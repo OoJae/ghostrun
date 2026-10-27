@@ -36,6 +36,7 @@ describe("recorded unseen worlds", () => {
     ["combat", "a-sumo-ring", "'pushed into out of bounds' means out of the ring"],
     ["combat", "bumper-cars-arena", "a shove lands from behind the car, toward where it must go"],
     ["combat", "dodgeball-arena", "'when blue is hit' means anyone on team blue"],
+    ["fresh", "dodgeball-arena", "a hit by a ball red threw scores for red, whatever the rule said"],
   ])("%s %s: %s", async (set, prefix) => {
     const w = recorded(set, prefix);
     const r = await prove(R, w.bundle, { engine: ENGINE_HASH, runs: 12 });

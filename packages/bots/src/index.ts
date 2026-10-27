@@ -44,6 +44,7 @@ interface Bot {
   replanAt: number;
   best: number;
   progressAt: number;
+  shoveAt: number; // the next tick it may shove the player
   last: Vec3 | null;
   dodge: { x: number; z: number; until: number } | null;
   patrol: Vec3[];
@@ -64,9 +65,11 @@ export class CastBrain implements Brain {
   readonly #goal = new Map<string, Vec3>();
   readonly #post = new Map<string, Vec3>();
   readonly #out = new Map<string, InputFrame>();
+  readonly #shoves: boolean; // the player can be shoved (a ring game): rivals next to them do
 
   constructor(nav: NavWorld, b: WorldBundle) {
     this.#nav = nav;
+    this.#shoves = b.verbs.some((v) => v.verb === "combat_sport.shove" && v.on === "player");
     // the thing to fight over; never a ball that gets thrown (bots don't throw, and crowding one
     // they can't pick up only kicks it into a corner): in a throwing game they go for the player
     const thrown = new Set(b.verbs.filter((v) => v.verb === "combat_sport.throw").map((v) => v.on));
@@ -99,7 +102,7 @@ export class CastBrain implements Brain {
       const home = nav.nearest(e.pos);
       this.bots.push({
         id: e.id, team: e.team, menu: c?.menu ?? [], option, beh: behaviourOf(option), speed: SPEED[c?.role ?? "citizen"] ?? 0.6,
-        rng: stream(b.seed, `bot:${e.id}`), path: [], wp: 0, aim: null, replanAt: 0, best: Infinity, progressAt: 0, last: null, dodge: null,
+        rng: stream(b.seed, `bot:${e.id}`), path: [], wp: 0, aim: null, replanAt: 0, best: Infinity, progressAt: 0, shoveAt: 0, last: null, dodge: null,
         patrol: home ? [...stops, home] : stops, patrolI: 0,
       });
     }
@@ -123,7 +126,13 @@ export class CastBrain implements Brain {
         this.#out.delete(bot.id);
         continue;
       }
-      this.#out.set(bot.id, this.#drive(w, bot, this.#target(w, bot), tick));
+      const frame = this.#drive(w, bot, this.#target(w, bot), tick);
+      // pushing back: a rival right next to the player shoves, every 50 ticks at most
+      if (this.#shoves && (bot.beh === "attack" || bot.beh === "intercept") && tick >= bot.shoveAt && bot.team !== w.entity("player")!.team && d2(w.pos(bot.id), w.pos("player")) < 1.3 * 1.3) {
+        frame.btn |= BTN.USE;
+        bot.shoveAt = tick + 50;
+      }
+      this.#out.set(bot.id, frame);
     }
     return this.#out;
   }

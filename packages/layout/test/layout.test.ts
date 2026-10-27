@@ -218,6 +218,38 @@ describe("rules the fourth unseen set wrote", () => {
   });
 });
 
+describe("ring and throwing games", () => {
+  it("in a ring you lose by leaving, rivals shove back with a force sized to the ring; a hit by a ball blue threw scores for blue", () => {
+    const fill = parseFill(
+      ctf
+        .replace('{"op":"verb","id":"vb_jump"', [
+          '{"op":"ent","id":"mat","kind":"prop","noun":"sumo ring","zone":"z_plaza","anchor":"wall_s","body":"fixed","size":[5,0.1,5]}',
+          '{"op":"ent","id":"oob","kind":"goal","noun":"out of bounds","zone":"z_plaza","anchor":"wall_e"}',
+          '{"op":"ent","id":"wrestler","kind":"npc","noun":"rival","zone":"z_plaza","anchor":"wall_n","team":"blue"}',
+          '{"op":"ent","id":"ball","kind":"pickup","noun":"ball","zone":"z_plaza","anchor":"wall_w"}',
+          '{"op":"verb","id":"vb_jump"',
+        ].join("\n"))
+        .replace('{"op":"law"', '{"op":"verb","id":"vb_ball","verb":"combat_sport.throw","on":"ball","params":{}}\n{"op":"law"')
+        .replace('{"op":"rule","id":"r_pickup"', [
+          '{"op":"rule","id":"r_me_out","when":{"t":"enter","a":"player","b":"oob"},"then":[{"e":"lose","target":"player"}],"once":true}',
+          '{"op":"rule","id":"r_him_out","when":{"t":"enter","a":"wrestler","b":"oob"},"then":[{"e":"win","target":"player"}],"once":true}',
+          '{"op":"rule","id":"r_hit","when":{"t":"hit","a":"player","b":"ball"},"if":[{"l":"ball.carrier.team","op":"eq","r":"blue"}],"then":[{"e":"score","target":"team:red","n":1}]}',
+          '{"op":"rule","id":"r_pickup"',
+        ].join("\n")),
+      { seed: 7 },
+    );
+    const layout = cityBlock.generate({ seed: 7, params: cityBlock.defaults, sub: fill.draft.pack.sub, laws: fill.draft.laws, harder: false });
+    const { bundle, notes } = placeWorld({ ...fill.draft, engine: "e".repeat(64) }, layout);
+    const rule = (id: string) => bundle.rules.find((r) => r.id === id)!;
+    expect(rule("r_me_out").when).toMatchObject({ t: "exit", a: "player", b: "area_ring" });
+    expect(rule("r_him_out").when).toMatchObject({ t: "exit", a: "wrestler", b: "area_ring" });
+    expect(bundle.entities.some((e) => e.id === "oob")).toBe(false);
+    expect(bundle.verbs.filter((v) => v.verb === "combat_sport.shove").map((v) => [v.on, v.params.force])).toEqual([["wrestler", 6], ["player", 6]]);
+    expect(rule("r_hit").then[0]!.target).toBe("team:blue");
+    expect(notes).toContain("player: the rivals can shove you too (you lose leaving the ring)");
+  });
+});
+
 describe("conditions nothing can satisfy", () => {
   it("'IF the gate is open' with nothing to open it means holding the unused key; 'IF the timer is running' on a prop goes", () => {
     const fill = parseFill(

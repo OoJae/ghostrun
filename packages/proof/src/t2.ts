@@ -2,7 +2,7 @@
 // precondition, step at most 120 ticks, and assert the rule fired exactly once.
 import type { Rule, Vec3, WorldBundle } from "@ghostrun/ir";
 import type { Cause } from "@ghostrun/plugin-api";
-import { BTN, SimWorld, type Rapier } from "@ghostrun/sim";
+import { BTN, SimWorld, type InputFrame, type Rapier } from "@ghostrun/sim";
 import { producers } from "./t0";
 import type { Chip } from "./types";
 
@@ -39,7 +39,10 @@ function force(sim: SimWorld, b: WorldBundle, c: Cause): string | boolean {
   return true;
 }
 
-function plan(sim: SimWorld, b: WorldBundle, r: Rule, playerTeam: string): string | boolean | null {
+/** NPC presses for a forced test (a rival shoving the player), read by the sim on the next tick. */
+type Presses = Map<string, InputFrame>;
+
+function plan(sim: SimWorld, b: WorldBundle, r: Rule, playerTeam: string, presses: Presses = new Map()): string | boolean | null {
   const w = r.when;
   const team = r.if.find((c) => c.l.endsWith(".carrier.team") && c.op === "eq")?.r;
   switch (w.t) {
@@ -106,8 +109,16 @@ function plan(sim: SimWorld, b: WorldBundle, r: Rule, playerTeam: string): strin
       const y = ring.pos[1] - ring.size[1] / 2 + 0.95;
       const edge = Math.max(0.5, ring.size[0] / 2 - 0.8);
       sim.teleport(p.cause.at, [ring.pos[0] + edge, y, ring.pos[2]]);
-      sim.teleport("player", [ring.pos[0] + edge - 1.2, y, ring.pos[2]]);
-      return true;
+      if (p.cause.at !== "player") {
+        sim.teleport("player", [ring.pos[0] + edge - 1.2, y, ring.pos[2]]);
+        return true;
+      }
+      // the player shoved out: a rival on the inner side does it
+      const rival = b.entities.find((e) => e.kind === "npc" && e.body !== "sensor" && e.body !== "none" && e.team !== playerTeam && b.verbs.some((v) => v.verb === "combat_sport.shove" && v.on === e.id));
+      if (!rival) return "no rival to shove the player out";
+      sim.teleport(rival.id, [ring.pos[0] + edge - 1.2, y, ring.pos[2]]);
+      presses.set(rival.id, { tick: sim.tick + 1, wx: 0, wz: 0, btn: BTN.USE });
+      return null;
     }
     case "timer_end": {
       const v = sim.verbs.find((x) => x.bound.on === w.a && x.plugin.id === "puzzle.timer");
@@ -124,7 +135,8 @@ export function t2(R: Rapier, b: WorldBundle, playerTeam: "red" | "blue" = "red"
   const chips: Chip[] = [];
   for (const r of [...b.rules].sort((x, y) => (x.id < y.id ? -1 : 1))) {
     const t0 = globalThis.performance?.now?.() ?? 0;
-    const sim = new SimWorld(R, b, { playerTeam });
+    const presses: Presses = new Map();
+    const sim = new SimWorld(R, b, { playerTeam, brain: { think: () => { const now = new Map(presses); presses.clear(); return now; } } });
     const base: Omit<Chip, "status" | "text" | "cx"> = { id: `T2:${r.id}`, tier: "T2", subject: { kind: "rule", id: r.id }, method: `forced-state ≤${MAX_TICKS} ticks`, n: 1, k: 0, src: r.src, ms: 0 };
     // the rule's state conditions are part of its precondition: force them too
     for (const c of r.if) {
@@ -147,7 +159,7 @@ export function t2(R: Rapier, b: WorldBundle, playerTeam: "red" | "blue" = "red"
       const held = /^([a-z][a-z0-9_]*)\.carrier\.team$/.exec(c.l)?.[1];
       if (held && c.op === "eq" && c.r === playerTeam && held !== r.when.a && b.entities.some((e) => e.id === held && e.kind !== "npc")) sim.attach(held, "player");
     }
-    const how = plan(sim, b, r, playerTeam);
+    const how = plan(sim, b, r, playerTeam, presses);
     const why = typeof how === "string" ? how : null;
     if (why) {
       chips.push({ ...base, n: 0, status: "not_checkable", text: `${r.id}: ${why}`, cx: null });

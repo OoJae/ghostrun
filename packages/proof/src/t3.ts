@@ -864,11 +864,11 @@ function t3Runs(R: Rapier, b: WorldBundle, nav: NavWorld, chain: WinChain | null
         src: "", ms: Math.round((globalThis.performance?.now?.() ?? 0) - t1),
       });
     }
-    // a win in under 3 s means the world asks nothing of the player: honest, but not a game
+    // a win in under 3 s is over before it starts: honest, but barely a game
     if (par && par.goldS < TOO_EASY_S) {
       chips.push({
         id: "T3:too_easy", tier: "T3", subject: { kind: "property", id: "win_reachable" }, status: "counterexample", method: `physics, ${runs} AI runners`,
-        n: runs, k: won.length, text: `won in ${par.goldS} s: the win needs none of what the world asks for`,
+        n: runs, k: won.length, text: `won in ${par.goldS} s: over almost before it starts`,
         cx: { where: null, have: par.goldS, need: TOO_EASY_S, unit: "s", text: `AI par ${par.goldS} s < ${TOO_EASY_S} s` }, src: "", ms: 0,
       });
     }

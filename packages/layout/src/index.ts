@@ -636,6 +636,21 @@ export function repairKits(b: WorldBundle): string[] {
     b.verbs.push(vb(uniqueId(b, `vb_shove_${e.id}`), "combat_sport.shove", e.id));
     notes.push(`${e.id}: added combat_sport.shove (rule ${r.id} waits for it to be knocked ${r.when.t === "exit" ? "out of" : "into"} ${r.when.b})`);
   }
+  // 1e'. a ring game (rivals to shove out, and you lose leaving it) goes both ways: they shove back
+  const ringOut = b.rules.some((r) => r.when.t === "exit" && r.when.a === "player" && r.then.some((x) => x.e === "lose"));
+  if (ringOut && b.verbs.some((v) => v.verb === "combat_sport.shove" && v.on !== "player") && !b.verbs.some((v) => v.verb === "combat_sport.shove" && v.on === "player")) {
+    b.verbs.push(vb(uniqueId(b, "vb_shove_player"), "combat_sport.shove", "player"));
+    notes.push("player: the rivals can shove you too (you lose leaving the ring)");
+  }
+  // in a small ring a full shove (~4 m) clears it from anywhere: scaled so it takes working them
+  // to the edge (about a third of the way across per shove)
+  const ring = ringOut ? b.entities.find((e) => b.rules.some((r) => r.when.t === "exit" && r.when.a === "player" && r.when.b === e.id)) : undefined;
+  if (ring) {
+    const force = Math.max(4, Math.min(12, Math.round(Math.min(ring.size[0], ring.size[2]) * 1.2)));
+    const shoves = b.verbs.filter((v) => v.verb === "combat_sport.shove" && v.params.force === undefined);
+    for (const v of shoves) v.params = { ...v.params, force };
+    if (shoves.length && force < 10) notes.push(`${ring.id}: shoves knock ${force < 10 ? "less far" : ""} (force ${force}) in a ${Math.min(ring.size[0], ring.size[2])} m ring`);
+  }
   // 1c'. a lock whose key names nothing in the world: the one unused key-like pickup is that key;
   // with none, the door opens on USE (a key nobody can find would lock it forever)
   const ids = new Set(b.entities.map((e) => e.id));
@@ -680,6 +695,15 @@ export function repairKits(b: WorldBundle): string[] {
     if (r.when.t === "hit" && r.when.a === "player" && throwable.has(r.when.b)) {
       r.when.a = "";
       notes.push(`rule ${r.id}: a hit by the thrown ${r.when.b} means anyone it hits`);
+    }
+    // "a hit by the ball blue threw scores for red": the thrower's team scores, never the one hit
+    if (r.when.t === "hit" && throwable.has(r.when.b)) {
+      const thrower = r.if.find((c) => c.l === `${r.when.b}.carrier.team` && c.op === "eq" && (c.r === "red" || c.r === "blue"))?.r;
+      for (const e of r.then) {
+        if (!thrower || e.e !== "score" || !/^team:(red|blue)$/.test(e.target) || e.target === `team:${thrower}`) continue;
+        notes.push(`rule ${r.id}: a hit by a ball ${thrower} threw scores for ${thrower}, not ${e.target.slice(5)}`);
+        e.target = `team:${thrower}`;
+      }
     }
   }
   // a thrown ball is carried, never collected (collecting it would destroy it)
