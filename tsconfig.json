@@ -26,6 +26,12 @@
       "path": "packages/packs/arena"
     },
     {
+      "path": "packages/packs/outdoor"
+    },
+    {
+      "path": "packages/packs/course"
+    },
+    {
       "path": "packages/sim"
     },
     {
