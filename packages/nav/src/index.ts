@@ -74,7 +74,9 @@ export function buildNav(b: WorldBundle): NavWorld {
       if (!r.success || r.path.length === 0) return null;
       const last = r.path[r.path.length - 1]!;
       // computePath snaps to the nearest polygon; reject paths that end far from the target
-      if ((last.x - to[0]) ** 2 + (last.z - to[2]) ** 2 > 1.0) return null;
+      const ex = last.x - to[0];
+      const ez = last.z - to[2];
+      if (ex * ex + ez * ez > 1.0) return null;
       return r.path.map((p) => [p.x, p.y, p.z] as Vec3);
     },
     destroy() {

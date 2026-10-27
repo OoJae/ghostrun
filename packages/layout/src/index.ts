@@ -96,8 +96,26 @@ export function placeWorld(input: WorldBundle, layout: PackLayout): PlaceResult 
     const lift = e.kind === "spawn" ? 0 : e.size[1] / 2;
     e.pos = [base[0] + offset, base[1] + lift, base[2]];
   }
-  notes.push(...repairExpects(b));
+  notes.push(...repairTriggers(b), ...repairExpects(b));
   return { bundle: b, notes };
+}
+
+/**
+ * Anything a rule's enter/exit trigger targets must be a sensor: a solid "spike trap" can never
+ * be entered, so its lose rule would be unreachable in play while a forced-state test (which
+ * teleports inside) still passed. Logged, never silent.
+ */
+export function repairTriggers(b: WorldBundle): string[] {
+  const notes: string[] = [];
+  const targets = new Set(b.rules.filter((r) => r.when.t === "enter" || r.when.t === "exit").map((r) => r.when.b));
+  for (const e of b.entities) {
+    if (targets.has(e.id) && e.body !== "sensor") {
+      notes.push(`${e.id}: body '${e.body}' → 'sensor' (it is the target of an enter/exit trigger)`);
+      e.body = "sensor";
+      if (e.size[0] === 1 && e.size[1] === 1 && e.size[2] === 1) e.size = [1.6, 1.2, 1.6];
+    }
+  }
+  return notes;
 }
 
 /**

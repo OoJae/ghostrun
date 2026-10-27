@@ -56,7 +56,7 @@ The memory cap held everywhere.
 
 Run it yourself: `pnpm --filter @ghostrun/detcheck quick` (2k ticks) or `full` (10k ticks).
 
-## S2: live fast lane (Cerebras intent + streamed fill): **latency GO; fill validity being fixed** (2026-10-27)
+## S2: live fast lane (Cerebras intent + streamed fill): **GO** (2026-10-27)
 
 10 varied dev prompts (`tools/bench/prompts-s2.txt`, written by us, so never part of the external eval set). Pipeline: qwen-3.8-27b intent (strict JSON schema, reasoning none) → gpt-oss-120b streamed JSONL fill (reasoning low), parsed line by line → placed → proof ladder. Measured from Lagos on the free tier. These are timings of *our pipeline*, not a vendor comparison (Cerebras ToS forbids competitive benchmarking).
 
@@ -72,9 +72,16 @@ Run it yourself: `pnpm --filter @ghostrun/detcheck quick` (2k ticks) or `full` (
 - 12 of the 18 invalid lines were `"body":"static"`. A deterministic enum synonym table in the parser's single repair pass now handles it (static→fixed, cylinder→capsule, team "none"→"", lose_reachable→reachable and others).
 - The fill prompt now lists the exact enum values.
 - The floor_plan pack was added, so interior prompts (villa tour, gallery, ramen shop, museum heist) are no longer forced into a street grid.
-- Re-run pending.
+- **Re-run, same 10 prompts:**
+  - invalid lines **0.7%** (2/270) ✅
+  - playable p50 **1.49 s**, p90 2.19 s ✅
+  - intent p50 0.59 s, p90 1.09 s ✅
+  - 8/10 prompts picked floor_plan, 2 picked city_block.
 
 **Open.**
 - Median interactive controls per world is well under the target of 15. The prompt and completeness contract must ask for more affordances.
 - Headline counterexamples on prompts that don't fit the available packs. The repair loop (counterexample-guided repair, CEGR) and more packs/kits address this.
-- The parkour prompt: 0/12 runners. The witness planner can't jump yet (needs jump links in the navmesh).
+- The parkour prompt: 0/12 runners at first, because the witness planner couldn't jump.
+  - Fixed: T3 jump links. When the target is on a raised surface the navmesh can't reach on foot, runners walk to its nearest face, jump, air-jump at the apex and land on top. Re-verified: **12/12 won, AI par 9.3 s**.
+  - Also fixed: any entity targeted by an enter/exit trigger is now forced to a sensor. A solid "spike trap" could never be entered in play, yet its forced-state test passed.
+- Coverage: the intent picks floor_plan for castles and space stations because only two packs exist. The arena, outdoor and maze packs are next (Build A).

@@ -18,7 +18,7 @@ interface RunResult {
 /** Walk the player to `goal` along the navmesh; returns false if it can't get there in time. */
 function walkTo(sim: SimWorld, nav: NavWorld, goal: Vec3, rng: () => number, speed: number, budget: { ticks: number }, stop: () => boolean): boolean {
   const from = sim.pos("player");
-  const path = nav.path([from[0], 0, from[2]], [goal[0], 0, goal[2]]);
+  const path = nav.path([from[0], from[1] - 0.9, from[2]], goal);
   if (!path) return false;
   const pts = path.map((p, i) => (i === path.length - 1 ? p : ([p[0] + (rng() - 0.5) * 0.3, p[1], p[2] + (rng() - 0.5) * 0.3] as Vec3)));
   let i = 0;
@@ -28,7 +28,9 @@ function walkTo(sim: SimWorld, nav: NavWorld, goal: Vec3, rng: () => number, spe
     if (stop()) return true;
     const p = sim.pos("player");
     const wp = pts[i]!;
-    const d2 = (p[0] - wp[0]) ** 2 + (p[2] - wp[2]) ** 2;
+    const dx = p[0] - wp[0];
+    const dz = p[2] - wp[2];
+    const d2 = dx * dx + dz * dz; // never **: exponentiation isn't guaranteed bit-identical across engines
     if (d2 < 0.45 * 0.45) {
       if (++i >= pts.length) return true;
       best = Infinity;
@@ -55,6 +57,67 @@ function walkTo(sim: SimWorld, nav: NavWorld, goal: Vec3, rng: () => number, spe
   return stop();
 }
 
+/** The static surface a point stands on (highest top at or below it). */
+function surfaceUnder(b: WorldBundle, p: Vec3) {
+  let best: WorldBundle["statics"][number] | undefined;
+  for (const s of b.statics) {
+    const top = s.pos[1] + s.size[1] / 2;
+    if (Math.abs(p[0] - s.pos[0]) > s.size[0] / 2 || Math.abs(p[2] - s.pos[2]) > s.size[2] / 2 || top > p[1] + 0.2) continue;
+    if (!best || top > best.pos[1] + best.size[1] / 2) best = s;
+  }
+  return best;
+}
+
+/**
+ * Jump link: when the target is on a raised surface the navmesh can't reach on foot, walk to the
+ * closest face of that surface, jump (and air-jump at the apex), then land on top.
+ */
+function climbOnto(sim: SimWorld, nav: NavWorld, b: WorldBundle, target: Vec3, rng: () => number, budget: { ticks: number }): boolean {
+  const s = surfaceUnder(b, [target[0], target[1] - 0.5, target[2]]);
+  if (!s) return false;
+  const top = s.pos[1] + s.size[1] / 2;
+  const p = sim.pos("player");
+  const [minX, maxX, minZ, maxZ] = [s.pos[0] - s.size[0] / 2, s.pos[0] + s.size[0] / 2, s.pos[2] - s.size[2] / 2, s.pos[2] + s.size[2] / 2];
+  const clampX = Math.min(maxX - 0.8, Math.max(minX + 0.8, target[0]));
+  const clampZ = Math.min(maxZ - 0.8, Math.max(minZ + 0.8, target[2]));
+  // candidate approach points 0.7 m outside each face, nearest walkable one first
+  const faces: { at: Vec3; dir: [number, number] }[] = [
+    { at: [clampX, 0, minZ - 0.7], dir: [0, 1] }, { at: [clampX, 0, maxZ + 0.7], dir: [0, -1] },
+    { at: [minX - 0.7, 0, clampZ], dir: [1, 0] }, { at: [maxX + 0.7, 0, clampZ], dir: [-1, 0] },
+  ];
+  const d2 = (a: Vec3) => (a[0] - p[0]) * (a[0] - p[0]) + (a[2] - p[2]) * (a[2] - p[2]);
+  faces.sort((u, v) => d2(u.at) - d2(v.at));
+  for (const f of faces) {
+    if (!nav.path([p[0], 0, p[2]], f.at)) continue;
+    if (!walkTo(sim, nav, f.at, rng, 1, budget, () => false)) continue;
+    let on = false;
+    for (let t = 0; t < 150 && budget.ticks > 0 && !on; t++) {
+      const q = sim.pos("player");
+      const above = q[1] - 0.9 > top + 0.05;
+      const inX = f.dir[0] === 0 ? 0 : Math.max(-127, Math.min(127, Math.round((clampX - q[0]) * 60)));
+      const inZ = f.dir[1] === 0 ? 0 : Math.max(-127, Math.min(127, Math.round((clampZ - q[2]) * 60)));
+      const wx = above ? inX : f.dir[0] * 127;
+      const wz = above ? inZ : f.dir[1] * 127;
+      const again = t > 6 && sim.player.vy <= 0.5 && sim.player.jumpsUsed > 0 && sim.player.jumpsUsed < sim.laws.jumpsMax;
+      sim.step({ tick: sim.tick + 1, wx, wz, btn: t === 0 || again ? BTN.JUMP : 0 });
+      if (again) sim.step({ tick: sim.tick + 1, wx, wz, btn: 0 });
+      budget.ticks -= again ? 2 : 1;
+      on = t > 0 && sim.player.grounded && q[1] - 0.9 > top - 0.1;
+    }
+    if (on) return true;
+  }
+  return false;
+}
+
+/** Walk there, climbing onto a raised surface first if the navmesh can't reach it on foot. */
+function goTo(sim: SimWorld, nav: NavWorld, b: WorldBundle, target: Vec3, rng: () => number, speed: number, budget: { ticks: number }, stop: () => boolean): boolean {
+  const p = sim.pos("player");
+  if (!nav.path([p[0], p[1] - 0.9, p[2]], target) && !stop()) {
+    if (!climbOnto(sim, nav, b, target, rng, budget)) return stop();
+  }
+  return walkTo(sim, nav, target, rng, speed, budget, stop);
+}
+
 function witnessRun(R: Rapier, b: WorldBundle, nav: NavWorld, chain: WinChain, seed: number, playerTeam: "red" | "blue"): RunResult {
   const sim = new SimWorld(R, b, { playerTeam });
   const rng = stream(seed, `t3:run`);
@@ -65,7 +128,7 @@ function witnessRun(R: Rapier, b: WorldBundle, nav: NavWorld, chain: WinChain, s
   outer: while (budget.ticks > 0 && !sim.result) {
     for (const st of chain.steps) {
       if (st.do === "pickup") {
-        const ok = walkTo(sim, nav, pos(st.item), rng, speed, budget, () => sim.entity(st.item)?.carrier === "player");
+        const ok = goTo(sim, nav, b, pos(st.item), rng, speed, budget, () => sim.entity(st.item)?.carrier === "player");
         if (!ok) {
           stuck++;
           break outer;
@@ -73,7 +136,7 @@ function witnessRun(R: Rapier, b: WorldBundle, nav: NavWorld, chain: WinChain, s
       } else {
         const scoredBefore = sim.log.filter((e) => e.rule === st.rule).length;
         const sensor = b.entities.find((e) => e.id === st.sensor)!;
-        const ok = walkTo(sim, nav, sensor.pos, rng, speed, budget, () => sim.log.filter((e) => e.rule === st.rule).length > scoredBefore);
+        const ok = goTo(sim, nav, b, sensor.pos, rng, speed, budget, () => sim.log.filter((e) => e.rule === st.rule).length > scoredBefore);
         if (!ok) {
           stuck++;
           break outer;
