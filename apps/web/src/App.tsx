@@ -4,6 +4,7 @@ import { better, issuesOf, statusWord, type Chip, type Receipt } from "@ghostrun
 import { Engine, type LoadResult } from "./engine";
 import { KeyHint } from "./hud/Corner";
 import { TouchControls } from "./hud/Touch";
+import { XRay } from "./hud/XRay";
 import { IntentCard } from "./hud/IntentCard";
 import { PromptBar } from "./hud/PromptBar";
 import { ProofBadge, ReceiptPanel, RepairChip, type ProofState, type RepairState } from "./hud/Proof";
@@ -45,6 +46,7 @@ export function App() {
   const [hint, setHint] = useState(false);
   const [proof, setProof] = useState<ProofState>({ status: "idle", chips: [], receipt: null });
   const [receiptOpen, setReceiptOpen] = useState(false);
+  const [xray, setXray] = useState(false);
   const [score, setScore] = useState<{ red: number; blue: number; result: string | null }>({ red: 0, blue: 0, result: null });
   const [teams, setTeams] = useState(true);
   const [useHint, setUseHint] = useState<string | null>(null);
@@ -260,7 +262,9 @@ export function App() {
         setStatus("error");
       });
     const onKey = (ev: KeyboardEvent) => {
-      if (ev.code === "KeyP" && !(ev.target instanceof HTMLInputElement)) setReceiptOpen((o) => !o);
+      if (ev.target instanceof HTMLInputElement || ev.target instanceof HTMLTextAreaElement) return;
+      if (ev.code === "KeyP") setReceiptOpen((o) => !o);
+      if (ev.code === "KeyX") setXray((o) => !o);
     };
     window.addEventListener("keydown", onKey);
     return () => {
@@ -348,6 +352,17 @@ export function App() {
             void show(w, ++runId.current, performance.now(), []);
           }}
         />
+        {xray && current.current && (
+          <XRay
+            bundle={current.current.bundle}
+            chips={proof.chips}
+            onFocus={(id) => engine.current?.highlight(id)}
+            onClose={() => {
+              setXray(false);
+              engine.current?.highlight(null);
+            }}
+          />
+        )}
         {receiptOpen && (
           <ReceiptPanel
             proof={proof}

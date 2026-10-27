@@ -175,3 +175,19 @@ test.describe("phone controls", () => {
     expect(errors).toEqual([]);
   });
 });
+
+test("Logic X-ray: X shows every rule as WHEN/IF/THEN with its forced-state mark", async ({ page }) => {
+  const errors = collectErrors(page);
+  await page.goto("/?gl=webgl2&fx=0&dpr=0.5");
+  await page.waitForFunction(() => window.__GHOSTRUN__?.ready === true, null, { timeout: 90_000 });
+  await expect(page.getByTestId("proof-badge")).toContainText("verified", { timeout: 60_000 });
+  await page.keyboard.press("KeyX");
+  const xray = page.getByTestId("xray");
+  await expect(xray).toBeVisible();
+  await expect(xray.locator(".sentence")).toHaveCount(5);
+  await expect(xray.locator(".sentence.verified")).toHaveCount(5); // every CTF rule is force-tested green
+  await expect(xray).toContainText("glowing orb");
+  await page.keyboard.press("KeyX");
+  await expect(xray).toHaveCount(0);
+  expect(errors).toEqual([]);
+});

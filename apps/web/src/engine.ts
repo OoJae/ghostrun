@@ -3,7 +3,7 @@
 import { bloom } from "three/addons/tsl/display/BloomNode.js";
 import { pass } from "three/tsl";
 import {
-  ACESFilmicToneMapping, PerspectiveCamera, Quaternion, RenderPipeline, Scene, WebGPURenderer, type Fog,
+  ACESFilmicToneMapping, CylinderGeometry, Mesh, PerspectiveCamera, Quaternion, RenderPipeline, Scene, WebGPURenderer, type Fog,
 } from "three/webgpu";
 import { InputCollector } from "./input";
 import type { WorldBundle } from "@ghostrun/ir";
@@ -12,6 +12,7 @@ import { probe } from "./probe";
 import { FollowCamera } from "./render/camera";
 import { makeRain } from "./render/rain";
 import { lookOf } from "./render/looks";
+import { beamMaterial, PALETTE } from "./render/materials";
 import { applySky, makeFog, neonEnvironment, skyNode } from "./render/sky";
 import { buildWorldView, type WorldView } from "./render/world";
 import { StubSim } from "./sim/stub";
@@ -76,6 +77,14 @@ export class Engine {
   /** Prewarmed sample worlds: never rendered, kept so their compiled programs stay cached. */
   readonly #warm: WorldView[] = [];
   #compiling = false;
+  /** Logic X-ray focus: a light beam over the thing a hovered tile names. */
+  #focus: string | null = null;
+  readonly #beacon = (() => {
+    const m = new Mesh(new CylinderGeometry(0.55, 0.55, 14, 24, 1, true), beamMaterial(PALETTE.cyan, 2.2, 0.55));
+    m.visible = false;
+    m.renderOrder = 2;
+    return m;
+  })();
 
   private constructor(canvas: HTMLCanvasElement, renderer: WebGPURenderer, opts: EngineOptions, initMs: number) {
     this.#canvas = canvas;
@@ -98,6 +107,7 @@ export class Engine {
     s.environmentIntensity = 0.8;
     this.#env = env;
     s.add(this.#rain.object);
+    s.add(this.#beacon);
 
     if (opts.bloom !== false) {
       const p = new RenderPipeline(renderer);
@@ -129,6 +139,12 @@ export class Engine {
     const renderer = new WebGPURenderer({ canvas, antialias: true, forceWebGL: opts.forceWebGL === true, powerPreference: "high-performance" });
     await renderer.init();
     return new Engine(canvas, renderer, opts, performance.now() - t0);
+  }
+
+  /** Light up one thing (Logic X-ray hover); null puts the beam away. */
+  highlight(id: string | null) {
+    this.#focus = id;
+    if (!id) this.#beacon.visible = false;
   }
 
   /** Touch controls feed the same input collector as the keyboard. */
@@ -317,6 +333,9 @@ export class Engine {
       this.#rain.follow(this.#camera.position);
     }
     view?.update(now / 1000);
+    const focused = this.#focus ? view?.actors.get(this.#focus) : undefined;
+    this.#beacon.visible = Boolean(focused);
+    if (focused) this.#beacon.position.set(focused.position.x, focused.position.y + 6, focused.position.z);
 
     if (this.#pipeline) this.#pipeline.render();
     else this.#renderer.render(this.#scene, this.#camera);
