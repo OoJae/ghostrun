@@ -301,7 +301,8 @@ export class FillParser {
       case "rule":
         return [op.when.a, op.when.b, ...op.if.map((c) => c.l), ...op.then.map((e) => e.target)].every((r) => this.#has(r));
       case "expect":
-        return this.#has(op.a) && this.#has(op.b);
+        // Never drop an expectation: the placer repairs references and the proof decides.
+        return true;
       default:
         return true;
     }

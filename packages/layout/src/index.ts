@@ -96,5 +96,30 @@ export function placeWorld(input: WorldBundle, layout: PackLayout): PlaceResult 
     const lift = e.kind === "spawn" ? 0 : e.size[1] / 2;
     e.pos = [base[0] + offset, base[1] + lift, base[2]];
   }
+  notes.push(...repairExpects(b));
   return { bundle: b, notes };
+}
+
+/**
+ * Deterministic repair of expectation references the LLM got wrong (logged, never silent):
+ * - a: "player" → the red (else first) spawn;
+ * - requires jumps≥k with b not a zone → the zone with the highest walkable surface.
+ */
+export function repairExpects(b: WorldBundle): string[] {
+  const notes: string[] = [];
+  const zoneIds = new Set(b.zones.map((z) => z.id));
+  const spawn = b.entities.find((e) => e.kind === "spawn" && e.team === "red") ?? b.entities.find((e) => e.kind === "spawn");
+  const top = (zid: string) => Math.max(-Infinity, ...b.statics.filter((s) => s.zone === zid && s.surf !== "wall").map((s) => s.pos[1] + s.size[1] / 2));
+  for (const x of b.expects) {
+    if (x.a === "player" && spawn) {
+      notes.push(`expect ${x.id}: a 'player' → spawn '${spawn.id}'`);
+      x.a = spawn.id;
+    }
+    if (x.prop === "requires" && !zoneIds.has(x.b) && b.zones.length) {
+      const highest = [...b.zones].sort((p, q) => top(q.id) - top(p.id) || (p.id < q.id ? -1 : 1))[0]!;
+      notes.push(`expect ${x.id}: b '${x.b}' is not a zone → '${highest.id}' (highest walkable area)`);
+      x.b = highest.id;
+    }
+  }
+  return notes;
 }

@@ -1,0 +1,27 @@
+{
+  "name": "@ghostrun/cli",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "ghostrun": "./dist/ghostrun.mjs"
+  },
+  "scripts": {
+    "build": "vite build",
+    "ghostrun": "node dist/ghostrun.mjs"
+  },
+  "dependencies": {
+    "@dimforge/rapier3d-deterministic": "catalog:",
+    "@ghostrun/ir": "workspace:*",
+    "@ghostrun/layout": "workspace:*",
+    "@ghostrun/llm": "workspace:*",
+    "@ghostrun/nav": "workspace:*",
+    "@ghostrun/pack-city-block": "workspace:*",
+    "@ghostrun/proof": "workspace:*",
+    "@ghostrun/sim": "workspace:*",
+    "@recast-navigation/wasm": "0.43.1",
+    "valibot": "catalog:"
+  },
+  "devDependencies": {
+    "vite": "catalog:"
+  }
+}

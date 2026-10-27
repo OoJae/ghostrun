@@ -1,0 +1,11 @@
+# S2 dev prompts (internal; written by us, so never part of the external eval set)
+Create a capture-the-flag game in a neon city. Add double jump. Score when the orb reaches the goal.
+a medieval castle where a dragon guards treasure
+a cozy ramen shop where customers order food
+zero-g basketball on a space station
+a real-estate tour of a modern villa where a guide books a viewing
+a Feng Shui handbag gallery
+parkour time trial across rooftops
+udělej mi bludiště s duchy
+a museum heist at night with guards
+a world made of music
