@@ -15,12 +15,8 @@
     "@ghostrun/layout": "workspace:*",
     "@ghostrun/llm": "workspace:*",
     "@ghostrun/nav": "workspace:*",
-    "@ghostrun/pack-arena": "workspace:*",
-    "@ghostrun/pack-city-block": "workspace:*",
-    "@ghostrun/pack-floor-plan": "workspace:*",
-    "@ghostrun/pack-maze": "workspace:*",
-    "@ghostrun/plugin-api": "workspace:*",
     "@ghostrun/proof": "workspace:*",
+    "@ghostrun/registry": "workspace:*",
     "@ghostrun/sim": "workspace:*",
     "@recast-navigation/wasm": "0.43.1",
     "valibot": "catalog:"

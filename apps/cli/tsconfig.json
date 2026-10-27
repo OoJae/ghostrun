@@ -25,7 +25,7 @@
       "path": "../../packages/layout"
     },
     {
-      "path": "../../packages/packs/city-block"
+      "path": "../../packages/registry"
     },
     {
       "path": "../../packages/proof"
@@ -35,15 +35,6 @@
     },
     {
       "path": "../../packages/nav"
-    },
-    {
-      "path": "../../packages/packs/floor-plan"
-    },
-    {
-      "path": "../../packages/packs/arena"
-    },
-    {
-      "path": "../../packages/packs/maze"
     }
   ]
 }
