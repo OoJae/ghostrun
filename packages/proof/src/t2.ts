@@ -90,12 +90,32 @@ function plan(sim: SimWorld, b: WorldBundle, r: Rule, playerTeam: string, presse
     case "hit": {
       const p = producers(b).find((x) => x.k === w.t && (!w.b || x.b === w.b) && x.cause);
       if (p?.cause?.do === "throw") {
-        // holding the ball, a few metres from the rival the rule names (or any rival): throw
-        const target = b.entities.find((e) => e.kind === "npc" && (w.a ? e.id === w.a : e.team !== playerTeam));
-        if (!target) return `no rival to throw ${p.cause.item} at`;
-        sim.attach(p.cause.item, "player");
+        const item = p.cause.item;
+        // "team:blue is hit": anyone on blue; "team:red is hit" (yours): a rival throws it at you
+        const hitTeam = w.a.startsWith("team:") ? w.a.slice(5) : null;
+        const other = playerTeam === "red" ? "blue" : "red";
+        // "a hit by the ball blue threw": a rival on that team throws it, at the player
+        const by = r.if.find((c) => c.l === `${item}.carrier.team` && c.op === "eq" && c.r !== playerTeam)?.r ?? (hitTeam === playerTeam ? other : undefined);
+        if (by !== undefined) {
+          const thrower = b.entities.find((e) => e.kind === "npc" && e.team === by && e.body !== "sensor" && e.body !== "none");
+          if (!thrower) return `no one on ${String(by)} to throw ${item}`;
+          sim.attach(item, thrower.id);
+          const q = sim.pos("player");
+          sim.teleport(thrower.id, [q[0] + 2.5, q[1], q[2]]);
+          presses.set(thrower.id, { tick: sim.tick + 1, wx: 0, wz: 0, btn: BTN.USE });
+          return null;
+        }
+        // holding the ball, a few metres from what the rule names (a rival, a pin) or any rival: throw
+        const target = b.entities.find((e) => (w.a && !hitTeam ? e.id === w.a : e.kind === "npc" && e.team !== playerTeam && (!hitTeam || e.team === hitTeam)));
+        if (!target) return `no rival to throw ${item} at`;
+        sim.attach(item, "player");
         const t = sim.pos(target.id);
-        sim.teleport("player", [t[0] + 2.5, t[1], t[2]]);
+        const y = t[1] - (target.kind === "npc" ? 0 : target.size[1] / 2 - 0.95);
+        // from the side where it is the nearest thing to hit (pins stand close together)
+        const others = String(b.verbs.find((v) => v.verb === "combat_sport.throw" && v.on === item)?.params.at ?? "").split(",").filter((id) => id && id !== target.id).map((id) => sim.pos(id));
+        const sides: Vec3[] = [[t[0] + 1.5, y, t[2]], [t[0] - 1.5, y, t[2]], [t[0], y, t[2] + 1.5], [t[0], y, t[2] - 1.5]];
+        const d2 = (u: Vec3, v: Vec3) => (u[0] - v[0]) * (u[0] - v[0]) + (u[2] - v[2]) * (u[2] - v[2]);
+        sim.teleport("player", sides.find((q) => others.every((o) => d2(q, o) > d2(q, t) + 0.3)) ?? sides[0]!);
         return true;
       }
       return p ? force(sim, b, p.cause!) : `nothing produces ${w.t}${w.b ? ` on ${w.b}` : ""}`;
