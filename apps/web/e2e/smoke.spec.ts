@@ -134,3 +134,17 @@ test("kit verbs: coin rush proves green and walking over a coin scores", async (
   await page.keyboard.up("KeyW");
   expect(errors).toEqual([]);
 });
+
+// Looks are cosmetic but must never break a world: grove (night forest) and gallery (cutaway interior).
+for (const [fx, look] of [["forest", "grove"], ["heist", "gallery"]] as const) {
+  test(`look: ${look} boots, proves and renders (${fx})`, async ({ page }) => {
+    const errors = collectErrors(page);
+    await page.goto(`/?gl=webgl2&fixture=${fx}`);
+    await page.waitForFunction(() => window.__GHOSTRUN__?.ready === true, null, { timeout: 90_000 });
+    await page.waitForFunction(() => window.__GHOSTRUN__?.proof !== undefined, null, { timeout: 90_000 });
+    await page.keyboard.press("KeyW");
+    await page.waitForTimeout(800);
+    await page.screenshot({ path: resolve(here, `__screenshots__/look-${look}.png`) });
+    expect(errors).toEqual([]);
+  });
+}

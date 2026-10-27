@@ -2,6 +2,9 @@
 //   JSONL fill → parseFill → pack.generate → placeWorld → placed WorldBundle.
 import fixtureFill from "../../../packages/ir/fixtures/ctf-neon.jsonl?raw";
 import coinRushFill from "../../../packages/ir/fixtures/coin-rush.jsonl?raw";
+import forestFill from "../../../packages/packs/outdoor/test/fixtures/glow-forest.jsonl?raw";
+import parkourFill from "../../../packages/packs/course/test/fixtures/parkour-time-trial.jsonl?raw";
+import heistFill from "../../../packages/ir/fixtures/heist-live-1.jsonl?raw";
 import { parseFill, specHash, type FillNote, type FillStats, type WorldBundle } from "@ghostrun/ir";
 import { placeWorld } from "@ghostrun/layout";
 import { packFor, PACKS } from "@ghostrun/registry";
@@ -63,10 +66,13 @@ export function buildWorld(_prompt: string, fixture = "ctf"): World {
 }
 
 /** Recorded fills: the organizer's CTF brief, and a kit-verb world (?fixture=coin-rush). */
-export const FIXTURES: Record<string, string> = { ctf: fixtureFill, "coin-rush": coinRushFill };
+export const FIXTURES: Record<string, string> = { ctf: fixtureFill, "coin-rush": coinRushFill, forest: forestFill, parkour: parkourFill, heist: heistFill };
 export const FIXTURE_PROMPTS: Record<string, string> = {
   ctf: BRIEF,
   "coin-rush": "Collect five gold coins in a neon arena before the clock runs out. Mind the lava.",
+  forest: "A bioluminescent forest at night: climb to the owl lookout before the fog rolls in.",
+  heist: "A museum heist: grab the key, unlock the vault, steal the gem and escape before the alarm timer runs out.",
+  parkour: "A parkour time trial: double jump the opening wall, then race the gaps and beams to the finish.",
 };
 
 /** Fill text (fixture or a live stream) → placed world, choosing the pack from the registry. */

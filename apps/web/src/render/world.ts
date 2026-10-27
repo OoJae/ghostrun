@@ -3,7 +3,7 @@
 import type { Entity, WorldBundle } from "@ghostrun/ir";
 import {
   AdditiveBlending, CapsuleGeometry, CircleGeometry, ConeGeometry, CylinderGeometry, DirectionalLight, DoubleSide,
-  Group, HemisphereLight, Mesh, MeshBasicNodeMaterial, Object3D, PlaneGeometry, PointLight, RingGeometry, SphereGeometry,
+  Color, Group, HemisphereLight, Mesh, MeshBasicNodeMaterial, MeshStandardNodeMaterial, Object3D, PlaneGeometry, PointLight, RingGeometry, SphereGeometry,
   TorusGeometry, type BufferGeometry, type Material,
 } from "three/webgpu";
 import { length, oneMinus, smoothstep, uv, vec2, vec3 } from "three/tsl";
@@ -12,6 +12,8 @@ import { PLAYER_ID } from "../sim/types";
 import { BoxBatch } from "./boxes";
 import { PALETTE, beamMaterial, bodyMaterial, buildingMaterial, glowMaterial, groundMaterial, lin, rimBodyMaterial, stripMaterial } from "./materials";
 import { kitActor, type KitActor } from "./kits";
+import type { LookStyle } from "./looks";
+import { buildScenery, type Scenery } from "./scenery";
 import { signMaterial } from "./sign";
 import { verb } from "@ghostrun/kits";
 
@@ -37,7 +39,11 @@ const rnd = (i: number) => {
   return x - Math.floor(x);
 };
 
-export function buildWorldView(bundle: WorldBundle): WorldView {
+export function buildWorldView(bundle: WorldBundle, look: LookStyle): WorldView {
+  const neonLook = look.id === "neon";
+  const city = neonLook && bundle.pack.id === "city_block";
+  // entity glow lights were tuned for dark streets; pale rooms and daylight need far less
+  const lightK = neonLook ? 1 : look.night ? 0.45 : 0.15;
   const root = new Group();
   root.name = "world";
   const actors = new Map<string, Object3D>();
@@ -56,7 +62,7 @@ export function buildWorldView(bundle: WorldBundle): WorldView {
   const floorTops: number[] = [];
   let arena = { minX: -40, maxX: 40, minZ: -20, maxZ: 20 };
 
-  bundle.statics.forEach((s, i) => {
+  if (neonLook) bundle.statics.forEach((s, i) => {
     const [x, y, z] = s.pos;
     const [w, h, d] = s.size;
     const min: V3 = [x - w / 2, y - h / 2, z - d / 2];
@@ -113,7 +119,7 @@ export function buildWorldView(bundle: WorldBundle): WorldView {
 
   // Cosmetic skyline beyond the perimeter (not collidable, not in the bundle).
   const margin = 6;
-  for (let gx = -110; gx <= 110; gx += 11) {
+  if (neonLook) for (let gx = -110; gx <= 110; gx += 11) {
     for (let gz = -80; gz <= 80; gz += 11) {
       if (gx > arena.minX - margin - 6 && gx < arena.maxX + margin + 6 && gz > arena.minZ - margin - 6 && gz < arena.maxZ + margin + 6) continue;
       const k = (gx + 200) * 1000 + gz + 200;
@@ -134,28 +140,35 @@ export function buildWorldView(bundle: WorldBundle): WorldView {
     }
   }
 
+  let scenery: Scenery | null = null;
+  if (!neonLook) {
+    scenery = buildScenery(bundle, look, { keep, animated, root });
+    arena = scenery.bounds;
+  }
+
   // Ground markings (part of the neon batch): base lines, street centre dashes, curb glow.
-  const gy = (floorTops.length ? Math.max(...floorTops) : 0) + 0.012;
+  const gy = (scenery ? scenery.groundY : floorTops.length ? Math.max(...floorTops) : 0) + 0.012;
   const flat = (x0: number, z0: number, x1: number, z1: number, rgb: V3, wdt = 0.12) =>
     neon.add([(x0 + x1) / 2, gy, (z0 + z1) / 2], [Math.abs(x1 - x0) || wdt, 0.02, Math.abs(z1 - z0) || wdt], rgb);
   const baseX = 24;
-  for (let zz = -11; zz < 11; zz += 2.2) {
+  if (city) for (let zz = -11; zz < 11; zz += 2.2) {
     flat(-baseX, zz, -baseX, zz + 1.4, lin(PALETTE.red, 2.2), 0.16);
     flat(baseX, zz, baseX, zz + 1.4, lin(PALETTE.blue, 2.2), 0.16);
   }
-  for (let xx = -baseX + 1; xx < baseX - 1; xx += 3) {
+  if (city) for (let xx = -baseX + 1; xx < baseX - 1; xx += 3) {
     if (Math.abs(xx + 0.75) < 8) continue;
     flat(xx, 0, xx + 1.5, 0, lin("#ffcf7a", 0.9), 0.1);
   }
-  for (const zz of [-12, 12]) flat(arena.minX + 2, zz, arena.maxX - 2, zz, lin(PALETTE.cyan, 0.7), 0.06);
+  if (city) for (const zz of [-12, 12]) flat(arena.minX + 2, zz, arena.maxX - 2, zz, lin(PALETTE.cyan, 0.7), 0.06);
 
   const solidMesh = new Mesh(keep(solid.build()), keep(buildingMaterial()));
   solidMesh.name = "statics";
   const neonMesh = new Mesh(keep(neon.build()), keep(stripMaterial()));
   neonMesh.name = "neon";
-  root.add(solidMesh, neonMesh);
+  if (neonLook) root.add(solidMesh, neonMesh);
 
-  const ground = new Mesh(keep(new PlaneGeometry(320, 240)), keep(groundMaterial()));
+  const groundMat = neonLook ? groundMaterial() : new MeshStandardNodeMaterial({ color: new Color(scenery!.groundHex), roughness: 0.95, metalness: 0 });
+  const ground = new Mesh(keep(new PlaneGeometry(320, 240)), keep(groundMat));
   ground.rotation.x = -Math.PI / 2;
   ground.position.y = gy - 0.012;
   ground.name = "ground";
@@ -165,14 +178,14 @@ export function buildWorldView(bundle: WorldBundle): WorldView {
   const plaza = new Mesh(keep(new RingGeometry(6.7, 6.85, 128)), keep(glowMaterial(PALETTE.cyan, 1.6)));
   plaza.rotation.x = -Math.PI / 2;
   plaza.position.y = gy + 0.004;
-  root.add(plaza);
+  if (city) root.add(plaza);
 
   // ---- Lights ----------------------------------------------------------------------------------
-  const hemi = new HemisphereLight("#5560a8", "#1a0f22", 4);
-  const moon = new DirectionalLight("#9fb2ff", 1.4);
+  const hemi = new HemisphereLight(look.hemi.sky, look.hemi.ground, look.hemi.intensity);
+  const moon = new DirectionalLight(look.sun.color, look.sun.intensity);
   moon.position.set(-20, 40, 18);
   root.add(hemi, moon);
-  for (const [hex, p] of [[PALETTE.magenta, [-14, 5, -9]], [PALETTE.cyan, [14, 5, 9]]] as const) {
+  if (neonLook) for (const [hex, p] of [[PALETTE.magenta, [-14, 5, -9]], [PALETTE.cyan, [14, 5, 9]]] as const) {
     const l = new PointLight(hex, 38, 24, 1.6);
     l.position.set(p[0], p[1], p[2]);
     root.add(l);
@@ -246,7 +259,7 @@ export function buildWorldView(bundle: WorldBundle): WorldView {
         const ring = new Mesh(keep(new RingGeometry(0.9, 1.04, 64)), keep(glowMaterial(team, 3.2)));
         ring.rotation.x = -Math.PI / 2;
         ring.position.y = 0.055;
-        const beam = new Mesh(keep(new CylinderGeometry(0.95, 0.95, 4.5, 40, 1, true)), keep(beamMaterial(team, 1, 0.07)));
+        const beam = new Mesh(keep(new CylinderGeometry(0.95, 0.95, 4.5, 40, 1, true)), keep(beamMaterial(team, 1, neonLook ? 0.07 : look.night ? 0.03 : 0.012)));
         beam.position.y = 2.25;
         g.add(disc, ring, beam);
         g.position.set(...e.pos);
@@ -266,7 +279,7 @@ export function buildWorldView(bundle: WorldBundle): WorldView {
         const pad = new Mesh(keep(new RingGeometry(1.3, 1.45, 64)), keep(glowMaterial(team, 2.4)));
         pad.rotation.x = -Math.PI / 2;
         pad.position.y = -e.size[1] / 2 + 0.01;
-        const light = new PointLight(team, 30, 14, 1.6);
+        const light = new PointLight(team, 30 * lightK, 14, 1.6);
         g.add(ring, ring2, film, pad, light);
         g.position.set(...e.pos);
         animated.push((t) => {
@@ -281,7 +294,7 @@ export function buildWorldView(bundle: WorldBundle): WorldView {
         const core = new Mesh(keep(new SphereGeometry(r, 32, 16)), keep(glowMaterial(PALETTE.orb, 6)));
         const halo = new Mesh(keep(new SphereGeometry(r * 1.9, 24, 12)), keep(glowMaterial(PALETTE.orb, 1.2, 0.16)));
         (halo.material as MeshBasicNodeMaterial).blending = AdditiveBlending;
-        const light = new PointLight(PALETTE.orb, 22, 12, 1.6);
+        const light = new PointLight(PALETTE.orb, 22 * lightK, 12, 1.6);
         const ring = new Mesh(keep(new RingGeometry(1.0, 1.08, 64)), keep(glowMaterial(PALETTE.orb, 2.2)));
         ring.rotation.x = -Math.PI / 2;
         ring.position.y = -e.size[1] / 2 + 0.015;
@@ -290,7 +303,7 @@ export function buildWorldView(bundle: WorldBundle): WorldView {
         animated.push((t) => {
           const s = 1 + Math.sin(t * 3.1) * 0.12;
           halo.scale.setScalar(s);
-          light.intensity = 20 + Math.sin(t * 3.1) * 4;
+          light.intensity = (20 + Math.sin(t * 3.1) * 4) * lightK;
         });
         obj = g;
         break;

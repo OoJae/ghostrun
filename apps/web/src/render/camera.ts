@@ -45,9 +45,9 @@ export class FollowCamera {
   }
 
   /** Jump straight to the target next update (new world / respawn). */
-  reset(yaw: number) {
+  reset(yaw: number, pitch = 0.36) {
     this.yaw = yaw;
-    this.pitch = 0.36;
+    this.pitch = pitch;
     this.dist = 7;
     this.#snap = true;
   }

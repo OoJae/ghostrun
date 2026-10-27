@@ -1,7 +1,8 @@
 // Night sky, fog and a procedural neon environment map (PMREM of a tiny emissive scene) so wet
 // asphalt and building glass pick up magenta/cyan reflections without any asset files.
 import { BackSide, BoxGeometry, Color, Fog, Mesh, MeshBasicNodeMaterial, PMREMGenerator, Scene, SphereGeometry, type WebGPURenderer, type Texture } from "three/webgpu";
-import { abs, exp, mix, positionWorldDirection, smoothstep, vec3 } from "three/tsl";
+import { abs, exp, mix, positionWorldDirection, smoothstep, uniform, vec3 } from "three/tsl";
+import type { LookStyle } from "./looks";
 import { PALETTE, lin } from "./materials";
 
 const v3 = (hex: string, scale = 1) => {
@@ -11,11 +12,28 @@ const v3 = (hex: string, scale = 1) => {
 
 const GLOW = 0.075;
 
-/** Gradient from a magenta-tinged horizon haze to a near-black zenith. */
+// Sky colours are uniforms, so each world's look restyles the sky without recompiling it.
+const sky = {
+  zenith: uniform(new Color(...lin(PALETTE.sky))),
+  horizon: uniform(new Color(...lin(PALETTE.horizon))),
+  glow: uniform(new Color(...lin(PALETTE.magenta, GLOW))),
+};
+
+/** Gradient from a tinted horizon haze to the zenith (neon: magenta haze, near-black zenith). */
 export function skyNode() {
   const y = positionWorldDirection.y;
-  const base = mix(v3(PALETTE.horizon), v3(PALETTE.sky), smoothstep(-0.05, 0.42, y));
-  return base.add(v3(PALETTE.magenta, GLOW).mul(exp(abs(y).mul(-12))));
+  const base = mix(sky.horizon, sky.zenith, smoothstep(-0.05, 0.42, y));
+  return base.add(sky.glow.mul(exp(abs(y).mul(-12))));
+}
+
+/** Restyle the sky and fog for a world's look (the neon fog keeps its horizon-matched colour). */
+export function applySky(look: LookStyle, fog: Fog) {
+  sky.zenith.value.setRGB(...lin(look.sky.zenith));
+  sky.horizon.value.setRGB(...lin(look.sky.horizon));
+  sky.glow.value.setRGB(...lin(look.sky.glow, look.sky.glowScale));
+  fog.color.copy(look.fog.color ? new Color(...lin(look.fog.color)) : makeFog().color);
+  fog.near = look.fog.near;
+  fog.far = look.fog.far;
 }
 
 /** Fog colour matched to the sky at the horizon so the skyline dissolves into the haze. */

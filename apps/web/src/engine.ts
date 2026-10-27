@@ -3,14 +3,15 @@
 import { bloom } from "three/addons/tsl/display/BloomNode.js";
 import { pass } from "three/tsl";
 import {
-  ACESFilmicToneMapping, PerspectiveCamera, Quaternion, RenderPipeline, Scene, WebGPURenderer,
+  ACESFilmicToneMapping, PerspectiveCamera, Quaternion, RenderPipeline, Scene, WebGPURenderer, type Fog,
 } from "three/webgpu";
 import { InputCollector } from "./input";
 import type { World } from "./pipeline";
 import { probe } from "./probe";
 import { FollowCamera } from "./render/camera";
 import { makeRain } from "./render/rain";
-import { makeFog, neonEnvironment, skyNode } from "./render/sky";
+import { lookOf } from "./render/looks";
+import { applySky, makeFog, neonEnvironment, skyNode } from "./render/sky";
 import { buildWorldView, type WorldView } from "./render/world";
 import { StubSim } from "./sim/stub";
 import type { RapierSim } from "./sim/rapier";
@@ -70,6 +71,7 @@ export class Engine {
   #onResize = () => this.#resize();
 
   onInput: (() => void) | undefined;
+  #bloom: ReturnType<typeof bloom> | null = null;
 
   private constructor(canvas: HTMLCanvasElement, renderer: WebGPURenderer, opts: EngineOptions, initMs: number) {
     this.#canvas = canvas;
@@ -97,7 +99,8 @@ export class Engine {
       const p = new RenderPipeline(renderer);
       const scenePass = pass(s, this.#camera, { samples: opts.msaa ?? 4 });
       const color = scenePass.getTextureNode("output");
-      p.outputNode = color.add(bloom(color, 0.85, 0.45, 0.85));
+      this.#bloom = bloom(color, 0.85, 0.45, 0.85);
+      p.outputNode = color.add(this.#bloom);
       this.#pipeline = p;
     } else {
       this.#pipeline = null;
@@ -137,10 +140,17 @@ export class Engine {
     this.#prev = this.#curr = null;
 
     let t = performance.now();
-    const view = buildWorldView(world.bundle);
+    const look = lookOf(world.bundle);
+    applySky(look, this.#scene.fog as Fog);
+    this.#rain.object.visible = look.rain;
+    this.#renderer.toneMappingExposure = look.exposure;
+    this.#scene.environmentIntensity = look.env;
+    if (this.#bloom) this.#bloom.strength.value = look.bloom;
+    const view = buildWorldView(world.bundle, look);
     this.#scene.add(view.root);
     this.#view = view;
-    this.#follow.setColliders(view.colliders);
+    // cutaway interiors: the camera looks down over the walls instead of bumping into them
+    this.#follow.setColliders(look.id === "gallery" ? [] : view.colliders);
     const sim = this.simFactory ? this.simFactory(world.bundle) : new StubSim(world.bundle);
     this.rapierSim = this.simFactory ? (sim as RapierSim) : null;
     this.rapierSim?.subscribe((evs) => {
@@ -149,7 +159,7 @@ export class Engine {
         else if (ev.k === "destroy") view.gone(ev.a);
       }
     });
-    this.#follow.reset(sim.spawnYaw);
+    this.#follow.reset(sim.spawnYaw, look.id === "gallery" ? 1.0 : 0.36);
     const player = view.actors.get(PLAYER_ID);
     if (player) this.#follow.update(0, player.position);
     splits.push({ label: "build", ms: performance.now() - t });
