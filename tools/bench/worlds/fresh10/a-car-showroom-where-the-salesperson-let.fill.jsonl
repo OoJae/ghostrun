@@ -1,0 +1,23 @@
+{"op":"meta","mode":"wander","lang":"en","pack":"floor_plan","sub":[],"seed":13,"look":"car showroom","mood":[0.5,0.15,0.0],"timeOfDay":12,"weather":"clear"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Showroom Entrance"}
+{"op":"zone","id":"z_showroom","slot":"main_room","tag":"hall","name":"Main Showroom"}
+{"op":"zone","id":"z_corner","slot":"room_sw","tag":"room","name":"Corner Display"}
+{"op":"spawn","id":"sp_red","zone":"z_entrance","anchor":"spawn_pad","team":"red"}
+{"op":"ent","id":"salesperson","kind":"npc","noun":"salesperson","hyper":"npc","zone":"z_showroom","anchor":"doorway_n","body":"fixed","shape":"box","team":""}
+{"op":"ent","id":"sports_car","kind":"vehicle","noun":"red sports car","hyper":"vehicle","zone":"z_showroom","anchor":"center","body":"fixed","shape":"hull","size":[2.0,1.2,4.5]}
+{"op":"ent","id":"car_door","kind":"door","noun":"sports car door","hyper":"door","zone":"z_showroom","anchor":"doorway_e","body":"fixed","shape":"box"}
+{"op":"ent","id":"driver_seat","kind":"prop","noun":"driver seat","hyper":"furniture","zone":"z_showroom","anchor":"corner_ne","body":"fixed","shape":"box","size":[0.5,0.5,0.5]}
+{"op":"ent","id":"car_key","kind":"pickup","noun":"car key","hyper":"key","zone":"z_corner","anchor":"corner_sw","body":"dynamic","shape":"box","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"suv","kind":"vehicle","noun":"blue SUV","hyper":"vehicle","zone":"z_corner","anchor":"center","body":"fixed","shape":"hull","size":[2.2,1.5,5.0]}
+{"op":"ent","id":"luxury_sedan","kind":"vehicle","noun":"luxury sedan","hyper":"vehicle","zone":"z_corner","anchor":"corner_se","body":"fixed","shape":"hull","size":[2.0,1.4,4.8]}
+{"op":"verb","id":"vb_inspect_car","verb":"social.inspect","on":"sports_car","params":{"text":"Sleek red sports car with low body and glossy finish."}}
+{"op":"verb","id":"vb_inspect_suv","verb":"social.inspect","on":"suv","params":{"text":"Spacious blue SUV, perfect for family trips."}}
+{"op":"verb","id":"vb_inspect_sedan","verb":"social.inspect","on":"luxury_sedan","params":{"text":"Elegant luxury sedan with premium interior."}}
+{"op":"verb","id":"vb_inspect_seat","verb":"social.inspect","on":"driver_seat","params":{"text":"Comfortable driver seat with adjustable controls."}}
+{"op":"verb","id":"vb_inspect_door","verb":"social.inspect","on":"car_door","params":{"text":"Door that can be opened to access the interior."}}
+{"op":"verb","id":"vb_open_door","verb":"puzzle.lock","on":"car_door","params":{"key":"car_key","keep":false}}
+{"op":"verb","id":"vb_pickup_key","verb":"physics_props.carry","on":"car_key","params":{}}
+{"op":"npc","id":"guide_1","role":"guide","zone":"z_showroom","anchor":"doorway_w","team":"","menu":["guide.welcome"],"dflt":"guide.welcome"}
+{"op":"expect","id":"x_car","prop":"requires","a":"sp_red","b":"car_door","headline":true,"text":"Sports car must be enterable (openable door and usable seat)."}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

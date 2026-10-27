@@ -1,0 +1,236 @@
+{
+  "prompt": "A jungle river rafting race through the rapids",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "raiding",
+    "setting": "A winding tropical river cutting through a dense jungle, featuring whitewater rapids, large mossy boulders, and rushing water.",
+    "role": "Raft",
+    "goal": "Race the raft down the river from the source camp to the jungle clearings, navigating rapids and obstacles ahead of a timer.",
+    "fail": "Colliding with large river rocks or the jungle banks, or failing to clear the final rapids before time runs out.",
+    "mood": "energetic",
+    "pack": "outdoor",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Rapids require precise steering to avoid rocks",
+    "nouns": [
+      {
+        "noun": "raft",
+        "hyper": "inflatable_watercraft"
+      },
+      {
+        "noun": "river",
+        "hyper": "water_body"
+      },
+      {
+        "noun": "jungle",
+        "hyper": "biome"
+      },
+      {
+        "noun": "rapids",
+        "hyper": "choppy_water"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.7,
+      "arousal": 0.8,
+      "tension": 0.6
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "5d5a449b329fac48be7dda544a8985f2fbfdc6e5b07fed1045a6caeb612afb3c",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_rapids",
+      "text": "Rapids require precise steering to avoid rocks",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 8 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (raft into goal_finish) ← pick up raft",
+        "src": ""
+      },
+      {
+        "id": "T2:r_checkpoint",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_checkpoint"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 6,
+        "status": "verified",
+        "text": "r_checkpoint fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lose_rock",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_rock"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_lose_rock fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lose_rock2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_rock2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_lose_rock2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lose_timer",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_timer"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_lose_timer fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_dock",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_dock"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_secret_dock fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_n",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_n"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_secret_flank_n fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_s",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_s"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_flank_s fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it (AI par 4.3 s)",
+        "cx": null,
+        "src": "",
+        "ms": 66
+      }
+    ],
+    "par": {
+      "goldS": 4.3,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 357
+  }
+}

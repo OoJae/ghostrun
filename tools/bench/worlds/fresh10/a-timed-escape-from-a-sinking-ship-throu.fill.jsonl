@@ -1,0 +1,31 @@
+{"op":"meta","mode":"play","lang":"en","pack":"floor_plan","sub":[],"seed":17,"look":"sinking ship night","mood":[-0.8,0.95,1],"timeOfDay":22,"weather":"storm"}
+{"op":"zone","id":"z_low","slot":"room_sw","tag":"deck","name":"Lower flooded deck"}
+{"op":"zone","id":"z_mid","slot":"room_se","tag":"deck","name":"Mid steam‑filled deck"}
+{"op":"zone","id":"z_up","slot":"main_room","tag":"deck","name":"Upper escape deck"}
+{"op":"spawn","id":"sp_red","zone":"z_low","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"exit","zone":"z_up","anchor":"corner_w","noun":"drain","hyper":"exit_point","team":"red"}
+{"op":"ent","id":"key_low","kind":"pickup","noun":"rusty key","hyper":"key","zone":"z_low","anchor":"corner_e","body":"dynamic","shape":"box","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"door_low_mid","kind":"door","noun":"bulkhead door","hyper":"door","zone":"z_low","anchor":"doorway_n","body":"fixed","shape":"box"}
+{"op":"ent","id":"key_mid","kind":"pickup","noun":"silver key","hyper":"key","zone":"z_mid","anchor":"corner_w","body":"dynamic","shape":"box","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"door_mid_up","kind":"door","noun":"upper hatch","hyper":"door","zone":"z_mid","anchor":"doorway_e","body":"fixed","shape":"box"}
+{"op":"ent","id":"hazard_low","kind":"hazard","noun":"rushing water","hyper":"water","zone":"z_low","anchor":"center","body":"sensor","shape":"box","size":[4,0.2,4]}
+{"op":"ent","id":"hazard_mid","kind":"hazard","noun":"steam vent","hyper":"steam","zone":"z_mid","anchor":"center","body":"sensor","shape":"box","size":[3,0.3,3]}
+{"op":"ent","id":"debris_pad","kind":"platform","noun":"sliding debris","hyper":"debris","zone":"z_mid","anchor":"corner_se","body":"kinematic","shape":"box","size":[2,0.5,2]}
+{"op":"ent","id":"timer_clock","kind":"goal","noun":"sinking timer","hyper":"timer","zone":"z_low","anchor":"corner_nw","body":"sensor","shape":"none"}
+{"op":"verb","id":"vb_carry_key_low","verb":"physics_props.carry","on":"key_low","params":{}}
+{"op":"verb","id":"vb_carry_key_mid","verb":"physics_props.carry","on":"key_mid","params":{}}
+{"op":"verb","id":"vb_lock_low_mid","verb":"puzzle.lock","on":"door_low_mid","params":{"key":"key_low","keep":false}}
+{"op":"verb","id":"vb_lock_mid_up","verb":"puzzle.lock","on":"door_mid_up","params":{"key":"key_mid","keep":false}}
+{"op":"verb","id":"vb_jump","verb":"locomotion.jump","on":"player","params":{"jumpsMax":2}}
+{"op":"verb","id":"vb_debris_move","verb":"motion_hazards.oscillate","on":"debris_pad","params":{"axis":"x","travel":3,"period":4}}
+{"op":"verb","id":"vb_timer","verb":"puzzle.timer","on":"player","params":{"seconds":90}}
+{"op":"verb","id":"vb_hazard_low","verb":"motion_hazards.hazard","on":"hazard_low","params":{"respawn":true}}
+{"op":"verb","id":"vb_hazard_mid","verb":"motion_hazards.hazard","on":"hazard_mid","params":{"respawn":true}}
+{"op":"rule","id":"r_win","when":{"t":"enter","a":"player","b":"exit"},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_timer_end","when":{"t":"timer_end","a":"player"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_low_door_open","when":{"t":"state_is","a":"door_low_mid","s":"open"},"then":[{"e":"set_state","target":"door_low_mid","v":"open"}]}
+{"op":"rule","id":"r_mid_door_open","when":{"t":"state_is","a":"door_mid_up","s":"open"},"then":[{"e":"set_state","target":"door_mid_up","v":"open"}]}
+{"op":"expect","id":"x_escape","prop":"win_reachable","a":"sp_red","b":"exit","headline":true,"text":"Three decks must be traversed before the 90-second sinking timer expires"}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":5}}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

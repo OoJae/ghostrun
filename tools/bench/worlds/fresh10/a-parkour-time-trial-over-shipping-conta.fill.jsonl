@@ -1,0 +1,52 @@
+{"op":"meta","mode":"play","lang":"en","pack":"course","sub":[],"seed":9,"look":"industrial harbour","mood":[0.3,0.8,0.6],"timeOfDay":14,"weather":"clear"}
+{"op":"zone","id":"z_start","slot":"start","tag":"outside","name":"Harbour entrance"}
+{"op":"zone","id":"z_seg_1","slot":"seg_1","tag":"ledge","name":"Container ledge"}
+{"op":"zone","id":"z_seg_2","slot":"seg_2","tag":"gap","name":"Wide gap"}
+{"op":"zone","id":"z_seg_3","slot":"seg_3","tag":"beam","name":"High beam"}
+{"op":"zone","id":"z_seg_4","slot":"seg_4","tag":"pit","name":"Drop pit"}
+{"op":"zone","id":"z_seg_5","slot":"seg_5","tag":"beam","name":"Upper beam"}
+{"op":"zone","id":"z_seg_6","slot":"seg_6","tag":"steps","name":"Stepping stones"}
+{"op":"zone","id":"z_finish","slot":"finish","tag":"outside","name":"Finish platform"}
+{"op":"spawn","id":"sp_red","zone":"z_start","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"goal_finish","zone":"z_finish","anchor":"goal","noun":"finish line","hyper":"goal","team":"red"}
+{"op":"ent","id":"coin_1","kind":"pickup","noun":"coin","hyper":"coin","zone":"z_seg_1","anchor":"pickup_1","body":"dynamic","shape":"box","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"coin_2","kind":"pickup","noun":"coin","hyper":"coin","zone":"z_seg_2","anchor":"pickup_2","body":"dynamic","shape":"box","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"coin_3","kind":"pickup","noun":"coin","hyper":"coin","zone":"z_seg_3","anchor":"pickup_3","body":"dynamic","shape":"box","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"coin_4","kind":"pickup","noun":"coin","hyper":"coin","zone":"z_seg_4","anchor":"pickup_4","body":"dynamic","shape":"box","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"coin_5","kind":"pickup","noun":"coin","hyper":"coin","zone":"z_seg_5","anchor":"pickup_5","body":"dynamic","shape":"box","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"coin_6","kind":"pickup","noun":"coin","hyper":"coin","zone":"z_seg_6","anchor":"pickup_6","body":"dynamic","shape":"box","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"plat_move","kind":"platform","noun":"moving platform","hyper":"platform","zone":"z_seg_2","anchor":"cp_2","body":"kinematic","shape":"box","size":[2,0.3,2]}
+{"op":"ent","id":"pad_jump","kind":"plate","noun":"jump pad","hyper":"jump_pad","zone":"z_seg_3","anchor":"cp_3","body":"sensor","shape":"box","size":[1,0.2,1]}
+{"op":"ent","id":"spike_pit","kind":"hazard","noun":"spike pit","hyper":"spikes","zone":"z_seg_4","anchor":"pit_4","body":"sensor","shape":"box","size":[3,0.3,3]}
+{"op":"ent","id":"door_finish","kind":"door","noun":"finish gate","hyper":"door","zone":"z_finish","anchor":"host","body":"fixed","shape":"box","size":[2,3,0.3]}
+{"op":"ent","id":"switch_gate","kind":"switch","noun":"gate switch","hyper":"switch","zone":"z_seg_5","anchor":"cp_5","body":"sensor","shape":"box","size":[0.5,0.5,0.5]}
+{"op":"ent","id":"checkpoint_4","kind":"checkpoint","noun":"checkpoint","hyper":"checkpoint","zone":"z_seg_4","anchor":"cp_4","body":"sensor","shape":"box","size":[1,0.2,1]}
+{"op":"verb","id":"vb_carry_coin_1","verb":"physics_props.carry","on":"coin_1","params":{}}
+{"op":"verb","id":"vb_carry_coin_2","verb":"physics_props.carry","on":"coin_2","params":{}}
+{"op":"verb","id":"vb_carry_coin_3","verb":"physics_props.carry","on":"coin_3","params":{}}
+{"op":"verb","id":"vb_carry_coin_4","verb":"physics_props.carry","on":"coin_4","params":{}}
+{"op":"verb","id":"vb_carry_coin_5","verb":"physics_props.carry","on":"coin_5","params":{}}
+{"op":"verb","id":"vb_carry_coin_6","verb":"physics_props.carry","on":"coin_6","params":{}}
+{"op":"verb","id":"vb_osc_move","verb":"motion_hazards.oscillate","on":"plat_move","params":{"axis":"x","travel":4,"period":3}}
+{"op":"verb","id":"vb_jump_pad","verb":"locomotion.jump_pad","on":"pad_jump","params":{"height":5}}
+{"op":"verb","id":"vb_hazard_spike","verb":"motion_hazards.hazard","on":"spike_pit","params":{"respawn":true}}
+{"op":"verb","id":"vb_lock_gate","verb":"puzzle.lock","on":"door_finish","params":{"key":"coin_5","keep":false}}
+{"op":"verb","id":"vb_switch_gate","verb":"puzzle.switch","on":"switch_gate","params":{"once":false}}
+{"op":"verb","id":"vb_checkpoint_4","verb":"puzzle.checkpoint","on":"checkpoint_4","params":{}}
+{"op":"verb","id":"vb_timer","verb":"puzzle.timer","on":"player","params":{"seconds":120}}
+{"op":"rule","id":"r_collect_coin","when":{"t":"touch","a":"player","b":"coin_1"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_collect_coin_2","when":{"t":"touch","a":"player","b":"coin_2"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_collect_coin_3","when":{"t":"touch","a":"player","b":"coin_3"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_collect_coin_4","when":{"t":"touch","a":"player","b":"coin_4"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_collect_coin_5","when":{"t":"touch","a":"player","b":"coin_5"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_collect_coin_6","when":{"t":"touch","a":"player","b":"coin_6"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_switch_open","when":{"t":"state_is","a":"switch_gate","s":"on"},"then":[{"e":"set_state","target":"door_finish","v":"open"}],"once":false}
+{"op":"rule","id":"r_reach_goal","when":{"t":"enter","a":"player","b":"goal_finish"},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_time_out","when":{"t":"timer_end","a":"player"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"expect","id":"x_time_trial","prop":"win_reachable","a":"sp_red","b":"goal_finish","headline":true,"text":"Time-trial course requires navigating stacked shipping containers"}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":6}}
+{"op":"end","layer":"gameplay"}
+{"op":"dress","id":"d_harbour_skin","zone":"z_start","anchor":"sign","hyper":"skin","params":{"theme":"industrial"}}
+{"op":"poster","id":"p_poster_0","zone":"z_start","anchor":"sign","text":"Parkour Time Trial"}
+{"op":"poster","id":"p_poster_2","zone":"z_finish","anchor":"sign","text":"Finish"}
+{"op":"end","layer":"cosmetic"}

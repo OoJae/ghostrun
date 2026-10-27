@@ -1,0 +1,28 @@
+{"op":"meta","mode":"play","lang":"en","pack":"floor_plan","sub":[],"seed":23,"look":"sterile laboratory","mood":[0.2,0.3,0.5],"timeOfDay":12,"weather":"clear"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Lab entrance"}
+{"op":"zone","id":"z_lab","slot":"main_room","tag":"lab","name":"Central workbench"}
+{"op":"zone","id":"z_storage","slot":"room_sw","tag":"storage","name":"Supply closet"}
+{"op":"spawn","id":"sp_red","zone":"z_entrance","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"goal_synth","zone":"z_lab","anchor":"center","noun":"synthesized compound","hyper":"vessel","team":"red","body":"sensor","shape":"none"}
+{"op":"ent","id":"beaker_stage","kind":"prop","noun":"mixing stage","hyper":"vessel","zone":"z_lab","anchor":"center","body":"sensor","shape":"none","state":"0"}
+{"op":"ent","id":"chem_a","kind":"pickup","noun":"chemical A","hyper":"substances","zone":"z_storage","anchor":"corner_sw","body":"dynamic","shape":"box","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"chem_b","kind":"pickup","noun":"chemical B","hyper":"substances","zone":"z_storage","anchor":"corner_se","body":"dynamic","shape":"box","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"chem_c","kind":"pickup","noun":"chemical C","hyper":"substances","zone":"z_storage","anchor":"corner_ne","body":"dynamic","shape":"box","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"switch_a","kind":"switch","noun":"add A","hyper":"switch","zone":"z_lab","anchor":"wall_n","body":"sensor","shape":"none","state":"off"}
+{"op":"ent","id":"switch_b","kind":"switch","noun":"add B","hyper":"switch","zone":"z_lab","anchor":"wall_e","body":"sensor","shape":"none","state":"off"}
+{"op":"ent","id":"switch_c","kind":"switch","noun":"add C","hyper":"switch","zone":"z_lab","anchor":"wall_s","body":"sensor","shape":"none","state":"off"}
+{"op":"ent","id":"spill","kind":"hazard","noun":"chemical spill","hyper":"hazard","zone":"z_lab","anchor":"corner_ne","body":"sensor","shape":"box","size":[1,0.2,1]}
+{"op":"verb","id":"vb_carry_a","verb":"physics_props.carry","on":"chem_a","params":{}}
+{"op":"verb","id":"vb_carry_b","verb":"physics_props.carry","on":"chem_b","params":{}}
+{"op":"verb","id":"vb_carry_c","verb":"physics_props.carry","on":"chem_c","params":{}}
+{"op":"verb","id":"vb_use_a","verb":"puzzle.switch","on":"switch_a","params":{"once":false}}
+{"op":"verb","id":"vb_use_b","verb":"puzzle.switch","on":"switch_b","params":{"once":false}}
+{"op":"verb","id":"vb_use_c","verb":"puzzle.switch","on":"switch_c","params":{"once":false}}
+{"op":"verb","id":"vb_spill_hazard","verb":"motion_hazards.hazard","on":"spill","params":{"respawn":true}}
+{"op":"rule","id":"r_a","when":{"t":"state_is","a":"switch_a","s":"on"},"if":[{"l":"beaker_stage.state","op":"eq","r":"0"}],"then":[{"e":"set_state","target":"beaker_stage","v":"1"}],"once":false}
+{"op":"rule","id":"r_b","when":{"t":"state_is","a":"switch_b","s":"on"},"if":[{"l":"beaker_stage.state","op":"eq","r":"1"}],"then":[{"e":"set_state","target":"beaker_stage","v":"2"}],"once":false}
+{"op":"rule","id":"r_c","when":{"t":"state_is","a":"switch_c","s":"on"},"if":[{"l":"beaker_stage.state","op":"eq","r":"2"}],"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_spill","when":{"t":"touch","a":"player","b":"spill"},"then":[{"e":"reset","target":"beaker_stage"},{"e":"set_state","target":"beaker_stage","v":"0"}],"once":false}
+{"op":"expect","id":"x_synth","prop":"win_reachable","a":"sp_red","b":"goal_synth","headline":true,"text":"The synthesis sequence requires a specific logical order to avoid failure"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

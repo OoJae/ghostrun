@@ -1,0 +1,40 @@
+{"op":"meta","mode":"play","lang":"en","pack":"outdoor","sub":[],"seed":22,"look":"snowy mountain","mood":[0.2,0.7,0.6],"timeOfDay":10,"weather":"snow"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Mountain basecamp"}
+{"op":"zone","id":"z_hub","slot":"clearing","tag":"hub","name":"Mid‑mountain clearing"}
+{"op":"zone","id":"z_left","slot":"clearing_w","tag":"base","name":"Left alpine course"}
+{"op":"zone","id":"z_right","slot":"clearing_e","tag":"base","name":"Right alpine course"}
+{"op":"spawn","id":"sp_red","zone":"z_entrance","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"finish_line","zone":"z_hub","anchor":"center","noun":"finish line","hyper":"goal","team":"red"}
+{"op":"ent","id":"gate_left_1","kind":"switch","noun":"gate","hyper":"gate","zone":"z_left","anchor":"flank_n","body":"fixed","shape":"box","size":[0.5,2,0.2]}
+{"op":"ent","id":"gate_left_2","kind":"switch","noun":"gate","hyper":"gate","zone":"z_left","anchor":"flank_s","body":"fixed","shape":"box","size":[0.5,2,0.2]}
+{"op":"ent","id":"gate_right_1","kind":"switch","noun":"gate","hyper":"gate","zone":"z_right","anchor":"flank_n","body":"fixed","shape":"box","size":[0.5,2,0.2]}
+{"op":"ent","id":"gate_right_2","kind":"switch","noun":"gate","hyper":"gate","zone":"z_right","anchor":"flank_s","body":"fixed","shape":"box","size":[0.5,2,0.2]}
+{"op":"ent","id":"boost_1","kind":"pickup","noun":"speed boost","hyper":"boost","zone":"z_left","anchor":"center","body":"dynamic","shape":"sphere","size":[0.4,0.4,0.4]}
+{"op":"ent","id":"boost_2","kind":"pickup","noun":"speed boost","hyper":"boost","zone":"z_right","anchor":"center","body":"dynamic","shape":"sphere","size":[0.4,0.4,0.4]}
+{"op":"ent","id":"ice_patch_1","kind":"hazard","noun":"slick ice","hyper":"ice","zone":"z_left","anchor":"center_n","body":"sensor","shape":"box","size":[2,0.2,2]}
+{"op":"ent","id":"ice_patch_2","kind":"hazard","noun":"slick ice","hyper":"ice","zone":"z_right","anchor":"center_s","body":"sensor","shape":"box","size":[2,0.2,2]}
+{"op":"ent","id":"checkpoint_left","kind":"checkpoint","noun":"checkpoint","hyper":"checkpoint","zone":"z_left","anchor":"center","body":"sensor","shape":"box","size":[1,0.5,1]}
+{"op":"ent","id":"checkpoint_right","kind":"checkpoint","noun":"checkpoint","hyper":"checkpoint","zone":"z_right","anchor":"center","body":"sensor","shape":"box","size":[1,0.5,1]}
+{"op":"verb","id":"vb_switch_gate_left_1","verb":"puzzle.switch","on":"gate_left_1","params":{"once":false}}
+{"op":"verb","id":"vb_switch_gate_left_2","verb":"puzzle.switch","on":"gate_left_2","params":{"once":false}}
+{"op":"verb","id":"vb_switch_gate_right_1","verb":"puzzle.switch","on":"gate_right_1","params":{"once":false}}
+{"op":"verb","id":"vb_switch_gate_right_2","verb":"puzzle.switch","on":"gate_right_2","params":{"once":false}}
+{"op":"verb","id":"vb_carry_boost_1","verb":"physics_props.carry","on":"boost_1","params":{}}
+{"op":"verb","id":"vb_carry_boost_2","verb":"physics_props.carry","on":"boost_2","params":{}}
+{"op":"verb","id":"vb_hazard_ice_1","verb":"motion_hazards.hazard","on":"ice_patch_1","params":{"respawn":true}}
+{"op":"verb","id":"vb_hazard_ice_2","verb":"motion_hazards.hazard","on":"ice_patch_2","params":{"respawn":true}}
+{"op":"verb","id":"vb_checkpoint_left","verb":"puzzle.checkpoint","on":"checkpoint_left","params":{}}
+{"op":"verb","id":"vb_checkpoint_right","verb":"puzzle.checkpoint","on":"checkpoint_right","params":{}}
+{"op":"rule","id":"r_gate_left_1","when":{"t":"state_is","a":"gate_left_1","s":"on"},"then":[{"e":"set_state","target":"gate_left_1","v":"off"}],"once":false}
+{"op":"rule","id":"r_gate_left_2","when":{"t":"state_is","a":"gate_left_2","s":"on"},"then":[{"e":"set_state","target":"gate_left_2","v":"off"}],"once":false}
+{"op":"rule","id":"r_gate_right_1","when":{"t":"state_is","a":"gate_right_1","s":"on"},"then":[{"e":"set_state","target":"gate_right_1","v":"off"}],"once":false}
+{"op":"rule","id":"r_gate_right_2","when":{"t":"state_is","a":"gate_right_2","s":"on"},"then":[{"e":"set_state","target":"gate_right_2","v":"off"}],"once":false}
+{"op":"rule","id":"r_finish_left","when":{"t":"enter","a":"player","b":"finish_line"},"if":[{"l":"player.path","op":"eq","r":"left"}],"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_finish_right","when":{"t":"enter","a":"player","b":"finish_line"},"if":[{"l":"player.path","op":"eq","r":"right"}],"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose_fall","when":{"t":"hit","a":"player","b":"ice_patch_1"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose_fall_2","when":{"t":"hit","a":"player","b":"ice_patch_2"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"npc","id":"rival_1","role":"rival","zone":"z_left","anchor":"center","team":"blue","menu":["rival.patrol"],"dflt":"rival.patrol"}
+{"op":"npc","id":"rival_2","role":"rival","zone":"z_right","anchor":"center","team":"blue","menu":["rival.patrol"],"dflt":"rival.patrol"}
+{"op":"expect","id":"x_course","prop":"win_reachable","a":"sp_red","b":"finish_line","headline":true,"text":"Moutain course requires precise line choices to beat two rivals"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

@@ -1,0 +1,35 @@
+{"op":"meta","mode":"play","lang":"en","pack":"floor_plan","sub":["rooftop"],"seed":24,"look":"zombie shopping mall","mood":[0.2,0.7,0.8],"timeOfDay":14,"weather":"overcast"}
+{"op":"zone","id":"z_yard","slot":"yard","tag":"outside","name":"Mall parking lot"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Main entrance"}
+{"op":"zone","id":"z_ground","slot":"room_sw","tag":"room","name":"Ground floor"}
+{"op":"zone","id":"z_mid","slot":"room_se","tag":"room","name":"Mid level"}
+{"op":"zone","id":"z_nw","slot":"room_nw","slot":"room_nw","tag":"room","name":"North wing"}
+{"op":"zone","id":"z_hall","slot":"main_room","tag":"hall","name":"Central atrium"}
+{"op":"zone","id":"z_roof","slot":"room_ne","tag":"roof","name":"Rooftop escape"}
+{"op":"spawn","id":"sp_red","zone":"z_yard","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"roof_exit","zone":"z_roof","anchor":"corner_w","noun":"roof exit","hyper":"escape point","team":"red","body":"sensor","shape":"box","size":[1,2,0.5]}
+{"op":"ent","id":"supply_1","kind":"pickup","noun":"first aid kit","hyper":"supplies","zone":"z_ground","anchor":"corner_sw","body":"dynamic","shape":"box","size":[0.4,0.4,0.2]}
+{"op":"ent","id":"supply_2","kind":"pickup","noun":"canned food","hyper":"supplies","zone":"z_mid","anchor":"corner_se","body":"dynamic","shape":"box","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"supply_3","kind":"pickup","noun":"batteries","hyper":"supplies","zone":"z_nw","anchor":"corner_ne","body":"dynamic","shape":"box","size":[0.2,0.2,0.1]}
+{"op":"ent","id":"door_elevator","kind":"door","noun":"elevator shaft door","hyper":"door","zone":"z_hall","anchor":"doorway_e","body":"fixed","shape":"box"}
+{"op":"ent","id":"zombie_1","kind":"npc","noun":"shambling zombie","hyper":"undead humanoid","zone":"z_ground","anchor":"center","body":"kinematic","shape":"capsule"}
+{"op":"ent","id":"zombie_2","kind":"npc","noun":"lurking zombie","hyper":"undead humanoid","zone":"z_mid","anchor":"center","body":"kinematic","shape":"capsule"}
+{"op":"ent","id":"spike_trap","kind":"hazard","noun":"spike trap","hyper":"hazard","zone":"z_ground","anchor":"corner_ne","body":"sensor","shape":"box","size":[1,0.2,1]}
+{"op":"ent","id":"jump_pad","kind":"plate","noun":"jump pad","hyper":"platform","zone":"z_hall","anchor":"corner_nw","body":"sensor","shape":"box","size":[0.5,0.2,0.5]}
+{"op":"verb","id":"vb_carry_1","verb":"physics_props.carry","on":"supply_1","params":{}}
+{"op":"verb","id":"vb_carry_2","verb":"physics_props.carry","on":"supply_2","params":{}}
+{"op":"verb","id":"vb_carry_3","verb":"physics_props.carry","on":"supply_3","params":{}}
+{"op":"verb","id":"vb_lock_elevator","verb":"puzzle.lock","on":"door_elevator","params":{"key":"supply_3","keep":false}}
+{"op":"verb","id":"vb_spike","verb":"motion_hazards.hazard","on":"spike_trap","params":{"respawn":true}}
+{"op":"verb","id":"vb_jump","verb":"locomotion.jump","on":"player","params":{"jumpsMax":2}}
+{"op":"verb","id":"vb_jump_pad","verb":"locomotion.jump_pad","on":"jump_pad","params":{"height":5}}
+{"op":"rule","id":"r_collect_1","when":{"t":"touch","a":"player","b":"supply_1"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_collect_2","when":{"t":"touch","a":"player","b":"supply_2"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_collect_3","when":{"t":"touch","a":"player","b":"supply_3"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_win","when":{"t":"enter","a":"player","b":"roof_exit"},"if":[{"l":"team:red.score","op":"gte","r":"3"}],"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose_spike","when":{"t":"hit","a":"player","b":"spike_trap"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_open_elevator","when":{"t":"state_is","a":"door_elevator","s":"open"},"then":[{"e":"emit","target":"door_elevator","fx":"door_open"}]}
+{"op":"expect","id":"x_mall","prop":"win_reachable","a":"sp_red","b":"roof_exit","headline":true,"text":"Vertical mall layout with zombie hordes guards the supply pickups"}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":5}}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

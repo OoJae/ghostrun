@@ -1,0 +1,358 @@
+{
+  "prompt": "An arena with three capture zones and a two-minute timer: hold more zones than the blue team",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "team battles",
+    "setting": "walled symmetric field with capture zones and team bases",
+    "role": "player on red team",
+    "goal": "hold more of the three capture zones than the blue team before the two-minute timer runs out",
+    "fail": "holding fewer or equal zones than the blue team at time out",
+    "mood": "competitive, urgent, strategic",
+    "pack": "arena",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Three capture zones decide winner in two-minute timer",
+    "nouns": [
+      {
+        "noun": "arena",
+        "hyper": "space"
+      },
+      {
+        "noun": "capture zones",
+        "hyper": "area"
+      },
+      {
+        "noun": "timer",
+        "hyper": "device"
+      },
+      {
+        "noun": "blue team",
+        "hyper": "group"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.1,
+      "arousal": 0.6,
+      "tension": 0.5
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "7964e33d720f9638fb68be060df29164e91bbbf4e8d286f2278c625fe83a8499",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_capture",
+      "text": "Three capture zones decide winner in two-minute timer",
+      "status": "counterexample",
+      "method": "static goal regression over rules + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 1,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 14 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 1,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (the timer runs out) [after cz_mid red, cz_west red, cz_east red]",
+        "src": ""
+      },
+      {
+        "id": "T2:r_east_enter",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_east_enter"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 7,
+        "status": "verified",
+        "text": "r_east_enter fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_east_enter_blue",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_east_enter_blue"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 0,
+        "src": "ai",
+        "ms": 6,
+        "status": "counterexample",
+        "text": "r_east_enter_blue fires exactly once",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "firings",
+          "text": "never fired when forced"
+        }
+      },
+      {
+        "id": "T2:r_lose",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_lose fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_mid_enter",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_mid_enter"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_mid_enter fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_mid_enter_blue",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_mid_enter_blue"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 0,
+        "src": "ai",
+        "ms": 4,
+        "status": "counterexample",
+        "text": "r_mid_enter_blue fires exactly once",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "firings",
+          "text": "never fired when forced"
+        }
+      },
+      {
+        "id": "T2:r_secret_deck_center",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_deck_center"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_deck_center fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_deck_center_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_deck_center_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_deck_center_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_deck_e",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_deck_e"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_deck_e fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_deck_e_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_deck_e_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_deck_e_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_n",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_n"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_flank_n fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_s",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_s"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_flank_s fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_west_enter",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_west_enter"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_west_enter fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_west_enter_blue",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_west_enter_blue"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 0,
+        "src": "ai",
+        "ms": 3,
+        "status": "counterexample",
+        "text": "r_west_enter_blue fires exactly once",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "firings",
+          "text": "never fired when forced"
+        }
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "counterexample",
+        "text": "r_win fires exactly once",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "firings",
+          "text": "never fired when forced"
+        }
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "counterexample",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 0,
+        "text": "no AI runner could win",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "wins",
+          "text": "12 lost (the timer ran out ×12)"
+        },
+        "src": "",
+        "ms": 776
+      }
+    ],
+    "par": null,
+    "ms": 937
+  }
+}

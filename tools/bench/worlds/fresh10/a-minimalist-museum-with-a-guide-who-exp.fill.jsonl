@@ -1,0 +1,23 @@
+{"op":"meta","mode":"wander","lang":"en","pack":"floor_plan","sub":[],"seed":12,"look":"minimalist museum","mood":[0.4,0.2,0.1],"timeOfDay":12,"weather":"clear"}
+{"op":"zone","id":"z_yard","slot":"yard","tag":"outside","name":"Museum entrance courtyard"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Atrium entrance"}
+{"op":"zone","id":"z_west","slot":"room_sw","tag":"room","name":"West gallery"}
+{"op":"zone","id":"z_east","slot":"room_se","tag":"room","name":"East gallery"}
+{"op":"zone","id":"z_hall","slot":"main_room","tag":"hall","name":"Central atrium"}
+{"op":"spawn","id":"sp_red","zone":"z_yard","anchor":"spawn_pad","team":"red"}
+{"op":"ent","id":"sculpture_a","kind":"prop","noun":"abstract sculpture A","hyper":"artwork","zone":"z_west","anchor":"center","body":"fixed","shape":"box","size":[0.8,1.2,0.8]}
+{"op":"ent","id":"sculpture_b","kind":"prop","noun":"abstract sculpture B","hyper":"artwork","zone":"z_west","anchor":"corner_sw","body":"fixed","shape":"box","size":[0.6,1.0,0.6]}
+{"op":"ent","id":"sculpture_c","kind":"prop","noun":"abstract sculpture C","hyper":"artwork","zone":"z_east","anchor":"center","body":"fixed","shape":"box","size":[0.9,1.4,0.9]}
+{"op":"ent","id":"sculpture_d","kind":"prop","noun":"abstract sculpture D","hyper":"artwork","zone":"z_east","anchor":"corner_se","body":"fixed","shape":"box","size":[0.7,1.1,0.7]}
+{"op":"ent","id":"sculpture_e","kind":"prop","noun":"abstract sculpture E","hyper":"artwork","zone":"z_hall","anchor":"center","body":"fixed","shape":"box","size":[1.0,1.5,1.0]}
+{"op":"ent","id":"guide_npc","kind":"npc","noun":"museum guide","hyper":"character","zone":"z_hall","anchor":"corner_nw","body":"kinematic","shape":"box","size":[0.5,1.8,0.5]}
+{"op":"verb","id":"vb_inspect_a","verb":"social.inspect","on":"sculpture_a","params":{"text":"A towering curve of polished steel, reflecting light."}}
+{"op":"verb","id":"vb_inspect_b","verb":"social.inspect","on":"sculpture_b","params":{"text":"Interlocking cubes suggesting balance and tension."}}
+{"op":"verb","id":"vb_inspect_c","verb":"social.inspect","on":"sculpture_c","params":{"text":"Rippled glass form evoking waves of thought."}}
+{"op":"verb","id":"vb_inspect_d","verb":"social.inspect","on":"sculpture_d","params":{"text":"A suspended mesh, symbolizing connections across space."}}
+{"op":"verb","id":"vb_inspect_e","verb":"social.inspect","on":"sculpture_e","params":{"text":"A minimalist block of marble, exploring void within form."}}
+{"op":"verb","id":"vb_guide_speak","verb":"social.inspect","on":"guide_npc","params":{"text":"Welcome! I will guide you through each piece, sharing its story."}}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":5}}
+{"op":"expect","id":"x_guide","prop":"win_reachable","a":"sp_red","b":"z_hall","headline":true,"text":"Guide must deliver a unique explanation for every sculpture in the plan"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

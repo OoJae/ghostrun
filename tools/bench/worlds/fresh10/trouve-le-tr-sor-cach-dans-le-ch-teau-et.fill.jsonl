@@ -1,0 +1,35 @@
+{"op":"meta","mode":"play","lang":"fr","pack":"floor_plan","sub":[],"seed":28,"look":"château ancien","mood":[0.1,0.6,0.7],"timeOfDay":22,"weather":"nuageux"}
+{"op":"zone","id":"z_yard","slot":"yard","tag":"outside","name":"Cour du château"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Entrée principale"}
+{"op":"zone","id":"z_west","slot":"room_sw","tag":"room","name":"Aile ouest"}
+{"op":"zone","id":"z_east","slot":"room_se","tag":"room","name":"Aile est"}
+{"op":"zone","id":"z_north","slot":"room_nw","tag":"room","name":"Tour nord"}
+{"op":"zone","id":"z_hall","slot":"main_room","tag":"hall","name":"Grande salle"}
+{"op":"spawn","id":"sp_red","zone":"z_yard","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"exit_gate","zone":"z_yard","anchor":"corner_w","noun":"porte de sortie","hyper":"gate","team":"red"}
+{"op":"ent","id":"treasure","kind":"pickup","noun":"coffre au trésor","hyper":"treasure","zone":"z_west","anchor":"center","body":"dynamic","shape":"box","size":[0.5,0.5,0.5]}
+{"op":"ent","id":"key_west","kind":"pickup","noun":"clef rouillée","hyper":"key","zone":"z_north","anchor":"corner_sw","body":"dynamic","shape":"box","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"door_west","kind":"door","noun":"porte de l'aile ouest","hyper":"door","zone":"z_west","anchor":"doorway_n","body":"fixed","shape":"box"}
+{"op":"ent","id":"door_north","kind":"door","noun":"porte de la tour nord","hyper":"door","zone":"z_north","anchor":"doorway_s","body":"fixed","shape":"box"}
+{"op":"ent","id":"plate_jump","kind":"plate","noun":"plaque de saut","hyper":"plate","zone":"z_hall","anchor":"center","body":"sensor","shape":"box","size":[1,0.2,1]}
+{"op":"ent","id":"switch_lights","kind":"switch","noun":"levier d'éclairage","hyper":"switch","zone":"z_hall","anchor":"corner_ne","body":"sensor","shape":"box"}
+{"op":"ent","id":"hazard_spikes","kind":"hazard","noun":"pics métalliques","hyper":"spike","zone":"z_east","anchor":"center","body":"sensor","shape":"box","size":[2,0.1,2]}
+{"op":"verb","id":"vb_carry_treasure","verb":"physics_props.carry","on":"treasure","params":{}}
+{"op":"verb","id":"vb_carry_key","verb":"physics_props.carry","on":"key_west","params":{}}
+{"op":"verb","id":"vb_lock_west","verb":"puzzle.lock","on":"door_west","params":{"key":"key_west","keep":false}}
+{"op":"verb","id":"vb_lock_north","verb":"puzzle.lock","on":"door_north","params":{"key":"key_west","keep":false}}
+{"op":"verb","id":"vb_inspect_switch","verb":"social.inspect","on":"switch_lights","params":{"text":"Un levier poussiéreux qui contrôle les lumières du hall."}}
+{"op":"verb","id":"vb_hazard_spikes","verb":"motion_hazards.hazard","on":"hazard_spikes","params":{"respawn":true}}
+{"op":"verb","id":"vb_jump_pad","verb":"locomotion.jump_pad","on":"plate_jump","params":{"height":3}}
+{"op":"verb","id":"vb_timer_midnight","verb":"puzzle.timer","on":"player","params":{"seconds":300}}
+{"op":"rule","id":"r_win","when":{"t":"enter","a":"treasure","b":"exit_gate"},"if":[{"l":"treasure.carrier.team","op":"eq","r":"red"}}
+{"l":"timer_midnight.state","op":"neq","r":"done"}
+{"e":"win","target":"player"}
+],"once":true}
+{"op":"rule","id":"r_lose_time","when":{"t":"timer_end","a":"player"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_open_west","when":{"t":"state_is","a":"door_west","s":"open"},"then":[{"e":"emit","target":"door_west","fx":"creak"}]}
+{"op":"rule","id":"r_open_north","when":{"t":"state_is","a":"door_north","s":"open"},"then":[{"e":"emit","target":"door_north","fx":"creak"}]}
+{"op":"expect","id":"x_treasure","prop":"win_reachable","a":"sp_red","b":"exit_gate","headline":true,"text":"Le trésor est caché dans les pièces latérales du château"}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.5,"speed":5}}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

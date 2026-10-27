@@ -29,6 +29,19 @@
    "controlsP50": 9
   },
   {
+   "name": "fresh10",
+   "note": "Tenth unseen set (27 Oct): the organizer's likely test prompts and other languages",
+   "prompts": 28,
+   "play": 21,
+   "places": 7,
+   "touredFirst": 7,
+   "toured": 7,
+   "firstPass": 15,
+   "now": 19,
+   "playableP50Ms": 2315,
+   "controlsP50": 10
+  },
+  {
    "name": "fresh2",
    "note": "Second fresh set (27 Oct, overnight): the honest test after fixes found on prompts-fresh.txt",
    "prompts": 14,

@@ -1,0 +1,200 @@
+{
+  "prompt": "Bludiště s duchy: najdi klíč a uteč z hradu",
+  "intent": {
+    "lang": "cs",
+    "mode": "play",
+    "genre": "horror-maze",
+    "setting": "Haunted medieval castle",
+    "role": "Lost explorer",
+    "goal": "Find the key and escape the castle",
+    "fail": "Caught by ghosts or time runs out",
+    "mood": "Eerie and tense",
+    "pack": "maze",
+    "sub": [],
+    "safety": "arcade",
+    "headline": "Hidden key location is the puzzle core",
+    "nouns": [
+      {
+        "noun": "klíč",
+        "hyper": "key"
+      },
+      {
+        "noun": "hrad",
+        "hyper": "castle"
+      },
+      {
+        "noun": "duch",
+        "hyper": "ghost"
+      }
+    ],
+    "moodVec": {
+      "valence": -0.5,
+      "arousal": 0.7,
+      "tension": 0.8
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "f11bc23625ac27d9949d9634cc453846071575b60231bcb780c66e2e70c52956",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_escape",
+      "text": "Hidden key location is the puzzle core",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 6 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_door_open (castle_door becomes open: use castle_door)",
+        "src": ""
+      },
+      {
+        "id": "T2:r_door_open",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_door_open"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_door_open fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_ghost2_hit",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_ghost2_hit"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_ghost2_hit fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_ghost_hit",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_ghost_hit"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_ghost_hit fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_key_carry",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_key_carry"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 6,
+        "status": "verified",
+        "text": "r_key_carry fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_entrance",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_entrance"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 6,
+        "status": "verified",
+        "text": "r_secret_entrance fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_timer_end",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_timer_end"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_timer_end fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it (AI par 25.6 s)",
+        "cx": null,
+        "src": "",
+        "ms": 442
+      }
+    ],
+    "par": {
+      "goldS": 25.6,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 487
+  }
+}

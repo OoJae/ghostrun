@@ -1,0 +1,20 @@
+{"op":"meta","mode":"wander","lang":"en","pack":"floor_plan","sub":[],"seed":14,"look":"Feng Shui living room","mood":[0.8,-0.5,-0.2],"timeOfDay":12,"weather":"clear"}
+{"op":"zone","id":"z_yard","slot":"yard","tag":"outside","name":"Front yard"}
+{"op":"zone","id":"z_living","slot":"main_room","tag":"hall","name":"Living room"}
+{"op":"spawn","id":"sp_red","zone":"z_yard","anchor":"spawn_pad","team":"red"}
+{"op":"ent","id":"sofa","kind":"prop","noun":"low sofa","hyper":"furniture","zone":"z_living","anchor":"corner_sw","body":"fixed","shape":"box","size":[2.0,0.8,0.5]}
+{"op":"ent","id":"coffee_table","kind":"prop","noun":"coffee table","hyper":"furniture","zone":"z_living","anchor":"center","body":"fixed","shape":"box","size":[1.2,0.4,0.6]}
+{"op":"ent","id":"tv_stand","kind":"prop","noun":"TV stand","hyper":"furniture","zone":"z_living","anchor":"corner_se","body":"fixed","shape":"box","size":[1.5,0.5,0.4]}
+{"op":"ent","id":"plant","kind":"prop","noun":"bamboo plant","hyper":"decor","zone":"z_living","anchor":"corner_ne","body":"fixed","shape":"cylinder","size":[0.5,1.5,0.5]}
+{"op":"ent","id":"lamp","kind":"prop","noun":"paper lantern lamp","hyper":"light","zone":"z_living","anchor":"corner_nw","body":"fixed","shape":"sphere","size":[0.6,0.6,0.6]}
+{"op":"ent","id":"rug","kind":"prop","noun":"silk rug","hyper":"decor","zone":"z_living","anchor":"corner_w","body":"fixed","shape":"box","size":[3.0,0.2,2.0]}
+{"op":"verb","id":"vb_inspect_sofa","verb":"social.inspect","on":"sofa","params":{"text":"A low sofa placed against the back wall for stability."}}
+{"op":"verb","id":"vb_inspect_coffee","verb":"social.inspect","on":"coffee_table","params":{"text":"A coffee table centered to promote conversation."}}
+{"op":"verb","id":"vb_inspect_tv","verb":"social.inspect","on":"tv_stand","params":{"text":"TV positioned to the east for yang energy."}}
+{"op":"verb","id":"vb_inspect_plant","verb":"social.inspect","on":"plant","params":{"text":"Bamboo plant in the northeast corner to attract growth."}}
+{"op":"verb","id":"vb_inspect_lamp","verb":"social.inspect","on":"lamp","params":{"text":"Paper lantern providing gentle light in the northwest."}}
+{"op":"verb","id":"vb_inspect_rug","verb":"social.inspect","on":"rug","params":{"text":"Silk rug aligns the central flow of chi."}}
+{"op":"npc","id":"guide_1","role":"guide","zone":"z_living","anchor":"wall_n","team":"","menu":["guide.tour"],"dflt":"guide.tour"}
+{"op":"expect","id":"x_fengshui","prop":"reachable","a":"sp_red","b":"z_living","headline":true,"text":"Living room geometry strictly adheres to traditional Feng Shui positioning rules"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

@@ -1,0 +1,222 @@
+{
+  "prompt": "Trouve le trésor caché dans le château et sors avant minuit",
+  "intent": {
+    "lang": "fr",
+    "mode": "play",
+    "genre": "Exploration / Aventure",
+    "setting": "Un château ancien et mystérieux",
+    "role": "Explorateur clandestin",
+    "goal": "Trouver le trésor caché dans le château et sortir avant minuit",
+    "fail": "Rester dans le château après minuit",
+    "mood": "Mystérieux et tendu",
+    "pack": "floor_plan",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Le trésor est caché dans les pièces latérales du château",
+    "nouns": [
+      {
+        "noun": "château",
+        "hyper": "monument"
+      },
+      {
+        "noun": "trésor",
+        "hyper": "butin"
+      },
+      {
+        "noun": "minuit",
+        "hyper": "limite temporelle"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.1,
+      "arousal": 0.6,
+      "tension": 0.7
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "08e96a6699e9b49a779cadc584c6a7342715d1be5d0f680a1dd70de36fbeeb15",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_treasure",
+      "text": "Le trésor est caché dans les pièces latérales du château",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 7 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win_goal (player enters exit_gate)",
+        "src": ""
+      },
+      {
+        "id": "T2:r_lose_time",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_time"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_lose_time fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_open_north",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_open_north"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_open_north fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_open_west",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_open_west"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 0,
+        "src": "ai",
+        "ms": 6,
+        "status": "counterexample",
+        "text": "r_open_west fires exactly once",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "firings",
+          "text": "never fired when forced"
+        }
+      },
+      {
+        "id": "T2:r_secret_corner_ne",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_ne"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_secret_corner_ne fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_nw",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_nw"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_corner_nw fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_nw_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_nw_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_corner_nw_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win_goal",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win_goal"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_win_goal fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it (AI par 3 s)",
+        "cx": null,
+        "src": "",
+        "ms": 43
+      }
+    ],
+    "par": {
+      "goldS": 3,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 85
+  }
+}

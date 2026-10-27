@@ -1,0 +1,42 @@
+{"op":"meta","mode":"play","lang":"pl","pack":"outdoor","sub":[],"seed":29,"look":"słoneczna plaża","mood":[0.8,0.6,0.2],"timeOfDay":12,"weather":"clear"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Wejście na plażę"}
+{"op":"zone","id":"z_center","slot":"clearing","tag":"hub","name":"Centralna część plaży"}
+{"op":"zone","id":"z_west","slot":"clearing_w","tag":"plaża_west","name":"Zachodnia plaża"}
+{"op":"zone","id":"z_east","slot":"clearing_e","tag":"plaża_east","name":"Wschodnia plaża"}
+{"op":"zone","id":"z_pond","slot":"pond","tag":"wodny","name":"Laguna"}
+{"op":"zone","id":"z_grove","slot":"grove","tag":"gaj","name":"Gaj pod palmami"}
+{"op":"zone","id":"z_camp","slot":"camp","tag":"obóz","name":"Obóz poszukiwacza"}
+{"op":"zone","id":"z_lookout","slot":"lookout","tag":"wysoka_teren","name":"Wysoki punkt obserwacyjny"}
+{"op":"spawn","id":"sp_red","zone":"z_entrance","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"exit_zone","zone":"z_west","anchor":"flank_s","noun":"wyjście z plaży","hyper":"exit","team":"red"}
+{"op":"ent","id":"coin_1","kind":"pickup","noun":"moneta","hyper":"przedmiot","zone":"z_center","anchor":"center_n","body":"dynamic","shape":"box","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"coin_2","kind":"pickup","noun":"moneta","hyper":"przedmiot","zone":"z_center","anchor":"center_s","body":"dynamic","shape":"box","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"coin_3","kind":"pickup","noun":"moneta","hyper":"przedmiot","zone":"z_west","anchor":"flank_n","body":"dynamic","shape":"box","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"coin_4","kind":"pickup","noun":"moneta","hyper":"przedmiot","zone":"z_west","anchor":"flank_s","body":"dynamic","shape":"box","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"coin_5","kind":"pickup","noun":"moneta","hyper":"przedmiot","zone":"z_east","anchor":"flank_n","body":"dynamic","shape":"box","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"coin_6","kind":"pickup","noun":"moneta","hyper":"przedmiot","zone":"z_east","anchor":"flank_s","body":"dynamic","shape":"box","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"coin_7","kind":"pickup","noun":"moneta","hyper":"przedmiot","zone":"z_grove","anchor":"heart","body":"dynamic","shape":"box","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"coin_8","kind":"pickup","noun":"moneta","hyper":"przedmiot","zone":"z_camp","anchor":"tent","body":"dynamic","shape":"box","size":[0.2,0.2,0.2]}
+{"op":"verb","id":"vb_carry_coin_1","verb":"physics_props.carry","on":"coin_1","params":{}}
+{"op":"verb","id":"vb_carry_coin_2","verb":"physics_props.carry","on":"coin_2","params":{}}
+{"op":"verb","id":"vb_carry_coin_3","verb":"physics_props.carry","on":"coin_3","params":{}}
+{"op":"verb","id":"vb_carry_coin_4","verb":"physics_props.carry","on":"coin_4","params":{}}
+{"op":"verb","id":"vb_carry_coin_5","verb":"physics_props.carry","on":"coin_5","params":{}}
+{"op":"verb","id":"vb_carry_coin_6","verb":"physics_props.carry","on":"coin_6","params":{}}
+{"op":"verb","id":"vb_carry_coin_7","verb":"physics_props.carry","on":"coin_7","params":{}}
+{"op":"verb","id":"vb_carry_coin_8","verb":"physics_props.carry","on":"coin_8","params":{}}
+{"op":"verb","id":"vb_collect_coin_1","verb":"puzzle.collect","on":"coin_1","params":{}}
+{"op":"verb","id":"vb_collect_coin_2","verb":"puzzle.collect","on":"coin_2","params":{}}
+{"op":"verb","id":"vb_collect_coin_3","verb":"puzzle.collect","on":"coin_3","params":{}}
+{"op":"verb","id":"vb_collect_coin_4","verb":"puzzle.collect","on":"coin_4","params":{}}
+{"op":"verb","id":"vb_collect_coin_5","verb":"puzzle.collect","on":"coin_5","params":{}}
+{"op":"verb","id":"vb_collect_coin_6","verb":"puzzle.collect","on":"coin_6","params":{}}
+{"op":"verb","id":"vb_collect_coin_7","verb":"puzzle.collect","on":"coin_7","params":{}}
+{"op":"verb","id":"vb_collect_coin_8","verb":"puzzle.collect","on":"coin_8","params":{}}
+{"op":"verb","id":"vb_jump","verb":"locomotion.jump","on":"player","params":{"jumpsMax":2}}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":6}}
+{"op":"rule","id":"r_win","when":{"t":"score_gte","a":"team:red","n":8},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose","when":{"t":"enter","a":"player","b":"exit_zone"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"expect","id":"x_beach","prop":"win_reachable","a":"sp_red","b":"exit_zone","headline":true,"text":"Ogarnięcie całego wybrzeża w celu zebrania wszystkich monet"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

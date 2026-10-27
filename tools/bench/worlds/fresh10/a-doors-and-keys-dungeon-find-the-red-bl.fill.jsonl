@@ -1,0 +1,30 @@
+{"op":"meta","mode":"play","lang":"en","pack":"maze","sub":[],"seed":16,"look":"underground stone dungeon","mood":[0.3,0.2,0.35],"timeOfDay":12,"weather":"none"}
+{"op":"zone","id":"z_start","slot":"start","tag":"outside","name":"Dungeon entrance"}
+{"op":"zone","id":"z_maze","slot":"maze","tag":"room","name":"Stone corridor maze"}
+{"op":"spawn","id":"sp_red","zone":"z_start","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"vault","zone":"z_maze","anchor":"exit","noun":"treasure vault","hyper":"vault","team":"red"}
+{"op":"ent","id":"key_red","kind":"pickup","noun":"red key","hyper":"key","zone":"z_maze","anchor":"dead_end_1","body":"dynamic","shape":"box","size":[0.2,0.4,0.1]}
+{"op":"ent","id":"key_blue","kind":"pickup","noun":"blue key","hyper":"key","zone":"z_maze","anchor":"dead_end_2","body":"dynamic","shape":"box","size":[0.2,0.4,0.1]}
+{"op":"ent","id":"key_green","kind":"pickup","noun":"green key","hyper":"key","zone":"z_maze","anchor":"dead_end_3","body":"dynamic","shape":"box","size":[0.2,0.4,0.1]}
+{"op":"ent","id":"door_red","kind":"door","noun":"red door","hyper":"door","zone":"z_maze","anchor":"entrance","body":"fixed","shape":"box"}
+{"op":"ent","id":"door_blue","kind":"door","noun":"blue door","hyper":"door","zone":"z_maze","anchor":"center","body":"fixed","shape":"box"}
+{"op":"ent","id":"door_green","kind":"door","noun":"green door","hyper":"door","zone":"z_maze","anchor":"dead_end_4","body":"fixed","shape":"box"}
+{"op":"ent","id":"plate_jump","kind":"plate","noun":"jump pad","hyper":"plate","zone":"z_maze","anchor":"center","body":"sensor","shape":"box","size":[0.5,0.2,0.5]}
+{"op":"ent","id":"hazard_spikes","kind":"hazard","noun":"spike trap","hyper":"spikes","zone":"z_maze","anchor":"dead_end_2","body":"sensor","shape":"box","size":[1,0.2,1]}
+{"op":"verb","id":"vb_carry_red","verb":"physics_props.carry","on":"key_red","params":{}}
+{"op":"verb","id":"vb_carry_blue","verb":"physics_props.carry","on":"key_blue","params":{}}
+{"op":"verb","id":"vb_carry_green","verb":"physics_props.carry","on":"key_green","params":{}}
+{"op":"verb","id":"vb_lock_red","verb":"puzzle.lock","on":"door_red","params":{"key":"key_red","keep":false}}
+{"op":"verb","id":"vb_lock_blue","verb":"puzzle.lock","on":"door_blue","params":{"key":"key_blue","keep":false}}
+{"op":"verb","id":"vb_lock_green","verb":"puzzle.lock","on":"door_green","params":{"key":"key_green","keep":false}}
+{"op":"verb","id":"vb_jump","verb":"locomotion.jump","on":"player","params":{"jumpsMax":2}}
+{"op":"verb","id":"vb_jump_pad","verb":"locomotion.jump_pad","on":"plate_jump","params":{"height":3}}
+{"op":"verb","id":"vb_spike_hazard","verb":"motion_hazards.hazard","on":"hazard_spikes","params":{"respawn":true}}
+{"op":"rule","id":"r_red_open","when":{"t":"state_is","a":"door_red","s":"open"},"then":[{"e":"emit","target":"door_red","fx":"unlock_glow"}]}
+{"op":"rule","id":"r_blue_open","when":{"t":"state_is","a":"door_blue","s":"open"},"then":[{"e":"emit","target":"door_blue","fx":"unlock_glow"}]}
+{"op":"rule","id":"r_green_open","when":{"t":"state_is","a":"door_green","s":"open"},"then":[{"e":"emit","target":"door_green","fx":"unlock_glow"}]}
+{"op":"rule","id":"r_win","when":{"t":"enter","a":"player","b":"vault"},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"expect","id":"x_vault","prop":"win_reachable","a":"sp_red","b":"vault","headline":true,"text":"Colored keys must match colored doors to reach the vault"}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":5}}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

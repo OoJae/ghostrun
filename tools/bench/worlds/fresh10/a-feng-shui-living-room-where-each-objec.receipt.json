@@ -1,0 +1,96 @@
+{
+  "prompt": "A Feng Shui living room where each object sits in its proper place",
+  "intent": {
+    "lang": "en",
+    "mode": "wander",
+    "genre": "Simulation / Interior Design",
+    "setting": "A harmonious residential living room arranged according to traditional Feng Shui principles",
+    "role": "Visitor or observer",
+    "goal": "Explore the space and observe the precise placement of furniture and decor",
+    "fail": "None; intended for non-linear exploration",
+    "mood": "Peaceful, balanced, and focused",
+    "pack": "floor_plan",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Living room geometry strictly adheres to traditional Feng Shui positioning rules",
+    "nouns": [
+      {
+        "noun": "living room",
+        "hyper": "interior space"
+      },
+      {
+        "noun": "object",
+        "hyper": "furniture or decor"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.8,
+      "arousal": -0.5,
+      "tension": -0.2
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "86efd8f18a69ac75e22914da44d4343948166a9371b1ca6e8f0f2a7552ebbed5",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_fengshui",
+      "text": "Living room geometry strictly adheres to traditional Feng Shui positioning rules",
+      "status": "verified",
+      "method": "kinematic reachability (jump apex model)"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 0 rules reference existing things",
+        "src": ""
+      },
+      {
+        "id": "T1:x_fengshui",
+        "tier": "T1",
+        "subject": {
+          "kind": "property",
+          "id": "x_fengshui"
+        },
+        "method": "kinematic reachability (jump apex model)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "Living room geometry strictly adheres to traditional Feng Shui positioning rules",
+        "cx": null
+      },
+      {
+        "id": "T3:tour",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "tour"
+        },
+        "status": "played",
+        "method": "physics, an AI visitor walks to and uses each",
+        "n": 6,
+        "k": 6,
+        "text": "walked to and inspected 6 of 6 things",
+        "cx": null,
+        "src": "",
+        "ms": 10
+      }
+    ],
+    "par": null,
+    "ms": 22
+  }
+}

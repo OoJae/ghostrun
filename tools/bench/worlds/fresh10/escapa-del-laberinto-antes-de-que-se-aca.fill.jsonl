@@ -1,0 +1,32 @@
+{"op":"meta","mode":"play","lang":"es","pack":"maze","sub":[],"seed":27,"look":"laberinto lab","mood":[-0.3,0.6,0.8],"timeOfDay":12,"weather":"clear"}
+{"op":"zone","id":"z_start","slot":"start","tag":"outside","name":"Entrada del laberinto"}
+{"op":"zone","id":"z_maze","slot":"maze","tag":"maze","name":"Laberinto"}
+{"op":"spawn","id":"sp_red","zone":"z_start","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"exit","zone":"z_maze","anchor":"exit","noun":"salida del laberinto","hyper":"objetivo","team":"","kind":"goal","body":"sensor","shape":"box"}
+{"op":"ent","id":"switch_1","kind":"switch","noun":"interruptor","hyper":"interruptor","zone":"z_maze","anchor":"entrance","body":"fixed","shape":"box"}
+{"op":"ent","id":"plate_1","kind":"plate","noun":"placa de presión","hyper":"placa","zone":"z_maze","anchor":"dead_end_1","body":"sensor","shape":"box"}
+{"op":"ent","id":"door_1","kind":"door","noun":"puerta bloqueada","hyper":"puerta","zone":"z_maze","anchor":"dead_end_2","body":"fixed","shape":"box"}
+{"op":"ent","id":"key_1","kind":"pickup","noun":"llave","hyper":"llave","zone":"z_maze","anchor":"dead_end_3","body":"dynamic","shape":"box","size":[0.3,0.2,0.1]}
+{"op":"ent","id":"coin_1","kind":"pickup","noun":"moneda","hyper":"moneda","zone":"z_maze","anchor":"dead_end_4","body":"dynamic","shape":"sphere","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"hazard_lava","kind":"hazard","noun":"lava","hyper":"lava","zone":"z_maze","anchor":"center","body":"sensor","shape":"box","size":[2,0.5,2]}
+{"op":"ent","id":"jump_pad_1","kind":"platform","noun":"pizón de salto","hyper":"pizón","zone":"z_maze","anchor":"center","body":"fixed","shape":"box","size":[1,0.2,1]}
+{"op":"ent","id":"portal_1","kind":"portal","noun":"portal secreto","hyper":"portal","zone":"z_maze","anchor":"dead_end_1","body":"sensor","shape":"box"}
+{"op":"verb","id":"vb_jump","verb":"locomotion.jump","on":"player","params":{"jumpsMax":2}}
+{"op":"verb","id":"vb_carry_key","verb":"physics_props.carry","on":"key_1","params":{}}
+{"op":"verb","id":"vb_lock_door","verb":"puzzle.lock","on":"door_1","params":{"key":"key_1","keep":false}}
+{"op":"verb","id":"vb_switch_1","verb":"puzzle.switch","on":"switch_1","params":{"once":false}}
+{"op":"verb","id":"vb_plate_1","verb":"puzzle.plate","on":"plate_1","params":{"latch":false}}
+{"op":"verb","id":"vb_hazard_lava","verb":"motion_hazards.hazard","on":"hazard_lava","params":{"respawn":true}}
+{"op":"verb","id":"vb_jump_pad","verb":"locomotion.jump_pad","on":"jump_pad_1","params":{"height":5}}
+{"op":"verb","id":"vb_portal","verb":"puzzle.portal","on":"portal_1","params":{"to":"switch_1"}}
+{"op":"verb","id":"vb_collect_coin","verb":"puzzle.collect","on":"coin_1","params":{}}
+{"op":"verb","id":"vb_timer","verb":"puzzle.timer","on":"player","params":{"seconds":120}}
+{"op":"rule","id":"r_switch_opens","when":{"t":"state_is","a":"switch_1","s":"on"},"then":[{"e":"set_state","target":"door_1","v":"open"}],"once":false}
+{"op":"rule","id":"r_plate_opens","when":{"t":"state_is","a":"plate_1","s":"down"},"then":[{"e":"set_state","target":"door_1","v":"open"}],"once":false}
+{"op":"rule","id":"r_hit_lava","when":{"t":"hit","a":"player","b":"hazard_lava"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_timer_end","when":{"t":"timer_end","a":"player"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_reach_exit","when":{"t":"enter","a":"player","b":"exit"},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"expect","id":"x_escape","prop":"win_reachable","a":"sp_red","b":"exit","headline":true,"text":"El reloj debe obligar a resolver el laberinto antes de agotarse."}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":6}}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

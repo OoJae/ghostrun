@@ -70,6 +70,10 @@ describe("recorded unseen worlds", () => {
     ["fresh7", "a-wild-west-town", "horses the game is about don't step aside like bystanders"],
     ["fresh9", "light-the-four-torches", "runners walk round the gate the torches open until it opens"],
     ["fresh7", "open-the-vault", "a waist-high vault door is hopped, plates are big enough to stand on, shut doors are walked round"],
+    ["fresh10", "an-arena-with-three-capture", "'win if all zones are red when time runs out; lose when it runs out': the exception goes first"],
+    ["fresh10", "a-water-temple", "two doors in one doorway are one door, opened by whichever lever is on this side"],
+    ["fresh10", "a-lab-where", "a beaker with stages 0, 1, 2 and no starting state starts at 0"],
+    ["fresh10", "a-snowy-mountain", "'if player.path is left', which nothing sets, is dropped"],
   ])("%s %s: %s", async (set, prefix) => {
     const w = recorded(set, prefix);
     const r = await prove(R, w.bundle, { engine: ENGINE_HASH, runs: 12 });

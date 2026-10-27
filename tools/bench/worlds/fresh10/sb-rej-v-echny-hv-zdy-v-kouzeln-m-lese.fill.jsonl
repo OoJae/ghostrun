@@ -1,0 +1,45 @@
+{"op":"meta","mode":"play","lang":"cs","pack":"outdoor","sub":[],"seed":26,"look":"magický les","mood":[0.8,0.4,0.1],"timeOfDay":12,"weather":"clear"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Vstup do lesa"}
+{"op":"zone","id":"z_clearing","slot":"clearing","tag":"hub","name":"Hlavní mýtina"}
+{"op":"zone","id":"z_clearing_w","slot":"clearing_w","tag":"base","name":"Levý výběžek"}
+{"op":"zone","id":"z_clearing_e","slot":"clearing_e","tag":"base","name":"Pravý výběžek"}
+{"op":"zone","id":"z_pond","slot":"pond","tag":"water","name":"Lesní rybník"}
+{"op":"zone","id":"z_grove","slot":"grove","tag":"trees","name":"Hustý háj"}
+{"op":"zone","id":"z_lookout","slot":"lookout","tag":"high_ground","name":"Skákavý rozhled"}
+{"op":"spawn","id":"sp_red","zone":"z_entrance","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"lookout_goal","zone":"z_lookout","anchor":"top","noun":"zlatá hvězda","hyper":"goal","team":"red"}
+{"op":"ent","id":"star1","kind":"pickup","noun":"hvězda","hyper":"collectibles","zone":"z_clearing","anchor":"center","body":"dynamic","shape":"sphere","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"star2","kind":"pickup","noun":"hvězda","hyper":"collectibles","zone":"z_clearing_w","anchor":"flank_n","body":"dynamic","shape":"sphere","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"star3","kind":"pickup","noun":"hvězda","hyper":"collectibles","zone":"z_clearing_e","anchor":"flank_s","body":"dynamic","shape":"sphere","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"star4","kind":"pickup","noun":"hvězda","hyper":"collectibles","zone":"z_pond","anchor":"water","body":"dynamic","shape":"sphere","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"star5","kind":"pickup","noun":"hvězda","hyper":"collectibles","zone":"z_grove","anchor":"heart","body":"dynamic","shape":"sphere","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"star6","kind":"pickup","noun":"hvězda","hyper":"collectibles","zone":"z_grove","anchor":"roots","body":"dynamic","shape":"sphere","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"key1","kind":"pickup","noun":"klíč","hyper":"key","zone":"z_clearing","anchor":"center_n","body":"dynamic","shape":"box","size":[0.2,0.2,0.05]}
+{"op":"ent","id":"door1","kind":"door","noun":"zavřený stromový portál","hyper":"door","zone":"z_clearing_e","anchor":"goal","body":"fixed","shape":"box"}
+{"op":"ent","id":"switch1","kind":"switch","noun":"lesní přepínač","hyper":"switch","zone":"z_clearing","anchor":"center_s","body":"fixed","shape":"box"}
+{"op":"ent","id":"plate1","kind":"plate","noun":"tlaková deska","hyper":"plate","zone":"z_clearing_w","anchor":"flank_s","body":"sensor","shape":"box"}
+{"op":"ent","id":"hazard1","kind":"hazard","noun":"ostré kameny","hyper":"spikes","zone":"z_pond","anchor":"dock","body":"sensor","shape":"box"}
+{"op":"ent","id":"jump_pad1","kind":"platform","noun":"čarovací skoková plošina","hyper":"jump_pad","zone":"z_grove","anchor":"hollow","body":"kinematic","shape":"box"}
+{"op":"ent","id":"portal1","kind":"portal","noun":"magický portál","hyper":"portal","zone":"z_entrance","anchor":"gate","body":"sensor","shape":"box"}
+{"op":"verb","id":"vb_carry_star1","verb":"physics_props.carry","on":"star1","params":{}}
+{"op":"verb","id":"vb_carry_star2","verb":"physics_props.carry","on":"star2","params":{}}
+{"op":"verb","id":"vb_carry_star3","verb":"physics_props.carry","on":"star3","params":{}}
+{"op":"verb","id":"vb_carry_star4","verb":"physics_props.carry","on":"star4","params":{}}
+{"op":"verb","id":"vb_carry_star5","verb":"physics_props.carry","on":"star5","params":{}}
+{"op":"verb","id":"vb_carry_star6","verb":"physics_props.carry","on":"star6","params":{}}
+{"op":"verb","id":"vb_carry_key1","verb":"physics_props.carry","on":"key1","params":{}}
+{"op":"verb","id":"vb_lock_door1","verb":"puzzle.lock","on":"door1","params":{"key":"key1","keep":false}}
+{"op":"verb","id":"vb_switch1","verb":"puzzle.switch","on":"switch1","params":{"once":false}}
+{"op":"verb","id":"vb_plate1","verb":"puzzle.plate","on":"plate1","params":{"latch":false}}
+{"op":"verb","id":"vb_hazard1","verb":"motion_hazards.hazard","on":"hazard1","params":{"respawn":true}}
+{"op":"verb","id":"vb_jump_pad1","verb":"locomotion.jump_pad","on":"jump_pad1","params":{"height":5}}
+{"op":"verb","id":"vb_portal1","verb":"puzzle.portal","on":"portal1","params":{"to":"z_clearing"}}
+{"op":"verb","id":"vb_jump","verb":"locomotion.jump","on":"player","params":{"jumpsMax":2}}
+{"op":"rule","id":"r_win","when":{"t":"enter","a":"player","b":"lookout_goal"},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose_hazard","when":{"t":"hit","a":"player","b":"hazard1"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_open_door","when":{"t":"state_is","a":"door1","s":"open"},"then":[{"e":"emit","target":"door1","fx":"sparkle"}]}
+{"op":"rule","id":"r_plate_down","when":{"t":"state_is","a":"plate1","s":"down"},"then":[{"e":"set_state","target":"switch1","v":"on"}]}
+{"op":"expect","id":"x_forest","prop":"win_reachable","a":"sp_red","b":"lookout_goal","headline":true,"text":"All stars must be reachable via forest paths and the jumping lookout"}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":6}}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

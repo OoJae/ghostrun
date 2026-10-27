@@ -1,0 +1,26 @@
+{"op":"meta","mode":"wander","lang":"it","pack":"floor_plan","sub":[],"seed":30,"look":"modern art museum","mood":[0.4,0.2,0.1],"timeOfDay":12,"weather":"clear"}
+{"op":"zone","id":"z_yard","slot":"yard","tag":"outside","name":"Ingresso esterno"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Foyer"}
+{"op":"zone","id":"z_west","slot":"room_sw","tag":"room","name":"Sala Ovest"}
+{"op":"zone","id":"z_east","slot":"room_se","tag":"room","name":"Sala Est"}
+{"op":"zone","id":"z_north","slot":"room_nw","tag":"room","name":"Sala Nord"}
+{"op":"zone","id":"z_main","slot":"main_room","tag":"hall","name":"Corpo Principale"}
+{"op":"zone","id":"z_northeast","slot":"room_ne","tag":"room","name":"Sala Nord-Est"}
+{"op":"spawn","id":"sp_red","zone":"z_yard","anchor":"spawn_pad","team":"red"}
+{"op":"ent","id":"painting_w1","kind":"prop","noun":"quadro astratto","hyper":"decoration","zone":"z_west","anchor":"center","body":"fixed","shape":"box","size":[1.2,1.6,0.2]}
+{"op":"ent","id":"painting_w2","kind":"prop","noun":"quadro geometrico","hyper":"decoration","zone":"z_west","anchor":"corner_sw","body":"fixed","shape":"box","size":[1.2,1.6,0.2]}
+{"op":"ent","id":"sculpture_c","kind":"prop","noun":"scultura fragile","hyper":"decoration","zone":"z_east","anchor":"center","body":"fixed","shape":"box","size":[0.8,0.8,0.8]}
+{"op":"ent","id":"painting_n1","kind":"prop","noun":"quadro lineare","hyper":"decoration","zone":"z_north","anchor":"center","body":"fixed","shape":"box","size":[1.2,1.6,0.2]}
+{"op":"ent","id":"painting_main1","kind":"prop","noun":"quadro vibrante","hyper":"decoration","zone":"z_main","anchor":"corner_ne","body":"fixed","shape":"box","size":[1.5,2.0,0.2]}
+{"op":"ent","id":"painting_main2","kind":"prop","noun":"quadro minimalista","hyper":"decoration","zone":"z_main","anchor":"corner_sw","body":"fixed","shape":"box","size":[1.5,2.0,0.2]}
+{"op":"ent","id":"guide_char","kind":"npc","noun":"guida del museo","hyper":"npc","zone":"z_main","anchor":"center","body":"none","shape":"none","team":""}
+{"op":"verb","id":"vb_inspect_w1","verb":"social.inspect","on":"painting_w1","params":{"text":"Forma e colore in contrasto, invita alla riflessione."}}
+{"op":"verb","id":"vb_inspect_w2","verb":"social.inspect","on":"painting_w2","params":{"text":"Geometrie intersecanti che suggeriscono movimento."}}
+{"op":"verb","id":"vb_inspect_sc","verb":"social.inspect","on":"sculpture_c","params":{"text":"Scultura in vetro, delicata: non toccare!"}}
+{"op":"verb","id":"vb_inspect_n1","verb":"social.inspect","on":"painting_n1","params":{"text":"Linee sottili che guidano lo sguardo verso l'alto."}}
+{"op":"verb","id":"vb_inspect_m1","verb":"social.inspect","on":"painting_main1","params":{"text":"Colori vivaci che celebrano l'energia urbana."}}
+{"op":"verb","id":"vb_inspect_m2","verb":"social.inspect","on":"painting_main2","params":{"text":"Semplicità di forme che invita alla contemplazione."}}
+{"op":"npc","id":"npc_guide","role":"guide","zone":"z_main","anchor":"center","team":"","menu":["guide.tour"],"dflt":"guide.tour"}
+{"op":"expect","id":"x_guide","prop":"requires","a":"sp_red","b":"z_main","headline":true,"text":"Must locate the guide character to hear the exhibit explanations"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

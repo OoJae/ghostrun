@@ -1,0 +1,202 @@
+{
+  "prompt": "A lab where you mix three chemicals in the right order",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "puzzle",
+    "setting": "A sterile laboratory interior featuring a central workbench, three distinct chemical flasks, and a digital mixing sequencer. Shelving along the walls holds glassware and protective gear.",
+    "role": "Researcher",
+    "goal": "Select and mix three specific chemical elements into the main beaker in the logically correct sequence to synthesize the target compound.",
+    "fail": "Adding an incorrect chemical or following the wrong order causes a volatile reaction that resets the current experiment.",
+    "mood": "Focused and contemplative",
+    "pack": "floor_plan",
+    "sub": [],
+    "safety": "ok",
+    "headline": "The synthesis sequence requires a specific logical order to avoid failure",
+    "nouns": [
+      {
+        "noun": "lab",
+        "hyper": "facility"
+      },
+      {
+        "noun": "chemicals",
+        "hyper": "substances"
+      },
+      {
+        "noun": "beaker",
+        "hyper": "vessel"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.2,
+      "arousal": 0.3,
+      "tension": 0.5
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "184f6d7f21badc6f46cbbed1488ed87d323e2e5b685818dd8d86bf8b89e83632",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_synth",
+      "text": "The synthesis sequence requires a specific logical order to avoid failure",
+      "status": "counterexample",
+      "method": "static goal regression over rules"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 7 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "chain",
+          "text": "win unreachable in the rule graph"
+        },
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "counterexample",
+        "method": "static goal regression over rules",
+        "text": "no rule chain lets the player trigger the win",
+        "src": ""
+      },
+      {
+        "id": "T2:r_a",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_a"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_a: no room to stand next to switch_a",
+        "cx": null
+      },
+      {
+        "id": "T2:r_b",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_b"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_b: no room to stand next to switch_b",
+        "cx": null
+      },
+      {
+        "id": "T2:r_c",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_c"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_c: no room to stand next to switch_c",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_nw",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_nw"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 10,
+        "status": "verified",
+        "text": "r_secret_corner_nw fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_nw_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_nw_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 7,
+        "status": "verified",
+        "text": "r_secret_corner_nw_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_se",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_se"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_secret_corner_se fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_spill",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_spill"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_spill: nothing produces touch on spill",
+        "cx": null
+      }
+    ],
+    "par": null,
+    "ms": 43
+  }
+}

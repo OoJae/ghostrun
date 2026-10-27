@@ -1,0 +1,30 @@
+{"op":"meta","mode":"play","lang":"en","pack":"outdoor","sub":[],"seed":32,"look":"jungle river","mood":[0.7,0.8,0.6],"timeOfDay":14,"weather":"rain"}
+{"op":"zone","id":"z_camp","slot":"camp","tag":"outside","name":"River source camp"}
+{"op":"zone","id":"z_rapids","slot":"pond","tag":"water","name":"Whitewater rapids"}
+{"op":"zone","id":"z_clearing","slot":"clearing","tag":"outside","name":"Jungle clearing hub"}
+{"op":"zone","id":"z_downstream","slot":"clearing_w","tag":"outside","name":"Downstream clearing"}
+{"op":"spawn","id":"sp_red","zone":"z_camp","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"goal_finish","zone":"z_downstream","anchor":"goal","noun":"river exit","hyper":"goal","team":"red"}
+{"op":"ent","id":"raft","kind":"vehicle","noun":"inflatable raft","hyper":"inflatable_watercraft","zone":"z_camp","anchor":"fire","body":"dynamic","shape":"box","size":[2,0.5,1]}
+{"op":"ent","id":"rock_left","kind":"hazard","noun":"large rock","hyper":"rock","zone":"z_rapids","anchor":"shore","body":"sensor","shape":"box","size":[1.2,1.2,0.8]}
+{"op":"ent","id":"rock_right","kind":"hazard","noun":"large rock","hyper":"rock","zone":"z_rapids","anchor":"bank","body":"sensor","shape":"box","size":[1.2,1.2,0.8]}
+{"op":"ent","id":"log","kind":"platform","noun":"rolling log","hyper":"log","zone":"z_rapids","anchor":"water","body":"kinematic","shape":"box","size":[3,0.3,0.5]}
+{"op":"ent","id":"gate","kind":"door","noun":"river gate","hyper":"gate","zone":"z_clearing","anchor":"center","body":"fixed","shape":"box"}
+{"op":"ent","id":"key","kind":"pickup","noun":"rusty key","hyper":"key","zone":"z_clearing","anchor":"center_n","body":"dynamic","shape":"box","size":[0.2,0.2,0.1]}
+{"op":"ent","id":"checkpoint","kind":"checkpoint","noun":"checkpoint flag","hyper":"flag","zone":"z_clearing","anchor":"center_s","body":"sensor","shape":"box","size":[0.3,1,0.3]}
+{"op":"verb","id":"vb_carry_raft","verb":"physics_props.carry","on":"raft","params":{}}
+{"op":"verb","id":"vb_carry_key","verb":"physics_props.carry","on":"key","params":{}}
+{"op":"verb","id":"vb_unlock_gate","verb":"puzzle.lock","on":"gate","params":{"key":"key","keep":false}}
+{"op":"verb","id":"vb_log_move","verb":"motion_hazards.oscillate","on":"log","params":{"axis":"x","travel":4,"period":3}}
+{"op":"verb","id":"vb_timer","verb":"puzzle.timer","on":"player","params":{"seconds":90}}
+{"op":"verb","id":"vb_rock_hazard","verb":"motion_hazards.hazard","on":"rock_left","params":{"respawn":true}}
+{"op":"verb","id":"vb_rock_hazard_r","verb":"motion_hazards.hazard","on":"rock_right","params":{"respawn":true}}
+{"op":"rule","id":"r_win","when":{"t":"enter","a":"raft","b":"goal_finish"},"if":[],"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose_rock","when":{"t":"hit","a":"player","b":"rock_left"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose_rock2","when":{"t":"hit","a":"player","b":"rock_right"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose_timer","when":{"t":"timer_end","a":"player"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_checkpoint","when":{"t":"enter","a":"player","b":"checkpoint"},"then":[{"e":"set_state","target":"checkpoint","v":"reached"}],"once":true}
+{"op":"expect","id":"x_rapids","prop":"headline","a":"sp_red","b":"z_rapids","headline":true,"text":"Rapids require precise steering to avoid rocks"}
+{"op":"expect","id":"x_win","prop":"win_reachable","a":"sp_red","b":"goal_finish","headline":false,"text":"Finish is reachable if raft avoids hazards"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

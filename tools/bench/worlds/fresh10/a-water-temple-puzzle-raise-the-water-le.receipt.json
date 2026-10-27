@@ -1,0 +1,290 @@
+{
+  "prompt": "A water temple puzzle: raise the water level to reach the door",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "puzzle",
+    "setting": "Underground water temple",
+    "role": "Temple explorer",
+    "goal": "Raise the water level through sequential puzzles until the main door is reachable and opened.",
+    "fail": "Running out of time to complete the water mechanism",
+    "mood": "Mysterious and tranquil",
+    "pack": "floor_plan",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Sequential water level switches must fill all chambers in order",
+    "nouns": [
+      {
+        "noun": "water temple",
+        "hyper": "dungeon"
+      },
+      {
+        "noun": "water level",
+        "hyper": "puzzle mechanism"
+      },
+      {
+        "noun": "door",
+        "hyper": "exit"
+      },
+      {
+        "noun": "chamber",
+        "hyper": "room"
+      },
+      {
+        "noun": "lever",
+        "hyper": "interactive object"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.4,
+      "arousal": 0.3,
+      "tension": 0.5
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "41720ad80b4ef9217cd921dc8d91830e120987b1f1dd6a4204db29f4c1cf05fe",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_water",
+      "text": "Sequential water level switches must fill all chambers in order",
+      "status": "counterexample",
+      "method": "static goal regression over rules + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 11 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (player enters main_door) [after door_main open]",
+        "src": ""
+      },
+      {
+        "id": "T2:r_nw_to_main",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_nw_to_main"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 8,
+        "status": "verified",
+        "text": "r_nw_to_main fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_open_main",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_open_main"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_open_main: nothing in the world makes door_nw 'open'",
+        "cx": null
+      },
+      {
+        "id": "T2:r_se_to_nw",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_se_to_nw"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 6,
+        "status": "verified",
+        "text": "r_se_to_nw fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_center",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_center"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_center fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_ne",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_ne"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_corner_ne fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_ne_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_ne_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_corner_ne_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_nw",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_nw"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_corner_nw fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_nw_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_nw_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_corner_nw_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_sw",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_sw"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_corner_sw fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_sw_to_se",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_sw_to_se"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_sw_to_se fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "counterexample",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 0,
+        "text": "no AI runner could win",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "wins",
+          "text": "12 got stuck (in the Main hall ×12)"
+        },
+        "src": "",
+        "ms": 18744
+      }
+    ],
+    "par": null,
+    "ms": 18801
+  }
+}

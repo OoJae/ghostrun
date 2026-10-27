@@ -1,0 +1,252 @@
+{
+  "prompt": "A football penalty shootout against a goalkeeper who dives",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "sports",
+    "setting": "a small outdoor penalty spot facing a goal with a large net, marked by a white circular patch, under neutral sky",
+    "role": "striker",
+    "goal": "score at least two goals by shooting the ball into the net before the goalkeeper catches it to avoid dropping off the edge",
+    "fail": "miss the target, save the ball, or fall off the edge of the level",
+    "mood": "climactic and focused",
+    "pack": "outdoor",
+    "sub": [],
+    "safety": "ok",
+    "headline": "The goalkeeper's dive speed determines how the shot needs to be placed to score.",
+    "nouns": [
+      {
+        "noun": "penalty",
+        "hyper": "spot"
+      },
+      {
+        "noun": "goalkeeper",
+        "hyper": "goalkeeper"
+      },
+      {
+        "noun": "dive",
+        "hyper": "body movement"
+      },
+      {
+        "noun": "shot",
+        "hyper": "kick"
+      },
+      {
+        "noun": "goal",
+        "hyper": "opening"
+      },
+      {
+        "noun": "net",
+        "hyper": "net"
+      },
+      {
+        "noun": "ball",
+        "hyper": "sphere"
+      },
+      {
+        "noun": "field",
+        "hyper": "grounding"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.62,
+      "arousal": 0.74,
+      "tension": 0.56
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "62194e5a62aff0260cca6bd43fdead52fb9ab447f82de4cdd7e1f1867cb2d190",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_shot",
+      "text": "The goalkeeper's dive speed determines how the shot needs be placed to score.",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners vs 1 bot"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 8 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_score (ball into net_goal) ← pick up ball",
+        "src": ""
+      },
+      {
+        "id": "T2:r_score",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_score fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_center_e",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_center_e"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 7,
+        "status": "verified",
+        "text": "r_secret_center_e fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_center_n",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_center_n"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_secret_center_n fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_center_s",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_center_s"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_secret_center_s fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_center_w",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_center_w"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_center_w fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_gate",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_gate"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_gate fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_sign",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_sign"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_sign fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_timeout",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_timeout"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_timeout fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners vs 1 bot",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it vs 1 bot (AI par 3.8 s)",
+        "cx": null,
+        "src": "",
+        "ms": 69
+      }
+    ],
+    "par": {
+      "goldS": 3.8,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 364
+  }
+}

@@ -1,0 +1,228 @@
+{
+  "prompt": "A greenhouse maze where you collect seeds and plant them at the centre",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "exploration, puzzle",
+    "setting": "a lush greenhouse with glass walls, planters, ferns, hanging baskets and winding aisle lanes leading to a central bed; seed pods are dotted across side niches with a clear center plot for planting",
+    "role": "gardener",
+    "goal": "Find and collect the required seed pods hidden within the greenhouse maze, then carry them to the central flower bed and plant them in the designated slots",
+    "fail": "Run out of time, drop a seed pod and break it, or miss required slots before the planting timer ends",
+    "mood": "calm, green, focused, satisfying; a quiet hush of glass and leaves",
+    "pack": "maze",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Greenhouse aisles must hide enough seed pods to fill central slots",
+    "nouns": [
+      {
+        "noun": "greenhouse",
+        "hyper": "indoor growery with glass walls"
+      },
+      {
+        "noun": "maze aisle",
+        "hyper": "winding plant-lined walkway"
+      },
+      {
+        "noun": "seed pod",
+        "hyper": "collectible botanical capsule"
+      },
+      {
+        "noun": "central bed",
+        "hyper": "central planting plot"
+      },
+      {
+        "noun": "planter",
+        "hyper": "decorative plant container"
+      },
+      {
+        "noun": "fren",
+        "hyper": "green leafy plant"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.55,
+      "arousal": 0.25,
+      "tension": 0.25
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "de2c66d1ea691a15b4e0ee8531130229df3ec3b5f032550ed19e7262e89a13dd",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_greenhouse",
+      "text": "Greenhouse aisles must hide enough seed pods to fill central slots",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 7 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (player enters central_bed) [after red scores 5]",
+        "src": ""
+      },
+      {
+        "id": "T2:r_lose_timer",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_timer"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_lose_timer fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_score_1",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score_1"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 7,
+        "status": "verified",
+        "text": "r_score_1 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_score_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_score_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_score_3",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score_3"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_score_3 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_score_4",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score_4"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_score_4 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_score_5",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score_5"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_score_5 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it (AI par 42.7 s)",
+        "cx": null,
+        "src": "",
+        "ms": 667
+      }
+    ],
+    "par": {
+      "goldS": 42.7,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 713
+  }
+}

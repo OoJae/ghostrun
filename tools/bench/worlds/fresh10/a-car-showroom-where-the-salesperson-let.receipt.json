@@ -1,0 +1,104 @@
+{
+  "prompt": "A car showroom where the salesperson lets you sit in the sports car",
+  "intent": {
+    "lang": "en",
+    "mode": "wander",
+    "genre": "interactive showcase",
+    "setting": "A sleek, brightly lit car showroom with polished floors and glass walls displaying several models, centering on a prominent low-slung red sports car.",
+    "role": "visiting customer",
+    "goal": "Walk the showroom, inspect the vehicles, and sit in the driver seat of the highlighted sports car.",
+    "fail": ": n/a (wander)",
+    "mood": "admiring, leisurely",
+    "pack": "floor_plan",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Sports car must be enterable (openable door and usable seat).",
+    "nouns": [
+      {
+        "noun": "car showroom",
+        "hyper": "indoor space"
+      },
+      {
+        "noun": "sports car",
+        "hyper": "vehicle"
+      },
+      {
+        "noun": "salesperson",
+        "hyper": "non-player character"
+      },
+      {
+        "noun": "driver seat",
+        "hyper": "furniture"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.5,
+      "arousal": 0.15,
+      "tension": 0
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "989678006a104b92dac484cd2e2043258c2b13e924de768e3e4e15765f3d163d",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_car",
+      "text": "Sports car must be enterable (openable door and usable seat).",
+      "status": "not_checkable",
+      "method": "kinematic reachability (jump apex model)"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 0 rules reference existing things",
+        "src": ""
+      },
+      {
+        "id": "T1:x_car",
+        "tier": "T1",
+        "subject": {
+          "kind": "property",
+          "id": "x_car"
+        },
+        "method": "kinematic reachability (jump apex model)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "Sports car must be enterable (openable door and usable seat).",
+        "cx": null
+      },
+      {
+        "id": "T3:tour",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "tour"
+        },
+        "status": "played",
+        "method": "physics, an AI visitor walks to and uses each",
+        "n": 5,
+        "k": 5,
+        "text": "walked to and inspected 5 of 5 things",
+        "cx": null,
+        "src": "",
+        "ms": 18
+      }
+    ],
+    "par": null,
+    "ms": 30
+  }
+}

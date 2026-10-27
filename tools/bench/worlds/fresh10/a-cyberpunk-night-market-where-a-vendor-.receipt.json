@@ -1,0 +1,84 @@
+{
+  "prompt": "A cyberpunk night market where a vendor sells you a glowing drink",
+  "intent": {
+    "lang": "en",
+    "mode": "wander",
+    "genre": "cyberpunk interactive story",
+    "setting": "A rain-damp cyberpunk night market under neon signage, with stalls, steam vents and floating screens",
+    "role": "you, a lone buyer browsing the market",
+    "goal": "Buy a glowing drink from a specific vendor at the stall",
+    "fail": "none (walking away only)",
+    "mood": "noir, glowing, immersive",
+    "pack": "outdoor",
+    "sub": [],
+    "safety": "ok",
+    "headline": "You must locate the specific vendor and buy its glowing drink",
+    "nouns": [
+      {
+        "noun": "night market",
+        "hyper": "market"
+      },
+      {
+        "noun": "vendor",
+        "hyper": "person"
+      },
+      {
+        "noun": "glowing drink",
+        "hyper": "drink"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.2,
+      "arousal": 0.35,
+      "tension": 0.2
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "d3bf685d2379838e0773c723e577f37909f2cc3ac3f423c9bd61817f8d905930",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_buy",
+      "text": "You must locate the specific vendor and buy its glowing drink",
+      "status": "not_checkable",
+      "method": "none"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 0 rules reference existing things",
+        "src": ""
+      },
+      {
+        "id": "T3:tour",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "tour"
+        },
+        "status": "played",
+        "method": "physics, an AI visitor walks to and uses each",
+        "n": 6,
+        "k": 6,
+        "text": "walked to and inspected 6 of 6 things",
+        "cx": null,
+        "src": "",
+        "ms": 113
+      }
+    ],
+    "par": null,
+    "ms": 487
+  }
+}

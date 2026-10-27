@@ -1,0 +1,192 @@
+{
+  "prompt": "Escapa del laberinto antes de que se acabe el tiempo",
+  "intent": {
+    "lang": "es",
+    "mode": "play",
+    "genre": "puzzle / chase / time attack",
+    "setting": "Un laberinto de muros altos y senderos estrechos, con un punto de inicio y una salida distante.",
+    "role": "Corredor atrapado",
+    "goal": "Alcanzar la salida del laberinto antes de que el tiempo se agote.",
+    "fail": "El reloj llega a cero antes de escapar.",
+    "mood": "Tensión urgida en un espacio confuso que obliga a pensar rápido.",
+    "pack": "maze",
+    "sub": [],
+    "safety": "ok",
+    "headline": "El reloj debe obligar a resolver el laberinto antes de agotarse.",
+    "nouns": [
+      {
+        "noun": "laberinto",
+        "hyper": "espacio"
+      },
+      {
+        "noun": "tiempo",
+        "hyper": "recurso"
+      },
+      {
+        "noun": "salida",
+        "hyper": "objetivo"
+      },
+      {
+        "noun": "muros",
+        "hyper": "obstáculo"
+      },
+      {
+        "noun": "sendero",
+        "hyper": "ruta"
+      }
+    ],
+    "moodVec": {
+      "valence": -0.3,
+      "arousal": 0.6,
+      "tension": 0.8
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "ee697a6b99304a95ad22eb96a1b84698ff8067b96c77c818b68acd9123bd26ac",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_escape",
+      "text": "El reloj debe obligar a resolver el laberinto antes de agotarse.",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 5 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_reach_exit (player enters exit)",
+        "src": ""
+      },
+      {
+        "id": "T2:r_hit_lava",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_hit_lava"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_hit_lava fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_plate_opens",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_plate_opens"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_plate_opens fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_reach_exit",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_reach_exit"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_reach_exit fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_switch_opens",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_switch_opens"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_switch_opens fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_timer_end",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_timer_end"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_timer_end fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 2,
+        "text": "AI runners won by playing it (AI par 26 s)",
+        "cx": null,
+        "src": "",
+        "ms": 295
+      }
+    ],
+    "par": {
+      "goldS": 26,
+      "runs": 12,
+      "won": 2
+    },
+    "ms": 328
+  }
+}

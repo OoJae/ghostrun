@@ -1,0 +1,29 @@
+{"op":"meta","mode":"wander","lang":"en","pack":"outdoor","sub":[],"seed":11,"look":"bioluminescent forest","mood":[0.7,0.2,0.1],"timeOfDay":20,"weather":"clear"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"outside","name":"Forest Edge"}
+{"op":"zone","id":"z_clearing","slot":"clearing","tag":"outside","name":"Glowing Clearing"}
+{"op":"zone","id":"z_pond","slot":"pond","tag":"outside","name":"Luminous Pond"}
+{"op":"zone","id":"z_grove","slot":"grove","tag":"outside","name":"Twilight Grove"}
+{"op":"zone","id":"z_camp","slot":"camp","tag":"outside","name":"Campfire Circle"}
+{"op":"zone","id":"z_shrine","slot":"clearing_w","tag":"outside","name":"Hidden Shrine"}
+{"op":"spawn","id":"sp_red","zone":"z_entrance","anchor":"spawn_pad","team":"red"}
+{"op":"ent","id":"fireflies_1","kind":"prop","noun":"fireflies swarm","hyper":"bioluminescent insects","zone":"z_clearing","anchor":"center","body":"fixed","shape":"none"}
+{"op":"ent","id":"fireflies_2","kind":"prop","noun":"fireflies cluster","hyper":"bioluminescent insects","zone":"z_grove","anchor":"heart","body":"fixed","shape":"none"}
+{"op":"ent","id":"fireflies_3","kind":"prop","noun":"fireflies trail","hyper":"bioluminescent insects","zone":"z_shrine","anchor":"center","body":"fixed","shape":"none"}
+{"op":"ent","id":"shrine_pillar","kind":"prop","noun":"ancient pillar","hyper":"sacred structure","zone":"z_shrine","anchor":"center","body":"fixed","shape":"box","size":[0.5,2,0.5]}
+{"op":"ent","id":"pond_water","kind":"prop","noun":"glowing water","hyper":"water","zone":"z_pond","anchor":"water","body":"fixed","shape":"box","size":[4,0.2,4]}
+{"op":"ent","id":"tree_1","kind":"prop","noun":"glowing tree","hyper":"tree","zone":"z_grove","anchor":"stump","body":"fixed","shape":"box","size":[0.3,3,0.3]}
+{"op":"ent","id":"rock_1","kind":"prop","noun":"luminescent rock","hyper":"rock","zone":"z_clearing","anchor":"center_n","body":"fixed","shape":"box","size":[0.4,0.4,0.4]}
+{"op":"ent","id":"camp_fire","kind":"prop","noun":"campfire","hyper":"fire","zone":"z_camp","anchor":"fire","body":"fixed","shape":"cylinder","size":[0.5,0.3,0.5]}
+{"op":"verb","id":"vb_inspect_fireflies_1","verb":"social.inspect","on":"fireflies_1","params":{"text":"A gentle swarm of fireflies lights the path forward."}}
+{"op":"verb","id":"vb_inspect_fireflies_2","verb":"social.inspect","on":"fireflies_2","params":{"text":"These fireflies seem to guide deeper into the woods."}}
+{"op":"verb","id":"vb_inspect_fireflies_3","verb":"social.inspect","on":"fireflies_3","params":{"text":"A bright cluster marks the hidden shrine entrance."}}
+{"op":"verb","id":"vb_inspect_shrine","verb":"social.inspect","on":"shrine_pillar","params":{"text":"An ancient shrine, etched with forgotten symbols."}}
+{"op":"verb","id":"vb_inspect_pond","verb":"social.inspect","on":"pond_water","params":{"text":"The pond glows with bioluminescent algae."}}
+{"op":"verb","id":"vb_inspect_tree","verb":"social.inspect","on":"tree_1","params":{"text":"A tall tree whose leaves pulse with light."}}
+{"op":"verb","id":"vb_inspect_rock","verb":"social.inspect","on":"rock_1","params":{"text":"A smooth rock that emits a faint glow."}}
+{"op":"verb","id":"vb_inspect_camp","verb":"social.inspect","on":"camp_fire","params":{"text":"A warm campfire invites travelers to rest."}}
+{"op":"npc","id":"guide_elf","role":"guide","zone":"z_entrance","anchor":"sign","team":"","menu":["guide.point"],"dflt":"guide.point"}
+{"op":"npc","id":"elf_2","role":"guide","zone":"z_grove","anchor":"heart","team":"","menu":["guide.point"],"dflt":"guide.point"}
+{"op":"expect","id":"x_path","prop":"reachable","a":"sp_red","b":"z_shrine","headline":true,"text":"Bioluminescent forest with firefly path to shrine"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

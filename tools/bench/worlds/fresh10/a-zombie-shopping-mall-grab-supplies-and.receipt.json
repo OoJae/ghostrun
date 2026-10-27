@@ -1,0 +1,270 @@
+{
+  "prompt": "A zombie shopping mall: grab supplies and reach the roof",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "survival horror",
+    "setting": "A multi-story shopping mall overrun by the undead, with scattered shoppers and debris, ending in an accessible rooftop escape point.",
+    "role": "Shopper survivor",
+    "goal": "Collect supplies in the mall while avoiding zombies, then climb to the roof to escape.",
+    "fail": "Being caught and killed by zombie horde.",
+    "mood": "Tense, urgent survival with a slice-of-life twist",
+    "pack": "floor_plan",
+    "sub": [
+      "rooftop"
+    ],
+    "safety": "arcade",
+    "headline": "Vertical mall layout with zombie hordes guards the supply pickups",
+    "nouns": [
+      {
+        "noun": "zombie",
+        "hyper": "undead humanoid"
+      },
+      {
+        "noun": "shopping_mall",
+        "hyper": "retail complex"
+      },
+      {
+        "noun": "supplies",
+        "hyper": "loot items"
+      },
+      {
+        "noun": "roof",
+        "hyper": "escape point"
+      }
+    ],
+    "moodVec": {
+      "valence": -0.2,
+      "arousal": 0.7,
+      "tension": 0.8
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "e98d81c0cc867cc28ea9c599bc0c392965593aa71a8364f271973d36524ae1bc",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_mall",
+      "text": "Vertical mall layout with zombie hordes guards the supply pickups",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners vs 2 bots"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 10 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (player enters roof_exit) [after red scores 3]",
+        "src": ""
+      },
+      {
+        "id": "T2:r_collect_1",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_collect_1"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 11,
+        "status": "verified",
+        "text": "r_collect_1 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_collect_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_collect_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 9,
+        "status": "verified",
+        "text": "r_collect_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_collect_3",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_collect_3"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 7,
+        "status": "verified",
+        "text": "r_collect_3 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lose_spike",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_spike"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_lose_spike fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_open_elevator",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_open_elevator"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_open_elevator fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_ne",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_ne"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_secret_corner_ne fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_ne_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_ne_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_secret_corner_ne_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_nw",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_nw"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_secret_corner_nw fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_nw_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_nw_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_secret_corner_nw_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners vs 2 bots",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it vs 2 bots (AI par 19.7 s)",
+        "cx": null,
+        "src": "",
+        "ms": 412
+      }
+    ],
+    "par": {
+      "goldS": 19.7,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 478
+  }
+}

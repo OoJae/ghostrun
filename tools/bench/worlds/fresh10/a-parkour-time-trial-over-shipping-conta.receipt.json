@@ -1,0 +1,252 @@
+{
+  "prompt": "A parkour time trial over shipping containers in a harbour",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "parkour",
+    "setting": "an industrial harbour lined with stacked shipping containers",
+    "role": "container-runner",
+    "goal": "finish the container parkour course against the clock",
+    "fail": "falling off the container stacks",
+    "mood": "urgent tempo",
+    "pack": "course",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Time-trial course requires navigating stacked shipping containers",
+    "nouns": [
+      {
+        "noun": "parkour",
+        "hyper": "movement challenge"
+      },
+      {
+        "noun": "time trial",
+        "hyper": "race against the clock"
+      },
+      {
+        "noun": "shipping containers",
+        "hyper": "industrial cover"
+      },
+      {
+        "noun": "harbour",
+        "hyper": "industrial waterfront"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.3,
+      "arousal": 0.8,
+      "tension": 0.6
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "3ccf3bb568555ccf510c0a825dc5c052564601c672c509b718c821225ccb2935",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_time_trial",
+      "text": "Time-trial course requires navigating stacked shipping containers",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 1,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 9 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 1,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_reach_goal (player enters goal_finish)",
+        "src": ""
+      },
+      {
+        "id": "T2:r_collect_coin",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_collect_coin"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 10,
+        "status": "verified",
+        "text": "r_collect_coin fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_collect_coin_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_collect_coin_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 7,
+        "status": "verified",
+        "text": "r_collect_coin_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_collect_coin_3",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_collect_coin_3"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_collect_coin_3 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_collect_coin_4",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_collect_coin_4"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_collect_coin_4 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_collect_coin_5",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_collect_coin_5"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_collect_coin_5 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_collect_coin_6",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_collect_coin_6"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_collect_coin_6 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_reach_goal",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_reach_goal"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_reach_goal fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_switch_open",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_switch_open"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_switch_open fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_time_out",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_time_out"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_time_out fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it (AI par 19.9 s)",
+        "cx": null,
+        "src": "",
+        "ms": 537
+      }
+    ],
+    "par": {
+      "goldS": 19.9,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 917
+  }
+}

@@ -1,0 +1,24 @@
+{"op":"meta","mode":"play","lang":"en","pack":"arena","sub":[],"seed":8,"look":"walled symmetric field","mood":[0.1,0.6,0.5],"timeOfDay":12,"weather":"clear"}
+{"op":"zone","id":"z_midfield","slot":"midfield","tag":"center","name":"Center Field"}
+{"op":"zone","id":"z_west_half","slot":"west_half","tag":"base","name":"West Base"}
+{"op":"zone","id":"z_east_half","slot":"east_half","tag":"base","name":"East Base"}
+{"op":"zone","id":"z_north_deck","slot":"north_deck","tag":"platform","name":"North Platform"}
+{"op":"zone","id":"z_south_deck","slot":"south_deck","tag":"platform","name":"South Platform"}
+{"op":"spawn","id":"sp_red","zone":"z_west_half","anchor":"spawn_pad","team":"red"}
+{"op":"spawn","id":"sp_blue","zone":"z_east_half","anchor":"spawn_pad","team":"blue"}
+{"op":"goal","id":"cz_mid","zone":"z_midfield","anchor":"center","noun":"central capture zone","hyper":"area","team":"","body":"sensor","shape":"box","size":[2,0.5,2]}
+{"op":"goal","id":"cz_west","zone":"z_west_half","anchor":"goal_ring","noun":"west capture zone","hyper":"area","team":"","body":"sensor","shape":"box","size":[2,0.5,2]}
+{"op":"goal","id":"cz_east","zone":"z_east_half","anchor":"goal_ring","noun":"east capture zone","hyper":"area","team":"","body":"sensor","shape":"box","size":[2,0.5,2]}
+{"op":"verb","id":"vb_timer","verb":"puzzle.timer","on":"player","params":{"seconds":120}}
+{"op":"rule","id":"r_mid_enter","when":{"t":"enter","a":"player","b":"cz_mid"},"if":[{"l":"player.team","op":"eq","r":"red"}],"then":[{"e":"set_state","target":"cz_mid","v":"red"}],"once":false}
+{"op":"rule","id":"r_mid_enter_blue","when":{"t":"enter","a":"player","b":"cz_mid"},"if":[{"l":"player.team","op":"eq","r":"blue"}],"then":[{"e":"set_state","target":"cz_mid","v":"blue"}],"once":false}
+{"op":"rule","id":"r_west_enter","when":{"t":"enter","a":"player","b":"cz_west"},"if":[{"l":"player.team","op":"eq","r":"red"}],"then":[{"e":"set_state","target":"cz_west","v":"red"}],"once":false}
+{"op":"rule","id":"r_west_enter_blue","when":{"t":"enter","a":"player","b":"cz_west"},"if":[{"l":"player.team","op":"eq","r":"blue"}],"then":[{"e":"set_state","target":"cz_west","v":"blue"}],"once":false}
+{"op":"rule","id":"r_east_enter","when":{"t":"enter","a":"player","b":"cz_east"},"if":[{"l":"player.team","op":"eq","r":"red"}],"then":[{"e":"set_state","target":"cz_east","v":"red"}],"once":false}
+{"op":"rule","id":"r_east_enter_blue","when":{"t":"enter","a":"player","b":"cz_east"},"if":[{"l":"player.team","op":"eq","r":"blue"}],"then":[{"e":"set_state","target":"cz_east","v":"blue"}],"once":false}
+{"op":"rule","id":"r_win","when":{"t":"timer_end","a":"player"},"if":[{"l":"cz_mid.state","op":"eq","r":"red"},{"l":"cz_west.state","op":"eq","r":"red"},{"l":"cz_east.state","op":"eq","r":"red"}],"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose","when":{"t":"timer_end","a":"player"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"expect","id":"x_capture","prop":"win_reachable","a":"sp_red","b":"cz_mid","headline":true,"text":"Three capture zones decide winner in two-minute timer"}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":6}}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

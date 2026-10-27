@@ -1,0 +1,100 @@
+{
+  "prompt": "Un museo d'arte moderna con una guida",
+  "intent": {
+    "lang": "it",
+    "mode": "wander",
+    "genre": "Museum Tour",
+    "setting": "A bright, minimalist modern art museum with geometric architecture, polished concrete floors, and large white walls displaying abstract paintings and sculptures.",
+    "role": "Visitor",
+    "goal": "Explore the gallery halls, look for the guide, and view the modern art exhibits at your own pace.",
+    "fail": "Bumping into fragile sculptures or walking slowly and missing the guided narrative.",
+    "mood": "Calm, curious, and contemplative",
+    "pack": "floor_plan",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Must locate the guide character to hear the exhibit explanations",
+    "nouns": [
+      {
+        "noun": "museo",
+        "hyper": "building_interior"
+      },
+      {
+        "noun": "guida",
+        "hyper": "npc"
+      },
+      {
+        "noun": "quadro",
+        "hyper": "decoration"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.4,
+      "arousal": 0.2,
+      "tension": 0.1
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "8e3493c16fbed87778e6408fdaf19aef1215df4b29054ffa365a65a538b53a30",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_guide",
+      "text": "Must locate the guide character to hear the exhibit explanations",
+      "status": "not_checkable",
+      "method": "kinematic reachability (jump apex model)"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 0 rules reference existing things",
+        "src": ""
+      },
+      {
+        "id": "T1:x_guide",
+        "tier": "T1",
+        "subject": {
+          "kind": "property",
+          "id": "x_guide"
+        },
+        "method": "kinematic reachability (jump apex model)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "Must locate the guide character to hear the exhibit explanations: needs nothing stated, no checker for that yet",
+        "cx": null
+      },
+      {
+        "id": "T3:tour",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "tour"
+        },
+        "status": "played",
+        "method": "physics, an AI visitor walks to and uses each",
+        "n": 6,
+        "k": 6,
+        "text": "walked to and inspected 6 of 6 things",
+        "cx": null,
+        "src": "",
+        "ms": 21
+      }
+    ],
+    "par": null,
+    "ms": 45
+  }
+}

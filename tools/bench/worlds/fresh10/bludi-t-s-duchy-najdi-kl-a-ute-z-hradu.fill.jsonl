@@ -1,0 +1,29 @@
+{"op":"meta","mode":"play","lang":"cs","pack":"maze","sub":[],"seed":25,"look":"haunted castle","mood":[-0.5,0.7,0.8],"timeOfDay":22,"weather":"fog"}
+{"op":"zone","id":"z_start","slot":"start","tag":"outside","name":"Hrad - vstupní nádvoří"}
+{"op":"zone","id":"z_maze","slot":"maze","tag":"maze","name":"Hradní bludiště"}
+{"op":"spawn","id":"sp_red","zone":"z_start","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"exit_gate","zone":"z_maze","anchor":"exit","noun":"únikový průchod","hyper":"gate","team":"red"}
+{"op":"ent","id":"key","kind":"pickup","noun":"klíč","hyper":"key","zone":"z_maze","anchor":"center","body":"dynamic","shape":"box","size":[0.2,0.2,0.05]}
+{"op":"ent","id":"castle_door","kind":"door","noun":"zavřený východ","hyper":"door","zone":"z_maze","anchor":"exit","body":"fixed","shape":"box"}
+{"op":"ent","id":"ghost_1","kind":"hazard","noun":"duch","hyper":"ghost","zone":"z_maze","anchor":"dead_end_1","body":"sensor","shape":"capsule","size":[0.5,2,0.5]}
+{"op":"ent","id":"ghost_2","kind":"hazard","noun":"duch","hyper":"ghost","zone":"z_maze","anchor":"dead_end_2","body":"sensor","shape":"capsule","size":[0.5,2,0.5]}
+{"op":"ent","id":"switch_1","kind":"switch","noun":"starý spínač","hyper":"switch","zone":"z_maze","anchor":"dead_end_3","body":"fixed","shape":"box","size":[0.3,0.2,0.2],"state":"off"}
+{"op":"ent","id":"plate_1","kind":"plate","noun":"tlaková deska","hyper":"plate","zone":"z_maze","anchor":"dead_end_4","body":"fixed","shape":"box","size":[0.5,0.1,0.5],"state":"up"}
+{"op":"ent","id":"moving_platform","kind":"platform","noun":"kolébající plocha","hyper":"platform","zone":"z_maze","anchor":"dead_end_3","body":"kinematic","shape":"box","size":[2,0.2,2]}
+{"op":"verb","id":"vb_carry_key","verb":"physics_props.carry","on":"key","params":{}}
+{"op":"verb","id":"vb_lock_door","verb":"puzzle.lock","on":"castle_door","params":{"key":"key"}}
+{"op":"verb","id":"vb_switch_1","verb":"puzzle.switch","on":"switch_1","params":{"once":false}}
+{"op":"verb","id":"vb_plate_1","verb":"puzzle.plate","on":"plate_1","params":{"latch":false}}
+{"op":"verb","id":"vb_platform_osc","verb":"motion_hazards.oscillate","on":"moving_platform","params":{"axis":"x","travel":4,"period":6}}
+{"op":"verb","id":"vb_ghost_1","verb":"motion_hazards.hazard","on":"ghost_1","params":{"respawn":true}}
+{"op":"verb","id":"vb_ghost_2","verb":"motion_hazards.hazard","on":"ghost_2","params":{"respawn":true}}
+{"op":"verb","id":"vb_timer","verb":"puzzle.timer","on":"player","params":{"seconds":120}}
+{"op":"rule","id":"r_key_carry","when":{"t":"pickup","a":"key","b":"player"},"then":[{"e":"set_state","target":"key","v":"carried"}],"once":true}
+{"op":"rule","id":"r_door_open","when":{"t":"state_is","a":"castle_door","s":"open"},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_ghost_hit","when":{"t":"hit","a":"player","b":"ghost_1"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_ghost2_hit","when":{"t":"hit","a":"player","b":"ghost_2"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_timer_end","when":{"t":"timer_end","a":"player"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"expect","id":"x_escape","prop":"win_reachable","a":"sp_red","b":"exit_gate","headline":true,"text":"Hidden key location is the puzzle core"}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":5}}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

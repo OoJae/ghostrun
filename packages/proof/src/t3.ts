@@ -7,7 +7,7 @@ import { buildNav, lowHazards, type NavWorld } from "@ghostrun/nav";
 import { castBrain } from "@ghostrun/bots";
 import { verb } from "@ghostrun/kits";
 import { BTN, SimWorld, type Rapier } from "@ghostrun/sim";
-import { carryables, type PlanStep, type Want, type WinChain } from "./t0";
+import { carryables, causeSteps, producers, type PlanStep, type Want, type WinChain } from "./t0";
 import { apex, gap, hopOk, hopRoute, reachAt, surfaceUnder as surfaceAt, surfaces, type Surface } from "./t1";
 import type { Chip, Trail } from "./types";
 
@@ -264,7 +264,7 @@ function walkTo(sim: SimWorld, nav: NavWorld, goal: Target, rng: () => number, s
     if (b && !btn && sim.player.grounded && sim.tick >= hopAt) {
       const len = Math.sqrt(ux * ux + uz * uz) || 1;
       const ahead: Vec3 = [p[0] + (ux / len) * 1.6, p[1], p[2] + (uz / len) * 1.6];
-      const top = apex(sim.laws, sim.laws.jumpsMax) - 0.4;
+      const top = Math.min(1.2, apex(sim.laws, sim.laws.jumpsMax) - 0.4); // a waist-high barrier, never a door under a lintel
       // (never from on top of it: a hop from there lands back on it)
       const low = b.entities.find((d) => d.kind === "door" && d.size[1] <= top && sim.entity(d.id)?.col?.isEnabled() && Math.abs(d.pos[1] - d.size[1] / 2 - (p[1] - 0.9)) < 0.5 && !inBox(p[0], p[2], d, 0.45) && crosses(p, ahead, d.pos, d.size));
       if (low) {
@@ -589,6 +589,8 @@ interface Run {
   budget: { ticks: number };
   openers: ReadonlyMap<string, PlanStep[]>;
   opened: Set<string>;
+  /** Trying one of several ways to open a door: give up on a target behind a shut door at once. */
+  failFast?: boolean;
 }
 
 const live = (r: Run) => r.budget.ticks > 0 && !r.sim.result;
@@ -621,6 +623,19 @@ function crosses(a: Vec3, b: Vec3, c: Vec3, size: Vec3): boolean {
   return true;
 }
 
+/** Every way the world opens a door: a rule that opens it, set off by something a runner can do. */
+function otherOpeners(b: WorldBundle, door: string): PlanStep[][] {
+  const made = producers(b);
+  const out: PlanStep[][] = [];
+  for (const r of [...b.rules].sort((x, y) => (x.id < y.id ? -1 : 1))) {
+    if (!r.then.some((e) => e.target === door && (e.e === "open" || (e.e === "set_state" && String(e.v) === "open")))) continue;
+    const w = r.when;
+    const p = w.t === "state_is" ? made.find((x) => x.k === "state" && x.a === w.a && x.s === w.s && x.cause) : undefined;
+    if (p?.cause) out.push(causeSteps(p.cause, r.id));
+  }
+  return out;
+}
+
 /** If a closed door stands on the way to `target`, open it first (once per door per run). */
 function clearDoors(r: Run, target: Vec3) {
   const p = r.sim.pos("player");
@@ -635,10 +650,24 @@ function clearDoors(r: Run, target: Vec3) {
       if (!e || e.destroyed || passable || !crosses(path[i - 1]!, path[i]!, d.pos, d.size)) continue;
       r.opened.add(d.id);
       trace?.(`door ${d.id} blocks the way: opening it`);
-      for (const st of r.openers.get(d.id) ?? []) {
-        const res = perform(r, st);
-        trace?.(`  opener ${st.do} ${"item" in st ? st.item : "at" in st ? st.at : "sensor" in st ? st.sensor : ""} → ${res} at ${v1(r.sim.pos("player"))}${"want" in st && st.want ? ` (${st.want.id} ${r.sim.entity(st.want.id)?.state})` : ""}`);
-        if (res !== "ok") return;
+      // its planned opener first, then any other way the world opens it (a lever on this side when
+      // the planned one is behind the door)
+      const ways = [r.openers.get(d.id) ?? [], ...otherOpeners(r.b, d.id)].filter((w, i, all) => w.length && all.findIndex((x) => JSON.stringify(x) === JSON.stringify(w)) === i);
+      for (const [wi, way] of ways.entries()) {
+        let ok = true;
+        r.failFast = wi < ways.length - 1;
+        for (const st of way) {
+          const res = perform(r, st);
+          trace?.(`  opener ${st.do} ${"item" in st ? st.item : "at" in st ? st.at : "sensor" in st ? st.sensor : ""} → ${res} at ${v1(r.sim.pos("player"))}${"want" in st && st.want ? ` (${st.want.id} ${r.sim.entity(st.want.id)?.state})` : ""}`);
+          if (res !== "ok") {
+            ok = false;
+            break;
+          }
+        }
+        r.failFast = false;
+        const e2 = r.sim.entity(d.id);
+        if (ok || e2?.state === "open" || (e2?.col && !e2.col.isEnabled())) break;
+        if (!live(r)) return;
       }
     }
   }
@@ -731,8 +760,15 @@ function perform(r: Run, st: PlanStep): "ok" | "lost" | "stuck" {
     if (closed.length) {
       const n = shutNav(b, closed);
       const p = sim.pos("player");
+      const feet: Vec3 = [p[0], p[1] - 0.9, p[2]];
       const q = typeof t === "function" ? t() : t;
-      if (n.path([p[0], p[1] - 0.9, p[2]], q)) return goTo(sim, n, b, t, rng, speed, budget, stop);
+      if (n.path(feet, q)) return goTo(sim, n, b, t, rng, speed, budget, stop);
+      // the only way there is through a door still shut, while another way to open the door is
+      // left to try: out of reach for now (don't walk into it for the rest of the run)
+      if (r.failFast && nav.path(feet, q)) {
+        trace?.(`  ${v1(q)} is behind a shut door for now`);
+        return false;
+      }
     }
     return goTo(sim, nav, b, t, rng, speed, budget, stop);
   };

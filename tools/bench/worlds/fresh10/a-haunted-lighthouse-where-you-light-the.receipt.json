@@ -1,0 +1,202 @@
+{
+  "prompt": "A haunted lighthouse where you light the lamp at the top",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "Horror / Puzzle",
+    "setting": "A decaying, fog-drenched stone lighthouse on a rocky islet",
+    "role": "The Last Keeper",
+    "goal": "Ascend the spiral stairs, overcome rising water or structural collapse, and ignite the beam to reveal the exit",
+    "fail": "The water breaches the door or the lights fail, leaving you trapped in the dark",
+    "mood": "Eerie, claustrophobic, tense",
+    "pack": "floor_plan",
+    "sub": [],
+    "safety": "arcade",
+    "headline": "Spiral staircase ascension to light the top lamp",
+    "nouns": [
+      {
+        "noun": "lighthouse",
+        "hyper": "buildings"
+      },
+      {
+        "noun": "lamp",
+        "hyper": "lighting"
+      },
+      {
+        "noun": "stairs",
+        "hyper": "architecture"
+      }
+    ],
+    "moodVec": {
+      "valence": -0.4,
+      "arousal": 0.7,
+      "tension": 0.8
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "82f651fa2666b27f7b21347cd4a964059202432e376c44c5f1e1cdc07e7749c6",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "exp_lamp",
+      "text": "Spiral staircase ascension to light the top lamp",
+      "status": "counterexample",
+      "method": "static goal regression over rules + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 6 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win_goal (player enters lamp_goal)",
+        "src": ""
+      },
+      {
+        "id": "T2:r_open_entrance",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_open_entrance"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_open_entrance fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_ne",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_ne"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_corner_ne fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_ne_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_ne_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_corner_ne_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_nw",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_nw"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_corner_nw fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_water_rise",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_water_rise"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_water_rise fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win_goal",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win_goal"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_win_goal fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "counterexample",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 0,
+        "text": "no AI runner could win",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "wins",
+          "text": "12 got stuck (in the Rocky islet ×12)"
+        },
+        "src": "",
+        "ms": 2329
+      }
+    ],
+    "par": null,
+    "ms": 2366
+  }
+}

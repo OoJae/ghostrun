@@ -1,0 +1,25 @@
+{"op":"meta","mode":"wander","lang":"en","pack":"outdoor","sub":[],"seed":10,"look":"cyberpunk night market","mood":[0.2,0.35,0.2],"timeOfDay":22,"weather":"rain"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"outside","name":"Market entrance"}
+{"op":"zone","id":"z_clearing","slot":"clearing","tag":"outside","name":"Central plaza"}
+{"op":"zone","id":"z_west","slot":"clearing_w","tag":"outside","name":"Vendor west stall"}
+{"op":"zone","id":"z_east","slot":"clearing_e","tag":"outside","name":"Vendor east stall"}
+{"op":"zone","id":"z_pond","slot":"pond","tag":"outside","name":"Rain pool"}
+{"op":"zone","id":"z_grove","slot":"grove","tag":"outside","name":"Neon grove"}
+{"op":"zone","id":"z_camp","slot":"camp","tag":"outside","name":"Food camp"}
+{"op":"zone","id":"z_lookout","slot":"lookout","tag":"outside","name":"High walkway"}
+{"op":"spawn","id":"sp_red","zone":"z_entrance","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"vendor_goal","zone":"z_west","anchor":"goal","noun":"glowing drink","hyper":"drink","team":""}
+{"op":"ent","id":"vendor_npc","kind":"npc","noun":"neon vendor","hyper":"person","zone":"z_west","anchor":"center","body":"fixed","shape":"box"}
+{"op":"ent","id":"drink_item","kind":"pickup","noun":"glowing drink","hyper":"drink","zone":"z_west","anchor":"center_n","body":"dynamic","shape":"sphere","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"sign_neon","kind":"prop","noun":"neon sign","hyper":"sign","zone":"z_clearing","anchor":"center","body":"fixed","shape":"box","size":[2,0.5,0.2]}
+{"op":"ent","id":"steam_vent","kind":"prop","noun":"steam vent","hyper":"vent","zone":"z_grove","anchor":"stump","body":"fixed","shape":"cylinder","size":[0.3,0.8,0.3]}
+{"op":"ent","id":"floating_screen","kind":"prop","npc_or_item":"screen","noun":"floating screen","hyper":"screen","zone":"z_east","anchor":"center","body":"fixed","shape":"box","size":[1,0.5,0.1]}
+{"op":"ent","id":"guide_npc","kind":"npc","noun":"market guide","hyper":"person","zone":"z_clearing","anchor":"center_e","body":"fixed","shape":"box"}
+{"op":"verb","id":"vb_inspect_sign","verb":"social.inspect","on":"sign_neon","params":{"text":"Neon sign flickers: 'Night Market - Stay Dry'"}}
+{"op":"verb","id":"vb_inspect_vent","verb":"social.inspect","on":"steam_vent","params":{"text":"Steam hisses from a cracked vent, scattering droplets."}}
+{"op":"verb","id":"vb_inspect_screen","verb":"social.inspect","on":"floating_screen","params":{"text":"Ad flashes: 'Try the new luminescent brew!'"}} 
+{"op":"verb","id":"vb_inspect_vendor","verb":"social.inspect","on":"vendor_npc","params":{"text":"Vendor offers a glowing drink, promising a spark of energy."}}
+{"op":"verb","id":"vb_inspect_guide","verb":"social.inspect","on":"guide_npc","params":{"text":"Guide points: 'The vendor is just west, look for the blue light.'"}}
+{"op":"expect","id":"x_buy","prop":"win_reachable","a":"sp_red","b":"vendor_goal","headline":true,"text":"You must locate the specific vendor and buy its glowing drink"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

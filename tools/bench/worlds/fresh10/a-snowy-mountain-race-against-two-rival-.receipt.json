@@ -1,0 +1,258 @@
+{
+  "prompt": "A snowy mountain race against two rival skiers",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "sports racer",
+    "setting": "Snowy mountain slopes",
+    "role": "Cross-country or alpine skier",
+    "goal": "Win the race against two rival skiers to the finish line",
+    "fail": "Finish second or third, or fall/miss the slalom gates",
+    "mood": "Cold, urgent, focused",
+    "pack": "outdoor",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Moutain course requires precise line choices to beat two rivals",
+    "nouns": [
+      {
+        "noun": "mountain",
+        "hyper": "terrain"
+      },
+      {
+        "noun": "race",
+        "hyper": "competition"
+      },
+      {
+        "noun": "skier",
+        "hyper": "athlete"
+      },
+      {
+        "noun": "snow",
+        "hyper": "material"
+      },
+      {
+        "noun": "rival",
+        "hyper": "agent"
+      },
+      {
+        "noun": "slope",
+        "hyper": "path"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.2,
+      "arousal": 0.7,
+      "tension": 0.6
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "8c65875ea44ef9304f77118ce023f634f59cd17d33e79dbda62febd5e3c35120",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_course",
+      "text": "Moutain course requires precise line choices to beat two rivals",
+      "status": "counterexample",
+      "method": "static goal regression over rules + physics, 12 AI runners vs 2 bots"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 8 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_finish_left (player enters finish_line)",
+        "src": ""
+      },
+      {
+        "id": "T2:r_finish_left",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_finish_left"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 0,
+        "src": "ai",
+        "ms": 11,
+        "status": "counterexample",
+        "text": "r_finish_left fires exactly once",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "firings",
+          "text": "never fired when forced"
+        }
+      },
+      {
+        "id": "T2:r_finish_right",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_finish_right"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 0,
+        "src": "ai",
+        "ms": 8,
+        "status": "counterexample",
+        "text": "r_finish_right fires exactly once",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "firings",
+          "text": "never fired when forced"
+        }
+      },
+      {
+        "id": "T2:r_gate_left_1",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_gate_left_1"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 7,
+        "status": "verified",
+        "text": "r_gate_left_1 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_gate_left_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_gate_left_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 6,
+        "status": "verified",
+        "text": "r_gate_left_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_gate_right_1",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_gate_right_1"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_gate_right_1 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_gate_right_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_gate_right_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_gate_right_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lose_fall",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_fall"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_lose_fall fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lose_fall_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_fall_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_lose_fall_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "counterexample",
+        "method": "physics, 12 AI runners vs 2 bots",
+        "n": 12,
+        "k": 0,
+        "text": "no AI runner could win vs 2 bots",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "wins",
+          "text": "12 got stuck (in the Mid‑mountain clearing ×12)"
+        },
+        "src": "",
+        "ms": 165
+      }
+    ],
+    "par": null,
+    "ms": 476
+  }
+}

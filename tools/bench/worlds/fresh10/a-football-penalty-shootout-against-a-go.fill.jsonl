@@ -1,0 +1,15 @@
+{"op":"meta","mode":"play","lang":"en","pack":"outdoor","sub":[],"seed":31,"look":"penalty spot","mood":[0.62,0.74,0.56],"timeOfDay":12,"weather":"clear"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"outside","name":"Penalty start area"}
+{"op":"zone","id":"z_field","slot":"clearing","tag":"outside","name":"Penalty field with goal net"}
+{"op":"spawn","id":"sp_red","zone":"z_entrance","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"net_goal","zone":"z_field","anchor":"center","noun":"goal net","hyper":"net","team":"red"}
+{"op":"ent","id":"ball","kind":"pickup","noun":"football","hyper":"ball","zone":"z_entrance","anchor":"center","body":"dynamic","shape":"sphere","size":[0.11,0.11,0.11]}
+{"op":"ent","id":"goalkeeper","kind":"npc","noun":"goalkeeper","hyper":"goalkeeper","zone":"z_field","anchor":"center","body":"kinematic","shape":"capsule"}
+{"op":"ent","id":"timer_gate","kind":"goal","noun":"timer gate","hyper":"timer","zone":"z_field","anchor":"center","body":"sensor","shape":"box","size":[0.5,0.2,2.0]}
+{"op":"verb","id":"vb_carry_ball","verb":"physics_props.carry","on":"ball","params":{}}
+{"op":"verb","id":"vb_throw_ball","verb":"combat_sport.throw","on":"ball","params":{"range":12,"at":"net_goal"}}
+{"op":"verb","id":"vb_timer","verb":"puzzle.timer","on":"timer_gate","params":{"seconds":5}}
+{"op":"rule","id":"r_score","when":{"t":"enter","a":"ball","b":"net_goal"},"if":[],"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_timeout","when":{"t":"timer_end","a":"timer_gate"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"expect","id":"x_shot","prop":"win_reachable","a":"sp_red","b":"net_goal","headline":true,"text":"The goalkeeper's dive speed determines how the shot needs be placed to score."}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":6}}

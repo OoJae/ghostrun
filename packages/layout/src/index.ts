@@ -244,7 +244,7 @@ export function placeWorld(input: WorldBundle, layout: PackLayout): PlaceResult 
     }
   }
   // wins first: a win rule the repairs add (reach the goal) gets the same trigger and verb repairs
-  notes.push(...repairSpawnRefs(b), ...repairGroups(b), ...repairRingOut(b, bound), ...repairAreas(b, bound), ...repairKits(b), ...repairConditions(b), ...repairWin(b), ...repairTriggers(b), ...repairVerbs(b), ...repairExpects(b));
+  notes.push(...repairDoubleDoors(b), ...repairSpawnRefs(b), ...repairGroups(b), ...repairRingOut(b, bound), ...repairAreas(b, bound), ...repairKits(b), ...repairConditions(b), ...repairWin(b), ...repairTriggers(b), ...repairVerbs(b), ...repairExpects(b));
   notes.push(...addRivals(b), ...repairDeliveries(b, layout, bound), ...addSecrets(b, layout, bound));
   return { bundle: b, notes };
 }
@@ -380,6 +380,32 @@ export function addSecrets(b: WorldBundle, layout: PackLayout, bound: Map<string
  * the ring") mean whoever starts there: the player's spawn is the player, another spawn the NPC
  * named after it (sp_rival1 → rival1 / rival_1) or the one standing on it. Logged.
  */
+/**
+ * Two doors placed in the same doorway (one from each room's side) are one door: the second goes,
+ * and everything that named it names the first, so either lever opens it. Logged.
+ */
+export function repairDoubleDoors(b: WorldBundle): string[] {
+  const notes: string[] = [];
+  const doors = b.entities.filter((e) => e.kind === "door");
+  for (const d of doors) {
+    if (!b.entities.includes(d)) continue;
+    const twin = doors.find((o) => o !== d && b.entities.includes(o) && Math.abs(o.pos[0] - d.pos[0]) < 0.3 && Math.abs(o.pos[2] - d.pos[2]) < 0.3 && Math.abs(o.pos[1] - d.pos[1]) < 0.5);
+    if (!twin) continue;
+    b.entities.splice(b.entities.indexOf(twin), 1);
+    const re = (x: string) => (x === twin.id ? d.id : x.startsWith(`${twin.id}.`) ? `${d.id}${x.slice(twin.id.length)}` : x);
+    for (const r of b.rules) {
+      r.when = { ...r.when, a: re(r.when.a), b: re(r.when.b) };
+      r.if = r.if.map((c) => ({ ...c, l: re(c.l) }));
+      r.then = r.then.map((e) => ({ ...e, target: re(e.target) }));
+    }
+    // its own lock (if any) goes: the door it shares is opened by whatever opened either
+    b.verbs = b.verbs.filter((v) => v.on !== twin.id);
+    for (const x of b.expects) ((x.a = re(x.a)), (x.b = re(x.b)));
+    notes.push(`${twin.id}: stood in the same doorway as ${d.id}; they are one door now`);
+  }
+  return notes;
+}
+
 export function repairSpawnRefs(b: WorldBundle): string[] {
   const notes: string[] = [];
   const spawns = b.entities.filter((e) => e.kind === "spawn");
@@ -548,7 +574,21 @@ export function repairConditions(b: WorldBundle): string[] {
         notes.push(`rule ${r.id}: dropped '${c.l} is ${String(c.r)}' (${r.when.b} stands in ${String(c.r)}, so reaching it is being there)`);
         return [];
       }
+      // "if player.path is left": a property of the player nothing ever sets can never hold
+      const pp = /^player\.([a-z_]+)$/.exec(c.l)?.[1];
+      if (pp && !["team", "carrier", "carrying", "state", "zone", "score"].includes(pp) && !b.rules.some((x) => x.then.some((e) => e.target === "player" && e.e === "set_state"))) {
+        notes.push(`rule ${r.id}: dropped '${c.l} ${c.op} ${String(c.r)}' (nothing ever sets the player's ${pp})`);
+        return [];
+      }
       const m = /^([a-z][a-z0-9_]*)\.state$/.exec(c.l);
+      // "if the beaker is at stage 0" on a beaker with no starting state, that rules move 0 → 1 → 2:
+      // a starting-state name is where it starts
+      const thing = m ? at(m[1]!) : undefined;
+      if (m && c.op === "eq" && thing && !thing.init && /^(0|idle|off|closed|start|empty|ready|none|initial|waiting|stage_?0|step_?0)$/.test(String(c.r)) && b.rules.some((x) => x.then.some((e) => e.e === "set_state" && e.target === thing.id))) {
+        thing.init = String(c.r);
+        notes.push(`${thing.id}: rule ${r.id} needs it '${String(c.r)}' and it has no starting state: it starts '${String(c.r)}'`);
+        return [c];
+      }
       if (!m || c.op !== "eq" || canBe(m[1]!, String(c.r))) return [c];
       // "the gym exit is open" where nothing opens the exit, but a door beside it can be: that door
       const self = at(m[1]!);
@@ -1030,6 +1070,20 @@ export function repairWin(b: WorldBundle): string[] {
     if (!win || r.then.some((e) => e.e === "lose")) continue;
     win.e = "lose";
     notes.push(`rule ${r.id}: ${w.a.slice(5)} reaching ${w.n} made you win → you lose (you play ${mine})`);
+  }
+  // "when time runs out: win if all three zones are red; lose" (the same moment, one with
+  // conditions): the one with conditions is the exception, so it goes first (the first win or
+  // loss of a tick is the one that counts)
+  const same = (x: Rule["when"], y: Rule["when"]) => x.t === y.t && x.a === y.a && x.b === y.b && x.s === y.s && x.n === y.n;
+  const ends = (r: Rule) => r.then.some((e) => e.e === "win" || e.e === "lose");
+  for (const r of b.rules) {
+    if (!ends(r) || !r.if.length) continue;
+    const other = b.rules.filter((o) => o !== r && ends(o) && same(o.when, r.when) && o.if.length < r.if.length && o.then.some((e) => e.e === "win") !== r.then.some((e) => e.e === "win"));
+    if (!other.length) continue;
+    const top = Math.max(...other.map((o) => o.prio));
+    if (r.prio > top) continue;
+    r.prio = top + 1;
+    notes.push(`rule ${r.id}: the exception to ${other.map((o) => o.id).join(", ")} at the same moment, so it is checked first`);
   }
   // "reach the coop holding all three chickens": one pair of hands holds one, so it means bringing
   // each of them in (then as below: each goes in, the last one in wins)

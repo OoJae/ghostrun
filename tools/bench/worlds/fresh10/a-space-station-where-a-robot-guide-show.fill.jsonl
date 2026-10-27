@@ -1,0 +1,19 @@
+{"op":"meta","mode":"wander","lang":"en","pack":"floor_plan","sub":[],"seed":33,"look":"orbital station interior","mood":[0.45,0.15,0.0],"timeOfDay":12,"weather":"clear"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Station Entrance"}
+{"op":"zone","id":"z_bridge","slot":"main_room","tag":"hall","name":"Command Bridge"}
+{"op":"zone","id":"z_lab","slot":"room_sw","tag":"room","name":"Research Lab"}
+{"op":"zone","id":"z_garden","slot":"room_se","tag":"room","name":"Hydroponic Garden"}
+{"op":"spawn","id":"sp_red","zone":"z_entrance","anchor":"spawn_pad","team":"red"}
+{"op":"npc","id":"guide_bot","role":"guide","zone":"z_entrance","anchor":"center","team":"","menu":["guide.patrol"],"dflt":"guide.patrol"}
+{"op":"ent","id":"bridge_console","kind":"prop","noun":"bridge console","hyper":"console","zone":"z_bridge","anchor":"center","body":"fixed","shape":"box","size":[1.0,0.5,0.3]}
+{"op":"ent","id":"lab_console","kind":"prop","noun":"lab console","hyper":"console","zone":"z_lab","anchor":"center","body":"fixed","shape":"box","size":[0.9,0.4,0.3]}
+{"op":"ent","id":"garden_plant","kind":"prop","noun":"hydroponic plant","hyper":"plant","zone":"z_garden","anchor":"center","body":"fixed","shape":"box","size":[0.5,0.5,0.8]}
+{"op":"ent","id":"garden_skylight","kind":"prop","noun":"garden skylight","hyper":"window","zone":"z_garden","anchor":"corner_ne","body":"fixed","shape":"box","size":[1.2,0.1,1.2]}
+{"op":"verb","id":"vb_inspect_bridge","verb":"social.inspect","on":"bridge_console","params":{"text":"Main navigation console for the station."}}
+{"op":"verb","id":"vb_inspect_lab","verb":"social.inspect","on":"lab_console","params":{"text":"Scientific instruments monitoring experiments."}}
+{"op":"verb","id":"vb_inspect_plant","verb":"social.inspect","on":"garden_plant","params":{"text":"Lush lettuce thriving under LED lights."}}
+{"op":"verb","id":"vb_inspect_skylight","verb":"social.inspect","on":"garden_skylight","params":{"text":"Transparent dome showing the stars outside."}}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.2,"speed":5}}
+{"op":"expect","id":"x_tour","prop":"win_reachable","a":"sp_red","b":"z_garden","headline":true,"text":"Station interior has three distinct tour zones reached sequentially"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

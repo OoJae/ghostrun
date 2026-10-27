@@ -1,0 +1,148 @@
+{
+  "prompt": "Zbierz wszystkie monety na plaży",
+  "intent": {
+    "lang": "pl",
+    "mode": "play",
+    "genre": "Action",
+    "setting": "Słoneczna piaszczysta plaża z łagodnym nurtem i wiatrem usychającym palemki",
+    "role": "Poszukiwacz skarbów",
+    "goal": "Zbierz wszystkie monety rozrzucone na plaży przed końcem poziomu.",
+    "fail": "Opuszczenie wyznaczonego obszaru plaży.",
+    "mood": "Radosny, letni, energetyczny",
+    "pack": "outdoor",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Ogarnięcie całego wybrzeża w celu zebrania wszystkich monet",
+    "nouns": [
+      {
+        "noun": "monety",
+        "hyper": "przedmiot"
+      },
+      {
+        "noun": "plaża",
+        "hyper": "lokalizacja"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.8,
+      "arousal": 0.6,
+      "tension": 0.2
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "ba7096a918bfe8ae144bbb453ebed11ef90967b7af8cca9d482af0f12aee98e6",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_beach",
+      "text": "Ogarnięcie całego wybrzeża w celu zebrania wszystkich monet",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 3 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (team:red reaches 8) ← r_collect_score (touch any of 8)",
+        "src": ""
+      },
+      {
+        "id": "T2:r_collect_score",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_collect_score"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 6,
+        "status": "verified",
+        "text": "r_collect_score fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lose",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_lose fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it (AI par 19.8 s)",
+        "cx": null,
+        "src": "",
+        "ms": 242
+      }
+    ],
+    "par": {
+      "goldS": 19.8,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 526
+  }
+}

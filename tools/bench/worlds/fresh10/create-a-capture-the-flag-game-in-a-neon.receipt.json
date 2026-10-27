@@ -1,0 +1,318 @@
+{
+  "prompt": "Create a capture-the-flag game in a neon city. Add double jump. Score when the orb reaches the goal.",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "capture the flag, arcade sports",
+    "setting": "A neon-lit city street layout with two team bases and a rooftop lane for double jump",
+    "role": "player on a team carrying a glowing orb",
+    "goal": "Carry the orb to the opponent's goal (base) to score",
+    "fail": "Get caught by the opponent team, or drop the orb before scoring",
+    "mood": "energetic, futuristic, competitive",
+    "pack": "city_block",
+    "sub": [
+      "rooftop"
+    ],
+    "safety": "arcade",
+    "headline": "Rooftop lane requires double jump to score",
+    "nouns": [
+      {
+        "noun": "neon city",
+        "hyper": "urban environment"
+      },
+      {
+        "noun": "orb",
+        "hyper": "capture-the-flag token"
+      },
+      {
+        "noun": "goal",
+        "hyper": "team base target"
+      },
+      {
+        "noun": "double jump",
+        "hyper": "movement mechanic"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.6,
+      "arousal": 0.8,
+      "tension": 0.4
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "a8f4ab920592b757990271eed838252fc622c94ec0767cbda6303b5f366a3a4c",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_rooftop",
+      "text": "Rooftop lane requires double jump to score",
+      "status": "verified",
+      "method": "kinematic reachability (jump apex model) + physics jump witness, 4 attempts per jump count"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 1,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 11 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 1,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_score_red (orb into goal_blue, carried by red) ← pick up orb",
+        "src": ""
+      },
+      {
+        "id": "T1:x_rooftop",
+        "tier": "T1",
+        "subject": {
+          "kind": "property",
+          "id": "x_rooftop"
+        },
+        "method": "kinematic reachability (jump apex model)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "Rooftop lane requires double jump to score",
+        "cx": null
+      },
+      {
+        "id": "T2:r_collect_coin",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_collect_coin"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 53,
+        "status": "verified",
+        "text": "r_collect_coin fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_collect_coin2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_collect_coin2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 7,
+        "status": "verified",
+        "text": "r_collect_coin2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_collect_coin3",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_collect_coin3"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_collect_coin3 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_collect_coin4",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_collect_coin4"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_collect_coin4 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_score_blue",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score_blue"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_score_blue: no agent on team blue to carry orb",
+        "cx": null
+      },
+      {
+        "id": "T2:r_score_red",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score_red"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_score_red fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_edge",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_edge"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_edge fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_floor_ne",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_floor_ne"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_floor_ne fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_floor_sw",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_floor_sw"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_floor_sw fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_lane_end",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_lane_end"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 7,
+        "status": "verified",
+        "text": "r_secret_lane_end fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_spike_die",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_spike_die"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_spike_die fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it (AI par 10.4 s)",
+        "cx": null,
+        "src": "",
+        "ms": 145
+      },
+      {
+        "id": "T3:x_rooftop",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "x_rooftop"
+        },
+        "status": "played",
+        "method": "physics jump witness, 4 attempts per jump count",
+        "n": 4,
+        "k": 4,
+        "text": "Rooftop lane requires double jump to score: reached with 2 jumps 4 of 4, with 1 0 of 4",
+        "cx": null,
+        "src": "ai",
+        "ms": 55
+      }
+    ],
+    "par": {
+      "goldS": 10.4,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 483
+  }
+}

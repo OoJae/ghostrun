@@ -1,0 +1,184 @@
+{
+  "prompt": "Defend the castle gate from the knights for ninety seconds",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "tower defense / defense",
+    "setting": "Medieval castle gate under siege",
+    "role": "Castle defender",
+    "goal": "Survive and hold the gate for 90 seconds against waves of attacking knights",
+    "fail": "If the gate is breached or the defender is overwhelmed before 90 seconds elapse",
+    "mood": "Stark, siege tension",
+    "pack": "city_block",
+    "sub": [],
+    "safety": "arcade",
+    "headline": "Gate must survive 90 seconds of knight waves",
+    "nouns": [
+      {
+        "noun": "castle gate",
+        "hyper": "fortification entrance"
+      },
+      {
+        "noun": "knights",
+        "hyper": "attacking forces"
+      },
+      {
+        "noun": "defender",
+        "hyper": "player character"
+      }
+    ],
+    "moodVec": {
+      "valence": -0.2,
+      "arousal": 0.7,
+      "tension": 0.6
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "d925fbae10079ff8bcfbf00f99b94daafa1bd86fe4ffffca77a88500e5a342f4",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "exp_gate_survive",
+      "text": "Gate must survive 90 seconds of knight waves",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners vs 2 bots"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 5 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (the timer runs out)",
+        "src": ""
+      },
+      {
+        "id": "T2:r_lever_open",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lever_open"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_lever_open: no room to stand next to lever_gate",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lose_gate",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_gate"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_lose_gate fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lose_gate_e",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_gate_e"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_lose_gate_e fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_floor_sw",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_floor_sw"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_floor_sw fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners vs 2 bots",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it vs 2 bots (AI par 90 s)",
+        "cx": null,
+        "src": "",
+        "ms": 1198
+      }
+    ],
+    "par": {
+      "goldS": 90,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 1283
+  }
+}

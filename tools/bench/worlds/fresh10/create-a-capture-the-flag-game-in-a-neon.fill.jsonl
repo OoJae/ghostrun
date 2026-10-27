@@ -1,0 +1,35 @@
+{"op":"meta","mode":"play","lang":"en","pack":"city_block","sub":["rooftop"],"seed":7,"look":"neon city","mood":[0.6,0.8,0.4],"timeOfDay":18,"weather":"clear"}
+{"op":"zone","id":"z_center","slot":"center","tag":"plaza","name":"Central Plaza"}
+{"op":"zone","id":"z_west","slot":"west_block","tag":"base","name":"Red Base"}
+{"op":"zone","id":"z_east","slot":"east_block","tag":"base","name":"Blue Base"}
+{"op":"zone","id":"z_street_w","slot":"street_w","tag":"street","name":"West Street"}
+{"op":"zone","id":"z_street_e","slot":"street_e","tag":"street","name":"East Street"}
+{"op":"zone","id":"z_roof","slot":"roof_lane_a","tag":"rooftop","name":"Rooftop Jump Lane"}
+{"op":"spawn","id":"sp_red","zone":"z_west","anchor":"spawn_pad","team":"red"}
+{"op":"spawn","id":"sp_blue","zone":"z_east","anchor":"spawn_pad","team":"blue"}
+{"op":"goal","id":"goal_red","zone":"z_west","anchor":"goal_ring","noun":"red base","hyper":"team base target","team":"red","body":"sensor","shape":"box","size":[1,1,0.5]}
+{"op":"goal","id":"goal_blue","zone":"z_east","anchor":"goal_ring","noun":"blue base","hyper":"team base target","team":"blue","body":"sensor","shape":"box","size":[1,1,0.5]}
+{"op":"ent","id":"orb","kind":"pickup","noun":"glowing orb","hyper":"capture-the-flag token","zone":"z_center","anchor":"plinth","body":"dynamic","shape":"sphere","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"coin_w1","kind":"pickup","noun":"neon coin","hyper":"coin","zone":"z_street_w","body":"sensor","shape":"box","size":[0.2,0.2,0.01]}
+{"op":"ent","id":"coin_w2","kind":"pickup","noun":"neon coin","hyper":"coin","zone":"z_street_w","body":"sensor","shape":"box","size":[0.2,0.2,0.01]}
+{"op":"ent","id":"coin_e1","kind":"pickup","noun":"neon coin","hyper":"coin","zone":"z_street_e","body":"sensor","shape":"box","size":[0.2,0.2,0.01]}
+{"op":"ent","id":"coin_e2","kind":"pickup","noun":"neon coin","hyper":"coin","zone":"z_street_e","body":"sensor","shape":"box","size":[0.2,0.2,0.01]}
+{"op":"ent","id":"spikes_w","kind":"hazard","noun":"spike trap","hyper":"spikes","zone":"z_street_w","body":"sensor","shape":"box","size":[3,0.2,0.1]}
+{"op":"verb","id":"vb_carry_orb","verb":"physics_props.carry","on":"orb","params":{}}
+{"op":"verb","id":"vb_collect_coin_w1","verb":"puzzle.collect","on":"coin_w1","params":{}}
+{"op":"verb":"vb_collect_coin_w2","verb":"puzzle.collect","on":"coin_w2","params":{}}
+{"op":"verb","id":"vb_collect_coin_e1","verb":"puzzle.collect","on":"coin_e1","params":{}}
+{"op":"verb","id":"vb_collect_coin_e2","verb":"puzzle.collect","on":"coin_e2","params":{}}
+{"op":"verb","id":"vb_hazard_spikes","verb":"motion_hazards.hazard","on":"spikes_w","params":{"respawn":true}}
+{"op":"verb","id":"vb_jump","verb":"locomotion.jump","on":"player","params":{"jumpsMax":2}}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":6}}
+{"op":"rule","id":"r_score_red","when":{"t":"enter","a":"orb","b":"goal_blue"},"if":[{"l":"orb.carrier.team","op":"eq","r":"red"}],"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_score_blue","when":{"t":"enter","a":"orb","b":"goal_red"},"if":[{"l":"orb.carrier.team","op":"eq","r":"blue"}],"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_spike_die","when":{"t":"hit","a":"player","b":"spikes_w"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_collect_coin","when":{"t":"touch","a":"player","b":"coin_w1"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_collect_coin2","when":{"t":"touch","a":"player","b":"coin_w2"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_collect_coin3","when":{"t":"touch","a":"player","b":"coin_e1"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_collect_coin4","when":{"t":"touch","a":"player","b":"coin_e2"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"expect","id":"x_rooftop","prop":"requires","a":"sp_red","b":"z_roof","need":["jumps>=2"],"headline":true,"text":"Rooftop lane requires double jump to score"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

@@ -1,0 +1,100 @@
+{
+  "prompt": "A bioluminescent forest where fireflies lead you to a hidden shrine",
+  "intent": {
+    "lang": "en",
+    "mode": "wander",
+    "genre": "Nature Exploration",
+    "setting": "Bioluminescent forest",
+    "role": "Visitor",
+    "goal": "Follow fireflies to a hidden shrine",
+    "fail": "Getting lost in the dark",
+    "mood": "Mystical / Calm",
+    "pack": "outdoor",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Bioluminescent forest with firefly path to shrine",
+    "nouns": [
+      {
+        "noun": "fireflies",
+        "hyper": "bioluminescent insects"
+      },
+      {
+        "noun": "hidden shrine",
+        "hyper": "sacred structure"
+      },
+      {
+        "noun": "forest",
+        "hyper": "natural environment"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.7,
+      "arousal": 0.2,
+      "tension": 0.1
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "757647095662fce6b4271b5f77642b47e6ca6ef25c2c3d3a527c3497d5e42cea",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_path",
+      "text": "Bioluminescent forest with firefly path to shrine",
+      "status": "verified",
+      "method": "kinematic reachability (jump apex model)"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 0 rules reference existing things",
+        "src": ""
+      },
+      {
+        "id": "T1:x_path",
+        "tier": "T1",
+        "subject": {
+          "kind": "property",
+          "id": "x_path"
+        },
+        "method": "kinematic reachability (jump apex model)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "Bioluminescent forest with firefly path to shrine",
+        "cx": null
+      },
+      {
+        "id": "T3:tour",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "tour"
+        },
+        "status": "played",
+        "method": "physics, an AI visitor walks to and uses each",
+        "n": 8,
+        "k": 8,
+        "text": "walked to and inspected 8 of 8 things",
+        "cx": null,
+        "src": "",
+        "ms": 43
+      }
+    ],
+    "par": null,
+    "ms": 328
+  }
+}

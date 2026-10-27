@@ -1,0 +1,39 @@
+{"op":"meta","mode":"play","lang":"en","pack":"city_block","sub":["rooftop"],"seed":18,"look":"city rooftops","mood":[-0.1,0.9,0.85],"timeOfDay":20,"weather":"clear"}
+{"op":"zone","id":"z_center","slot":"center","tag":"rooftop","name":"Central plaza"}
+{"op":"zone","id":"z_west","slot":"west_block","tag":"base","name":"West rooftop base"}
+{"op":"zone","id":"z_east","slot":"east_block","tag":"base","name":"East rooftop base"}
+{"op":"zone","id":"z_street_w","slot":"street_w","tag":"street","name":"West street"}
+{"op":"zone","id":"z_street_e","slot":"street_e","tag":"street","name":"East street"}
+{"op":"zone","id":"z_roof_lane","slot":"roof_lane_a","tag":"rooftop","name":"Rooftop chase lane"}
+{"op":"spawn","id":"sp_red","zone":"z_west","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"heli_goal","zone":"z_roof_lane","anchor":"lane_end","noun":"helicopter","hyper":"aircraft","team":"red"}
+{"op":"ent","id":"thief_npc","kind":"npc","noun":"thief","hyper":"person","zone":"z_roof_lane","anchor":"lane_start","body":"kinematic","shape":"capsule","size":[0.5,1.8,0.5],"team":"blue"}
+{"op":"ent","id":"jump_pad_w","kind":"plate","noun":"jump pad","hyper":"jump_pad","zone":"z_west","anchor":"spawn_pad","body":"sensor","shape":"box","size":[1,0.2,1]}
+{"op":"ent","id":"jump_pad_e","kind":"plate","noun":"jump pad","hyper":"jump_pad","zone":"z_east","anchor":"spawn_pad","body":"sensor","shape":"box","size":[1,0.2,1]}
+{"op":"ent","id":"hazard_spike","kind":"hazard","noun":"spike strip","hyper":"spikes","zone":"z_center","anchor":"floor_ne","body":"sensor","shape":"box","size":[2,0.1,0.3]}
+{"op":"ent","id":"plate_unlock","kind":"plate","noun":"unlock plate","hyper":"pressure_plate","zone":"z_center","anchor":"floor_sw","body":"sensor","shape":"box","size":[1,0.2,1]}
+{"op":"ent","id":"door_gate","kind":"door","noun":"gate door","hyper":"door","zone":"z_center","anchor":"wall_n","body":"fixed","shape":"box","size":[1,2,0.2]}
+{"op":"ent","id":"coin_1","kind":"pickup","noun":"gold coin","hyper":"coin","zone":"z_street_w","anchor":"none","body":"dynamic","shape":"sphere","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"coin_2","kind":"pickup","noun":"gold coin","hyper":"coin","zone":"z_street_e","anchor":"none","body":"dynamic","shape":"sphere","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"inspect_sign","kind":"sign","noun":"inspection sign","hyper":"sign","zone":"z_center","anchor":"none","body":"fixed","shape":"box","size":[1,0.5,0.1]}
+{"op":"ent","id":"crumble_plat","kind":"platform","noun":"crumbling platform","hyper":"platform","zone":"z_center","anchor":"none","body":"kinematic","shape":"box","size":[2,0.3,2]}
+{"op":"ent","id":"wind_zone","kind":"hazard","noun":"wind gust","hyper":"wind","zone":"z_center","anchor":"none","body":"sensor","shape":"box","size":[3,3,3]}
+{"op":"verb","id":"vb_jump","verb":"locomotion.jump","on":"player","params":{"jumpsMax":2}}
+{"op":"verb","id":"vb_carry_coin1","verb":"physics_props.carry","on":"coin_1","params":{}}
+{"op":"verb","id":"vb_carry_coin2","verb":"physics_props.carry","on":"coin_2","params":{}}
+{"op":"verb","id":"vb_plate_unlock","verb":"puzzle.plate","on":"plate_unlock","params":{"latch":false}}
+{"op":"verb","id":"vb_lock_gate","verb":"puzzle.lock","on":"door_gate","params":{"key":"coin_1","keep":false}}
+{"op":"verb","id":"vb_inspect","verb":"social.inspect","on":"inspect_sign","params":{"text":"Watch the thief's route. He jumps over gaps."}}
+{"op":"verb","id":"vb_crumble","verb":"motion_hazards.crumble","on":"crumble_plat","params":{"delay":0.5,"back":5}}
+{"op":"verb","id":"vb_wind","verb":"motion_hazards.wind","on":"wind_zone","params":{"x":-5,"z":0}}
+{"op":"verb","id":"vb_jump_pad_w","verb":"locomotion.jump_pad","on":"jump_pad_w","params":{"height":5}}
+{"op":"verb","id":"vb_jump_pad_e","verb":"locomotion.jump_pad","on":"jump_pad_e","params":{"height":5}}
+{"op":"rule","id":"r_start_jump","when":{"t":"enter","a":"player","b":"jump_pad_w"},"then":[{"e":"set_state","target":"player","v":"jumping"}]}
+{"op":"rule","id":"r_unlock_gate","when":{"t":"state_is","a":"plate_unlock","s":"down"},"then":[{"e":"set_state","target":"door_gate","v":"open"}]}
+{"op":"rule","id":"r_gate_locked","when":{"t":"enter","a":"player","b":"door_gate"},"if":[{"l":"door_gate.state","op":"eq","r":"closed"}],"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_catch_thief","when":{"t":"enter","a":"player","b":"thief_npc"},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_helicopter_escape","when":{"t":"enter","a":"thief_npc","b":"heli_goal"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"expect","id":"x_chase","prop":"win_reachable","a":"sp_red","b":"heli_goal","headline":true,"text":"Catch thief on rooftops before he boards helicopter"}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":6}}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

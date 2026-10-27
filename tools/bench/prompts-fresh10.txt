@@ -1,0 +1,29 @@
+# Tenth unseen set (27 Oct): the organizer's likely test prompts and other languages
+Create a capture-the-flag game in a neon city. Add double jump. Score when the orb reaches the goal.
+An arena with three capture zones and a two-minute timer: hold more zones than the blue team
+A parkour time trial over shipping containers in a harbour
+A cyberpunk night market where a vendor sells you a glowing drink
+A bioluminescent forest where fireflies lead you to a hidden shrine
+A minimalist museum with a guide who explains each sculpture
+A car showroom where the salesperson lets you sit in the sports car
+A Feng Shui living room where each object sits in its proper place
+A villa tour where the agent books a viewing at the end
+A doors-and-keys dungeon: find the red, blue and green keys to reach the treasure
+A timed escape from a sinking ship through three flooded decks
+A rooftop chase: catch the thief before he reaches the helicopter
+Defend the castle gate from the knights for ninety seconds
+A water temple puzzle: raise the water level to reach the door
+A greenhouse maze where you collect seeds and plant them at the centre
+A snowy mountain race against two rival skiers
+A lab where you mix three chemicals in the right order
+A zombie shopping mall: grab supplies and reach the roof
+Bludiště s duchy: najdi klíč a uteč z hradu
+Sbírej všechny hvězdy v kouzelném lese
+Escapa del laberinto antes de que se acabe el tiempo
+Trouve le trésor caché dans le château et sors avant minuit
+Zbierz wszystkie monety na plaży
+Un museo d'arte moderna con una guida
+A football penalty shootout against a goalkeeper who dives
+A jungle river rafting race through the rapids
+A space station where a robot guide shows you the bridge, the lab and the garden
+A haunted lighthouse where you light the lamp at the top

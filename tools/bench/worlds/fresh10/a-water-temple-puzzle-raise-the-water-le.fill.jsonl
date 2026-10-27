@@ -1,0 +1,28 @@
+{"op":"meta","mode":"play","lang":"en","pack":"floor_plan","sub":[],"seed":20,"look":"underground water temple","mood":[0.4,0.3,0.5],"timeOfDay":12,"weather":"clear"}
+{"op":"zone","id":"z_yard","slot":"yard","tag":"outside","name":"Temple entrance"}
+{"op":"zone","id":"z_sw","slot":"room_sw","tag":"room","name":"Southwest chamber"}
+{"op":"zone","id":"z_se","slot":"room_se","tag":"room","name":"Southeast chamber"}
+{"op":"zone","id":"z_nw","slot":"room_nw","tag":"room","name":"Northwest chamber"}
+{"op":"zone","id":"z_main","slot":"main_room","tag":"hall","name":"Main hall"}
+{"op":"spawn","id":"sp_red","zone":"z_yard","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"main_door","zone":"z_main","anchor":"corner_w","noun":"temple exit","hyper":"door","team":"red"}
+{"op":"ent","id":"lever_sw","kind":"switch","noun":"water lever","hyper":"lever","zone":"z_sw","anchor":"center","body":"fixed","shape":"box","size":[0.3,0.5,0.2]}
+{"op":"ent","id":"lever_se","kind":"switch","noun":"water lever","hyper":"lever","zone":"z_se","anchor":"center","body":"fixed","shape":"box","size":[0.3,0.5,0.2]}
+{"op":"ent","id":"lever_nw","kind":"switch","noun":"water lever","hyper":"lever","zone":"z_nw","anchor":"center","body":"fixed","shape":"box","size":[0.3,0.5,0.2]}
+{"op":"ent","id":"door_sw","kind":"door","noun":"floodgate","hyper":"door","zone":"z_sw","anchor":"doorway_n","body":"fixed","shape":"box"}
+{"op":"ent","id":"door_se","kind":"door","noun":"floodgate","hyper":"door","zone":"z_se","anchor":"doorway_w","body":"fixed","shape":"box"}
+{"op":"ent","id":"door_nw","kind":"door","noun":"floodgate","hyper":"door","zone":"z_nw","anchor":"doorway_s","body":"fixed","shape":"box"}
+{"op":"ent","id":"door_main","kind":"door","noun":"main door","hyper":"door","zone":"z_main","anchor":"doorway_s","body":"fixed","shape":"box"}
+{"op":"verb","id":"vb_sw","verb":"puzzle.switch","on":"lever_sw","params":{"once":false}}
+{"op":"verb","id":"vb_se","verb":"puzzle.switch","on":"lever_se","params":{"once":false}}
+{"op":"verb","id":"vb_nw","verb":"puzzle.switch","on":"lever_nw","params":{"once":false}}
+{"op":"verb","id":"vb_jump","verb":"locomotion.jump","on":"player","params":{"jumpsMax":2}}
+{"op":"rule","id":"r_sw_to_se","when":{"t":"state_is","a":"lever_sw","s":"on"},"then":[{"e":"set_state","target":"door_sw","v":"open"}],"once":true}
+{"op":"rule","id":"r_se_to_nw","when":{"t":"state_is","a":"lever_se","s":"on"},"then":[{"e":"set_state","target":"door_se","v":"open"}],"once":true}
+{"op":"rule","id":"r_nw_to_main","when":{"t":"state_is","a":"lever_nw","s":"on"},"then":[{"e":"set_state","target":"door_nw","v":"open"}],"once":true}
+{"op":"rule","id":"r_open_main","when":{"t":"state_is","a":"door_nw","s":"open"},"then":[{"e":"set_state","target":"door_main","v":"open"}],"once":true}
+{"op":"rule","id":"r_win","when":{"t":"enter","a":"player","b":"main_door"},"if":[{"l":"door_main.state","op":"eq","r":"open"}],"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"expect","id":"x_water","prop":"win_reachable","a":"sp_red","b":"main_door","headline":true,"text":"Sequential water level switches must fill all chambers in order"}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":5}}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

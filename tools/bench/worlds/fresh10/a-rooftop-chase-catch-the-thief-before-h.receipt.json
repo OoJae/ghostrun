@@ -1,0 +1,208 @@
+{
+  "prompt": "A rooftop chase: catch the thief before he reaches the helicopter",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "chase",
+    "setting": "city rooftops and skylines",
+    "role": "pursuer",
+    "goal": "Catch the thief before he reaches the helicopter",
+    "fail": "The thief boards the helicopter and escapes",
+    "mood": "tense, cinematic",
+    "pack": "city_block",
+    "sub": [
+      "rooftop"
+    ],
+    "safety": "arcade",
+    "headline": "Catch thief on rooftops before he boards helicopter",
+    "nouns": [
+      {
+        "noun": "rooftop",
+        "hyper": "structure"
+      },
+      {
+        "noun": "thief",
+        "hyper": "person"
+      },
+      {
+        "noun": "helicopter",
+        "hyper": "aircraft"
+      }
+    ],
+    "moodVec": {
+      "valence": -0.1,
+      "arousal": 0.9,
+      "tension": 0.85
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "0b1a507b580f507b67356c069fa714f0ea1f2ed181887b51fab3297b44c8a891",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_chase",
+      "text": "Catch thief on rooftops before he boards helicopter",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 6 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_catch_thief (player enters thief_npc)",
+        "src": ""
+      },
+      {
+        "id": "T2:r_catch_thief",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_catch_thief"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_catch_thief fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_gate_locked",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_gate_locked"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_gate_locked fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_helicopter_escape",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_helicopter_escape"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 0,
+        "src": "ai",
+        "ms": 2,
+        "status": "counterexample",
+        "text": "r_helicopter_escape fires exactly once",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "firings",
+          "text": "never fired when forced"
+        }
+      },
+      {
+        "id": "T2:r_secret_plinth",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_plinth"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_secret_plinth fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_start_jump",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_start_jump"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_start_jump fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_unlock_gate",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_unlock_gate"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_unlock_gate fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it (AI par 6.8 s)",
+        "cx": null,
+        "src": "",
+        "ms": 190
+      }
+    ],
+    "par": {
+      "goldS": 6.8,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 275
+  }
+}

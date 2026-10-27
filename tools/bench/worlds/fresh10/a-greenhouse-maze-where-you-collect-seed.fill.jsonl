@@ -1,0 +1,28 @@
+{"op":"meta","mode":"play","lang":"en","pack":"maze","sub":[],"seed":21,"look":"greenhouse maze","mood":[0.55,0.25,0.25],"timeOfDay":12,"weather":"clear"}
+{"op":"zone","id":"z_start","slot":"start","tag":"outside","name":"Greenhouse entrance"}
+{"op":"zone","id":"z_maze","slot":"maze","tag":"maze","name":"Greenhouse maze"}
+{"op":"spawn","id":"sp_red","zone":"z_start","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"central_bed","zone":"z_maze","anchor":"center","noun":"central bed","hyper":"central bed","team":"red","body":"sensor","shape":"box","size":[2,0.2,2]}
+{"op":"ent","id":"seed_1","kind":"pickup","noun":"seed pod","hyper":"seed pod","zone":"z_maze","anchor":"dead_end_1","body":"dynamic","shape":"sphere","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"seed_2","kind":"pickup","noun":"seed pod","hyper":"seed pod","zone":"z_maze","anchor":"dead_end_2","body":"dynamic","shape":"sphere","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"seed_3","kind":"pickup","noun":"seed pod","hyper":"seed pod","zone":"z_maze","anchor":"dead_end_3","body":"dynamic","shape":"sphere","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"seed_4","kind":"pickup","noun":"seed pod","hyper":"seed pod","zone":"z_maze","anchor":"dead_end_4","body":"dynamic","shape":"sphere","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"seed_5","kind":"pickup","noun":"seed pod","hyper":"seed pod","zone":"z_maze","anchor":"entrance","body":"dynamic","shape":"sphere","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"plant_1","kind":"prop","noun":"planter","hyper":"planter","zone":"z_maze","anchor":"exit","body":"fixed","shape":"box","size":[0.5,0.8,0.5]}
+{"op":"verb","id":"vb_carry_seed_1","verb":"physics_props.carry","on":"seed_1","params":{}}
+{"op":"verb","id":"vb_carry_seed_2","verb":"physics_props.carry","on":"seed_2","params":{}}
+{"op":"verb","id":"vb_carry_seed_3","verb":"physics_props.carry","on":"seed_3","params":{}}
+{"op":"verb","id":"vb_carry_seed_4","verb":"physics_props.carry","on":"seed_4","params":{}}
+{"op":"verb","id":"vb_carry_seed_5","verb":"physics_props.carry","on":"seed_5","params":{}}
+{"op":"verb","id":"vb_timer","verb":"puzzle.timer","on":"player","params":{"seconds":180}}
+{"op":"rule","id":"r_score_1","when":{"t":"touch","a":"player","b":"seed_1"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_score_2","when":{"t":"touch","a":"player","b":"seed_2"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_score_3","when":{"t":"touch","a":"player","b":"seed_3"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_score_4","when":{"t":"touch","a":"player","b":"seed_4"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_score_5","when":{"t":"touch","a":"player","b":"seed_5"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_win","when":{"t":"enter","a":"player","b":"central_bed"},"if":[{"l":"team:red.score","op":"gte","r":"5"}],"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose_timer","when":{"t":"timer_end","a":"player"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":6}}
+{"op":"expect","id":"x_greenhouse","prop":"win_reachable","a":"sp_red","b":"central_bed","headline":true,"text":"Greenhouse aisles must hide enough seed pods to fill central slots"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

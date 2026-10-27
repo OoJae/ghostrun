@@ -1,0 +1,168 @@
+{
+  "prompt": "Sbírej všechny hvězdy v kouzelném lese",
+  "intent": {
+    "lang": "cs",
+    "mode": "play",
+    "genre": "collectathon",
+    "setting": "Magical forest with paths, a pond, a grove on a knoll and side clearings",
+    "role": "Wandering character",
+    "goal": "Collect all stars scattered around the magical forest",
+    "fail": "Time runs out before all stars are collected or all stars are missed",
+    "mood": "Curious, magical, gentle",
+    "pack": "outdoor",
+    "sub": [],
+    "safety": "ok",
+    "headline": "All stars must be reachable via forest paths and the jumping lookout",
+    "nouns": [
+      {
+        "noun": "stars",
+        "hyper": "collectibles"
+      },
+      {
+        "noun": "forest",
+        "hyper": "terrain"
+      },
+      {
+        "noun": "paths",
+        "hyper": "navigation"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.8,
+      "arousal": 0.4,
+      "tension": 0.1
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "34a3f139c621458c455e5cd045b500c19930a5275d604d9c9d7c5049838989d2",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_forest",
+      "text": "All stars must be reachable via forest paths and the jumping lookout",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 4 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (player enters lookout_goal)",
+        "src": ""
+      },
+      {
+        "id": "T2:r_lose_hazard",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_hazard"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_lose_hazard fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_open_door",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_open_door"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_open_door fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_plate_down",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_plate_down"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_plate_down fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it (AI par 24.3 s)",
+        "cx": null,
+        "src": "",
+        "ms": 404
+      }
+    ],
+    "par": {
+      "goldS": 24.3,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 703
+  }
+}
