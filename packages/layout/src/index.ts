@@ -645,9 +645,10 @@ export function repairKits(b: WorldBundle): string[] {
     b.verbs.push(vb(uniqueId(b, `vb_${kit.split(".")[1]}_${e.id}`), kit, e.id, kit === "social.inspect" ? { text: noun.charAt(0).toUpperCase() + noun.slice(1) } : {}));
     notes.push(`${e.id}: added ${kit} (rule ${r.id} waits on a ${w.t} nothing could produce)`);
   }
-  // 1e. a rival a rule waits to see knocked into or out of something can be shoved
+  // 1e. a rival a rule waits to see knocked into or out of something can be shoved (only where that
+  // is the player's doing: a fox reaching the coop on its own is a loss, not a target)
   for (const r of b.rules) {
-    if (r.when.t !== "enter" && r.when.t !== "exit") continue;
+    if ((r.when.t !== "enter" && r.when.t !== "exit") || r.then.some((x) => x.e === "lose")) continue;
     const e = b.entities.find((x) => x.id === r.when.a && x.kind === "npc");
     if (!e || b.verbs.some((v) => v.on === e.id && v.verb === "combat_sport.shove")) continue;
     b.verbs.push(vb(uniqueId(b, `vb_shove_${e.id}`), "combat_sport.shove", e.id));
@@ -864,6 +865,20 @@ export function repairWin(b: WorldBundle): string[] {
     if (!win || r.then.some((e) => e.e === "lose")) continue;
     win.e = "lose";
     notes.push(`rule ${r.id}: ${w.a.slice(5)} reaching ${w.n} made you win → you lose (you play ${mine})`);
+  }
+  // "reach the coop holding all three chickens": one pair of hands holds one, so it means bringing
+  // each of them in (then as below: each goes in, the last one in wins)
+  const carriable = new Set(b.verbs.filter((v) => v.verb.endsWith(".carry")).map((v) => v.on));
+  for (const r of [...b.rules]) {
+    const held = r.if.filter((c) => c.op === "eq" && c.r === mine && /^([a-z][a-z0-9_]*)\.carrier\.team$/.test(c.l) && carriable.has(c.l.split(".")[0]!));
+    if (r.when.t !== "enter" || r.when.a !== "player" || held.length < 2 || !r.then.some((e) => e.e === "win")) continue;
+    const rest = r.if.filter((c) => !held.includes(c));
+    b.rules.splice(b.rules.indexOf(r), 1);
+    for (const c of held) {
+      const item = c.l.split(".")[0]!;
+      b.rules.push({ ...structuredClone(r), id: uniqueId(b, `${r.id}_${item}`), when: { ...r.when, a: item }, if: [...structuredClone(rest), { ...c }] });
+    }
+    notes.push(`rule ${r.id}: reaching ${r.when.b} holding ${held.length} things at once can't happen (one pair of hands); it means bringing each of them in`);
   }
   // several rules each winning when a different thing is brought to the same place ("brew the
   // potion from three ingredients": the root into the cauldron wins, the scale into the cauldron
