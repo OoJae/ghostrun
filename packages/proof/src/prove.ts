@@ -5,7 +5,7 @@ import type { Rapier } from "@ghostrun/sim";
 import { t0 } from "./t0";
 import { t1 } from "./t1";
 import { t2 } from "./t2";
-import { t3 } from "./t3";
+import { t3, tour } from "./t3";
 import type { Chip, ChipStatus, Receipt } from "./types";
 
 export interface ProveOptions {
@@ -36,10 +36,16 @@ export async function prove(R: Rapier, b: WorldBundle, opts: ProveOptions): Prom
   try {
     const s3 = t3(R, b, nav, s0.chain, opts.runs ?? 12, team, s0.openers);
     emit(s3.chips);
+    if (b.mode === "wander") {
+      const t = tour(R, b, nav);
+      if (t) emit([t]);
+    }
     const headlineExpect = b.expects.find((x) => x.headline);
     let headline: Receipt["headline"] = null;
     if (headlineExpect) {
-      const mine = chips.filter((c) => c.subject.id === headlineExpect.id || (headlineExpect.prop === "win_reachable" && c.subject.id === "win_reachable"));
+      const mine = chips.filter(
+        (c) => c.subject.id === headlineExpect.id || (headlineExpect.prop === "win_reachable" && c.subject.id === "win_reachable") || (b.mode === "wander" && headlineExpect.prop === "reachable" && !headlineExpect.b && c.subject.id === "tour"),
+      );
       const status: ChipStatus = mine.some((c) => c.status === "counterexample")
         ? "counterexample"
         : mine.some((c) => c.status === "verified")

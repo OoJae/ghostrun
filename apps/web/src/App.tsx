@@ -178,7 +178,7 @@ export function App() {
         });
         if (id !== runId.current) return;
         if (r.kind === "world") {
-          const world = worldFromFill(r.fill, r.seed, { genre: r.intent.genre, setting: r.intent.setting, goal: r.intent.goal, fail: r.intent.fail, role: r.intent.role }, r.intent.pack);
+          const world = worldFromFill(r.fill, r.seed, { genre: r.intent.genre, setting: r.intent.setting, goal: r.intent.goal, fail: r.intent.fail, role: r.intent.role }, r.intent.pack, r.intent.mode);
           world.source = { prompt: text, intent: r.intent, fill: r.fill, seed: r.seed, pack: r.intent.pack };
           setNotice(undefined);
           await show(world, id, startedAt, [...extraSplits, { label: "intent", ms: r.intentMs }, { label: "fill", ms: r.gameplayMs - r.intentMs }]);

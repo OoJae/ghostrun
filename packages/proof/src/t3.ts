@@ -310,10 +310,23 @@ function clearDoors(r: Run, target: Vec3) {
   }
 }
 
-/** Where to stand to reach a solid thing: the closest walkable point to it. */
+/**
+ * Where to stand to reach a thing. A sensor or decor: the walkable point nearest it. A solid
+ * thing: beside it, on the side with a path from here (never on top: a sculpture's top is
+ * walkable navmesh, and a visitor up there is too high to use it).
+ */
 const spotBy = (r: Run, id: string): Vec3 => {
   const e = r.b.entities.find((x) => x.id === id)!;
-  return r.nav.nearest(e.pos) ?? e.pos;
+  const solid = e.body === "fixed" || e.body === "kinematic" || e.body === "dynamic";
+  const floor = e.pos[1] - e.size[1] / 2;
+  if (!solid) return r.nav.nearest([e.pos[0], floor, e.pos[2]]) ?? e.pos;
+  const p = r.sim.pos("player");
+  const feet: Vec3 = [p[0], p[1] - 0.9, p[2]];
+  const [hx, hz] = [e.size[0] / 2 + 0.6, e.size[2] / 2 + 0.6];
+  const sides: Vec3[] = [[e.pos[0], floor, e.pos[2] - hz], [e.pos[0], floor, e.pos[2] + hz], [e.pos[0] - hx, floor, e.pos[2]], [e.pos[0] + hx, floor, e.pos[2]]];
+  const spots = sides.map((q) => r.nav.nearest(q)).filter((q): q is Vec3 => q !== null && Math.abs(q[1] - floor) < 0.6);
+  spots.sort((u, v) => d2h(u, p) - d2h(v, p));
+  return spots.find((q) => r.nav.path(feet, q)) ?? spots[0] ?? r.nav.nearest([e.pos[0], floor, e.pos[2]]) ?? e.pos;
 };
 
 /** Execute one plan step in physics; "lost" means a carried item was taken (start over). */
@@ -523,4 +536,45 @@ export function t3(R: Rapier, b: WorldBundle, nav: NavWorld, chain: WinChain | n
     });
   }
   return { chips, par };
+}
+
+/**
+ * The tour, for places to explore: an AI visitor walks to everything that can be used or
+ * inspected, nearest first, and uses it. Played, k of n reached; anything it can't reach is the
+ * counterexample (a sealed room, an exhibit inside a wall).
+ */
+export function tour(R: Rapier, b: WorldBundle, nav: NavWorld): Chip | null {
+  // what a visitor can always use: exhibits and switches (a lock needs its key, so it isn't a sight)
+  const sights = [...new Set(b.verbs.filter((v) => (v.verb === "social.inspect" || v.verb === "puzzle.switch") && b.entities.some((e) => e.id === v.on)).map((v) => v.on))].sort();
+  if (!sights.length) return null;
+  const t0 = globalThis.performance?.now?.() ?? 0;
+  const sim = new SimWorld(R, b, { brain: castBrain(nav, b) });
+  const r: Run = { sim, nav, b, rng: stream(b.seed, "t3:tour"), speed: 0.9, budget: { ticks: RUN_TICKS * 2 }, openers: new Map(), opened: new Set() };
+  const seen = new Set<string>();
+  const used = () => {
+    for (const e of sim.log) if (e.k === "touch" && e.a === "player") seen.add(e.b);
+  };
+  const left = new Set(sights);
+  while (left.size && live(r)) {
+    const p = sim.pos("player");
+    const next = [...left].sort((x, y) => d2h(sim.pos(x), p) - d2h(sim.pos(y), p) || (x < y ? -1 : 1))[0]!;
+    left.delete(next);
+    dropDown(sim, b, sim.pos(next), r.budget); // perched on something: come down first
+    goTo(sim, nav, b, spotBy(r, next), r.rng, r.speed, r.budget, () => sim.usable()?.on === next);
+    if (sim.usable()?.on === next) {
+      sim.step({ tick: sim.tick + 1, wx: 0, wz: 0, btn: BTN.USE });
+      sim.step({ tick: sim.tick + 1, wx: 0, wz: 0, btn: 0 });
+    }
+    used();
+  }
+  sim.free();
+  const k = sights.filter((s) => seen.has(s)).length;
+  const missed = sights.filter((s) => !seen.has(s));
+  return {
+    id: "T3:tour", tier: "T3", subject: { kind: "property", id: "tour" }, status: k === sights.length ? "played" : "counterexample",
+    method: "physics, an AI visitor walks to and uses each", n: sights.length, k,
+    text: `walked to and inspected ${k} of ${sights.length} things`,
+    cx: missed.length ? { where: null, have: k, need: sights.length, unit: "things", text: `couldn't reach ${missed.slice(0, 4).join(", ")}${missed.length > 4 ? "…" : ""}` } : null,
+    src: "", ms: Math.round((globalThis.performance?.now?.() ?? 0) - t0),
+  };
 }

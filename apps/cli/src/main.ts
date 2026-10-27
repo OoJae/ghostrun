@@ -29,14 +29,15 @@ function loadDevVars() {
   }
 }
 
-function placeFromFill(text: string, seed: number, packId?: string): { bundle: WorldBundle; invalid: number; lines: number } {
+function placeFromFill(text: string, seed: number, packId?: string, mode?: WorldBundle["mode"]): { bundle: WorldBundle; invalid: number; lines: number; notes: string[] } {
   const fill = parseFill(text, { seed });
   if (packId) fill.draft.pack = { ...fill.draft.pack, id: packId };
+  if (mode) fill.draft.mode = mode;
   const pack = packFor(fill.draft.pack.id);
   const layout = pack.generate({ seed, params: pack.defaults, sub: fill.draft.pack.sub, laws: fill.draft.laws, harder: false });
   const placed = placeWorld({ ...fill.draft, engine: ENGINE }, layout);
   for (const n of fill.notes) console.log(`  · fill line ${n.line}: ${n.kind} — ${n.text}`);
-  return { bundle: placed.bundle, invalid: fill.stats.invalid, lines: fill.stats.lines };
+  return { bundle: placed.bundle, invalid: fill.stats.invalid, lines: fill.stats.lines, notes: placed.notes };
 }
 
 function printReceipt(r: Receipt) {
@@ -83,7 +84,7 @@ async function repairRound(R: Awaited<ReturnType<typeof loadRapierNode>>, prompt
     if (ev.type === "text") patch += ev.delta;
   }
   const merged = mergeFill(fill, patch);
-  const placed = placeFromFill(merged.text, seed, packId);
+  const placed = placeFromFill(merged.text, seed, packId, intent.mode);
   const r2 = await prove(R, placed.bundle, { engine: ENGINE, runs: 12 });
   return { fill: merged.text, receipt: r2, bundle: placed.bundle, kept: better(r2, receipt), issues, stats: merged.stats, ms: Math.round(performance.now() - t0) };
 }
@@ -139,7 +140,7 @@ async function build(prompt: string, seed: number, outDir: string | null): Promi
   if (gameplayEndMs < 0) gameplayEndMs = fillDoneMs;
 
   // 3. place + prove
-  const { bundle, invalid, lines } = placeFromFill(fillText, seed, layout.packId);
+  const { bundle, invalid, lines } = placeFromFill(fillText, seed, layout.packId, intent.mode);
   const playableMs = Math.round(now() - t0); // gameplay layer final + placed
   const R = await loadRapierNode();
   await loadNavNode();
@@ -189,6 +190,8 @@ async function main() {
       const rp = join(dir, f.replace(".fill.jsonl", ".receipt.json"));
       const intentPack = existsSync(rp) ? (JSON.parse(readFileSync(rp, "utf8")) as { intent?: { pack?: string } }).intent?.pack : undefined;
       if (intentPack) fill.draft.pack = { ...fill.draft.pack, id: intentPack }; // the layout the fill was written against
+      const intentMode = existsSync(rp) ? (JSON.parse(readFileSync(rp, "utf8")) as { intent?: { mode?: WorldBundle["mode"] } }).intent?.mode : undefined;
+      if (intentMode) fill.draft.mode = intentMode;
       const pack = packFor(fill.draft.pack.id);
       const layout = pack.generate({ seed: meta.seed ?? 7, params: pack.defaults, sub: fill.draft.pack.sub, laws: fill.draft.laws, harder: false });
       const placed = placeWorld({ ...fill.draft, engine: ENGINE }, layout);

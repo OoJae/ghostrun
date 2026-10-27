@@ -85,7 +85,7 @@ export function placeWorld(input: WorldBundle, layout: PackLayout): PlaceResult 
     if (!spec) continue;
     let base = spec.anchors[e.anchor];
     // a door is meant to guard a way through: "the gate in the east wall" stands in that doorway
-    if (e.kind === "door" && !e.anchor.startsWith("doorway_")) {
+    if (e.kind === "door" && (!e.anchor.startsWith("doorway_") || !spec.anchors[e.anchor])) {
       const doors = Object.keys(spec.anchors).filter((k) => k.startsWith("doorway_")).sort();
       const side = /^wall_([nsew])$/.exec(e.anchor)?.[1];
       const pick = (side && spec.anchors[`doorway_${side}`] ? `doorway_${side}` : undefined) ?? doors[0];
@@ -192,6 +192,16 @@ export function repairKits(b: WorldBundle): string[] {
       b.verbs.push(vb(uniqueId(b, `vb_${e.id}`), "motion_hazards.crumble", e.id));
       notes.push(`${e.id}: added motion_hazards.crumble (it is described as crumbling)`);
     }
+  }
+  // 1b. a place to explore is never inert: named things with no verb can be looked at
+  if (b.mode === "wander") {
+    let added = 0;
+    for (const e of b.entities) {
+      if (!["prop", "sign", "vehicle", "pickup"].includes(e.kind) || bound(e.id) || !e.noun) continue;
+      b.verbs.push(vb(uniqueId(b, `vb_look_${e.id}`), "social.inspect", e.id, { text: e.noun.charAt(0).toUpperCase() + e.noun.slice(1) }));
+      added++;
+    }
+    if (added) notes.push(`${added} named thing(s) made inspectable (a place to explore)`);
   }
   // 2. collections: ≥3 same-noun carried pickups that are never delivered anywhere
   const delivered = new Set<string>();
@@ -318,6 +328,11 @@ export function repairExpects(b: WorldBundle): string[] {
       notes.push(`expect ${x.id}: b '${x.b}' is not a zone → '${highest.id}' (highest walkable area)`);
       x.b = highest.id;
     }
+  }
+  // a place leads its receipt with its tour: every exhibit can be walked to and inspected
+  if (b.mode === "wander" && !b.expects.some((x) => x.headline) && spawn) {
+    b.expects.push({ id: "x_tour", src: "template", layer: "gameplay", prop: "reachable", a: spawn.id, b: "", need: [], lo: 0, hi: 0, headline: true, text: "Every exhibit can be reached" });
+    notes.push("expect x_tour: added as headline (a place: the tour is what gets checked)");
   }
   // every play world leads its receipt with something: promote a win check, or add one
   if (b.mode === "play" && !b.expects.some((x) => x.headline)) {

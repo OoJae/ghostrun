@@ -134,7 +134,7 @@ export function fillMessages(prompt: string, intent: IntentOut, layout: PackLayo
     },
     {
       role: "user",
-      content: `Prompt: ${prompt}\nIntent: ${JSON.stringify(intent)}\nUse seed ${seed}, pack "${layout.packId}", sub ${JSON.stringify(intent.sub)}. Headline expect text: "${intent.headline}".`,
+      content: `Prompt: ${prompt}\nIntent: ${JSON.stringify(intent)}\nUse seed ${seed}, pack "${layout.packId}", mode "${intent.mode}", sub ${JSON.stringify(intent.sub)}. Headline expect text: "${intent.headline}".${intent.mode === "wander" ? " This is a place to explore: no win or lose rules needed; make its things inspectable (social.inspect with a real one-line text each) and let NPCs guide." : ""}`,
     },
   ];
 }

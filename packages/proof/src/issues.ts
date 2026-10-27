@@ -23,6 +23,10 @@ export function issuesOf(r: Receipt, b: WorldBundle): string[] {
     else out.push(`${c.id}: ${c.text}${cx ? ` (${cx})` : ""}`);
   }
   if (b.mode === "play" && !r.chips.some((c) => c.id === "T3:win")) out.push("The world has no winnable objective the AI runners could play.");
+  if (b.mode === "wander") {
+    const sights = new Set(b.verbs.filter((v) => v.verb === "social.inspect" || v.verb === "puzzle.switch").map((v) => v.on));
+    if (sights.size < 5) out.push(`This place has only ${sights.size} thing(s) to look at or use. Add 6-10 inspectable things (ent + social.inspect with a real one-line text) spread over different zones and anchors, and a guide npc.`);
+  }
   return out.slice(0, 8);
 }
 

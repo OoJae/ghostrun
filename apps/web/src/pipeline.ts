@@ -83,7 +83,7 @@ export const FIXTURE_PROMPTS: Record<string, string> = {
 };
 
 /** Fill text (fixture or a live stream) → placed world, choosing the pack from the registry. */
-export function worldFromFill(fillText: string, seed: number, live?: Intent["live"], packId?: string): World {
+export function worldFromFill(fillText: string, seed: number, live?: Intent["live"], packId?: string, mode?: WorldBundle["mode"]): World {
   const t0 = performance.now();
   const fill = parseFill(fillText, { seed });
   const t1 = performance.now();
@@ -91,6 +91,7 @@ export function worldFromFill(fillText: string, seed: number, live?: Intent["liv
   const draft = fill.draft;
   // place into the pack the fill was written against (its meta line sometimes names another)
   if (packId && PACKS.some((p) => p.id === packId)) draft.pack = { ...draft.pack, id: packId };
+  if (mode) draft.mode = mode; // the intent decides play vs wander (fills tend to say "play")
   const known = PACKS.some((p) => p.id === draft.pack.id);
   const pack = packFor(draft.pack.id);
   const layout = pack.generate({ seed, params: pack.defaults, sub: draft.pack.sub, laws: draft.laws, harder: false });
@@ -118,7 +119,7 @@ export function worldFromFill(fillText: string, seed: number, live?: Intent["liv
   const lines = fillText.split("\n");
   try {
     const meta = JSON.parse(lines[0] ?? "") as { op?: string; pack?: string };
-    if (meta.op === "meta" && meta.pack !== pack.id) lines[0] = JSON.stringify({ ...meta, pack: pack.id });
+    if (meta.op === "meta" && (meta.pack !== pack.id || (meta as { mode?: string }).mode !== bundle.mode)) lines[0] = JSON.stringify({ ...meta, pack: pack.id, mode: bundle.mode });
   } catch {
     // no meta line: the parser already defaulted it
   }
