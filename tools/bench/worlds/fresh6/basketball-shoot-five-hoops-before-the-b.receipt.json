@@ -1,0 +1,328 @@
+{
+  "prompt": "Basketball: shoot five hoops before the buzzer",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "sports",
+    "setting": "Indoor basketball arena with walled symmetric field, hoops and two team bases",
+    "role": "Basketball player",
+    "goal": "Score five hoops before the buzzer sounds",
+    "fail": "Timer runs out before five hoops are scored",
+    "mood": "Urgent and competitive",
+    "pack": "arena",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Arena layout requires precise shooting under a ticking buzzer timer",
+    "nouns": [
+      {
+        "noun": "basketball court",
+        "hyper": "arena"
+      },
+      {
+        "noun": "hoop",
+        "hyper": "structure"
+      },
+      {
+        "noun": "buzzer",
+        "hyper": "object"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.4,
+      "arousal": 0.8,
+      "tension": 0.8
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "cabdd527fd9890729dede9df07dca6c67b3f8ab54a6ee8aee71e82b65ab0f461",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_buzzer",
+      "text": "Arena layout requires precise shooting under a ticking buzzer timer",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners vs 2 bots + physics, 3 menu schedules × 3 runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 13 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (team:red reaches 5) ← r_score_hoop_1 (ball into hoop_1) ← pick up ball + r_score_hoop_2 (ball into hoop_2) ← pick up ball + r_score_hoop_3 (ball into hoop_3) ← pick up ball + r_score_hoop_4 (ball into hoop_4) ← pick up ball + r_score_hoop_5 (ball into hoop_5) ← pick up ball",
+        "src": ""
+      },
+      {
+        "id": "T2:r_lose",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_lose fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_score_hoop_1",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score_hoop_1"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 7,
+        "status": "verified",
+        "text": "r_score_hoop_1 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_score_hoop_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score_hoop_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 6,
+        "status": "verified",
+        "text": "r_score_hoop_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_score_hoop_3",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score_hoop_3"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 7,
+        "status": "verified",
+        "text": "r_score_hoop_3 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_score_hoop_4",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score_hoop_4"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_score_hoop_4 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_score_hoop_5",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score_hoop_5"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 6,
+        "status": "verified",
+        "text": "r_score_hoop_5 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_deck_center",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_deck_center"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_deck_center fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_deck_e",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_deck_e"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_secret_deck_e fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_deck_e_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_deck_e_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 30,
+        "status": "verified",
+        "text": "r_secret_deck_e_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_deck_w",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_deck_w"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 10,
+        "status": "verified",
+        "text": "r_secret_deck_w fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_n",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_n"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 6,
+        "status": "verified",
+        "text": "r_secret_flank_n fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_s",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_s"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 18,
+        "status": "verified",
+        "text": "r_secret_flank_s fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners vs 2 bots",
+        "n": 12,
+        "k": 11,
+        "text": "AI runners won by playing it vs 2 bots (AI par 19 s)",
+        "cx": null,
+        "src": "",
+        "ms": 3524
+      },
+      {
+        "id": "T3:envelope",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 3 menu schedules × 3 runners",
+        "n": 9,
+        "k": 8,
+        "text": "runners still win whatever the cast's minds choose (3 schedules)",
+        "cx": null,
+        "src": "",
+        "ms": 2600
+      }
+    ],
+    "par": {
+      "goldS": 19,
+      "runs": 12,
+      "won": 11
+    },
+    "ms": 6419
+  }
+}

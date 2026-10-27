@@ -1,0 +1,34 @@
+{"op":"meta","mode":"play","lang":"en","pack":"floor_plan","sub":[],"seed":14,"look":"bowling alley","mood":[0.2,0.35,0.2],"timeOfDay":14,"weather":"indoor"}
+{"op":"zone","id":"z_yard","slot":"yard","tag":"outside","name":"Alley entrance courtyard"}
+{"op":"zone","id":"z_lobby","slot":"entrance","tag":"entrance","name":"Alley lobby"}
+{"op":"zone","id":"z_lane","slot":"main_room","tag":"lane","name":"Bowling lane"}
+{"op":"zone","id":"z_seating","slot":"room_sw","tag":"seating","name":"Seating area"}
+{"op":"spawn","id":"sp_red","zone":"z_yard","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"goal_win","zone":"z_lane","anchor":"corner_w","noun":"all pins down","hyper":"goal","team":"red"}
+{"op":"ent","id":"ball","kind":"pickup","noun":"bowling ball","hyper":"ball","zone":"z_lobby","anchor":"center","body":"dynamic","shape":"sphere","size":[0.25,0.25,0.25]}
+{"op":"ent","id":"pin_1","kind":"goal","noun":"pin 1","hyper":"pin","zone":"z_lane","anchor":"corner_ne","body":"sensor","shape":"box","size":[0.1,0.15,0.1]}
+{"op":"ent","id":"pin_2","kind":"goal","noun":"pin 2","hyper":"pin","zone":"z_lane","anchor":"center","body":"sensor","shape":"box","size":[0.1,0.15,0.1]}
+{"op":"ent","id":"pin_3","kind":"goal","noun":"pin 3","hyper":"pin","zone":"z_lane","anchor":"corner_se","body":"sensor","shape":"box","size":[0.1,0.15,0.1]}
+{"op":"ent","id":"pin_4","kind":"goal","noun":"pin 4","hyper":"pin","zone":"z_lane","anchor":"corner_sw","body":"sensor","shape":"box","size":[0.1,0.15,0.1]}
+{"op":"ent","id":"pin_5","kind":"goal","noun":"pin 5","hyper":"pin","zone":"z_lane","anchor":"wall_n","body":"sensor","shape":"box","size":[0.1,0.15,0.1]}
+{"op":"ent","id":"pin_6","kind":"goal","noun":"pin 6","hyper":"pin","zone":"z_lane","anchor":"wall_s","body":"sensor","shape":"box","size":[0.1,0.15,0.1]}
+{"op":"ent","id":"pin_7","kind":"goal","noun":"pin 7","hyper":"pin","zone":"z_lane","anchor":"wall_e","body":"sensor","shape":"box","size":[0.1,0.15,0.1]}
+{"op":"ent","id":"pin_8","kind":"goal","noun":"pin 8","hyper":"pin","zone":"z_lane","anchor":"wall_w","body":"sensor","shape":"box","size":[0.1,0.15,0.1]}
+{"op":"ent","id":"pin_9","kind":"goal","noun":"pin 9","hyper":"pin","zone":"z_lane","anchor":"doorway_s","body":"sensor","shape":"box","size":[0.1,0.15,0.1]}
+{"op":"ent","id":"pin_10","kind":"goal","noun":"pin 10","hyper":"pin","zone":"z_lane","anchor":"doorway_n","body":"sensor","shape":"box","size":[0.1,0.15,0.1]}
+{"op":"verb","id":"vb_carry_ball","verb":"physics_props.carry","on":"ball","params":{}}
+{"op":"verb","id":"vb_throw_ball","verb":"combat_sport.throw","on":"ball","params":{"range":15}}
+{"op":"rule","id":"r_pin1","when":{"t":"touch","a":"ball","b":"pin_1"},"then":[{"e":"score","target":"team:red","n":1},{"e":"destroy","target":"pin_1"}],"once":true}
+{"op":"rule","id":"r_pin2","when":{"t":"touch","a":"ball","b":"pin_2"},"then":[{"e":"score","target":"team:red","n":1},{"e":"destroy","target":"pin_2"}],"once":true}
+{"op":"rule","id":"r_pin3","when":{"t":"touch","a":"ball","b":"pin_3"},"then":[{"e":"score","target":"team:red","n":1},{"e":"destroy","target":"pin_3"}],"once":true}
+{"op":"rule","id":"r_pin4","when":{"t":"touch","a":"ball","b":"pin_4"},"then":[{"e":"score","target":"team:red","n":1},{"e":"destroy","target":"pin_4"}],"once":true}
+{"op":"rule","id":"r_pin5","when":{"t":"touch","a":"ball","b":"pin_5"},"then":[{"e":"score","target":"team:red","n":1},{"e":"destroy","target":"pin_5"}],"once":true}
+{"op":"rule","id":"r_pin6","when":{"t":"touch","a":"ball","b":"pin_6"},"then":[{"e":"score","target":"team:red","n":1},{"e":"destroy","target":"pin_6"}],"once":true}
+{"op":"rule","id":"r_pin7","when":{"t":"touch","a":"ball","b":"pin_7"},"then":[{"e":"score","target":"team:red","n":1},{"e":"destroy","target":"pin_7"}],"once":true}
+{"op":"rule","id":"r_pin8","when":{"t":"touch","a":"ball","b":"pin_8"},"then":[{"e":"score","target":"team:red","n":1},{"e":"destroy","target":"pin_8"}],"once":true}
+{"op":"rule","id":"r_pin9","when":{"t":"touch","a":"ball","b":"pin_9"},"then":[{"e":"score","target":"team:red","n":1},{"e":"destroy","target":"pin_9"}],"once":true}
+{"op":"rule","id":"r_pin10","when":{"t":"touch","a":"ball","b":"pin_10"},"then":[{"e":"score","target":"team:red","n":1},{"e":"destroy","target":"pin_10"}],"once":true}
+{"op":"rule","id":"r_win","when":{"t":"score_gte","a":"team:red","n":10},"then":[{"e":"win","target":"player"}]}
+{"op":"expect","id":"x_pins","prop":"win_reachable","a":"sp_red","b":"goal_win","headline":true,"text":"Alley length and pin rack must make spare/strike timing feel right"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

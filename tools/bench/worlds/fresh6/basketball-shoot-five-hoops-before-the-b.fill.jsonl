@@ -1,0 +1,28 @@
+{"op":"meta","mode":"play","lang":"en","pack":"arena","sub":[],"seed":22,"look":"basketball arena","mood":[0.4,0.8,0.8],"timeOfDay":14,"weather":"clear"}
+{"op":"zone","id":"z_midfield","slot":"midfield","tag":"court","name":"Center court"}
+{"op":"zone","id":"z_west_half","slot":"west_half","tag":"base","name":"Red team base"}
+{"op":"zone","id":"z_east_half","slot":"east_half","tag":"base","name":"Blue team base"}
+{"op":"zone","id":"z_north_deck","slot":"north_deck","tag":"platform","name":"Upper platform"}
+{"op":"zone","id":"z_south_deck","slot":"south_deck","tag":"platform","name":"Lower platform"}
+{"op":"spawn","id":"sp_red","zone":"z_west_half","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"hoop_1","zone":"z_midfield","anchor":"center_n","noun":"basket hoop","hyper":"structure","team":"red"}
+{"op":"goal","id":"hoop_2","zone":"z_midfield","anchor":"center_s","noun":"basket hoop","hyper":"structure","team":"red"}
+{"op":"goal","id":"hoop_3","zone":"z_west_half","anchor":"goal_ring","noun":"basket hoop","hyper":"structure","team":"red"}
+{"op":"goal","id":"hoop_4","zone":"z_east_half","anchor":"goal_ring","noun":"basket hoop","hyper":"structure","team":"red"}
+{"op":"goal","id":"hoop_5","zone":"z_north_deck","anchor":"deck_center","noun":"basket hoop","hyper":"structure","team":"red"}
+{"op":"ent","id":"ball","kind":"pickup","noun":"basketball","hyper":"object","zone":"z_midfield","anchor":"center","body":"dynamic","shape":"sphere","size":[0.24,0.24,0.24]}
+{"op":"ent","id":"buzzer_timer","kind":"prop","noun":"buzzer timer","hyper":"object","zone":"z_midfield","anchor":"scoreboard","body":"sensor","shape":"box","size":[0.2,0.2,0.2]}
+{"op":"verb","id":"vb_carry_ball","verb":"physics_props.carry","on":"ball","params":{}}
+{"op":"verb","id":"vb_throw_ball","verb":"combat_sport.throw","on":"ball","params":{"range":15}}
+{"op":"verb","id":"vb_buzzer","verb":"puzzle.timer","on":"buzzer_timer","params":{"seconds":60}}
+{"op":"rule","id":"r_score_hoop_1","when":{"t":"enter","a":"ball","b":"hoop_1"},"then":[{"e":"score","target":"team:red","n":1}],"once":false}
+{"op":"rule","id":"r_score_hoop_2","when":{"t":"enter","a":"ball","b":"hoop_2"},"then":[{"e":"score","target":"team:red","n":1}],"once":false}
+{"op":"rule","id":"r_score_hoop_3","when":{"t":"enter","a":"ball","b":"hoop_3"},"then":[{"e":"score","target":"team:red","n":1}],"once":false}
+{"op":"rule","id":"r_score_hoop_4","when":{"t":"enter","a":"ball","b":"hoop_4"},"then":[{"e":"score","target":"team:red","n":1}],"once":false}
+{"op":"rule","id":"r_score_hoop_5","when":{"t":"enter","a":"ball","b":"hoop_5"},"then":[{"e":"score","target":"team:red","n":1}],"once":false}
+{"op":"rule","id":"r_win","when":{"t":"score_gte","a":"team:red","n":5},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose","when":{"t":"timer_end","a":"buzzer_timer"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":6}}
+{"op":"expect","id":"x_buzzer","prop":"win_reachable","a":"sp_red","b":"hoop_1","headline":true,"text":"Arena layout requires precise shooting under a ticking buzzer timer"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

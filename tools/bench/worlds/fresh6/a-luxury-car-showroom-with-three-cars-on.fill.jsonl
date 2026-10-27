@@ -1,0 +1,13 @@
+{"op":"meta","mode":"wander","lang":"en","pack":"floor_plan","sub":[],"seed":30,"look":"luxury showroom","mood":[0.55,0.15,0.05],"timeOfDay":19,"weather":"clear"}
+{"op":"zone","id":"z_showroom","slot":"main_room","tag":"hall","name":"Showroom"}
+{"op":"spawn","id":"sp_red","zone":"z_showroom","anchor":"spawn_pad","team":"red"}
+{"op":"ent","id":"car_aurora","kind":"prop","noun":"Aurora sedan","hyper":"vehicle","zone":"z_showroom","anchor":"corner_ne","body":"fixed","shape":"box","size":[2.0,1.4,4.5]}
+{"op":"ent","id":"car_velox","kind":"prop","noun":"Velox coupe","hyper":"vehicle","zone":"z_showroom","anchor":"center","body":"fixed","shape":"box","size":[1.8,1.3,4.2]}
+{"op":"ent","id":"car_eclipse","kind":"prop","noun":"Eclipse SUV","hyper":"vehicle","zone":"z_showroom","anchor":"corner_sw","body":"fixed","shape":"box","size":[2.2,1.7,5.0]}
+{"op":"verb","id":"vb_inspect_aurora","verb":"social.inspect","on":"car_aurora","params":{"text":"Sleek Aurora with autonomous drive."}}
+{"op":"verb","id":"vb_inspect_velox","verb":"social.inspect","on":"car_velox","params":{"text":"Velox coupe, 0-60 in 3.2s."}}
+{"op":"verb","id":"vb_inspect_eclipse","verb":"social.inspect","on":"car_eclipse","params":{"text":"Eclipse SUV, all‑wheel drive luxury."}}
+{"op":"npc","id":"guide_1","role":"guide","zone":"z_showroom","anchor":"doorway_s","team":"","menu":["guide.patrol"],"dflt":"guide.patrol"}
+{"op":"expect","id":"x_cars","prop":"win_reachable","a":"sp_red","b":"car_aurora","headline":true,"text":"Showroom must hold exactly three on-display cars"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

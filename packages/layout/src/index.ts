@@ -246,13 +246,25 @@ export function repairDeliveries(b: WorldBundle, layout: PackLayout, bound: Map<
   const notes: string[] = [];
   const inside = (p: Vec3, s: Entity) => Math.abs(p[0] - s.pos[0]) < s.size[0] / 2 + 0.5 && Math.abs(p[2] - s.pos[2]) < s.size[2] / 2 + 0.5 && Math.abs(p[1] - s.pos[1]) < s.size[1] / 2 + 1;
   const standable = (p: Vec3) => layout.statics.some((st) => st.surf !== "wall" && Math.abs(p[0] - st.pos[0]) <= st.size[0] / 2 && Math.abs(p[2] - st.pos[2]) <= st.size[2] / 2 && Math.abs(st.pos[1] + st.size[1] / 2 - p[1]) < 0.3);
+  // you lose leaving a place (the bridge, the ring): you start inside it
+  for (const r of b.rules) {
+    if (r.when.t !== "exit" || r.when.a !== "player" || !r.then.some((e) => e.e === "lose")) continue;
+    const place = b.entities.find((e) => e.id === r.when.b);
+    const sp = b.entities.find((e) => e.kind === "spawn" && e.team === (b.entities.some((x) => x.kind === "spawn" && x.team === "red") ? "red" : e.team));
+    if (!place || !sp || inside([sp.pos[0], sp.pos[1] + 0.9, sp.pos[2]], place)) continue;
+    sp.pos = [place.pos[0], place.pos[1] - place.size[1] / 2, place.pos[2]];
+    sp.zone = place.zone;
+    notes.push(`${sp.id}: you lose leaving ${place.id}, so you start inside it`);
+  }
   // someone a rule waits to see leave a place (knocked out of a ring) starts inside it
   let k = 0;
   for (const r of b.rules) {
     if (r.when.t !== "exit") continue;
     const who = b.entities.find((e) => e.id === r.when.a && e.kind === "npc");
     const place = b.entities.find((e) => e.id === r.when.b);
-    if (!who || !place || inside(who.pos, place)) continue;
+    // well inside (a rival 0.1 m past the edge was never in it, so it can never leave)
+    const wellIn = (p: Vec3, s: Entity) => Math.abs(p[0] - s.pos[0]) < s.size[0] / 2 - 0.4 && Math.abs(p[2] - s.pos[2]) < s.size[2] / 2 - 0.4 && Math.abs(p[1] - s.pos[1]) < s.size[1] / 2 + 1;
+    if (!who || !place || wellIn(who.pos, place)) continue;
     const off = ((k++ % 3) - 1) * Math.min(1.6, place.size[0] / 4);
     who.pos = [place.pos[0] + off, place.pos[1] - place.size[1] / 2 + who.size[1] / 2, place.pos[2] + (k % 2 ? 1 : -1) * Math.min(1.6, place.size[2] / 4)];
     who.zone = place.zone;
@@ -288,7 +300,9 @@ export function repairDeliveries(b: WorldBundle, layout: PackLayout, bound: Map<
  * gets two rivals at the rival spawn, playing the usual rival options. Logged.
  */
 export function addRivals(b: WorldBundle): string[] {
-  if (b.mode !== "play" || !b.verbs.some((v) => v.verb === "combat_sport.throw")) return [];
+  // a throwing game with nothing to throw at needs rivals; one with pins or cans to hit doesn't
+  const throws = b.verbs.filter((v) => v.verb === "combat_sport.throw");
+  if (b.mode !== "play" || !throws.length || throws.every((v) => String(v.params.at ?? ""))) return [];
   const spawnOf = (t: string) => b.entities.find((e) => e.kind === "spawn" && e.team === t);
   const mine = !spawnOf("red") && spawnOf("blue") ? "blue" : "red";
   const them = mine === "red" ? "blue" : "red";
@@ -678,12 +692,44 @@ export function repairKits(b: WorldBundle): string[] {
       w.t = "touch";
       notes.push(`rule ${r.id}: the player hitting ${npc.id} means tagging them (USE next to them)`);
     }
+    // "the download terminal enters the server room": a fixed thing can't move; it means you
+    // reaching that room (a condition that it's carried, which it can't be, goes with it)
+    // (never a spawn point, which means whoever spawns there, and never a rule you lose by: reaching
+    // the place yourself would then be the loss)
+    const fixedMover = w.t === "enter" && !r.then.some((e) => e.e === "lose") ? b.entities.find((e) => e.id === w.a && e.kind !== "spawn" && (e.body === "fixed" || e.body === "none" || e.body === "sensor") && e.kind !== "npc" && !b.verbs.some((v) => v.on === e.id && (v.verb.endsWith(".carry") || v.verb.endsWith(".oscillate")))) : undefined;
+    if (fixedMover && w.b) {
+      r.if = r.if.filter((c) => !c.l.startsWith(`${fixedMover.id}.carrier`));
+      w.a = "player";
+      notes.push(`rule ${r.id}: the ${fixedMover.noun || fixedMover.id} can't move; '${fixedMover.id} enters ${w.b}' means you reaching it`);
+    }
     // a countdown nobody started: "until sunrise" with no timer on sunrise_timer
     const clock = w.t === "timer_end" ? b.entities.find((e) => e.id === w.a) : undefined;
     if (clock && !b.verbs.some((v) => v.on === clock.id && v.verb === "puzzle.timer")) {
       b.verbs.push(vb(uniqueId(b, `vb_timer_${clock.id}`), "puzzle.timer", clock.id, { seconds: 60 }));
       notes.push(`${clock.id}: rule ${r.id} waits for it to run out, so it is a 60 s countdown`);
     }
+  }
+  // 1b''. "when fire1 is destroyed" (state_is fire1 destroyed): destroying something sets no state,
+  // so whatever destroys it (a rule, or touching it to collect it) now says so first
+  const GONE = /^(destroyed|gone|dead|out|extinguished|put_?out|collected|removed|broken|defeated)$/;
+  for (const r of [...b.rules]) {
+    const w = r.when;
+    if (w.t !== "state_is" || !GONE.test(w.s) || !b.entities.some((e) => e.id === w.a)) continue;
+    const st = w.s;
+    const setsIt = (x: Rule) => x.then.some((e) => e.e === "set_state" && e.target === w.a && String(e.v) === st);
+    if (b.rules.some(setsIt)) continue;
+    let n = 0;
+    for (const x of b.rules) {
+      const i = x.then.findIndex((e) => e.e === "destroy" && e.target === w.a);
+      if (i < 0) continue;
+      x.then.splice(i, 0, { ...fx("set_state", w.a), v: st });
+      n++;
+    }
+    if (b.verbs.some((v) => v.on === w.a && v.verb === "puzzle.collect")) {
+      b.rules.push({ id: uniqueId(b, `r_${st}_${w.a}`), src: "template", layer: "gameplay", when: { t: "touch", a: "player", b: w.a, s: "", n: 0, act: "" }, if: [], then: [{ ...fx("set_state", w.a), v: st }], once: true, cooldownS: 0, prio: 0 });
+      n++;
+    }
+    if (n) notes.push(`rule ${r.id}: '${w.a} is ${st}' happens when it is destroyed; ${n} way${n > 1 ? "s" : ""} of destroying it now say so`);
   }
   // 1c. a rule waiting on an event nothing could produce: what it touches is collected (or, if
   // not a pickup, inspected); what it picks up is carried
@@ -716,11 +762,28 @@ export function repairKits(b: WorldBundle): string[] {
   // in a small ring a full shove (~4 m) clears it from anywhere: scaled so it takes working them
   // to the edge (about a third of the way across per shove)
   const ring = ringOut ? b.entities.find((e) => b.rules.some((r) => r.when.t === "exit" && r.when.a === "player" && r.when.b === e.id)) : undefined;
+  // the ring (the bridge, the mat) you must stay on isn't also a hazard: stepping onto it would
+  // send you back, which is leaving it
+  if (ring && b.verbs.some((v) => v.on === ring.id && v.verb === "motion_hazards.hazard")) {
+    b.verbs = b.verbs.filter((v) => !(v.on === ring.id && v.verb === "motion_hazards.hazard"));
+    notes.push(`${ring.id}: you must stay in it, so it isn't a hazard too`);
+  }
   if (ring) {
     const force = Math.max(4, Math.min(12, Math.round(Math.min(ring.size[0], ring.size[2]) * 1.2)));
     const shoves = b.verbs.filter((v) => v.verb === "combat_sport.shove" && v.params.force === undefined);
     for (const v of shoves) v.params = { ...v.params, force };
     if (shoves.length && force < 10) notes.push(`${ring.id}: shoves knock ${force < 10 ? "less far" : ""} (force ${force}) in a ${Math.min(ring.size[0], ring.size[2])} m ring`);
+  }
+  // 1c''. a lock whose key is something you can't carry (a switch: "the rope switch opens the rope
+  // door"): with a rule that opens the door, the lock goes; without one, the door opens on USE
+  for (const v of [...b.verbs]) {
+    if (v.verb !== "puzzle.lock" || !v.params.key) continue;
+    const k = b.entities.find((e) => e.id === String(v.params.key));
+    if (!k || k.kind === "pickup" || b.verbs.some((x) => x.on === k.id && x.verb.endsWith(".carry"))) continue;
+    const opened = b.rules.some((r) => r.then.some((e) => (e.e === "open" || (e.e === "set_state" && String(e.v) === "open")) && e.target === v.on));
+    if (opened) b.verbs.splice(b.verbs.indexOf(v), 1);
+    else v.params = { ...v.params, key: "" };
+    notes.push(`${v.on}: its 'key' ${k.id} is a ${k.kind}, not something to carry; ${opened ? "a rule opens the door, so the lock goes" : "the door opens with USE"}`);
   }
   // 1c'. a lock whose key names nothing in the world: the one unused key-like pickup is that key;
   // with none, the door opens on USE (a key nobody can find would lock it forever)
@@ -767,6 +830,17 @@ export function repairKits(b: WorldBundle): string[] {
       r.when.a = "";
       notes.push(`rule ${r.id}: a hit by the thrown ${r.when.b} means anyone it hits`);
     }
+    // "the ball touches pin_3" (or "pin_3 is hit by the ball"): pin_3 is something to throw it at
+    const tv = throwable.has(r.when.b) || throwable.has(r.when.a) ? b.verbs.find((v) => v.verb === "combat_sport.throw" && (v.on === r.when.a || v.on === r.when.b)) : undefined;
+    if (tv && r.when.t === "touch" && r.when.a === tv.on && r.when.b) [r.when.t, r.when.a, r.when.b] = ["hit", r.when.b, tv.on];
+    const thing = tv && r.when.t === "hit" && r.when.b === tv.on ? b.entities.find((e) => e.id === r.when.a && e.kind !== "npc") : undefined;
+    if (tv && thing) {
+      const at = String(tv.params.at ?? "").split(",").filter(Boolean);
+      if (!at.includes(thing.id)) {
+        tv.params = { ...tv.params, at: [...at, thing.id].join(",") };
+        notes.push(`${thing.id}: something to throw the ${tv.on} at (rule ${r.id} waits for it to be hit)`);
+      }
+    }
     // "a hit by the ball blue threw scores for red": the thrower's team scores, never the one hit
     if (r.when.t === "hit" && throwable.has(r.when.b)) {
       const thrower = r.if.find((c) => c.l === `${r.when.b}.carrier.team` && c.op === "eq" && (c.r === "red" || c.r === "blue"))?.r;
@@ -804,7 +878,7 @@ export function repairKits(b: WorldBundle): string[] {
   const scored = [...groups.values()].flat().filter((id) => scoring.has(id));
   if (scored.length) groups.set("scoring pickup", [...new Set([...(groups.get("scoring pickup") ?? []), ...scored])]);
   for (const [noun, ids] of groups) {
-    if (ids.length < 3 && noun !== "scoring pickup") continue;
+    if ((ids.length < 3 && noun !== "scoring pickup") || !ids.length) continue;
     if (noun !== "scoring pickup") for (const [k, v] of groups) if (k !== noun) groups.set(k, v.filter((x) => !ids.includes(x)));
     b.verbs = b.verbs.filter((v) => !(v.verb.endsWith(".carry") && ids.includes(v.on)));
     for (const id of ids) if (!bound(id, "puzzle.collect")) b.verbs.push(vb(uniqueId(b, `vb_collect_${id}`), "puzzle.collect", id));

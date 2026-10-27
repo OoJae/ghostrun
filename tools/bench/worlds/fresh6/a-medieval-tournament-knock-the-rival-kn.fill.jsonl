@@ -1,0 +1,16 @@
+{"op":"meta","mode":"play","lang":"en","pack":"arena","sub":[],"seed":24,"look":"medieval tournament","mood":[0.2,0.8,0.7],"timeOfDay":14,"weather":"clear"}
+{"op":"zone","id":"z_bridge","slot":"north_deck","tag":"bridge","name":"Stone bridge over chasm"}
+{"op":"zone","id":"z_ground","slot":"south_deck","tag":"ground","name":"Chasm floor"}
+{"op":"spawn","id":"sp_red","zone":"z_bridge","anchor":"deck_w","team":"red"}
+{"op":"goal","id":"edge_goal","zone":"z_bridge","anchor":"deck_e","noun":"bridge edge","hyper":"edge","team":""}
+{"op":"ent","id":"shield","kind":"pickup","noun":"iron shield","hyper":"shield","zone":"z_bridge","anchor":"deck_center","body":"dynamic","shape":"box","size":[0.5,0.8,0.2]}
+{"op":"ent","id":"rival_knight","kind":"npc","noun":"rival knight","hyper":"person","zone":"z_bridge","anchor":"deck_e","team":"blue","body":"dynamic","shape":"capsule"}
+{"op":"verb","id":"vb_carry_shield","verb":"physics_props.carry","on":"shield","params":{}}
+{"op":"verb","id":"vb_shove_rival","verb":"combat_sport.shove","on":"rival_knight","params":{"force":8}}
+{"op":"verb","id":"vb_hazard_chasm","verb":"motion_hazards.hazard","on":"edge_goal","params":{"respawn":true}}
+{"op":"rule","id":"r_win","when":{"t":"exit","a":"rival_knight","b":"edge_goal"},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose","when":{"t":"exit","a":"sp_red","b":"edge_goal"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"expect","id":"x_match","prop":"win_reachable","a":"sp_red","b":"edge_goal","headline":true,"text":"Match is won by shoving the opponent off the bridge edge"}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":6}}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

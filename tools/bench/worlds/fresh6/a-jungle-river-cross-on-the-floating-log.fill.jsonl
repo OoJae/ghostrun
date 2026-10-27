@@ -1,0 +1,63 @@
+{"op":"meta","mode":"play","lang":"en","pack":"course","sub":[],"seed":23,"look":"jungle river","mood":[0.65,0.6,0.55],"timeOfDay":14,"weather":"rain"}
+\
+{"op":"zone","id":"z_start","slot":"start","tag":"outside","name":"Riverbank"}
+\
+{"op":"zone","id":"z_seg_1","slot":"seg_1","tag":"ledge","name":"Log Hurdle 1"}
+\
+{"op":"zone","id":"z_seg_2","slot":"seg_2","tag":"beam","name":"Log Hurdle 2"}
+\
+{"op":"zone","id":"z_seg_3","slot":"seg_3","tag":"gaps","name":"Log Hurdle 3"}
+\
+{"op":"zone","id":"z_seg_4","slot":"seg_4","tag":"pit","name":"Log Hurdle 4"}
+\
+{"op":"zone","id":"z_seg_5","slot":"seg_5","tag":"gaps","name":"Log Hurdle 5"}
+\
+{"op":"zone","id":"z_seg_6","slot":"seg_6","tag":"steps","name":"Log Hurdle 6"}
+\
+{"op":"zone","id":"z_finish","slot":"finish","tag":"landmark","name":"Waterfall"}
+\
+{"op":"spawn","id":"sp_red","zone":"z_start","anchor":"spawn_pad","team":"red"}
+\
+{"op":"goal","id":"waterfall_goal","zone":"z_finish","anchor":"goal","noun":"waterfall","hyper":"landmark","team":"red"}
+\
+{"op":"ent","id":"log_1","kind":"platform","noun":"floating log","hyper":"platforms","zone":"z_seg_1","anchor":"cp_1","body":"kinematic","shape":"box","size":[2,0.3,0.5]}
+\
+{"op":"ent","id":"log_2","kind":"platform","noun":"floating log","hyper":"platforms","zone":"z_seg_2","anchor":"cp_2","body":"kinematic","shape":"box","size":[2,0.3,0.5]}
+\
+{"op":"ent","id":"log_3","kind":"platform","noun":"floating log","hyper":"platforms","zone":"z_seg_3","anchor":"cp_3","body":"kinematic","shape":"box","size":[2,0.3,0.5]}
+\
+{"op":"ent","id":"log_4","kind":"platform","noun":"floating log","hyper":"platforms","zone":"z_seg_4","anchor":"cp_4","body":"kinematic","shape":"box","size":[2,0.3,0.5]}
+\
+{"op":"ent","id":"log_5","kind":"platform","noun":"floating log","hyper":"platforms","zone":"z_seg_5","anchor":"cp_5","body":"kinematic","shape":"box","size":[2,0.3,0.5]}
+\
+{"op":"ent","id":"log_6","kind":"platform","noun":"floating log","hyper":"platforms","zone":"z_seg_6","anchor":"pickup_6","body":"kinematic","shape":"box","size":[2,0.3,0.5]}
+\
+{"op":"ent","id":"river_hazard","kind":"hazard","noun":"rushing water","hyper":"watercourse","zone":"z_seg_1","anchor":"river","body":"sensor","shape":"box","size":[20,0.5,10]}
+\
+{"op":"ent","id":"start_sign","kind":"sign","noun":"sign","hyper":"sign","zone":"z_start","anchor":"sign","body":"fixed","shape":"box","size":[0.5,0.5,0.1]}
+\
+{"op":"verb","id":"vb_jump","verb":"locomotion.jump","on":"player","params":{"jumpsMax":2}}
+\
+{"op":"verb","id":"vb_log1","verb":"motion_hazards.oscillate","on":"log_1","params":{"axis":"x","travel":3,"period":4}}
+\
+{"op":"verb","id":"vb_log2","verb":"motion_hazards.oscillate","on":"log_2","params":{"axis":"x","travel":3,"period":4}}
+\
+{"op":"verb","id":"vb_log3","verb":"motion_hazards.oscillate","on":"log_3","params":{"axis":"x","travel":3,"period":4}}
+\
+{"op":"verb","id":"vb_log4","verb":"motion_hazards.oscillate","on":"log_4","params":{"axis":"x","travel":3,"period":4}}
+\
+{"op":"verb","id":"vb_log5","verb":"motion_hazards.oscillate","on":"log_5","params":{"axis":"x","travel":3,"period":4}}
+\
+{"op":"verb","id":"vb_log6","verb":"motion_hazards.oscillate","on":"log_6","params":{"axis":"x","travel":3,"period":4}}
+\
+{"op":"verb","id":"vb_water_hazard","verb":"motion_hazards.hazard","on":"river_hazard","params":{"respawn":true}}
+\
+{"op":"rule","id":"r_win","when":{"t":"enter","a":"player","b":"waterfall_goal"},"if":[{"l":"player.team","op":"eq","r":"red"}],"then":[{"e":"win","target":"player"}],"once":true}
+\
+{"op":"rule","id":"r_lose","when":{"t":"hit","a":"player","b":"river_hazard"},"then":[{"e":"lose","target":"player"}],"once":true}
+\
+{"op":"expect","id":"exp_river","prop":"win_reachable","a":"sp_red","b":"waterfall_goal","headline":true,"text":"River path requires timing jumps across moving logs"}
+\
+{"op":"end","layer":"gameplay"}
+\
+{"op":"end","layer":"cosmetic"}

@@ -1,0 +1,100 @@
+{
+  "prompt": "A cozy coffee shop where you can order a latte",
+  "intent": {
+    "lang": "en",
+    "mode": "wander",
+    "genre": "cozy simulation",
+    "setting": "A cozy coffee shop interior with a counter, seating and a drink menu",
+    "role": "Customer",
+    "goal": "Approach the counter, order a latte and watch it being made",
+    "fail": "Walking out without completing the order",
+    "mood": "warm",
+    "pack": "floor_plan",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Order flow must end with serving a prepared latte",
+    "nouns": [
+      {
+        "noun": "coffee shop",
+        "hyper": "interior"
+      },
+      {
+        "noun": "latte",
+        "hyper": "drinks"
+      },
+      {
+        "noun": "counter",
+        "hyper": "furniture"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.6,
+      "arousal": 0.2,
+      "tension": -0.4
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "766851c8058be5f87b6b1554c780ad55973fc407590b10a4f0acbe72ac9db936",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_order",
+      "text": "Order flow must end with serving a prepared latte",
+      "status": "not_checkable",
+      "method": "kinematic reachability (jump apex model)"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 0 rules reference existing things",
+        "src": ""
+      },
+      {
+        "id": "T1:x_order",
+        "tier": "T1",
+        "subject": {
+          "kind": "property",
+          "id": "x_order"
+        },
+        "method": "kinematic reachability (jump apex model)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "Order flow must end with serving a prepared latte",
+        "cx": null
+      },
+      {
+        "id": "T3:tour",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "tour"
+        },
+        "status": "played",
+        "method": "physics, an AI visitor walks to and uses each",
+        "n": 4,
+        "k": 4,
+        "text": "walked to and inspected 4 of 4 things",
+        "cx": null,
+        "src": "",
+        "ms": 9
+      }
+    ],
+    "par": null,
+    "ms": 22
+  }
+}

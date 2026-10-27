@@ -1,0 +1,23 @@
+{"op":"meta","mode":"play","lang":"en","pack":"arena","sub":[],"seed":18,"look":"indoor ice rink","mood":[0,0.7,0.6],"timeOfDay":12,"weather":"clear"}
+{"op":"zone","id":"z_midfield","slot":"midfield","tag":"center","name":"Center Ice"}
+{"op":"zone","id":"z_west_half","slot":"west_half","tag":"defense","name":"West Half"}
+{"op":"zone","id":"z_east_half","slot":"east_half","tag":"offense","name":"East Half"}
+{"op":"zone","id":"z_north_deck","slot":"north_deck","tag":"upper","name":"North Deck"}
+{"op":"zone","id":"z_south_deck","slot":"south_deck","tag":"lower","name":"South Deck"}
+{"op":"spawn","id":"sp_red","zone":"z_west_half","anchor":"spawn_pad","team":"red"}
+{"op":"spawn","id":"sp_blue","zone":"z_east_half","anchor":"spawn_pad","team":"blue"}
+{"op":"goal","id":"goal_east","zone":"z_east_half","anchor":"goal_ring","noun":"goal","hyper":"goal","team":"","body":"sensor","shape":"box","size":[1.8,2,0.2]}
+{"op":"goal","id":"goal_west","zone":"z_west_half","anchor":"goal_ring","noun":"goal","hyper":"goal","team":"","body":"sensor","shape":"box","size":[1.8,2,0.2]}
+{"op":"ent","id":"puck","kind":"pickup","noun":"hockey puck","hyper":"puck","zone":"z_midfield","anchor":"center","body":"dynamic","shape":"sphere","size":[0.07,0.07,0.07]}
+{"op":"ent","id":"goalie_east","kind":"npc","noun":"goalie","hyper":"player","zone":"z_east_half","anchor":"flank_n","body":"kinematic","shape":"box","size":[0.6,1.8,0.5],"team":"blue","role":"guard","menu":["guard.patrol"],"dflt":"guard.patrol"}
+{"op":"verb","id":"vb_carry_puck","verb":"physics_props.carry","on":"puck","params":{}}
+{"op":"verb","id":"vb_timer","verb":"puzzle.timer","on":"player","params":{"seconds":120}}
+{"op":"rule","id":"r_score_red","when":{"t":"enter","a":"puck","b":"goal_east"},"then":[{"e":"score","target":"team:red","n":1},{"e":"reset","target":"puck"}],"once":false}
+{"op":"rule","id":"r_score_blue","when":{"t":"enter","a":"puck","b":"goal_west"},"then":[{"e":"score","target":"team:blue","n":1},{"e":"reset","target":"puck"}],"once":false}
+{"op":"rule","id":"r_win","when":{"t":"score_gte","a":"team:red","n":2},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose_score","when":{"t":"score_gte","a":"team:blue","n":2},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose_time","when":{"t":"timer_end","a":"player"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"expect","id":"x_hockey","prop":"win_reachable","a":"sp_red","b":"goal_east","headline":true,"text":"Goalie makes saves, puck must be scored twice for a win"}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":6}}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

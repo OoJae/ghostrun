@@ -1,0 +1,80 @@
+{
+  "prompt": "Find your way out of a dark cave using glowing mushrooms",
+  "intent": {
+    "lang": "en",
+    "mode": "wander",
+    "genre": "exploration",
+    "setting": "a dark cave",
+    "role": "explorer",
+    "goal": "find your way out of the dark cave using the glowing mushrooms as guides",
+    "fail": "get lost forever while a faint heartbeat pulses",
+    "mood": "quiet, eerie, hopeful",
+    "pack": "maze",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Each glowing mushroom marks a corridor and leads to the exit",
+    "nouns": [
+      {
+        "noun": "cave",
+        "hyper": "space"
+      },
+      {
+        "noun": "mushroom",
+        "hyper": "object"
+      }
+    ],
+    "moodVec": {
+      "valence": -0.25,
+      "arousal": -0.3,
+      "tension": 0.35
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "1afb537c44a6e54439597a20d96ceb6bf724ef0d6f4538f3962030e74210e692",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_corridor",
+      "text": "Each glowing mushroom marks a corridor and leads to the exit",
+      "status": "not_checkable",
+      "method": "none"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 0 rules reference existing things",
+        "src": ""
+      },
+      {
+        "id": "T3:tour",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "tour"
+        },
+        "status": "played",
+        "method": "physics, an AI visitor walks to and uses each",
+        "n": 6,
+        "k": 6,
+        "text": "walked to and inspected 6 of 6 things",
+        "cx": null,
+        "src": "",
+        "ms": 78
+      }
+    ],
+    "par": null,
+    "ms": 98
+  }
+}

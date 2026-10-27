@@ -22,6 +22,15 @@ export const IntentOut = v.object({
 });
 export type IntentOut = v.InferOutput<typeof IntentOut>;
 
+// A prompt that opens with something to do (or has one after a colon) is a game, whatever the model
+// said: "Find your way out of a dark cave using glowing mushrooms" came back as a place to explore.
+const GOAL = /(^|:\s*)(find|escape|get out|collect|catch|reach|rescue|steal|win|beat|race|deliver|defend|survive|climb|cross|knock|shoot|score|light|sneak|bring|carry|grab|put out|save|stop|chase|hunt|dodge|smuggle|break into|herd|capture|tag|return|sort|water|dig up)\b/i;
+
+/** The model's intent with what the prompt itself settles (a goal phrase makes it a game). */
+export function settleIntent(prompt: string, intent: IntentOut): IntentOut {
+  return intent.mode === "wander" && GOAL.test(prompt.trim()) ? { ...intent, mode: "play" } : intent;
+}
+
 /** JSON Schema twin of IntentOut for strict structured outputs. */
 export function intentJsonSchema(packs: string[], subs: string[]): Record<string, unknown> {
   const str = { type: "string" };

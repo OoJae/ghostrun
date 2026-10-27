@@ -1,0 +1,80 @@
+{
+  "prompt": "A modern art museum with five sculptures to look at",
+  "intent": {
+    "lang": "en",
+    "mode": "wander",
+    "genre": "virtual tour",
+    "setting": "A modern art museum with clean galleries",
+    "role": "visitor",
+    "goal": "Look at five sculptures",
+    "fail": "",
+    "mood": "calm",
+    "pack": "floor_plan",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Tour sees exactly five sculptures",
+    "nouns": [
+      {
+        "noun": "museum",
+        "hyper": "hall"
+      },
+      {
+        "noun": "sculpture",
+        "hyper": "artwork"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.5,
+      "arousal": 0,
+      "tension": -0.2
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "fe08b028ca562b8d21a8b6fd9e5d7b431b9751f645e7d73a27ba443949749bad",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "tour_expect",
+      "text": "Tour sees exactly five sculptures",
+      "status": "not_checkable",
+      "method": "none"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 0 rules reference existing things",
+        "src": ""
+      },
+      {
+        "id": "T3:tour",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "tour"
+        },
+        "status": "played",
+        "method": "physics, an AI visitor walks to and uses each",
+        "n": 5,
+        "k": 5,
+        "text": "walked to and inspected 5 of 5 things",
+        "cx": null,
+        "src": "",
+        "ms": 22
+      }
+    ],
+    "par": null,
+    "ms": 47
+  }
+}

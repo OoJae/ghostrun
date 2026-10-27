@@ -48,6 +48,12 @@ describe("recorded unseen worlds", () => {
     ["fresh5", "penalty-shootout", "a miss box with no ring is not a ring game"],
     ["fresh5", "defend-the-crystal", "a sunrise nobody started becomes a countdown"],
     ["fresh5", "paintball", "'the player hits blue_1' means tagging them"],
+    ["fresh6", "a-neon-arcade", "a token hung on the wall over the floor is jumped for from below, not stared at from the wall top"],
+    ["fresh6", "bowling-alley", "'the ball touches pin_3' means throwing it at pin_3; no rivals are added to a game with pins"],
+    ["fresh6", "a-secret-agent", "'the terminal enters the server room' means you reaching it"],
+    ["fresh6", "a-tiny-town-fire", "'when fire1 is destroyed' fires when it is"],
+    ["fresh6", "a-medieval-tournament", "the bridge you mustn't leave isn't a hazard, you start on it, and so does the knight"],
+    ["fresh6", "climb-the-beanstalk", "a switch named as a lock's key isn't carried, and a carried thing never takes USE"],
   ])("%s %s: %s", async (set, prefix) => {
     const w = recorded(set, prefix);
     const r = await prove(R, w.bundle, { engine: ENGINE_HASH, runs: 12 });

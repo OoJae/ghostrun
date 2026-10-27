@@ -1,0 +1,22 @@
+{"op":"meta","mode":"wander","lang":"en","pack":"floor_plan","sub":[],"seed":29,"look":"cozy coffee shop","mood":[0.6,0.2,-0.4],"timeOfDay":10,"weather":"clear"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Shop entrance"}
+{"op":"zone","id":"z_main","slot":"main_room","tag":"hall","name":"Coffee counter area"}
+{"op":"zone","id":"z_seating","slot":"room_se","tag":"room","name":"Seating nook"}
+{"op":"spawn","id":"sp_red","zone":"z_entrance","anchor":"spawn_pad","team":"red"}
+{"op":"ent","id":"counter","kind":"prop","noun":"counter","hyper":"furniture","zone":"z_main","anchor":"center","body":"fixed","shape":"box","size":[2,1,0.5]}
+{"op":"ent","id":"menu_board","kind":"prop","noun":"menu board","hyper":"sign","zone":"z_main","anchor":"wall_n","body":"fixed","shape":"box","size":[1,0.5,0.1]}
+{"op":"ent","id":"latte_cup","kind":"pickup","noun":"latte cup","hyper":"drink","zone":"z_main","anchor":"corner_sw","body":"dynamic","shape":"box","size":[0.1,0.1,0.12]}
+{"op":"ent","id":"plant","kind":"prop","noun":"potted plant","hyper":"plant","zone":"z_seating","anchor":"corner_se","body":"fixed","shape":"box","size":[0.3,0.6,0.3]}
+{"op":"ent","id":"art_piece","kind":"prop","noun":"art piece","hyper":"painting","zone":"z_seating","anchor":"corner_sw","body":"fixed","shape":"box","size":[1,0.8,0.1]}
+{"op":"ent","id":"barista","kind":"npc","noun":"barista","hyper":"person","zone":"z_main","anchor":"doorway_n","team":"","menu":["guide.greet"],"dflt":"guide.greet"}
+{"op":"verb","id":"vb_inspect_menu","verb":"social.inspect","on":"menu_board","params":{"text":"Today's specials: latte, espresso, tea."}}
+{"op":"verb","id":"vb_inspect_plant","verb":"social.inspect","on":"plant","params":{"text":"A small fern adds a fresh touch."}}
+{"op":"verb","id":"vb_inspect_art","verb":"social.inspect","on":"art_piece","params":{"text":"A cozy painting of a sunrise over mountains."}}
+{"op":"verb","id":"vb_carry_latte","verb":"physics_props.carry","on":"latte_cup","params":{}}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":6}}
+{"op":"expect","id":"x_order","prop":"requires","a":"sp_red","b":"latte_cup","headline":true,"text":"Order flow must end with serving a prepared latte"}
+{"op":"end","layer":"gameplay"}
+{"op":"dress","id":"dress_cozy","zone":"z_main","anchor":"wall_e","kind":"prop","noun":"cozy rug","hyper":"decor","body":"fixed","shape":"box","size":[1.5,0.1,1]}
+{"op":"poster","id":"poster_0","zone":"z_seating","anchor":"wall_w","kind":"sign","noun":"welcome poster","hyper":"sign","body":"fixed","shape":"box","size":[0.8,0.2,0.1]}
+{"op":"poster","id":"poster_2","zone":"z_seating","anchor":"wall_n","kind":"sign","noun":"coffee quote","hyper":"sign","body":"fixed","shape":"box","size":[0.9,0.2,0.1]}
+{"op":"end","layer":"cosmetic"}

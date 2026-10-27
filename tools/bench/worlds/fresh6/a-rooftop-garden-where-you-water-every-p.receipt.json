@@ -1,0 +1,266 @@
+{
+  "prompt": "A rooftop garden where you water every plant",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "cozy simulation",
+    "setting": "A quiet, sunlit rooftop garden with neat rows of potted plants, watering cans, and a gentle breeze.",
+    "role": "A dedicated gardener or resident tending to the space.",
+    "goal": "Water every dry plant before the day ends to keep the garden thriving.",
+    "fail": "Leaving any plant unwatered or letting them wilt until the timer runs out.",
+    "mood": "Calm, nurturing, and peaceful",
+    "pack": "outdoor",
+    "sub": [
+      "rooftop"
+    ],
+    "safety": "ok",
+    "headline": "Every plant needs its own unique water interaction to complete the task",
+    "nouns": [
+      {
+        "noun": "rooftop garden",
+        "hyper": "outdoor space"
+      },
+      {
+        "noun": "plant",
+        "hyper": "living organism"
+      },
+      {
+        "noun": "watering can",
+        "hyper": "tool"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.8,
+      "arousal": 0.3,
+      "tension": 0.2
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "c2b4f053d95947fcf0e2aed37afe439d8c50f31a2881f94ec18d5eeef91f06e0",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_water",
+      "text": "Every plant needs its own unique water interaction to complete the task",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 10 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (team:red reaches 4) ← r_score_a (plant_a becomes on: use plant_a) + r_score_b (plant_b becomes on: use plant_b) + r_score_c (plant_c becomes on: use plant_c) + r_score_d (plant_d becomes on: use plant_d)",
+        "src": ""
+      },
+      {
+        "id": "T2:r_lose",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_lose fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_score_a",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score_a"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 6,
+        "status": "verified",
+        "text": "r_score_a fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_score_b",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score_b"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_score_b fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_score_c",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score_c"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_score_c fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_score_d",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score_d"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_score_d fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_bank",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_bank"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_secret_bank fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_center_w",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_center_w"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_secret_center_w fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_shore",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_shore"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_secret_shore fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_water",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_water"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_water fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it (AI par 6.1 s)",
+        "cx": null,
+        "src": "",
+        "ms": 165
+      }
+    ],
+    "par": {
+      "goldS": 6.1,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 576
+  }
+}

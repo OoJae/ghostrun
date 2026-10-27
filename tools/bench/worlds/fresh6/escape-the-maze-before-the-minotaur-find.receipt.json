@@ -1,0 +1,164 @@
+{
+  "prompt": "Escape the maze before the minotaur finds you",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "horror-pursuit",
+    "setting": "stone labyrinth with dim torch light and winding corridors",
+    "role": "maze runner",
+    "goal": "reach the exit pad before the minotaur reaches you",
+    "fail": "the minotaur closes in and catches the runner",
+    "mood": "dread",
+    "pack": "maze",
+    "sub": [],
+    "safety": "arcade",
+    "headline": "Maze exit must be reachable before the chasing minotaur path",
+    "nouns": [
+      {
+        "noun": "maze",
+        "hyper": "pursuit labyrinth"
+      },
+      {
+        "noun": "minotaur",
+        "hyper": "pursuit monster"
+      }
+    ],
+    "moodVec": {
+      "valence": -0.4,
+      "arousal": 0.5,
+      "tension": 0.8
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "23a063c63c7543c882de1625cdef21b767c3fba92733e49be21f264a5a46dc54",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_maze_exit",
+      "text": "Maze exit must be reachable before the chasing minotaur path",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners vs 1 bot"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 4 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (player enters exit_pad)",
+        "src": ""
+      },
+      {
+        "id": "T2:r_lose_minotaur",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_minotaur"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_lose_minotaur: sensor not found",
+        "cx": null
+      },
+      {
+        "id": "T2:r_open_door",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_open_door"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 7,
+        "status": "verified",
+        "text": "r_open_door fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_plate_opens",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_plate_opens"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 6,
+        "status": "verified",
+        "text": "r_plate_opens fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners vs 1 bot",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it vs 1 bot (AI par 21.2 s)",
+        "cx": null,
+        "src": "",
+        "ms": 795
+      }
+    ],
+    "par": {
+      "goldS": 21.2,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 833
+  }
+}

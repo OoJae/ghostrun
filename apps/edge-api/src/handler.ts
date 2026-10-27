@@ -5,7 +5,7 @@
 // Every route but health sits behind the gate (gate.ts). A build reserves its worst-case cost with
 // the governor before any model call and commits the metered cost when it ends (governor.ts).
 import { DEFAULT_LAWS, gameplayLines } from "@ghostrun/ir";
-import { chatJson, editMessages, fillMessages, hostJsonSchema, hostMessages, IntentOut, intentJsonSchema, intentMessages, LlmError, mindJsonSchema, mindMessages, repairMessages, streamChat } from "@ghostrun/llm";
+import { chatJson, editMessages, fillMessages, hostJsonSchema, hostMessages, IntentOut, intentJsonSchema, intentMessages, LlmError, mindJsonSchema, mindMessages, repairMessages, settleIntent, streamChat } from "@ghostrun/llm";
 import { ALL_SUBS, PACKS, packFor } from "@ghostrun/registry";
 import * as v from "valibot";
 // the vault heist teaches goal-dependent wins, doorway doors, keys and inspectable exhibits (an A/B
@@ -360,7 +360,7 @@ async function build(req: Request, env: Env, url: URL, later: (p: Promise<unknow
           signal: upstream.signal,
         });
         if (intentRes.inTok > 0) intentCost = costMicroUsd(INTENT_MODEL, intentRes.inTok, intentRes.outTok);
-        const intent = v.parse(IntentOut, intentRes.value);
+        const intent = settleIntent(prompt, v.parse(IntentOut, intentRes.value));
         await send("intent", { intent, seed, ms: Date.now() - t0 });
         if (intent.safety === "block") {
           await send("refusal", { message: "That one's outside what GHOSTRUN builds. Try a game, a place or a challenge." });

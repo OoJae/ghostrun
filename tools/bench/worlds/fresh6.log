@@ -1,0 +1,74 @@
+  · fill line 26: late — gameplay op 'law' after the gameplay layer closed
+[1/28] {"prompt":"A pirate cove: dig up the buried treasure and row back to the ship","pack":"outdoor","intentMs":2912,"fillFirstTokenMs":3865,"firstEntityMs":3939,"gameplayEndMs":4229,"fillDoneMs":4493,"playableMs":4498,"proofMs":573,"outTok":1466,"invalid":0,"lines":27,"controls":10,"headline":"verified","t3win":"12/12","par":9.4,"tooEasy":false,"chips":9}
+[2/28] {"prompt":"Tag game in a playground: catch all three kids before the bell rings","pack":"outdoor","intentMs":787,"fillFirstTokenMs":1631,"firstEntityMs":1683,"gameplayEndMs":2713,"fillDoneMs":2841,"playableMs":2845,"proofMs":1060,"outTok":1555,"invalid":0,"lines":27,"controls":10,"headline":"verified","t3win":"12/12","par":5.8,"tooEasy":false,"chips":12}
+[3/28] {"prompt":"A haunted library: return the cursed books to their shelves","pack":"floor_plan","intentMs":775,"fillFirstTokenMs":1664,"firstEntityMs":1741,"gameplayEndMs":2036,"fillDoneMs":2125,"playableMs":2127,"proofMs":467,"outTok":1902,"invalid":0,"lines":33,"controls":10,"headline":"verified","t3win":"12/12","par":16.4,"tooEasy":false,"chips":13}
+  · fill line 1: invalid — weather: Invalid type: Expected ("clear" | "rain" | "snow" | "fog" | "storm") but received "dim"
+  · fill line 34: invalid — prompt: Invalid key: Expected "prompt" but received undefined
+[4/28] {"prompt":"Escape the maze before the minotaur finds you","pack":"maze","intentMs":688,"fillFirstTokenMs":1712,"firstEntityMs":1723,"gameplayEndMs":1983,"fillDoneMs":2167,"playableMs":2169,"proofMs":833,"outTok":2030,"invalid":2,"lines":35,"controls":9,"headline":"verified","t3win":"12/12","par":21.2,"tooEasy":false,"chips":7}
+  · fill line 18: repaired — coerced field types/enums
+[5/28] {"prompt":"A neon arcade: collect tokens and beat the high score of 10","pack":"arena","intentMs":720,"fillFirstTokenMs":1260,"firstEntityMs":1308,"gameplayEndMs":1801,"fillDoneMs":1801,"playableMs":1803,"proofMs":1146,"outTok":1949,"invalid":0,"lines":45,"controls":11,"headline":"counterexample","t3win":"0/12","par":null,"tooEasy":false,"chips":15}
+[6/28] {"prompt":"Sneak past the sleeping dragon and steal the crown","pack":"floor_plan","intentMs":2321,"fillFirstTokenMs":3222,"firstEntityMs":3334,"gameplayEndMs":3382,"fillDoneMs":3382,"playableMs":3383,"proofMs":263,"outTok":1214,"invalid":0,"lines":20,"controls":10,"headline":"verified","t3win":"12/12","par":11.5,"tooEasy":false,"chips":12}
+[7/28] {"prompt":"A rooftop garden where you water every plant","pack":"outdoor","intentMs":1376,"fillFirstTokenMs":2469,"firstEntityMs":2519,"gameplayEndMs":2816,"fillDoneMs":2850,"playableMs":2853,"proofMs":576,"outTok":1592,"invalid":0,"lines":27,"controls":10,"headline":"verified","t3win":"12/12","par":6.1,"tooEasy":false,"chips":13}
+  · fill line 1: invalid — weather: Invalid type: Expected ("clear" | "rain" | "snow" | "fog" | "storm") but received "indoor"
+[8/28] {"prompt":"Bowling alley: knock down all the pins","pack":"floor_plan","intentMs":755,"fillFirstTokenMs":1904,"firstEntityMs":1904,"gameplayEndMs":2271,"fillDoneMs":2362,"playableMs":2365,"proofMs":56,"outTok":2137,"invalid":1,"lines":34,"controls":13,"headline":"counterexample","t3win":"-","par":null,"tooEasy":false,"chips":13}
+[9/28] {"prompt":"A train station: catch the last train before it leaves","pack":"floor_plan","intentMs":760,"fillFirstTokenMs":1926,"firstEntityMs":2821,"gameplayEndMs":3444,"fillDoneMs":3444,"playableMs":3445,"proofMs":405,"outTok":1131,"invalid":0,"lines":21,"controls":9,"headline":"counterexample","t3win":"12/12","par":1.8,"tooEasy":true,"chips":12}
+  · fill line 15: repaired — coerced field types/enums
+  · fill line 39: invalid — prompt: Invalid key: Expected "prompt" but received undefined
+[10/28] {"prompt":"Mountain rescue: carry the injured hiker down to the cabin","pack":"outdoor","intentMs":781,"fillFirstTokenMs":1380,"firstEntityMs":1441,"gameplayEndMs":1967,"fillDoneMs":2106,"playableMs":2114,"proofMs":4079,"outTok":1878,"invalid":1,"lines":40,"controls":10,"headline":"verified","t3win":"12/12","par":7.3,"tooEasy":false,"chips":9}
+  · fill line 20: invalid — if: Invalid length: Expected <=4 but received 5
+[11/28] {"prompt":"A desert temple with pressure plates that open the inner sanctum","pack":"maze","intentMs":914,"fillFirstTokenMs":1904,"firstEntityMs":-1,"gameplayEndMs":2879,"fillDoneMs":2879,"playableMs":2880,"proofMs":2968,"outTok":1403,"invalid":1,"lines":26,"controls":6,"headline":"verified","t3win":"12/12","par":22.4,"tooEasy":false,"chips":5}
+[12/28] {"prompt":"Ice hockey: score two goals against the rival team","pack":"arena","intentMs":12810,"fillFirstTokenMs":18715,"firstEntityMs":18799,"gameplayEndMs":19011,"fillDoneMs":19235,"playableMs":19236,"proofMs":445,"outTok":1486,"invalid":0,"lines":23,"controls":7,"headline":"verified","t3win":"12/12","par":10.9,"tooEasy":false,"chips":14}
+  · fill line 1: invalid — weather: Invalid type: Expected ("clear" | "rain" | "snow" | "fog" | "storm") but received "none"
+[13/28] {"prompt":"Find your way out of a dark cave using glowing mushrooms","pack":"maze","intentMs":1082,"fillFirstTokenMs":1895,"firstEntityMs":1906,"gameplayEndMs":2159,"fillDoneMs":2159,"playableMs":2160,"proofMs":98,"outTok":1318,"invalid":1,"lines":22,"controls":7,"headline":"not_checkable","t3win":"-","par":null,"tooEasy":false,"chips":2}
+[14/28] {"prompt":"A secret agent laser maze: reach the server room and download the files","pack":"maze","intentMs":797,"fillFirstTokenMs":3040,"firstEntityMs":3103,"gameplayEndMs":3433,"fillDoneMs":3533,"playableMs":3534,"proofMs":43,"outTok":1333,"invalid":0,"lines":29,"controls":6,"headline":"counterexample","t3win":"-","par":null,"tooEasy":false,"chips":8}
+[15/28] {"prompt":"A candy factory: sort the sweets into the right boxes","pack":"floor_plan","intentMs":738,"fillFirstTokenMs":1670,"firstEntityMs":1751,"gameplayEndMs":1959,"fillDoneMs":2011,"playableMs":2013,"proofMs":499,"outTok":1660,"invalid":0,"lines":26,"controls":9,"headline":"verified","t3win":"12/12","par":16.5,"tooEasy":false,"chips":13}
+[16/28] {"prompt":"Basketball: shoot five hoops before the buzzer","pack":"arena","intentMs":739,"fillFirstTokenMs":1948,"firstEntityMs":2005,"gameplayEndMs":2251,"fillDoneMs":2303,"playableMs":2304,"proofMs":6419,"outTok":1422,"invalid":0,"lines":28,"controls":10,"headline":"verified","t3win":"11/12","par":19,"tooEasy":false,"chips":17}
+  · fill line 2: invalid — not JSON
+  · fill line 4: invalid — not JSON
+  · fill line 6: invalid — not JSON
+  · fill line 8: invalid — not JSON
+  · fill line 10: invalid — not JSON
+  · fill line 12: invalid — not JSON
+  · fill line 14: invalid — not JSON
+  · fill line 16: invalid — not JSON
+  · fill line 18: invalid — not JSON
+  · fill line 20: invalid — not JSON
+  · fill line 22: invalid — not JSON
+  · fill line 24: invalid — not JSON
+  · fill line 26: invalid — not JSON
+  · fill line 28: invalid — not JSON
+  · fill line 30: invalid — not JSON
+  · fill line 32: invalid — not JSON
+  · fill line 34: invalid — not JSON
+  · fill line 36: invalid — not JSON
+  · fill line 38: invalid — not JSON
+  · fill line 40: invalid — not JSON
+  · fill line 42: invalid — not JSON
+  · fill line 44: invalid — not JSON
+  · fill line 46: invalid — not JSON
+  · fill line 48: invalid — not JSON
+  · fill line 50: invalid — not JSON
+  · fill line 52: invalid — not JSON
+  · fill line 54: invalid — not JSON
+  · fill line 56: invalid — not JSON
+  · fill line 58: invalid — not JSON
+  · fill line 60: invalid — not JSON
+  · fill line 62: invalid — not JSON
+[17/28] {"prompt":"A jungle river: cross on the floating logs to reach the waterfall","pack":"course","intentMs":6548,"fillFirstTokenMs":11703,"firstEntityMs":11800,"gameplayEndMs":12069,"fillDoneMs":13460,"playableMs":13466,"proofMs":1632,"outTok":1854,"invalid":31,"lines":63,"controls":10,"headline":"verified","t3win":"12/12","par":22.9,"tooEasy":false,"chips":8}
+[18/28] {"prompt":"A medieval tournament: knock the rival knight off the bridge","pack":"arena","intentMs":7362,"fillFirstTokenMs":10733,"firstEntityMs":10734,"gameplayEndMs":10799,"fillDoneMs":15353,"playableMs":15354,"proofMs":308,"outTok":934,"invalid":0,"lines":16,"controls":6,"headline":"counterexample","t3win":"0/12","par":null,"tooEasy":false,"chips":8}
+  · fill line 26: invalid — prompt: Invalid key: Expected "prompt" but received undefined
+  · fill line 27: invalid — prompt: Invalid key: Expected "prompt" but received undefined
+[19/28] {"prompt":"A tiny town fire station: put out the three fires","pack":"city_block","intentMs":743,"fillFirstTokenMs":1519,"firstEntityMs":1529,"gameplayEndMs":1861,"fillDoneMs":1925,"playableMs":1926,"proofMs":151,"outTok":1398,"invalid":2,"lines":28,"controls":6,"headline":"counterexample","t3win":"-","par":null,"tooEasy":false,"chips":9}
+[20/28] {"prompt":"Climb the beanstalk to the giant's castle and grab the golden harp","pack":"course","intentMs":629,"fillFirstTokenMs":1329,"firstEntityMs":1411,"gameplayEndMs":1717,"fillDoneMs":1771,"playableMs":1772,"proofMs":867,"outTok":1538,"invalid":0,"lines":34,"controls":10,"headline":"counterexample","t3win":"0/12","par":null,"tooEasy":false,"chips":12}
+  · fill line 9: repaired — coerced field types/enums
+  · fill line 10: repaired — coerced field types/enums
+[21/28] {"prompt":"A quiet zen garden with a koi pond to walk around","pack":"outdoor","intentMs":1067,"fillFirstTokenMs":1804,"firstEntityMs":1874,"gameplayEndMs":2195,"fillDoneMs":2283,"playableMs":2287,"proofMs":331,"outTok":1336,"invalid":0,"lines":25,"controls":11,"headline":"not_checkable","t3win":"-","par":null,"tooEasy":false,"chips":2}
+[22/28] {"prompt":"A modern art museum with five sculptures to look at","pack":"floor_plan","intentMs":658,"fillFirstTokenMs":1612,"firstEntityMs":1616,"gameplayEndMs":1693,"fillDoneMs":1866,"playableMs":1868,"proofMs":47,"outTok":1304,"invalid":0,"lines":24,"controls":6,"headline":"not_checkable","t3win":"-","par":null,"tooEasy":false,"chips":2}
+  · fill line 20: invalid — prompt: Invalid key: Expected "prompt" but received undefined
+  · fill line 21: invalid — prompt: Invalid key: Expected "prompt" but received undefined
+[23/28] {"prompt":"A cozy coffee shop where you can order a latte","pack":"floor_plan","intentMs":799,"fillFirstTokenMs":1870,"firstEntityMs":1945,"gameplayEndMs":2136,"fillDoneMs":2270,"playableMs":2271,"proofMs":22,"outTok":1107,"invalid":2,"lines":22,"controls":5,"headline":"not_checkable","t3win":"-","par":null,"tooEasy":false,"chips":3}
+[24/28] {"prompt":"A luxury car showroom with three cars on display","pack":"floor_plan","intentMs":969,"fillFirstTokenMs":1991,"firstEntityMs":2145,"gameplayEndMs":2149,"fillDoneMs":2149,"playableMs":2149,"proofMs":15,"outTok":819,"invalid":0,"lines":13,"controls":4,"headline":"not_checkable","t3win":"-","par":null,"tooEasy":false,"chips":2}
+[25/28] {"prompt":"A real estate tour of a two-bedroom apartment","pack":"floor_plan","intentMs":689,"fillFirstTokenMs":1430,"firstEntityMs":1497,"gameplayEndMs":1830,"fillDoneMs":1840,"playableMs":1841,"proofMs":37,"outTok":1479,"invalid":0,"lines":30,"controls":10,"headline":"not_checkable","t3win":"-","par":null,"tooEasy":false,"chips":2}
+[26/28] {"prompt":"A night market with food stalls and lanterns","pack":"outdoor","intentMs":830,"fillFirstTokenMs":1805,"firstEntityMs":2016,"gameplayEndMs":2356,"fillDoneMs":2357,"playableMs":2359,"proofMs":722,"outTok":1663,"invalid":0,"lines":38,"controls":14,"headline":"not_checkable","t3win":"-","par":null,"tooEasy":false,"chips":2}
+[27/28] {"prompt":"A science museum with a dinosaur skeleton and a planetarium","pack":"floor_plan","intentMs":988,"fillFirstTokenMs":1864,"firstEntityMs":1900,"gameplayEndMs":2102,"fillDoneMs":2102,"playableMs":2103,"proofMs":34,"outTok":1140,"invalid":0,"lines":19,"controls":4,"headline":"not_checkable","t3win":"-","par":null,"tooEasy":false,"chips":3}
+[28/28] {"prompt":"A Japanese tea house in the rain","pack":"floor_plan","intentMs":729,"fillFirstTokenMs":1441,"firstEntityMs":1497,"gameplayEndMs":1803,"fillDoneMs":1803,"playableMs":1804,"proofMs":26,"outTok":1229,"invalid":0,"lines":22,"controls":8,"headline":"not_checkable","t3win":"-","par":null,"tooEasy":false,"chips":2}

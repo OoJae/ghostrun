@@ -1,0 +1,90 @@
+{
+  "prompt": "A quiet zen garden with a koi pond to walk around",
+  "intent": {
+    "lang": "en",
+    "mode": "wander",
+    "genre": "Zen Garden Exploration",
+    "setting": "A serene, walled Japanese-style courtyard featuring raked gravel, moss patches, and a central koi pond surrounded by stone lanterns and bamboo.",
+    "role": "A visitor on a contemplative walk",
+    "goal": "Explore the garden paths and observe the koi pond at your own pace.",
+    "fail": "None (relaxation-focused)",
+    "mood": "Peaceful, serene, and meditative",
+    "pack": "outdoor",
+    "sub": [],
+    "safety": "ok",
+    "headline": "A winding path circles the central koi pond",
+    "nouns": [
+      {
+        "noun": "zen garden",
+        "hyper": "court"
+      },
+      {
+        "noun": "koi pond",
+        "hyper": "body of water"
+      },
+      {
+        "noun": "path",
+        "hyper": "route"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.8,
+      "arousal": -0.7,
+      "tension": -0.8
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "d379e907937a875c69a16a749d9fc9ff0ee3c774462c5ae2696001615f63c80a",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "exp_path",
+      "text": "A winding path circles the central koi pond",
+      "status": "not_checkable",
+      "method": "none"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 0 rules reference existing things",
+        "src": ""
+      },
+      {
+        "id": "T3:tour",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "tour"
+        },
+        "status": "counterexample",
+        "method": "physics, an AI visitor walks to and uses each",
+        "n": 10,
+        "k": 9,
+        "text": "walked to and inspected 9 of 10 things",
+        "cx": {
+          "where": null,
+          "have": 9,
+          "need": 10,
+          "unit": "things",
+          "text": "couldn't reach stone_path"
+        },
+        "src": "",
+        "ms": 50
+      }
+    ],
+    "par": null,
+    "ms": 331
+  }
+}

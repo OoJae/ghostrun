@@ -1,0 +1,33 @@
+{"op":"meta","mode":"play","lang":"en","pack":"floor_plan","sub":[],"seed":9,"look":"haunted library","mood":[0.2,0.6,0.8],"timeOfDay":22,"weather":"clear"}
+{"op":"zone","id":"z_yard","slot":"yard","tag":"outside","name":"Library grounds"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Grand Entrance Hall"}
+{"op":"zone","id":"z_main","slot":"main_room","tag":"hall","name":"Main Reading Hall"}
+{"op":"zone","id":"z_atrium","slot":"room_ne","tag":"room","name":"Circular Atrium"}
+{"op":"zone","id":"z_vault","slot":"room_se","tag":"room","name":"Restricted Manuscript Vault"}
+{"op":"zone","id":"z_wing","slot":"room_sw","tag":"room","name":"Forbidden Works Wing"}
+{"op":"zone","id":"z_annex","slot":"room_nw","tag":"room","name":"Ruined Archive Annex"}
+{"op":"spawn","id":"sp_red","zone":"z_yard","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"bell","zone":"z_main","anchor":"corner_w","noun":"final bell","hyper":"sound event","team":"red"}
+{"op":"ent","id":"book_1","kind":"pickup","noun":"cursed book","hyper":"book objects","zone":"z_wing","anchor":"center","body":"dynamic","shape":"box","size":[0.3,0.3,0.2]}
+{"op":"ent","id":"book_2","kind":"pickup","noun":"cursed book","hyper":"book objects","zone":"z_vault","anchor":"center","body":"dynamic","shape":"box","size":[0.3,0.3,0.2]}
+{"op":"ent","id":"book_3","kind":"pickup","noun":"cursed book","hyper":"book objects","zone":"z_annex","anchor":"center","body":"dynamic","shape":"box","size":[0.3,0.3,0.2]}
+{"op":"ent","id":"shelf_1","kind":"prop","noun":"marked shelf slot","hyper":"furniture","zone":"z_wing","anchor":"corner_sw","body":"fixed","shape":"box","size":[0.5,0.2,0.3]}
+{"op":"ent","id":"shelf_2","kind":"prop","noun":"marked shelf slot","hyper":"furniture","zone":"z_vault","anchor":"corner_se","body":"fixed","shape":"box","size":[0.5,0.2,0.3]}
+{"op":"ent","id":"shelf_3","kind":"prop","noun":"marked shelf slot","hyper":"furniture","zone":"z_annex","anchor":"corner_nw","body":"fixed","shape":"box","size":[0.5,0.2,0.3]}
+{"op":"ent","id":"lamp","kind":"prop","noun":"flickering gaslight","hyper":"light fixture","zone":"z_main","anchor":"corner_ne","body":"fixed","shape":"box","size":[0.2,0.5,0.2]}
+{"op":"ent","id":"hazard_spikes","kind":"hazard","noun":"spike trap","hyper":"hazard","zone":"z_atrium","anchor":"center","body":"sensor","shape":"box","size":[1,0.2,1]}
+{"op":"verb","id":"vb_carry_1","verb":"physics_props.carry","on":"book_1","params":{}}
+{"op":"verb","id":"vb_carry_2","verb":"physics_props.carry","on":"book_2","params":{}}
+{"op":"verb","id":"vb_carry_3","verb":"physics_props.carry","on":"book_3","params":{}}
+{"op":"verb","id":"vb_inspect_lamp","verb":"social.inspect","on":"lamp","params":{"text":"The gaslight sputters, casting wavering shadows over the stacks."}}
+{"op":"verb","id":"vb_spike_hazard","verb":"motion_hazards.hazard","on":"hazard_spikes","params":{"respawn":true}}
+{"op":"verb","id":"vb_jump","verb":"locomotion.jump","on":"player","params":{"jumpsMax":2}}
+{"op":"rule","id":"r_place_1","when":{"t":"enter","a":"book_1","b":"shelf_1"},"then":[{"e":"set_state","target":"shelf_1","v":"filled"}],"once":true}
+{"op":"rule","id":"r_place_2","when":{"t":"enter","a":"book_2","b":"shelf_2"},"then":[{"e":"set_state","target":"shelf_2","v":"filled"}],"once":true}
+{"op":"rule","id":"r_place_3","when":{"t":"enter","a":"book_3","b":"shelf_3"},"then":[{"e":"set_state","target":"shelf_3","v":"filled"}],"once":true}
+{"op":"rule","id":"r_win","when":{"t":"enter","a":"player","b":"bell"},"if":[{"l":"shelf_1.state","op":"eq","r":"filled"},{"l":"shelf_2.state","op":"eq","r":"filled"},{"l":"shelf_3.state","op":"eq","r":"filled"}],"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose","when":{"t":"timer_end","a":"player"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"expect","id":"x_match","prop":"win_reachable","a":"sp_red","b":"bell","headline":true,"text":"Cursed books must be matched to marked shelf slots across five wing rooms"}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":6}}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

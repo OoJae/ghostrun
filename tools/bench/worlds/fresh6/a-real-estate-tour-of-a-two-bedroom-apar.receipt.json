@@ -1,0 +1,88 @@
+{
+  "prompt": "A real estate tour of a two-bedroom apartment",
+  "intent": {
+    "lang": "en",
+    "mode": "wander",
+    "genre": "realestate",
+    "setting": "Two-bedroom apartment",
+    "role": "viewer",
+    "goal": "Explore the living room, kitchen, bathroom, and two bedrooms of the two-bedroom apartment",
+    "fail": "-",
+    "mood": "neutral",
+    "pack": "floor_plan",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Two-bedroom apartment must contain exactly two bedrooms",
+    "nouns": [
+      {
+        "noun": "apartment",
+        "hyper": "residence"
+      },
+      {
+        "noun": "bedroom",
+        "hyper": "room"
+      },
+      {
+        "noun": "real estate",
+        "hyper": "industry"
+      },
+      {
+        "noun": "tour",
+        "hyper": "experience"
+      }
+    ],
+    "moodVec": {
+      "valence": 0,
+      "arousal": -0.5,
+      "tension": -0.5
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "b4c94bd5d239623a1b1547bf957632358ec868b49b7215bf57bc2954fa56d5fd",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_bedrooms",
+      "text": "Two-bedroom apartment must contain exactly two bedrooms",
+      "status": "not_checkable",
+      "method": "none"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 0 rules reference existing things",
+        "src": ""
+      },
+      {
+        "id": "T3:tour",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "tour"
+        },
+        "status": "played",
+        "method": "physics, an AI visitor walks to and uses each",
+        "n": 9,
+        "k": 9,
+        "text": "walked to and inspected 9 of 9 things",
+        "cx": null,
+        "src": "",
+        "ms": 24
+      }
+    ],
+    "par": null,
+    "ms": 37
+  }
+}

@@ -1,0 +1,40 @@
+{"op":"meta","mode":"play","lang":"en","pack":"outdoor","sub":[],"seed":16,"look":"mountain trail","mood":[0.2,0.6,0.5],"timeOfDay":10,"weather":"clear"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"outside","name":"Trailhead"}
+{"op":"zone","id":"z_clearing","slot":"clearing","tag":"outside","name":"Mid‑mountain clearing"}
+{"op":"zone","id":"z_cabin_w","slot":"clearing_w","tag":"outside","name":"Cabin base (west)"}
+{"op":"zone","id":"z_cabin_e","slot":"clearing_e","tag":"outside","name":"Cabin base (east)"}
+{"op":"spawn","id":"sp_red","zone":"z_entrance","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"cabin_goal","zone":"z_cabin_w","anchor":"goal","noun":"cabin","hyper":"building","team":"red"}
+{"op":"ent","id":"hiker","kind":"pickup","noun":"injured hiker","hyper":"person","zone":"z_clearing","anchor":"center","body":"dynamic","shape":"capsule","size":[0.5,1.8,0.5]}
+{"op":"ent","id":"key","kind":"pickup","noun":"rusty key","hyper":"key","zone":"z_clearing","anchor":"center_n","body":"dynamic","shape":"box","size":[0.2,0.2,0.1]}
+{"op":"ent","id":"gate_west","kind":"door","noun":"gate to cabin","hyper":"door","zone":"z_cabin_w","anchor":"flank_n","body":"fixed","shape":"box"}
+{"op":"ent","id":"switch_bridge","kind":"switch","noun":"rope bridge lever","hyper":"lever","zone":"z_clearing","anchor":"center_s","body":"fixed","shape":"box"}
+{"op":"ent","id":"bridge","kind":"platform","noun":"rope bridge","hyper":"bridge","zone":"z_clearing","anchor":"center_e","body":"kinematic","shape":"box","size":[4,0.3,2]}
+{"op":"ent","id":"rock_hazard","kind":"hazard","noun":"falling rocks","hyper":"rocks","zone":"z_clearing","anchor":"center_w","body":"sensor","shape":"box","size":[2,1,2]}
+{"op":"ent","id":"plate_slip","kind":"plate","noun":"slippery stone","hyper":"stone","zone":"z_clearing","anchor":"center","body":"sensor","shape":"box","size":[1,0.2,1]}
+{"op":"ent","id":"timer_fail","kind":"timer","noun":"evacuation timer","hyper":"timer","zone":"z_entrance","anchor":"entrance","body":"none","shape":"none"}
+{"op":"ent","id":"sign_warning","kind":"sign","noun":"caution sign","hyper":"sign","zone":"z_clearing","anchor":"center_n","body":"fixed","shape":"box","size":[0.5,0.5,0.1]}
+{"op":"ent","id":"crate","kind":"prop","noun":"wooden crate","hyper":"crate","zone":"z_clearing","anchor":"flank_s","body":"fixed","shape":"box","size":[1,1,1]}
+{"op":"verb","id":"vb_carry_hiker","verb":"physics_props.carry","on":"hiker","params":{}}
+{"op":"verb","id":"vb_carry_key","verb":"physics_props.carry","on":"key","params":{}}
+{"op":"verb","id":"vb_lock_gate","verb":"puzzle.lock","on":"gate_west","params":{"key":"key","keep":false}}
+{"op":"verb","id":"vb_use_switch","verb":"puzzle.switch","on":"switch_bridge","params":{"once":true}}
+{"op":"verb","id":"vb_plate_slip","verb":"puzzle.plate","on":"plate_slip","params":{"latch":false}}
+{"op":"verb","id":"vb_bridge_osc","verb":"motion_hazards.oscillate","on":"bridge","params":{"axis":"x","travel":3,"period":5}}
+{"op":"verb","id":"vb_rock_hazard","verb":"motion_hazards.hazard","on":"rock_hazard","params":{"respawn":true}}
+{"op":"verb","id":"vb_timer","verb":"puzzle.timer","on":"timer_fail","params":{"seconds":180}}
+{"op":"verb","id":"vb_inspect_sign","verb":"social.inspect","on":"sign_warning","params":{"text":"Steep descent ahead. Keep balance and secure the hiker."}}
+{"op":"verb","id":"vb_inspect_crate","verb":"social.inspect","on":"crate","params":{"text":"A crate that could be moved to block rockfall."}}
+{"op":"rule","id":"r_reach_cabin","when":{"t":"enter","a":"hiker","b":"cabin_goal"},"if":[{"l":"hiker.carrier.team","op":"eq","r":"red"}],"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_drop_hiker","when":{"t":"state_is","a":"hiker","s":"none"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_open_gate","when":{"t":"state_is","a":"gate_west","s":"open"},"then":[{"e":"emit","target":"gate_west","fx":"gate_open"}]}
+{"op":"rule","id":"r_switch_opens","when":{"t":"state_is","a":"switch_bridge","s":"on"},"then":[{"e":"set_state","target":"bridge","v":"active"}]}
+{"op":"rule","id":"r_plate_down","when":{"t":"state_is","a":"plate_slip","s":"down"},"then":[{"e":"set_state","target":"bridge","v":"inactive"}]}
+{"op":"rule","id":"r_timer_end","when":{"t":"timer_end","a":"timer_fail"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"expect","id":"exp_rescue","prop":"win_reachable","a":"sp_red","b":"cabin_goal","headline":true,"text":"Steep trail requires stable balance to carry hiker to cabin"}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":5}}
+{"op":"end","layer":"gameplay"}
+{"op":"dress","id":"d_cabin","zone":"z_cabin_w","anchor":"goal","kind":"prop","noun":"cabin","hyper":"building","body":"fixed","shape":"box","size":[4,3,4]}
+{"op":"dress","id":"d_entrance_sign","zone":"z_entrance","anchor":"entrance","kind":"sign","noun":"trailhead sign","hyper":"sign","body":"fixed","shape":"box","size":[1,0.5,0.1]}
+{"op":"poster","id":"poster_info","zone":"z_clearing","anchor":"center","kind":"prop","noun":"info poster","hyper":"poster","body":"fixed","shape":"box","size":[1,2,0.1]}
+{"op":"end","layer":"cosmetic"}

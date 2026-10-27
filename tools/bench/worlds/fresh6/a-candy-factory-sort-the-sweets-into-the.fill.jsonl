@@ -1,0 +1,26 @@
+{"op":"meta","mode":"play","lang":"en","pack":"floor_plan","sub":[],"seed":21,"look":"candy factory","mood":[0.6,0.3,0.25],"timeOfDay":12,"weather":"clear"}
+{"op":"zone","id":"z_yard","slot":"yard","tag":"outside","name":"Factory floor entrance"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Main entrance"}
+{"op":"zone","id":"z_sort","slot":"main_room","tag":"hall","name":"Sorting line"}
+{"op":"zone","id":"z_box1","slot":"room_sw","tag":"room","name":"Red candy box area"}
+{"op":"zone","id":"z_box2","slot":"room_se","tag":"room","name":"Green candy box area"}
+{"op":"zone","id":"z_box3","slot":"room_nw","slot":"room_nw","tag":"room","name":"Blue candy box area"}
+{"op":"spawn","id":"sp_red","zone":"z_yard","anchor":"spawn_pad","team":"red"}
+{"op":"ent","id":"candy_red","kind":"pickup","noun":"red candy","hyper":"sweets","zone":"z_sort","anchor":"center","body":"dynamic","shape":"sphere","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"candy_green","kind":"pickup","noun":"green candy","hyper":"sweets","zone":"z_sort","anchor":"corner_ne","body":"dynamic","shape":"sphere","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"candy_blue","kind":"pickup","noun":"blue candy","hyper":"sweets","zone":"z_sort","anchor":"corner_nw","body":"dynamic","shape":"sphere","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"box_red","kind":"goal","noun":"red candy box","hyper":"boxes","zone":"z_box1","anchor":"center","body":"sensor","shape":"box","size":[1,1,0.5],"state":"empty"}
+{"op":"ent","id":"box_green","kind":"goal","noun":"green candy box","hyper":"boxes","zone":"z_box2","anchor":"center","body":"sensor","shape":"box","size":[1,1,0.5],"state":"empty"}
+{"op":"ent","id":"box_blue","kind":"goal","noun":"blue candy box","hyper":"boxes","zone":"z_box3","anchor":"center","body":"sensor","shape":"box","size":[1,1,0.5],"state":"empty"}
+{"op":"verb","id":"vb_carry_red","verb":"physics_props.carry","on":"candy_red","params":{}}
+{"op":"verb","id":"vb_carry_green","verb":"physics_props.carry","on":"candy_green","params":{}}
+{"op":"verb","id":"vb_carry_blue","verb":"physics_props.carry","on":"candy_blue","params":{}}
+{"op":"verb","id":"vb_jump","verb":"locomotion.jump","on":"player","params":{"jumpsMax":2}}
+{"op":"rule","id":"r_place_red","when":{"t":"enter","a":"candy_red","b":"box_red"},"then":[{"e":"set_state","target":"box_red","v":"filled"}],"once":true}
+{"op":"rule","id":"r_place_green","when":{"t":"enter","a":"candy_green","b":"box_green"},"then":[{"e":"set_state","target":"box_green","v":"filled"}],"once":true}
+{"op":"rule","id":"r_place_blue","when":{"t":"enter","a":"candy_blue","b":"box_blue"},"then":[{"e":"set_state","target":"box_blue","v":"filled"}],"once":true}
+{"op":"rule","id":"r_win","when":{"t":"state_is","a":"box_red","s":"filled"},"if":[{"l":"box_green.state","op":"eq","r":"filled"},{"l":"box_blue.state","op":"eq","r":"filled"}],"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":6}}
+{"op":"expect","id":"x_sort","prop":"win_reachable","a":"sp_red","b":"box_red","headline":true,"text":"Matching each sweet to the correct box before the floor stops is the core puzzle"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

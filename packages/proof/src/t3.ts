@@ -604,8 +604,9 @@ const spotBy = (r: Run, id: string): Vec3 => {
   const floor = e.pos[1] - e.size[1] / 2;
   if (!solid) {
     const near = r.nav.nearest([e.pos[0], floor, e.pos[2]]);
-    // ground too narrow for the navmesh (a beam): stand on the thing's own spot and get there by hops
-    return near && d2h(near, e.pos) <= 1 ? near : [e.pos[0], floor, e.pos[2]];
+    // ground too narrow for the navmesh (a beam), or the walkable ground found is the floor below a
+    // deck it lies on: stand on the thing's own spot and get there by climbing or hops
+    return near && d2h(near, e.pos) <= 1 && near[1] > floor - 1.2 ? near : [e.pos[0], floor, e.pos[2]];
   }
   const p = r.sim.pos("player");
   const feet: Vec3 = [p[0], p[1] - 0.9, p[2]];
@@ -723,12 +724,18 @@ function perform(r: Run, st: PlanStep): "ok" | "lost" | "stuck" {
       const fired = counter(sim, st.rule);
       const done = () => (st.want ? met(st.want) : fired() >= (st.times ?? 1));
       const mine = sim.entity("player")?.team ?? "";
+      // what it can be thrown at: rivals, and the things the throw verb names (pins, cans)
+      const at = new Set(String(b.verbs.find((v) => v.verb === "combat_sport.throw" && v.on === st.item)?.params.at ?? "").split(",").filter(Boolean));
+      // a rule about one pin: that pin, and close enough that it's the nearest when the ball goes
+      const one = b.rules.find((x) => x.id === st.rule)?.when.a;
+      const only = one && at.has(one) ? one : "";
       const rival = () => {
         const p = sim.pos("player");
         let best: Vec3 = p;
         let bestD = Infinity;
         for (const e of b.entities) {
-          if (e.kind !== "npc" || (mine && e.team === mine) || sim.entity(e.id)?.destroyed) continue;
+          if (only ? e.id !== only : !(e.kind === "npc" && !(mine && e.team === mine)) && !at.has(e.id)) continue;
+          if (sim.entity(e.id)?.destroyed) continue;
           const q = sim.pos(e.id);
           const d = d2h(p, q);
           if (d < bestD) ((bestD = d), (best = q));
@@ -738,7 +745,7 @@ function perform(r: Run, st: PlanStep): "ok" | "lost" | "stuck" {
       for (let attempt = 0; attempt < 8 * (st.times ?? 1) && live(r) && !done(); attempt++) {
         if (sim.entity(st.item)?.carrier !== "player") go(() => sim.pos(st.item), () => sim.entity(st.item)?.carrier === "player" || done());
         if (sim.entity(st.item)?.carrier !== "player") continue;
-        go(rival, () => d2h(sim.pos("player"), rival()) < 25 || done()); // within 5 m: well inside any throw's range
+        go(rival, () => d2h(sim.pos("player"), rival()) < (only ? 2.25 : 25) || done()); // within 5 m: well inside any throw's range
         trace?.(`throw ${attempt}: at ${v1(sim.pos("player"))}, rival ${v1(rival())}, holding ${sim.entity(st.item)?.carrier === "player"}, usable ${sim.usable()?.on ?? "-"}, fired ${fired()}`);
         sim.step({ tick: sim.tick + 1, wx: 0, wz: 0, btn: BTN.USE });
         sim.step({ tick: sim.tick + 1, wx: 0, wz: 0, btn: 0 });
@@ -760,7 +767,10 @@ function perform(r: Run, st: PlanStep): "ok" | "lost" | "stuck" {
         const [dx, dz] = [t[0] - c.pos[0], t[2] - c.pos[2]];
         const len = Math.sqrt(dx * dx + dz * dz) || 1;
         const k = ring ? -1.1 : 1.1;
-        return [t[0] + (dx / len) * k, t[1], t[2] + (dz / len) * k];
+        const q: Vec3 = [t[0] + (dx / len) * k, t[1], t[2] + (dz / len) * k];
+        // never off the ring yourself (leaving it is how you lose)
+        if (ring) for (const ax of [0, 2] as const) q[ax] = Math.max(ring.pos[ax] - ring.size[ax] / 2 + 0.5, Math.min(ring.pos[ax] + ring.size[ax] / 2 - 0.5, q[ax]));
+        return q;
       };
       // only from that spot: a shove from wherever reach begins pushes them any which way
       const placed = () => (ring || pit ? d2h(sim.pos("player"), inner()) < 0.6 * 0.6 : true) && sim.usable()?.on === st.at;
@@ -782,6 +792,24 @@ function perform(r: Run, st: PlanStep): "ok" | "lost" | "stuck" {
       return done() ? "ok" : "stuck";
     }
     case "collect": {
+      // a coin hung in the air over the ground (nothing under it) is jumped for from below
+      const overhead = (id: string): Vec3 | null => {
+        const q = sim.pos(id);
+        // the ground below it (searching down: the nearest walkable point may be a wall top above)
+        let g: Vec3 | null = null;
+        for (const down of [1.5, 3, 4.5]) if (!g) g = ((x) => (x && x[1] < q[1] - 1.2 ? x : null))(nav.nearest([q[0], q[1] - down, q[2]], 1));
+        if (!g || d2h(g, q) > 0.5 || q[1] - g[1] < 1.6 || surfaces(b).some((s) => q[0] >= s.min[0] && q[0] <= s.max[0] && q[2] >= s.min[1] && q[2] <= s.max[1] && s.top <= q[1] + 0.05 && s.top > g[1] + 0.3)) return null;
+        return q[1] - g[1] <= apex(sim.laws, sim.laws.jumpsMax) + 2.2 ? g : null;
+      };
+      const jumpFor = (id: string) => {
+        for (let t = 0; t < 120 && live(r) && !gone(id); t++, budget.ticks--) {
+          const again = t > 6 && sim.player.vy <= 0.5 && sim.player.jumpsUsed > 0 && sim.player.jumpsUsed < sim.laws.jumpsMax;
+          sim.step({ tick: sim.tick + 1, wx: 0, wz: 0, btn: t === 0 || again ? BTN.JUMP : 0 });
+          if (again) sim.step({ tick: sim.tick + 1, wx: 0, wz: 0, btn: 0 });
+          if (t > 10 && sim.player.grounded) break;
+        }
+        return gone(id);
+      };
       const counts = (st.rules ?? [st.rule]).map((id) => counter(sim, id));
       const fired = () => counts.reduce((n, f) => n + f(), 0);
       // nearest first; an item it can't reach this time (a missed jump) waits for a later pass
@@ -799,8 +827,10 @@ function perform(r: Run, st: PlanStep): "ok" | "lost" | "stuck" {
         const it = left[0]!;
         const t0 = sim.tick;
         const before = fired();
-        const ok = go(spotBy(r, it), () => gone(it));
-        if (!gone(it) && (!ok || sim.tick === t0)) {
+        const g = overhead(it);
+        const ok = g ? go(g, () => gone(it)) && jumpFor(it) : go(spotBy(r, it), () => gone(it));
+        // got there and it's still there (out of reach overhead), or never got there: try the others first
+        if (!gone(it) && (!ok || sim.tick === t0 || fired() === before)) {
           if (skipped.has(it) || (sim.tick === t0 && fired() === before && skipped.size >= left.length - 1)) return "stuck"; // a pass with no progress: never spin in place
           skipped.add(it);
         }

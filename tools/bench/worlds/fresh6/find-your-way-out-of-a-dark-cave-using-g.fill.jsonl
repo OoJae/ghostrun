@@ -1,0 +1,22 @@
+{"op":"meta","mode":"wander","lang":"en","pack":"maze","sub":[],"seed":19,"look":"dark cave","mood":[-0.25,-0.3,0.35],"timeOfDay":0,"weather":"none"}
+{"op":"zone","id":"z_start","slot":"start","tag":"outside","name":"Cave entrance"}
+{"op":"zone","id":"z_maze","slot":"maze","tag":"cavern","name":"Mushroom maze"}
+{"op":"spawn","id":"sp_red","zone":"z_start","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"exit","zone":"z_maze","anchor":"exit","noun":"cave exit","hyper":"door","team":"red","body":"sensor","shape":"box"}
+{"op":"ent","id":"mushroom_center","kind":"prop","noun":"glowing mushroom","hyper":"mushroom","zone":"z_maze","anchor":"center","body":"fixed","shape":"sphere","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"mushroom_entrance","kind":"prop","noun":"glowing mushroom","hyper":"mushroom","zone":"z_maze","anchor":"entrance","body":"fixed","shape":"sphere","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"mushroom_dead_end_1","kind":"prop","noun":"glowing mushroom","hyper":"mushroom","zone":"z_maze","anchor":"dead_end_1","body":"fixed","shape":"sphere","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"mushroom_dead_end_2","kind":"prop","noun":"glowing mushroom","hyper":"mushroom","zone":"z_maze","anchor":"dead_end_2","body":"fixed","shape":"sphere","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"mushroom_dead_end_3","kind":"prop","noun":"glowing mushroom","hyper":"mushroom","zone":"z_maze","anchor":"dead_end_3","body":"fixed","shape":"sphere","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"mushroom_dead_end_4","kind":"prop","noun":"glowing mushroom","hyper":"mushroom","zone":"z_maze","anchor":"dead_end_4","body":"fixed","shape":"sphere","size":[0.3,0.3,0.3]}
+{"op":"verb","id":"vb_inspect_center","verb":"social.inspect","on":"mushroom_center","params":{"text":"A faint blue glow pulses here."}}
+{"op":"verb","id":"vb_inspect_entrance","verb":"social.inspect","on":"mushroom_entrance","params":{"text":"The glow seems brighter near the way forward."}}
+{"op":"verb","id":"vb_inspect_de1","verb":"social.inspect","on":"mushroom_dead_end_1","params":{"text":"Its light fades, hinting a dead end."}}
+{"op":"verb","id":"vb_inspect_de2","verb":"social.inspect","on":"mushroom_dead_end_2","params":{"text":"The glow flickers erratically."}}
+{"op":"verb","id":"vb_inspect_de3","verb":"social.inspect","on":"mushroom_dead_end_3","params":{"text":"A steady glow, but the path loops back."}}
+{"op":"verb","id":"vb_inspect_de4","verb":"social.inspect","on":"mushroom_dead_end_4","params":{"text":"Dim light, almost invisible."}}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.2,"speed":4}}
+{"op":"npc","id":"guide_elf","role":"guide","zone":"z_maze","anchor":"entrance","team":"","menu":["guide.point"],"dflt":"guide.point"}
+{"op":"expect","id":"x_corridor","prop":"win_reachable","a":"sp_red","b":"exit","headline":true,"text":"Each glowing mushroom marks a corridor and leads to the exit"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

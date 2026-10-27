@@ -1,0 +1,27 @@
+{"op":"meta","mode":"play","lang":"en","pack":"outdoor","sub":[],"seed":8,"look":"sunlit playground","mood":[0.9,0.9,0.6],"timeOfDay":14,"weather":"clear"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Playground entrance"}
+{"op":"zone","id":"z_central","slot":"clearing","tag":"hub","name":"Central play area"}
+{"op":"zone","id":"z_west","slot":"clearing_w","tag":"base","name":"West sandbox"}
+{"op":"zone","id":"z_east","slot":"clearing_e","tag":"base","name":"East swings"}
+{"op":"spawn","id":"sp_red","zone":"z_entrance","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"bell_goal","zone":"z_west","anchor":"goal","noun":"recess bell","hyper":"bell","team":""}
+{"op":"ent","id":"kid1","kind":"npc","noun":"playground kid","hyper":"kid","zone":"z_central","anchor":"center_n","body":"fixed","shape":"box"}
+{"op":"ent","id":"kid2","kind":"npc","noun":"playground kid","hyper":"kid","zone":"z_central","anchor":"center_s","body":"fixed","shape":"box"}
+{"op":"ent","id":"kid3","kind":"npc","noun":"playground kid","hyper":"kid","zone":"z_central","anchor":"center_e","body":"fixed","shape":"box"}
+{"op":"ent","id":"bell","kind":"goal","noun":"recess bell","hyper":"bell","zone":"z_west","anchor":"goal","body":"sensor","shape":"box"}
+{"op":"verb","id":"vb_shove_kid1","verb":"combat_sport.shove","on":"kid1","params":{"force":5}}
+{"op":"verb","id":"vb_shove_kid2","verb":"combat_sport.shove","on":"kid2","params":{"force":5}}
+{"op":"verb","id":"vb_shove_kid3","verb":"combat_sport.shove","on":"kid3","params":{"force":5}}
+{"op":"verb","id":"vb_timer","verb":"puzzle.timer","on":"player","params":{"seconds":45}}
+{"op":"rule","id":"r_tag1","when":{"t":"hit","a":"player","b":"kid1"},"then":[{"e":"set_state","target":"kid1","v":"tagged"}],"once":true}
+{"op":"rule","id":"r_tag2","when":{"t":"hit","a":"player","b":"kid2"},"then":[{"e":"set_state","target":"kid2","v":"tagged"}],"once":true}
+{"op":"rule","id":"r_tag3","when":{"t":"hit","a":"player","b":"kid3"},"then":[{"e":"set_state","target":"kid3","v":"tagged"}],"once":true}
+{"op":"rule","id":"r_win","when":{"t":"state_is","a":"kid3","s":"tagged"},"if":[{"l":"kid1.state","op":"eq","r":"tagged"},{"l":"kid2.state","op":"eq","r":"tagged"}],"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_bell","when":{"t":"timer_end","a":"player"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"expect","id":"x_tag","prop":"win_reachable","a":"sp_red","b":"bell_goal","headline":true,"text":"Three targets must be tagged before the countdown bell rings out"}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":6}}
+{"op":"npc","id":"kid1_npc","role":"rival","zone":"z_central","anchor":"center_n","team":"","menu":["combat_sport.shove"],"dflt":"combat_sport.shove"}
+{"op":"npc","id":"kid2_npc","role":"rival","zone":"z_central","anchor":"center_s","team":"","menu":["combat_sport.shove"],"dflt":"combat_sport.shove"}
+{"op":"npc","id":"kid3_npc","role":"rival","zone":"z_central","anchor":"center_e","team":"","menu":["combat_sport.shove"],"dflt":"combat_sport.shove"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

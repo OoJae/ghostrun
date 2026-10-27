@@ -1,0 +1,22 @@
+{"op":"meta","mode":"wander","lang":"en","pack":"floor_plan","sub":[],"seed":34,"look":"Japanese tea house in the rain","mood":[0.6,-0.3,-0.4],"timeOfDay":14,"weather":"rain"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Tea house entrance"}
+{"op":"zone","id":"z_hall","slot":"main_room","tag":"hall","name":"Tea house interior"}
+{"op":"spawn","id":"sp_red","zone":"z_entrance","anchor":"spawn_pad","team":"red"}
+{"op":"ent","id":"door_sliding","kind":"door","noun":"sliding shoji door","hyper":"door","zone":"z_entrance","anchor":"doorway_e","body":"fixed","shape":"box"}
+{"op":"ent","id":"tatami_mat","kind":"prop","noun":"tatami mat","hyper":"floor","zone":"z_hall","anchor":"center","body":"fixed","shape":"box","size":[2,0.02,2]}
+{"op":"ent","id":"tea_set","kind":"prop","noun":"ceremonial tea set","hyper":"tea_set","zone":"z_hall","anchor":"corner_sw","body":"fixed","shape":"box","size":[0.3,0.2,0.3]}
+{"op":"ent","id":"lantern","kind":"prop","noun":"paper lantern","hyper":"lantern","zone":"z_hall","anchor":"corner_ne","body":"fixed","shape":"box","size":[0.2,0.5,0.2]}
+{"op":"ent","id":"rain_window","kind":"prop","noun":"rain-soaked window","hyper":"window","zone":"z_hall","anchor":"wall_n","body":"fixed","shape":"box","size":[1.5,2,0.1]}
+{"op":"ent","id":"incense_burner","kind":"prop","noun":"incense burner","hyper":"incense","zone":"z_hall","anchor":"corner_se","body":"fixed","shape":"box","size":[0.15,0.25,0.15]}
+{"op":"ent","id":"sound_rain","kind":"prop","noun":"ambient rain sound","hyper":"sound","zone":"z_hall","anchor":"center","body":"fixed","shape":"none"}
+{"op":"verb","id":"vb_look_door","verb":"social.inspect","on":"door_sliding","params":{"text":"Sliding shoji doors rustle softly as rain hits them."}}
+{"op":"verb","id":"vb_look_tatami","verb":"social.inspect","on":"tatami_mat","params":{"text":"Woven tatami mats warm underfoot, inviting quiet steps."}}
+{"op":"verb","id":"vb_look_tea","verb":"social.inspect","on":"tea_set","params":{"text":"A delicate tea set, polished to a mirror shine."}}
+{"op":"verb","id":"vb_look_lantern","verb":"social.inspect","on":"lantern","params":{"text":"Paper lantern glows, diffusing a warm amber light."}}
+{"op":"verb","id":"vb_look_window","verb":"social.inspect","on":"rain_window","params":{"text":"Rain streams down the pane, blurring the garden beyond."}}
+{"op":"verb","id":"vb_look_incense","verb":"social.inspect","on":"incense_burner","params":{"text":"Incense curls, mixing scent with the damp air."}}
+{"op":"verb","id":"vb_look_sound","verb":"social.inspect","on":"sound_rain","params":{"text":"Constant patter of rain creates a soothing backdrop."}}
+{"op":"npc","id":"guide_1","role":"guide","zone":"z_hall","anchor":"corner_nw","team":"","menu":["guide.welcome"],"dflt":"guide.welcome"}
+{"op":"expect","id":"x_atmosphere","prop":"win_reachable","a":"sp_red","b":"z_hall","headline":true,"text":"Rain-sound ambience over a single-storey tea house interior"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

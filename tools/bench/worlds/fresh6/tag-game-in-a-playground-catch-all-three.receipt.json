@@ -1,0 +1,248 @@
+{
+  "prompt": "Tag game in a playground: catch all three kids before the bell rings",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "sports",
+    "setting": "A sunlit suburban playground with colorful equipment in the afternooon",
+    "role": "the tagger",
+    "goal": "Tag all three kids before the recess bell rings",
+    "fail": "The bell rings before you have tagged all three kids",
+    "mood": "energetic",
+    "pack": "outdoor",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Three targets must be tagged before the countdown bell rings out",
+    "nouns": [
+      {
+        "noun": "playground",
+        "hyper": "recreation area"
+      },
+      {
+        "noun": "kids",
+        "hyper": "non-adult humans"
+      },
+      {
+        "noun": "bell",
+        "hyper": "timekeeping device"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.9,
+      "arousal": 0.9,
+      "tension": 0.6
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "6d76825252d7c69b33a28ee8383207c3728019b976bc0e707318638ae2195bab",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_tag",
+      "text": "Three targets must be tagged before the countdown bell rings out",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners vs 6 bots"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 1,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 9 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 1,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (kid3 becomes tagged) ← r_tag3 (touch kid3) [after kid1 tagged, kid2 tagged]",
+        "src": ""
+      },
+      {
+        "id": "T2:r_bell",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_bell"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_bell fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_n",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_n"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 10,
+        "status": "verified",
+        "text": "r_secret_flank_n fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_n_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_n_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 10,
+        "status": "verified",
+        "text": "r_secret_flank_n_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_s",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_s"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 8,
+        "status": "verified",
+        "text": "r_secret_flank_s fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_s_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_s_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 8,
+        "status": "verified",
+        "text": "r_secret_flank_s_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_tag1",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_tag1"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 10,
+        "status": "verified",
+        "text": "r_tag1 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_tag2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_tag2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 8,
+        "status": "verified",
+        "text": "r_tag2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_tag3",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_tag3"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 17,
+        "status": "verified",
+        "text": "r_tag3 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_win: nothing in the world makes kid3 'tagged'",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners vs 6 bots",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it vs 6 bots (AI par 5.8 s)",
+        "cx": null,
+        "src": "",
+        "ms": 605
+      }
+    ],
+    "par": {
+      "goldS": 5.8,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 1060
+  }
+}

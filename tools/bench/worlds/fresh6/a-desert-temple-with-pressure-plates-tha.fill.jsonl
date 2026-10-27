@@ -1,0 +1,26 @@
+{"op":"meta","mode":"play","lang":"en","pack":"maze","sub":[],"seed":17,"look":"ancient desert temple","mood":[-0.2,0.55,0.65],"timeOfDay":12,"weather":"clear"}
+{"op":"zone","id":"z_start","slot":"start","tag":"outside","name":"Temple entrance"}
+{"op":"zone","id":"z_maze","slot":"maze","tag":"maze","name":"Stone corridors"}
+{"op":"spawn","id":"sp_red","zone":"z_start","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"inner_sanctum","zone":"z_maze","anchor":"exit","noun":"inner sanctum","hyper":"secret room","team":"red"}
+{"op":"ent","id":"door_sanctum","kind":"door","noun":"sealed door","hyper":"door","zone":"z_maze","anchor":"exit","body":"fixed","shape":"box"}
+{"op":"ent","id":"plate_entrance","kind":"plate","noun":"pressure plate","hyper":"mechanical switch","zone":"z_maze","anchor":"entrance","body":"sensor","shape":"box"}
+{"op":"ent","id":"plate_dead_end_1","kind":"plate","noun":"pressure plate","hyper":"mechanical switch","zone":"z_maze","anchor":"dead_end_1","body":"sensor","shape":"box"}
+{"op":"ent","id":"plate_dead_end_2","kind":"plate","noun":"pressure plate","hyper":"mechanical switch","zone":"z_maze","anchor":"dead_end_2","body":"sensor","shape":"box"}
+{"op":"ent","id":"plate_dead_end_3","kind":"plate","noun":"pressure plate","hyper":"mechanical switch","zone":"z_maze","anchor":"dead_end_3","body":"sensor","shape":"box"}
+{"op":"ent","id":"plate_dead_end_4","kind":"plate","noun":"pressure plate","hyper":"mechanical switch","zone":"z_maze","anchor":"dead_end_4","body":"sensor","shape":"box"}
+{"op":"ent","id":"plate_center","kind":"plate","noun":"pressure plate","hyper":"mechanical switch","zone":"z_maze","anchor":"center","body":"sensor","shape":"box"}
+{"op":"verb","id":"vb_plate_entrance","verb":"puzzle.plate","on":"plate_entrance","params":{"latch":false}}
+{"op":"verb","id":"vb_plate_de1","verb":"puzzle.plate","on":"plate_dead_end_1","params":{"latch":false}}
+{"op":"verb","id":"vb_plate_de2","verb":"puzzle.plate","on":"plate_dead_end_2","params":{"latch":false}}
+{"op":"verb","id":"vb_plate_de3","verb":"puzzle.plate","on":"plate_dead_end_3","params":{"latch":false}}
+{"op":"verb","id":"vb_plate_de4","verb":"puzzle.plate","on":"plate_dead_end_4","params":{"latch":false}}
+{"op":"verb","id":"vb_plate_center","verb":"puzzle.plate","on":"plate_center","params":{"latch":false}}
+{"op":"verb","id":"vb_timer","verb":"puzzle.timer","on":"player","params":{"seconds":60}}
+{"op":"rule","id":"r_open_door","when":{"t":"state_is","a":"plate_center","s":"down"},"if":[{"l":"plate_entrance.state","op":"eq","r":"down"},{"l":"plate_dead_end_1.state","op":"eq","r":"down"},{"l":"plate_dead_end_2.state","op":"eq","r":"down"},{"l":"plate_dead_end_3.state","op":"eq","r":"down"},{"l":"plate_dead_end_4.state","op":"eq","r":"down"}],"then":[{"e":"set_state","target":"door_sanctum","v":"open"}],"once":false}
+{"op":"rule","id":"r_win","when":{"t":"enter","a":"player","b":"inner_sanctum"},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose","when":{"t":"timer_end","a":"player"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"expect","id":"exp_seq","prop":"win_reachable","a":"sp_red","b":"inner_sanctum","headline":true,"text":"Pressure-plate sequencing required to open the inner sanctum."}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":6}}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

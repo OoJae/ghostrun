@@ -19,18 +19,38 @@ function nearestRival(c: Parameters<NonNullable<VerbPlugin["tick"]>>[0], from: s
   return best;
 }
 
+/** The nearest of `ids` (things to throw at: pins, cans) still standing within `range` of `from`. */
+function nearestTarget(c: Parameters<NonNullable<VerbPlugin["tick"]>>[0], from: string, ids: string[], range: number): { id: string; d: number } {
+  const p = c.pos(from);
+  let best = { id: "", d: range * range };
+  for (const id of ids) {
+    const e = c.ent(id);
+    if (!e || e.destroyed) continue;
+    const q = c.pos(id);
+    const d = (q[0] - p[0]) * (q[0] - p[0]) + (q[2] - p[2]) * (q[2] - p[2]);
+    if (d < best.d) best = { id, d };
+  }
+  return best;
+}
+
 export const throwVerb: VerbPlugin = {
   id: "combat_sport.throw",
-  line: 'on a ball/snowball: carry it, USE hits the nearest rival in range (hit a=the one hit b=it), then it goes back to its spot; params {"range":3-20}',
+  line: 'on a ball/snowball: carry it, USE hits the nearest rival (or thing in "at") in range (hit a=the one hit b=it), then it goes back to its spot; params {"range":3-20,"at":"pin_1,pin_2"}',
   on: ["pickup"],
-  params: { range: { def: 10, min: 3, max: 20 } },
+  params: { range: { def: 10, min: 3, max: 20 }, at: { def: "" } },
   carries: (b) => [b.on],
   use: {
     radius: 1.5,
     label: "throw",
     run(c, b, actor) {
       if (c.ent(actor)?.carrying !== b.on) return false;
-      const target = nearestRival(c, actor, Number(b.params.range));
+      const range = Number(b.params.range);
+      const rival = nearestRival(c, actor, range);
+      const thing = nearestTarget(c, actor, String(b.params.at ?? "").split(",").filter(Boolean), range);
+      const p = c.pos(actor);
+      const q = rival ? c.pos(rival) : null;
+      const rd = q ? (q[0] - p[0]) * (q[0] - p[0]) + (q[2] - p[2]) * (q[2] - p[2]) : Infinity;
+      const target = thing.id && thing.d < rd ? thing.id : rival;
       if (!target) return false;
       // the hit first, the release next tick: rules see who threw it ("IF ball.carrier.team eq red")
       c.emit("hit", target, b.on);

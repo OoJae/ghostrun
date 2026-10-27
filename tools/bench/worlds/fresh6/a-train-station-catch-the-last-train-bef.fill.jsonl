@@ -1,0 +1,21 @@
+{"op":"meta","mode":"play","lang":"en","pack":"floor_plan","sub":[],"seed":15,"look":"busy urban train station","mood":[0.1,0.75,0.8],"timeOfDay":18,"weather":"clear"}
+{"op":"zone","id":"z_outside","slot":"yard","tag":"outside","name":"Station entrance plaza"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Main concourse"}
+{"op":"zone","id":"z_plat_a","slot":"room_sw","tag":"room","name":"Platform A"}
+{"op":"zone","id":"z_plat_b","slot":"room_se","slot":"room_se","tag":"room","name":"Platform B"}
+{"op":"zone","id":"z_hall","slot":"main_room","tag":"hall","name":"Central hall"}
+{"op":"spawn","id":"sp_red","zone":"z_outside","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"gate_goal","zone":"z_entrance","anchor":"doorway_e","noun":"boarding gate","hyper":"door","team":"red"}
+{"op":"ent","id":"ticket","kind":"pickup","noun":"train ticket","hyper":"ticket","zone":"z_outside","anchor":"corner_e","body":"dynamic","shape":"box","size":[0.2,0.2,0.05]}
+{"op":"ent","id":"gate_door","kind":"door","noun":"boarding gate","hyper":"door","zone":"z_entrance","anchor":"doorway_e","body":"fixed","shape":"box","size":[1.5,2.5,0.2]}
+{"op":"ent","id":"crowd_hazard","kind":"hazard","noun":"crowd crush","hyper":"crowd","zone":"z_hall","anchor":"center","body":"sensor","shape":"box","size":[4,0.5,4]}
+{"op":"verb","id":"vb_carry_ticket","verb":"physics_props.carry","on":"ticket","params":{}}
+{"op":"verb","id":"vb_lock_gate","verb":"puzzle.lock","on":"gate_door","params":{"key":"ticket","keep":false}}
+{"op":"verb","id":"vb_crowd_hazard","verb":"motion_hazards.hazard","on":"crowd_hazard","params":{"respawn":true}}
+{"op":"verb","id":"vb_timer","verb":"puzzle.timer","on":"player","params":{"seconds":30}}
+{"op":"rule","id":"r_win","when":{"t":"enter","a":"player","b":"gate_goal"},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose","when":{"t":"timer_end","a":"player"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"expect","id":"x_last_train","prop":"win_reachable","a":"sp_red","b":"gate_goal","headline":true,"text":"Last train leaves before you reach the gate"}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":6}}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

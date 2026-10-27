@@ -1,0 +1,198 @@
+{
+  "prompt": "A tiny town fire station: put out the three fires",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "Simulation/Action",
+    "setting": "A cozy, cartoonish fire station and the surrounding streets of a tiny town.",
+    "role": "Firefighter",
+    "goal": "Drain a limited water supply to extinguish three separate burning structures in town.",
+    "fail": "The water supply runs out before all three fires are extinguished, or a fire spreads to an unburnt house.",
+    "mood": "Charming and time-pressured",
+    "pack": "city_block",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Water supply strictly limits how many fires can be put out",
+    "nouns": [
+      {
+        "noun": "fire station",
+        "hyper": "building"
+      },
+      {
+        "noun": "fires",
+        "hyper": "combusiton event"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.4,
+      "arousal": 0.5,
+      "tension": 0.4
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "3b1a8aa8dbdfba44b43601bcf2beb2aa75cfa295b4a4f17af9133b4dda4d5a3c",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "exp_water",
+      "text": "Water supply strictly limits how many fires can be put out",
+      "status": "counterexample",
+      "method": "static goal regression over rules"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 7 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "chain",
+          "text": "win unreachable in the rule graph"
+        },
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "counterexample",
+        "method": "static goal regression over rules",
+        "text": "no rule chain lets the player trigger the win",
+        "src": ""
+      },
+      {
+        "id": "T2:r_ext1",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_ext1"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_ext1 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_ext2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_ext2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_ext2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_ext3",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_ext3"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_ext3 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lose",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_lose: nothing in the world makes water_bucket 'none'",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_floor_sw",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_floor_sw"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_floor_sw fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_plinth",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_plinth"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_plinth fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_win: nothing in the world makes fire1 'destroyed'",
+        "cx": null
+      }
+    ],
+    "par": null,
+    "ms": 151
+  }
+}

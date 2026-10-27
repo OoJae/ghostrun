@@ -69,6 +69,17 @@
    "controlsP50": 10
   },
   {
+   "name": "fresh6",
+   "note": "Sixth unseen set (27 Oct, after triage of five sets): 28 prompts, games and places, for a steadier first-pass number",
+   "prompts": 28,
+   "play": 19,
+   "places": 9,
+   "firstPass": 13,
+   "now": 19,
+   "playableP50Ms": 2287,
+   "controlsP50": 10
+  },
+  {
    "name": "judges",
    "note": "Judge-style prompts (internal; written by us, never part of the external eval set)",
    "prompts": 12,

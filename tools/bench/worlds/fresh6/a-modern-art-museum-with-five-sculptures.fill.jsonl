@@ -1,0 +1,24 @@
+{"op":"meta","mode":"wander","lang":"en","pack":"floor_plan","sub":[],"seed":28,"look":"modern art museum","mood":[0.5,0,0.2],"timeOfDay":12,"weather":"clear"}
+{"op":"zone","id":"z_yard","slot":"yard","tag":"outside","name":"Museum Plaza"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Main Entrance Hall"}
+{"op":"zone","id":"z_west","slot":"room_sw","tag":"room","name":"West Gallery"}
+{"op":"zone","id":"z_east","slot":"room_se","tag":"room","name":"East Gallery"}
+{"op":"zone","id":"z_north","slot":"room_nw","tag":"room","name":"North Gallery"}
+{"op":"zone","id":"z_south","slot":"room_ne","tag":"room","name":"South Gallery"}
+{"op":"spawn","id":"sp_red","zone":"z_yard","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"tour_goal","zone":"z_entrance","anchor":"corner_w","noun":"exit","hyper":"door","team":"red"}
+{"op":"ent","id":"sculpt_west","kind":"prop","noun":"abstract sculpture","hyper":"artwork","zone":"z_west","anchor":"center","body":"fixed","shape":"box","size":[1.5,2.0,1.5]}
+{"op":"ent","id":"sculpt_east","kind":"prop","noun":"metal spirals","hyper":"artwork","zone":"z_east","anchor":"center","body":"fixed","shape":"box","size":[1.2,2.2,1.2]}
+{"op":"ent","id":"sculpt_north","kind":"prop","noun":"stone figure","hyper":"artwork","zone":"z_north","anchor":"center","body":"fixed","shape":"box","size":[1.0,1.8,1.0]}
+{"op":"ent","id":"sculpt_south","kind":"prop","noun":"glass installation","hyper":"artwork","zone":"z_south","anchor":"center","body":"fixed","shape":"box","size":[1.4,2.5,1.4]}
+{"op":"ent","id":"sculpt_center","kind":"prop","noun":"kinetic mobile","hyper":"artwork","zone":"z_entrance","anchor":"center","body":"fixed","shape":"box","size":[2.0,1.0,2.0]}
+{"op":"verb","id":"vb_inspect_west","verb":"social.inspect","on":"sculpt_west","params":{"text":"A twisting steel form that catches light."}}
+{"op":"verb","id":"vb_inspect_east","verb":"social.inspect","on":"sculpt_east","params":{"text":"Spiraling metal ribbons hovering in air."}}
+{"op":"verb","id":"vb_inspect_north","verb":"social.inspect","on":"sculpt_north","params":{"text":"Carved stone figure embodying motion."}}
+{"op":"verb","id":"vb_inspect_south","verb":"social.inspect","on":"sculpt_south","params":{"text":"Transparent glass shards reflecting the room."}}
+{"op":"verb","id":"vb_inspect_center","verb":"social.inspect","on":"sculpt_center","params":{"text":"A kinetic mobile moving gently with the breeze."}}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.2,"speed":5}}
+{"op":"npc","id":"guide_1","role":"guide","zone":"z_entrance","anchor":"corner_ne","team":"","menu":["guide.tour"],"dflt":"guide.tour"}
+{"op":"expect","id":"tour_expect","prop":"win_reachable","a":"sp_red","b":"tour_goal","headline":true,"text":"Tour sees exactly five sculptures"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

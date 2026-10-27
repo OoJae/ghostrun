@@ -1,0 +1,100 @@
+{
+  "prompt": "A science museum with a dinosaur skeleton and a planetarium",
+  "intent": {
+    "lang": "en",
+    "mode": "wander",
+    "genre": "Exhibition / Museum tour",
+    "setting": "A science museum hall with a large dinosaur skeleton display and a planetarium room showing a star mapping",
+    "role": "Visitor exploring the exhibits",
+    "goal": "Walk through the museum, view the dinosaur skeleton and the planetarium star display",
+    "fail": "None; exploration has no win or lose condition",
+    "mood": "Wonder and quiet curiosity",
+    "pack": "floor_plan",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Museum must contain a dinosaur skeleton exhibit and a planetarium star display",
+    "nouns": [
+      {
+        "noun": "science museum",
+        "hyper": "building"
+      },
+      {
+        "noun": "dinosaur skeleton",
+        "hyper": "exhibit"
+      },
+      {
+        "noun": "planetarium",
+        "hyper": "room"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.35,
+      "arousal": 0.15,
+      "tension": -0.45
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "b14cdcfc11492aecc0e569458b2775e371ef039a6bdf812bcfdc545253dc2e0a",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "exp_museum",
+      "text": "Museum must contain a dinosaur skeleton exhibit and a planetarium star display",
+      "status": "not_checkable",
+      "method": "kinematic reachability (jump apex model)"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 0 rules reference existing things",
+        "src": ""
+      },
+      {
+        "id": "T1:exp_museum",
+        "tier": "T1",
+        "subject": {
+          "kind": "property",
+          "id": "exp_museum"
+        },
+        "method": "kinematic reachability (jump apex model)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "Museum must contain a dinosaur skeleton exhibit and a planetarium star display",
+        "cx": null
+      },
+      {
+        "id": "T3:tour",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "tour"
+        },
+        "status": "played",
+        "method": "physics, an AI visitor walks to and uses each",
+        "n": 4,
+        "k": 4,
+        "text": "walked to and inspected 4 of 4 things",
+        "cx": null,
+        "src": "",
+        "ms": 20
+      }
+    ],
+    "par": null,
+    "ms": 34
+  }
+}

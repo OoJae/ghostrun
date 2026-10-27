@@ -1,0 +1,324 @@
+{
+  "prompt": "Bowling alley: knock down all the pins",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "sports",
+    "setting": "indoor bowling alley",
+    "role": "bowler",
+    "goal": "knock down all the pins",
+    "fail": "leave pins standing",
+    "mood": "relaxed, skill-based",
+    "pack": "floor_plan",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Alley length and pin rack must make spare/strike timing feel right",
+    "nouns": [
+      {
+        "noun": "bowling alley",
+        "hyper": "interior venue"
+      },
+      {
+        "noun": "lanes",
+        "hyper": "playing surfaces"
+      },
+      {
+        "noun": "pins",
+        "hyper": "targets"
+      },
+      {
+        "noun": "balls",
+        "hyper": "projectiles"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.2,
+      "arousal": 0.35,
+      "tension": 0.2
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "2d8c3c69388f7f3113f5df5fdb4bd34e790752f3e7e3e80a2ebd66b61cf0b730",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_pins",
+      "text": "Alley length and pin rack must make spare/strike timing feel right",
+      "status": "counterexample",
+      "method": "static goal regression over rules"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 11 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "chain",
+          "text": "win unreachable in the rule graph"
+        },
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "counterexample",
+        "method": "static goal regression over rules",
+        "text": "no rule chain lets the player trigger the win",
+        "src": ""
+      },
+      {
+        "id": "T2:r_pin1",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_pin1"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 0,
+        "src": "ai",
+        "ms": 5,
+        "status": "counterexample",
+        "text": "r_pin1 fires exactly once",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "firings",
+          "text": "never fired when forced"
+        }
+      },
+      {
+        "id": "T2:r_pin10",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_pin10"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 0,
+        "src": "ai",
+        "ms": 3,
+        "status": "counterexample",
+        "text": "r_pin10 fires exactly once",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "firings",
+          "text": "never fired when forced"
+        }
+      },
+      {
+        "id": "T2:r_pin2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_pin2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 0,
+        "src": "ai",
+        "ms": 4,
+        "status": "counterexample",
+        "text": "r_pin2 fires exactly once",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "firings",
+          "text": "never fired when forced"
+        }
+      },
+      {
+        "id": "T2:r_pin3",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_pin3"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 0,
+        "src": "ai",
+        "ms": 3,
+        "status": "counterexample",
+        "text": "r_pin3 fires exactly once",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "firings",
+          "text": "never fired when forced"
+        }
+      },
+      {
+        "id": "T2:r_pin4",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_pin4"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 0,
+        "src": "ai",
+        "ms": 5,
+        "status": "counterexample",
+        "text": "r_pin4 fires exactly once",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "firings",
+          "text": "never fired when forced"
+        }
+      },
+      {
+        "id": "T2:r_pin5",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_pin5"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 0,
+        "src": "ai",
+        "ms": 3,
+        "status": "counterexample",
+        "text": "r_pin5 fires exactly once",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "firings",
+          "text": "never fired when forced"
+        }
+      },
+      {
+        "id": "T2:r_pin6",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_pin6"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_pin6: no room to stand next to pin_6",
+        "cx": null
+      },
+      {
+        "id": "T2:r_pin7",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_pin7"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 0,
+        "src": "ai",
+        "ms": 4,
+        "status": "counterexample",
+        "text": "r_pin7 fires exactly once",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "firings",
+          "text": "never fired when forced"
+        }
+      },
+      {
+        "id": "T2:r_pin8",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_pin8"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 0,
+        "src": "ai",
+        "ms": 4,
+        "status": "counterexample",
+        "text": "r_pin8 fires exactly once",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "firings",
+          "text": "never fired when forced"
+        }
+      },
+      {
+        "id": "T2:r_pin9",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_pin9"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 0,
+        "src": "ai",
+        "ms": 3,
+        "status": "counterexample",
+        "text": "r_pin9 fires exactly once",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "firings",
+          "text": "never fired when forced"
+        }
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      }
+    ],
+    "par": null,
+    "ms": 56
+  }
+}

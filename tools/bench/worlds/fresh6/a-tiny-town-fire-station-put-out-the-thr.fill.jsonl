@@ -1,0 +1,28 @@
+{"op":"meta","mode":"play","lang":"en","pack":"city_block","sub":[],"seed":25,"look":"tiny town fire station","mood":[0.4,0.5,0.4],"timeOfDay":14,"weather":"clear"}
+{"op":"zone","id":"z_center","slot":"center","tag":"plaza","name":"Town Plaza"}
+{"op":"zone","id":"z_west","slot":"west_block","tag":"base","name":"Fire Station"}
+{"op":"zone","id":"z_east","slot":"east_block","tag":"base","name":"East Residential"}
+{"op":"zone","id":"z_street_w","slot":"street_w","tag":"street","name":"West Street"}
+{"op":"zone","id":"z_street_e","slot":"street_e","tag":"street","name":"East Street"}
+{"op":"spawn","id":"sp_red","zone":"z_west","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"goal_water","zone":"z_west","anchor":"goal_ring","noun":"water source","hyper":"pool","team":"red"}
+{"op":"ent","id":"fire1","kind":"hazard","noun":"burning house","hyper":"fire","zone":"z_street_w","anchor":"wall_n","body":"sensor","shape":"box","size":[2,2,2]}
+{"op":"ent","id":"fire2","kind":"hazard","noun":"burning shop","hyper":"fire","zone":"z_center","anchor":"floor_ne","body":"sensor","shape":"box","size":[2,2,2]}
+{"op":"ent","id":"fire3","kind":"hazard","noun":"burning garage","hyper":"fire","zone":"z_street_e","anchor":"floor_sw","body":"sensor","shape":"box","size":[2,2,2]}
+{"op":"ent","id":"water_bucket","kind":"pickup","noun":"water bucket","hyper":"bucket","zone":"z_west","anchor":"plinth","body":"dynamic","shape":"box","size":[0.3,0.3,0.5]}
+{"op":"verb","id":"vb_carry_water","verb":"physics_props.carry","on":"water_bucket","params":{}}
+{"op":"verb","id":"vb_extinguish1","verb":"puzzle.collect","on":"fire1","params":{}}
+{"op":"verb","id":"vb_extinguish2","verb":"puzzle.collect","on":"fire2","params":{}}
+{"op":"verb","id":"vb_extinguish3","verb":"puzzle.collect","on":"fire3","params":{}}
+{"op":"verb","id":"vb_inspect_station","verb":"social.inspect","on":"water_bucket","params":{"text":"A bucket of limited water for the hoses"}}
+{"op":"rule","id":"r_ext1","when":{"t":"enter","a":"sp_red","b":"fire1"},"if":[{"l":"water_bucket.carrier.team","op":"eq","r":"red"}],"then":[{"e":"destroy","target":"fire1"}],"once":true}
+{"op":"rule","id":"r_ext2","when":{"t":"enter","a":"sp_red","b":"fire2"},"if":[{"l":"water_bucket.carrier.team","op":"eq","r":"red"}],"then":[{"e":"destroy","target":"fire2"}],"once":true}
+{"op":"rule","id":"r_ext3","when":{"t":"enter","a":"sp_red","b":"fire3"},"if":[{"l":"water_bucket.carrier.team","op":"eq","r":"red"}],"then":[{"e":"destroy","target":"fire3"}],"once":true}
+{"op":"rule","id":"r_win","when":{"t":"state_is","a":"fire1","s":"destroyed"},"if":[],"then":[{"e":"win","target":"player"}],"once":false}
+{"op":"rule","id":"r_lose","when":{"t":"state_is","a":"water_bucket","s":"none"},"if":[],"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"expect","id":"exp_water","prop":"win_reachable","a":"sp_red","b":"goal_water","headline":true,"text":"Water supply strictly limits how many fires can be put out"}
+{"op":"end","layer":"gameplay"}
+{"op":"dress","id":"d_fire_station","zone":"z_west","anchor":"wall_n","hyper":"building","noun":"fire station"}
+{"op":"poster","id":"p_sign1","zone":"z_center","anchor":"wall_n","hyper":"sign","text":"Fire Safety Zone"}
+{"op":"poster","id":"p_sign2","zone":"z_center","anchor":"wall_sw","hyper":"sign","text":"No Smoking"}
+{"op":"end","layer":"cosmetic"}

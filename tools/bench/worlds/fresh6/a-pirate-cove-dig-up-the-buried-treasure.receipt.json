@@ -1,0 +1,212 @@
+{
+  "prompt": "A pirate cove: dig up the buried treasure and row back to the ship",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "treasure hunt",
+    "setting": "A foggy pirate cove with sandy beach, buried treasure plot, sea kayaks and a moored pirate ship",
+    "role": "Pirate treasure hunter",
+    "goal": "Dig up the buried treasure at the marked spot and row back to the pirate ship before time",
+    "fail": "Fail to retrieve the treasure or get back to the ship in time",
+    "mood": "adventurous, adventurous, tension-ish",
+    "pack": "outdoor",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Treasure is underground at the cove and return requires rowing to the ship",
+    "nouns": [
+      {
+        "noun": "pirate cove",
+        "hyper": "outdoor location"
+      },
+      {
+        "noun": "buried treasure",
+        "hyper": "object"
+      },
+      {
+        "noun": "ship",
+        "hyper": "vehicle"
+      },
+      {
+        "noun": "rowboat",
+        "hyper": "vehicle"
+      },
+      {
+        "noun": "shovel",
+        "hyper": "tool"
+      },
+      {
+        "noun": "map",
+        "hyper": "object"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.6,
+      "arousal": 0.7,
+      "tension": 0.4
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "03f8aa397d73a888067fcf7c995f90500f5fe6d1c6d3ce3fd3d5d0b643d73ea3",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_treasure",
+      "text": "Treasure is underground at the cove and return requires rowing to the ship",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 6 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (treasure into ship_goal, carried by red) ← pick up treasure",
+        "src": ""
+      },
+      {
+        "id": "T2:r_lose_timer",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_timer"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 36,
+        "status": "verified",
+        "text": "r_lose_timer fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_bank",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_bank"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 12,
+        "status": "verified",
+        "text": "r_secret_bank fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_n",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_n"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 10,
+        "status": "verified",
+        "text": "r_secret_flank_n fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_shore",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_shore"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 6,
+        "status": "verified",
+        "text": "r_secret_shore fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_water",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_water"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 6,
+        "status": "verified",
+        "text": "r_secret_water fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it (AI par 9.4 s)",
+        "cx": null,
+        "src": "",
+        "ms": 163
+      }
+    ],
+    "par": {
+      "goldS": 9.4,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 573
+  }
+}

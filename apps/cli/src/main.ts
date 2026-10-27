@@ -5,7 +5,7 @@ import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 
 import { dirname, join, resolve } from "node:path";
 import { FillParser, layoutLaws, mergeFill, parseFill, pinLayout, splitObjects, type WorldBundle } from "@ghostrun/ir";
 import { placeWorld } from "@ghostrun/layout";
-import { chatJson, editMessages, fillMessages, IntentOut, intentJsonSchema, intentMessages, repairMessages, streamChat } from "@ghostrun/llm";
+import { chatJson, editMessages, fillMessages, IntentOut, intentJsonSchema, intentMessages, repairMessages, settleIntent, streamChat } from "@ghostrun/llm";
 import { loadNavNode } from "@ghostrun/nav/node";
 import { better, caught, chipLine, issuesOf, plants, prove, provedWon, traceRunners, type Receipt } from "@ghostrun/proof";
 import { ALL_SUBS, PACKS, packFor } from "@ghostrun/registry";
@@ -111,7 +111,7 @@ async function build(prompt: string, seed: number, outDir: string | null): Promi
     jsonSchema: { name: "intent", schema: intentJsonSchema(PACKS.map((p) => p.id), ALL_SUBS) },
     maxTokens: 800,
   });
-  const intent = v.parse(IntentOut, intentRes.value);
+  const intent = settleIntent(prompt, v.parse(IntentOut, intentRes.value));
   const intentMs = Math.round(now() - t0);
   if (intent.safety === "block") throw new Error(`blocked by moderation: ${intent.setting}`);
 

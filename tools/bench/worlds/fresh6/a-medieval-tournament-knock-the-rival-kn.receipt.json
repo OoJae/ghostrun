@@ -1,0 +1,192 @@
+{
+  "prompt": "A medieval tournament: knock the rival knight off the bridge",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "Arcade Action",
+    "setting": "A narrow stone bridge over a deep chasm in a medieval fantasy landscape.",
+    "role": "Knight",
+    "goal": "Knock the rival knight off the bridge onto the ground below.",
+    "fail": "You are knocked off the bridge.",
+    "mood": "Competitive and physical",
+    "pack": "arena",
+    "sub": [],
+    "safety": "arcade",
+    "headline": "Match is won by shoving the opponent off the bridge edge",
+    "nouns": [
+      {
+        "noun": "knight",
+        "hyper": "person"
+      },
+      {
+        "noun": "bridge",
+        "hyper": "structure"
+      },
+      {
+        "noun": "shield",
+        "hyper": "equipment"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.2,
+      "arousal": 0.8,
+      "tension": 0.7
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "f7e49575e803bc2ce7af6ebba4008f0dc52ac4cea9b17230116ce549ae59e718",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_match",
+      "text": "Match is won by shoving the opponent off the bridge edge",
+      "status": "counterexample",
+      "method": "static goal regression over rules + physics, 12 AI runners vs 1 bot"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 2,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 5 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 2,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (rival_knight knocked out of edge_goal)",
+        "src": ""
+      },
+      {
+        "id": "T2:r_lose",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_lose fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_deck_center",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_deck_center"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 12,
+        "status": "verified",
+        "text": "r_secret_deck_center fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_deck_e",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_deck_e"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_secret_deck_e fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_deck_w",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_deck_w"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_deck_w fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "counterexample",
+        "text": "r_win fires exactly once",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "firings",
+          "text": "never fired when forced"
+        }
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "counterexample",
+        "method": "physics, 12 AI runners vs 1 bot",
+        "n": 12,
+        "k": 0,
+        "text": "no AI runner could win vs 1 bot",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "wins",
+          "text": "12 lost (r_lose ×12)"
+        },
+        "src": "",
+        "ms": 49
+      }
+    ],
+    "par": null,
+    "ms": 308
+  }
+}

@@ -1,0 +1,45 @@
+{"op":"meta","mode":"play","lang":"en","pack":"arena","sub":[],"seed":11,"look":"neon arcade","mood":[0.7,0.8,0.2],"timeOfDay":20,"weather":"clear"}
+{"op":"zone","id":"z_west","slot":"west_half","tag":"base","name":"West arcade bay"}
+{"op":"zone","id":"z_east","slot":"east_half","tag":"base","name":"East arcade bay"}
+{"op":"zone","id":"z_north","slot":"north_deck","tag":"platform","name":"North platform"}
+{"op":"zone","id":"z_south","slot":"south_deck","tag":"platform","name":"South platform"}
+{"op":"spawn","id":"sp_red","zone":"z_west","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"goal_score","zone":"z_west","anchor":"goal_ring","noun":"high score","hyper":"metric","team":"red"}
+{"op":"ent","id":"token_1","kind":"pickup","noun":"neon token","hyper":"item","zone":"z_west","anchor":"flank_n","body":"dynamic","shape":"sphere","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"token_2","kind":"pickup","noun":"neon token","hyper":"item","zone":"z_west","anchor":"flank_s","body":"dynamic","shape":"sphere","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"token_3","kind":"pickup","noun":"neon token","hyper":"item","zone":"z_east","anchor":"flank_n","body":"dynamic","shape":"sphere","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"token_4","kind":"pickup","noun":"neon token","hyper":"item","zone":"z_east","anchor":"flank_s","body":"dynamic","shape":"sphere","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"token_5","kind":"pickup","noun":"neon token","hyper":"item","zone":"z_north","anchor":"deck_w","body":"dynamic","shape":"sphere","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"token_6","kind":"pickup","noun":"neon token","hyper":"item","zone":"z_north","anchor":"deck_e","body":"dynamic","shape":"sphere","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"token_7","kind":"pickup","noun":"neon token","hyper":"item","zone":"z_south","anchor":"deck_w","body":"dynamic","shape":"sphere","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"token_8","kind":"pickup","noun":"neon token","hyper":"item","zone":"z_south","anchor":"deck_e","body":"dynamic","shape":"sphere","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"token_9","kind":"pickup","noun":"neon token","hyper":"item","zone":"z_west","anchor":"hoop","body":"dynamic","shape":"sphere","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"token_10","kind":"pickup","noun":"neon token","hyper":"item","zone":"z_east","anchor":"hoop","body":"dynamic","shape":"sphere","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"timer_limit","kind":"timer","noun":"timer","hyper":"timer","zone":"z_west","anchor":"goal_ring","body":"none","shape":"none"}
+{"op":"verb","id":"vb_carry_1","verb":"physics_props.carry","on":"token_1","params":{}}
+{"op":"verb","id":"vb_carry_2","verb":"physics_props.carry","on":"token_2","params":{}}
+{"op":"verb","id":"vb_carry_3","verb":"physics_props.carry","on":"token_3","params":{}}
+{"op":"verb","id":"vb_carry_4","verb":"physics_props.carry","on":"token_4","params":{}}
+{"op":"verb","id":"vb_carry_5","verb":"physics_props.carry","on":"token_5","params":{}}
+{"op":"verb","id":"vb_carry_6","verb":"physics_props.carry","on":"token_6","params":{}}
+{"op":"verb","id":"vb_carry_7","verb":"physics_props.carry","on":"token_7","params":{}}
+{"op":"verb","id":"vb_carry_8","verb":"physics_props.carry","on":"token_8","params":{}}
+{"op":"verb","id":"vb_carry_9","verb":"physics_props.carry","on":"token_9","params":{}}
+{"op":"verb","id":"vb_carry_10","verb":"physics_props.carry","on":"token_10","params":{}}
+{"op":"verb","id":"vb_timer","verb":"puzzle.timer","on":"timer_limit","params":{"seconds":60}}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.8,"speed":7}}
+{"op":"rule","id":"r_collect_1","when":{"t":"touch","a":"player","b":"token_1"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_collect_2","when":{"t":"touch","a":"player","b":"token_2"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_collect_3","when":{"t":"touch","a":"player","b":"token_3"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_collect_4","when":{"t":"touch","a":"player","b":"token_4"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_collect_5","when":{"t":"touch","a":"player","b":"token_5"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_collect_6","when":{"t":"touch","a":"player","b":"token_6"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_collect_7","when":{"t":"touch","a":"player","b":"token_7"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_collect_8","when":{"t":"touch","a":"player","b":"token_8"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_collect_9","when":{"t":"touch","a":"player","b":"token_9"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_collect_10","when":{"t":"touch","a":"player","b":"token_10"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_win","when":{"t":"score_gte","a":"team:red","n":10},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose","when":{"t":"timer_end","a":"timer_limit"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"expect","id":"x_score","prop":"win_reachable","a":"sp_red","b":"goal_score","headline":true,"text":"Goal requires collecting 10 tokens to beat the high score"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

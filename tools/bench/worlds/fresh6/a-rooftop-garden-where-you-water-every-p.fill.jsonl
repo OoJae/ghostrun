@@ -1,0 +1,27 @@
+{"op":"meta","mode":"play","lang":"en","pack":"outdoor","sub":["rooftop"],"seed":13,"look":"rooftop garden","mood":[0.8,0.3,0.2],"timeOfDay":12,"weather":"clear"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Garden entry"}
+{"op":"zone","id":"z_garden","slot":"clearing","tag":"garden","name":"Main rooftop garden"}
+{"op":"zone","id":"z_water","slot":"pond","tag":"water_source","name":"Water source pond"}
+{"op":"spawn","id":"sp_red","zone":"z_entrance","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"day_timer","zone":"z_entrance","anchor":"gate","noun":"day timer","hyper":"timer","team":"","body":"sensor","shape":"box"}
+{"op":"ent","id":"can","kind":"pickup","noun":"watering can","hyper":"tool","zone":"z_water","anchor":"dock","body":"dynamic","shape":"box","size":[0.3,0.5,0.3]}
+{"op":"ent","id":"plant_a","kind":"prop","noun":"potted plant A","hyper":"living","zone":"z_garden","anchor":"center","body":"fixed","shape":"box","size":[0.4,0.8,0.4]}
+{"op":"ent","id":"plant_b","kind":"prop","noun":"potted plant B","hyper":"living","zone":"z_garden","anchor":"center_n","body":"fixed","shape":"box","size":[0.4,0.8,0.4]}
+{"op":"ent","id":"plant_c","kind":"prop","noun":"potted plant C","hyper":"living","zone":"z_garden","anchor":"center_s","body":"fixed","shape":"box","size":[0.4,0.8,0.4]}
+{"op":"ent","id":"plant_d","kind":"prop","noun":"potted plant D","hyper":"living","zone":"z_garden","anchor":"center_e","body":"fixed","shape":"box","size":[0.4,0.8,0.4]}
+{"op":"verb","id":"vb_carry_can","verb":"physics_props.carry","on":"can","params":{}}
+{"op":"verb","id":"vb_water_a","verb":"puzzle.switch","on":"plant_a","params":{"once":true}}
+{"op":"verb","id":"vb_water_b","verb":"puzzle.switch","on":"plant_b","params":{"once":true}}
+{"op":"verb","id":"vb_water_c","verb":"puzzle.switch","on":"plant_c","params":{"once":true}}
+{"op":"verb","id":"vb_water_d","verb":"puzzle.switch","on":"plant_d","params":{"once":true}}
+{"op":"verb","id":"vb_timer","verb":"puzzle.timer","on":"day_timer","params":{"seconds":180}}
+{"op":"rule","id":"r_score_a","when":{"t":"state_is","a":"plant_a","s":"on"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_score_b","when":{"t":"state_is","a":"plant_b","s":"on"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_score_c","when":{"t":"state_is","a":"plant_c","s":"on"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_score_d","when":{"t":"state_is","a":"plant_d","s":"on"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_win","when":{"t":"score_gte","a":"team:red","n":4},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose","when":{"t":"timer_end","a":"day_timer"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"expect","id":"x_water","prop":"win_reachable","a":"sp_red","b":"day_timer","headline":true,"text":"Every plant needs its own unique water interaction to complete the task"}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":5}}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

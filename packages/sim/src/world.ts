@@ -236,8 +236,10 @@ export class SimWorld {
     for (const { plugin, bound } of this.verbs) {
       const u = plugin.use;
       const e = this.ents.get(bound.on);
-      // never itself (a shove bound on the player is for the rivals to use)
-      if (!u || !e || e.destroyed || bound.on === agent || !this.#near(agent, bound.on, u.radius + Math.max(e.size[0], e.size[2]) / 2)) continue;
+      // never itself (a shove bound on the player is for the rivals to use), nor something being
+      // carried (a switch in your hands would take every press meant to put it down)
+      // (a ball you throw is used while carried: its verb says it carries the thing)
+      if (!u || !e || e.destroyed || bound.on === agent || (e.carrier && !plugin.carries) || !this.#near(agent, bound.on, u.radius + Math.max(e.size[0], e.size[2]) / 2)) continue;
       const p = this.pos(agent);
       const q = this.pos(bound.on);
       const d = (p[0] - q[0]) * (p[0] - q[0]) + (p[2] - q[2]) * (p[2] - q[2]);

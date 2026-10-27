@@ -1,0 +1,276 @@
+{
+  "prompt": "A candy factory: sort the sweets into the right boxes",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "puzzle / sort",
+    "setting": "A candy factory (a colorful shop-floor where assorted sweets spill out at one end and numbered or labelled boxes sit in rows at the other)",
+    "role": "Candymaker sorting line worker",
+    "goal": "Move each sweet to the box that matches its type before any boxes overflow",
+    "fail": "A box overflows or a sweet is left on the floor when the conveyor stops",
+    "mood": "playful, tidy rush",
+    "pack": "floor_plan",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Matching each sweet to the correct box before the floor stops is the core puzzle",
+    "nouns": [
+      {
+        "noun": "candy",
+        "hyper": "sweets"
+      },
+      {
+        "noun": "candy box",
+        "hyper": "boxes"
+      },
+      {
+        "noun": "conveyor belt",
+        "hyper": "floor"
+      },
+      {
+        "noun": "sorting line",
+        "hyper": "room"
+      },
+      {
+        "noun": "factory",
+        "hyper": "building"
+      },
+      {
+        "noun": "worker",
+        "hyper": "person"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.6,
+      "arousal": 0.3,
+      "tension": 0.25
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "a60ddea9c68eb97f7d1176faf19ed71390c32b24ec7681a6209b8f378a5e0719",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_sort",
+      "text": "Matching each sweet to the correct box before the floor stops is the core puzzle",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 10 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (box_red becomes filled) ← r_place_red (candy_red into box_red) ← pick up candy_red [after box_green filled, box_blue filled]",
+        "src": ""
+      },
+      {
+        "id": "T2:r_place_blue",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_place_blue"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_place_blue fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_place_green",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_place_green"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_place_green fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_place_red",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_place_red"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_place_red fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_ne",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_ne"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_secret_corner_ne fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_ne_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_ne_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_secret_corner_ne_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_nw",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_nw"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_secret_corner_nw fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_nw_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_nw_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_corner_nw_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_se",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_se"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_secret_corner_se fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_sw",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_sw"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_secret_corner_sw fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_win: nothing in the world makes box_red 'filled'",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it (AI par 16.5 s)",
+        "cx": null,
+        "src": "",
+        "ms": 458
+      }
+    ],
+    "par": {
+      "goldS": 16.5,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 499
+  }
+}

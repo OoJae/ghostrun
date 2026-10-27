@@ -1,0 +1,38 @@
+{"op":"meta","mode":"wander","lang":"en","pack":"outdoor","sub":[],"seed":32,"look":"night market","mood":[0.6,0.4,0.1],"timeOfDay":20,"weather":"clear"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Market entrance"}
+{"op":"zone","id":"z_clearing","slot":"clearing","tag":"hub","name":"Central gathering area"}
+{"op":"zone","id":"z_clearing_w","slot":"clearing_w","tag":"west_section","name":"West stalls"}
+{"op":"zone","id":"z_clearing_e","slot":"clearing_e","tag":"east_section","name":"East stalls"}
+{"op":"zone","id":"z_pond","slot":"pond","tag":"food_court","name":"Food court near pond"}
+{"op":"zone","id":"z_grove","slot":"grove","tag":"lantern_row","name":"Lantern walk"}
+{"op":"zone","id":"z_lookout","slot":"lookout","tag":"high_view","name":"Viewpoint hill"}
+{"op":"spawn","id":"sp_red","zone":"z_entrance","anchor":"spawn_pad","team":"red"}
+{"op":"ent","id":"lantern_1","kind":"prop","noun":"red lantern","hyper":"lantern","zone":"z_clearing_w","anchor":"heart","body":"fixed","shape":"box","size":[0.5,0.8,0.2]}
+{"op":"ent","id":"lantern_2","kind":"prop","noun":"orange lantern","hyper":"lantern","zone":"z_clearing_w","anchor":"stump","body":"fixed","shape":"box","size":[0.5,0.8,0.2]}
+{"op":"ent","id":"lantern_3","kind":"prop","noun":"red lantern","hyper":"lantern","zone":"z_clearing_e","anchor":"heart","body":"fixed","shape":"box","size":[0.5,0.8,0.2]}
+{"op":"ent","id":"lantern_4","kind":"prop","noun":"orange lantern","hyper":"lantern","zone":"z_clearing_e","anchor":"stump","body":"fixed","shape":"box","size":[0.5,0.8,0.2]}
+{"op":"ent","id":"stall_1","kind":"prop","noun":"spice stall","hyper":"stall","zone":"z_clearing_w","anchor":"flank_n","body":"fixed","shape":"box","size":[2,2,2]}
+{"op":"ent","id":"stall_2","kind":"prop","noun":"noodle stall","hyper":"stall","zone":"z_clearing_w","anchor":"flank_s","body":"fixed","shape":"box","size":[2,2,2]}
+{"op":"ent","id":"stall_3","kind":"prop","noun":"grill stall","hyper":"stall","zone":"z_clearing_e","anchor":"flank_n","body":"fixed","shape":"box","size":[2,2,2]}
+{"op":"ent","id":"stall_4","kind":"prop","noun":"dessert stall","hyper":"stall","zone":"z_clearing_e","anchor":"flank_s","body":"fixed","shape":"box","size":[2,2,2]}
+{"op":"ent","id":"pond_fish","kind":"prop","noun":"floating lantern","hyper":"lantern","zone":"z_pond","anchor":"dock","body":"fixed","shape":"box","size":[0.4,0.6,0.2]}
+{"op":"ent","id":"tree_1","kind":"prop","noun":"bamboo grove","hyper":"trees","zone":"z_grove","anchor":"heart","body":"fixed","shape":"box","size":[3,5,3]}
+{"op":"ent","id":"tree_2","kind":"prop","noun":"bamboo grove","hyper":"trees","zone":"z_grove","anchor":"hollow","body":"fixed","shape":"box","size":[3,5,3]}
+{"op":"ent","id":"view_point","kind":"prop","noun":"viewpoint platform","hyper":"platform","zone":"z_lookout","anchor":"top","body":"fixed","shape":"box","size":[4,0.5,4]}
+{"op":"verb","id":"vb_inspect_lantern_1","verb":"social.inspect","on":"lantern_1","params":{"text":"A bright red lantern swaying gently."}}
+{"op":"verb","id":"vb_inspect_lantern_2","verb":"social.inspect","on":"lantern_2","params":{"text":"An orange lantern casting warm glow."}}
+{"op":"verb","id":"vb_inspect_lantern_3","verb":"social.inspect","on":"lantern_3","params":{"text":"Red lantern lighting the east side."}}
+{"op":"verb","id":"vb_inspect_lantern_4","verb":"social.inspect","on":"lantern_4","params":{"text":"Orange lantern flickering softly."}}
+{"op":"verb","id":"vb_inspect_stall_1","verb":"social.inspect","on":"stall_1","params":{"text":"Spice stall offering exotic aromas."}}
+{"op":"verb","id":"vb_inspect_stall_2","verb":"social.inspect","on":"stall_2","params":{"text":"Noodle stall with steaming broth."}}
+{"op":"verb","id":"vb_inspect_stall_3","verb":"social.inspect","on":"stall_3","params":{"text":"Grill stall sizzling with skewers."}}
+{"op":"verb","id":"vb_inspect_stall_4","verb":"social.inspect","on":"stall_4","params":{"text":"Dessert stall serving sweet treats."}}
+{"op":"verb","id":"vb_inspect_pond_fish","verb":"social.inspect","on":"pond_fish","params":{"text":"Floating lantern bobbing on water."}}
+{"op":"verb","id":"vb_inspect_tree_1","verb":"social.inspect","on":"tree_1","params":{"text":"Tall bamboo swaying in night breeze."}}
+{"op":"verb","id":"vb_inspect_tree_2","verb":"social.inspect","on":"tree_2","params":{"text":"Cluster of bamboo trunks illuminated."}}
+{"op":"verb","id":"vb_inspect_view_point","verb":"social.inspect","on":"view_point","params":{"text":"A platform offering a view over the market."}}
+{"op":"npc","id":"guide_1","role":"guide","zone":"z_entrance","anchor":"sign","team":"","menu":["guide.tour"],"dflt":"guide.tour"}
+{"op":"npc","id":"guide_2","role":"guide","zone":"z_clearing","anchor":"center","team":"","menu":["guide.tour"],"dflt":"guide.tour"}
+{"op":"expect","id":"expect_paths","prop":"win_reachable","a":"sp_red","b":"z_clearing","headline":true,"text":"Night market paths must support dense stall placement and ambient lantern lighting"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

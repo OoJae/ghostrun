@@ -1,0 +1,298 @@
+{
+  "prompt": "A neon arcade: collect tokens and beat the high score of 10",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "Arcade",
+    "setting": "A neon-lit digital arcade featuring vibrant lighting and classic game machines.",
+    "role": "Player",
+    "goal": "Collect 10 tokens to set a new high score.",
+    "fail": "Running out of time or missing tokens before reaching the target score.",
+    "mood": "Energetic, colorful, exciting",
+    "pack": "arena",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Goal requires collecting 10 tokens to beat the high score",
+    "nouns": [
+      {
+        "noun": "arcade",
+        "hyper": "room"
+      },
+      {
+        "noun": "tokens",
+        "hyper": "items"
+      },
+      {
+        "noun": "high score",
+        "hyper": "metric"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.7,
+      "arousal": 0.8,
+      "tension": 0.2
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "15cf1379e7380c315e5ca9c05fd3c8b444332e7ad5acca681c2a33a22a8ef9f7",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_score",
+      "text": "Goal requires collecting 10 tokens to beat the high score",
+      "status": "counterexample",
+      "method": "static goal regression over rules + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 12 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (team:red reaches 10) ← collect 10 of 10",
+        "src": ""
+      },
+      {
+        "id": "T2:r_collect_1",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_collect_1"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 6,
+        "status": "verified",
+        "text": "r_collect_1 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_collect_10",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_collect_10"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_collect_10 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_collect_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_collect_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_collect_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_collect_3",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_collect_3"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_collect_3 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_collect_4",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_collect_4"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_collect_4 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_collect_5",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_collect_5"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 6,
+        "status": "verified",
+        "text": "r_collect_5 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_collect_6",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_collect_6"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_collect_6 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_collect_7",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_collect_7"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_collect_7 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_collect_8",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_collect_8"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_collect_8 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_collect_9",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_collect_9"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_collect_9 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lose",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_lose fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "counterexample",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 0,
+        "text": "no AI runner could win",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "wins",
+          "text": "12 lost (the timer ran out ×12)"
+        },
+        "src": "",
+        "ms": 897
+      }
+    ],
+    "par": null,
+    "ms": 1146
+  }
+}

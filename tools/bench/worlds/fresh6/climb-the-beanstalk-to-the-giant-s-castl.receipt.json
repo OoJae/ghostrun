@@ -1,0 +1,252 @@
+{
+  "prompt": "Climb the beanstalk to the giant's castle and grab the golden harp",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "fantasy platformer",
+    "setting": "a towering beanstalk rising in a meadow, topped by a giant's castle in the clouds",
+    "role": "brave fairy-tale adventurer",
+    "goal": "climb from the meadow to the cloud castle and grab the golden harp before being discovered",
+    "fail": "fall from the beanstalk or be caught by the sleeping giant",
+    "mood": "wondering, slightly tense adventure that rewards vertical climbing",
+    "pack": "course",
+    "sub": [
+      "rooftop"
+    ],
+    "safety": "ok",
+    "headline": "The beanstalk is a vertical climb ending in a treasure (harp) grab at the cloud castle",
+    "nouns": [
+      {
+        "noun": "beanstalk",
+        "hyper": "climbable vertical structure"
+      },
+      {
+        "noun": "giant's castle",
+        "hyper": "castle interior"
+      },
+      {
+        "noun": "golden harp",
+        "hyper": "treasure object"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.45,
+      "arousal": 0.6,
+      "tension": 0.5
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "894186314e8b3991bf3199da11877bfe7473f04049566f65cb7e78919252612c",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_beanstalk",
+      "text": "The beanstalk is a vertical climb ending in a treasure (harp) grab at the cloud castle",
+      "status": "counterexample",
+      "method": "static goal regression over rules + physics, 12 AI runners vs 1 bot"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 9 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (harp into castle_exit, carried by red) ← pick up harp",
+        "src": ""
+      },
+      {
+        "id": "T2:r_collect_coin1",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_collect_coin1"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 6,
+        "status": "verified",
+        "text": "r_collect_coin1 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_collect_coin2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_collect_coin2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 6,
+        "status": "verified",
+        "text": "r_collect_coin2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lose_giant",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_giant"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_lose_giant: sensor not found",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_cp_4",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_cp_4"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 6,
+        "status": "verified",
+        "text": "r_secret_cp_4 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_pickup_3",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_pickup_3"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 8,
+        "status": "verified",
+        "text": "r_secret_pickup_3 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_pickup_5",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_pickup_5"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 12,
+        "status": "verified",
+        "text": "r_secret_pickup_5 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_pickup_6",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_pickup_6"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 8,
+        "status": "verified",
+        "text": "r_secret_pickup_6 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_unlock_rope",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_unlock_rope"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 8,
+        "status": "verified",
+        "text": "r_unlock_rope fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "counterexample",
+        "method": "physics, 12 AI runners vs 1 bot",
+        "n": 12,
+        "k": 0,
+        "text": "no AI runner could win vs 1 bot",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "wins",
+          "text": "12 got stuck (in the Giant's Castle Tower ×12)"
+        },
+        "src": "",
+        "ms": 325
+      }
+    ],
+    "par": null,
+    "ms": 867
+  }
+}

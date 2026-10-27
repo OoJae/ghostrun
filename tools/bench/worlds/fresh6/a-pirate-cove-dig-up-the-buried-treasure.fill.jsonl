@@ -1,0 +1,27 @@
+{"op":"meta","mode":"play","lang":"en","pack":"outdoor","sub":[],"seed":7,"look":"pirate cove","mood":[0.6,0.7,0.4],"timeOfDay":9,"weather":"fog"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Beach entry"}
+{"op":"zone","id":"z_beach","slot":"clearing","tag":"clearing","name":"Sandy beach"}
+{"op":"zone","id":"z_cove","slot":"clearing_w","tag":"cove","name":"Buried treasure site"}
+{"op":"zone","id":"z_sea","slot":"pond","tag":"pond","name":"Foggy sea"}
+{"op":"zone","id":"z_ship","slot":"clearing_e","tag":"ship","name":"Moored pirate ship"}
+{"op":"spawn","id":"sp_red","zone":"z_entrance","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"ship_goal","zone":"z_ship","anchor":"goal","noun":"pirate ship","hyper":"vehicle","team":"red"}
+{"op":"ent","id":"shovel","kind":"pickup","noun":"rusty shovel","hyper":"tool","zone":"z_beach","anchor":"center","body":"dynamic","shape":"box","size":[0.3,0.8,0.1]}
+{"op":"ent","id":"treasure","kind":"pickup","noun":"buried treasure chest","hyper":"object","zone":"z_cove","anchor":"heart","body":"dynamic","shape":"box","size":[0.5,0.5,0.4]}
+{"op":"ent","id":"rowboat","kind":"vehicle","noun":"rowboat","hyper":"vehicle","zone":"z_sea","anchor":"dock","body":"kinematic","shape":"hull","size":[2,0.5,1]}
+{"op":"ent","id":"map","kind":"pickup","noun":"tattered map","hyper":"object","zone":"z_beach","anchor":"stump","body":"dynamic","shape":"box","size":[0.2,0.3,0.01]}
+{"op":"ent","id":"quicksand","kind":"hazard","noun":"quicksand","hyper":"hazard","zone":"z_beach","anchor":"flank_n","body":"sensor","shape":"box","size":[1,0.2,1]}
+{"op":"ent","id":"spike_trap","kind":"hazard","noun":"spike trap","hyper":"hazard","zone":"z_beach","anchor":"flank_s","body":"sensor","shape":"box","size":[1,0.2,1]}
+{"op":"ent","id":"timer","kind":"prop","noun":"timer","hyper":"timer","zone":"z_entrance","anchor":"center_n","body":"fixed","shape":"none"}
+{"op":"verb","id":"vb_carry_shovel","verb":"physics_props.carry","on":"shovel","params":{}}
+{"op":"verb","id":"vb_carry_treasure","verb":"physics_props.carry","on":"treasure","params":{}}
+{"op":"verb","id":"vb_carry_map","verb":"physics_props.carry","on":"map","params":{}}
+{"op":"verb","id":"vb_quicksand_hazard","verb":"motion_hazards.hazard","on":"quicksand","params":{"respawn":true}}
+{"op":"verb","id":"vb_spike_hazard","verb":"motion_hazards.hazard","on":"spike_trap","params":{"respawn":true}}
+{"op":"verb","id":"vb_timer","verb":"puzzle.timer","on":"timer","params":{"seconds":180}}
+{"op":"rule","id":"r_win","when":{"t":"enter","a":"treasure","b":"ship_goal"},"if":[{"l":"treasure.carrier.team","op":"eq","r":"red"}],"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose_timer","when":{"t":"timer_end","a":"timer"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"expect","id":"x_treasure","prop":"win_reachable","a":"sp_red","b":"ship_goal","headline":true,"text":"Treasure is underground at the cove and return requires rowing to the ship"}
+{"op":"end","layer":"gameplay"}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":6}}
+{"op":"end","layer":"cosmetic"}

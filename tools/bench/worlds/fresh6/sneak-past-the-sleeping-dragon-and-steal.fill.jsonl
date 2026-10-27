@@ -1,0 +1,20 @@
+{"op":"meta","mode":"play","lang":"en","pack":"floor_plan","sub":[],"seed":12,"look":"cave dungeon","mood":[-0.6,0.5,0.9],"timeOfDay":0,"weather":"clear"}
+{"op":"zone","id":"z_entrance","slot":"yard","tag":"outside","name":"Cave mouth"}
+{"op":"zone","id":"z_main","slot":"main_room","tag":"hall","name":"Dragon's Lair"}
+{"op":"zone","id":"z_side","slot":"room_sw","tag":"room","name":"Hidden Chamber"}
+{"op":"spawn","id":"sp_red","zone":"z_entrance","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"exit_gate","zone":"z_entrance","anchor":"corner_w","noun":"cave exit","hyper":"exit","team":"red"}
+{"op":"ent","id":"crown","kind":"pickup","noun":"golden crown","hyper":"artifact","zone":"z_side","anchor":"corner_sw","body":"dynamic","shape":"box","size":[0.4,0.3,0.1]}
+{"op":"ent","id":"wake_plate","kind":"plate","noun":"squeaky stone slab","hyper":"plate","zone":"z_main","anchor":"corner_ne","body":"sensor","shape":"box","size":[1,0.2,1]}
+{"op":"ent","id":"dragon_anchor","kind":"prop","noun":"sleeping dragon","hyper":"monster","zone":"z_main","anchor":"center","body":"fixed","shape":"box","size":[3,2,3]}
+{"op":"npc","id":"dragon","role":"creature","zone":"z_main","anchor":"center","team":"","menu":["dragon.sleep"],"dflt":"dragon.sleep"}
+{"op":"verb","id":"vb_carry_crown","verb":"physics_props.carry","on":"crown","params":{}}
+{"op":"verb","id":"vb_plate","verb":"puzzle.plate","on":"wake_plate","params":{"latch":false}}
+{"op":"verb","id":"vb_jump","verb":"locomotion.jump","on":"player","params":{"jumpsMax":2}}
+{"op":"rule","id":"r_touch_dragon","when":{"t":"touch","a":"player","b":"dragon_anchor"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_plate_down","when":{"t":"state_is","a":"wake_plate","s":"down"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_win","when":{"t":"enter","a":"crown","b":"exit_gate"},"if":[{"l":"crown.carrier.team","op":"eq","r":"red"}],"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"expect","id":"x_stealth","prop":"win_reachable","a":"sp_red","b":"exit_gate","headline":true,"text":"Silent movement required to avoid waking the dragon"}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":5}}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

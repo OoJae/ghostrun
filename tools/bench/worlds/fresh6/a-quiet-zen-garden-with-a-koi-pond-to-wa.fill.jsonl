@@ -1,0 +1,25 @@
+{"op":"meta","mode":"wander","lang":"en","pack":"outdoor","sub":[],"seed":27,"look":"zen garden","mood":[0.8,-0.7,-0.8],"timeOfDay":10,"weather":"clear"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Garden entrance"}
+{"op":"zone","id":"z_clearing","slot":"clearing","tag":"hub","name":"Central clearing"}
+{"op":"zone","id":"z_pond","slot":"pond","tag":"water","name":"Koi pond"}
+{"op":"zone","id":"z_grove","slot":"grove","tag":"trees","name":"Bamboo grove"}
+{"op":"spawn","id":"sp_red","zone":"z_entrance","anchor":"spawn_pad","team":"red"}
+{"op":"ent","id":"lantern_n","kind":"prop","noun":"stone lantern","hyper":"lantern","zone":"z_clearing","anchor":"center_n","body":"fixed","shape":"box","size":[0.4,0.6,0.4]}
+{"op":"ent","id":"lantern_s","kind":"prop","noun":"stone lantern","hyper":"lantern","zone":"z_clearing","anchor":"center_s","body":"fixed","shape":"box","size":[0.4,0.6,0.4]}
+{"op":"ent","id":"bamboo_1","kind":"prop","noun":"bamboo stalk","hyper":"bamboo","zone":"z_grove","anchor":"heart","body":"fixed","shape":"cylinder","size":[0.2,1.5,0.2]}
+{"op":"ent","id":"bamboo_2","kind":"prop","noun":"bamboo stalk","hyper":"bamboo","zone":"z_grove","anchor":"stump","body":"fixed","shape":"cylinder","size":[0.2,1.2,0.2]}
+{"op":"ent","id":"koi_pond","kind":"prop","noun":"koi pond","hyper":"pond","zone":"z_pond","anchor":"water","body":"fixed","shape":"box","size":[3,0.3,2]}
+{"op":"ent","id":"stone_path","kind":"prop","noun":"gravel path","hyper":"path","zone":"z_clearing","anchor":"center","body":"fixed","shape":"box","size":[4,0.1,2]}
+{"op":"ent","id":"inspect_lantern_n","kind":"prop","noun":"lantern inscription","hyper":"inscription","zone":"z_clearing","anchor":"center_n","body":"fixed","shape":"box","size":[0.4,0.2,0.1]}
+{"op":"ent","id":"inspect_lantern_s","kind":"prop","noun":"lantern inscription","hyper":"inscription","zone":"z_clearing","anchor":"center_s","body":"fixed","shape":"box","size":[0.4,0.2,0.1]}
+{"op":"ent","id":"inspect_bamboo_1","kind":"prop","noun":"bamboo plaque","hyper":"plaque","zone":"z_grove","anchor":"heart","body":"fixed","shape":"box","size":[0.3,0.1,0.2]}
+{"op":"ent","id":"inspect_koi","kind":"prop","noun":"koi fish","hyper":"fish","zone":"z_pond","anchor":"shore","body":"fixed","shape":"sphere","size":[0.2,0.2,0.2]}
+{"op":"verb","id":"vb_inspect_lantern_n","verb":"social.inspect","on":"inspect_lantern_n","params":{"text":"A bronze plaque reads: 'Peace comes from within.'"}}
+{"op":"verb","id":"vb_inspect_lantern_s","verb":"social.inspect","on":"inspect_lantern_s","params":{"text":"A bronze plaque reads: 'Quiet the mind, and the rest will follow.'"}}
+{"op":"verb","id":"vb_inspect_bamboo_1","verb":"social.inspect","on":"inspect_bamboo_1","params":{"text":"Carved bamboo: 'Harmony with nature'"}}
+{"op":"verb","id":"vb_inspect_koi","verb":"social.inspect","on":"inspect_koi","params":{"text":"Colorful koi glide silently beneath the surface."}}
+{"op":"npc","id":"guide_zen","role":"guide","zone":"z_clearing","anchor":"center","team":"","menu":["guide.talk"],"dflt":"guide.talk"}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.2,"speed":4}}
+{"op":"expect","id":"exp_path","prop":"win_reachable","a":"sp_red","b":"z_pond","headline":true,"text":"A winding path circles the central koi pond"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

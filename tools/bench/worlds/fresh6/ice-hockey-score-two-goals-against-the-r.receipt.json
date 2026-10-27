@@ -1,0 +1,296 @@
+{
+  "prompt": "Ice hockey: score two goals against the rival team",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "sports",
+    "setting": "indoor ice rink",
+    "role": "player",
+    "goal": "Score two goals against the rival team",
+    "fail": "Rival team scores or time runs out",
+    "mood": "intense",
+    "pack": "arena",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Goalie makes saves, puck must be scored twice for a win",
+    "nouns": [
+      {
+        "noun": "player",
+        "hyper": "athlete"
+      },
+      {
+        "noun": "ice",
+        "hyper": "surface"
+      },
+      {
+        "noun": "rink",
+        "hyper": "venue"
+      },
+      {
+        "noun": "goalie",
+        "hyper": "player"
+      },
+      {
+        "noun": "puck",
+        "hyper": "object"
+      },
+      {
+        "noun": "goal",
+        "hyper": "scoring opportunity"
+      },
+      {
+        "noun": "rival team",
+        "hyper": "group"
+      }
+    ],
+    "moodVec": {
+      "valence": 0,
+      "arousal": 0.7,
+      "tension": 0.6
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "87202dc8b7f1b3cf53f33bf6f642f9194d0d5993e3625f086eb5c9c3e518e707",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_hockey",
+      "text": "Goalie makes saves, puck must be scored twice for a win",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners vs 1 bot"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 11 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (team:red reaches 2) ← r_score_red (puck into goal_east) ← pick up puck",
+        "src": ""
+      },
+      {
+        "id": "T2:r_lose_score",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_score"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_lose_score fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lose_time",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_time"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_lose_time fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_score_blue",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score_blue"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_score_blue fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_score_red",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score_red"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_score_red fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_center_n",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_center_n"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_secret_center_n fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_deck_center",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_deck_center"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_deck_center fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_deck_center_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_deck_center_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_deck_center_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_deck_e",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_deck_e"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_deck_e fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_deck_e_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_deck_e_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_secret_deck_e_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_s",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_s"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_flank_s fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners vs 1 bot",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it vs 1 bot (AI par 10.9 s)",
+        "cx": null,
+        "src": "",
+        "ms": 244
+      }
+    ],
+    "par": {
+      "goldS": 10.9,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 445
+  }
+}

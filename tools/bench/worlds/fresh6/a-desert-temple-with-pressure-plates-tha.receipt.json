@@ -1,0 +1,140 @@
+{
+  "prompt": "A desert temple with pressure plates that open the inner sanctum",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "mysterious adventure",
+    "setting": "An ancient desert temple complex with weathered stone corridors, sliding mechanisms, and a hidden inner sanctum.",
+    "role": "Lost explorer",
+    "goal": "Activate the correct sequence of pressure plates to unlock the sealed door and enter the inner sanctum.",
+    "fail": "Running out of time before the temple's hidden traps collapse the passageway.",
+    "mood": "Tense and atmospheric, heavy on suspense and puzzle-solving.",
+    "pack": "maze",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Pressure-plate sequencing required to open the inner sanctum.",
+    "nouns": [
+      {
+        "noun": "desert temple",
+        "hyper": "ancient monument"
+      },
+      {
+        "noun": "pressure plates",
+        "hyper": "mechanical switches"
+      },
+      {
+        "noun": "inner sanctum",
+        "hyper": "secret room"
+      },
+      {
+        "noun": "stone corridors",
+        "hyper": "maze passages"
+      }
+    ],
+    "moodVec": {
+      "valence": -0.2,
+      "arousal": 0.55,
+      "tension": 0.65
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "a56066bafaa1c71d6b123215457bd274c9952659af73c857b46dd2e959ef6a4a",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "exp_seq",
+      "text": "Pressure-plate sequencing required to open the inner sanctum.",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 2 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (player enters inner_sanctum)",
+        "src": ""
+      },
+      {
+        "id": "T2:r_lose",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 12,
+        "status": "verified",
+        "text": "r_lose fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it (AI par 22.4 s)",
+        "cx": null,
+        "src": "",
+        "ms": 2858
+      }
+    ],
+    "par": {
+      "goldS": 22.4,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 2968
+  }
+}

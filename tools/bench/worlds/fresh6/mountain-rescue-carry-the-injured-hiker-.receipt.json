@@ -1,0 +1,200 @@
+{
+  "prompt": "Mountain rescue: carry the injured hiker down to the cabin",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "rescue",
+    "setting": "Mountain trail near a cabin",
+    "role": "Rescue worker",
+    "goal": "Carry the injured hiker down the mountain to the cabin",
+    "fail": "Drop the hiker or fail to reach the cabin",
+    "mood": "Tense but hopeful",
+    "pack": "outdoor",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Steep trail requires stable balance to carry hiker to cabin",
+    "nouns": [
+      {
+        "noun": "hiker",
+        "hyper": "person"
+      },
+      {
+        "noun": "cabin",
+        "hyper": "building"
+      },
+      {
+        "noun": "mountain",
+        "hyper": "landform"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.2,
+      "arousal": 0.6,
+      "tension": 0.5
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "73bce5ef2de6fc18fc9c97af6ad207862c2946007307ccaf7a66b0019dc1e17a",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "exp_rescue",
+      "text": "Steep trail requires stable balance to carry hiker to cabin",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 6 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_reach_cabin (hiker into cabin_goal, carried by red) ← pick up hiker",
+        "src": ""
+      },
+      {
+        "id": "T2:r_drop_hiker",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_drop_hiker"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_drop_hiker: nothing in the world makes hiker 'none'",
+        "cx": null
+      },
+      {
+        "id": "T2:r_open_gate",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_open_gate"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 42,
+        "status": "verified",
+        "text": "r_open_gate fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_plate_down",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_plate_down"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 43,
+        "status": "verified",
+        "text": "r_plate_down fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_reach_cabin",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_reach_cabin"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_reach_cabin fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_switch_opens",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_switch_opens"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 123,
+        "status": "verified",
+        "text": "r_switch_opens fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_timer_end",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_timer_end"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 19,
+        "status": "verified",
+        "text": "r_timer_end fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it (AI par 7.3 s)",
+        "cx": null,
+        "src": "",
+        "ms": 1542
+      }
+    ],
+    "par": {
+      "goldS": 7.3,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 4079
+  }
+}

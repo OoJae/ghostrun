@@ -1,0 +1,90 @@
+{
+  "prompt": "A night market with food stalls and lanterns",
+  "intent": {
+    "lang": "en",
+    "mode": "wander",
+    "genre": "Atmospheric Exploration",
+    "setting": "A bustling outdoor night market arranged along winding paved paths, illuminated by hundreds of glowing red and orange paper lanterns hung between wooden stalls. The air is thick with the aroma of steaming food and sizzling woks, and the ground is slightly uneven with cobblestones, leading to a central gathering area.",
+    "role": "A curious food critic or tourist",
+    "goal": "To wander the market freely, observing the lively stalls, the flickering lantern light, and the diverse array of floating food options without a specific objective.",
+    "fail": "Exiting the market area or losing immersion due to lack of interactive feedback.",
+    "mood": "Cozy, vibrant, and aromatic",
+    "pack": "outdoor",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Night market paths must support dense stall placement and ambient lantern lighting",
+    "nouns": [
+      {
+        "noun": "food stalls",
+        "hyper": "merchant structures"
+      },
+      {
+        "noun": "lanterns",
+        "hyper": "lighting fixtures"
+      },
+      {
+        "noun": "paths",
+        "hyper": "walkways"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.6,
+      "arousal": 0.4,
+      "tension": 0.1
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "f4c673b6f20bbe584add6dea3650481efdcaa93982847384651eb2e54bf34a5d",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "expect_paths",
+      "text": "Night market paths must support dense stall placement and ambient lantern lighting",
+      "status": "not_checkable",
+      "method": "none"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 0 rules reference existing things",
+        "src": ""
+      },
+      {
+        "id": "T3:tour",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "tour"
+        },
+        "status": "counterexample",
+        "method": "physics, an AI visitor walks to and uses each",
+        "n": 12,
+        "k": 9,
+        "text": "walked to and inspected 9 of 12 things",
+        "cx": {
+          "where": null,
+          "have": 9,
+          "need": 12,
+          "unit": "things",
+          "text": "couldn't reach stall_4, tree_1, tree_2"
+        },
+        "src": "",
+        "ms": 156
+      }
+    ],
+    "par": null,
+    "ms": 722
+  }
+}

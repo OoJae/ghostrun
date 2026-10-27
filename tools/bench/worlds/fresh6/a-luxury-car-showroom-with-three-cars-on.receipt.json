@@ -1,0 +1,84 @@
+{
+  "prompt": "A luxury car showroom with three cars on display",
+  "intent": {
+    "lang": "en",
+    "mode": "wander",
+    "genre": "archviz",
+    "setting": "polished showroom floor with overhead cove lighting, glossy black marble columns, and a glass perimeter wall looking out onto a dusk streetscape (luxury automotive dealership display hall)",
+    "role": "visitor strolling through the showroom",
+    "goal": "explore the showroom and inspect the three display cars at their own pace",
+    "fail": "none",
+    "mood": "sophisticated, quiet, aspirational",
+    "pack": "floor_plan",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Showroom must hold exactly three on-display cars",
+    "nouns": [
+      {
+        "noun": "showroom",
+        "hyper": "interior"
+      },
+      {
+        "noun": "car",
+        "hyper": "vehicle"
+      },
+      {
+        "noun": "display",
+        "hyper": "object"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.55,
+      "arousal": 0.15,
+      "tension": 0.05
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "59587ed4681cb9c80c4ece7f7b732ac5b5dde7fc8e398bddb579c5a93ea14939",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_cars",
+      "text": "Showroom must hold exactly three on-display cars",
+      "status": "not_checkable",
+      "method": "none"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 0 rules reference existing things",
+        "src": ""
+      },
+      {
+        "id": "T3:tour",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "tour"
+        },
+        "status": "played",
+        "method": "physics, an AI visitor walks to and uses each",
+        "n": 3,
+        "k": 3,
+        "text": "walked to and inspected 3 of 3 things",
+        "cx": null,
+        "src": "",
+        "ms": 3
+      }
+    ],
+    "par": null,
+    "ms": 15
+  }
+}

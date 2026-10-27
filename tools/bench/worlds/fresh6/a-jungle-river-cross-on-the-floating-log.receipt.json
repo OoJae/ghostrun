@@ -1,0 +1,188 @@
+{
+  "prompt": "A jungle river: cross on the floating logs to reach the waterfall",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "platformer",
+    "setting": "A winding jungle river surrounded by dense foliage, where floating logs serve as precarious stepping stones leading to a large waterfall.",
+    "role": "An explorer or jungle adventurer",
+    "goal": "Jump across the floating log hurdles to reach the waterfall and observe it up close.",
+    "fail": "Falling into the rushing river water",
+    "mood": "Tense and adventurous with a touch of natural wonder",
+    "pack": "course",
+    "sub": [],
+    "safety": "ok",
+    "headline": "River path requires timing jumps across moving logs",
+    "nouns": [
+      {
+        "noun": "jungle river",
+        "hyper": "watercourse"
+      },
+      {
+        "noun": "floating logs",
+        "hyper": "platforms"
+      },
+      {
+        "noun": "waterfall",
+        "hyper": "landmark"
+      },
+      {
+        "noun": "foliage",
+        "hyper": "vegetation"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.65,
+      "arousal": 0.6,
+      "tension": 0.55
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "58d777134af9e4b767f8f7735a74808faf2ef7cc0285f3e7f45cf553fcb1b5aa",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "exp_river",
+      "text": "River path requires timing jumps across moving logs",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 5 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (player enters waterfall_goal)",
+        "src": ""
+      },
+      {
+        "id": "T2:r_lose",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_lose fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_host",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_host"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 6,
+        "status": "verified",
+        "text": "r_secret_host fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_pickup_5",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_pickup_5"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_secret_pickup_5 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_trophy",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_trophy"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 8,
+        "status": "verified",
+        "text": "r_secret_trophy fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it (AI par 22.9 s)",
+        "cx": null,
+        "src": "",
+        "ms": 856
+      }
+    ],
+    "par": {
+      "goldS": 22.9,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 1632
+  }
+}
