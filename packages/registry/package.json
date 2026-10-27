@@ -6,8 +6,10 @@
   "dependencies": {
     "@ghostrun/pack-arena": "workspace:*",
     "@ghostrun/pack-city-block": "workspace:*",
+    "@ghostrun/pack-course": "workspace:*",
     "@ghostrun/pack-floor-plan": "workspace:*",
     "@ghostrun/pack-maze": "workspace:*",
+    "@ghostrun/pack-outdoor": "workspace:*",
     "@ghostrun/plugin-api": "workspace:*"
   }
 }

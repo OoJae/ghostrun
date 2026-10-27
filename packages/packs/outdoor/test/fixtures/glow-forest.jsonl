@@ -1,0 +1,28 @@
+{"op":"meta","mode":"play","lang":"en","pack":"outdoor","sub":[],"seed":7,"look":"bioluminescent","mood":[0.6,0.4,0.3],"timeOfDay":23,"weather":"fog"}
+{"op":"zone","id":"z_trailhead","slot":"entrance","tag":"start","name":"Mossy trailhead"}
+{"op":"zone","id":"z_glade","slot":"clearing","tag":"hub","name":"Glowcap glade"}
+{"op":"zone","id":"z_pond","slot":"pond","tag":"water","name":"Moonlit pond"}
+{"op":"zone","id":"z_grove","slot":"grove","tag":"trees","name":"Lantern grove"}
+{"op":"zone","id":"z_camp","slot":"camp","tag":"camp","name":"Firefly camp"}
+{"op":"zone","id":"z_lookout","slot":"lookout","tag":"high_ground","name":"Owl lookout"}
+{"op":"spawn","id":"sp_red","zone":"z_trailhead","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"shrine","zone":"z_camp","anchor":"goal","noun":"seed shrine","hyper":"altar"}
+{"op":"ent","id":"seed","kind":"pickup","noun":"glowing seed","hyper":"orb","zone":"z_grove","anchor":"heart","body":"dynamic","shape":"sphere","states":["home","carried"],"init":"home","size":[0.5,0.5,0.5]}
+{"op":"ent","id":"wisp","kind":"hazard","noun":"will-o'-wisp","hyper":"ghost","zone":"z_pond","anchor":"water","body":"sensor","size":[3,2,3]}
+{"op":"ent","id":"glowcaps","kind":"prop","noun":"glowing mushroom ring","hyper":"plant","zone":"z_glade","anchor":"center_e","body":"none","shape":"none"}
+{"op":"ent","id":"telescope","kind":"prop","noun":"brass telescope","hyper":"prop","zone":"z_lookout","anchor":"top","body":"none","shape":"none"}
+{"op":"verb","id":"vb_jump","verb":"locomotion.jump","on":"player","params":{"jumpsMax":2}}
+{"op":"verb","id":"vb_carry","verb":"physics_props.carry","on":"seed","params":{"speedMul":0.9}}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":6}}
+{"op":"rule","id":"r_pickup","when":{"t":"pickup","a":"seed","b":"player"},"then":[{"e":"set_state","target":"seed","v":"carried"},{"e":"emit","target":"seed","fx":"sparkle"}]}
+{"op":"rule","id":"r_win","when":{"t":"enter","a":"seed","b":"shrine"},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_wisp","when":{"t":"enter","a":"player","b":"wisp"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"npc","id":"owl_keeper","role":"guide","zone":"z_trailhead","anchor":"guide","menu":["guide.talk"],"dflt":"guide.talk"}
+{"op":"npc","id":"camp_cook","role":"merchant","zone":"z_camp","anchor":"tent","menu":["merchant.trade"],"dflt":"merchant.trade"}
+{"op":"expect","id":"x_lookout","prop":"requires","a":"sp_red","b":"z_lookout","need":["jumps>=2"],"headline":true,"text":"Owl lookout needs double jump"}
+{"op":"expect","id":"x_camp","prop":"reachable","a":"sp_red","b":"z_camp","text":"Camp is reachable from the trailhead"}
+{"op":"expect","id":"x_win","prop":"win_reachable","a":"player","b":"shrine","text":"The seed can reach the shrine"}
+{"op":"end","layer":"gameplay"}
+{"op":"dress","id":"d_fireflies","noun":"firefly swarm","zone":"z_glade","anchor":"center"}
+{"op":"dress","id":"d_lanterns","noun":"paper lanterns","zone":"z_camp","anchor":"fire"}
+{"op":"end","layer":"cosmetic"}

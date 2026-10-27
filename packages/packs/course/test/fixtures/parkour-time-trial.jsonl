@@ -1,0 +1,32 @@
+{"op":"meta","mode":"play","lang":"en","pack":"course","sub":[],"seed":7,"look":"neon","mood":[0.5,0.8,0.6],"timeOfDay":20,"weather":"clear"}
+{"op":"zone","id":"z_start","slot":"start","tag":"start","name":"Start pad"}
+{"op":"zone","id":"z_wall","slot":"seg_1","tag":"ledge","name":"The opening wall"}
+{"op":"zone","id":"z_beams","slot":"seg_2","tag":"beam","name":"Balance beams"}
+{"op":"zone","id":"z_stairs","slot":"seg_3","tag":"steps","name":"Sky stairs"}
+{"op":"zone","id":"z_hops","slot":"seg_4","tag":"gaps","name":"Hop gardens"}
+{"op":"zone","id":"z_lava","slot":"seg_5","tag":"pit","name":"Lava pit"}
+{"op":"zone","id":"z_climb","slot":"seg_6","tag":"steps","name":"Final climb"}
+{"op":"zone","id":"z_finish","slot":"finish","tag":"finish","name":"Finish"}
+{"op":"spawn","id":"sp_red","zone":"z_start","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"finish_line","zone":"z_finish","anchor":"goal","noun":"finish arch","hyper":"ring"}
+{"op":"ent","id":"lava","kind":"hazard","noun":"lava pool","hyper":"hazard","zone":"z_lava","anchor":"pit_5","body":"sensor","size":[6,2,9]}
+{"op":"ent","id":"cp_flag_1","kind":"checkpoint","noun":"checkpoint flag","hyper":"flag","zone":"z_wall","anchor":"cp_1"}
+{"op":"ent","id":"cp_flag_3","kind":"checkpoint","noun":"checkpoint flag","hyper":"flag","zone":"z_stairs","anchor":"cp_3"}
+{"op":"ent","id":"gem_2","kind":"pickup","noun":"time gem","hyper":"gem","zone":"z_beams","anchor":"pickup_2","body":"sensor","shape":"sphere","size":[1.2,1.2,1.2]}
+{"op":"ent","id":"gem_4","kind":"pickup","noun":"time gem","hyper":"gem","zone":"z_hops","anchor":"pickup_4","body":"sensor","shape":"sphere","size":[1.2,1.2,1.2]}
+{"op":"verb","id":"vb_jump","verb":"locomotion.jump","on":"player","params":{"jumpsMax":2}}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":6}}
+{"op":"rule","id":"r_win","when":{"t":"enter","a":"player","b":"finish_line"},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lava","when":{"t":"enter","a":"player","b":"lava"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_cp1","when":{"t":"enter","a":"player","b":"cp_flag_1"},"then":[{"e":"emit","target":"cp_flag_1","fx":"confetti"}],"once":true}
+{"op":"rule","id":"r_cp3","when":{"t":"enter","a":"player","b":"cp_flag_3"},"then":[{"e":"emit","target":"cp_flag_3","fx":"confetti"}],"once":true}
+{"op":"rule","id":"r_gem2","when":{"t":"enter","a":"player","b":"gem_2"},"then":[{"e":"score","target":"team:red","n":1},{"e":"destroy","target":"gem_2"}],"once":true}
+{"op":"rule","id":"r_gem4","when":{"t":"enter","a":"player","b":"gem_4"},"then":[{"e":"score","target":"team:red","n":1},{"e":"destroy","target":"gem_4"}],"once":true}
+{"op":"npc","id":"coach","role":"guide","zone":"z_start","anchor":"host","menu":["guide.cheer"],"dflt":"guide.cheer"}
+{"op":"npc","id":"judge","role":"citizen","zone":"z_finish","anchor":"host","menu":["citizen.cheer"],"dflt":"citizen.cheer"}
+{"op":"expect","id":"x_wall","prop":"requires","a":"sp_red","b":"z_wall","need":["jumps>=2"],"headline":true,"text":"Opening wall needs double jump"}
+{"op":"expect","id":"x_finish","prop":"reachable","a":"sp_red","b":"z_finish","text":"Finish is reachable within the jump laws"}
+{"op":"expect","id":"x_win","prop":"win_reachable","a":"player","b":"finish_line","text":"A runner can reach the finish"}
+{"op":"end","layer":"gameplay"}
+{"op":"dress","id":"d_banner","noun":"start banner","zone":"z_start","anchor":"sign"}
+{"op":"end","layer":"cosmetic"}
