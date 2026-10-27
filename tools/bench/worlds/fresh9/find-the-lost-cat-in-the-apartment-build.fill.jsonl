@@ -1,0 +1,31 @@
+{"op":"meta","mode":"play","lang":"en-US","pack":"floor_plan","sub":[],"seed":27,"look":"apartment building","mood":[0,0.4,0.3],"timeOfDay":18,"weather":"clear"}
+{"op":"zone","id":"z_yard","slot":"yard","tag":"outside","name":"Building entrance courtyard"}
+{"op":"zone","id":"z_lobby","slot":"entrance","tag":"entrance","name":"Lobby"}
+{"op":"zone","id":"z_floor1","slot":"main_room","tag":"hall","name":"First floor hallway"}
+{"op":"zone","id":"z_floor2","slot":"main_room","tag":"hall","name":"Second floor hallway"}
+{"op":"zone","id":"z_floor3","slot":"main_room","tag":"hall","name":"Third floor hallway"}
+{"op":"spawn","id":"sp_red","zone":"z_yard","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"home","zone":"z_yard","anchor":"corner_w","noun":"owner's door","hyper":"door","team":"red"}
+{"op":"ent","id":"cat","kind":"pickup","noun":"lost cat","hyper":"animal","zone":"z_floor2","anchor":"corner_ne","body":"dynamic","shape":"box","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"key_f1","kind":"pickup","noun":"silver key","hyper":"key","zone":"z_floor1","anchor":"corner_sw","body":"dynamic","shape":"box","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"door_f1","kind":"door","noun":"first floor door","hyper":"door","zone":"z_floor1","anchor":"doorway_e","body":"fixed","shape":"box"}
+{"op":"ent","id":"door_f2","kind":"door","noun":"second floor door","hyper":"door","zone":"z_floor2","anchor":"doorway_w","body":"fixed","shape":"box"}
+{"op":"ent","id":"switch_f2","kind":"switch","noun":"light switch","hyper":"switch","zone":"z_floor2","anchor":"wall_n","body":"sensor","shape":"box"}
+{"op":"ent","id":"plate_f3","kind":"plate","noun":"pressure plate","hyper":"plate","zone":"z_floor3","anchor":"center","body":"sensor","shape":"box"}
+{"op":"ent","id":"hazard_spike","kind":"hazard","noun":"spike trap","hyper":"spikes","zone":"z_floor3","anchor":"corner_se","body":"sensor","shape":"box"}
+{"op":"verb","id":"vb_carry_cat","verb":"physics_props.carry","on":"cat","params":{}}
+{"op":"verb","id":"vb_carry_key_f1","verb":"physics_props.carry","on":"key_f1","params":{}}
+{"op":"verb","id":"vb_lock_f1","verb":"puzzle.lock","on":"door_f1","params":{"key":"key_f1","keep":false}}
+{"op":"verb","id":"vb_lock_f2","verb":"puzzle.lock","on":"door_f2","params":{"key":"key_f1","keep":false}}
+{"op":"verb","id":"vb_switch_f2","verb":"puzzle.switch","on":"switch_f2","params":{"once":false}}
+{"op":"verb","id":"vb_plate_f3","verb":"puzzle.plate","on":"plate_f3","params":{"latch":false}}
+{"op":"verb","id":"vb_hazard_spike","verb":"motion_hazards.hazard","on":"hazard_spike","params":{"respawn":true}}
+{"op":"verb","id":"vb_timer","verb":"puzzle.timer","on":"player","params":{"seconds":300}}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":6}}
+{"op":"rule","id":"r_open_f2","when":{"t":"state_is","a":"switch_f2","s":"on"},"then":[{"e":"set_state","target":"door_f2","v":"open"}]}
+{"op":"rule","id":"r_plate_f3","when":{"t":"state_is","a":"plate_f3","s":"down"},"then":[{"e":"set_state","target":"hazard_spike","v":"off"}]}
+{"op":"rule","id":"r_win","when":{"t":"enter","a":"cat","b":"home"},"if":[{"l":"cat.carrier.team","op":"eq","r":"red"}],"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose","when":{"t":"timer_end","a":"player"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"expect","id":"x_cat_find","prop":"win_reachable","a":"sp_red","b":"home","headline":true,"text":"Cat must be found in a hidden spot per floor"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

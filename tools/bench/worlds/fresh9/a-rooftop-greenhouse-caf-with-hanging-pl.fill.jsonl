@@ -1,0 +1,23 @@
+{"op":"meta","mode":"wander","lang":"en","pack":"floor_plan","sub":[],"seed":15,"look":"rooftop greenhouse café","mood":[0.35,-0.35,-0.2],"timeOfDay":12,"weather":"clear"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Café entrance ramp"}
+{"op":"zone","id":"z_main","slot":"main_room","tag":"hall","name":"Central greenhouse"}
+{"op":"zone","id":"z_nw","slot":"room_nw","tag":"room","name":"North‑west seating"}
+{"op":"zone","id":"z_ne","slot":"room_ne","tag":"room","name":"North‑east plant alcove"}
+{"op":"zone","id":"z_sw","slot":"room_sw","tag":"room","name":"South‑west lounge"}
+{"op":"zone","id":"z_se","slot":"room_se","tag":"room","name":"South‑east garden view"}
+{"op":"spawn","id":"sp_red","zone":"z_entrance","anchor":"doorway_s","team":"red"}
+{"op":"ent","id":"plant_center","kind":"prop","noun":"hanging plant","hyper":"potted flora","zone":"z_main","anchor":"center","body":"fixed","shape":"box","size":[0.8,1.2,0.8]}
+{"op":"ent","id":"plant_nw","kind":"prop","noun":"hanging plant","hyper":"potted flora","zone":"z_nw","anchor":"corner_nw","body":"fixed","shape":"box","size":[0.8,1.0,0.8]}
+{"op":"ent","id":"plant_ne","kind":"prop","noun":"hanging plant","hyper":"potted flora","zone":"z_ne","anchor":"corner_ne","body":"fixed","shape":"box","size":[0.8,1.0,0.8]}
+{"op":"ent","id":"table_center","kind":"prop","noun":"wooden table","hyper":"furniture","zone":"z_main","anchor":"corner_se","body":"fixed","shape":"box","size":[1.2,0.6,1.0]}
+{"op":"ent","id":"glass_pane","kind":"prop","noun":"large glass pane","hyper":"building structure","zone":"z_main","anchor":"wall_n","body":"fixed","shape":"box","size":[3.0,0.2,2.5]}
+{"op":"ent","id":"npc_barista","kind":"npc","noun":"barista","hyper":"guide","zone":"z_main","anchor":"doorway_w","team":"","menu":["guide.talk"],"dflt":"guide.talk"}
+{"op":"ent","id":"npc_visitor","kind":"npc","noun":"visitor","hyper":"guide","zone":"z_sw","anchor":"corner_sw","team":"","menu":["guide.talk"],"dflt":"guide.talk"}
+{"op":"verb","id":"vb_inspect_plant_center","verb":"social.inspect","on":"plant_center","params":{"text":"Lush fern drapes over the glass."}}
+{"op":"verb","id":"vb_inspect_plant_nw","verb":"social.inspect","on":"plant_nw","params":{"text":"Trailing ivy curls around the table."}}
+{"op":"verb","id":"vb_inspect_plant_ne","verb":"social.inspect","on":"plant_ne","params":{"text":"Bright succulents sway in the breeze."}}
+{"op":"verb","id":"vb_inspect_table_center","verb":"social.inspect","on":"table_center","params":{"text":"Reclaimed wood table with a soft cushion."}}
+{"op":"verb","id":"vb_inspect_glass_pane","verb":"social.inspect","on":"glass_pane","params":{"text":"Floor‑to‑ceiling glass framing the skyline."}}
+{"op":"expect","id":"exp_cafe","prop":"win_reachable","a":"sp_red","b":"z_main","headline":true,"text":"Rooftop greenhouse café highlighted by hanging plants"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

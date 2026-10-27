@@ -1,0 +1,25 @@
+{"op":"meta","mode":"wander","lang":"en","pack":"floor_plan","sub":[],"seed":7,"look":"sneaker showroom","mood":[0.8,0.2,0.1],"timeOfDay":12,"weather":"clear"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Showroom Entrance"}
+{"op":"zone","id":"z_main","slot":"main_room","tag":"hall","name":"Central Display Hall"}
+{"op":"spawn","id":"sp_red","zone":"z_entrance","anchor":"spawn_pad","team":"red"}
+{"op":"ent","id":"pedestal_1","kind":"prop","noun":"circular pedestal","hyper":"platform","zone":"z_main","anchor":"corner_ne","body":"fixed","shape":"box","size":[0.6,0.05,0.6]}
+{"op":"ent","id":"sneaker_1","kind":"prop","noun":"limited edition sneaker","hyper":"footwear","zone":"z_main","anchor":"corner_ne","body":"fixed","shape":"box","size":[0.3,0.1,0.5]}
+{"op":"ent","id":"pedestal_2","kind":"prop","noun":"circular pedestal","hyper":"platform","zone":"z_main","anchor":"corner_nw","body":"fixed","shape":"box","size":[0.6,0.05,0.6]}
+{"op":"ent","id":"sneaker_2","kind":"prop","noun":"limited edition sneaker","hyper":"footwear","zone":"z_main","anchor":"corner_nw","body":"fixed","shape":"box","size":[0.3,0.1,0.5]}
+{"op":"ent","id":"pedestal_3","kind":"prop","noun":"circular pedestal","hyper":"platform","zone":"z_main","anchor":"center","body":"fixed","shape":"box","size":[0.6,0.05,0.6]}
+{"op":"ent","id":"sneaker_3","kind":"prop","noun":"limited edition sneaker","hyper":"footwear","zone":"z_main","anchor":"center","body":"fixed","shape":"box","size":[0.3,0.1,0.5]}
+{"op":"ent","id":"pedestal_4","kind":"prop","noun":"circular pedestal","hyper":"platform","zone":"z_main","anchor":"corner_se","body":"fixed","shape":"box","size":[0.6,0.05,0.6]}
+{"op":"ent","id":"sneaker_4","kind":"prop","noun":"limited edition sneaker","hyper":"footwear","zone":"z_main","anchor":"corner_se","body":"fixed","shape":"box","size":[0.3,0.1,0.5]}
+{"op":"ent","id":"pedestal_5","kind":"prop","noun":"circular pedestal","hyper":"platform","zone":"z_main","anchor":"corner_sw","body":"fixed","shape":"box","size":[0.6,0.05,0.6]}
+{"op":"ent","id":"sneaker_5","kind":"prop","noun":"limited edition sneaker","hyper":"footwear","zone":"z_main","anchor":"corner_sw","body":"fixed","shape":"box","size":[0.3,0.1,0.5]}
+{"op":"verb","id":"vb_inspect_1","verb":"social.inspect","on":"sneaker_1","params":{"text":"Sleek white sneaker with gold accents."}}
+{"op":"verb","id":"vb_inspect_2","verb":"social.inspect","on":"sneaker_2","params":{"text":"Retro high-top in neon teal, limited run."}}
+{"op":"verb","id":"vb_inspect_3","verb":"social.inspect","on":"sneaker_3","params":{"text":"Monochrome low-top, crafted from vegan leather."}}
+{"op":"verb","id":"vb_inspect_4","verb":"social.inspect","on":"sneaker_4","params":{"text":"Bold red sneaker with reflective strips."}}
+{"op":"verb","id":"vb_inspect_5","verb":"social.inspect","on":"sneaker_5","params":{"text":"Classic black sneaker, embossed with signature logo."}}
+{"op":"npc","id":"guide_1","role":"guide","zone":"z_entrance","anchor":"doorway_n","team":"","menu":["guide.welcome"],"dflt":"guide.welcome"}
+{"op":"npc","id":"guide_2","role":"guide","zone":"z_main","anchor":"doorway_s","team":"","menu":["guide.tour"],"dflt":"guide.tour"}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":5}}
+{"op":"expect","id":"x_showroom","prop":"win_reachable","a":"sp_red","b":"z_main","headline":true,"text":"Showroom features exactly five limited edition sneakers on pedestals"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

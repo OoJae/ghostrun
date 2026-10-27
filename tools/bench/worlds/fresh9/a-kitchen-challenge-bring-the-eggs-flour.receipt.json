@@ -1,0 +1,276 @@
+{
+  "prompt": "A kitchen challenge: bring the eggs, flour and milk to the mixing bowl",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "cooking",
+    "setting": "A kitchen counter and prep area",
+    "role": "a player or actor representing a chef",
+    "goal": "collect the eggs, flour and milk and place them in the mixing bowl",
+    "fail": "drop or break an item, or leave a required ingredient unfetched",
+    "mood": "cozy",
+    "pack": "floor_plan",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Player can physically pick up and place each ingredient in the mixing bowl",
+    "nouns": [
+      {
+        "noun": "kitchen",
+        "hyper": "room"
+      },
+      {
+        "noun": "eggs",
+        "hyper": "food"
+      },
+      {
+        "noun": "flour",
+        "hyper": "food"
+      },
+      {
+        "noun": "milk",
+        "hyper": "food"
+      },
+      {
+        "noun": "mixing bowl",
+        "hyper": "vessel"
+      },
+      {
+        "noun": "counter",
+        "hyper": "surface"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.7,
+      "arousal": 0.3,
+      "tension": 0.2
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "b14408c2bc16f739ec7c574e6aee78b852a1709798aaf49871948f0227d91204",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_mix",
+      "text": "Player can physically pick up and place each ingredient in the mixing bowl",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 10 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (team:red reaches 3) ← r_egg_put (eggs into bowl) ← pick up eggs + r_flour_put (flour into bowl) ← pick up flour + r_milk_put (milk into bowl) ← pick up milk",
+        "src": ""
+      },
+      {
+        "id": "T2:r_egg_put",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_egg_put"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 8,
+        "status": "verified",
+        "text": "r_egg_put fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_flour_put",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_flour_put"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 6,
+        "status": "verified",
+        "text": "r_flour_put fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_milk_put",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_milk_put"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_milk_put fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_center",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_center"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_center fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_ne",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_ne"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_corner_ne fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_ne_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_ne_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_corner_ne_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_nw",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_nw"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_corner_nw fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_nw_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_nw_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_corner_nw_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_se",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_se"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_corner_se fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it (AI par 18.1 s)",
+        "cx": null,
+        "src": "",
+        "ms": 230
+      }
+    ],
+    "par": {
+      "goldS": 18.1,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 282
+  }
+}

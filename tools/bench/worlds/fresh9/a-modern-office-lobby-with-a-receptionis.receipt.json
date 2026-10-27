@@ -1,0 +1,84 @@
+{
+  "prompt": "A modern office lobby with a receptionist and a waiting area",
+  "intent": {
+    "lang": "en",
+    "mode": "wander",
+    "genre": "simulation",
+    "setting": "modern office lobby",
+    "role": "visitor",
+    "goal": "observe the reception area and waiting space layout",
+    "fail": "none",
+    "mood": "neutral",
+    "pack": "floor_plan",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Reception desk visible from lobby entrance",
+    "nouns": [
+      {
+        "noun": "office lobby",
+        "hyper": "interior space"
+      },
+      {
+        "noun": "receptionist",
+        "hyper": "staff"
+      },
+      {
+        "noun": "waiting area",
+        "hyper": "furniture arrangement"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.2,
+      "arousal": 0.1,
+      "tension": -0.3
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "8b43d3679e4a9a361c58c67b3487c36b3ecc84297a624860457b4c2043d3b2ab",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_reception",
+      "text": "Reception desk visible from lobby entrance",
+      "status": "not_checkable",
+      "method": "none"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 0 rules reference existing things",
+        "src": ""
+      },
+      {
+        "id": "T3:tour",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "tour"
+        },
+        "status": "played",
+        "method": "physics, an AI visitor walks to and uses each",
+        "n": 6,
+        "k": 6,
+        "text": "walked to and inspected 6 of 6 things",
+        "cx": null,
+        "src": "",
+        "ms": 27
+      }
+    ],
+    "par": null,
+    "ms": 51
+  }
+}

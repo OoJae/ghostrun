@@ -60,9 +60,19 @@ describe("recorded unseen worlds", () => {
     ["fresh8", "defuse-the-bomb", "a door nothing opens opens with USE; wires a win wants off start on, and USE cuts them"],
     ["fresh8", "a-robot-factory", "slots made doors stay put; a used-up part and an already-done step don't stall the run"],
     ["fresh8", "golden-snitch", "'the snitch is carried' is the moment it's picked up"],
+    ["judges", "a-feng-shui-handbag", "a place: no jitter into a doorway's jamb, so the visitor reaches every bag"],
+    ["judges", "a-minimalist-white-museum", "a place: the visitor steps toward the sculpture its guide stands beside"],
+    ["kits", "a-real-estate-tour-of-a-modern", "a place: a door with only a line to inspect opens with USE, and the tour opens it"],
+    ["fresh6", "a-japanese-tea-house", "a place: a window above head height is in reach to look at"],
+    ["fresh7", "a-bookshop", "a place: the window you face, not the cushion beside you"],
+    ["fresh9", "a-wine-cellar", "a place: a guide standing in the doorway steps aside"],
+    ["fresh9", "a-rooftop-greenhouse", "a place: a pane above a shelf is looked at from the floor in front"],
+    ["fresh7", "a-wild-west-town", "horses the game is about don't step aside like bystanders"],
   ])("%s %s: %s", async (set, prefix) => {
     const w = recorded(set, prefix);
     const r = await prove(R, w.bundle, { engine: ENGINE_HASH, runs: 12 });
-    expect(r.chips.find((c) => c.id === "T3:win")?.k ?? 0).toBeGreaterThanOrEqual(10);
+    // a game: AI runners win it; a place: the AI visitor reaches and uses everything in it
+    if (w.bundle.mode === "wander") expect(r.chips.find((c) => c.id === "T3:tour")?.status).toBe("played");
+    else expect(r.chips.find((c) => c.id === "T3:win")?.k ?? 0).toBeGreaterThanOrEqual(10);
   }, 180_000);
 });

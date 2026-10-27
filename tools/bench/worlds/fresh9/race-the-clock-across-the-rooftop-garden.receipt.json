@@ -1,0 +1,252 @@
+{
+  "prompt": "Race the clock across the rooftop gardens to the helipad",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "parkour race",
+    "setting": "urban high-rises with rooftop gardens leading to a central helipad",
+    "role": "speed courier",
+    "goal": "reach the rooftop helipad before the timer runs out",
+    "fail": "the elapsed time exceeds the limit",
+    "mood": "tense",
+    "pack": "outdoor",
+    "sub": [
+      "rooftop"
+    ],
+    "safety": "ok",
+    "headline": "Rooftop garden route needs timed dash to helipad",
+    "nouns": [
+      {
+        "noun": "rooftop gardens",
+        "hyper": "outdoor"
+      },
+      {
+        "noun": "helipad",
+        "hyper": "outdoor"
+      }
+    ],
+    "moodVec": {
+      "valence": -0.2,
+      "arousal": 0.8,
+      "tension": 0.6
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "0bc1d2153c75fe94b3bc1dc9127df017c1d8177375afcb916e60fcd8f45dba2f",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_dash",
+      "text": "Rooftop garden route needs timed dash to helipad",
+      "status": "counterexample",
+      "method": "static goal regression over rules + physics, 12 AI runners + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 8 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (player enters helipad_goal)",
+        "src": ""
+      },
+      {
+        "id": "T2:r_lose_timer",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_timer"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_lose_timer fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_open_jet",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_open_jet"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 6,
+        "status": "verified",
+        "text": "r_open_jet fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_bank",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_bank"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_secret_bank fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_dock",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_dock"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_dock fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_n",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_n"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_flank_n fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_shore",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_shore"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_shore fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_water",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_water"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_water fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it (AI par 2 s)",
+        "cx": null,
+        "src": "",
+        "ms": 325
+      },
+      {
+        "id": "T3:too_easy",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "counterexample",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 12,
+        "text": "won in 2 s: over almost before it starts",
+        "cx": {
+          "where": null,
+          "have": 2,
+          "need": 3,
+          "unit": "s",
+          "text": "AI par 2 s < 3 s"
+        },
+        "src": "",
+        "ms": 0
+      }
+    ],
+    "par": {
+      "goldS": 2,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 638
+  }
+}

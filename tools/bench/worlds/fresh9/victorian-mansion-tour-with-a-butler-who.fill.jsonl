@@ -1,0 +1,25 @@
+{"op":"meta","mode":"wander","lang":"en","pack":"floor_plan","sub":[],"seed":23,"look":"Victorian mansion at dusk","mood":[0.1,0.25,0.55],"timeOfDay":19,"weather":"clear"}
+{"op":"zone","id":"z_yard","slot":"yard","tag":"outside","name":"Front garden"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Grand entrance hall"}
+{"op":"zone","id":"z_gallery","slot":"room_sw","tag":"room","name":"Portrait gallery"}
+{"op":"zone","id":"z_library","slot":"room_se","tag":"room","name":"Smoke-filled library"}
+{"op":"zone","id":"z_parlor","slot":"room_nw","tag":"room","name":"Parlor with firelight"}
+{"op":"zone","id":"z_conserv","slot":"main_room","tag":"hall","name":"Stained‑glass conservatory"}
+{"op":"zone","id":"z_pantry","slot":"room_ne","tag":"room","name":"Butler's pantry"}
+{"op":"spawn","id":"sp_red","zone":"z_yard","anchor":"spawn_pad","team":"red"}
+{"op":"npc","id":"butler_james","role":"guide","zone":"z_entrance","anchor":"center","team":"","menu":["guide.tour"],"dflt":"guide.tour"}
+{"op":"ent","id":"portrait_1","kind":"prop","noun":"portrait of Lady Eleanor","hyper":"painting","zone":"z_gallery","anchor":"corner_ne","body":"fixed","shape":"box","size":[1.2,1.6,0.2]}
+{"op":"ent","id":"portrait_2","kind":"prop","noun":"portrait of Sir Charles","hyper":"painting","zone":"z_gallery","anchor":"corner_nw","body":"fixed","shape":"box","size":[1.2,1.6,0.2]}
+{"op":"ent","id":"bookshelf","kind":"prop","noun":"leather bookcase","hyper":"bookshelf","zone":"z_library","anchor":"wall_n","body":"fixed","shape":"box","size":[2,0.3,3]}
+{"op":"ent","id":"fireplace","kind":"prop","noun":"marble fireplace","hyper":"fireplace","zone":"z_parlor","anchor":"wall_s","body":"fixed","shape":"box","size":[2,0.5,1.5]}
+{"op":"ent","id":"stained_glass","kind":"prop","noun":"stained‑glass window","hyper":"window","zone":"z_conserv","anchor":"corner_sw","body":"fixed","shape":"box","size":[3,0.2,4]}
+{"op":"ent","id":"pantry_table","kind":"prop","noun":"oak pantry table","hyper":"table","zone":"z_pantry","anchor":"center","body":"fixed","shape":"box","size":[1.5,0.8,0.9]}
+{"op":"verb","id":"vb_inspect_1","verb":"social.inspect","on":"portrait_1","params":{"text":"Lady Eleanor, matriarch, founded the east wing in 1882."}}
+{"op":"verb","id":"vb_inspect_2","verb":"social.inspect","on":"portrait_2","params":{"text":"Sir Charles, famed explorer, brought exotic artifacts home."}}
+{"op":"verb","id":"vb_inspect_3","verb":"social.inspect","on":"bookshelf","params":{"text":"Volumes on alchemy and Victorian inventions line the shelves."}}
+{"op":"verb","id":"vb_inspect_4","verb":"social.inspect","on":"fireplace","params":{"text":"The fire crackles, recalling evenings of whispered secrets."}}
+{"op":"verb","id":"vb_inspect_5","verb":"social.inspect","on":"stained_glass","params":{"text":"Colors depict the family's crest rising from the sea."}}
+{"op":"verb","id":"vb_inspect_6","verb":"social.inspect","on":"pantry_table","params":{"text":"A polished oak table bearing the butler's silver serving tray."}}
+{"op":"expect","id":"x_tour","prop":"reachable","a":"sp_red","b":"z_conserv","headline":true,"text":"Butler's guided narrative tour through a Victorian mansion"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

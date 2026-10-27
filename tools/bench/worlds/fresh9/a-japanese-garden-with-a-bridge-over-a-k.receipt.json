@@ -1,0 +1,88 @@
+{
+  "prompt": "A Japanese garden with a bridge over a koi pond and a tea pavilion",
+  "intent": {
+    "lang": "en",
+    "mode": "wander",
+    "genre": "architectural showcase",
+    "setting": "A Japanese garden featuring a bridge over a koi pond, a tea pavilion, and landscaped greenery",
+    "role": "Visitor",
+    "goal": "Explore the garden and its features",
+    "fail": "",
+    "mood": "serene",
+    "pack": "outdoor",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Japanese garden with bridge and pond",
+    "nouns": [
+      {
+        "noun": "Japanese garden",
+        "hyper": "garden"
+      },
+      {
+        "noun": "bridge",
+        "hyper": "structure"
+      },
+      {
+        "noun": "koi pond",
+        "hyper": "pond"
+      },
+      {
+        "noun": "tea pavilion",
+        "hyper": "pavilion"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.8,
+      "arousal": 0.2,
+      "tension": -0.5
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "5ceadf8931dd0fda24065775d97eb27b8c2bf94c9e44e46e22137726d341b789",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "exp_japan_garden",
+      "text": "Japanese garden with bridge and pond",
+      "status": "not_checkable",
+      "method": "none"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 0 rules reference existing things",
+        "src": ""
+      },
+      {
+        "id": "T3:tour",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "tour"
+        },
+        "status": "played",
+        "method": "physics, an AI visitor walks to and uses each",
+        "n": 5,
+        "k": 5,
+        "text": "walked to and inspected 5 of 5 things",
+        "cx": null,
+        "src": "",
+        "ms": 23
+      }
+    ],
+    "par": null,
+    "ms": 334
+  }
+}

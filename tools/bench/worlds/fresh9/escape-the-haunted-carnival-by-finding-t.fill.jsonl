@@ -1,0 +1,31 @@
+{"op":"meta","mode":"play","lang":"en","pack":"outdoor","sub":[],"seed":34,"look":"haunted carnival","mood":[0.1,0.8,0.9],"timeOfDay":22,"weather":"clear"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Carnival Entrance"}
+{"op":"zone","id":"z_clearing","slot":"clearing","tag":"hub","name":"Main Fairground"}
+{"op":"zone","id":"z_clearing_w","slot":"clearing_w","tag":"base","name":"West Tent Zone"}
+{"op":"zone","id":"z_clearing_e","slot":"clearing_e","tag":"base","name":"East Tent Zone"}
+{"op":"zone","id":"z_pond","slot":"pond","tag":"water","name":"Haunted Pond"}
+{"op":"zone","id":"z_grove","slot":"grove","tag":"trees","name":"Spooky Grove"}
+{"op":"zone","id":"z_lookout","slot":"lookout","tag":"high_ground","name":"Bleak Lookout"}
+{"op":"spawn","id":"sp_red","zone":"z_entrance","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"exit_gate","zone":"z_entrance","anchor":"gate","noun":"exit gate","hyper":"gate","team":"red"}
+{"op":"ent","id":"ticket_west","kind":"pickup","noun":"ticket","hyper":"ticket","zone":"z_clearing_w","anchor":"goal","body":"dynamic","shape":"box","size":[0.2,0.2,0.05]}
+{"op":"ent","id":"ticket_east","kind":"pickup","noun":"ticket","hyper":"ticket","zone":"z_clearing_e","anchor":"goal","body":"dynamic","shape":"box","size":[0.2,0.2,0.05]}
+{"op":"ent","id":"ticket_pond","kind":"pickup","noun":"ticket","hyper":"ticket","zone":"z_pond","anchor":"dock","body":"dynamic","shape":"box","size":[0.2,0.2,0.05]}
+{"op":"ent","id":"gate_door","kind":"door","noun":"gate door","hyper":"gate","zone":"z_entrance","anchor":"gate","body":"fixed","shape":"box"}
+{"op":"ent","id":"wraith_hazard","kind":"hazard","noun":"wraith","hyper":"wraith","zone":"z_grove","anchor":"hollow","body":"sensor","shape":"sphere","size":[0.5,0.5,0.5]}
+{"op":"ent","id":"sign_entrance","kind":"sign","noun":"tattered sign","hyper":"sign","zone":"z_entrance","anchor":"sign","body":"fixed","shape":"box","size":[1,0.3,0.1]}
+{"op":"verb","id":"vb_carry_west","verb":"physics_props.carry","on":"ticket_west","params":{}}
+{"op":"verb","id":"vb_carry_east","verb":"physics_props.carry","on":"ticket_east","params":{}}
+{"op":"verb","id":"vb_carry_pond","verb":"physics_props.carry","on":"ticket_pond","params":{}}
+{"op":"verb","id":"vb_unlock_gate","verb":"puzzle.lock","on":"gate_door","params":{"key":"ticket_west"}}
+{"op":"verb","id":"vb_inspect_sign","verb":"social.inspect","on":"sign_entrance","params":{"text":"\"Find the three tickets to escape. Beware the wraith in the grove.\""}}
+{"op":"verb","id":"vb_wraith","verb":"motion_hazards.hazard","on":"wraith_hazard","params":{"respawn":true}}
+{"op":"rule","id":"r_win","when":{"t":"enter","a":"sp_red","b":"exit_gate"},"if":[{"l":"ticket_west.carrier.team","op":"eq","r":"red"},{"l":"ticket_east.carrier.team","op":"eq","r":"red"},{"l":"ticket_pond.carrier.team","op":"eq","r":"red"}],"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_wraith_hit","when":{"t":"hit","a":"sp_red","b":"wraith_hazard"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_unlock","when":{"t":"state_is","a":"gate_door","s":"open"},"then":[{"e":"emit","target":"gate_door","fx":"ghost_light"}]}
+{"op":"expect","id":"x_tickets","prop":"win_reachable","a":"sp_red","b":"exit_gate","headline":true,"text":"Three scattered tickets must be found to open the exit gate"}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":5}}
+{"op":"end","layer":"gameplay"}
+{"op":"dress","id":"d_entrance","zone":"z_entrance","anchor":"sign","layer":"foreground","sprite":"sign_tattered.png"}
+{"op":"dress","id":"d_gate","zone":"z_entrance","anchor":"gate","layer":"foreground","sprite":"gate_iron.png"}
+{"op":"end","layer":"cosmetic"}

@@ -1,0 +1,100 @@
+{
+  "prompt": "A concert hall with an orchestra and a grand piano",
+  "intent": {
+    "lang": "en",
+    "mode": "wander",
+    "genre": "stage design",
+    "setting": "A large, wood-paneled concert hall with a raised stage, an orchestra pit filled with classical instruments, and a grand piano under a spotlight",
+    "role": "audience member or stage designer",
+    "goal": "Explore the hall and observe the arrangement of the orchestra, the solo piano, and the architecture",
+    "fail": "N/A (exploration only)",
+    "mood": "solemn, elegant, anticipatory",
+    "pack": "floor_plan",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Grand piano is spotlighted at the center of the stage, separated from the orchestra rows",
+    "nouns": [
+      {
+        "noun": "concert hall",
+        "hyper": "performance space"
+      },
+      {
+        "noun": "orchestra",
+        "hyper": "musical group"
+      },
+      {
+        "noun": "grand piano",
+        "hyper": "musical instrument"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.3,
+      "arousal": 0.2,
+      "tension": -0.4
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "b5b33b1946365e7d95e0644da48edc733b5a099f6a96d7e91c9f75576686288d",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_piano_spotlight",
+      "text": "Grand piano is spotlighted at the center of the stage, separated from the orchestra rows",
+      "status": "not_checkable",
+      "method": "kinematic reachability (jump apex model)"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 0 rules reference existing things",
+        "src": ""
+      },
+      {
+        "id": "T1:x_piano_spotlight",
+        "tier": "T1",
+        "subject": {
+          "kind": "property",
+          "id": "x_piano_spotlight"
+        },
+        "method": "kinematic reachability (jump apex model)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "Grand piano is spotlighted at the center of the stage, separated from the orchestra rows",
+        "cx": null
+      },
+      {
+        "id": "T3:tour",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "tour"
+        },
+        "status": "played",
+        "method": "physics, an AI visitor walks to and uses each",
+        "n": 5,
+        "k": 5,
+        "text": "walked to and inspected 5 of 5 things",
+        "cx": null,
+        "src": "",
+        "ms": 27
+      }
+    ],
+    "par": null,
+    "ms": 47
+  }
+}

@@ -1,0 +1,21 @@
+{"op":"meta","mode":"wander","lang":"en","pack":"floor_plan","sub":[],"seed":13,"look":"classroom","mood":[0.3,0.2,0.0],"timeOfDay":10,"weather":"clear"}
+{"op":"zone","id":"z_classroom","slot":"entrance","tag":"entrance","name":"Classroom"}
+{"op":"spawn","id":"sp_red","zone":"z_classroom","anchor":"center","team":"red"}
+{"op":"ent","id":"whiteboard","kind":"prop","noun":"whiteboard","hyper":"whiteboard","zone":"z_classroom","anchor":"wall_n","body":"fixed","shape":"box","size":[2,0.5,0.1]}
+{"op":"ent","id":"desk_row","kind":"prop","noun":"student desks","hyper":"desk","zone":"z_classroom","anchor":"wall_s","body":"fixed","shape":"box","size":[5,1,0.5]}
+{"op":"ent","id":"display","kind":"prop","noun":"interactive display","hyper":"display","zone":"z_classroom","anchor":"wall_e","body":"fixed","shape":"box","size":[1.5,1,0.1]}
+{"op":"ent","id":"model_mercury","kind":"prop","noun":"Mercury model","hyper":"planet","zone":"z_classroom","anchor":"corner_ne","body":"fixed","shape":"sphere","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"model_venus","kind":"prop","noun":"Venus model","hyper":"planet","zone":"z_classroom","anchor":"corner_se","body":"fixed","shape":"sphere","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"model_earth","kind":"prop","noun":"Earth model","hyper":"planet","zone":"z_classroom","anchor":"corner_sw","body":"fixed","shape":"sphere","size":[0.35,0.35,0.35]}
+{"op":"ent","id":"model_mars","kind":"prop","noun":"Mars model","hyper":"planet","zone":"z_classroom","anchor":"corner_nw","body":"fixed","shape":"sphere","size":[0.25,0.25,0.25]}
+{"op":"verb","id":"vb_inspect_whiteboard","verb":"social.inspect","on":"whiteboard","params":{"text":"The board shows today's agenda."}}
+{"op":"verb","id":"vb_inspect_display","verb":"social.inspect","on":"display","params":{"text":"Touch to rotate the solar system."}}
+{"op":"verb","id":"vb_inspect_mercury","verb":"social.inspect","on":"model_mercury","params":{"text":"Mercury: smallest planet, closest to the Sun."}}
+{"op":"verb","id":"vb_inspect_venus","verb":"social.inspect","on":"model_venus","params":{"text":"Venus: thick clouds, hottest surface."}}
+{"op":"verb","id":"vb_inspect_earth","verb":"social.inspect","on":"model_earth","params":{"text":"Earth: our home, life-supporting."}}
+{"op":"verb","id":"vb_inspect_mars","verb":"social.inspect","on":"model_mars","params":{"text":"Mars: red planet, potential for past water."}}
+{"op":"npc","id":"teacher_guide","role":"guide","zone":"z_classroom","anchor":"doorway_n","team":"","menu":["guide.talk"],"dflt":"guide.talk"}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":5}}
+{"op":"expect","id":"x_lesson","prop":"reachable","a":"sp_red","b":"z_classroom","headline":true,"text":"Classroom lesson features interactive planet models"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

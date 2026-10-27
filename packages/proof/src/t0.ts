@@ -148,6 +148,9 @@ export function t0(b: WorldBundle, playerTeam: "red" | "blue" = "red"): { chips:
       if (!m || c.op !== "eq") continue;
       const [id, want] = [m[1]!, String(c.r)];
       if (startState(id) === want) continue;
+      // "when the torch is lit, if the torch is lit": the trigger itself makes it so (doing it first
+      // and again as the trigger would flip a switch back off)
+      if (w.t === "state_is" && w.a === id && w.s === want) continue;
       const p = made.find((x) => x.k === "state" && x.a === id && x.s === want);
       if (p) {
         pre.push(...(p.cause ? causeSteps(p.cause, "", { id, s: want }) : [{ do: "wait" as const, rule: "", want: { id, s: want } }]));

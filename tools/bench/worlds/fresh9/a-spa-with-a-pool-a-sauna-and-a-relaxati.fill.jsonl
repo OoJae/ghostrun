@@ -1,0 +1,20 @@
+{"op":"meta","mode":"wander","lang":"en","pack":"floor_plan","sub":[],"seed":19,"look":"spa interior","mood":[0.7,0.1,-0.8],"timeOfDay":14,"weather":"clear"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Spa Reception"}
+{"op":"zone","id":"z_pool","slot":"main_room","tag":"hall","name":"Central Pool Hall"}
+{"op":"zone","id":"z_sauna","slot":"room_sw","tag":"room","name":"Wooden Sauna"}
+{"op":"zone","id":"z_relax","slot":"room_se","tag":"room","name":"Relaxation Lounge"}
+{"op":"spawn","id":"sp_red","zone":"z_entrance","anchor":"center","team":"red"}
+{"op":"ent","id":"pool","kind":"prop","noun":"soft-lit pool","hyper":"water feature","zone":"z_pool","anchor":"center","body":"fixed","shape":"box","size":[5,1.5,3]}
+{"op":"ent","id":"sauna_door","kind":"door","noun":"sauna door","hyper":"door","zone":"z_sauna","anchor":"doorway_n","body":"fixed","shape":"box"}
+{"op":"ent","id":"sauna","kind":"prop","noun":"steam sauna","hyper":"room","zone":"z_sauna","anchor":"center","body":"fixed","shape":"box","size":[4,2.5,4]}
+{"op":"ent","id":"relax_lounge","kind":"prop","noun":"reclining loungers","hyper":"interior space","zone":"z_relax","anchor":"center","body":"fixed","shape":"box","size":[6,2,3]}
+{"op":"ent","id":"ambient_sound","kind":"prop","noun":"ambient sound device","hyper":"speaker","zone":"z_relax","anchor":"corner_ne","body":"fixed","shape":"box","size":[0.5,0.5,0.5]}
+{"op":"verb","id":"vb_inspect_pool","verb":"social.inspect","on":"pool","params":{"text":"The pool glows with calming blue light."}}
+{"op":"verb","id":"vb_inspect_sauna","verb":"social.inspect","on":"sauna","params":{"text":"The sauna exudes warm steam from wooden walls."}}
+{"op":"verb","id":"vb_inspect_relax","verb":"social.inspect","on":"relax_lounge","params":{"text":"Soft loungers invite guests to unwind."}}
+{"op":"verb","id":"vb_inspect_sound","verb":"social.inspect","on":"ambient_sound","params":{"text":"Gentle sounds fill the space, enhancing relaxation."}}
+{"op":"npc","id":"guide_1","role":"guide","zone":"z_entrance","anchor":"corner_sw","team":"","menu":["guide.intro"],"dflt":"guide.intro"}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":4}}
+{"op":"expect","id":"x_path","prop":"win_reachable","a":"sp_red","b":"z_relax","headline":true,"text":"Smooth path network connecting the pool, wooden sauna, and dimmed relaxation room"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

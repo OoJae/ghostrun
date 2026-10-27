@@ -1,0 +1,20 @@
+{"op":"meta","mode":"wander","lang":"en","pack":"floor_plan","sub":[],"seed":9,"look":"modern office lobby","mood":[0.2,0.1,-0.3],"timeOfDay":10,"weather":"clear"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Lobby entrance"}
+{"op":"zone","id":"z_waiting","slot":"room_sw","tag":"room","name":"Waiting area"}
+{"op":"spawn","id":"sp_red","zone":"z_entrance","anchor":"doorway_s","team":"red"}
+{"op":"ent","id":"reception_desk","kind":"prop","noun":"reception desk","hyper":"desk","zone":"z_entrance","anchor":"center","body":"fixed","shape":"box","size":[2,1,0.8]}
+{"op":"ent","id":"plant_pot","kind":"prop","noun":"large plant pot","hyper":"plant","zone":"z_entrance","anchor":"corner_ne","body":"fixed","shape":"box","size":[0.5,0.5,1.2]}
+{"op":"ent","id":"artwork_1","kind":"prop","noun":"abstract painting","hyper":"painting","zone":"z_entrance","anchor":"corner_nw","body":"fixed","shape":"box","size":[1,0.1,1.5]}
+{"op":"ent","id":"chair_1","kind":"prop","noun":"blue chair","hyper":"chair","zone":"z_waiting","anchor":"corner_sw","body":"fixed","shape":"box","size":[0.5,0.5,0.9]}
+{"op":"ent","id":"chair_2","kind":"prop","noun":"blue chair","hyper":"chair","zone":"z_waiting","anchor":"corner_se","body":"fixed","shape":"box","size":[0.5,0.5,0.9]}
+{"op":"ent","id":"magazine_rack","kind":"prop","noun":"magazine rack","hyper":"rack","zone":"z_waiting","anchor":"center","body":"fixed","shape":"box","size":[1,0.3,0.8]}
+{"op":"ent","id":"receptionist_npc","kind":"npc","noun":"receptionist","hyper":"staff","zone":"z_entrance","anchor":"doorway_n","team":"","role":"guide","menu":["guide.welcome"],"dflt":"guide.welcome"}
+{"op":"verb","id":"vb_inspect_desk","verb":"social.inspect","on":"reception_desk","params":{"text":"Polished marble desk with a name plate."}}
+{"op":"verb","id":"vb_inspect_plant","verb":"social.inspect","on":"plant_pot","params":{"text":"A tall ficus adds a touch of green."}}
+{"op":"verb","id":"vb_inspect_artwork","verb":"social.inspect","on":"artwork_1","params":{"text":"Colorful shapes evoke creativity."}}
+{"op":"verb","id":"vb_inspect_chair1","verb":"social.inspect","on":"chair_1","params":{"text":"Comfortable blue chair for visitors."}}
+{"op":"verb","id":"vb_inspect_chair2","verb":"social.inspect","on":"chair_2","params":{"text":"Another blue chair matching the first."}}
+{"op":"verb","id":"vb_inspect_magazine","verb":"social.inspect","on":"magazine_rack","params":{"text":"Latest magazines for waiting guests."}}
+{"op":"expect","id":"x_reception","prop":"win_reachable","a":"sp_red","b":"reception_desk","headline":true,"text":"Reception desk visible from lobby entrance"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

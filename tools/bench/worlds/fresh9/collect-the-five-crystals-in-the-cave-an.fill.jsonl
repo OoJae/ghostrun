@@ -1,0 +1,25 @@
+{"op":"meta","mode":"play","lang":"en","pack":"maze","sub":[],"seed":29,"look":"underground cave","mood":[-0.5,0.6,0.85],"timeOfDay":12,"weather":"clear"}
+{"op":"zone","id":"z_start","slot":"start","tag":"outside","name":"Cave entrance"}
+{"op":"zone","id":"z_maze","slot":"maze","tag":"maze","name":"Crystal labyrinth"}
+{"op":"spawn","id":"sp_red","zone":"z_start","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"exit_gate","zone":"z_maze","anchor":"exit","noun":"exit tunnel","hyper":"exit","team":"red"}
+{"op":"ent","id":"crystal_1","kind":"pickup","noun":"crystal","hyper":"collectible","zone":"z_maze","anchor":"center","body":"dynamic","shape":"sphere","size":[0.4,0.4,0.4]}
+{"op":"ent","id":"crystal_2","kind":"pickup","noun":"crystal","hyper":"collectible","zone":"z_maze","anchor":"dead_end_1","body":"dynamic","shape":"sphere","size":[0.4,0.4,0.4]}
+{"op":"ent","id":"crystal_3","kind":"pickup","noun":"crystal","hyper":"collectible","zone":"z_maze","anchor":"dead_end_2","body":"dynamic","shape":"sphere","size":[0.4,0.4,0.4]}
+{"op":"ent","id":"crystal_4","kind":"pickup","noun":"crystal","hyper":"collectible","zone":"z_maze","anchor":"dead_end_3","body":"dynamic","shape":"sphere","size":[0.4,0.4,0.4]}
+{"op":"ent","id":"crystal_5","kind":"pickup","noun":"crystal","hyper":"collectible","zone":"z_maze","anchor":"dead_end_4","body":"dynamic","shape":"sphere","size":[0.4,0.4,0.4]}
+{"op":"ent","id":"flood_water","kind":"hazard","noun":"rising water","hyper":"flood","zone":"z_maze","anchor":"center","body":"sensor","shape":"box","size":[5,0.5,5]}
+{"op":"verb","id":"vb_carry_1","verb":"physics_props.carry","on":"crystal_1","params":{}}
+{"op":"verb","id":"vb_carry_2","verb":"physics_props.carry","on":"crystal_2","params":{}}
+{"op":"verb","id":"vb_carry_3","verb":"physics_props.carry","on":"crystal_3","params":{}}
+{"op":"verb","id":"vb_carry_4","verb":"physics_props.carry","on":"crystal_4","params":{}}
+{"op":"verb","id":"vb_carry_5","verb":"physics_props.carry","on":"crystal_5","params":{}}
+{"op":"verb","id":"vb_flood_timer","verb":"puzzle.timer","on":"player","params":{"seconds":90}}
+{"op":"verb","id":"vb_flood_activate","verb":"motion_hazards.hazard","on":"flood_water","params":{"respawn":false}}
+{"op":"rule","id":"r_win","when":{"t":"enter","a":"player","b":"exit_gate"},"if":[{"l":"crystal_1.carrier.team","op":"eq","r":"red"},{"l":"crystal_2.carrier.team","op":"eq","r":"red"},{"l":"crystal_3.carrier.team","op":"eq","r":"red"},{"l":"crystal_4.carrier.team","op":"eq","r":"red"},{"l":"crystal_5.carrier.team","op":"eq","r":"red"}],"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_flood_start","when":{"t":"timer_end","a":"player"},"then":[{"e":"set_state","target":"flood_water","v":"active"},{"e":"emit","target":"flood_water","fx":"water_rise"}],"once":true}
+{"op":"rule","id":"r_flood_lose","when":{"t":"touch","a":"player","b":"flood_water"},"if":[{"l":"flood_water.state","op":"eq","r":"active"}],"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"expect","id":"x_flood","prop":"requires","a":"sp_red","b":"z_maze","headline":true,"text":"Five-crystal timer maze needs a flooding water level that closes routes over time"}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":6}}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

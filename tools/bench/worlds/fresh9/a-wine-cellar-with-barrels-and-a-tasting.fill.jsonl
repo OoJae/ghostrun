@@ -1,0 +1,22 @@
+{"op":"meta","mode":"wander","lang":"en","pack":"floor_plan","sub":[],"seed":24,"look":"wine cellar","mood":[0.3,0.2,0.1],"timeOfDay":18,"weather":"clear"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Cellar entrance"}
+{"op":"zone","id":"z_storage_sw","slot":"room_sw","tag":"room","name":"Barrel row SW"}
+{"op":"zone","id":"z_storage_se","slot":"room_se","slot":"room_se","tag":"room","name":"Barrel row SE"}
+{"op":"zone","id":"z_tasting","slot":"main_room","tag":"hall","name":"Tasting area"}
+{"op":"spawn","id":"sp_red","zone":"z_entrance","anchor":"center","team":"red"}
+{"op":"ent","id":"barrel_a","kind":"prop","noun":"oak barrel","hyper":"storage","zone":"z_storage_sw","anchor":"corner_sw","body":"fixed","shape":"box","size":[0.6,0.9,0.6]}
+{"op":"ent","id":"barrel_b","kind":"prop","noun":"oak barrel","hyper":"storage","zone":"z_storage_sw","anchor":"corner_se","body":"fixed","shape":"box","size":[0.6,0.9,0.6]}
+{"op":"ent","id":"barrel_c","kind":"prop","noun":"oak barrel","hyper":"storage","zone":"z_storage_se","anchor":"corner_sw","body":"fixed","shape":"box","size":[0.6,0.9,0.6]}
+{"op":"ent","id":"barrel_d","kind":"prop","noun":"oak barrel","hyper":"storage","zone":"z_storage_se","anchor":"corner_se","body":"fixed","shape":"box","size":[0.6,0.9,0.6]}
+{"op":"ent","id":"tasting_tbl","kind":"prop","noun":"tasting table","hyper":"furniture","zone":"z_tasting","anchor":"center","body":"fixed","shape":"box","size":[2.0,0.8,1.0]}
+{"op":"ent","id":"sign_info","kind":"sign","noun":"information plaque","hyper":"sign","zone":"z_tasting","anchor":"wall_n","body":"fixed","shape":"box","size":[0.4,0.6,0.1]}
+{"op":"verb","id":"vb_inspect_barrel_a","verb":"social.inspect","on":"barrel_a","params":{"text":"Matured Cabernet, 10 years old"}}
+{"op":"verb","id":"vb_inspect_barrel_b","verb":"social.inspect","on":"barrel_b","params":{"text":"Reserve Pinot Noir, limited edition"}}
+{"op":"verb","id":"vb_inspect_barrel_c","verb":"social.inspect","on":"barrel_c","params":{"text":"Classic Merlot, oak aged"}}
+{"op":"verb","id":"vb_inspect_barrel_d","verb":"social.inspect","on":"barrel_d","params":{"text":"Vintage Chardonnay, crisp finish"}}
+{"op":"verb","id":"vb_inspect_table","verb":"social.inspect","on":"tasting_tbl","params":{"text":"Polished oak table for wine tasting"}}
+{"op":"verb","id":"vb_inspect_sign","verb":"social.inspect","on":"sign_info","params":{"text":"Welcome to the cellar tour. Enjoy the selection."}}
+{"op":"npc","id":"guide_1","role":"guide","zone":"z_tasting","anchor":"wall_w","team":"","menu":["guide.tour"],"dflt":"guide.tour"}
+{"op":"expect","id":"x_tour","prop":"win_reachable","a":"sp_red","b":"z_tasting","headline":true,"text":"Cellar features both barrel rows and a central tasting table for a guided tour"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

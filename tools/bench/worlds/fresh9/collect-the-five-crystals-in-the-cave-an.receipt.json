@@ -1,0 +1,188 @@
+{
+  "prompt": "Collect the five crystals in the cave and escape before it floods",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "survival escape puzzler",
+    "setting": "Underground cave system with rising water, crystal alcoves and a single exit tunnel",
+    "role": "Cave adventurer",
+    "goal": "Collect all five crystals and reach the exit before the flood reaches your level",
+    "fail": "The flood rises and swallows you before you escape",
+    "mood": "tense",
+    "pack": "maze",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Five-crystal timer maze needs a flooding water level that closes routes over time",
+    "nouns": [
+      {
+        "noun": "crystal",
+        "hyper": "collectible object"
+      },
+      {
+        "noun": "cave",
+        "hyper": "enclosed space"
+      },
+      {
+        "noun": "flood",
+        "hyper": "rising threat / water level"
+      },
+      {
+        "noun": "exit",
+        "hyper": "goal point"
+      }
+    ],
+    "moodVec": {
+      "valence": -0.5,
+      "arousal": 0.6,
+      "tension": 0.85
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "835f4d03d5e2648376bbe32d9361f94cc24c06d62c1403939decc1edb22dfe50",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_flood",
+      "text": "Five-crystal timer maze needs a flooding water level that closes routes over time",
+      "status": "not_checkable",
+      "method": "kinematic reachability (jump apex model)"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 4 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win_goal (player enters exit_gate)",
+        "src": ""
+      },
+      {
+        "id": "T1:x_flood",
+        "tier": "T1",
+        "subject": {
+          "kind": "property",
+          "id": "x_flood"
+        },
+        "method": "kinematic reachability (jump apex model)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "Five-crystal timer maze needs a flooding water level that closes routes over time: needs nothing stated, no checker for that yet",
+        "cx": null
+      },
+      {
+        "id": "T2:r_flood_lose",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_flood_lose"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_flood_lose: nothing produces touch on flood_water",
+        "cx": null
+      },
+      {
+        "id": "T2:r_flood_start",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_flood_start"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_flood_start fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_entrance",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_entrance"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_entrance fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win_goal",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win_goal"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_win_goal fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it (AI par 9.3 s)",
+        "cx": null,
+        "src": "",
+        "ms": 165
+      }
+    ],
+    "par": {
+      "goldS": 9.3,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 196
+  }
+}

@@ -66,10 +66,13 @@ export class CastBrain implements Brain {
   readonly #post = new Map<string, Vec3>();
   readonly #out = new Map<string, InputFrame>();
   readonly #shoves: boolean; // the player can be shoved (a ring game): rivals next to them do
+  readonly #part = new Set<string>(); // NPCs the game is about (caught, shoved, named in a rule): never bystanders
 
   constructor(nav: NavWorld, b: WorldBundle) {
     this.#nav = nav;
     this.#shoves = b.verbs.some((v) => v.verb === "combat_sport.shove" && v.on === "player");
+    for (const v of b.verbs) if (/^combat_sport\./.test(v.verb)) this.#part.add(v.on);
+    for (const r of b.rules) for (const id of [r.when.a, r.when.b, ...r.if.map((c) => c.l.split(".")[0]!)]) this.#part.add(id);
     // the thing to fight over; never a ball that gets thrown (bots don't throw, and crowding one
     // they can't pick up only kicks it into a corner): in a throwing game they go for the player
     const thrown = new Set(b.verbs.filter((v) => v.verb === "combat_sport.throw").map((v) => v.on));
@@ -126,7 +129,17 @@ export class CastBrain implements Brain {
         this.#out.delete(bot.id);
         continue;
       }
-      const frame = this.#drive(w, bot, this.#target(w, bot), tick);
+      let frame = this.#drive(w, bot, this.#target(w, bot), tick);
+      // a bystander (a guide, a barista: no team) standing idle in your way steps aside, so nobody
+      // blocks a doorway for good
+      if (!bot.team && !this.#part.has(bot.id) && frame.wx === 0 && frame.wz === 0) {
+        const p = w.pos(bot.id);
+        const q = w.pos("player");
+        const dx = p[0] - q[0];
+        const dz = p[2] - q[2];
+        const d = Math.sqrt(dx * dx + dz * dz);
+        if (d < 1.2 && d > 1e-3) frame = { tick, wx: Math.round((dx / d) * 76), wz: Math.round((dz / d) * 76), btn: 0 };
+      }
       // pushing back: a rival right next to the player shoves, every 50 ticks at most
       if (this.#shoves && (bot.beh === "attack" || bot.beh === "intercept") && tick >= bot.shoveAt && bot.team !== w.entity("player")!.team && d2(w.pos(bot.id), w.pos("player")) < 1.3 * 1.3) {
         frame.btn |= BTN.USE;

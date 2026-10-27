@@ -1,0 +1,26 @@
+{"op":"meta","mode":"wander","lang":"en","pack":"floor_plan","sub":[],"seed":16,"look":"vintage record shop","mood":[0.8,0.2,-0.6],"timeOfDay":14,"weather":"clear"}
+{"op":"zone","id":"z_yard","slot":"yard","tag":"outside","name":"Shop entrance courtyard"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Shop doorway"}
+{"op":"zone","id":"z_main","slot":"main_room","tag":"hall","name":"Main floor"}
+{"op":"zone","id":"z_sw","slot":"room_sw","tag":"room","name":"Southwest nook"}
+{"op":"zone","id":"z_se","slot":"room_se","slot":"room_se","tag":"room","name":"Southeast alcove"}
+{"op":"zone","id":"z_nw","slot":"room_nw","tag":"room","name":"Northwest lounge"}
+{"op":"spawn","id":"sp_red","zone":"z_yard","anchor":"spawn_pad","team":"red"}
+{"op":"ent","id":"shelf_sw","kind":"prop","noun":"wooden shelf","hyper":"shelf","zone":"z_sw","anchor":"corner_sw","body":"fixed","shape":"box","size":[2,1,0.3]}
+{"op":"ent","id":"shelf_se","kind":"prop","noun":"wooden shelf","hyper":"shelf","zone":"z_se","anchor":"corner_se","body":"fixed","shape":"box","size":[2,1,0.3]}
+{"op":"ent","id":"shelf_nw","kind":"prop","noun":"wooden shelf","hyper":"shelf","zone":"z_nw","anchor":"corner_nw","body":"fixed","shape":"box","size":[2,1,0.3]}
+{"op":"ent","id":"album_1","kind":"prop","noun":"Vinyl album: \"Midnight Jazz\"","hyper":"album","zone":"z_sw","anchor":"center","body":"fixed","shape":"box","size":[0.3,0.3,0.05]}
+{"op":"ent","id":"album_2","kind":"prop","noun":"Vinyl album: \"Sunny Pop\"","hyper":"album","zone":"z_se","anchor":"center","body":"fixed","shape":"box","size":[0.3,0.3,0.05]}
+{"op":"ent","id":"album_3","kind":"prop","noun":"Vinyl album: \"Retro Rock\"","hyper":"album","zone":"z_nw","anchor":"center","body":"fixed","shape":"box","size":[0.3,0.3,0.05]}
+{"op":"ent","id":"listening_station","kind":"prop","noun":"Listening station","hyper":"fixture","zone":"z_main","anchor":"center","body":"fixed","shape":"box","size":[1,0.8,0.5]}
+{"op":"ent","id":"shop_sign","kind":"sign","noun":"Shop sign","hyper":"building","zone":"z_entrance","anchor":"corner_nw","body":"fixed","shape":"box","size":[1.5,0.5,0.1]}
+{"op":"verb","id":"vb_inspect_alb1","verb":"social.inspect","on":"album_1","params":{"text":"Smooth saxophone, perfect for late nights."}}
+{"op":"verb","id":"vb_inspect_alb2","verb":"social.inspect","on":"album_2","params":{"text":"Up‑beat tracks that brighten any room."}}
+{"op":"verb","id":"vb_inspect_alb3","verb":"social.inspect","on":"album_3","params":{"text":"Gritty guitars with a vintage vibe."}}
+{"op":"verb","id":"vb_inspect_station","verb":"social.inspect","on":"listening_station","params":{"text":"Classic turntable with three album previews."}}
+{"op":"verb","id":"vb_inspect_shelf","verb":"social.inspect","on":"shelf_sw","params":{"text":"Rows of carefully curated vinyl."}}
+{"op":"verb","id":"vb_inspect_sign","verb":"social.inspect","on":"shop_sign","params":{"text":"Vinyl Vault – Rare Finds Inside."}}
+{"op":"npc","id":"guide_1","role":"guide","zone":"z_main","anchor":"wall_n","team":"","menu":["guide.welcome"],"dflt":"guide.welcome"}
+{"op":"expect","id":"x_listen","prop":"win_reachable","a":"sp_red","b":"listening_station","headline":true,"text":"Listening station features three specific albums to preview"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

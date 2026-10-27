@@ -1,0 +1,80 @@
+{
+  "prompt": "A children's museum with dinosaurs and a volcano exhibit",
+  "intent": {
+    "lang": "en",
+    "mode": "wander",
+    "genre": "Children's Discovery Tour",
+    "setting": "A bright indoor children's museum featuring a fossil excavation pit, a roaring volcano diorama, and a hall of friendly animatronic dinosaurs.",
+    "role": "A curious child on a school trip",
+    "goal": "Walk through the exhibits to see the dinosaurs, touch the fossil wall, and watch the volcano erupt.",
+    "fail": "None",
+    "mood": "Wonderful and playful",
+    "pack": "floor_plan",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Volcano exhibit triggers a timed diorama eruption",
+    "nouns": [
+      {
+        "noun": "dinosaur",
+        "hyper": "animal_model"
+      },
+      {
+        "noun": "volcano",
+        "hyper": "exhibit"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.7,
+      "arousal": 0.3,
+      "tension": -0.5
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "c7a6e277d5b5055615c059a74e60acea4b1851dd311e8eb0b1dace109adb53bd",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_eruption",
+      "text": "Volcano exhibit triggers a timed diorama eruption",
+      "status": "not_checkable",
+      "method": "none"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 0 rules reference existing things",
+        "src": ""
+      },
+      {
+        "id": "T3:tour",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "tour"
+        },
+        "status": "played",
+        "method": "physics, an AI visitor walks to and uses each",
+        "n": 4,
+        "k": 4,
+        "text": "walked to and inspected 4 of 4 things",
+        "cx": null,
+        "src": "",
+        "ms": 8
+      }
+    ],
+    "par": null,
+    "ms": 24
+  }
+}

@@ -1,0 +1,28 @@
+{"op":"meta","mode":"play","lang":"en","pack":"outdoor","sub":["rooftop"],"seed":28,"look":"urban high-rises","mood":[0.2,0.8,0.6],"timeOfDay":12,"weather":"clear"}
+{"op":"zone","id":"z_start","slot":"entrance","tag":"entrance","name":"Rooftop entry"}
+{"op":"zone","id":"z_garden1","slot":"clearing","tag":"garden","name":"Garden north"}
+{"op":"zone","id":"z_garden2","slot":"clearing_w","tag":"garden","name":"Garden west base"}
+{"op":"zone","id":"z_garden3","slot":"clearing_e","tag":"garden","name":"Garden east base"}
+{"op":"zone","id":"z_pond","slot":"pond","tag":"pond","name":"Central pond"}
+{"op":"zone","id":"z_lookout","slot":"lookout","tag":"lookout","name":"Helipad hill"}
+{"op":"spawn","id":"sp_red","zone":"z_start","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"helipad_goal","zone":"z_lookout","anchor":"ledge","noun":"helipad","hyper":"outdoor","team":"red"}
+{"op":"ent","id":"key_jet","kind":"pickup","noun":"jetpack key","hyper":"key","zone":"z_garden2","anchor":"goal","body":"dynamic","shape":"box","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"door_jet","kind":"door","noun":"jetpack door","hyper":"door","zone":"z_garden2","anchor":"flank_n","body":"fixed","shape":"box"}
+{"op":"ent","id":"jump_pad1","kind":"plate","noun":"launch pad","hyper":"jump_pad","zone":"z_garden1","anchor":"center","body":"sensor","shape":"box","size":[0.5,0.1,0.5]}
+{"op":"ent","id":"osc_platform","kind":"platform","noun":"swinging platform","hyper":"platform","zone":"z_garden2","anchor":"center_n","body":"kinematic","shape":"box","size":[2,0.3,2]}
+{"op":"ent","id":"spike_haz","kind":"hazard","noun":"spike trap","hyper":"spikes","zone":"z_garden3","anchor":"center_s","body":"sensor","shape":"box","size":[3,0.2,3]}
+{"op":"ent","id":"timer_display","kind":"prop","noun":"timer display","hyper":"timer","zone":"z_start","anchor":"sign","body":"fixed","shape":"box","size":[0.5,0.5,0.2]}
+{"op":"verb","id":"vb_carry_key","verb":"physics_props.carry","on":"key_jet","params":{}}
+{"op":"verb","id":"vb_lock_jet","verb":"puzzle.lock","on":"door_jet","params":{"key":"key_jet","keep":false}}
+{"op":"verb","id":"vb_jump_pad1","verb":"locomotion.jump_pad","on":"jump_pad1","params":{"height":5}}
+{"op":"verb","id":"vb_osc_platform","verb":"motion_hazards.oscillate","on":"osc_platform","params":{"axis":"x","travel":4,"period":6}}
+{"op":"verb","id":"vb_spike_haz","verb":"motion_hazards.hazard","on":"spike_haz","params":{"respawn":true}}
+{"op":"verb","id":"vb_timer","verb":"puzzle.timer","on":"player","params":{"seconds":45}}
+{"op":"rule","id":"r_win","when":{"t":"enter","a":"player","b":"helipad_goal"},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose_timer","when":{"t":"timer_end","a":"player"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_open_jet","when":{"t":"state_is","a":"door_jet","s":"open"},"then":[{"e":"emit","target":"door_jet","fx":"unlock_light"}]}
+{"op":"expect","id":"x_dash","prop":"win_reachable","a":"sp_red","b":"helipad_goal","headline":true,"text":"Rooftop garden route needs timed dash to helipad"}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.8,"speed":7}}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

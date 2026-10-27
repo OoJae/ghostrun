@@ -1,0 +1,23 @@
+{"op":"meta","mode":"wander","lang":"en","pack":"floor_plan","sub":[],"seed":10,"look":"boutique hotel suite","mood":[0.8,0.2,-0.8],"timeOfDay":14,"weather":"clear"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Hotel lobby"}
+{"op":"zone","id":"z_suite","slot":"main_room","tag":"room","name":"Suite interior"}
+{"op":"zone","id":"z_balcony","slot":"room_ne","tag":"balcony","name":"Private balcony"}
+{"op":"spawn","id":"sp_red","zone":"z_entrance","anchor":"spawn_pad","team":"red"}
+{"op":"ent","id":"bed","kind":"prop","noun":"king-size bed","hyper":"bed","zone":"z_suite","anchor":"center","body":"fixed","shape":"box","size":[2,1.5,2]}
+{"op":"ent","id":"sofa","kind":"prop","noun":"plush sofa","hyper":"sofa","zone":"z_suite","anchor":"corner_sw","body":"fixed","shape":"box","size":[1.8,1,2]}
+{"op":"ent","id":"lamp","kind":"prop","noun":"marble lamp","hyper":"lamp","zone":"z_suite","anchor":"corner_ne","body":"fixed","shape":"box","size":[0.3,1.2,0.3]}
+{"op":"ent","id":"artwork","kind":"prop","noun":"cityscape painting","hyper":"painting","zone":"z_suite","anchor":"wall_n","body":"fixed","shape":"box","size":[1.2,1.6,0.1]}
+{"op":"ent","id":"minibar","kind":"prop","noun":"well-stocked minibar","hyper":"minibar","zone":"z_suite","anchor":"wall_s","body":"fixed","shape":"box","size":[0.8,0.5,0.5]}
+{"op":"ent","id":"view","kind":"prop","noun":"scenic vista","hyper":"view","zone":"z_balcony","anchor":"center","body":"fixed","shape":"box","size":[4,3,0.2]}
+{"op":"ent","id":"guide","kind":"npc","noun":"concierge","hyper":"guide","zone":"z_suite","anchor":"corner_se","body":"kinematic","shape":"none","team":""}
+{"op":"verb","id":"vb_inspect_bed","verb":"social.inspect","on":"bed","params":{"text":"A plush king-size bed with soft linens."}}
+{"op":"verb","id":"vb_inspect_sofa","verb":"social.inspect","on":"sofa","params":{"text":"A comfortable sofa perfect for relaxing."}}
+{"op":"verb","id":"vb_inspect_lamp","verb":"social.inspect","on":"lamp","params":{"text":"A marble lamp casting a warm glow."}}
+{"op":"verb","id":"vb_inspect_artwork","verb":"social.inspect","on":"artwork","params":{"text":"A vibrant painting of the city skyline at sunset."}}
+{"op":"verb","id":"vb_inspect_minibar","verb":"social.inspect","on":"minibar","params":{"text":"A minibar stocked with fine snacks and beverages."}}
+{"op":"verb","id":"vb_inspect_view","verb":"social.inspect","on":"view","params":{"text":"A breathtaking view over the city hills."}}
+{"op":"verb","id":"vb_guide_talk","verb":"social.inspect","on":"guide","params":{"text":"Welcome! Feel free to explore the suite and balcony."}}
+{"op":"npc","id":"guide","role":"guide","zone":"z_suite","anchor":"corner_se","team":"","menu":["guide.talk"],"dflt":"guide.talk"}
+{"op":"expect","id":"x_visual","prop":"win_reachable","a":"sp_red","b":"z_balcony","headline":true,"text":"Visual transition from interior living space to exterior balcony scenic overlook"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

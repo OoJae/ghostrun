@@ -1,0 +1,296 @@
+{
+  "prompt": "A paintball arena: tag the red team three times",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "sports",
+    "setting": "Paintball arena",
+    "role": "Player",
+    "goal": "Tag the red team 3 times to win",
+    "fail": "Eliminated by opponents or unable to reach the target",
+    "mood": "Competitive and energetic",
+    "pack": "arena",
+    "sub": [],
+    "safety": "arcade",
+    "headline": "Victory requires tagging 3 opponents",
+    "nouns": [
+      {
+        "noun": "paintball",
+        "hyper": "projectile"
+      },
+      {
+        "noun": "arena",
+        "hyper": "field"
+      },
+      {
+        "noun": "red team",
+        "hyper": "team"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.6,
+      "arousal": 0.9,
+      "tension": 0.7
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "dda3fe31baea3c4df0034c9e257da0d9912066bebd286bfe8e0c2d3fab841a74",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_victory",
+      "text": "Victory requires tagging 3 opponents",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners vs 3 bots"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 1,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 12 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 1,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (team:blue reaches 3) ← r_tag_score (touch red_npc_1) + r_tag_score2 (touch red_npc_2) + r_tag_score3 (touch red_npc_3)",
+        "src": ""
+      },
+      {
+        "id": "T2:r_lose",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_lose: nothing produces hit on player",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lose2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_lose2: nothing produces hit on player",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lose3",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose3"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_lose3: nothing produces hit on player",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_center_s",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_center_s"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 9,
+        "status": "verified",
+        "text": "r_secret_center_s fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_n",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_n"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 6,
+        "status": "verified",
+        "text": "r_secret_flank_n fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_n_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_n_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_secret_flank_n_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_s",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_s"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_secret_flank_s fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_s_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_s_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_flank_s_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_tag_score",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_tag_score"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_tag_score fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_tag_score2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_tag_score2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_tag_score2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_tag_score3",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_tag_score3"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_tag_score3 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners vs 3 bots",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it vs 3 bots (AI par 11.2 s)",
+        "cx": null,
+        "src": "",
+        "ms": 281
+      }
+    ],
+    "par": {
+      "goldS": 11.2,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 455
+  }
+}

@@ -1,0 +1,16 @@
+{"op":"meta","mode":"wander","lang":"en","pack":"floor_plan","sub":[],"seed":25,"look":"modern gym","mood":[0.4,0.6,0.2],"timeOfDay":12,"weather":"clear"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Gym lobby"}
+{"op":"zone","id":"z_hall","slot":"main_room","tag":"hall","name":"Exercise hall"}
+{"op":"zone","id":"z_weights","slot":"room_sw","tag":"room","name":"Free‑weights corner"}
+{"op":"zone","id":"z_cardio","slot":"room_se","tag":"room","name":"Cardio zone"}
+{"op":"spawn","id":"sp_red","zone":"z_entrance","anchor":"center","team":"red"}
+{"op":"npc","id":"coach_1","role":"guide","zone":"z_weights","anchor":"corner_sw","team":"","menu":["guide.tour"],"dflt":"guide.tour"}
+{"op":"ent","id":"weights_set","kind":"prop","noun":"dumbbell set","hyper":"equipment","zone":"z_weights","anchor":"center","body":"fixed","shape":"box","size":[0.5,0.5,0.5]}
+{"op":"ent","id":"treadmill_1","kind":"prop","noun":"treadmill","hyper":"cardio-machines","zone":"z_cardio","anchor":"center","body":"fixed","shape":"box","size":[1.2,0.6,1.5]}
+{"op":"ent","id":"coach_entity","kind":"npc","noun":"fitness coach","hyper":"fitness-professional","zone":"z_weights","anchor":"corner_sw","body":"kinematic","shape":"capsule"}
+{"op":"verb","id":"vb_inspect_weights","verb":"social.inspect","on":"weights_set","params":{"text":"Adjustable dumbbells for strength training."}}
+{"op":"verb","id":"vb_inspect_treadmill","verb":"social.inspect","on":"treadmill_1","params":{"text":"Treadmill with speed and incline controls."}}
+{"op":"verb","id":"vb_inspect_coach","verb":"social.inspect","on":"coach_entity","params":{"text":"Coach demonstrates proper form at the rack."}}
+{"op":"expect","id":"x_visible_coach","prop":"reachable","a":"sp_red","b":"coach_entity","headline":true,"text":"Gym must have a visible coach at the free-weights rack"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

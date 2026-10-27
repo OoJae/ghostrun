@@ -1,0 +1,98 @@
+{
+  "prompt": "A rooftop greenhouse café with hanging plants",
+  "intent": {
+    "lang": "en",
+    "mode": "wander",
+    "genre": "cozy interior scene",
+    "setting": "A rooftop greenhouse café featuring wooden tables, large glass panes, and hanging plants that soften the light.",
+    "role": "a visitor or barista strolling through the café",
+    "goal": "explore the greenhouse café and admire the hanging plants",
+    "fail": "none",
+    "mood": "relaxed, warm, botanical",
+    "pack": "floor_plan",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Rooftop greenhouse café highlighted by hanging plants",
+    "nouns": [
+      {
+        "noun": "greenhouse",
+        "hyper": "rooftop café building"
+      },
+      {
+        "noun": "hanging plants",
+        "hyper": "potted flora"
+      },
+      {
+        "noun": "tables",
+        "hyper": "furniture"
+      },
+      {
+        "noun": "glass panes",
+        "hyper": "building structure"
+      },
+      {
+        "noun": "café",
+        "hyper": "social space"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.35,
+      "arousal": -0.35,
+      "tension": -0.2
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "cb52079d77f7f0195f587035f8002f80fbe7e410709bc41715a63a19781c3281",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "exp_cafe",
+      "text": "Rooftop greenhouse café highlighted by hanging plants",
+      "status": "not_checkable",
+      "method": "none"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 0 rules reference existing things",
+        "src": ""
+      },
+      {
+        "id": "T3:tour",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "tour"
+        },
+        "status": "counterexample",
+        "method": "physics, an AI visitor walks to and uses each",
+        "n": 5,
+        "k": 4,
+        "text": "walked to and inspected 4 of 5 things",
+        "cx": {
+          "where": null,
+          "have": 4,
+          "need": 5,
+          "unit": "things",
+          "text": "couldn't reach glass_pane"
+        },
+        "src": "",
+        "ms": 185
+      }
+    ],
+    "par": null,
+    "ms": 204
+  }
+}

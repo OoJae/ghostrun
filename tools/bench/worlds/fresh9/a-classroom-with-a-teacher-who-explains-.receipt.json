@@ -1,0 +1,100 @@
+{
+  "prompt": "A classroom with a teacher who explains the planets",
+  "intent": {
+    "lang": "en",
+    "mode": "wander",
+    "genre": "simulation",
+    "setting": "A standard classroom with desks, a whiteboard, and interactive displays showing models of the solar system.",
+    "role": "student",
+    "goal": "Attend the lesson and observe the explanations of the planets.",
+    "fail": "n/a",
+    "mood": "curious and educational",
+    "pack": "floor_plan",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Classroom lesson features interactive planet models",
+    "nouns": [
+      {
+        "noun": "classroom",
+        "hyper": "room"
+      },
+      {
+        "noun": "teacher",
+        "hyper": "person"
+      },
+      {
+        "noun": "planets",
+        "hyper": "celestial bodies"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.3,
+      "arousal": 0.2,
+      "tension": 0
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "58076871c7952137e47c8e6e1a5b8fe311923fb6d91cff66d12d2d3ae72095ec",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_lesson",
+      "text": "Classroom lesson features interactive planet models",
+      "status": "verified",
+      "method": "kinematic reachability (jump apex model)"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 0 rules reference existing things",
+        "src": ""
+      },
+      {
+        "id": "T1:x_lesson",
+        "tier": "T1",
+        "subject": {
+          "kind": "property",
+          "id": "x_lesson"
+        },
+        "method": "kinematic reachability (jump apex model)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "Classroom lesson features interactive planet models",
+        "cx": null
+      },
+      {
+        "id": "T3:tour",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "tour"
+        },
+        "status": "played",
+        "method": "physics, an AI visitor walks to and uses each",
+        "n": 7,
+        "k": 7,
+        "text": "walked to and inspected 7 of 7 things",
+        "cx": null,
+        "src": "",
+        "ms": 12
+      }
+    ],
+    "par": null,
+    "ms": 25
+  }
+}

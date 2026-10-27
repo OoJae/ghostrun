@@ -1,0 +1,84 @@
+{
+  "prompt": "A sneaker showroom with five limited editions on pedestals",
+  "intent": {
+    "lang": "en",
+    "mode": "wander",
+    "genre": "showcase",
+    "setting": "A minimalist, brightly lit sneaker showroom featuring a central display area",
+    "role": "Visitor",
+    "goal": "Inspect and view five limited edition sneakers displayed on circular pedestals",
+    "fail": "None",
+    "mood": "Clean, impressive, and casual yet exclusive",
+    "pack": "floor_plan",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Showroom features exactly five limited edition sneakers on pedestals",
+    "nouns": [
+      {
+        "noun": "sneaker",
+        "hyper": "footwear"
+      },
+      {
+        "noun": "pedestal",
+        "hyper": "platform"
+      },
+      {
+        "noun": "showroom",
+        "hyper": "exhibition space"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.8,
+      "arousal": 0.2,
+      "tension": 0.1
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "39788993cb78a22f2315d2b67d10556caa629c82e2ef2eb6303277882efbbaee",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_showroom",
+      "text": "Showroom features exactly five limited edition sneakers on pedestals",
+      "status": "not_checkable",
+      "method": "none"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 0 rules reference existing things",
+        "src": ""
+      },
+      {
+        "id": "T3:tour",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "tour"
+        },
+        "status": "played",
+        "method": "physics, an AI visitor walks to and uses each",
+        "n": 10,
+        "k": 10,
+        "text": "walked to and inspected 10 of 10 things",
+        "cx": null,
+        "src": "",
+        "ms": 110
+      }
+    ],
+    "par": null,
+    "ms": 142
+  }
+}

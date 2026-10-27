@@ -1,0 +1,304 @@
+{
+  "prompt": "Escape the haunted carnival by finding the three tickets",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "horror-mystery",
+    "setting": "A dark, abandoned carnival at night with tents, ferris wheels, and a funhouse",
+    "role": "Guest trapped in the carnival",
+    "goal": "Find three tickets hidden across the park and use them to escape",
+    "fail": "Getting caught or dragged into a tent by a carnival wraith",
+    "mood": "eerie, tense",
+    "pack": "outdoor",
+    "sub": [],
+    "safety": "arcade",
+    "headline": "Three scattered tickets must be found to open the exit gate",
+    "nouns": [
+      {
+        "noun": "carnival",
+        "hyper": "fairground"
+      },
+      {
+        "noun": "ticket",
+        "hyper": "token"
+      },
+      {
+        "noun": "tents",
+        "hyper": "canopy structures"
+      },
+      {
+        "noun": "ferris wheel",
+        "hyper": "amusement ride"
+      },
+      {
+        "noun": "funhouse",
+        "hyper": "building"
+      }
+    ],
+    "moodVec": {
+      "valence": -0.4,
+      "arousal": 0.7,
+      "tension": 0.9
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "4c670880dccec22adb337df0d7aba9e97b8710884e0feabeb397b8843c8aa6a4",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_tickets",
+      "text": "Three scattered tickets must be found to open the exit gate",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 12 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win_ticket_east_all (ticket_east into exit_gate, carried by red) ← pick up ticket_east [after ticket_west in, ticket_pond in]",
+        "src": ""
+      },
+      {
+        "id": "T2:r_secret_bank",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_bank"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 6,
+        "status": "verified",
+        "text": "r_secret_bank fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_heart",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_heart"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_heart fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_stump",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_stump"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_stump fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_water",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_water"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_water fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_unlock",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_unlock"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_unlock fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win_ticket_east",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win_ticket_east"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_win_ticket_east fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win_ticket_east_all",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win_ticket_east_all"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_win_ticket_east_all fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win_ticket_pond",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win_ticket_pond"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_win_ticket_pond fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win_ticket_pond_all",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win_ticket_pond_all"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_win_ticket_pond_all fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win_ticket_west",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win_ticket_west"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_win_ticket_west fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win_ticket_west_all",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win_ticket_west_all"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_win_ticket_west_all fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_wraith_hit",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_wraith_hit"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_wraith_hit fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it (AI par 32.8 s)",
+        "cx": null,
+        "src": "",
+        "ms": 456
+      }
+    ],
+    "par": {
+      "goldS": 32.8,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 757
+  }
+}

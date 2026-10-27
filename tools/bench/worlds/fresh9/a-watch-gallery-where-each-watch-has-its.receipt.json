@@ -1,0 +1,84 @@
+{
+  "prompt": "A watch gallery where each watch has its own glass case",
+  "intent": {
+    "lang": "en",
+    "mode": "wander",
+    "genre": "virtual gallery",
+    "setting": "an elegant indoor watch gallery with rows of glass display cases",
+    "role": "visitor",
+    "goal": "explore the collection and admire the craftsmanship of each timepiece",
+    "fail": "none",
+    "mood": "serene and contemplative",
+    "pack": "floor_plan",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Each timepiece needs its own dedicated glass case",
+    "nouns": [
+      {
+        "noun": "watch",
+        "hyper": "timepiece"
+      },
+      {
+        "noun": "glass case",
+        "hyper": "display case"
+      },
+      {
+        "noun": "gallery",
+        "hyper": "exhibition space"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.7,
+      "arousal": 0.2,
+      "tension": 0
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "9b21037d65709f0fd0cd7d3ca417299093401dfceeb8eb1a3dd03a5306bdefbb",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_cases",
+      "text": "Each timepiece needs its own dedicated glass case",
+      "status": "not_checkable",
+      "method": "none"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 0 rules reference existing things",
+        "src": ""
+      },
+      {
+        "id": "T3:tour",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "tour"
+        },
+        "status": "played",
+        "method": "physics, an AI visitor walks to and uses each",
+        "n": 8,
+        "k": 8,
+        "text": "walked to and inspected 8 of 8 things",
+        "cx": null,
+        "src": "",
+        "ms": 33
+      }
+    ],
+    "par": null,
+    "ms": 48
+  }
+}

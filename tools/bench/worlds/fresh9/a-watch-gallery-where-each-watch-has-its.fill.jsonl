@@ -1,0 +1,24 @@
+{"op":"meta","mode":"wander","lang":"en","pack":"floor_plan","sub":[],"seed":12,"look":"elegant indoor watch gallery","mood":[0.7,0.2,0.0],"timeOfDay":14,"weather":"clear"}
+{"op":"zone","id":"z_yard","slot":"yard","tag":"outside","name":"Gallery entrance plaza"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Main Atrium"}
+{"op":"zone","id":"z_west","slot":"room_sw","tag":"room","name":"West Exhibit Hall"}
+{"op":"zone","id":"z_east","slot":"room_se","tag":"room","name":"East Exhibit Hall"}
+{"op":"zone","id":"z_center","slot":"main_room","tag":"hall","name":"Central Display Hall"}
+{"op":"spawn","id":"sp_red","zone":"z_yard","anchor":"spawn_pad","team":"red"}
+{"op":"ent","id":"case_w1","kind":"prop","noun":"glass case #1","hyper":"display case","zone":"z_west","anchor":"corner_sw","body":"fixed","shape":"box","size":[1.0,1.2,0.5]}
+{"op":"ent","id":"watch_w1","kind":"prop","noun":"golden chronometer","hyper":"timepiece","zone":"z_west","anchor":"corner_sw","body":"fixed","shape":"box","size":[0.3,0.3,0.1]}
+{"op":"ent","id":"case_w2","kind":"prop","noun":"glass case #2","hyper":"display case","zone":"z_west","anchor":"corner_se","body":"fixed","shape":"box","size":[1.0,1.2,0.5]}
+{"op":"ent","id":"watch_w2","kind":"prop","noun":"silver tourbillon","hyper":"timepiece","zone":"z_west","anchor":"corner_se","body":"fixed","shape":"box","size":[0.3,0.3,0.1]}
+{"op":"ent","id":"case_e1","kind":"prop","noun":"glass case #3","hyper":"display case","zone":"z_east","anchor":"corner_nw","body":"fixed","shape":"box","size":[1.0,1.2,0.5]}
+{"op":"ent","id":"watch_e1","kind":"prop","noun":"ceramic regulator","hyper":"timepiece","zone":"z_east","anchor":"corner_nw","body":"fixed","shape":"box","size":[0.3,0.3,0.1]}
+{"op":"ent","id":"case_c1","kind":"prop","noun":"glass case #4","hyper":"display case","zone":"z_center","anchor":"corner_ne","body":"fixed","shape":"box","size":[1.0,1.2,0.5]}
+{"op":"ent","id":"watch_c1","kind":"prop","noun":"platinum skeleton","hyper":"timepiece","zone":"z_center","anchor":"corner_ne","body":"fixed","shape":"box","size":[0.3,0.3,0.1]}
+{"op":"verb","id":"vb_inspect_w1","verb":"social.inspect","on":"watch_w1","params":{"text":"A golden chronometer with ornate dial."}}
+{"op":"verb","id":"vb_inspect_w2","verb":"social.inspect","on":"watch_w2","params":{"text":"Silver tourbillon, showcasing kinetic art."}}
+{"op":"verb","id":"vb_inspect_e1","verb":"social.inspect","on":"watch_e1","params":{"text":"Ceramic regulator, minimalist design."}}
+{"op":"verb","id":"vb_inspect_c1","verb":"social.inspect","on":"watch_c1","params":{"text":"Platinum skeleton, exposed gears gleam."}}
+{"op":"npc","id":"guide_1","role":"guide","zone":"z_entrance","anchor":"center","team":"","menu":["guide.intro"],"dflt":"guide.intro"}
+{"op":"npc","id":"guide_2","role":"guide","zone":"z_center","anchor":"center","team":"","menu":["guide.tour"],"dflt":"guide.tour"}
+{"op":"expect","id":"x_cases","prop":"headline","a":"sp_red","b":"z_center","headline":true,"text":"Each timepiece needs its own dedicated glass case"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

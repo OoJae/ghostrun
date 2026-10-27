@@ -1,0 +1,22 @@
+{"op":"meta","mode":"play","lang":"en","pack":"floor_plan","sub":[],"seed":33,"look":"kitchen challenge","mood":[0.7,0.3,0.2],"timeOfDay":12,"weather":"clear"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Kitchen entrance"}
+{"op":"zone","id":"z_prep","slot":"room_sw","tag":"room","name":"Prep station"}
+{"op":"zone","id":"z_cook","slot":"room_se","tag":"room","name":"Cooking area"}
+{"op":"zone","id":"z_main","slot":"main_room","tag":"hall","name":"Main counter"}
+{"op":"spawn","id":"sp_red","zone":"z_entrance","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"bowl","zone":"z_main","anchor":"center","noun":"mixing bowl","hyper":"vessel","team":"","body":"sensor","shape":"box","size":[0.4,0.3,0.2]}
+{"op":"ent","id":"eggs","kind":"pickup","noun":"eggs","hyper":"food","zone":"z_prep","anchor":"corner_sw","body":"dynamic","shape":"box","size":[0.3,0.2,0.2]}
+{"op":"ent","id":"flour","kind":"pickup","noun":"flour","hyper":"food","zone":"z_prep","anchor":"corner_se","body":"dynamic","shape":"box","size":[0.3,0.2,0.2]}
+{"op":"ent","id":"milk","kind":"pickup","noun":"milk","hyper":"food","zone":"z_cook","anchor":"corner_w","body":"dynamic","shape":"box","size":[0.2,0.2,0.3]}
+{"op":"verb","id":"vb_carry_eggs","verb":"physics_props.carry","on":"eggs","params":{}}
+{"op":"verb","id":"vb_carry_flour","verb":"physics_props.carry","on":"flour","params":{}}
+{"op":"verb","id":"vb_carry_milk","verb":"physics_props.carry","on":"milk","params":{}}
+{"op":"verb","id":"vb_jump","verb":"locomotion.jump","on":"player","params":{"jumpsMax":2}}
+{"op":"rule","id":"r_egg_put","when":{"t":"enter","a":"eggs","b":"bowl"},"then":[{"e":"score","target":"team:red","n":1}],"once":false}
+{"op":"rule","id":"r_flour_put","when":{"t":"enter","a":"flour","b":"bowl"},"then":[{"e":"score","target":"team:red","n":1}],"once":false}
+{"op":"rule","id":"r_milk_put","when":{"t":"enter","a":"milk","b":"bowl"},"then":[{"e":"score","target":"team:red","n":1}],"once":false}
+{"op":"rule","id":"r_win","when":{"t":"score_gte","a":"team:red","n":3},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"expect","id":"x_mix","prop":"win_reachable","a":"sp_red","b":"bowl","headline":true,"text":"Player can physically pick up and place each ingredient in the mixing bowl"}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":6}}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

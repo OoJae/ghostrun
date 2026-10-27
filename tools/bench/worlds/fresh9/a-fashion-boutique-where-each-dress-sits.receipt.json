@@ -1,0 +1,84 @@
+{
+  "prompt": "A fashion boutique where each dress sits on its mannequin",
+  "intent": {
+    "lang": "en",
+    "mode": "wander",
+    "genre": "retail",
+    "setting": "A chic boutique interior with display platforms, spotlights, and racks of clothing",
+    "role": "Visitor or shopper",
+    "goal": "Browse and view the dresses displayed on mannequins",
+    "fail": "None (exploratory)",
+    "mood": "Chic and attentive",
+    "pack": "floor_plan",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Boutique scale allows mannequin-level detail viewing.",
+    "nouns": [
+      {
+        "noun": "boutique",
+        "hyper": "store"
+      },
+      {
+        "noun": "dress",
+        "hyper": "clothing"
+      },
+      {
+        "noun": "mannequin",
+        "hyper": "display figure"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.3,
+      "arousal": 0.1,
+      "tension": -0.3
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "15b01fd0d93891311a33446c043a254288c3a95a6a552cf75cb6e81bdeb6e5cb",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_scale",
+      "text": "Boutique scale allows mannequin-level detail viewing.",
+      "status": "not_checkable",
+      "method": "none"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 0 rules reference existing things",
+        "src": ""
+      },
+      {
+        "id": "T3:tour",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "tour"
+        },
+        "status": "played",
+        "method": "physics, an AI visitor walks to and uses each",
+        "n": 9,
+        "k": 9,
+        "text": "walked to and inspected 9 of 9 things",
+        "cx": null,
+        "src": "",
+        "ms": 21
+      }
+    ],
+    "par": null,
+    "ms": 40
+  }
+}

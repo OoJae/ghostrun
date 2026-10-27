@@ -1,0 +1,29 @@
+{"op":"meta","mode":"wander","lang":"en","pack":"floor_plan","sub":[],"seed":21,"look":"fashion boutique","mood":[0.3,0.1,-0.3],"timeOfDay":14,"weather":"clear"}
+{"op":"zone","id":"z_yard","slot":"yard","tag":"outside","name":"Boutique Entrance Plaza"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Boutique Lobby"}
+{"op":"zone","id":"z_main","slot":"main_room","tag":"hall","name":"Showroom"}
+{"op":"zone","id":"z_fitting","slot":"room_sw","tag":"room","name":"Fitting Room"}
+{"op":"spawn","id":"sp_red","zone":"z_yard","anchor":"spawn_pad","team":"red"}
+{"op":"ent","id":"mannequin_red","kind":"prop","noun":"red dress mannequin","hyper":"mannequin","zone":"z_main","anchor":"center","body":"fixed","shape":"box","size":[0.5,1.8,0.5]}
+{"op":"ent","id":"mannequin_blue","kind":"prop","noun":"blue dress mannequin","hyper":"mannequin","zone":"z_main","anchor":"corner_ne","body":"fixed","shape":"box","size":[0.5,1.8,0.5]}
+{"op":"ent","id":"mannequin_green","kind":"prop","noun":"green dress mannequin","hyper":"mannequin","zone":"z_main","anchor":"corner_nw","body":"fixed","shape":"box","size":[0.5,1.8,0.5]}
+{"op":"ent","id":"dress_red","kind":"prop","noun":"silk red dress","hyper":"dress","zone":"z_main","anchor":"corner_se","body":"fixed","shape":"box","size":[0.6,0.1,1.0]}
+{"op":"ent","id":"dress_blue","kind":"prop","noun":"linen blue dress","hyper":"dress","zone":"z_main","anchor":"corner_sw","body":"fixed","shape":"box","size":[0.6,0.1,1.0]}
+{"op":"ent","id":"dress_green","kind":"prop","noun":"velvet green dress","hyper":"dress","zone":"z_main","anchor":"wall_n","body":"fixed","shape":"box","size":[0.6,0.1,1.0]}
+{"op":"ent","id":"spotlight_1","kind":"prop","noun":"spotlight","hyper":"light","zone":"z_main","anchor":"wall_e","body":"fixed","shape":"sphere","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"spotlight_2","kind":"prop","noun":"spotlight","hyper":"light","zone":"z_main","anchor":"wall_w","body":"fixed","shape":"sphere","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"rack_1","kind":"prop","noun":"clothing rack","hyper":"rack","zone":"z_fitting","anchor":"center","body":"fixed","shape":"box","size":[2,0.5,0.5]}
+{"op":"verb","id":"vb_inspect_red","verb":"social.inspect","on":"mannequin_red","params":{"text":"A mannequin displaying a sleek red silk dress."}}
+{"op":"verb","id":"vb_inspect_blue","verb":"social.inspect","on":"mannequin_blue","params":{"text":"A mannequin adorned with a flowing blue linen dress."}}
+{"op":"verb","id":"vb_inspect_green","verb":"social.inspect","on":"mannequin_green","params":{"text":"A mannequin showcasing a luxurious green velvet dress."}}
+{"op":"verb","id":"vb_inspect_dress_red","verb":"social.inspect","on":"dress_red","params":{"text":"Silk red dress, perfect for evening events."}}
+{"op":"verb","id":"vb_inspect_dress_blue","verb":"social.inspect","on":"dress_blue","params":{"text":"Linen blue dress, breezy and casual."}}
+{"op":"verb","id":"vb_inspect_dress_green","verb":"social.inspect","on":"dress_green","params":{"text":"Velvet green dress, rich and formal."}}
+{"op":"npc","id":"guide_1","role":"guide","zone":"z_entrance","anchor":"center","team":"","menu":["guide.welcome"],"dflt":"guide.welcome"}
+{"op":"expect","id":"x_scale","prop":"win_reachable","a":"sp_red","b":"z_main","headline":true,"text":"Boutique scale allows mannequin-level detail viewing."}
+{"op":"end","layer":"gameplay"}
+{"op":"dress","id":"d_style_1","style":"elegant","color":"red"}
+{"op":"dress","id":"d_style_2","style":"casual","color":"blue"}
+{"op":"poster","0":"fashion"} 
+{"op":"poster","2":"display"} 
+{"op":"end","layer":"cosmetic"}

@@ -1,0 +1,20 @@
+{"op":"meta","mode":"wander","lang":"en","pack":"floor_plan","sub":[],"seed":17,"look":"concert hall","mood":[0.3,0.2,-0.4],"timeOfDay":19,"weather":"clear"}
+{"op":"zone","id":"z_yard","slot":"yard","tag":"outside","name":"Hall entrance area"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Foyer"}
+{"op":"zone","id":"z_stage","slot":"main_room","tag":"hall","name":"Stage"}
+{"op":"zone","id":"z_pit","slot":"room_sw","tag":"room","name":"Orchestra pit"}
+{"op":"zone","id":"z_audience","slot":"room_se","tag":"room","name":"Audience seating"}
+{"op":"spawn","id":"sp_red","zone":"z_yard","anchor":"spawn_pad","team":"red"}
+{"op":"ent","id":"piano","kind":"prop","noun":"grand piano","hyper":"musical instrument","zone":"z_stage","anchor":"center","body":"fixed","shape":"box","size":[2.2,1.2,0.6]}
+{"op":"ent","id":"spotlight","kind":"prop","noun":"spotlight","hyper":"light","zone":"z_stage","anchor":"corner_ne","body":"fixed","shape":"box","size":[0.3,0.3,2.5]}
+{"op":"ent","id":"orchestra_rows","kind":"prop","noun":"orchestra rows","hyper":"musical group","zone":"z_pit","anchor":"center","body":"fixed","shape":"box","size":[8,3,0.5]}
+{"op":"ent","id":"conductor","kind":"npc","noun":"conductor","hyper":"person","zone":"z_pit","anchor":"corner_nw","team":"","menu":["guide.tour"],"dflt":"guide.tour"}
+{"op":"ent","id":"guide","kind":"npc","noun":"stage guide","hyper":"person","zone":"z_audience","anchor":"corner_se","team":"","menu":["guide.tour"],"dflt":"guide.tour"}
+{"op":"verb","id":"vb_inspect_piano","verb":"social.inspect","on":"piano","params":{"text":"The gleaming grand piano sits under a bright spotlight."}}
+{"op":"verb","id":"vb_inspect_spotlight","verb":"social.inspect","on":"spotlight","params":{"text":"A focused beam highlights the piano's polished surface."}}
+{"op":"verb","id":"vb_inspect_orchestra","verb":"social.inspect","on":"orchestra_rows","params":{"text":"Rows of violins, cellos, and brass fill the pit."}}
+{"op":"verb","id":"vb_inspect_conductor","verb":"social.inspect","on":"conductor","params":{"text":"The conductor ready the orchestra for the performance."}}
+{"op":"verb","id":"vb_inspect_guide","verb":"social.inspect","on":"guide","params":{"text":"A guide offers information about the hall's architecture."}}
+{"op":"expect","id":"x_piano_spotlight","prop":"reachable","a":"sp_red","b":"piano","headline":true,"text":"Grand piano is spotlighted at the center of the stage, separated from the orchestra rows"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

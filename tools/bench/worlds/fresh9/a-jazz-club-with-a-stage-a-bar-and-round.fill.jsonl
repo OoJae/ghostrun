@@ -1,0 +1,28 @@
+{"op":"meta","mode":"wander","lang":"en","pack":"floor_plan","sub":[],"seed":11,"look":"jazz club interior","mood":[0.5,0.2,0.05],"timeOfDay":20,"weather":"clear"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Club entrance"}
+{"op":"zone","id":"z_stage","slot":"main_room","tag":"stage","name":"Stage area"}
+{"op":"zone","id":"z_bar","slot":"room_sw","tag":"bar","name":"Bar"}
+{"op":"zone","id":"z_tables","slot":"room_se","tag":"tables","name":"Seated area"}
+{"op":"zone","id":"z_lounge","slot":"room_nw","tag":"lounge","name":"Lounge"}
+{"op":"spawn","id":"sp_red","zone":"z_entrance","anchor":"doorway_s","team":"red"}
+{"op":"ent","id":"stage","kind":"prop","noun":"stage","hyper":"performing area","zone":"z_stage","anchor":"center","body":"fixed","shape":"box","size":[4,0.5,2]}
+{"op":"ent","id":"stage_light","kind":"prop","noun":"stage light","hyper":"light","zone":"z_stage","anchor":"corner_ne","body":"fixed","shape":"box","size":[0.2,0.5,0.2]}
+{"op":"ent","id":"bar_counter","kind":"prop","noun":"bar counter","hyper":"service counter","zone":"z_bar","anchor":"center","body":"fixed","shape":"box","size":[3,1,1]}
+{"op":"ent","id":"bar_stool_1","kind":"prop","noun":"bar stool","hyper":"chair","zone":"z_bar","anchor":"corner_sw","body":"fixed","shape":"box","size":[0.5,0.8,0.5]}
+{"op":"ent","id":"table_1","kind":"prop","noun":"round table","hyper":"seating","zone":"z_tables","anchor":"center","body":"fixed","shape":"cylinder","size":[1.2,0.5,1.2]}
+{"op":"ent","id":"chair_1","kind":"prop","noun":"chair","hyper":"furniture","zone":"z_tables","anchor":"corner_ne","body":"fixed","shape":"box","size":[0.5,0.8,0.5]}
+{"op":"ent","id":"chair_2","kind":"prop","noun":"chair","hyper":"furniture","zone":"z_tables","anchor":"corner_se","body":"fixed","shape":"box","size":[0.5,0.8,0.5]}
+{"op":"ent","id":"poster_jazz","kind":"sign","noun":"vintage jazz poster","hyper":"poster","zone":"z_lounge","anchor":"wall_n","body":"fixed","shape":"box","size":[2,3,0.1]}
+{"op":"verb","id":"vb_inspect_stage","verb":"social.inspect","on":"stage","params":{"text":"A modest wooden platform for live performances."}}
+{"op":"verb","id":"vb_inspect_light","verb":"social.inspect","on":"stage_light","params":{"text":"A soft amber spotlight casting a warm glow."}}
+{"op":"verb","id":"vb_inspect_bar","verb":"social.inspect","on":"bar_counter","params":{"text":"Polished mahogany bar serving classic cocktails."}}
+{"op":"verb","id":"vb_inspect_stool","verb":"social.inspect","on":"bar_stool_1","params":{"text":"High stool perfect for sipping drinks."}}
+{"op":"verb","id":"vb_inspect_table","verb":"social.inspect","on":"table_1","params":{"text":"Round table surrounded by cozy chairs."}}
+{"op":"verb","id":"vb_inspect_chair1","verb":"social.inspect","on":"chair_1","params":{"text":"Comfortable upholstered chair."}}
+{"op":"verb","id":"vb_inspect_chair2","verb":"social.inspect","on":"chair_2","params":{"text":"Matching chair beside the table."}}
+{"op":"verb","id":"vb_inspect_poster","verb":"social.inspect","on":"poster_jazz","params":{"text":"Poster advertising tonight's swing set."}}
+{"op":"npc","id":"npc_bartender","role":"guide","zone":"z_bar","anchor":"corner_nw","team":"","menu":["guide.welcome"],"dflt":"guide.welcome"}
+{"op":"npc","id":"npc_musician","role":"guide","zone":"z_stage","anchor":"corner_se","team":"","menu":["guide.intro"],"dflt":"guide.intro"}
+{"op":"expect","id":"x_explore","prop":"win_reachable","a":"sp_red","b":"z_stage","headline":true,"text":"Floor plan shows stage, bar and scattered round tables"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

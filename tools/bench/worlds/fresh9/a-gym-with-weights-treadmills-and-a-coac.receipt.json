@@ -1,0 +1,100 @@
+{
+  "prompt": "A gym with weights, treadmills and a coach",
+  "intent": {
+    "lang": "en",
+    "mode": "wander",
+    "genre": "fitness",
+    "setting": "Modern functional gym interior with a main exercise hall, free-weights corner and cardio zone",
+    "role": "Member on a guided check-in",
+    "goal": "Look around the floor, the rack and the track row to observe the coach\u0019s layout and form cues",
+    "fail": "N/A \u0013 this is a static showcase; no fail state",
+    "mood": "Steady, industrious, focused",
+    "pack": "floor_plan",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Gym must have a visible coach at the free-weights rack",
+    "nouns": [
+      {
+        "noun": "weights",
+        "hyper": "equipment"
+      },
+      {
+        "noun": "treadmills",
+        "hyper": "cardio-machines"
+      },
+      {
+        "noun": "coach",
+        "hyper": "fitness-professional"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.4,
+      "arousal": 0.6,
+      "tension": 0.2
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "ff81676b86fd305bbcdf5f17eb6534401443dbcd1fe3c9f5cbd4849be4d28930",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_visible_coach",
+      "text": "Gym must have a visible coach at the free-weights rack",
+      "status": "not_checkable",
+      "method": "kinematic reachability (jump apex model)"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 0 rules reference existing things",
+        "src": ""
+      },
+      {
+        "id": "T1:x_visible_coach",
+        "tier": "T1",
+        "subject": {
+          "kind": "property",
+          "id": "x_visible_coach"
+        },
+        "method": "kinematic reachability (jump apex model)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "Gym must have a visible coach at the free-weights rack",
+        "cx": null
+      },
+      {
+        "id": "T3:tour",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "tour"
+        },
+        "status": "played",
+        "method": "physics, an AI visitor walks to and uses each",
+        "n": 3,
+        "k": 3,
+        "text": "walked to and inspected 3 of 3 things",
+        "cx": null,
+        "src": "",
+        "ms": 9
+      }
+    ],
+    "par": null,
+    "ms": 23
+  }
+}

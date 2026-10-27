@@ -1,0 +1,22 @@
+{"op":"meta","mode":"wander","lang":"en","pack":"outdoor","sub":[],"seed":20,"look":"japanese garden","mood":[0.8,0.2,-0.5],"timeOfDay":12,"weather":"clear"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Garden entrance"}
+{"op":"zone","id":"z_clearing","slot":"clearing","tag":"hub","name":"Central clearing"}
+{"op":"zone","id":"z_pond","slot":"pond","tag":"pond","name":"Koi pond"}
+{"op":"zone","id":"z_pavilion","slot":"camp","tag":"pavilion","name":"Tea pavilion"}
+{"op":"spawn","id":"sp_red","zone":"z_entrance","anchor":"spawn_pad","team":"red"}
+{"op":"ent","id":"bridge","kind":"prop","noun":"arched bridge","hyper":"structure","zone":"z_clearing","anchor":"center","body":"fixed","shape":"box","size":[4,0.5,2]}
+{"op":"ent","id":"koi_pond","kind":"prop","noun":"koi pond","hyper":"pond","zone":"z_pond","anchor":"water","body":"fixed","shape":"hull"}
+{"op":"ent","id":"tea_pavilion","kind":"prop","noun":"tea pavilion","hyper":"pavilion","zone":"z_pavilion","anchor":"tent","body":"fixed","shape":"box","size":[5,3,4]}
+{"op":"ent","id":"lantern","kind":"prop","noun":"stone lantern","hyper":"lantern","zone":"z_clearing","anchor":"center_n","body":"fixed","shape":"box","size":[0.5,1.2,0.5]}
+{"op":"ent","id":"bamboo_fence","kind":"prop","noun":"bamboo fence","hyper":"fence","zone":"z_clearing","anchor":"center_e","body":"fixed","shape":"box","size":[3,1.5,0.2]}
+{"op":"verb","id":"vb_inspect_bridge","verb":"social.inspect","on":"bridge","params":{"text":"A gracefully curved stone bridge spanning the pond."}}
+{"op":"verb","id":"vb_inspect_pond","verb":"social.inspect","on":"koi_pond","params":{"text":"Clear water teeming with colorful koi fish."}}
+{"op":"verb","id":"vb_inspect_pavilion","verb":"social.inspect","on":"tea_pavilion","params":{"text":"A tranquil tea pavilion overlooking the garden."}}
+{"op":"verb","id":"vb_inspect_lantern","verb":"social.inspect","on":"lantern","params":{"text":"A weathered stone lantern casting soft light."}}
+{"op":"verb","id":"vb_inspect_fence","verb":"social.inspect","on":"bamboo_fence","params":{"text":"A delicate bamboo fence framing the path."}}
+{"op":"npc","id":"guide_1","role":"guide","zone":"z_entrance","anchor":"guide","team":"","menu":["guide.tour"],"dflt":"guide.tour"}
+{"op":"npc","id":"guide_2","role":"guide","zone":"z_pavilion","anchor":"guide","team":"","menu":["guide.tour"],"dflt":"guide.tour"}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":5}}
+{"op":"expect","id":"exp_japan_garden","prop":"headline","a":"sp_red","b":"z_entrance","headline":true,"text":"Japanese garden with bridge and pond"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

@@ -1,0 +1,17 @@
+{"op":"meta","mode":"wander","lang":"en","pack":"floor_plan","sub":[],"seed":14,"look":"Scandinavian furniture showroom","mood":[0.6,0.2,-0.4],"timeOfDay":12,"weather":"clear"}
+{"op":"zone","id":"z_yard","slot":"yard","tag":"outside","name":"Store frontage"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Entrance hall"}
+{"op":"zone","id":"z_showroom","slot":"main_room","tag":"hall","name":"Showroom"}
+{"op":"spawn","id":"sp_red","zone":"z_entrance","anchor":"center","team":"red"}
+{"op":"ent","id":"sofa_01","kind":"prop","noun":"sofa","hyper":"furniture","zone":"z_showroom","anchor":"center","body":"fixed","shape":"box","size":[2.0,1.0,0.8]}
+{"op":"ent","id":"lamp_01","kind":"prop","noun":"lamp","hyper":"lighting fixture","zone":"z_showroom","anchor":"corner_ne","body":"fixed","shape":"box","size":[0.3,0.5,0.3]}
+{"op":"ent","id":"rug_01","kind":"prop","noun":"rug","hyper":"floor covering","zone":"z_showroom","anchor":"corner_sw","body":"fixed","shape":"box","size":[3.0,0.2,2.0]}
+{"op":"ent","id":"guide_01","kind":"npc","noun":"store guide","hyper":"guide","zone":"z_showroom","anchor":"doorway_s","body":"kinematic","shape":"box","team":"","menu":["guide.tour"],"dflt":"guide.tour"}
+{"op":"verb","id":"vb_inspect_sofa","verb":"social.inspect","on":"sofa_01","params":{"text":"A sleek, low-back sofa in natural linen."}}
+{"op":"verb","id":"vb_inspect_lamp","verb":"social.inspect","on":"lamp_01","params":{"text":"A minimal pendant lamp with a warm glow."}}
+{"op":"verb","id":"vb_inspect_rug","verb":"social.inspect","on":"rug_01","params":{"text":"A hand-woven rug adding a soft texture."}}
+{"op":"verb","id":"vb_guide_tour","verb":"social.inspect","on":"guide_01","params":{"text":"Welcome! Feel free to explore the showroom."}}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.2,"speed":5}}
+{"op":"expect","id":"x_showroom","prop":"win_reachable","a":"sp_red","b":"z_showroom","headline":true,"text":"Showroom vignette shows a sofa, a lamp and a rug"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

@@ -1,0 +1,108 @@
+{
+  "prompt": "A cosy mountain cabin with a fireplace and a bookshelf",
+  "intent": {
+    "lang": "en",
+    "mode": "wander",
+    "genre": "simulation",
+    "setting": "A single-storey mountain cabin at real scale with a central hearth, a tall bookshelf, and a view of snowy peaks from a window.",
+    "role": "A visitor staying in the cabin",
+    "goal": "Explore the cabin, crack the fireplace, and browse the books for a relaxing session.",
+    "fail": "",
+    "mood": "calm, cosy, snowy",
+    "pack": "floor_plan",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Cabin features a lit fireplace and an accessible bookshelf in the main room.",
+    "nouns": [
+      {
+        "noun": "cabin",
+        "hyper": "floor_plan"
+      },
+      {
+        "noun": "fireplace",
+        "hyper": "floor_plan"
+      },
+      {
+        "noun": "bookshelf",
+        "hyper": "floor_plan"
+      },
+      {
+        "noun": "books",
+        "hyper": "floor_plan"
+      },
+      {
+        "noun": "mountain",
+        "hyper": "outdoor"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.8,
+      "arousal": 0.1,
+      "tension": -0.8
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "af891870457140aa6b8a89a2f6f40189ca3f3f76e5c2eb31cf2e4827e0f6d7c8",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_cabin",
+      "text": "Cabin features a lit fireplace and an accessible bookshelf in the main room.",
+      "status": "verified",
+      "method": "kinematic reachability (jump apex model)"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 0 rules reference existing things",
+        "src": ""
+      },
+      {
+        "id": "T1:x_cabin",
+        "tier": "T1",
+        "subject": {
+          "kind": "property",
+          "id": "x_cabin"
+        },
+        "method": "kinematic reachability (jump apex model)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "Cabin features a lit fireplace and an accessible bookshelf in the main room.",
+        "cx": null
+      },
+      {
+        "id": "T3:tour",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "tour"
+        },
+        "status": "played",
+        "method": "physics, an AI visitor walks to and uses each",
+        "n": 6,
+        "k": 6,
+        "text": "walked to and inspected 6 of 6 things",
+        "cx": null,
+        "src": "",
+        "ms": 18
+      }
+    ],
+    "par": null,
+    "ms": 35
+  }
+}

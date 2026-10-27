@@ -626,6 +626,9 @@ function clearDoors(r: Run, target: Vec3) {
   }
 }
 
+/** Eight directions round a point (no trigonometry in the simulation path). */
+const RING8: readonly (readonly [number, number])[] = [[1, 0], [0.7071, 0.7071], [0, 1], [-0.7071, 0.7071], [-1, 0], [-0.7071, -0.7071], [0, -1], [0.7071, -0.7071]];
+
 /**
  * Where to stand to reach a thing. A sensor or decor: the walkable point nearest it. A solid
  * thing: beside it, on the side with a path from here (never on top: a sculpture's top is
@@ -649,9 +652,25 @@ const spotBy = (r: Run, id: string): Vec3 => {
   const [hx, hz] = [e.size[0] / 2 + 0.6, e.size[2] / 2 + 0.6];
   const sides: Vec3[] = [[e.pos[0], floor, e.pos[2] - hz], [e.pos[0], floor, e.pos[2] + hz], [e.pos[0] - hx, floor, e.pos[2]], [e.pos[0] + hx, floor, e.pos[2]]];
   // a side that only reaches the navmesh by snapping far away (into the wall beside a door) is no spot
-  const spots = sides.map((q) => [q, r.nav.nearest(q)] as const).filter(([q, n]) => n !== null && Math.abs(n[1] - floor) < 0.6 && d2h(q, n) < 0.25).map(([, n]) => n!);
+  // (walkable ground at the thing's own level first: a pane in the wall has a ledge above it)
+  const spots = sides.map((q) => [q, r.nav.nearest(q, 1) ?? r.nav.nearest(q)] as const).filter(([q, n]) => n !== null && Math.abs(n[1] - floor) < 0.6 && d2h(q, n) < 0.25).map(([, n]) => n!);
   spots.sort((u, v) => d2h(u, p) - d2h(v, p));
-  return spots.find((q) => r.nav.path(feet, q)) ?? spots[0] ?? r.nav.nearest([e.pos[0], floor, e.pos[2]]) ?? e.pos;
+  const side = spots.find((q) => r.nav.path(feet, q)) ?? spots[0];
+  if (side) return side;
+  // nothing walkable right beside it (a pane above a shelf): anywhere on the floor within its reach
+  const use = Math.max(0, ...r.b.verbs.filter((v) => v.on === id).map((v) => verb(v.verb)?.use?.radius ?? 0));
+  const reach = use + Math.max(e.size[0], e.size[2]) / 2 - 0.3;
+  const ring: Vec3[] = [];
+  for (const rad of [1.2, 1.8, 2.4, 3.0]) {
+    if (rad > reach) break;
+    for (const [cx, cz] of RING8) {
+      const n = r.nav.nearest([e.pos[0] + cx * rad, floor, e.pos[2] + cz * rad], 1.6);
+      if (n && d2h(n, e.pos) <= reach * reach && r.nav.path(feet, n)) ring.push(n);
+    }
+    if (ring.length) break;
+  }
+  ring.sort((u, v) => d2h(u, p) - d2h(v, p));
+  return ring[0] ?? r.nav.nearest([e.pos[0], floor, e.pos[2]]) ?? e.pos;
 };
 
 /** Turn toward a thing (one short nudge of the stick): USE takes what you face. */

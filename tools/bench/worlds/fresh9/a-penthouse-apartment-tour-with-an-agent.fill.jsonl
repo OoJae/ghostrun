@@ -1,0 +1,30 @@
+{"op":"meta","mode":"wander","lang":"en","pack":"floor_plan","sub":[],"seed":8,"look":"luxurious penthouse","mood":[0.4,0.3,0.2],"timeOfDay":14,"weather":"clear"}
+{"op":"zone","id":"z_yard","slot":"yard","tag":"outside","name":"Building entrance"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Lobby foyer"}
+{"op":"zone","id":"z_main","slot":"main_room","tag":"hall","name":"Grand living area"}
+{"op":"zone","id":"z_sw","slot":"room_sw","tag":"room","name":"Bedroom suite"}
+{"op":"zone","id":"z_se","slot":"room_se","tag":"room","name":"Office"}
+{"op":"zone","id":"z_nw","slot":"room_nw","tag":"room","name":"Study"}
+{"op":"zone","id":"z_ne","slot":"room_ne","tag":"room","name":"Bathroom & Utility"}
+{"op":"spawn","id":"sp_red","zone":"z_yard","anchor":"spawn_pad","team":"red"}
+{"op":"ent","id":"living_area","kind":"prop","noun":"spacious living area","hyper":"room","zone":"z_main","anchor":"center","body":"fixed","shape":"box","size":[5,3,4]}
+{"op":"ent","id":"kitchen","kind":"prop","noun":"modern kitchen","hyper":"room","zone":"z_main","anchor":"corner_ne","body":"fixed","shape":"box","size":[3,2.5,3]}
+{"op":"ent","id":"terrace","kind":"prop","noun":"rooftop terrace","hyper":"room","zone":"z_main","anchor":"corner_se","body":"fixed","shape":"box","size":[4,2,4]}
+{"op":"ent","id":"bedroom","kind":"prop","noun":"master bedroom","hyper":"room","zone":"z_sw","anchor":"center","body":"fixed","shape":"box","size":[4,3,4]}
+{"op":"ent","id":"office","kind":"prop","noun":"home office","hyper":"room","zone":"z_se","anchor":"center","body":"fixed","shape":"box","size":[3,2.5,4]}
+{"op":"ent","id":"study","kind":"prop","noun":"quiet study","hyper":"room","zone":"z_nw","anchor":"center","body":"fixed","shape":"box","size":[3,2.5,4]}
+{"op":"ent","id":"bathroom","kind":"prop","noun":"bathroom & utility","hyper":"room","zone":"z_ne","anchor":"center","body":"fixed","shape":"box","size":[3,2.5,4]}
+{"op":"ent","id":"booking_sign","kind":"sign","noun":"booking info sign","hyper":"sign","zone":"z_main","anchor":"doorway_w","body":"fixed","shape":"box","size":[1,0.2,0.5]}
+{"op":"npc","id":"agent_guide","role":"guide","zone":"z_entrance","anchor":"center","team":"","menu":["guide.tour"],"dflt":"guide.tour"}
+{"op":"verb","id":"vb_inspect_living","verb":"social.inspect","on":"living_area","params":{"text":"Open-plan living space with floor‑to‑ceiling windows."}}
+{"op":"verb","id":"vb_inspect_kitchen","verb":"social.inspect","on":"kitchen","params":{"text":"Sleek appliances and marble countertops."}}
+{"op":"verb","id":"vb_inspect_terrace","verb":"social.inspect","on":"terrace","params":{"text":"Private terrace offering panoramic city views."}}
+{"op":"verb","id":"vb_inspect_bedroom","verb":"social.inspect","on":"bedroom","params":{"text":"Spacious master suite with walk‑in closet."}}
+{"op":"verb","id":"vb_inspect_office","verb":"social.inspect","on":"office","params":{"text":"Dedicated office with built‑in desk and shelving."}}
+{"op":"verb","id":"vb_inspect_study","verb":"social.inspect","on":"study","params":{"text":"Quiet study nook lined with bookshelves."}}
+{"op":"verb","id":"vb_inspect_bathroom","verb":"social.inspect","on":"bathroom","params":{"text":"Luxury bathroom with large bathtub and laundry area."}}
+{"op":"verb","id":"vb_inspect_booking","verb":"social.inspect","on":"booking_sign","params":{"text":"Contact the agent to schedule a private viewing."}}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":5}}
+{"op":"expect","id":"x_tour","prop":"win_reachable","a":"sp_red","b":"terrace","headline":true,"text":"Penthouse tour includes a terrace and booking prompt"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

@@ -1,0 +1,88 @@
+{
+  "prompt": "A penthouse apartment tour with an agent who books a viewing",
+  "intent": {
+    "lang": "en",
+    "mode": "wander",
+    "genre": "real estate tour",
+    "setting": "A luxurious penthouse apartment with a living area, kitchen, bedrooms, and a terrace, staged for viewing. The floor plan uses a central main room with a yard/entrance, a main living space, and four side rooms (bedroom, office, study, and a bathroom/utility).",
+    "role": "Prospective buyer following the agent",
+    "goal": "Tour the penthouse, inspect key rooms and features, and ask the agent for booking details.",
+    "fail": "No explicit fail state; the tour simply ends without a booking if the viewer does not engage.",
+    "mood": "Aspirational, polished, slightly tense with the prospect of a high-stakes purchase",
+    "pack": "floor_plan",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Penthouse tour includes a terrace and booking prompt",
+    "nouns": [
+      {
+        "noun": "penthouse",
+        "hyper": "apartment"
+      },
+      {
+        "noun": "agent",
+        "hyper": "character"
+      },
+      {
+        "noun": "terrace",
+        "hyper": "room"
+      },
+      {
+        "noun": "viewing",
+        "hyper": "event"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.4,
+      "arousal": 0.3,
+      "tension": 0.2
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "e57022cc56ce6d329f15d2735b5441ad4c47171e814fc6367e6467af15894186",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_tour",
+      "text": "Penthouse tour includes a terrace and booking prompt",
+      "status": "not_checkable",
+      "method": "none"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 0 rules reference existing things",
+        "src": ""
+      },
+      {
+        "id": "T3:tour",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "tour"
+        },
+        "status": "played",
+        "method": "physics, an AI visitor walks to and uses each",
+        "n": 8,
+        "k": 8,
+        "text": "walked to and inspected 8 of 8 things",
+        "cx": null,
+        "src": "",
+        "ms": 46
+      }
+    ],
+    "par": null,
+    "ms": 60
+  }
+}

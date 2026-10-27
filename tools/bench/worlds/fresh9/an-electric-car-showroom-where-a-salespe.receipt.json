@@ -1,0 +1,92 @@
+{
+  "prompt": "An electric car showroom where a salesperson shows the range",
+  "intent": {
+    "lang": "en",
+    "mode": "wander",
+    "genre": "showcase",
+    "setting": "a modern electric car showroom with floor-to-ceiling windows, display ramps and interactive charge-bay cutaways",
+    "role": "a salesperson demonstrating to a visitor",
+    "goal": "present the driving range of the flagship EV using the interactive range map and charge-bay cutaway, ending with a hands-on demo of the zero-emission battery pack",
+    "fail": "none (explanatory showcase)",
+    "mood": "bright, confident, futuristic",
+    "pack": "floor_plan",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Interactive charge-bay cutaway must display the vehicle's range figure when approached",
+    "nouns": [
+      {
+        "noun": "electric car",
+        "hyper": "showroom vehicle"
+      },
+      {
+        "noun": "salesperson",
+        "hyper": "demo presenter"
+      },
+      {
+        "noun": "range map",
+        "hyper": "interactive display"
+      },
+      {
+        "noun": "charge bay",
+        "hyper": "cutaway exhibit"
+      },
+      {
+        "noun": "showroom",
+        "hyper": "single-storey interior"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.8,
+      "arousal": 0.3,
+      "tension": 0.1
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "5ce105dff7c69e22d0cb674801cda648e326c32fc2b83df01cc8c52e79e0da43",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_cutaway",
+      "text": "Interactive charge-bay cutaway must display the vehicle's range figure when approached",
+      "status": "not_checkable",
+      "method": "none"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 0 rules reference existing things",
+        "src": ""
+      },
+      {
+        "id": "T3:tour",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "tour"
+        },
+        "status": "played",
+        "method": "physics, an AI visitor walks to and uses each",
+        "n": 5,
+        "k": 5,
+        "text": "walked to and inspected 5 of 5 things",
+        "cx": null,
+        "src": "",
+        "ms": 77
+      }
+    ],
+    "par": null,
+    "ms": 97
+  }
+}

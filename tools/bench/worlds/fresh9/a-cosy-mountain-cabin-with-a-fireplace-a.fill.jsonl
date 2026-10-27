@@ -1,0 +1,21 @@
+{"op":"meta","mode":"wander","lang":"en","pack":"floor_plan","sub":[],"seed":22,"look":"cosy mountain cabin","mood":[0.8,0.1,-0.8],"timeOfDay":14,"weather":"snow"}
+{"op":"zone","id":"z_yard","slot":"yard","tag":"outside","name":"Cabin grounds"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Cabin doorway"}
+{"op":"zone","id":"z_main","slot":"main_room","tag":"hall","name":"Main cabin room"}
+{"op":"spawn","id":"sp_visitor","zone":"z_entrance","anchor":"doorway_s","team":"red"}
+{"op":"ent","id":"fireplace","kind":"prop","noun":"stone fireplace","hyper":"fireplace","zone":"z_main","anchor":"corner_ne","body":"fixed","shape":"box","size":[2,1,1]}
+{"op":"ent","id":"bookshelf","kind":"prop","noun":"tall bookshelf","hyper":"bookshelf","zone":"z_main","anchor":"center","body":"fixed","shape":"box","size":[1,2,0.4]}
+{"op":"ent","id":"book_1","kind":"prop","noun":"old novel","hyper":"book","zone":"z_main","anchor":"corner_sw","body":"fixed","shape":"box","size":[0.2,0.3,0.05]}
+{"op":"ent","id":"book_2","kind":"prop","noun":"travel diary","hyper":"book","zone":"z_main","anchor":"corner_se","body":"fixed","shape":"box","size":[0.2,0.3,0.05]}
+{"op":"ent","id":"window_view","kind":"prop","noun":"window with snowy peaks","hyper":"window","zone":"z_main","anchor":"corner_nw","body":"fixed","shape":"box","size":[1.5,1,0.1]}
+{"op":"ent","id":"guide_npc","kind":"npc","noun":"friendly guide","hyper":"guide","zone":"z_main","anchor":"doorway_w","body":"kinematic","shape":"none","team":"","menu":["guide.talk"],"dflt":"guide.talk"}
+{"op":"verb","id":"vb_look_fireplace","verb":"social.inspect","on":"fireplace","params":{"text":"A roaring fire warms the room."}}
+{"op":"verb","id":"vb_look_bookshelf","verb":"social.inspect","on":"bookshelf","params":{"text":"Shelves filled with classic literature."}}
+{"op":"verb","id":"vb_look_book1","verb":"social.inspect","on":"book_1","params":{"text":"An old novel about mountain adventures."}}
+{"op":"verb","id":"vb_look_book2","verb":"social.inspect","on":"book_2","params":{"text":"A diary recounting a winter trek."}}
+{"op":"verb","id":"vb_look_window","verb":"social.inspect","on":"window_view","params":{"text":"Snow-capped peaks glisten beyond the glass."}}
+{"op":"verb","id":"vb_guide_talk","verb":"social.inspect","on":"guide_npc","params":{"text":"Welcome! Feel free to explore and relax."}}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.2,"speed":5}}
+{"op":"expect","id":"x_cabin","prop":"reachable","a":"sp_visitor","b":"z_main","headline":true,"text":"Cabin features a lit fireplace and an accessible bookshelf in the main room."}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

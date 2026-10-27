@@ -1,0 +1,24 @@
+{"op":"meta","mode":"wander","lang":"en","pack":"floor_plan","sub":[],"seed":26,"look":"children's museum","mood":[0.7,0.3,-0.5],"timeOfDay":12,"weather":"clear"}
+{"op":"zone","id":"z_yard","slot":"yard","tag":"outside","name":"Museum courtyard"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Main entrance hall"}
+{"op":"zone","id":"z_dino_west","slot":"room_sw","tag":"room","name":"Dinosaur exhibit West"}
+{"op":"zone","id":"z_dino_east","slot":"room_se","tag":"room","name":"Dinosaur exhibit East"}
+{"op":"zone","id":"z_fossil","slot":"room_nw","tag":"room","name":"Fossil excavation pit"}
+{"op":"zone","id":"z_volcano","slot":"main_room","tag":"hall","name":"Volcano diorama"}
+{"op":"zone","id":"z_play","slot":"room_ne","tag":"room","name":"Play area"}
+{"op":"spawn","id":"sp_red","zone":"z_yard","anchor":"spawn_pad","team":"red"}
+{"op":"ent","id":"dino_trike","kind":"prop","noun":"stepping triceratops","hyper":"animal_model","zone":"z_dino_west","anchor":"corner_w","body":"fixed","shape":"box","size":[1.5,2.0,1.5]}
+{"op":"ent","id":"dino_bronto","kind":"prop","noun":"friendly brachiosaur","hyper":"animal_model","zone":"z_dino_east","anchor":"corner_e","body":"fixed","shape":"box","size":[2.0,3.5,2.0]}
+{"op":"ent","id":"fossil_wall","kind":"prop","noun":"fossil wall","hyper":"exhibit","zone":"z_fossil","anchor":"center","body":"fixed","shape":"box","size":[3.0,2.5,0.2]}
+{"op":"ent","id":"volcano_exhibit","kind":"prop","noun":"volcano diorama","hyper":"exhibit","zone":"z_volcano","anchor":"center","body":"fixed","shape":"box","size":[4.0,3.0,4.0]}
+{"op":"ent","id":"volcano_timer","kind":"trigger","noun":"volcano timer","hyper":"timer","zone":"z_volcano","anchor":"corner_ne","body":"sensor","shape":"box","size":[0.5,0.5,0.5]}
+{"op":"ent","id":"guide_npc","kind":"npc","noun":"museum guide","hyper":"guide","zone":"z_entrance","anchor":"center","body":"fixed","shape":"box","team":"","menu":["guide.tour"],"dflt":"guide.tour"}
+{"op":"verb","id":"vb_inspect_trike","verb":"social.inspect","on":"dino_trike","params":{"text":"A tall triceratops ready for a photo."}}
+{"op":"verb","id":"vb_inspect_bronto","verb":"social.inspect","on":"dino_bronto","params":{"text":"A gentle brachiosaur reaching for the clouds."}}
+{"op":"verb","id":"vb_inspect_fossil","verb":"social.inspect","on":"fossil_wall","params":{"text":"Touch the ancient bones embedded in the rock."}}
+{"op":"verb","id":"vb_inspect_volcano","verb":"social.inspect","on":"volcano_exhibit","params":{"text":"Volcano ready to erupt in a flash!"}}
+{"op":"verb","id":"vb_volcano_timer","verb":"puzzle.timer","on":"volcano_timer","params":{"seconds":45}}
+{"op":"rule","id":"r_volcano_erupt","when":{"t":"timer_end","a":"volcano_timer"},"then":[{"e":"set_state","target":"volcano_exhibit","v":"erupt"},{"e":"emit","target":"volcano_exhibit","fx":"eruption_smoke"}],"once":true}
+{"op":"expect","id":"x_eruption","prop":"win_reachable","a":"sp_red","b":"volcano_exhibit","headline":true,"text":"Volcano exhibit triggers a timed diorama eruption"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

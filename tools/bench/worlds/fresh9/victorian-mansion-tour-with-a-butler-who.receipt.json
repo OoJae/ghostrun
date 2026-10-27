@@ -1,0 +1,112 @@
+{
+  "prompt": "Victorian mansion tour with a butler who tells the history",
+  "intent": {
+    "lang": "en",
+    "mode": "wander",
+    "genre": "mystery-tour",
+    "setting": "A grand, dimly lit Victorian mansion at dusk: a grand entrance hall with a sweeping staircase, a portrait-lined gallery, a smoke-filled library lined with leather-bound books, a parlor with firelight and velvet furniture, a conservatory with stained glass, and a dusty butler's pantry in the rear. A well-dressed butler moves ahead, speaking the history of the family as key rooms come into view.",
+    "role": "visitor",
+    "goal": "Walk through the mansion and listen to the butler's guided storytelling tour of the family's history.",
+    "fail": "none (exploratory tour; no win or lose state)",
+    "mood": "elegant, eerie, nostalgic",
+    "pack": "floor_plan",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Butler's guided narrative tour through a Victorian mansion",
+    "nouns": [
+      {
+        "noun": "mansion",
+        "hyper": "building"
+      },
+      {
+        "noun": "butler",
+        "hyper": "npc"
+      },
+      {
+        "noun": "tour",
+        "hyper": "guided_exploration"
+      },
+      {
+        "noun": "history",
+        "hyper": "narrative"
+      },
+      {
+        "noun": "hall",
+        "hyper": "room"
+      },
+      {
+        "noun": "staircase",
+        "hyper": "architecture"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.1,
+      "arousal": 0.25,
+      "tension": 0.55
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "064c878829679bdceb6f507d6ab9b7afbb4dc468d0f0174a47353fc3c3450b2f",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_tour",
+      "text": "Butler's guided narrative tour through a Victorian mansion",
+      "status": "verified",
+      "method": "kinematic reachability (jump apex model)"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 0 rules reference existing things",
+        "src": ""
+      },
+      {
+        "id": "T1:x_tour",
+        "tier": "T1",
+        "subject": {
+          "kind": "property",
+          "id": "x_tour"
+        },
+        "method": "kinematic reachability (jump apex model)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "Butler's guided narrative tour through a Victorian mansion",
+        "cx": null
+      },
+      {
+        "id": "T3:tour",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "tour"
+        },
+        "status": "played",
+        "method": "physics, an AI visitor walks to and uses each",
+        "n": 6,
+        "k": 6,
+        "text": "walked to and inspected 6 of 6 things",
+        "cx": null,
+        "src": "",
+        "ms": 31
+      }
+    ],
+    "par": null,
+    "ms": 54
+  }
+}

@@ -1,0 +1,22 @@
+{"op":"meta","mode":"play","lang":"en","pack":"floor_plan","sub":[],"seed":32,"look":"ancient temple","mood":[-0.1,0.2,0.3],"timeOfDay":12,"weather":"clear"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Temple entrance"}
+{"op":"zone","id":"z_hall","slot":"main_room","tag":"hall","name":"Inner sanctum"}
+{"op":"zone","id":"z_nw","slot":"room_nw","tag":"room","name":"Northwest chamber"}
+{"op":"zone","id":"z_ne","slot":"room_ne","slot":"room_ne","tag":"room","name":"Northeast chamber"}
+{"op":"spawn","id":"sp_red","zone":"z_entrance","anchor":"center","team":"red"}
+{"op":"goal","id":"sealed_door","zone":"z_hall","anchor":"doorway_s","noun":"sealed door","hyper":"door","team":"red"}
+{"op":"ent","id":"torch_sw","kind":"switch","noun":"torch","hyper":"torch","zone":"z_sw","anchor":"center","body":"sensor","shape":"box"}
+{"op":"ent","id":"torch_se","kind":"switch","noun":"torch","hyper":"torch","zone":"z_se","anchor":"center","body":"sensor","shape":"box"}
+{"op":"ent","id":"torch_nw","kind":"switch","noun":"torch","hyper":"torch","zone":"z_nw","anchor":"center","body":"sensor","shape":"box"}
+{"op":"ent","id":"torch_ne","kind":"switch","noun":"torch","hyper":"torch","zone":"z_ne","anchor":"center","body":"sensor","shape":"box"}
+{"op":"ent","id":"door_gate","kind":"door","noun":"sealed door","hyper":"door","zone":"z_hall","anchor":"doorway_s","body":"fixed","shape":"box"}
+{"op":"verb","id":"vb_switch_sw","verb":"puzzle.switch","on":"torch_sw","params":{"once":false}}
+{"op":"verb","id":"vb_switch_se","verb":"puzzle.switch","on":"torch_se","params":{"once":false}}
+{"op":"verb","id":"vb_switch_nw","verb":"puzzle.switch","on":"torch_nw","params":{"once":false}}
+{"op":"verb","id":"vb_switch_ne","verb":"puzzle.switch","on":"torch_ne","params":{"once":false}}
+{"op":"verb","id":"vb_law","verb":"locomotion.jump","on":"player","params":{"jumpsMax":2}}
+{"op":"rule","id":"r_open_door","when":{"t":"state_is","a":"torch_sw","s":"on"},"if":[{"l":"torch_sw.state","op":"eq","r":"on"},{"l":"torch_se.state","op":"eq","r":"on"},{"l":"torch_nw.state","op":"eq","r":"on"},{"l":"torch_ne.state","op":"eq","r":"on"}],"then":[{"e":"set_state","target":"door_gate","v":"open"}],"once":false}
+{"op":"rule","id":"r_win","when":{"t":"enter","a":"player","b":"sealed_door"},"if":[{"l":"door_gate.state","op":"eq","r":"open"}],"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"expect","id":"x_lights","prop":"win_reachable","a":"sp_red","b":"sealed_door","headline":true,"text":"Must locate and ignite all four torches to open the door"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

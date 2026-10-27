@@ -1,0 +1,22 @@
+{"op":"meta","mode":"play","lang":"en","pack":"arena","sub":[],"seed":31,"look":"paintball arena","mood":[0.6,0.9,0.7],"timeOfDay":14,"weather":"clear"}
+{"op":"zone","id":"z_mid","slot":"midfield","tag":"field","name":"Central arena"}
+{"op":"zone","id":"z_west","slot":"west_half","tag":"base","name":"West base"}
+{"op":"zone","id":"z_east","slot":"east_half","tag":"base","name":"East base"}
+{"op":"spawn","id":"sp_blue","zone":"z_mid","anchor":"spawn_pad","team":"blue"}
+{"op":"ent","id":"red_npc_1","kind":"npc","noun":"red player","hyper":"player","zone":"z_west","anchor":"spawn_pad","body":"dynamic","shape":"capsule","team":"red"}
+{"op":"ent","id":"red_npc_2","kind":"npc","noun":"red player","hyper":"player","zone":"z_east","anchor":"spawn_pad","body":"dynamic","shape":"capsule","team":"red"}
+{"op":"ent","id":"red_npc_3","kind":"npc","noun":"red player","hyper":"player","zone":"z_mid","anchor":"center_n","body":"dynamic","shape":"capsule","team":"red"}
+{"op":"ent","id":"paintball","kind":"pickup","noun":"paintball","hyper":"projectile","zone":"z_mid","anchor":"center","body":"dynamic","shape":"sphere","size":[0.05,0.05,0.05]}
+{"op":"verb","id":"vb_carry_pb","verb":"physics_props.carry","on":"paintball","params":{}}
+{"op":"verb","id":"vb_tag","verb":"combat_sport.tag_drop","on":"player","params":{"radius":2}}
+{"op":"rule","id":"r_tag_score","when":{"t":"hit","a":"player","b":"red_npc_1"},"if":[],"then":[{"e":"score","target":"team:blue","n":1}],"once":false}
+{"op":"rule","id":"r_tag_score2","when":{"t":"hit","a":"player","b":"red_npc_2"},"if":[],"then":[{"e":"score","target":"team:blue","n":1}],"once":false}
+{"op":"rule","id":"r_tag_score3","when":{"t":"hit","a":"player","b":"red_npc_3"},"if":[],"then":[{"e":"score","target":"team:blue","n":1}],"once":false}
+{"op":"rule","id":"r_win","when":{"t":"score_gte","a":"team:blue","n":3},"if":[],"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose","when":{"t":"hit","a":"red_npc_1","b":"player"},"if":[],"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose2","when":{"t":"hit","a":"red_npc_2","b":"player"},"if":[],"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose3","when":{"t":"hit","a":"red_npc_3","b":"player"},"if":[],"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":6}}
+{"op":"expect","id":"x_victory","prop":"win_reachable","a":"sp_blue","b":"z_mid","headline":true,"text":"Victory requires tagging 3 opponents"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

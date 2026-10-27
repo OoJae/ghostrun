@@ -1,0 +1,21 @@
+{"op":"meta","mode":"wander","lang":"en","pack":"floor_plan","sub":[],"seed":18,"look":"electric car showroom","mood":[0.8,0.3,0.1],"timeOfDay":12,"weather":"clear"}
+{"op":"zone","id":"z_yard","slot":"yard","tag":"outside","name":"Showroom entrance plaza"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Main Entrance Hall"}
+{"op":"zone","id":"z_showroom","slot":"main_room","tag":"hall","name":"Showroom Floor"}
+{"op":"zone","id":"z_ramp","slot":"room_sw","tag":"room","name":"Display Ramp Area"}
+{"op":"zone","id":"z_cutaway","slot":"room_se","tag":"room","name":"Charge Bay Cutaway Exhibit"}
+{"op":"spawn","id":"sp_red","zone":"z_yard","anchor":"spawn_pad","team":"red"}
+{"op":"ent","id":"salesperson_npc","kind":"npc","noun":"salesperson","hyper":"demo presenter","zone":"z_entrance","anchor":"center","body":"fixed","shape":"box"}
+{"op":"ent","id":"car_model","kind":"prop","noun":"electric car","hyper":"showroom vehicle","zone":"z_showroom","anchor":"center","body":"fixed","shape":"box","size":[2.0,1.5,4.5]}
+{"op":"ent","id":"range_map","kind":"prop","noun":"range map","hyper":"interactive display","zone":"z_ramp","anchor":"corner_sw","body":"fixed","shape":"box","size":[1.2,0.1,0.8]}
+{"op":"ent","id":"charge_bay","kind":"prop","noun":"charge bay","hyper":"cutaway exhibit","zone":"z_cutaway","anchor":"center","body":"fixed","shape":"box","size":[2.0,1.5,2.0]}
+{"op":"ent","id":"info_panel","kind":"sign","noun":"info panel","hyper":"exhibit sign","zone":"z_showroom","anchor":"corner_ne","body":"fixed","shape":"box","size":[0.8,0.6,0.1]}
+{"op":"verb","id":"vb_inspect_salesperson","verb":"social.inspect","on":"salesperson_npc","params":{"text":"Welcome! Let me show you our flagship EV's range."}}
+{"op":"verb","id":"vb_inspect_car","verb":"social.inspect","on":"car_model","params":{"text":"Sleek design, 0‑100 km/h in 3.2 s, 500 km range."}}
+{"op":"verb","id":"vb_inspect_map","verb":"social.inspect","on":"range_map","params":{"text":"Touch to view real‑time range based on battery level."}}
+{"op":"verb","id":"vb_inspect_bay","verb":"social.inspect","on":"charge_bay","params":{"text":"Approach to see the vehicle's current range figure."}}
+{"op":"verb","id":"vb_inspect_panel","verb":"social.inspect","on":"info_panel","params":{"text":"All EVs here are zero‑emission and feature fast charging."}}
+{"op":"npc","id":"guide_1","role":"guide","zone":"z_entrance","anchor":"doorway_n","team":"","menu":["guide.tour"],"dflt":"guide.tour"}
+{"op":"expect","id":"x_cutaway","prop":"headline","a":"sp_red","b":"charge_bay","headline":true,"text":"Interactive charge-bay cutaway must display the vehicle's range figure when approached"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

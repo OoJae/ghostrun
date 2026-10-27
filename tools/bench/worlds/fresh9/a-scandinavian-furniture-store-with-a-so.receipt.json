@@ -1,0 +1,88 @@
+{
+  "prompt": "A Scandinavian furniture store with a sofa, a lamp and a rug to look at",
+  "intent": {
+    "lang": "en",
+    "mode": "wander",
+    "genre": "showroom",
+    "setting": "A minimalist Scandinavian furniture showroom with light wood floors, white walls, a feature sofa, a lamp and a woven rug arranged as a vignette.",
+    "role": "Visitor",
+    "goal": "Stroll through the store and look at the sofa, lamp and rug",
+    "fail": "",
+    "mood": "calm and cozy",
+    "pack": "floor_plan",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Showroom vignette shows a sofa, a lamp and a rug",
+    "nouns": [
+      {
+        "noun": "sofa",
+        "hyper": "furniture"
+      },
+      {
+        "noun": "lamp",
+        "hyper": "lighting fixture"
+      },
+      {
+        "noun": "rug",
+        "hyper": "floor covering"
+      },
+      {
+        "noun": "furniture store",
+        "hyper": "retail showroom"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.6,
+      "arousal": 0.2,
+      "tension": -0.4
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "1616d3ca8880dd2ab25ba24e28e5cfb7e617b6a6ca7e8ebff65751542d9cc70b",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_showroom",
+      "text": "Showroom vignette shows a sofa, a lamp and a rug",
+      "status": "not_checkable",
+      "method": "none"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 0 rules reference existing things",
+        "src": ""
+      },
+      {
+        "id": "T3:tour",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "tour"
+        },
+        "status": "played",
+        "method": "physics, an AI visitor walks to and uses each",
+        "n": 4,
+        "k": 4,
+        "text": "walked to and inspected 4 of 4 things",
+        "cx": null,
+        "src": "",
+        "ms": 57
+      }
+    ],
+    "par": null,
+    "ms": 73
+  }
+}
