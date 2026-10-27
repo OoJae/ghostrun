@@ -6,10 +6,20 @@
     ".": "./src/index.ts",
     "./handler": "./src/handler.ts"
   },
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "test:workerd": "node scripts/build.mjs && node scripts/test-workerd.mjs",
+    "judge-token": "node scripts/judge-token.mjs"
+  },
   "dependencies": {
     "@ghostrun/ir": "workspace:*",
     "@ghostrun/llm": "workspace:*",
     "@ghostrun/registry": "workspace:*",
+    "@ghostrun/sim": "workspace:*",
     "valibot": "catalog:"
+  },
+  "devDependencies": {
+    "vite": "catalog:",
+    "workerd": "1.20261019.1"
   }
 }

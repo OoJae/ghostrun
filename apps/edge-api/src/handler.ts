@@ -2,101 +2,219 @@
 // POST /v1/build streams the fast lane as server-sent events:
 //   intent {intent, ms}  →  op {i, line} per complete JSONL fill line  →  done {timings}
 // Keys never leave the server. The client parses ops into the IR, places, simulates and proves.
+// Every route but health sits behind the gate (gate.ts). A build reserves its worst-case cost with
+// the governor before any model call and commits the metered cost when it ends (governor.ts).
 import { DEFAULT_LAWS } from "@ghostrun/ir";
 import { chatJson, fillMessages, IntentOut, intentJsonSchema, intentMessages, LlmError, streamChat } from "@ghostrun/llm";
 import { ALL_SUBS, PACKS, packFor } from "@ghostrun/registry";
 import * as v from "valibot";
 import EXAMPLE from "../../../packages/ir/fixtures/ctf-neon.jsonl?raw";
+import { Buckets, intVar, WINDOW_MS } from "./buckets";
+import type { DoNamespace, KvNamespace, R2Bucket, WaitUntil } from "./cf";
+import { buildEstimate, costMicroUsd, FILL_MAX_OUT, FILL_MODEL, INTENT_MAX_OUT, INTENT_MODEL } from "./cost";
+import { capsFromEnv, doCall, Governor, governorClient, localCall, MemoryLedger, type GovernorApi, type GovernorEnv } from "./governor";
+import { devOpen, gateMode, identify, ipKey, ipOf, mintSession, verifyTurnstile, type GateEnv } from "./gate";
+import { json, ntfy, readJson } from "./http";
+import { getShare, memoryBlobs, postReport, postShare, postWrong, r2Blobs, type BlobStore, type ShareCtx } from "./share";
 
-export interface Env {
+export interface Env extends GateEnv, GovernorEnv {
   CEREBRAS_API_KEY: string;
-  /** Per-isolate guard until the Durable Object governor lands: builds per IP per window. */
+  /** Public Turnstile sitekey, echoed by /v1/health for the client widget. */
+  TURNSTILE_SITEKEY?: string;
+  /** Tokenless builds per IP per isolate per 10 min (default 30). */
   BUILDS_PER_WINDOW?: string;
+  /** Session/share/report/wrong requests per IP per isolate per 10 min (default 60). */
+  RATE_PER_WINDOW?: string;
+  /** Builds per judge token per isolate per 10 min while the governor is unreachable (default 10). */
+  JUDGE_FALLBACK_PER_WINDOW?: string;
+  /** How long a build waits for the governor's reservation answer (default 300 ms). */
+  GOVERNOR_TIMEOUT_MS?: string;
+  GOVERNOR?: DoNamespace;
+  FLAGS?: KvNamespace;
+  SHARES?: R2Bucket;
 }
 
 const MAX_PROMPT = 500;
-const WINDOW_MS = 10 * 60 * 1000;
-const buckets = new Map<string, { n: number; since: number }>();
+/** KV key in FLAGS: any value pauses new builds (an instant, deploy-free kill switch). */
+export const PAUSE_FLAG = "builds:paused";
 
-function allow(ip: string, limit: number, now: number): boolean {
-  const b = buckets.get(ip);
-  if (!b || now - b.since > WINDOW_MS) {
-    buckets.set(ip, { n: 1, since: now });
-    return true;
-  }
-  if (b.n >= limit) return false;
-  b.n++;
-  return true;
+const buildBuckets = new Buckets();
+const apiBuckets = new Buckets();
+const judgeBuckets = new Buckets();
+let devGovernor: Governor | undefined;
+let devBlobs: BlobStore | undefined;
+
+function governorFor(env: Env, url: URL): GovernorApi | undefined {
+  const ms = intVar(env.GOVERNOR_TIMEOUT_MS, 300);
+  if (env.GOVERNOR) return governorClient(doCall(env.GOVERNOR), ms, ms * 10);
+  if (!devOpen(env, url)) return undefined;
+  devGovernor ??= new Governor(new MemoryLedger(), capsFromEnv(env));
+  return governorClient(localCall(devGovernor), ms, ms * 10);
 }
 
-const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json" } });
+function blobsFor(env: Env, url: URL): BlobStore | undefined {
+  if (env.SHARES) return r2Blobs(env.SHARES);
+  return devOpen(env, url) ? (devBlobs ??= memoryBlobs()) : undefined;
+}
 
-export async function handle(req: Request, env: Env): Promise<Response> {
-  const url = new URL(req.url);
-  if (url.pathname === "/v1/health") return json({ ok: true, packs: PACKS.map((p) => p.id), llm: Boolean(env.CEREBRAS_API_KEY) });
-  if (url.pathname !== "/v1/build" || req.method !== "POST") return json({ error: "not found" }, 404);
-  if (!env.CEREBRAS_API_KEY) return json({ error: "llm not configured" }, 503);
-
-  const ip = req.headers.get("cf-connecting-ip") ?? req.headers.get("x-forwarded-for") ?? "local";
-  if (!allow(ip, Number(env.BUILDS_PER_WINDOW ?? 30), Date.now())) return json({ error: "rate limited", retryMs: WINDOW_MS }, 429);
-
-  let input: { prompt?: unknown; seed?: unknown };
+async function paused(env: Env): Promise<boolean> {
   try {
-    input = (await req.json()) as typeof input;
+    return (await env.FLAGS?.get(PAUSE_FLAG, { cacheTtl: 60 })) != null;
   } catch {
-    return json({ error: "bad json" }, 400);
+    return false;
   }
+}
+
+export async function handle(req: Request, env: Env, ctx?: WaitUntil): Promise<Response> {
+  const url = new URL(req.url);
+  const path = url.pathname;
+  const later = (p: Promise<unknown>) => (ctx ? ctx.waitUntil(p) : void p.catch(() => undefined));
+  if (path === "/v1/health") return json({ ok: true, packs: PACKS.map((p) => p.id), llm: Boolean(env.CEREBRAS_API_KEY), gate: gateMode(env, url), sitekey: env.TURNSTILE_SITEKEY ?? null });
+  if (path === "/v1/session" && req.method === "POST") return session(req, env, url);
+  if (path === "/v1/build" && req.method === "POST") return build(req, env, url, later);
+  const shareId = /^\/v1\/share\/([a-z2-7]{16})$/.exec(path)?.[1];
+  const post = req.method === "POST";
+  const route =
+    path === "/v1/share" && post ? postShare
+    : path === "/v1/report" && post ? postReport
+    : path === "/v1/wrong" && post ? postWrong
+    : shareId && req.method === "GET" ? (_: Request, c: ShareCtx) => getShare(shareId, c)
+    : undefined;
+  if (!route) return json({ error: "not found" }, 404);
+
+  const gate = await identify(req, url, env);
+  if (!gate.ok) return json(gate.body, gate.status);
+  const ip = ipOf(req);
+  if (!apiBuckets.allow(ip, intVar(env.RATE_PER_WINDOW, 60))) return json({ error: "rate limited", retryMs: WINDOW_MS }, 429);
+  const store = blobsFor(env, url);
+  if (!store) return json({ error: "share store not configured" }, 503);
+  const notify = (title: string, body: string) => env.NTFY_URL && later(ntfy(env.NTFY_URL, title, body));
+  try {
+    return await route(req, { store, caller: gate.caller, ip: await ipKey(env, ip), notify });
+  } catch {
+    return json({ error: "share store unavailable", retryable: true }, 503);
+  }
+}
+
+async function session(req: Request, env: Env, url: URL): Promise<Response> {
+  const ip = ipOf(req);
+  if (!apiBuckets.allow(ip, intVar(env.RATE_PER_WINDOW, 60))) return json({ error: "rate limited", retryMs: WINDOW_MS }, 429);
+  if (!env.TURNSTILE_SECRET) return devOpen(env, url) ? json({ ok: true, dev: true }) : json({ error: "turnstile not configured", retryable: false }, 503);
+  if (!env.SESSION_SECRET) return json({ error: "gate misconfigured", retryable: false }, 503);
+  const body = await readJson(req, 4096);
+  if (!body.ok) return json({ error: body.error }, body.status);
+  const verdict = await verifyTurnstile((body.value as { token?: unknown } | null)?.token, env.TURNSTILE_SECRET, ip, env.TURNSTILE_HOSTNAMES);
+  if (!verdict.ok) return json({ error: "turnstile failed", codes: verdict.codes, retryable: verdict.status === 503 }, verdict.status);
+  const s = await mintSession(env.SESSION_SECRET);
+  return json({ ok: true, expiresAt: s.exp * 1000 }, 200, { "set-cookie": s.cookie });
+}
+
+async function build(req: Request, env: Env, url: URL, later: (p: Promise<unknown>) => void): Promise<Response> {
+  if (!env.CEREBRAS_API_KEY) return json({ error: "llm not configured" }, 503);
+  const gate = await identify(req, url, env);
+  if (!gate.ok) return json(gate.body, gate.status);
+  const caller = gate.caller;
+  const ip = ipOf(req);
+  // Judges may share one NAT; their tokens are bounded by session caps instead.
+  if (caller.via !== "token" && !buildBuckets.allow(ip, intVar(env.BUILDS_PER_WINDOW, 30))) return json({ error: "rate limited", retryMs: WINDOW_MS }, 429);
+
+  const body = await readJson(req, 8192);
+  if (!body.ok) return json({ error: body.error }, body.status);
+  const input = (body.value ?? {}) as { prompt?: unknown; seed?: unknown };
   const prompt = typeof input.prompt === "string" ? input.prompt.trim().slice(0, MAX_PROMPT) : "";
   if (!prompt) return json({ error: "empty prompt" }, 400);
   const seed = Number.isInteger(input.seed) ? (input.seed as number) : 1 + Math.floor(Date.now() % 100000);
+  if (await paused(env)) return json({ error: "builds paused", retryable: true }, 503);
+
+  // Reserve the worst case first. No answer in time: tokenless traffic fails closed; a judge token
+  // falls back to a per-isolate bucket and the spend is recorded after the fact.
+  const intentMsgs = intentMessages(prompt, PACKS);
+  const est = buildEstimate(intentMsgs);
+  const gov = governorFor(env, url);
+  const who = { pool: caller.pool, ...(caller.session ? { session: caller.session } : {}), ip: await ipKey(env, ip) };
+  const hold = gov ? await gov.reserve({ ...who, estimateMicroUsd: est.intent + est.fill }) : ({ ok: false, reason: "unavailable" } as const);
+  let settle: (microUsd: number) => Promise<unknown>;
+  if (hold.ok) settle = (m) => gov!.commit(hold.id, m);
+  else if (hold.reason !== "unavailable") return json({ error: "budget", reason: hold.reason, retryable: false }, 429);
+  else if (caller.via !== "token") return json({ error: "governor unavailable", retryable: true }, 503);
+  else if (!judgeBuckets.allow(caller.session ?? ip, intVar(env.JUDGE_FALLBACK_PER_WINDOW, 10))) return json({ error: "rate limited", retryMs: WINDOW_MS }, 429);
+  else settle = (m) => gov?.record({ ...who, actualMicroUsd: m }) ?? Promise.resolve();
 
   const enc = new TextEncoder();
   const { readable, writable } = new TransformStream<Uint8Array, Uint8Array>();
   const w = writable.getWriter();
-  const send = (event: string, data: unknown) => w.write(enc.encode(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`));
-
-  (async () => {
-    const t0 = Date.now();
+  const upstream = new AbortController();
+  let gone = false;
+  const send = async (event: string, data: unknown) => {
+    if (gone) return;
     try {
-      const intentRes = await chatJson<unknown>({
-        apiKey: env.CEREBRAS_API_KEY,
-        model: "qwen-3.8-27b",
-        reasoningEffort: "none",
-        messages: intentMessages(prompt, PACKS),
-        jsonSchema: { name: "intent", schema: intentJsonSchema(PACKS.map((p) => p.id), ALL_SUBS) },
-        maxTokens: 800,
-      });
-      const intent = v.parse(IntentOut, intentRes.value);
-      await send("intent", { intent, seed, ms: Date.now() - t0 });
-      if (intent.safety === "block") {
-        await send("refusal", { message: "That one's outside what GHOSTRUN builds. Try a game, a place or a challenge." });
-        return;
-      }
-      const pack = packFor(intent.pack);
-      const layout = pack.generate({ seed, params: pack.defaults, sub: intent.sub, laws: DEFAULT_LAWS, harder: false });
-      let buf = "";
-      let i = 0;
-      let firstMs = -1;
-      for await (const ev of streamChat({ apiKey: env.CEREBRAS_API_KEY, model: "gpt-oss-120b", reasoningEffort: "low", maxTokens: 6000, messages: fillMessages(prompt, intent, layout, EXAMPLE, seed) })) {
-        if (ev.type === "first_token") firstMs = Date.now() - t0;
-        if (ev.type !== "text") continue;
-        buf += ev.delta;
-        let nl: number;
-        while ((nl = buf.indexOf("\n")) >= 0) {
-          const line = buf.slice(0, nl).trim();
-          buf = buf.slice(nl + 1);
-          if (line) await send("op", { i: i++, line });
-        }
-      }
-      if (buf.trim()) await send("op", { i: i++, line: buf.trim() });
-      await send("done", { intentMs: intentRes.ms, fillFirstTokenMs: firstMs, totalMs: Date.now() - t0, lines: i });
-    } catch (e) {
-      const retryable = e instanceof LlmError ? e.retryable : true;
-      await send("error", { message: e instanceof Error ? e.message.slice(0, 200) : "build failed", retryable });
-    } finally {
-      await w.close();
+      await w.write(enc.encode(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`));
+    } catch {
+      gone = true; // the client left: stop paying for tokens nobody will read
+      upstream.abort();
     }
-  })();
+  };
+
+  later(
+    (async () => {
+      const t0 = Date.now();
+      // A call is charged at its estimate until it reports usage (fail closed); an HTTP error is free.
+      let phase: "intent" | "fill" | "after" = "intent";
+      let intentCost = est.intent;
+      let fillCost = 0;
+      try {
+        const intentRes = await chatJson<unknown>({
+          apiKey: env.CEREBRAS_API_KEY,
+          model: INTENT_MODEL,
+          reasoningEffort: "none",
+          messages: intentMsgs,
+          jsonSchema: { name: "intent", schema: intentJsonSchema(PACKS.map((p) => p.id), ALL_SUBS) },
+          maxTokens: INTENT_MAX_OUT,
+          signal: upstream.signal,
+        });
+        if (intentRes.inTok > 0) intentCost = costMicroUsd(INTENT_MODEL, intentRes.inTok, intentRes.outTok);
+        const intent = v.parse(IntentOut, intentRes.value);
+        await send("intent", { intent, seed, ms: Date.now() - t0 });
+        if (intent.safety === "block") {
+          await send("refusal", { message: "That one's outside what GHOSTRUN builds. Try a game, a place or a challenge." });
+          return;
+        }
+        const pack = packFor(intent.pack);
+        const layout = pack.generate({ seed, params: pack.defaults, sub: intent.sub, laws: DEFAULT_LAWS, harder: false });
+        phase = "fill";
+        fillCost = est.fill;
+        let buf = "";
+        let i = 0;
+        let firstMs = -1;
+        const stream = streamChat({ apiKey: env.CEREBRAS_API_KEY, model: FILL_MODEL, reasoningEffort: "low", maxTokens: FILL_MAX_OUT, messages: fillMessages(prompt, intent, layout, EXAMPLE, seed), signal: upstream.signal });
+        for await (const ev of stream) {
+          if (ev.type === "usage") fillCost = costMicroUsd(FILL_MODEL, ev.inTok, ev.outTok);
+          if (ev.type === "first_token") firstMs = Date.now() - t0;
+          if (ev.type !== "text") continue;
+          buf += ev.delta;
+          let nl: number;
+          while ((nl = buf.indexOf("\n")) >= 0) {
+            const line = buf.slice(0, nl).trim();
+            buf = buf.slice(nl + 1);
+            if (line) await send("op", { i: i++, line });
+          }
+        }
+        phase = "after";
+        if (buf.trim()) await send("op", { i: i++, line: buf.trim() });
+        await send("done", { intentMs: intentRes.ms, fillFirstTokenMs: firstMs, totalMs: Date.now() - t0, lines: i });
+      } catch (e) {
+        if (e instanceof LlmError && e.status !== 200) {
+          if (phase === "intent") intentCost = 0;
+          if (phase === "fill") fillCost = 0;
+        }
+        const retryable = e instanceof LlmError ? e.retryable : true;
+        await send("error", { message: e instanceof Error ? e.message.slice(0, 200) : "build failed", retryable });
+      } finally {
+        await w.close().catch(() => undefined);
+        await settle(intentCost + fillCost).catch(() => undefined);
+      }
+    })(),
+  );
 
   return new Response(readable, {
     headers: { "content-type": "text/event-stream", "cache-control": "no-store", "x-accel-buffering": "no" },
