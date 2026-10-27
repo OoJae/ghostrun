@@ -82,6 +82,8 @@ export class SimWorld {
   #emit: (k: string, a: string, b?: string, v?: number | string) => void = () => {};
   #checkpoint = new Map<string, Vec3>();
   #useHeld = new Set<string>();
+  /** Items thrown with combat_sport.throw: only the player picks them up. */
+  readonly #thrown = new Set<string>();
   #agents: string[] = [];
 
   constructor(R: Rapier, bundle: WorldBundle, opts: SimOptions = {}) {
@@ -137,6 +139,7 @@ export class SimWorld {
       const e = this.ents.get(bound.on);
       if (e && !e.init && plugin.initial) e.state = e.init = plugin.initial;
     }
+    for (const v of bundle.verbs) if (v.verb === "combat_sport.throw") this.#thrown.add(v.on);
     this.#ctx = this.#makeCtx();
     for (const { plugin, bound } of this.verbs) plugin.init?.(this.#ctx, bound);
   }
@@ -429,6 +432,7 @@ export class SimWorld {
       for (const agentId of this.order) {
         const ag = this.ents.get(agentId)!;
         if (!ag.agent && agentId !== "player") continue;
+        if (agentId !== "player" && this.#thrown.has(itemId)) continue; // bots don't throw: they'd only hoard the ball
         if (ag.carrying || ag.destroyed || (this.#noPickup.get(agentId) ?? 0) > t) continue;
         if (this.#touching(agentId, itemId)) {
           this.attach(itemId, agentId);
@@ -464,6 +468,7 @@ export class SimWorld {
       this.#fire(evs[i]!, i, push);
       if (this.result) break;
     }
+    const scoredFrom = evs.length;
     for (const r of this.#rules) {
       if (this.result) break;
       if (r.when.t === "score_gte" && (this.scores[r.when.a] ?? 0) >= r.when.n) {
@@ -472,6 +477,9 @@ export class SimWorld {
         this.#fire(evs[idx]!, idx, push, r);
       }
     }
+    // what a score threshold sets off cascades too (three points open the door, the open door wins);
+    // thresholds themselves are checked once per tick, so their own events aren't fired again
+    for (let i = scoredFrom; i < evs.length && i < 512 && !this.result; i++) if (evs[i]!.k !== "score_gte") this.#fire(evs[i]!, i, push);
 
     // 6. state hash over everything that moves or counts
     const buf = new Float64Array(this.order.length * 3 + 4);

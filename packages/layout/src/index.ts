@@ -199,7 +199,7 @@ export function placeWorld(input: WorldBundle, layout: PackLayout): PlaceResult 
   }
   // wins first: a win rule the repairs add (reach the goal) gets the same trigger and verb repairs
   notes.push(...repairSpawnRefs(b), ...repairAreas(b, bound), ...repairKits(b), ...repairWin(b), ...repairTriggers(b), ...repairVerbs(b), ...repairExpects(b));
-  notes.push(...repairDeliveries(b, layout, bound), ...addSecrets(b, layout, bound));
+  notes.push(...addRivals(b), ...repairDeliveries(b, layout, bound), ...addSecrets(b, layout, bound));
   return { bundle: b, notes };
 }
 
@@ -247,6 +247,29 @@ export function repairDeliveries(b: WorldBundle, layout: PackLayout, bound: Map<
     item.pos = [best.pos[0], best.pos[1] + item.size[1] / 2, best.pos[2]];
   }
   return notes;
+}
+
+/**
+ * A throwing game with no one to throw at (a snowball fight whose fill forgot the other team)
+ * gets two rivals at the rival spawn, playing the usual rival options. Logged.
+ */
+export function addRivals(b: WorldBundle): string[] {
+  if (b.mode !== "play" || !b.verbs.some((v) => v.verb === "combat_sport.throw")) return [];
+  const spawnOf = (t: string) => b.entities.find((e) => e.kind === "spawn" && e.team === t);
+  const mine = !spawnOf("red") && spawnOf("blue") ? "blue" : "red";
+  const them = mine === "red" ? "blue" : "red";
+  if (b.entities.some((e) => e.kind === "npc" && e.team !== mine)) return [];
+  const at = spawnOf(them) ?? b.entities.find((e) => e.kind === "spawn" && e.team !== mine);
+  const home = at?.pos ?? [0, 0, 0];
+  const menu = ["rival.attack", "rival.defend", "rival.intercept"];
+  const added: string[] = [];
+  for (const [k, dz] of [[1, -1.5], [2, 1.5]] as const) {
+    const id = uniqueId(b, `rival_${k}`);
+    b.entities.push({ id, src: "template", layer: "gameplay", kind: "npc", zone: at?.zone ?? b.zones[0]?.id ?? "", anchor: at?.anchor ?? "", pos: [home[0], home[1] + 0.9, home[2] + dz], rotY: 0, size: [0.7, 1.8, 0.7], noun: `rival ${k}`, hyper: "person", asset: "", body: "kinematic", shape: "capsule", team: them, tags: [], states: [], init: "", props: {} });
+    b.cast.push({ id: uniqueId(b, `k_${id}`), src: "template", layer: "gameplay", npc: id, role: "rival", minded: false, persona: { identity: "", personality: "", knowledge: "", replyStyle: "", tools: [], safety: "" }, coneDeg: 70, rangeM: 12, hearM: 8, menu, dflt: k === 1 ? "rival.attack" : "rival.defend", utility: {}, memory: 0 });
+    added.push(id);
+  }
+  return [`added ${added.join(" and ")} on the ${them} side: a throwing game needs someone to throw at`];
 }
 
 /** What a secret is called in each pack (cosmetic: the rule and the count are the same everywhere). */

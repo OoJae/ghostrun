@@ -11,7 +11,7 @@
    "firstPass": 0,
    "now": 0,
    "playableP50Ms": 3237,
-   "controlsP50": 9
+   "controlsP50": 10
   },
   {
    "name": "fresh",
@@ -20,7 +20,7 @@
    "play": 13,
    "places": 1,
    "firstPass": 6,
-   "now": 9,
+   "now": 10,
    "playableP50Ms": 2849,
    "controlsP50": 9
   },

@@ -34,11 +34,11 @@ export const throwVerb: VerbPlugin = {
       if (!target) return false;
       // the hit first, the release next tick: rules see who threw it ("IF ball.carrier.team eq red")
       c.emit("hit", target, b.on);
-      b.mem.release = 1;
+      b.mem.release = c.tick + 1; // verbs tick before rules: let go on the next tick, after the rules have seen the hit
     },
   },
   tick(c, b) {
-    if (!b.mem.release) return;
+    if (!b.mem.release || c.tick < Number(b.mem.release)) return;
     b.mem.release = 0;
     c.release(b.on, c.ent(b.on)!.home); // back in play where it started (not at their feet, or they'd simply keep it)
   },

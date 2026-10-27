@@ -210,3 +210,20 @@ describe("putting things down", () => {
     expect(sim.entity("orb")?.carrier).toBe(""); // a second before it can be picked up again
   });
 });
+
+describe("rule cascades", () => {
+  it("what a score threshold sets off cascades in the same tick: points open the door, the open door wins", () => {
+    const sim = world(
+      [ent("door", "door", [6, 1.1, 0], [1, 2.2, 0.2], "kinematic")],
+      [],
+      [
+        { ...rule("r_open", { t: "score_gte", a: "team:red", n: 3 }, [{ e: "set_state", target: "door" }]), then: [{ e: "set_state", target: "door", v: "open", n: 0, fx: "" }], once: true },
+        { ...rule("r_win", { t: "state_is", a: "door", s: "open" }, [{ e: "win", target: "player" }]), once: true },
+      ],
+    );
+    sim.setScore("team:red", 3);
+    const evs = sim.step(null);
+    expect(evs.map((e) => e.k)).toEqual(expect.arrayContaining(["score_gte", "state", "win"]));
+    expect(sim.result).toBe("win");
+  });
+});
