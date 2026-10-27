@@ -76,12 +76,14 @@ export const FIXTURE_PROMPTS: Record<string, string> = {
 };
 
 /** Fill text (fixture or a live stream) → placed world, choosing the pack from the registry. */
-export function worldFromFill(fillText: string, seed: number, live?: Intent["live"]): World {
+export function worldFromFill(fillText: string, seed: number, live?: Intent["live"], packId?: string): World {
   const t0 = performance.now();
   const fill = parseFill(fillText, { seed });
   const t1 = performance.now();
 
   const draft = fill.draft;
+  // place into the pack the fill was written against (its meta line sometimes names another)
+  if (packId && PACKS.some((p) => p.id === packId)) draft.pack = { ...draft.pack, id: packId };
   const known = PACKS.some((p) => p.id === draft.pack.id);
   const pack = packFor(draft.pack.id);
   const layout = pack.generate({ seed, params: pack.defaults, sub: draft.pack.sub, laws: draft.laws, harder: false });

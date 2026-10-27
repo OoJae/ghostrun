@@ -1,7 +1,7 @@
 // ghostrun CLI: verify a saved fill, build a world from a prompt with the live fast lane, or
 // benchmark the fast lane over a prompt list (spike S2: our pipeline's timings, not vendor
 // comparisons).
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { FillParser, parseFill, type WorldBundle } from "@ghostrun/ir";
 import { placeWorld } from "@ghostrun/layout";
@@ -29,8 +29,9 @@ function loadDevVars() {
   }
 }
 
-function placeFromFill(text: string, seed: number): { bundle: WorldBundle; invalid: number; lines: number } {
+function placeFromFill(text: string, seed: number, packId?: string): { bundle: WorldBundle; invalid: number; lines: number } {
   const fill = parseFill(text, { seed });
+  if (packId) fill.draft.pack = { ...fill.draft.pack, id: packId };
   const pack = packFor(fill.draft.pack.id);
   const layout = pack.generate({ seed, params: pack.defaults, sub: fill.draft.pack.sub, laws: fill.draft.laws, harder: false });
   const placed = placeWorld({ ...fill.draft, engine: ENGINE }, layout);
@@ -109,7 +110,7 @@ async function build(prompt: string, seed: number, outDir: string | null): Promi
   if (gameplayEndMs < 0) gameplayEndMs = fillDoneMs;
 
   // 3. place + prove
-  const { bundle, invalid, lines } = placeFromFill(fillText, seed);
+  const { bundle, invalid, lines } = placeFromFill(fillText, seed, layout.packId);
   const playableMs = Math.round(now() - t0); // gameplay layer final + placed
   const R = await loadRapierNode();
   await loadNavNode();
@@ -147,6 +148,27 @@ async function main() {
     console.log(`INTENT: ${JSON.stringify(r.intent)}`);
     console.log(`TIMINGS (ms): ${JSON.stringify(r.timings)}`);
     printReceipt(r.receipt);
+  } else if (cmd === "rebench") {
+    // re-prove saved live fills offline (no LLM calls): what the deterministic repairs buy
+    const dir = args[0]!;
+    const R = await loadRapierNode();
+    await loadNavNode();
+    for (const f of readdirSync(dir).filter((x) => x.endsWith(".fill.jsonl")).sort()) {
+      const text = readFileSync(join(dir, f), "utf8");
+      const meta = JSON.parse(text.split("\n", 1)[0] ?? "{}") as { seed?: number };
+      const fill = parseFill(text, { seed: meta.seed ?? 7 });
+      const rp = join(dir, f.replace(".fill.jsonl", ".receipt.json"));
+      const intentPack = existsSync(rp) ? (JSON.parse(readFileSync(rp, "utf8")) as { intent?: { pack?: string } }).intent?.pack : undefined;
+      if (intentPack) fill.draft.pack = { ...fill.draft.pack, id: intentPack }; // the layout the fill was written against
+      const pack = packFor(fill.draft.pack.id);
+      const layout = pack.generate({ seed: meta.seed ?? 7, params: pack.defaults, sub: fill.draft.pack.sub, laws: fill.draft.laws, harder: false });
+      const placed = placeWorld({ ...fill.draft, engine: ENGINE }, layout);
+      const r = await prove(R, placed.bundle, { engine: ENGINE, runs: 12 });
+      const win = r.chips.find((c) => c.id === "T3:win");
+      const bad = r.chips.filter((c) => c.status === "counterexample").map((c) => c.id);
+      console.log(`${f.slice(0, 40).padEnd(40)} ${placed.bundle.mode.padEnd(6)} ctrl ${String(controlsOf(placed.bundle)).padStart(2)}  headline ${(r.headline?.status ?? "none").padEnd(14)} T3 ${win ? `${win.k}/${win.n}` : "-"}  par ${r.par?.goldS ?? "-"}  ${bad.length ? "✗ " + bad.join(" ") : ""}`);
+      for (const n of placed.notes.filter((x) => !x.startsWith("interior") && !x.startsWith("arena") && !x.startsWith("outdoor") && !x.startsWith("course"))) console.log(`    · ${n}`);
+    }
   } else if (cmd === "bench") {
     const prompts = readFileSync(args[0]!, "utf8").split("\n").map((l) => l.trim()).filter((l) => l && !l.startsWith("#"));
     const outDir = args.includes("--out") ? args[args.indexOf("--out") + 1]! : "bench-out";

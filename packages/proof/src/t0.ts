@@ -9,11 +9,17 @@ import type { Chip } from "./types";
 /** One step of the abstract plan T3 executes. */
 export type PlanStep =
   | { do: "pickup"; item: string; rule: string } // pick up `item`
-  | { do: "deliver"; item: string; sensor: string; rule: string; times: number } // bring `item` (or the player) into `sensor`
-  | { do: "use"; at: string; rule: string } // stand by `at` and press USE
-  | { do: "touch"; at: string; rule: string } // touch `at`
+  | { do: "deliver"; item: string; sensor: string; rule: string; times: number; want?: Want } // bring `item` (or the player) into `sensor`
+  | { do: "use"; at: string; rule: string; want?: Want } // stand by `at` and press USE
+  | { do: "touch"; at: string; rule: string; want?: Want } // touch `at`
   | { do: "collect"; items: string[]; rule: string; times: number } // touch `times` of `items`
   | { do: "wait"; rule: string }; // let time run (a timer)
+
+/** A precondition step is done when `id` is in state `s` (it has no rule of its own to watch). */
+export interface Want {
+  id: string;
+  s: string;
+}
 
 /** What each kit verb in the world can produce, and how an agent causes it. */
 export function producers(b: WorldBundle): Produces[] {
@@ -42,14 +48,15 @@ export function carryables(b: WorldBundle): Set<string> {
   return out;
 }
 
-export function causeSteps(c: Cause, rule: string): PlanStep[] {
+export function causeSteps(c: Cause, rule: string, want?: Want): PlanStep[] {
+  const w = want ? { want } : {};
   switch (c.do) {
     case "use":
-      return [...(c.holding ? [{ do: "pickup" as const, item: c.holding, rule: "" }] : []), { do: "use", at: c.at, rule }];
+      return [...(c.holding ? [{ do: "pickup" as const, item: c.holding, rule: "" }] : []), { do: "use", at: c.at, rule, ...w }];
     case "enter":
-      return [{ do: "deliver", item: "player", sensor: c.at, rule, times: 1 }];
+      return [{ do: "deliver", item: "player", sensor: c.at, rule, times: 1, ...w }];
     case "touch":
-      return [{ do: "touch", at: c.at, rule }];
+      return [{ do: "touch", at: c.at, rule, ...w }];
   }
 }
 
@@ -88,10 +95,32 @@ export function t0(b: WorldBundle, playerTeam: "red" | "blue" = "red"): { chips:
     if (depth > 8 || seen.has(r.id)) return null;
     const s2 = new Set(seen).add(r.id);
     const w = r.when;
-    // conditions: only "<item>.carrier.team eq T" needs work (the player must be on team T)
+    // conditions: "<item>.carrier.team eq T" needs the player on team T; "<id>.state eq S" is
+    // regressed to whatever makes it S (a verb's cause, or a rule that sets it), done first
+    const pre: PlanStep[] = [];
+    const preWhy: string[] = [];
     for (const c of r.if) {
       if (c.l.endsWith(".carrier.team") && c.op === "eq" && c.r !== playerTeam) return null;
+      const m = /^([a-z][a-z0-9_]*)\.state$/.exec(c.l);
+      if (!m || c.op !== "eq") continue;
+      const [id, want] = [m[1]!, String(c.r)];
+      if ((ents.get(id)?.states.length ? ents.get(id)!.init : "") === want) continue;
+      const p = made.find((x) => x.k === "state" && x.a === id && x.s === want && x.cause);
+      if (p) {
+        pre.push(...causeSteps(p.cause!, "", { id, s: want }));
+        preWhy.push(`${id} ${want}`);
+        continue;
+      }
+      const setter = rules.find((r2) => r2.id !== r.id && r2.then.some((e) => (e.e === "set_state" && e.target === id && String(e.v) === want) || (e.e === "open" && e.target === id && want === "open")));
+      const sub = setter && sat(setter, depth + 1, s2);
+      if (!sub) return null;
+      pre.push(...sub.steps);
+      preWhy.push(`${id} ${want}`);
     }
+    const withPre = (x: { steps: PlanStep[]; explain: string } | null) => (x && pre.length ? { steps: [...pre, ...x.steps], explain: `${x.explain} [after ${preWhy.join(", ")}]` } : x);
+    return withPre(satTrigger(r, w, depth, s2));
+  };
+  const satTrigger = (r: Rule, w: Rule["when"], depth: number, s2: Set<string>): { steps: PlanStep[]; explain: string } | null => {
     switch (w.t) {
       case "score_gte": {
         for (const r2 of rules) {
@@ -148,11 +177,11 @@ export function t0(b: WorldBundle, playerTeam: "red" | "blue" = "red"): { chips:
   for (const d of [...ents.values()].filter((e) => e.kind === "door").sort((x, y) => (x.id < y.id ? -1 : 1))) {
     const lock = made.find((x) => x.k === "state" && x.a === d.id && x.s === "open" && x.cause);
     if (lock) {
-      openers.set(d.id, causeSteps(lock.cause!, ""));
+      openers.set(d.id, causeSteps(lock.cause!, "", { id: d.id, s: "open" }));
       continue;
     }
     for (const r of rules) {
-      if (!r.then.some((e) => e.e === "open" && e.target === d.id)) continue;
+      if (!r.then.some((e) => (e.e === "open" || (e.e === "set_state" && e.v === "open")) && e.target === d.id)) continue;
       const s = sat(r, 1, new Set());
       if (s) {
         openers.set(d.id, s.steps);

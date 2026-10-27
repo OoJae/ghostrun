@@ -8,10 +8,13 @@ import type { Chip } from "./types";
 
 const MAX_TICKS = 120;
 
-/** Is a standing capsule at p clear of every static and solid entity? */
+/** Is a standing capsule at p clear of every static and solid entity, with ground under its feet? */
 function clear(b: WorldBundle, p: Vec3): boolean {
   const boxes = [...b.statics, ...b.entities.filter((e) => e.body === "fixed" || e.body === "kinematic")];
-  return !boxes.some((x) => Math.abs(p[0] - x.pos[0]) < x.size[0] / 2 + 0.35 && Math.abs(p[2] - x.pos[2]) < x.size[2] / 2 + 0.35 && p[1] - 0.95 < x.pos[1] + x.size[1] / 2 - 0.05 && p[1] + 0.95 > x.pos[1] - x.size[1] / 2);
+  const blocked = boxes.some((x) => Math.abs(p[0] - x.pos[0]) < x.size[0] / 2 + 0.35 && Math.abs(p[2] - x.pos[2]) < x.size[2] / 2 + 0.35 && p[1] - 0.95 < x.pos[1] + x.size[1] / 2 - 0.05 && p[1] + 0.95 > x.pos[1] - x.size[1] / 2);
+  const feet = p[1] - 0.95;
+  const ground = b.statics.some((x) => Math.abs(p[0] - x.pos[0]) <= x.size[0] / 2 && Math.abs(p[2] - x.pos[2]) <= x.size[2] / 2 && Math.abs(x.pos[1] + x.size[1] / 2 - feet) < 0.6);
+  return !blocked && ground;
 }
 
 /** Put the player where the verb's cause happens; true when USE must be pressed on the first tick. */
@@ -24,9 +27,10 @@ function force(sim: SimWorld, b: WorldBundle, c: Cause): string | boolean {
     return false;
   }
   if (c.holding) sim.attach(c.holding, "player");
+  const y = floor + 0.97;
   const spots: Vec3[] = [
-    [e.pos[0], 0.95, e.pos[2] - e.size[2] / 2 - 0.6], [e.pos[0], 0.95, e.pos[2] + e.size[2] / 2 + 0.6],
-    [e.pos[0] - e.size[0] / 2 - 0.6, 0.95, e.pos[2]], [e.pos[0] + e.size[0] / 2 + 0.6, 0.95, e.pos[2]],
+    [e.pos[0], y, e.pos[2] - e.size[2] / 2 - 0.6], [e.pos[0], y, e.pos[2] + e.size[2] / 2 + 0.6],
+    [e.pos[0] - e.size[0] / 2 - 0.6, y, e.pos[2]], [e.pos[0] + e.size[0] / 2 + 0.6, y, e.pos[2]],
   ];
   const spot = spots.find((p) => clear(b, p));
   if (!spot) return `no room to stand next to ${c.at}`;
@@ -56,7 +60,7 @@ function plan(sim: SimWorld, b: WorldBundle, r: Rule, playerTeam: string): strin
     case "pickup": {
       const item = b.entities.find((e) => e.id === w.a);
       if (!item) return "item not found";
-      sim.teleport("player", [item.pos[0] + 0.5, 0.95, item.pos[2]]);
+      sim.teleport("player", [item.pos[0] + 0.5, item.pos[1] - item.size[1] / 2 + 0.95, item.pos[2]]);
       return null;
     }
     case "score_gte":
@@ -90,6 +94,11 @@ export function t2(R: Rapier, b: WorldBundle, playerTeam: "red" | "blue" = "red"
     const t0 = globalThis.performance?.now?.() ?? 0;
     const sim = new SimWorld(R, b, { playerTeam });
     const base: Omit<Chip, "status" | "text" | "cx"> = { id: `T2:${r.id}`, tier: "T2", subject: { kind: "rule", id: r.id }, method: `forced-state ≤${MAX_TICKS} ticks`, n: 1, k: 0, src: r.src, ms: 0 };
+    // the rule's state conditions are part of its precondition: force them too
+    for (const c of r.if) {
+      const m = /^([a-z][a-z0-9_]*)\.state$/.exec(c.l);
+      if (m && c.op === "eq") sim.forceState(m[1]!, String(c.r));
+    }
     const how = plan(sim, b, r, playerTeam);
     const why = typeof how === "string" ? how : null;
     if (why) {
@@ -97,10 +106,17 @@ export function t2(R: Rapier, b: WorldBundle, playerTeam: "red" | "blue" = "red"
       sim.free();
       continue;
     }
+    // force the cause, see the rule fire, take the cause away (back to spawn), and make sure it
+    // does not fire again on its own: a bounce pad re-triggering is a new cause, a loop is a bug
     const firedTicks = new Set<number>();
+    const home = sim.entity("player")!.home;
     for (let i = 0; i < MAX_TICKS && !sim.result; i++) {
       const input = how === true && i === 0 ? { tick: sim.tick + 1, wx: 0, wz: 0, btn: BTN.USE } : null;
-      for (const e of sim.step(input)) if (e.rule === r.id) firedTicks.add(e.tick);
+      const before = firedTicks.size;
+      const was = sim.fires.get(r.id) ?? 0;
+      sim.step(input);
+      if ((sim.fires.get(r.id) ?? 0) > was) firedTicks.add(sim.tick);
+      if (before === 0 && firedTicks.size === 1 && r.when.t !== "score_gte" && r.when.t !== "every" && r.when.t !== "timer_end") sim.teleport("player", home);
     }
     const n = firedTicks.size;
     sim.free();

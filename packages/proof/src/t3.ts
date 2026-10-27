@@ -6,11 +6,11 @@ import type { Expect, Vec3, WorldBundle } from "@ghostrun/ir";
 import type { NavWorld } from "@ghostrun/nav";
 import { castBrain } from "@ghostrun/bots";
 import { BTN, SimWorld, type Rapier } from "@ghostrun/sim";
-import type { PlanStep, WinChain } from "./t0";
+import type { PlanStep, Want, WinChain } from "./t0";
 import { apex, gap, hopRoute, reachAt, surfaceUnder as surfaceAt, surfaces, type Surface } from "./t1";
 import type { Chip } from "./types";
 
-const RUN_TICKS = 60 * 60; // one minute of play per run
+const RUN_TICKS = 120 * 60; // two minutes of play per run (a world's own timer still ends it sooner)
 const TOO_EASY_S = 3;
 
 interface RunResult {
@@ -268,12 +268,8 @@ const live = (r: Run) => r.budget.ticks > 0 && !r.sim.result;
 
 /** Counts a rule's firings from now on. */
 function counter(sim: SimWorld, rule: string): () => number {
-  let seen = sim.log.length;
-  let n = 0;
-  return () => {
-    for (; seen < sim.log.length; seen++) if (sim.log[seen]!.rule === rule) n++;
-    return n;
-  };
+  const base = sim.fires.get(rule) ?? 0;
+  return () => (rule ? (sim.fires.get(rule) ?? 0) - base : 0);
 }
 
 /** Does the segment a→b cross the box (grown by the capsule radius) on the ground plane? */
@@ -328,6 +324,7 @@ function perform(r: Run, st: PlanStep, carried: string): "ok" | "lost" | "stuck"
     return goTo(sim, nav, b, t, rng, speed, budget, stop);
   };
   const gone = (id: string) => sim.entity(id)?.destroyed === true;
+  const met = (w: Want) => sim.entity(w.id)?.state === w.s;
   switch (st.do) {
     case "pickup": {
       const has = () => sim.entity(st.item)?.carrier === "player";
@@ -341,15 +338,23 @@ function perform(r: Run, st: PlanStep, carried: string): "ok" | "lost" | "stuck"
     }
     case "deliver": {
       const fired = counter(sim, st.rule);
+      const done = () => (st.want ? met(st.want) : fired() > 0);
       const lost = () => carried !== "" && sim.entity(carried)?.carrier !== "player";
       const sensor = b.entities.find((e) => e.id === st.sensor)!;
-      go(sensor.pos, () => fired() > 0 || lost());
-      if (fired() > 0) return "ok";
+      go(sensor.pos, () => done() || lost());
+      // already inside from a previous delivery: step out and come back in (a fresh enter)
+      for (let k = 0; k < 2 && !done() && !lost() && live(r); k++) {
+        const p = sim.pos("player");
+        const out: Vec3 = [sensor.pos[0] + (p[0] >= sensor.pos[0] ? 1 : -1) * (sensor.size[0] / 2 + 2), p[1] - 0.9, sensor.pos[2]];
+        go(nav.nearest(out) ?? out, () => false);
+        go(sensor.pos, () => done() || lost());
+      }
+      if (done()) return "ok";
       return lost() && live(r) ? "lost" : "stuck";
     }
     case "use": {
       const fired = counter(sim, st.rule);
-      const done = () => (st.rule ? fired() > 0 : sim.entity(st.at)?.state === "open");
+      const done = () => (st.want ? met(st.want) : st.rule ? fired() > 0 : sim.entity(st.at)?.state === "open");
       for (let attempt = 0; attempt < 3 && live(r) && !done(); attempt++) {
         go(spotBy(r, st.at), () => sim.usable()?.on === st.at || done());
         if (sim.usable()?.on !== st.at || !live(r)) continue;
@@ -361,8 +366,9 @@ function perform(r: Run, st: PlanStep, carried: string): "ok" | "lost" | "stuck"
     }
     case "touch": {
       const fired = counter(sim, st.rule);
-      go(spotBy(r, st.at), () => fired() > 0 || gone(st.at));
-      return fired() > 0 || gone(st.at) ? "ok" : "stuck";
+      const done = () => (st.want ? met(st.want) : fired() > 0 || gone(st.at));
+      go(spotBy(r, st.at), done);
+      return done() ? "ok" : "stuck";
     }
     case "collect": {
       const fired = counter(sim, st.rule);

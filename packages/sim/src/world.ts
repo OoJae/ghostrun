@@ -68,6 +68,8 @@ export class SimWorld {
   hash = 0;
   #rules: Rule[];
   #fired = new Set<string>();
+  /** How many times each rule fired (a rule whose effects were all no-ops still fired). */
+  readonly fires = new Map<string, number>();
   #lastFire = new Map<string, number>();
   #inside = new Map<string, Set<string>>(); // sensor id → movers inside
   #bundle: WorldBundle;
@@ -312,6 +314,14 @@ export class SimWorld {
     item.carrier = carrierId;
     carrier.carrying = itemId;
     item.body?.setBodyType(this.R.RigidBodyType.KinematicPositionBased, true);
+  }
+
+  /** Forced state (T2): set an entity's state without an event, as if it had always been so. */
+  forceState(id: string, st: string) {
+    const e = this.ents.get(id);
+    if (!e) return;
+    e.state = st;
+    if (e.kind === "door" && (st === "open" || st === "closed")) e.col?.setEnabled(st === "closed");
   }
 
   setScore(team: string, n: number) {
@@ -572,6 +582,7 @@ export class SimWorld {
       if (r.cooldownS > 0 && last !== undefined && this.tick - last < r.cooldownS * 60) continue;
       if (!this.#cond(r)) continue;
       this.#fired.add(r.id);
+      this.fires.set(r.id, (this.fires.get(r.id) ?? 0) + 1);
       this.#lastFire.set(r.id, this.tick);
       for (const fx of r.then) this.#effect(fx, r.id, idx, push);
       if (this.result) return;
@@ -611,6 +622,8 @@ export class SimWorld {
         const e = this.ents.get(target);
         if (!e) break;
         e.state = String(fx.v);
+        // a door said to be open is open: its collider follows the state
+        if (e.kind === "door" && (e.state === "open" || e.state === "closed")) e.col?.setEnabled(e.state === "closed");
         push("state", target, "", e.state, rule, cause);
         break;
       }

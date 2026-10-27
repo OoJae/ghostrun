@@ -89,7 +89,7 @@ export const Effect = v.strictObject({
 export const Rule = v.strictObject({
   ...meta,
   when: Trigger,
-  if: v.pipe(v.array(Cond), v.maxLength(4)),
+  if: v.pipe(v.array(Cond), v.maxLength(8)),
   then: v.pipe(v.array(Effect), v.minLength(1), v.maxLength(4)),
   once: v.boolean(),
   cooldownS: num,

@@ -1,7 +1,7 @@
 // The placer: binds the fill's zones to a pack's slots and turns anchors into positions.
 // The LLM chooses relations (zone + anchor), never coordinates (Holodeck/LayoutVLM lesson).
 import { stream } from "@ghostrun/detmath";
-import type { Entity, Static, Vec3, WorldBundle, Zone } from "@ghostrun/ir";
+import type { Effect, Entity, Static, Vec3, VerbBinding, WorldBundle, Zone } from "@ghostrun/ir";
 import { verb } from "@ghostrun/kits";
 import type { PackLayout, ZoneSpec } from "@ghostrun/plugin-api";
 
@@ -95,13 +95,15 @@ export function placeWorld(input: WorldBundle, layout: PackLayout): PlaceResult 
     taken.set(key, k + 1);
     const offset = k === 0 ? 0 : (k % 2 ? 1 : -1) * Math.ceil(k / 2) * 1.6;
     const alongZ = Math.abs(base[0]) >= Math.abs(base[2]);
+    // doors stand on the zone's floor even when the fill names a wall-height anchor
+    if (e.kind === "door") base = [base[0], spec.floorY, base[2]];
     // Sensors and spawns sit on the floor; bodies rest with their centre half their height up.
     const lift = e.kind === "spawn" ? 0 : e.size[1] / 2;
     e.pos = alongZ ? [base[0], base[1] + lift, base[2] + offset] : [base[0] + offset, base[1] + lift, base[2]];
     // a door in an east/west wall's doorway turns to fill the gap across z
     if (e.kind === "door" && /^doorway_[ew]$/.test(e.anchor) && e.size[0] > e.size[2]) e.size = [e.size[2], e.size[1], e.size[0]];
   }
-  notes.push(...repairTriggers(b), ...repairVerbs(b), ...repairExpects(b));
+  notes.push(...repairKits(b), ...repairTriggers(b), ...repairVerbs(b), ...repairWin(b), ...repairExpects(b));
   return { bundle: b, notes };
 }
 
@@ -121,6 +123,129 @@ export function repairTriggers(b: WorldBundle): string[] {
     }
   }
   return notes;
+}
+
+const vb = (id: string, verb: string, on: string, params: VerbBinding["params"] = {}): VerbBinding => ({ id, src: "template", layer: "gameplay", verb, on, params, signature: false });
+const fx = (e: Effect["e"], target: string, n = 0): Effect => ({ e, target, v: "", n, fx: "" });
+const uniqueId = (b: WorldBundle, base: string) => {
+  const taken = new Set([...b.verbs.map((v) => v.id), ...b.rules.map((r) => r.id), ...b.entities.map((e) => e.id)]);
+  let id = base.slice(0, 32);
+  for (let k = 2; taken.has(id); k++) id = `${base.slice(0, 28)}_${k}`;
+  return id;
+};
+
+/**
+ * Deterministic repairs of the kit wiring LLM fills get wrong, each logged (seen in live fills):
+ * kinds with no verb get the obvious one; a set of same-noun carried pickups nobody delivers is a
+ * collection; nothing you must carry is also "collected" (that destroys it); triggers match the
+ * verb (pickup for carried things, touch for collected ones); plates used together latch.
+ */
+export function repairKits(b: WorldBundle): string[] {
+  const notes: string[] = [];
+  const bound = (id: string, kit?: string) => b.verbs.some((v) => v.on === id && (!kit || v.verb === kit));
+  // 1. kinds that imply a verb
+  const IMPLIED: Partial<Record<Entity["kind"], string>> = { switch: "puzzle.switch", plate: "puzzle.plate", checkpoint: "puzzle.checkpoint", hazard: "motion_hazards.hazard" };
+  for (const e of b.entities) {
+    const kit = IMPLIED[e.kind];
+    if (kit && !bound(e.id)) {
+      b.verbs.push(vb(uniqueId(b, `vb_${e.id}`), kit, e.id, kit === "motion_hazards.hazard" ? { respawn: true } : {}));
+      notes.push(`${e.id}: added ${kit} (a ${e.kind} with no verb)`);
+    }
+    if ((e.kind === "platform" || e.kind === "prop") && /crumbl|collaps|fragile|breakable|cracked/.test(`${e.noun} ${e.hyper} ${e.id}`) && !bound(e.id)) {
+      b.verbs.push(vb(uniqueId(b, `vb_${e.id}`), "motion_hazards.crumble", e.id));
+      notes.push(`${e.id}: added motion_hazards.crumble (it is described as crumbling)`);
+    }
+  }
+  // 2. collections: ≥3 same-noun carried pickups that are never delivered anywhere
+  const delivered = new Set<string>();
+  for (const r of b.rules) {
+    if (r.when.t === "enter" || r.when.t === "exit") delivered.add(r.when.a);
+    for (const c of r.if) if (c.l.includes(".carrier")) delivered.add(c.l.split(".")[0]!);
+  }
+  for (const v of b.verbs) if (v.verb === "puzzle.lock" && v.params.key) delivered.add(String(v.params.key));
+  const groups = new Map<string, string[]>();
+  for (const v of b.verbs) {
+    if (!v.verb.endsWith(".carry") || delivered.has(v.on)) continue;
+    const e = b.entities.find((x) => x.id === v.on);
+    if (!e) continue;
+    const key = e.noun || e.hyper || "item";
+    groups.set(key, [...(groups.get(key) ?? []), e.id]);
+  }
+  for (const [noun, ids] of groups) {
+    if (ids.length < 3) continue;
+    b.verbs = b.verbs.filter((v) => !(v.verb.endsWith(".carry") && ids.includes(v.on)));
+    for (const id of ids) if (!bound(id, "puzzle.collect")) b.verbs.push(vb(uniqueId(b, `vb_collect_${id}`), "puzzle.collect", id));
+    notes.push(`${ids.length} × ${noun}: carried but never delivered → collected (touch to collect)`);
+  }
+  // 3. nothing that must be carried is also collected
+  const carried = new Set(b.verbs.filter((v) => v.verb.endsWith(".carry")).map((v) => v.on));
+  for (const v of b.verbs) if (v.verb === "puzzle.lock" && v.params.key) carried.add(String(v.params.key));
+  const before = b.verbs.length;
+  b.verbs = b.verbs.filter((v) => !(v.verb === "puzzle.collect" && carried.has(v.on)));
+  if (b.verbs.length < before) notes.push(`dropped puzzle.collect on ${before - b.verbs.length} carried item(s) (collecting destroys them)`);
+  // 4. triggers that match the verb
+  const collected = new Set(b.verbs.filter((v) => v.verb === "puzzle.collect").map((v) => v.on));
+  for (const r of b.rules) {
+    const w = r.when;
+    if (w.t === "pickup" && collected.has(w.a)) {
+      notes.push(`rule ${r.id}: pickup of collected ${w.a} → touch`);
+      [w.t, w.a, w.b] = ["touch", "player", w.a];
+    } else if (w.t === "touch" && carried.has(w.b) && (w.a === "player" || !w.a)) {
+      notes.push(`rule ${r.id}: touch of carried ${w.b} → pickup`);
+      [w.t, w.a, w.b] = ["pickup", w.b, "player"];
+    }
+  }
+  // 2b. a score goal with nothing that scores: each collected thing scores a point
+  for (const g of b.rules.filter((r) => r.when.t === "score_gte")) {
+    const team = g.when.a;
+    if (b.rules.some((r) => r.then.some((e) => e.e === "score" && e.target === team))) continue;
+    const touchRules = b.rules.filter((r) => r.when.t === "touch" && collected.has(r.when.b));
+    if (touchRules.length) {
+      for (const r of touchRules) if (r.then.length < 4) r.then.push(fx("score", team, 1));
+      notes.push(`${team}: nothing scored toward ${g.id}; each collect now scores 1`);
+    } else if (collected.size) {
+      b.rules.push({ id: uniqueId(b, "r_collect_score"), src: "template", layer: "gameplay", when: { t: "touch", a: "player", b: "", s: "", n: 0, act: "" }, if: [], then: [fx("score", team, 1)], once: false, cooldownS: 0, prio: 0 });
+      notes.push(`${team}: nothing scored toward ${g.id}; added a collect-scores-1 rule`);
+    }
+  }
+  // 4b. scoring a carried item into a goal sends it home (or one delivery scores forever after)
+  for (const r of b.rules) {
+    if (r.when.t !== "enter" || !carried.has(r.when.a) || !r.then.some((e) => e.e === "score")) continue;
+    if (r.then.some((e) => (e.e === "reset" || e.e === "destroy" || e.e === "teleport") && e.target === r.when.a) || r.then.length >= 4) continue;
+    r.then.push(fx("reset", r.when.a));
+    notes.push(`rule ${r.id}: scoring ${r.when.a} now sends it back to its start`);
+  }
+  // 4c. a score goal can't be met by once-only scoring rules that add up to less than it
+  for (const g of b.rules.filter((r) => r.when.t === "score_gte")) {
+    const scorers = b.rules.filter((r) => r.then.some((e) => e.e === "score" && e.target === g.when.a));
+    const total = scorers.reduce((n, r) => n + (r.once ? r.then.filter((e) => e.e === "score" && e.target === g.when.a).reduce((m, e) => m + (e.n || 1), 0) : Infinity), 0);
+    if (total >= g.when.n) continue;
+    for (const r of scorers.filter((x) => x.once)) {
+      r.once = false;
+      notes.push(`rule ${r.id}: no longer once-only (${g.id} needs ${g.when.a} to reach ${g.when.n})`);
+    }
+  }
+  // 5. plates that must be down together latch, or a solo player could never hold them all
+  for (const r of b.rules) {
+    const plates = r.if.filter((c) => c.op === "eq" && c.r === "down").map((c) => c.l.split(".")[0]!);
+    if (plates.length < 2) continue;
+    for (const v of b.verbs) {
+      if (v.verb === "puzzle.plate" && plates.includes(v.on) && v.params.latch !== true) {
+        v.params = { ...v.params, latch: true };
+        notes.push(`${v.on}: plate latches (rule ${r.id} needs ${plates.length} plates down at once)`);
+      }
+    }
+  }
+  return notes;
+}
+
+/** A play world with no way to win gets the obvious one: reach the goal. Logged. */
+export function repairWin(b: WorldBundle): string[] {
+  if (b.mode !== "play" || b.rules.some((r) => r.then.some((e) => e.e === "win"))) return [];
+  const goal = b.entities.find((e) => e.kind === "goal" && (e.team === "red" || !e.team));
+  if (!goal) return [];
+  b.rules.push({ id: uniqueId(b, "r_win_goal"), src: "template", layer: "gameplay", when: { t: "enter", a: "player", b: goal.id, s: "", n: 0, act: "" }, if: [], then: [fx("win", "player")], once: true, cooldownS: 0, prio: 0 });
+  return [`added r_win_goal: no rule wins, so reaching ${goal.id} does`];
 }
 
 /** A verb that needs a particular body (a plate or a coin must be a sensor) gets it. Logged. */
