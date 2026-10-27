@@ -43,18 +43,34 @@ export class LlmError extends Error {
   }
 }
 
-async function post(o: ChatOptions, stream: boolean): Promise<Response> {
-  const res = await fetch(`${o.baseUrl ?? BASE}/chat/completions`, {
-    method: "POST",
-    headers: { authorization: `Bearer ${o.apiKey}`, "content-type": "application/json" },
-    body: body(o, stream),
-    ...(o.signal ? { signal: o.signal } : {}),
+/** Waits `ms`, or less if the caller gives up. */
+const pause = (ms: number, signal?: AbortSignal) =>
+  new Promise<void>((resolve) => {
+    if (signal?.aborted) return resolve();
+    const t = setTimeout(resolve, ms);
+    signal?.addEventListener("abort", () => (clearTimeout(t), resolve()), { once: true });
   });
-  if (!res.ok) {
+
+/** Backoff before each retry of a busy provider (429) or a server error: a second or two, not a failed world. */
+export const RETRY_MS = [700, 1500] as const;
+
+async function post(o: ChatOptions, stream: boolean): Promise<Response> {
+  for (let attempt = 0; ; attempt++) {
+    const res = await fetch(`${o.baseUrl ?? BASE}/chat/completions`, {
+      method: "POST",
+      headers: { authorization: `Bearer ${o.apiKey}`, "content-type": "application/json" },
+      body: body(o, stream),
+      ...(o.signal ? { signal: o.signal } : {}),
+    });
+    if (res.ok) return res;
     const text = await res.text().catch(() => "");
-    throw new LlmError(`cerebras ${res.status}: ${text.slice(0, 300)}`, res.status, res.status === 429 || res.status >= 500);
+    const retryable = res.status === 429 || res.status >= 500;
+    const wait = RETRY_MS[attempt];
+    if (!retryable || wait === undefined || o.signal?.aborted) throw new LlmError(`cerebras ${res.status}: ${text.slice(0, 300)}`, res.status, retryable);
+    // the provider's own hint when it gives one (in seconds), never more than 2 s
+    const hint = Number(res.headers.get("retry-after"));
+    await pause(Number.isFinite(hint) && hint > 0 ? Math.min(2000, hint * 1000) : wait, o.signal);
   }
-  return res;
 }
 
 /** Stream answer text (reasoning deltas are dropped). */
