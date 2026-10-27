@@ -1,0 +1,19 @@
+{
+  "name": "@ghostrun/sim",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./node": "./src/rapier/node.ts",
+    "./vite-plugin": "./src/rapier/vite-plugin.ts"
+  },
+  "dependencies": {
+    "@dimforge/rapier3d-deterministic": "catalog:",
+    "@ghostrun/detmath": "workspace:*",
+    "@ghostrun/ir": "workspace:*"
+  },
+  "devDependencies": {
+    "@ghostrun/layout": "workspace:*",
+    "@ghostrun/pack-city-block": "workspace:*"
+  }
+}

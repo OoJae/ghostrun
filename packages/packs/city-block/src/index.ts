@@ -62,7 +62,8 @@ export const cityBlock: LayoutPack<CityBlockParams> = {
 
     const zones: ZoneSpec[] = [
       { slot: "center", tag: "plaza", bounds: { min: [-12, 0, -8], max: [12, 6, 8] }, floorY: 0,
-        anchors: { plinth: [0, 0, 0], wall_n: [0, 3, 8], floor_ne: [8, 0, 6], floor_sw: [-8, 0, -6] } },
+        // wall_n is on the north row's front face, above head height even from the rooftop lane
+        anchors: { plinth: [0, 0, 0], wall_n: [0, 5.5, D - rowDepth - 0.15], floor_ne: [8, 0, 6], floor_sw: [-8, 0, -6] } },
       { slot: "west_block", tag: "base", bounds: { min: [-L, 0, -8], max: [-24, 6, 8] }, floorY: 0,
         anchors: { spawn_pad: [-(L - 4), 0, 0], goal_ring: [-(L - 14), 0, 0] } },
       { slot: "east_block", tag: "base", bounds: { min: [24, 0, -8], max: [L, 6, 8] }, floorY: 0,

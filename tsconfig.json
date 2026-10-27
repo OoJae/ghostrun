@@ -17,6 +17,9 @@
       "path": "packages/layout"
     },
     {
+      "path": "packages/sim"
+    },
+    {
       "path": "tools/detcheck"
     }
   ]

@@ -90,6 +90,25 @@ importers:
         specifier: workspace:*
         version: link:../ir
 
+  packages/sim:
+    dependencies:
+      '@dimforge/rapier3d-deterministic':
+        specifier: 'catalog:'
+        version: 0.21.0
+      '@ghostrun/detmath':
+        specifier: workspace:*
+        version: link:../detmath
+      '@ghostrun/ir':
+        specifier: workspace:*
+        version: link:../ir
+    devDependencies:
+      '@ghostrun/layout':
+        specifier: workspace:*
+        version: link:../layout
+      '@ghostrun/pack-city-block':
+        specifier: workspace:*
+        version: link:../packs/city-block
+
   tools/detcheck:
     dependencies:
       '@dimforge/rapier3d-deterministic':
