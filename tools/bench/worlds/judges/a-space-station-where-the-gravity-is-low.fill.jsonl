@@ -1,0 +1,20 @@
+{"op":"meta","mode":"play","lang":"en","pack":"maze","sub":[],"seed":108,"look":"space station corridors","mood":[0.15,0.45,0.5],"timeOfDay":12,"weather":"clear"}  
+{"op":"zone","id":"z_start","slot":"start","tag":"outside","name":"Station entry"}  
+{"op":"zone","id":"z_maze","slot":"maze","tag":"corridor","name":"Zero‑g maintenance corridor"}  
+{"op":"spawn","id":"sp_red","zone":"z_start","anchor":"spawn_pad","team":"red"}  
+{"op":"ent","id":"panel_a","kind":"prop","noun":"broken panel A","hyper":"repairable_object","zone":"z_maze","anchor":"dead_end_1","body":"fixed","shape":"box","size":[0.6,0.6,0.2]}  
+{"op":"ent","id":"panel_b","kind":"prop","noun":"broken panel B","hyper":"repairable_object","zone":"z_maze","anchor":"dead_end_2","body":"fixed","shape":"box","size":[0.6,0.6,0.2]}  
+{"op":"ent","id":"panel_c","kind":"prop","noun":"broken panel C","hyper":"repairable_object","zone":"z_maze","anchor":"dead_end_3","body":"fixed","shape":"box","size":[0.6,0.6,0.2]}  
+{"op":"ent","id":"void_hole","kind":"hazard","noun":"void","hyper":"void","zone":"z_maze","anchor":"dead_end_4","body":"sensor","shape":"box","size":[2,2,0.2]}  
+{"op":"ent","id":"jump_pad","kind":"prop","noun":"jump pad","hyper":"jump_pad","zone":"z_maze","anchor":"center","body":"fixed","shape":"box","size":[1,1,0.2]}  
+{"op":"verb","id":"vb_jump","verb":"locomotion.jump","on":"player","params":{"jumpsMax":2}}  
+{"op":"verb","id":"vb_jump_pad","verb":"locomotion.jump_pad","on":"jump_pad","params":{"height":8}}  
+{"op":"verb","id":"vb_fix_a","verb":"puzzle.switch","on":"panel_a","params":{"once":true}}  
+{"op":"verb","id":"vb_fix_b","verb":"puzzle.switch","on":"panel_b","params":{"once":true}}  
+{"op":"verb","id":"vb_fix_c","verb":"puzzle.switch","on":"panel_c","params":{"once":true}}  
+{"op":"verb","id":"vb_void","verb":"motion_hazards.hazard","on":"void_hole","params":{"respawn":true}}  
+{"op":"rule","id":"r_win","when":{"t":"state_is","a":"panel_c","s":"on"},"if":[{"l":"panel_a.state","op":"eq","r":"on"},{"l":"panel_b.state","op":"eq","r":"on"}],"then":[{"e":"win","target":"player"}],"once":true}  
+{"op":"rule","id":"r_lose","when":{"t":"hit","a":"player","b":"void_hole"},"then":[{"e":"lose","target":"player"}],"once":true}  
+{"op":"expect","id":"exp_lowg","prop":"requires","a":"sp_red","b":"z_maze","need":["jumps>=2"],"headline":true,"text":"Low gravity must make reaching the three panels require momentum-jumps"}  
+{"op":"end","layer":"gameplay"}  
+{"op":"end","layer":"cosmetic"}

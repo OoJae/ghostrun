@@ -1,0 +1,264 @@
+{
+  "prompt": "Hide and seek in an old library: the librarian is looking for you",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "Hide and Seek",
+    "setting": "Dusty old library with towering bookshelves",
+    "role": "Reader",
+    "goal": "Stay hidden and avoid the librarian until the timer runs out",
+    "fail": "Being spotted or caught by the librarian before the time limit expires",
+    "mood": "Eerie and suspenseful",
+    "pack": "floor_plan",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Library floor plan supports long-term hiding spots from a single seeker",
+    "nouns": [
+      {
+        "noun": "library",
+        "hyper": "building"
+      },
+      {
+        "noun": "librarian",
+        "hyper": "person"
+      },
+      {
+        "noun": "bookshelves",
+        "hyper": "storage"
+      }
+    ],
+    "moodVec": {
+      "valence": -0.3,
+      "arousal": 0.5,
+      "tension": 0.8
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "498bb99cb618690ed55db88deecf2e50119537427015b56137fae6b13cebc067",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_survive",
+      "text": "Library floor plan supports long-term hiding spots from a single seeker",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 10 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_timer_win (the timer runs out)",
+        "src": ""
+      },
+      {
+        "id": "T2:r_librarian_spot",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_librarian_spot"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_librarian_spot fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_plate_opens",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_plate_opens"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_plate_opens fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_ne",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_ne"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_corner_ne fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_ne_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_ne_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_corner_ne_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_nw",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_nw"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_corner_nw fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_nw_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_nw_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_corner_nw_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_nw_3",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_nw_3"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_corner_nw_3 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_sw",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_sw"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_corner_sw fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_switch_opens",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_switch_opens"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_switch_opens fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_timer_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_timer_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_timer_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it (AI par 120 s)",
+        "cx": null,
+        "src": "",
+        "ms": 901
+      }
+    ],
+    "par": {
+      "goldS": 120,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 946
+  }
+}

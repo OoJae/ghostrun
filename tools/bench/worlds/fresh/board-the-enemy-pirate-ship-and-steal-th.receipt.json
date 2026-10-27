@@ -1,0 +1,264 @@
+{
+  "prompt": "Board the enemy pirate ship and steal their treasure chest before they sink you",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "action-adventure",
+    "setting": "A stormy open ocean with two wooden ships locked in combat; the enemy vessel has a cluttered cargo deck, a captain's cabin holding an ornate treasure chest, and boarding ladders or a rowboat gap to cross.",
+    "role": "A nimble sea marauder with a crowbar and grappling hook",
+    "goal": "Cross over from your ship to the enemy vessel, avoid or distract the crew, grab the treasure chest from the captain's cabin, and get back to your ship before the enemy captain sets the fire oil alight or capsizes your side.",
+    "fail": "You are knocked overboard, struck by a cutlass, or the enemy ship sinks yours while you are still aboard it.",
+    "mood": "Tense, chaotic and briny with urgency",
+    "pack": "outdoor",
+    "sub": [],
+    "safety": "arcade",
+    "headline": "Must cross between the two ships during a sinking timer and steal the chest",
+    "nouns": [
+      {
+        "noun": "ship",
+        "hyper": "vessel"
+      },
+      {
+        "noun": "treasure chest",
+        "hyper": "container"
+      },
+      {
+        "noun": "ocean",
+        "hyper": "body of water"
+      },
+      {
+        "noun": "crew",
+        "hyper": "personnel"
+      },
+      {
+        "noun": "boarding ladder",
+        "hyper": "access point"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.1,
+      "arousal": 0.9,
+      "tension": 0.9
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "9955988ae8370c1ff57a5bc937668129cb8b16726d7c2f097f1b3045723cb358",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_cross",
+      "text": "Must cross between the two ships during a sinking timer and steal the chest",
+      "status": "counterexample",
+      "method": "static goal regression over rules + physics, 12 AI runners vs 2 bots"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 1,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 9 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 1,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (chest into sp_red, carried by red) ← pick up chest",
+        "src": ""
+      },
+      {
+        "id": "T2:r_lose_spike",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_spike"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 39,
+        "status": "verified",
+        "text": "r_lose_spike fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lose_timer",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_timer"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_lose_timer fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_bank",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_bank"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 13,
+        "status": "verified",
+        "text": "r_secret_bank fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_dock",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_dock"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 8,
+        "status": "verified",
+        "text": "r_secret_dock fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_n",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_n"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 10,
+        "status": "verified",
+        "text": "r_secret_flank_n fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_n_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_n_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 11,
+        "status": "verified",
+        "text": "r_secret_flank_n_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_s",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_s"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 6,
+        "status": "verified",
+        "text": "r_secret_flank_s fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_s_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_s_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_secret_flank_s_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 0,
+        "src": "ai",
+        "ms": 5,
+        "status": "counterexample",
+        "text": "r_win fires exactly once",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "firings",
+          "text": "never fired when forced"
+        }
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "counterexample",
+        "method": "physics, 12 AI runners vs 2 bots",
+        "n": 12,
+        "k": 0,
+        "text": "no AI runner could win vs 2 bots",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "wins",
+          "text": "12 got stuck (in the Your Ship ×12)"
+        },
+        "src": "",
+        "ms": 286
+      }
+    ],
+    "par": null,
+    "ms": 704
+  }
+}

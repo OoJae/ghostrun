@@ -1,0 +1,214 @@
+{
+  "prompt": "Build up speed on the skate park ramps and grab the golden board on the top deck",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "skateboarding game",
+    "setting": "urban skate park with concrete ramps and a raised top deck",
+    "role": "skateboarder",
+    "goal": "build speed on the ramps to reach and grab the golden board on the top deck",
+    "fail": "stall out on a ramp or fall off the course before reaching the top deck",
+    "mood": "punchy, kinetic, street-chic",
+    "pack": "course",
+    "sub": [
+      "rooftop"
+    ],
+    "safety": "ok",
+    "headline": "Final ramp chain must allow enough speed to grab the golden board on the top deck",
+    "nouns": [
+      {
+        "noun": "skate park",
+        "hyper": "recreation area"
+      },
+      {
+        "noun": "ramp",
+        "hyper": "structural element"
+      },
+      {
+        "noun": "golden board",
+        "hyper": "skateboard"
+      },
+      {
+        "noun": "top deck",
+        "hyper": "platform"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.55,
+      "arousal": 0.75,
+      "tension": 0.4
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "d92fcd800562714059d989a392008b89c5999c074e17e0d25962eb2c71f73f72",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_speed",
+      "text": "Final ramp chain must allow enough speed to grab the golden board on the top deck",
+      "status": "counterexample",
+      "method": "static goal regression over rules + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 6 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (gold_board into goal_top, carried by red) ← pick up gold_board",
+        "src": ""
+      },
+      {
+        "id": "T2:r_gate_open",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_gate_open"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 7,
+        "status": "verified",
+        "text": "r_gate_open fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_gate_use",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_gate_use"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 0,
+        "src": "ai",
+        "ms": 5,
+        "status": "counterexample",
+        "text": "r_gate_use fires exactly once",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "firings",
+          "text": "never fired when forced"
+        }
+      },
+      {
+        "id": "T2:r_lose_hazard",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_hazard"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_lose_hazard fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_host",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_host"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_host fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_pickup_4",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_pickup_4"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_pickup_4 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "counterexample",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 0,
+        "text": "no AI runner could win",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "wins",
+          "text": "12 got stuck (in the Skate park entry ×12)"
+        },
+        "src": "",
+        "ms": 1483
+      }
+    ],
+    "par": null,
+    "ms": 1871
+  }
+}

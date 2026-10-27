@@ -1,0 +1,72 @@
+{
+ "generated": "2026-10-27",
+ "won": "at least 10 of 12 AI runners win in physics",
+ "sets": [
+  {
+   "name": "combat",
+   "note": "Throwing and knock-out games (the throw and shove verbs, 27 Oct)",
+   "prompts": 4,
+   "play": 4,
+   "places": 0,
+   "firstPass": 0,
+   "now": 0,
+   "playableP50Ms": 3237,
+   "controlsP50": 9
+  },
+  {
+   "name": "fresh",
+   "note": "Fresh internal set (27 Oct): genres the earlier sets didn't touch",
+   "prompts": 14,
+   "play": 13,
+   "places": 1,
+   "firstPass": 6,
+   "now": 7,
+   "playableP50Ms": 2849,
+   "controlsP50": 9
+  },
+  {
+   "name": "fresh2",
+   "note": "Second fresh set (27 Oct, overnight): the honest test after fixes found on prompts-fresh.txt",
+   "prompts": 14,
+   "play": 13,
+   "places": 1,
+   "firstPass": 7,
+   "now": 8,
+   "playableP50Ms": 3053,
+   "controlsP50": 10
+  },
+  {
+   "name": "fresh3",
+   "note": "Third unseen set (27 Oct, after the fixes found on fresh and fresh2): the honest first-pass number",
+   "prompts": 14,
+   "play": 14,
+   "places": 0,
+   "firstPass": 7,
+   "now": 9,
+   "playableP50Ms": 5603,
+   "controlsP50": 10
+  },
+  {
+   "name": "judges",
+   "note": "Judge-style prompts (internal; written by us, never part of the external eval set)",
+   "prompts": 12,
+   "play": 7,
+   "places": 5,
+   "firstPass": 4,
+   "now": 4,
+   "playableP50Ms": 2722,
+   "controlsP50": 8
+  },
+  {
+   "name": "kits",
+   "note": "Kit bench prompts (internal; written by us, never part of the external eval set)",
+   "prompts": 12,
+   "play": 8,
+   "places": 4,
+   "firstPass": 6,
+   "now": 6,
+   "playableP50Ms": 3772,
+   "controlsP50": 10
+  }
+ ]
+}

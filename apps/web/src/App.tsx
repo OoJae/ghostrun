@@ -11,6 +11,7 @@ import { IntentCard } from "./hud/IntentCard";
 import { PromptBar } from "./hud/PromptBar";
 import { EditBox, type EditState } from "./hud/Edit";
 import { Gallery, GALLERY, type GalleryEntry } from "./hud/Gallery";
+import { TrustPanel } from "./hud/Trust";
 import { ProofBadge, ReceiptPanel, RepairChip, type ProofState, type RepairState } from "./hud/Proof";
 import { liveAvailable, liveBuild, liveEdit, liveRepair, type LiveIntent } from "./live";
 import { ANGLES, changeSummary, editedPrompt, HARDER, intentFor, newFailures, pickHarder, receiptDelta, suggestionsFor } from "./edits";
@@ -68,6 +69,7 @@ export function App() {
   const [collapsed, setCollapsed] = useState(false);
   const [typing, setTyping] = useState(false);
   const [gallery, setGallery] = useState(false);
+  const [trusting, setTrusting] = useState(false);
   const [hint, setHint] = useState(false);
   const [proof, setProof] = useState<ProofState>({ status: "idle", chips: [], receipt: null });
   const [receiptOpen, setReceiptOpen] = useState(false);
@@ -723,10 +725,12 @@ export function App() {
           />
         )}
         {gallery && <Gallery onOpen={(e) => void openGallery(e)} onClose={() => setGallery(false)} />}
+        {trusting && <TrustPanel onClose={() => setTrusting(false)} />}
         {receiptOpen && (
           <ReceiptPanel
             proof={proof}
             onClose={() => setReceiptOpen(false)}
+            onTrust={() => (setReceiptOpen(false), setTrusting(true))}
             reported={reported}
             onShare={shareRun}
             onExport={async () => {

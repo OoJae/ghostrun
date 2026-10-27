@@ -1,0 +1,84 @@
+{
+  "prompt": "A dinosaur museum with a guide who tells you about each skeleton",
+  "intent": {
+    "lang": "en",
+    "mode": "wander",
+    "genre": "museums",
+    "setting": "Indoor dinosaur exhibit hall with multiple fossil skeletons on display",
+    "role": "visitor",
+    "goal": "Tour the hall and meet the guide to hear about each dinosaur skeleton",
+    "fail": "None (non-gated exploration)",
+    "mood": "curious",
+    "pack": "floor_plan",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Each skeleton has an attached guide briefing",
+    "nouns": [
+      {
+        "noun": "dinosaur skeleton",
+        "hyper": "skeleton"
+      },
+      {
+        "noun": "guide",
+        "hyper": "guide"
+      },
+      {
+        "noun": "museum hall",
+        "hyper": "room"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.4,
+      "arousal": 0.2,
+      "tension": -0.5
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "a974402526dfc6413444c04fec4e0f14badc41ef10b0734b702b95b4541530c6",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_brief",
+      "text": "Each skeleton has an attached guide briefing",
+      "status": "not_checkable",
+      "method": "none"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 0 rules reference existing things",
+        "src": ""
+      },
+      {
+        "id": "T3:tour",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "tour"
+        },
+        "status": "played",
+        "method": "physics, an AI visitor walks to and uses each",
+        "n": 4,
+        "k": 4,
+        "text": "walked to and inspected 4 of 4 things",
+        "cx": null,
+        "src": "",
+        "ms": 19
+      }
+    ],
+    "par": null,
+    "ms": 49
+  }
+}

@@ -1,0 +1,256 @@
+{
+  "prompt": "Firefighters: put out three fires and rescue the cat from the roof",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "Simulation/Rescue",
+    "setting": "Urban residential area with multi-story buildings",
+    "role": "Firefighter",
+    "goal": "Extinguish three fires and rescue a cat from a rooftop",
+    "fail": "Fires spread out of control or the cat is lost",
+    "mood": "Urgent and heroic",
+    "pack": "city_block",
+    "sub": [
+      "rooftop"
+    ],
+    "safety": "ok",
+    "headline": "Rooftop access is required to rescue the cat",
+    "nouns": [
+      {
+        "noun": "firefighter",
+        "hyper": "occupant"
+      },
+      {
+        "noun": "fire",
+        "hyper": "hazard"
+      },
+      {
+        "noun": "cat",
+        "hyper": "animal"
+      },
+      {
+        "noun": "roof",
+        "hyper": "structure"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.2,
+      "arousal": 0.8,
+      "tension": 0.7
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "d3ea42756c6432bf14872b9612c16b3bab7a2e803b6663358485ccac12cd137c",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_rooftop",
+      "text": "Rooftop access is required to rescue the cat",
+      "status": "verified",
+      "method": "kinematic reachability (jump apex model) + physics jump witness, 4 attempts per jump count"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 7 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win_goal (player enters fire_goal_1)",
+        "src": ""
+      },
+      {
+        "id": "T1:x_rooftop",
+        "tier": "T1",
+        "subject": {
+          "kind": "property",
+          "id": "x_rooftop"
+        },
+        "method": "kinematic reachability (jump apex model)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "Rooftop access is required to rescue the cat",
+        "cx": null
+      },
+      {
+        "id": "T2:r_extinguish_1",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_extinguish_1"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_extinguish_1 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_extinguish_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_extinguish_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_extinguish_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_extinguish_3",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_extinguish_3"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_extinguish_3 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_floor_ne",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_floor_ne"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_floor_ne fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_floor_sw",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_floor_sw"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_floor_sw fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_plinth",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_plinth"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_plinth fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win_goal",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win_goal"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_win_goal fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "counterexample",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 0,
+        "text": "no AI runner could win",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "wins",
+          "text": "12 got stuck (in the Town Square ×12)"
+        },
+        "src": "",
+        "ms": 31
+      },
+      {
+        "id": "T3:x_rooftop",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "x_rooftop"
+        },
+        "status": "played",
+        "method": "physics jump witness, 4 attempts per jump count",
+        "n": 4,
+        "k": 4,
+        "text": "Rooftop access is required to rescue the cat: reached with 2 jumps 4 of 4, with 1 0 of 4",
+        "cx": null,
+        "src": "ai",
+        "ms": 45
+      }
+    ],
+    "par": null,
+    "ms": 183
+  }
+}

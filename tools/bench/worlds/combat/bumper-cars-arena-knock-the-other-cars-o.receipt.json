@@ -1,0 +1,240 @@
+{
+  "prompt": "Bumper cars arena: knock the other cars out of the ring",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "arcade sports",
+    "setting": "a circular, walled bumper car arena with a polished floor, cushioned walls and two evenly equipped go-karts",
+    "role": "a driver of a bumper car",
+    "goal": "ram the opposing car off its wheels or out of the ring until they crash into the boundary",
+    "fail": "get knocked out of the ring by the other car first",
+    "mood": "rowdy, bouncy, giddy",
+    "pack": "arena",
+    "sub": [],
+    "safety": "arcade",
+    "headline": "Bumper car arena is walled so both karts can be knocked out of the ring",
+    "nouns": [
+      {
+        "noun": "bumper car",
+        "hyper": "vehicle"
+      },
+      {
+        "noun": "arena",
+        "hyper": "indoor space"
+      },
+      {
+        "noun": "ring",
+        "hyper": "boundary"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.7,
+      "arousal": 0.8,
+      "tension": 0.4
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "0f6ff4181e63075e30c37bda0f9b3858a1ba3f7b78196ae339d9c476ea0a5f19",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_ring",
+      "text": "Bumper car arena is walled so both karts can be knocked out of the ring",
+      "status": "counterexample",
+      "method": "static goal regression over rules"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 9 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "chain",
+          "text": "win unreachable in the rule graph"
+        },
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "counterexample",
+        "method": "static goal regression over rules",
+        "text": "no rule chain lets the player trigger the win",
+        "src": ""
+      },
+      {
+        "id": "T2:r_lose_player",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_player"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_lose_player fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_score_coin1",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score_coin1"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 11,
+        "status": "verified",
+        "text": "r_score_coin1 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_score_coin2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score_coin2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 8,
+        "status": "verified",
+        "text": "r_score_coin2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_score_coin3",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score_coin3"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 6,
+        "status": "verified",
+        "text": "r_score_coin3 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_center_n",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_center_n"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_secret_center_n fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_center_s",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_center_s"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_secret_center_s fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_n",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_n"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_flank_n fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_s",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_s"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_flank_s fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win_opponent_out",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win_opponent_out"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "counterexample",
+        "text": "r_win_opponent_out fires exactly once",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "firings",
+          "text": "never fired when forced"
+        }
+      }
+    ],
+    "par": null,
+    "ms": 158
+  }
+}

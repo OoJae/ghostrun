@@ -1,0 +1,22 @@
+{"op":"meta","mode":"play","lang":"en","pack":"floor_plan","sub":[],"seed":112,"look":"hilltop castle siege","mood":[0.4,0.65,0.6],"timeOfDay":14,"weather":"clear"}
+{"op":"zone","id":"z_yard","slot":"yard","tag":"outside","name":"Siege camp"}
+{"op":"zone","id":"z_gate","slot":"entrance","tag":"entrance","name":"Castle gate"}
+{"op":"zone","id":"z_rampart","slot":"room_sw","tag":"room","name":"North rampart"}
+{"op":"zone","id":"z_courtyard","slot":"main_room","tag":"hall","name":"Inner courtyard"}
+{"op":"spawn","id":"sp_red","zone":"z_yard","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"gate_open","zone":"z_gate","anchor":"doorway_n","noun":"opened gate","hyper":"drawbridge","team":"red"}
+{"op":"ent","id":"gate_door","kind":"door","noun":"castle gate","hyper":"gate","zone":"z_gate","anchor":"doorway_n","body":"fixed","shape":"box"}
+{"op":"ent","id":"lever","kind":"switch","noun":"lever","hyper":"lever","zone":"z_gate","anchor":"center","body":"sensor","shape":"box"}
+{"op":"ent","id":"key","kind":"pickup","noun":"iron key","hyper":"key","zone":"z_rampart","anchor":"corner_sw","body":"dynamic","shape":"box","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"spike_trap","kind":"hazard","noun":"spike trap","hyper":"spikes","zone":"z_gate","anchor":"corner_e","body":"sensor","shape":"box","size":[1,0.2,1]}
+{"op":"ent","id":"banner","kind":"prop","noun":"army banner","hyper":"banner","zone":"z_yard","anchor":"corner_w","body":"fixed","shape":"box","size":[1,2,0.1]}
+{"op":"verb","id":"vb_carry_key","verb":"physics_props.carry","on":"key","params":{}}
+{"op":"verb","id":"vb_lock_gate","verb":"puzzle.lock","on":"gate_door","params":{"key":"key"}}
+{"op":"verb","id":"vb_pull_lever","verb":"puzzle.switch","on":"lever","params":{"once":false}}
+{"op":"verb","id":"vb_spike_hazard","verb":"motion_hazards.hazard","on":"spike_trap","params":{"respawn":true}}
+{"op":"rule","id":"r_gate_open","when":{"t":"state_is","a":"gate_door","s":"open"},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lever_opens","when":{"t":"state_is","a":"lever","s":"on"},"then":[{"e":"set_state","target":"gate_door","v":"open"}]}
+{"op":"expect","id":"x_gate","prop":"win_reachable","a":"sp_red","b":"gate_open","headline":true,"text":"Opening the gate is the win condition, triggering the army's assault into the courtyard"}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":6}}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

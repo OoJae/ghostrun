@@ -197,7 +197,8 @@ export function placeWorld(input: WorldBundle, layout: PackLayout): PlaceResult 
     // a door in an east/west wall's doorway turns to fill the gap across z
     if (e.kind === "door" && /^doorway_[ew]$/.test(e.anchor) && e.size[0] > e.size[2]) e.size = [e.size[2], e.size[1], e.size[0]];
   }
-  notes.push(...repairAreas(b, bound), ...repairKits(b), ...repairTriggers(b), ...repairVerbs(b), ...repairWin(b), ...repairExpects(b));
+  // wins first: a win rule the repairs add (reach the goal) gets the same trigger and verb repairs
+  notes.push(...repairAreas(b, bound), ...repairKits(b), ...repairWin(b), ...repairTriggers(b), ...repairVerbs(b), ...repairExpects(b));
   notes.push(...repairDeliveries(b, layout, bound), ...addSecrets(b, layout, bound));
   return { bundle: b, notes };
 }
@@ -328,10 +329,16 @@ export function repairTriggers(b: WorldBundle): string[] {
   const notes: string[] = [];
   const targets = new Set(b.rules.filter((r) => r.when.t === "enter" || r.when.t === "exit").map((r) => r.when.b));
   for (const e of b.entities) {
-    if (targets.has(e.id) && e.body !== "sensor") {
+    if (!targets.has(e.id)) continue;
+    if (e.body !== "sensor") {
       notes.push(`${e.id}: body '${e.body}' → 'sensor' (it is the target of an enter/exit trigger)`);
       e.body = "sensor";
       if (e.size[0] === 1 && e.size[1] === 1 && e.size[2] === 1) e.size = [1.6, 1.2, 1.6];
+    }
+    // somewhere you walk into is at least a stride across (a 0.5 m "goal" can hardly be entered)
+    if (e.kind !== "npc" && (e.size[0] < 1.6 || e.size[2] < 1.6)) {
+      e.size = [Math.max(1.6, e.size[0]), Math.max(1.2, e.size[1]), Math.max(1.6, e.size[2])];
+      notes.push(`${e.id}: grown to ${e.size[0]} × ${e.size[2]} m (too small to walk into)`);
     }
   }
   return notes;
@@ -389,6 +396,15 @@ export function repairKits(b: WorldBundle): string[] {
     const noun = e.noun || e.id.replace(/_/g, " ");
     b.verbs.push(vb(uniqueId(b, `vb_${kit.split(".")[1]}_${e.id}`), kit, e.id, kit === "social.inspect" ? { text: noun.charAt(0).toUpperCase() + noun.slice(1) } : {}));
     notes.push(`${e.id}: added ${kit} (rule ${r.id} waits on a ${w.t} nothing could produce)`);
+  }
+  // 1d. one key for several locks: it opens them all (a lock using it up would leave the next
+  // door locked forever)
+  const byKey = new Map<string, VerbBinding[]>();
+  for (const v of b.verbs) if (v.verb === "puzzle.lock" && v.params.key) byKey.set(String(v.params.key), [...(byKey.get(String(v.params.key)) ?? []), v]);
+  for (const [key, locks] of byKey) {
+    if (locks.length < 2 || locks.every((v) => v.params.keep === true)) continue;
+    for (const v of locks) v.params = { ...v.params, keep: true };
+    notes.push(`${key}: opens ${locks.length} locks, so it is kept, not used up`);
   }
   // 2. collections: ≥3 same-noun carried pickups that are never delivered anywhere
   const delivered = new Set<string>();

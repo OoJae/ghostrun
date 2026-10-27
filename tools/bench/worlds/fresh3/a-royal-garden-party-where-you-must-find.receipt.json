@@ -1,0 +1,256 @@
+{
+  "prompt": "A royal garden party where you must find the lost crown",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "quest",
+    "setting": "A formal royal garden with ornamental hedges, fountains, and manicured lawns",
+    "role": "Invited guest or royal attendant",
+    "goal": "Find the lost crown hidden somewhere in the garden",
+    "fail": "Run out of time or leave the garden area without finding the crown",
+    "mood": "Elegant, suspenseful, and curious",
+    "pack": "outdoor",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Garden hide-and-seek quest for a hidden crown",
+    "nouns": [
+      {
+        "noun": "crown",
+        "hyper": "artifact"
+      },
+      {
+        "noun": "garden",
+        "hyper": "place"
+      },
+      {
+        "noun": "fountain",
+        "hyper": "sculpture"
+      },
+      {
+        "noun": "hedge",
+        "hyper": "planting"
+      },
+      {
+        "noun": "party",
+        "hyper": "event"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.5,
+      "arousal": 0.3,
+      "tension": 0.4
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "1b39f421ab6333f82e621bf91a2a2056ff0234792c6e1d552dedf8fff04f05d6",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_crown",
+      "text": "Garden hide-and-seek quest for a hidden crown",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners vs 1 bot"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 9 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (crown into exit_gate, carried by red) ← pick up crown",
+        "src": ""
+      },
+      {
+        "id": "T2:r_collect_coin1",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_collect_coin1"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 6,
+        "status": "verified",
+        "text": "r_collect_coin1 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_collect_coin2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_collect_coin2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_collect_coin2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lose_timer",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_timer"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_lose_timer fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_bank",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_bank"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_bank fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_dock",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_dock"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_dock fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_hollow",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_hollow"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_hollow fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_water",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_water"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_secret_water fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_spike_kill",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_spike_kill"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_spike_kill fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners vs 1 bot",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it vs 1 bot (AI par 12.6 s)",
+        "cx": null,
+        "src": "",
+        "ms": 250
+      }
+    ],
+    "par": {
+      "goldS": 12.6,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 541
+  }
+}

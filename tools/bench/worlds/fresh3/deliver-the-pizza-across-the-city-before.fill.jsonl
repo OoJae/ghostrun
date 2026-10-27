@@ -1,0 +1,35 @@
+{"op":"meta","mode":"play","lang":"en","pack":"city_block","sub":[],"seed":92,"look":"urban night","mood":[0.2,0.85,0.75],"timeOfDay":18,"weather":"clear"}
+{"op":"zone","id":"z_center","slot":"center","tag":"plaza","name":"Main Plaza"}
+{"op":"zone","id":"z_west","slot":"west_block","tag":"base","name":"Pizza Shop"}
+{"op":"zone","id":"z_east","slot":"east_block","tag":"base","name":"Customer Block"}
+{"op":"zone","id":"z_street_w","slot":"street_w","tag":"street","name":"West Street"}
+{"op":"zone","id":"z_street_e","slot":"street_e","tag":"street","name":"East Street"}
+{"op":"spawn","id":"sp_red","zone":"z_west","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"goal_ring","zone":"z_east","anchor":"goal_ring","noun":"customer door","hyper":"door","team":"red"}
+{"op":"ent","id":"pizza_box","kind":"pickup","noun":"pizza box","hyper":"food","zone":"z_center","anchor":"plinth","body":"dynamic","shape":"box","size":[0.4,0.3,0.2]}
+{"op":"ent","id":"key_gate","kind":"pickup","noun":"gate key","hyper":"key","zone":"z_street_w","anchor":"none","body":"dynamic","shape":"box","size":[0.2,0.2,0.1]}
+{"op":"ent","id":"gate_door","kind":"door","noun":"gate door","hyper":"door","zone":"z_center","anchor":"wall_n","body":"fixed","shape":"box"}
+{"op":"ent","id":"switch_gate","kind":"switch","noun":"gate switch","hyper":"switch","zone":"z_center","anchor":"floor_ne","body":"sensor","shape":"box"}
+{"op":"ent","id":"plate_speed","kind":"plate","noun":"speed plate","hyper":"plate","zone":"z_street_e","anchor":"none","body":"sensor","shape":"box"}
+{"op":"ent","id":"spike_hazard","kind":"hazard","noun":"spikes","hyper":"spikes","zone":"z_street_w","anchor":"none","body":"sensor","shape":"box"}
+{"op":"ent","id":"osc_platform","kind":"platform","noun":"moving platform","hyper":"platform","zone":"z_street_e","anchor":"none","body":"kinematic","shape":"box","size":[2,0.3,2]}
+{"op":"ent","id":"jump_pad","kind":"platform","noun":"jump pad","hyper":"pad","zone":"z_street_w","anchor":"none","body":"sensor","shape":"box"}
+{"op":"ent","id":"timer_disp","kind":"goal","noun":"timer","hyper":"timer","zone":"z_center","anchor":"floor_sw","body":"sensor","shape":"box"}
+{"op":"verb","id":"vb_carry_pizza","verb":"physics_props.carry","on":"pizza_box","params":{}}
+{"op":"verb","id":"vb_carry_key","verb":"physics_props.carry","on":"key_gate","params":{}}
+{"op":"verb","id":"vb_lock_gate","verb":"puzzle.lock","on":"gate_door","params":{"key":"key_gate"}}
+{"op":"verb","id":"vb_switch_gate","verb":"puzzle.switch","on":"switch_gate","params":{"once":false}}
+{"op":"verb","id":"vb_plate_speed","verb":"puzzle.plate","on":"plate_speed","params":{"latch":false}}
+{"op":"verb","id":"vb_spike_hazard","verb":"motion_hazards.hazard","on":"spike_hazard","params":{"respawn":true}}
+{"op":"verb","id":"vb_osc_platform","verb":"motion_hazards.oscillate","on":"osc_platform","params":{"axis":"x","travel":5,"period":4}}
+{"op":"verb","id":"vb_jump_pad","verb":"locomotion.jump_pad","on":"jump_pad","params":{"height":4}}
+{"op":"verb","id":"vb_timer","verb":"puzzle.timer","on":"player","params":{"seconds":120}}
+{"op":"verb","id":"vb_jump","verb":"locomotion.jump","on":"player","params":{"jumpsMax":2}}
+{"op":"rule","id":"r_win","when":{"t":"enter","a":"pizza_box","b":"goal_ring"},"if":[{"l":"pizza_box.carrier.team","op":"eq","r":"red"}],"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose_timer","when":{"t":"timer_end","a":"player"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_gate_open","when":{"t":"state_is","a":"switch_gate","s":"on"},"then":[{"e":"set_state","target":"gate_door","v":"open"}]}
+{"op":"rule","id":"r_plate_speed","when":{"t":"state_is","a":"plate_speed","s":"down"},"then":[{"e":"set_state","target":"player","v":"speed_boost"}]}
+{"op":"expect","id":"exp_delivery","prop":"win_reachable","a":"sp_red","b":"goal_ring","headline":true,"text":"Delivery is only valid if the rider arrives before the timer expires"}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":6}}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

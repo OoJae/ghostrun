@@ -462,3 +462,20 @@ test("gallery: G opens 28 recorded live worlds; one opens, is rebuilt and re-pro
   await expect(page.getByTestId("proof-badge")).toContainText("12 of 12 AI runners won", { timeout: 120_000 });
   expect(errors).toEqual([]);
 });
+
+test("why trust this: the receipt opens the method, the eval table (one row per committed set) and the limits", async ({ page }) => {
+  const errors = collectErrors(page);
+  await page.goto("/?gl=webgl2&fx=0&dpr=0.5&prewarm=0");
+  await page.waitForFunction(() => window.__GHOSTRUN__?.ready === true, null, { timeout: 90_000 });
+  await page.keyboard.press("KeyP");
+  await page.getByTestId("why-trust").click();
+  const trust = page.getByTestId("trust");
+  await expect(trust).toContainText("How a receipt is made");
+  await expect(trust).toContainText("Node, Cloudflare workerd, Chromium, Firefox and WebKit");
+  await expect(trust.locator("tbody tr")).toHaveCount(6);
+  await expect(trust).toContainText("fresh3");
+  await expect(trust).toContainText("What it doesn't do yet");
+  await page.keyboard.press("Escape");
+  await expect(trust).toHaveCount(0);
+  expect(errors).toEqual([]);
+});

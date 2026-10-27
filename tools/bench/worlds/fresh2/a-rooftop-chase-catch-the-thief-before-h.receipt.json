@@ -1,0 +1,172 @@
+{
+  "prompt": "A rooftop chase: catch the thief before he reaches the helicopter",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "chase",
+    "setting": "city rooftops with narrow lanes, gaps and height drops",
+    "role": "protagonist pursuing a thief",
+    "goal": "catch the thief before he reaches the helicopter",
+    "fail": "thief boards the helicopter or escapes the rooftops",
+    "mood": "high-stakes urban pursuit",
+    "pack": "city_block",
+    "sub": [
+      "rooftop"
+    ],
+    "safety": "arcade",
+    "headline": "Rooftop lane must let you chase the thief to the waiting helicopter",
+    "nouns": [
+      {
+        "noun": "rooftop",
+        "hyper": "building surface"
+      },
+      {
+        "noun": "thief",
+        "hyper": "character to catch"
+      },
+      {
+        "noun": "helicopter",
+        "hyper": "escape vehicle"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.1,
+      "arousal": 0.8,
+      "tension": 0.7
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "921db4828fd18188e0e0e3bc7b0c346b33d4335cb7598a285f975a4335d92ba4",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_rooftop",
+      "text": "Rooftop lane must let you chase the thief to the waiting helicopter",
+      "status": "counterexample",
+      "method": "static goal regression over rules"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 5 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "chain",
+          "text": "win unreachable in the rule graph"
+        },
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "counterexample",
+        "method": "static goal regression over rules",
+        "text": "no rule chain lets the player trigger the win",
+        "src": ""
+      },
+      {
+        "id": "T2:r_catch",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_catch"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_catch: nothing produces touch on thief",
+        "cx": null
+      },
+      {
+        "id": "T2:r_door_open",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_door_open"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 7,
+        "status": "verified",
+        "text": "r_door_open fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_helicopter_escape",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_helicopter_escape"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_helicopter_escape fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_plinth",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_plinth"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 7,
+        "status": "verified",
+        "text": "r_secret_plinth fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_switch_opens",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_switch_opens"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 6,
+        "status": "verified",
+        "text": "r_switch_opens fires exactly once",
+        "cx": null
+      }
+    ],
+    "par": null,
+    "ms": 107
+  }
+}

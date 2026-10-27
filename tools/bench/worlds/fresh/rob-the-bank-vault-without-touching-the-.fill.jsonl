@@ -1,0 +1,35 @@
+{"op":"meta","mode":"play","lang":"en","pack":"floor_plan","sub":[],"seed":110,"look":"high-security bank interior","mood":[-0.2,0.6,0.9],"timeOfDay":14,"weather":"clear"}\
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Main Lobby"}\
+{"op":"zone","id":"z_hall","slot":"main_room","tag":"hall","name":"Central Hall"}\
+{"op":"zone","id":"z_armory_sw","slot":"room_sw","tag":"room","name":"West Armory"}\
+{"op":"zone","id":"z_armory_ne","slot":"room_ne","tag":"room","name":"East Armory"}\
+{"op":"zone","id":"z_vault","slot":"room_nw","tag":"room","name":"Vault Chamber"}\
+{"op":"spawn","id":"sp_red","zone":"z_entrance","anchor":"center","team":"red"}\
+{"op":"goal","id":"vault_goal","zone":"z_vault","anchor":"center","noun":"vault","hyper":"structure","team":"","kind":"goal","body":"sensor","shape":"box"}\
+{"op":"ent","id":"key_card","kind":"pickup","noun":"access card","hyper":"key","zone":"z_armory_sw","anchor":"corner_sw","body":"dynamic","shape":"box","size":[0.2,0.2,0.02]}\
+{"op":"ent","id":"vault_door","kind":"door","noun":"vault door","hyper":"door","zone":"z_vault","anchor":"doorway_w","body":"fixed","shape":"box"}\
+{"op":"ent","id":"laser_west","kind":"hazard","noun":"laser tripwire","hyper":"laser","zone":"z_hall","anchor":"wall_n","body":"sensor","shape":"box","size":[3,0.1,0.1]}\
+{"op":"ent","id":"laser_east","kind":"hazard","noun":"laser tripwire","hyper":"laser","zone":"z_hall","anchor":"wall_s","body":"sensor","shape":"box","size":[3,0.1,0.1]}\
+{"op":"ent","id":"laser_north","kind":"hazard","noun":"laser tripwire","hyper":"laser","zone":"z_hall","anchor":"wall_w","body":"sensor","shape":"box","size":[2,0.1,0.1]}\
+{"op":"ent","id":"laser_south","kind":"hazard","noun":"laser tripwire","hyper":"laser","zone":"z_hall","anchor":"wall_e","body":"sensor","shape":"box","size":[2,0.1,0.1]}\
+{"op":"ent","id":"switch_disable","kind":"switch","noun":"laser disable switch","hyper":"switch","zone":"z_armory_ne","anchor":"center","body":"fixed","shape":"box"}\
+{"op":"ent","id":"jump_pad","kind":"plate","noun":"jump pad","hyper":"pad","zone":"z_hall","anchor":"corner_ne","body":"fixed","shape":"box","size":[0.5,0.1,0.5]}\
+{"op":"verb","id":"vb_carry_key","verb":"physics_props.carry","on":"key_card","params":{}}\
+{"op":"verb","id":"vb_lock_vault","verb":"puzzle.lock","on":"vault_door","params":{"key":"key_card"}}\
+{"op":"verb","id":"vb_disable_lasers","verb":"puzzle.switch","on":"switch_disable","params":{"once":true}}\
+{"op":"verb","id":"vb_jump","verb":"locomotion.jump","on":"player","params":{"jumpsMax":2}}\
+{"op":"verb","id":"vb_laser_hazard","verb":"motion_hazards.hazard","on":"laser_west","params":{"respawn":true}}\
+{"op":"verb","id":"vb_laser_hazard2","verb":"motion_hazards.hazard","on":"laser_east","params":{"respawn":true}}\
+{"op":"verb","id":"vb_laser_hazard3","verb":"motion_hazards.hazard","on":"laser_north","params":{"respawn":true}}\
+{"op":"verb","id":"vb_laser_hazard4","verb":"motion_hazards.hazard","on":"laser_south","params":{"respawn":true}}\
+{"op":"verb","id":"vb_jump_pad","verb":"locomotion.jump_pad","on":"jump_pad","params":{"height":5}}\
+{"op":"rule","id":"r_lose_west","when":{"t":"hit","a":"player","b":"laser_west"},"then":[{"e":"lose","target":"player"}],"once":true}\
+{"op":"rule","id":"r_lose_east","when":{"t":"hit","a":"player","b":"laser_east"},"then":[{"e":"lose","target":"player"}],"once":true}\
+{"op":"rule","id":"r_lose_north","when":{"t":"hit","a":"player","b":"laser_north"},"then":[{"e":"lose","target":"player"}],"once":true}\
+{"op":"rule","id":"r_lose_south","when":{"t":"hit","a":"player","b":"laser_south"},"then":[{"e":"lose","target":"player"}],"once":true}\
+{"op":"rule","id":"r_disable","when":{"t":"state_is","a":"switch_disable","s":"on"},"then":[{"e":"set_state","target":"laser_west","v":"off"},{"e":"set_state","target":"laser_east","v":"off"},{"e":"set_state","target":"laser_north","v":"off"},{"e":"set_state","target":"laser_south","v":"off"}],"once":true}\
+{"op":"rule","id":"r_win","when":{"t":"enter","a":"player","b":"vault_goal"},"if":[{"l":"vault_door.state","op":"eq","r":"open"}],"then":[{"e":"win","target":"player"}],"once":true}\
+{"op":"expect","id":"x_heist","prop":"win_reachable","a":"sp_red","b":"vault_goal","headline":true,"text":"The path to the vault is strictly defined by un-touchable laser tripwires"}\
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":6}}\
+{"op":"end","layer":"gameplay"}\
+{"op":"end","layer":"cosmetic"}

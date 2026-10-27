@@ -1,0 +1,332 @@
+{
+  "prompt": "collect 10 crystals in a glowing cave before the timer runs out, avoid the lava",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "puzzle-platformer",
+    "setting": "A glowing underground cave illuminated by bioluminescent fungi and sparkling crystals, with streams of lava cutting between stone platforms.",
+    "role": "a cave explorer wearing heat-resistant gear",
+    "goal": "Collect 10 glowing crystals scattered throughout the cave before the countdown timer hits zero.",
+    "fail": "Touching the lava or letting the timer run out before collecting all 10 crystals.",
+    "mood": "Urgent and mysterious, with a sense of pressing danger from the lava and a captivating visual glow",
+    "pack": "course",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Cave route requires navigating lava gaps to reach 10 crystals in time",
+    "nouns": [
+      {
+        "noun": "cave",
+        "hyper": "underground"
+      },
+      {
+        "noun": "crystal",
+        "hyper": "ore"
+      },
+      {
+        "noun": "lava",
+        "hyper": "molten substance"
+      },
+      {
+        "noun": "timer",
+        "hyper": "clock"
+      }
+    ],
+    "moodVec": {
+      "valence": -0.1,
+      "arousal": 0.65,
+      "tension": 0.7
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "834eb79416bb354762fcfe03473d98520914a47ef665494cabeac0d704d272b9",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_cave",
+      "text": "Cave route requires navigating lava gaps to reach 10 crystals in time",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 14 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (team:red reaches 10) ← collect 10 of 10",
+        "src": ""
+      },
+      {
+        "id": "T2:r_collect_cr1",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_collect_cr1"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_collect_cr1 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_collect_cr10",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_collect_cr10"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_collect_cr10 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_collect_cr2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_collect_cr2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_collect_cr2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_collect_cr3",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_collect_cr3"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_collect_cr3 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_collect_cr4",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_collect_cr4"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_collect_cr4 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_collect_cr5",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_collect_cr5"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_collect_cr5 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_collect_cr6",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_collect_cr6"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_collect_cr6 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_collect_cr7",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_collect_cr7"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_collect_cr7 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_collect_cr8",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_collect_cr8"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_collect_cr8 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_collect_cr9",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_collect_cr9"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_collect_cr9 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lose_lava1",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_lava1"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_lose_lava1 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lose_lava2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_lava2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_lose_lava2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lose_timer",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_timer"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_lose_timer fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it (AI par 17.6 s)",
+        "cx": null,
+        "src": "",
+        "ms": 185
+      }
+    ],
+    "par": {
+      "goldS": 17.6,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 564
+  }
+}

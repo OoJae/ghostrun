@@ -1,0 +1,106 @@
+{
+  "prompt": "a real-estate tour of a modern villa where a guide books a viewing",
+  "intent": {
+    "lang": "en",
+    "mode": "wander",
+    "genre": "Real Estate",
+    "setting": "A modern, high-end residential villa",
+    "role": "Prospective Buyer",
+    "goal": "Take a guided tour of the villa to view the property",
+    "fail": "None specified (non-game environment)",
+    "mood": "Upscale, professional, welcoming",
+    "pack": "floor_plan",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Guided villa tour explores interior rooms",
+    "nouns": [
+      {
+        "noun": "villa",
+        "hyper": "residential property"
+      },
+      {
+        "noun": "tour",
+        "hyper": "property viewing"
+      },
+      {
+        "noun": "guide",
+        "hyper": "real estate agent"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.5,
+      "arousal": 0.2,
+      "tension": 0
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "0abbd6768aff1bab019af9334fa271adc1cabb594cc82fca69534d9c892384f3",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_tour",
+      "text": "Guided villa tour explores interior rooms",
+      "status": "verified",
+      "method": "kinematic reachability (jump apex model)"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 0 rules reference existing things",
+        "src": ""
+      },
+      {
+        "id": "T1:x_tour",
+        "tier": "T1",
+        "subject": {
+          "kind": "property",
+          "id": "x_tour"
+        },
+        "method": "kinematic reachability (jump apex model)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "Guided villa tour explores interior rooms",
+        "cx": null
+      },
+      {
+        "id": "T3:tour",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "tour"
+        },
+        "status": "counterexample",
+        "method": "physics, an AI visitor walks to and uses each",
+        "n": 8,
+        "k": 1,
+        "text": "walked to and inspected 1 of 8 things",
+        "cx": {
+          "where": null,
+          "have": 1,
+          "need": 8,
+          "unit": "things",
+          "text": "couldn't reach chandelier, garden_fountain, kitchen_counter, master_bed…"
+        },
+        "src": "",
+        "ms": 3286
+      }
+    ],
+    "par": null,
+    "ms": 3299
+  }
+}

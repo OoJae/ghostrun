@@ -1,0 +1,212 @@
+{
+  "prompt": "a space station where the gravity is low and you fix three broken panels",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "mechanic repair puzzle",
+    "setting": "interior corridors of a low-gravity space station",
+    "role": "maintenance technician",
+    "goal": "Fix three broken power panels scattered through the station by jumping between zero-g platforms to reach them",
+    "fail": "Falling into the void",
+    "mood": "floating awkwardness turning into focused problem-solving",
+    "pack": "maze",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Low gravity must make reaching the three panels require momentum-jumps",
+    "nouns": [
+      {
+        "noun": "space_station",
+        "hyper": "interior_environment"
+      },
+      {
+        "noun": "broken_panel",
+        "hyper": "repairable_object"
+      },
+      {
+        "noun": "low_gravity",
+        "hyper": "physics_rule"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.15,
+      "arousal": 0.45,
+      "tension": 0.5
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "4e136812ba71c597523c8a5b44e6b399d6ed5758edce6308cbc851eb80ed4210",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "exp_lowg",
+      "text": "Low gravity must make reaching the three panels require momentum-jumps",
+      "status": "counterexample",
+      "method": "kinematic reachability (jump apex model) + physics jump witness, 4 attempts per jump count"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 1,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 4 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 1,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (panel_c becomes on: use panel_c) [after panel_a on, panel_b on]",
+        "src": ""
+      },
+      {
+        "id": "T1:exp_lowg",
+        "tier": "T1",
+        "subject": {
+          "kind": "property",
+          "id": "exp_lowg"
+        },
+        "method": "kinematic reachability (jump apex model)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 2,
+        "status": "counterexample",
+        "text": "Low gravity must make reaching the three panels require momentum-jumps",
+        "cx": {
+          "where": null,
+          "have": 1.5,
+          "need": 0,
+          "unit": "m",
+          "text": "reachable with 1 jump: step 0 m ≤ apex 1.5 m"
+        }
+      },
+      {
+        "id": "T2:r_lose",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_lose fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_entrance",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_entrance"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 7,
+        "status": "verified",
+        "text": "r_secret_entrance fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_exit",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_exit"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_exit fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 10,
+        "text": "AI runners won by playing it (AI par 28.5 s)",
+        "cx": null,
+        "src": "",
+        "ms": 664
+      },
+      {
+        "id": "T3:exp_lowg",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "exp_lowg"
+        },
+        "status": "counterexample",
+        "method": "physics jump witness, 4 attempts per jump count",
+        "n": 4,
+        "k": 1,
+        "text": "Low gravity must make reaching the three panels require momentum-jumps: reached with 2 jumps 1 of 4, with 1 1 of 4",
+        "cx": {
+          "where": null,
+          "have": 1,
+          "need": 0,
+          "unit": "attempts",
+          "text": "reached with only 1 jump(s)"
+        },
+        "src": "ai",
+        "ms": 23
+      }
+    ],
+    "par": {
+      "goldS": 28.5,
+      "runs": 12,
+      "won": 10
+    },
+    "ms": 727
+  }
+}

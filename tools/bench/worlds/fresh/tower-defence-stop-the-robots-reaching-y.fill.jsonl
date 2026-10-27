@@ -1,0 +1,36 @@
+{"op":"meta","mode":"play","lang":"en","pack":"maze","sub":[],"seed":114,"look":"fortress gate","mood":[-0.4,0.7,0.8],"timeOfDay":12,"weather":"clear"}
+{"op":"zone","id":"z_start","slot":"start","tag":"outside","name":"Fortress entrance"}
+{"op":"zone","id":"z_maze","slot":"maze","tag":"maze","name":"Reconfigurable bridge grid"}
+{"op":"spawn","id":"sp_red","zone":"z_start","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"base_core","zone":"z_maze","anchor":"dead_end_4","noun":"base core","hyper":"objective","team":"red"}
+{"op":"ent","id":"bridge_a","kind":"door","noun":"bridge A","hyper":"path","zone":"z_maze","anchor":"dead_end_1","body":"fixed","shape":"box","size":[2,0.2,4]}
+{"op":"ent","id":"bridge_b","kind":"door","noun":"bridge B","hyper":"path","zone":"z_maze","anchor":"dead_end_2","body":"fixed","shape":"box","size":[2,0.2,4]}
+{"op":"ent","id":"bridge_c","kind":"door","noun":"bridge C","hyper":"path","zone":"z_maze","anchor":"dead_end_3","body":"fixed","shape":"box","size":[2,0.2,4]}
+{"op":"ent","id":"bridge_d","kind":"door","noun":"bridge D","hyper":"path","zone":"z_maze","anchor":"center","body":"fixed","shape":"box","size":[2,0.2,4]}
+{"op":"ent","id":"switch_a","kind":"switch","noun":"bridge switch A","hyper":"puzzle mechanism","zone":"z_maze","anchor":"entrance","body":"sensor","shape":"box","size":[0.5,0.5,0.5]}
+{"op":"ent","id":"switch_b","kind":"switch","noun":"bridge switch B","hyper":"puzzle mechanism","zone":"z_maze","anchor":"dead_end_1","body":"sensor","shape":"box","size":[0.5,0.5,0.5]}
+{"op":"ent","id":"switch_c","kind":"switch","noun":"bridge switch C","hyper":"puzzle mechanism","zone":"z_maze","anchor":"dead_end_2","body":"sensor","shape":"box","size":[0.5,0.5,0.5]}
+{"op":"ent","id":"switch_d","kind":"switch","noun":"bridge switch D","hyper":"puzzle mechanism","zone":"z_maze","anchor":"dead_end_3","body":"sensor","shape":"box","size":[0.5,0.5,0.5]}
+{"op":"ent","id":"robot_spawner","kind":"npc","noun":"robot spawner","hyper":"enemy","zone":"z_maze","anchor":"entrance","body":"kinematic","shape":"capsule"}
+{"op":"verb","id":"vb_switch_a","verb":"puzzle.switch","on":"switch_a","params":{"once":false}}
+{"op":"verb","id":"vb_switch_b","verb":"puzzle.switch","on":"switch_b","params":{"once":false}}
+{"op":"verb","id":"vb_switch_c","verb":"puzzle.switch","on":"switch_c","params":{"once":false}}
+{"op":"verb","id":"vb_switch_d","verb":"puzzle.switch","on":"switch_d","params":{"once":false}}
+{"op":"verb","id":"vb_lock_a","verb":"puzzle.lock","on":"bridge_a","params":{"key":"switch_a"}}
+{"op":"verb","id":"vb_lock_b","verb":"puzzle.lock","on":"bridge_b","params":{"key":"switch_b"}}
+{"op":"verb","id":"vb_lock_c","verb":"puzzle.lock","on":"bridge_c","params":{"key":"switch_c"}}
+{"op":"verb","id":"vb_lock_d","verb":"puzzle.lock","on":"bridge_d","params":{"key":"switch_d"}}
+{"op":"verb","id":"vb_timer","verb":"puzzle.timer","on":"player","params":{"seconds":180}}
+{"op":"rule","id":"r_switch_a_open","when":{"t":"state_is","a":"switch_a","s":"on"},"then":[{"e":"set_state","target":"bridge_a","v":"open"}],"once":false}
+{"op":"rule","id":"r_switch_a_close","when":{"t":"state_is","a":"switch_a","s":"off"},"then":[{"e":"set_state","target":"bridge_a","v":"closed"}],"once":false}
+{"op":"rule","id":"r_switch_b_open","when":{"t":"state_is","a":"switch_b","s":"on"},"then":[{"e":"set_state","target":"bridge_b","v":"open"}],"once":false}
+{"op":"rule","id":"r_switch_b_close","when":{"t":"state_is","a":"switch_b","s":"off"},"then":[{"e":"set_state","target":"bridge_b","v":"closed"}],"once":false}
+{"op":"rule","id":"r_switch_c_open","when":{"t":"state_is","a":"switch_c","s":"on"},"then":[{"e":"set_state","target":"bridge_c","v":"open"}],"once":false}
+{"op":"rule","id":"r_switch_c_close","when":{"t":"state_is","a":"switch_c","s":"off"},"then":[{"e":"set_state","target":"bridge_c","v":"closed"}],"once":false}
+{"op":"rule","id":"r_switch_d_open","when":{"t":"state_is","a":"switch_d","s":"on"},"then":[{"e":"set_state","target":"bridge_d","v":"open"}],"once":false}
+{"op":"rule","id":"r_switch_d_close","when":{"t":"state_is","a":"switch_d","s":"off"},"then":[{"e":"set_state","target":"bridge_d","v":"closed"}],"once":false}
+{"op":"rule","id":"r_robot_reach","when":{"t":"enter","a":"robot_spawner","b":"base_core"},"then":[{"e":"lose","target":"player"}],"once":false}
+{"op":"rule","id":"r_win_timer","when":{"t":"timer_end","a":"player"},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"expect","id":"x_puzzle","prop":"win_reachable","a":"sp_red","b":"base_core","headline":true,"text":"Puzzle-solving requires manipulating bridge switches to prevent pathing to the base."}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

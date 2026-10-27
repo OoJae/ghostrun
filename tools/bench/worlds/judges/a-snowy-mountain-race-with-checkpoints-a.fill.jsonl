@@ -1,0 +1,29 @@
+{"op":"meta","mode":"play","lang":"en","pack":"course","sub":[],"seed":109,"look":"snowy mountain","mood":[0.6,0.8,0.5],"timeOfDay":10,"weather":"snow"}
+{"op":"zone","id":"z_start","slot":"start","tag":"outdoor","name":"High altitude start pad"}
+{"op":"zone","id":"z_seg_1","slot":"seg_1","tag":"outdoor","name":"Snowy ledge"}
+{"op":"zone","id":"z_seg_2","slot":"seg_2","tag":"outdoor","name":"Icy beam"}
+{"op":"zone","id":"z_seg_3","slot":"seg_3","tag":"outdoor","name":"Rocky steps"}
+{"op":"zone","id":"z_seg_4","slot":"seg_4","tag":"outdoor","name":"Deep pit"}
+{"op":"zone","id":"z_seg_5","slot":"seg_5","tag":"outdoor","name":"Narrow beam"}
+{"op":"zone","id":"z_seg_6","slot":"seg_6","tag":"outdoor","name":"Gaps stretch"}
+{"op":"zone","id":"z_finish","slot":"finish","tag":"outdoor","name":"Valley finish flag"}
+{"op":"spawn","id":"sp_red","zone":"z_start","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"finish_flag","zone":"z_finish","anchor":"goal","noun":"finish flag","hyper":"finish_marker","team":"red"}
+{"op":"ent","id":"cp_1","kind":"checkpoint","noun":"checkpoint 1","hyper":"marker","zone":"z_seg_1","anchor":"cp_1","body":"fixed","shape":"box","size":[0.5,0.5,0.2]}
+{"op":"ent","id":"cp_2","kind":"checkpoint","noun":"checkpoint 2","hyper":"marker","zone":"z_seg_2","anchor":"cp_2","body":"fixed","shape":"box","size":[0.5,0.5,0.2]}
+{"op":"ent","id":"cp_3","kind":"checkpoint","noun":"checkpoint 3","hyper":"marker","zone":"z_seg_3","anchor":"cp_3","body":"fixed","shape":"box","size":[0.5,0.5,0.2]}
+{"op":"ent","id":"cp_4","kind":"checkpoint","noun":"checkpoint 4","hyper":"marker","zone":"z_seg_4","anchor":"cp_4","body":"fixed","shape":"box","size":[0.5,0.5,0.2]}
+{"op":"ent","id":"cp_5","kind":"checkpoint","noun":"checkpoint 5","hyper":"marker","zone":"z_seg_5","anchor":"cp_5","body":"fixed","shape":"box","size":[0.5,0.5,0.2]}
+{"op":"ent","id":"spike_hazard","kind":"hazard","noun":"spike pit","hyper":"spikes","zone":"z_seg_4","anchor":"pit_4","body":"sensor","shape":"box","size":[2,0.2,2]}
+{"op":"verb","id":"vb_chk_1","verb":"puzzle.checkpoint","on":"cp_1","params":{}}
+{"op":"verb","id":"vb_chk_2","verb":"puzzle.checkpoint","on":"cp_2","params":{}}
+{"op":"verb","id":"vb_chk_3","verb":"puzzle.checkpoint","on":"cp_3","params":{}}
+{"op":"verb","id":"vb_chk_4","verb":"puzzle.checkpoint","on":"cp_4","params":{}}
+{"op":"verb","id":"vb_chk_5","verb":"puzzle.checkpoint","on":"cp_5","params":{}}
+{"op":"verb","id":"vb_spike","verb":"motion_hazards.hazard","on":"spike_hazard","params":{"respawn":true}}
+{"op":"rule","id":"r_win","when":{"t":"enter","a":"player","b":"finish_flag"},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose_spike","when":{"t":"hit","a":"player","b":"spike_hazard"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"expect","id":"x_course","prop":"win_reachable","a":"sp_red","b":"finish_flag","headline":true,"text":"Course features a continuous downhill gradient with checkpoints along the slope."}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.8,"speed":8}}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

@@ -1,0 +1,40 @@
+{"op":"meta","mode":"play","lang":"en","pack":"city_block","sub":["rooftop"],"seed":104,"look":"snowy mountain fort","mood":[0.1,0.6,0.4],"timeOfDay":12,"weather":"snow"}
+{"op":"zone","id":"z_center","slot":"center","tag":"outside","name":"Fort plaza"}
+{"op":"zone","id":"z_west","slot":"west_block","tag":"base","name":"Western barracks"}
+{"op":"zone","id":"z_east","slot":"east_block","tag":"base","name":"Eastern outpost"}
+{"op":"zone","id":"z_street_w","slot":"street_w","tag":"street","name":"Northwestern approach"}
+{"op":"zone","id":"z_street_e","slot":"street_e","tag":"street","name":"Northeastern approach"}
+{"op":"zone","id":"z_roof","slot":"roof_lane_a","tag":"rooftop","name":"Rooftop climbing lane"}
+{"op":"spawn","id":"sp_red","zone":"z_west","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"goal_capture","zone":"z_west","anchor":"goal_ring","noun":"capture point","hyper":"zone","team":"red"}
+{"op":"ent","id":"flag_enemy","kind":"pickup","noun":"enemy flag","hyper":"flag","zone":"z_east","anchor":"goal_ring","body":"dynamic","shape":"box","size":[0.4,0.6,0.1]}
+{"op":"ent","id":"snow_spikes","kind":"hazard","noun":"snow spikes","hyper":"spikes","zone":"z_center","anchor":"floor_ne","body":"sensor","shape":"box","size":[2,0.2,2]}
+{"op":"ent","id":"ice_patch","kind":"hazard","noun":"slick ice","hyper":"ice","zone":"z_center","anchor":"floor_sw","body":"sensor","shape":"box","size":[2,0.2,2]}
+{"op":"ent","id":"jump_pad_roof","kind":"plate","noun":"jump pad","hyper":"pad","zone":"z_roof","anchor":"lane_start","body":"sensor","shape":"box","size":[1,0.2,1]}
+{"op":"ent","id":"moving_platform","kind":"platform","noun":"moving platform","hyper":"platform","zone":"z_center","anchor":"plinth","body":"kinematic","shape":"box","size":[1.5,0.3,1.5]}
+{"op":"ent","id":"key_gate","kind":"pickup","noun":"rusty key","hyper":"key","zone":"z_center","anchor":"wall_n","body":"dynamic","shape":"box","size":[0.3,0.3,0.1]}
+{"op":"ent","id":"gate_door","kind":"door","noun":"gate door","hyper":"door","zone":"z_center","anchor":"wall_n","body":"fixed","shape":"box"}
+{"op":"ent","id":"info_sign","kind":"sign","noun":"info sign","hyper":"sign","zone":"z_center","anchor":"plinth","body":"fixed","shape":"box","size":[0.5,0.5,0.1]}
+{"op":"ent","id":"enemy_rival","kind":"npc","noun":"enemy rival","hyper":"rival","zone":"z_east","anchor":"goal_ring","team":"blue","menu":["rival.patrol"],"dflt":"rival.patrol"}
+{"op":"verb","id":"vb_carry_flag","verb":"physics_props.carry","on":"flag_enemy","params":{}}
+{"op":"verb","id":"vb_jump","verb":"locomotion.jump","on":"player","params":{"jumpsMax":2}}
+{"op":"verb","id":"vb_hazard_spikes","verb":"motion_hazards.hazard","on":"snow_spikes","params":{"respawn":true}}
+{"op":"verb","id":"vb_hazard_ice","verb":"motion_hazards.hazard","on":"ice_patch","params":{"respawn":true}}
+{"op":"verb","id":"vb_jump_pad","verb":"locomotion.jump_pad","on":"jump_pad_roof","params":{"height":8}}
+{"op":"verb","id":"vb_move_platform","verb":"motion_hazards.oscillate","on":"moving_platform","params":{"axis":"x","travel":4,"period":6}}
+{"op":"verb","id":"vb_lock_gate","verb":"puzzle.lock","on":"gate_door","params":{"key":"key_gate"}}
+{"op":"verb","id":"vb_inspect_sign","verb":"social.inspect","on":"info_sign","params":{"text":"Fort: Capture the enemy flag and return to base."}}
+{"op":"verb","id":"vb_rival_shove","verb":"combat_sport.shove","on":"enemy_rival","params":{"force":6}}
+{"op":"verb","id":"vb_timer","verb":"puzzle.timer","on":"player","params":{"seconds":180}}
+{"op":"rule","id":"r_capture","when":{"t":"enter","a":"flag_enemy","b":"goal_capture"},"if":[{"l":"flag_enemy.carrier.team","op":"eq","r":"red"}],"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_timer","when":{"t":"timer_end","a":"player"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_gate_open","when":{"t":"state_is","a":"gate_door","s":"open"},"then":[{"e":"emit","target":"gate_door","fx":"gate_open"}]}
+{"op":"rule","id":"r_hazard_spike","when":{"t":"hit","a":"player","b":"snow_spikes"},"then":[{"e":"lose","target":"player"}]}
+{"op":"rule","id":"r_hazard_ice","when":{"t":"hit","a":"player","b":"ice_patch"},"then":[{"e":"lose","target":"player"}]}
+{"op":"expect","id":"x_fort","prop":"requires","a":"sp_red","b":"z_roof","need":["jumps>=2"],"headline":true,"text":"Snowy fort walls require climbing for capture"}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.8,"speed":5}}
+{"op":"end","layer":"gameplay"}
+{"op":"dress","id":"player_skin","zone":"z_west","anchor":"spawn_pad","hyper":"avatar"}
+{"op":"poster","id":"poster_fort","zone":"z_center","anchor":"plinth","hyper":"poster","text":"Fort Assault"}
+{"op":"poster","id":"poster_flag","zone":"z_east","anchor":"goal_ring","hyper":"poster","text":"Enemy Flag"}
+{"op":"end","layer":"cosmetic"}

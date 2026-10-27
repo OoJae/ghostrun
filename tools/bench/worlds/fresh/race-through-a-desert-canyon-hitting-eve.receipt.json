@@ -1,0 +1,208 @@
+{
+  "prompt": "Race through a desert canyon, hitting every checkpoint before the sandstorm",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "racing",
+    "setting": "A long desert canyon path featuring checkpoints and a closing sandstorm.",
+    "role": "A canyon racer driving fast through the desert.",
+    "goal": "Tap or click to jump the gaps and dash through all checkpoints before the sandstorm closes.",
+    "fail": "Fail if the sandstorm reaches you before finishing.",
+    "mood": "Urgent, dusty and fast.",
+    "pack": "outdoor",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Sandstorm chase demands hitting every checkpoint along the canyon path",
+    "nouns": [
+      {
+        "noun": "canyon",
+        "hyper": "landform"
+      },
+      {
+        "noun": "checkpoint",
+        "hyper": "marker"
+      },
+      {
+        "noun": "sandstorm",
+        "hyper": "weather event"
+      },
+      {
+        "noun": "checkpoint",
+        "hyper": "marker"
+      },
+      {
+        "noun": "vehicle",
+        "hyper": "conveyance"
+      }
+    ],
+    "moodVec": {
+      "valence": 0,
+      "arousal": 0.85,
+      "tension": 0.8
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "236550cf67467d5f1ffcb1253a4c7aad800ba1c19fed1e8cf5ab45e95f1f0eb9",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "exp_sandstorm",
+      "text": "Sandstorm chase demands hitting every checkpoint along the canyon path",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 6 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_finish_win (player enters goal_finish)",
+        "src": ""
+      },
+      {
+        "id": "T2:r_checkpoint1",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_checkpoint1"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 12,
+        "status": "verified",
+        "text": "r_checkpoint1 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_checkpoint2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_checkpoint2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 7,
+        "status": "verified",
+        "text": "r_checkpoint2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_checkpoint3",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_checkpoint3"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_checkpoint3 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_finish_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_finish_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_finish_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_open_west",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_open_west"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_open_west fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_timer_lose",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_timer_lose"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_timer_lose: no timer on player",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it (AI par 23.9 s)",
+        "cx": null,
+        "src": "",
+        "ms": 393
+      }
+    ],
+    "par": {
+      "goldS": 23.9,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 690
+  }
+}

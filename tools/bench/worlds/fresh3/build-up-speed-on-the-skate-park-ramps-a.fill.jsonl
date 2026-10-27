@@ -1,0 +1,40 @@
+{"op":"meta","mode":"play","lang":"en","pack":"course","sub":["rooftop"],"seed":97,"look":"urban skate park","mood":[0.55,0.75,0.4],"timeOfDay":14,"weather":"clear"}
+{"op":"zone","id":"z_start","slot":"start","tag":"outside","name":"Skate park entry"}
+{"op":"zone","id":"z_seg_1","slot":"seg_1","tag":"ramp","name":"First ramp"}
+{"op":"zone","id":"z_seg_2","slot":"seg_2","tag":"gap","name":"Mid gap"}
+{"op":"zone","id":"z_seg_3","slot":"seg_3","tag":"beam","name":"Long beam"}
+{"op":"zone","id":"z_seg_4","slot":"seg_4","tag":"pit","name":"Deep pit"}
+{"op":"zone","id":"z_seg_5","slot":"seg_5","tag":"steps","name":"Stair steps"}
+{"op":"zone","id":"z_seg_6","slot":"seg_6","tag":"gap","name":"Final gap"}
+{"op":"zone","id":"z_finish","slot":"finish","tag":"platform","name":"Top deck"}
+{"op":"spawn","id":"sp_red","zone":"z_start","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"goal_top","zone":"z_finish","anchor":"goal","noun":"exit ramp","hyper":"ramp","team":"red"}
+{"op":"ent","id":"gold_board","kind":"pickup","noun":"golden board","hyper":"skateboard","zone":"z_finish","anchor":"goal","body":"dynamic","shape":"box","size":[0.5,0.2,0.1]}
+{"op":"ent","id":"ramp_1","kind":"platform","noun":"ramp","hyper":"structural element","zone":"z_seg_1","anchor":"cp_1","body":"kinematic","shape":"box","size":[4,0.3,2]}
+{"op":"ent","id":"ramp_2","kind":"platform","noun":"ramp","hyper":"structural element","zone":"z_seg_2","anchor":"cp_2","body":"kinematic","shape":"box","size":[5,0.3,2.5]}
+{"op":"ent","id":"beam_1","kind":"platform","noun":"beam","hyper":"structural element","zone":"z_seg_3","anchor":"cp_3","body":"kinematic","shape":"box","size":[6,0.2,1]}
+{"op":"ent","id":"pit_floor","kind":"hazard","noun":"spikes","hyper":"hazard","zone":"z_seg_4","anchor":"pit_4","body":"sensor","shape":"box","size":[4,0.1,4]}
+{"op":"ent","id":"steps_1","kind":"platform","noun":"steps","hyper":"structural element","zone":"z_seg_5","anchor":"cp_5","body":"kinematic","shape":"box","size":[3,0.3,2]}
+{"op":"ent","id":"jump_pad","kind":"plate","noun":"speed pad","hyper":"jump_pad","zone":"z_seg_2","anchor":"pickup_2","body":"sensor","shape":"box","size":[1,0.1,1]}
+{"op":"ent","id":"coin_1","kind":"pickup","noun":"coin","hyper":"coin","zone":"z_seg_3","anchor":"pickup_3","body":"dynamic","shape":"sphere","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"switch_1","kind":"switch","noun":"switch","hyper":"switch","zone":"z_seg_4","anchor":"cp_4","body":"fixed","shape":"box","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"door_1","kind":"door","noun":"gate","hyper":"door","zone":"z_seg_4","anchor":"cp_4","body":"fixed","shape":"box"}
+{"op":"ent","id":"portal_back","kind":"portal","noun":"loop portal","hyper":"portal","zone":"z_seg_6","anchor":"pickup_6","body":"sensor","shape":"box","size":[1,0.1,1]}
+{"op":"ent","id":"exhibit_1","kind":"prop","noun":"graffiti wall","hyper":"wall","zone":"z_seg_5","anchor":"pickup_5","body":"fixed","shape":"box","size":[4,2,0.2]}
+{"op":"verb","id":"vb_carry_board","verb":"physics_props.carry","on":"gold_board","params":{}}
+{"op":"verb","id":"vb_carry_coin","verb":"physics_props.carry","on":"coin_1","params":{}}
+{"op":"verb","id":"vb_jump_pad","verb":"locomotion.jump_pad","on":"jump_pad","params":{"height":5}}
+{"op":"verb","id":"vb_switch_gate","verb":"puzzle.switch","on":"switch_1","params":{"once":false}}
+{"op":"verb","id":"vb_lock_gate","verb":"puzzle.lock","on":"door_1","params":{"key":"coin_1"}}
+{"op":"verb","id":"vb_inspect_exhibit","verb":"social.inspect","on":"exhibit_1","params":{"text":"Colorful graffiti celebrating the skate culture."}}
+{"op":"verb","id":"vb_hazard_spikes","verb":"motion_hazards.hazard","on":"pit_floor","params":{"respawn":true}}
+{"op":"verb","id":"vb_portal_loop","verb":"puzzle.portal","on":"portal_back","params":{"to":"sp_red"}}
+{"op":"verb","id":"vb_jump","verb":"locomotion.jump","on":"player","params":{"jumpsMax":2}}
+{"op":"rule","id":"r_win","when":{"t":"enter","a":"gold_board","b":"goal_top"},"if":[{"l":"gold_board.carrier.team","op":"eq","r":"red"}],"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose_hazard","when":{"t":"hit","a":"player","b":"pit_floor"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_gate_open","when":{"t":"state_is","a":"switch_1","s":"on"},"then":[{"e":"set_state","target":"door_1","v":"open"}]}
+{"op":"rule","id":"r_gate_use","when":{"t":"use","a":"door_1","b":"player"},"if":[{"l":"coin_1.carrier.team","op":"eq","r":"red"}],"then":[{"e":"destroy","target":"coin_1"},{"e":"set_state","target":"door_1","v":"open"}]}
+{"op":"expect","id":"x_speed","prop":"win_reachable","a":"sp_red","b":"goal_top","headline":true,"text":"Final ramp chain must allow enough speed to grab the golden board on the top deck"}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":7}}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

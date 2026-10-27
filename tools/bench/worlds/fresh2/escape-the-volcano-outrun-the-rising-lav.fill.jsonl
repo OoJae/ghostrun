@@ -1,0 +1,31 @@
+{"op":"meta","mode":"play","lang":"en","pack":"course","sub":[],"seed":101,"look":"volcanic landscape","mood":[0.2,0.6,0.8],"timeOfDay":14,"weather":"clear"}
+{"op":"zone","id":"z_start","slot":"start","tag":"outside","name":"Volcano base"}
+{"op":"zone","id":"z_seg1","slot":"seg_1","tag":"ledge","name":"Ledge"}
+{"op":"zone","id":"z_seg2","slot":"seg_2","tag":"bridge","name":"Bridge"}
+{"op":"zone","id":"z_seg3","slot":"seg_3","tag":"gate","name":"Gate"}
+{"op":"zone","id":"z_seg4","slot":"seg_4","tag":"crater","name":"Crater"}
+{"op":"zone","id":"z_seg5","slot":"seg_5","tag":"gaps","name":"Gaps"}
+{"op":"zone","id":"z_seg6","slot":"seg_6","tag":"steps","name":"Final steps"}
+{"op":"zone","id":"z_finish","slot":"finish","tag":"objective","name":"Helicopter pad"}
+{"op":"spawn","id":"sp_red","zone":"z_start","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"goal_pad","zone":"z_finish","anchor":"goal","noun":"helicopter pad","hyper":"objective","team":"red","body":"sensor","shape":"box","size":[2,0.5,2]}
+{"op":"ent","id":"key_1","kind":"pickup","noun":"rusty key","hyper":"key","zone":"z_seg2","anchor":"pickup_1","body":"dynamic","shape":"box","size":[0.2,0.2,0.1]}
+{"op":"ent","id":"gate_door","kind":"door","noun":"gate door","hyper":"door","zone":"z_seg3","anchor":"cp_3","body":"fixed","shape":"box","size":[1,2,0.3]}
+{"op":"ent","id":"plate_crater","kind":"plate","noun":"pressure plate","hyper":"plate","zone":"z_seg4","anchor":"cp_4","body":"sensor","shape":"box","size":[0.5,0.1,0.5]}
+{"op":"ent","id":"switch_gap","kind":"switch","noun":"lever switch","hyper":"switch","zone":"z_seg5","anchor":"cp_5","body":"fixed","shape":"box","size":[0.3,0.5,0.2]}
+{"op":"ent","id":"water_bottle","kind":"pickup","noun":"water bottle","hyper":"bottle","zone":"z_seg6","anchor":"pickup_6","body":"dynamic","shape":"cylinder","size":[0.1,0.3,0.1]}
+{"op":"ent","id":"jump_pad_ledge","kind":"platform","noun":"jump pad","hyper":"jump_pad","zone":"z_seg1","anchor":"cp_1","body":"fixed","shape":"box","size":[1,0.2,1]}
+{"op":"verb","id":"vb_carry_key","verb":"physics_props.carry","on":"key_1","params":{}}
+{"op":"verb","id":"vb_carry_water","verb":"physics_props.carry","on":"water_bottle","params":{}}
+{"op":"verb","id":"vb_lock_gate","verb":"puzzle.lock","on":"gate_door","params":{"key":"key_1"}}
+{"op":"verb","id":"vb_switch_lever","verb":"puzzle.switch","on":"switch_gap","params":{"once":false}}
+{"op":"verb","id":"vb_plate_crater","verb":"puzzle.plate","on":"plate_crater","params":{"latch":false}}
+{"op":"verb","id":"vb_jump_pad","verb":"locomotion.jump_pad","on":"jump_pad_ledge","params":{"height":5}}
+{"op":"verb","id":"vb_lava_timer","verb":"puzzle.timer","on":"player","params":{"seconds":120}}
+{"op":"rule","id":"r_win","when":{"t":"enter","a":"player","b":"goal_pad"},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lava_fail","when":{"t":"timer_end","a":"player"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_gate_open","when":{"t":"state_is","a":"gate_door","s":"open"},"then":[{"e":"emit","target":"gate_door","fx":"gate_open"}]}
+{"op":"expect","id":"x_escape","prop":"win_reachable","a":"sp_red","b":"goal_pad","headline":true,"text":"Rising lava acts as a moving time limit"}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":6}}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

@@ -1,0 +1,164 @@
+{
+  "prompt": "Mini golf: get the ball into the hole before the windmill blocks it",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "sports",
+    "setting": "A mini golf hole with a moving windmill gate placed between the teeing area and the cup.",
+    "role": "grounder",
+    "goal": "Putt the golf ball into the hole before the swinging windmill blades can strike the ball or block the path to the cup.",
+    "fail": "The windmill hits the ball, sending it out of play or resetting the attempt; the round/level ends or time runs out before the ball is sunk.",
+    "mood": "focused, playful",
+    "pack": "arena",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Timing a putt around a moving windmill gate",
+    "nouns": [
+      {
+        "noun": "golf ball",
+        "hyper": "ball"
+      },
+      {
+        "noun": "hole",
+        "hyper": "cup/cupped depression"
+      },
+      {
+        "noun": "windmill",
+        "hyper": "rotating obstacle mechanism"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.55,
+      "arousal": 0.6,
+      "tension": 0.65
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "607e375aa7878f8cb62489a02d1f10f15ff5a74efd010ac68e013cd7a9311271",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_timing",
+      "text": "Timing a putt around a moving windmill gate",
+      "status": "counterexample",
+      "method": "static goal regression over rules + physics, 12 AI runners + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 2 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (golf_ball into hole) ← pick up golf_ball",
+        "src": ""
+      },
+      {
+        "id": "T2:r_lose",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 0,
+        "src": "ai",
+        "ms": 5,
+        "status": "counterexample",
+        "text": "r_lose fires exactly once",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "firings",
+          "text": "never fired when forced"
+        }
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it (AI par 1.1 s)",
+        "cx": null,
+        "src": "",
+        "ms": 13
+      },
+      {
+        "id": "T3:too_easy",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "counterexample",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 12,
+        "text": "won in 1.1 s: the win needs none of what the world asks for",
+        "cx": {
+          "where": null,
+          "have": 1.1,
+          "need": 3,
+          "unit": "s",
+          "text": "AI par 1.1 s < 3 s"
+        },
+        "src": "",
+        "ms": 0
+      }
+    ],
+    "par": {
+      "goldS": 1.1,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 143
+  }
+}

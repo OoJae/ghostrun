@@ -1,0 +1,21 @@
+{"op":"meta","mode":"wander","lang":"en","pack":"outdoor","sub":[],"seed":105,"look":"bioluminescent forest","mood":[0.6,0.2,0.3],"timeOfDay":22,"weather":"mist"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Forest edge"}
+{"op":"zone","id":"z_clearing","slot":"clearing","tag":"hub","name":"Misty clearing"}
+{"op":"zone","id":"z_grove","slot":"grove","tag":"trees","name":"Glowing grove"}
+{"op":"zone","id":"z_lookout","slot":"lookout","tag":"high_ground","name":"Owl's lookout"}
+{"op":"spawn","id":"sp_red","zone":"z_entrance","anchor":"spawn_pad","team":"red"}
+{"op":"ent","id":"tree_1","kind":"prop","noun":"glowing tree","hyper":"tree","zone":"z_grove","anchor":"heart","body":"fixed","shape":"box","size":[1,5,1]}
+{"op":"ent","id":"hollow","kind":"prop","noun":"hollow trunk","hyper":"hollow","zone":"z_grove","anchor":"stump","body":"fixed","shape":"box","size":[0.5,2,0.5]}
+{"op":"ent","id":"owl_statue","kind":"prop","noun":"owl statue","hyper":"owl","zone":"z_lookout","anchor":"ledge","body":"fixed","shape":"box","size":[0.8,0.8,0.8]}
+{"op":"ent","id":"mushroom_1","kind":"prop","noun":"bioluminescent mushroom","hyper":"mushroom","zone":"z_clearing","anchor":"center_n","body":"fixed","shape":"sphere","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"mushroom_2","kind":"prop","noun":"glowing fungus","hyper":"fungus","zone":"z_clearing","anchor":"center_s","body":"fixed","shape":"sphere","size":[0.3,0.3,0.3]}
+{"op":"verb","id":"vb_inspect_tree","verb":"social.inspect","on":"tree_1","params":{"text":"A towering tree whose bark emits a soft blue glow."}}
+{"op":"verb","id":"vb_inspect_hollow","verb":"social.inspect","on":"hollow","params":{"text":"A deep vertical hollow, perfect for climbing."}}
+{"op":"verb","id":"vb_inspect_owl","verb":"social.inspect","on":"owl_statue","params":{"text":"An owl perched watchfully, its eyes reflect the canopy."}}
+{"op":"verb","id":"vb_inspect_mush1","verb":"social.inspect","on":"mushroom_1","params":{"text":"A mushroom that pulses with emerald light."}}
+{"op":"verb","id":"vb_inspect_mush2","verb":"social.inspect","on":"mushroom_2","params":{"text":"Fungi glowing faintly, lighting the forest floor."}}
+{"op":"npc","id":"guide_owl","role":"guide","zone":"z_lookout","anchor":"mid","team":"","menu":["guide.point"],"dflt":"guide.point"}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":5}}
+{"op":"expect","id":"x_route","prop":"requires","a":"sp_red","b":"z_grove","headline":true,"text":"Climbing route must be vertical to the hollow"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

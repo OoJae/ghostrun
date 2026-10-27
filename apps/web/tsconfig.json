@@ -19,6 +19,7 @@
   "include": [
     "src",
     "src/gallery/index.json",
+    "src/trust.json",
     "e2e",
     "vite.config.ts",
     "playwright.config.ts"

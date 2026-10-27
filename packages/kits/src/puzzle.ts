@@ -50,9 +50,9 @@ export const plateVerb: VerbPlugin = {
 
 export const lockVerb: VerbPlugin = {
   id: "puzzle.lock",
-  line: 'on a door: USE while carrying the key opens it (key is used up); params {"key":"<item id>"}; state "open"',
+  line: 'on a door: USE while carrying the key opens it (key is used up unless "keep"); params {"key":"<item id>","keep":false}; state "open"',
   on: ["door"],
-  params: { key: { def: "" } },
+  params: { key: { def: "" }, keep: { def: false } },
   body: "fixed",
   initial: "locked",
   carries: (b) => (b.params.key ? [String(b.params.key)] : []),
@@ -63,7 +63,7 @@ export const lockVerb: VerbPlugin = {
       if (c.ent(b.on)?.state === "open") return false;
       const key = String(b.params.key);
       if (key && c.ent(actor)?.carrying !== key) return false;
-      if (key) c.destroy(key);
+      if (key && b.params.keep !== true) c.destroy(key);
       c.setSolid(b.on, false);
       c.setState(b.on, "open");
     },

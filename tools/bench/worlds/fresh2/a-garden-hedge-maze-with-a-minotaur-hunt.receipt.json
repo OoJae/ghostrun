@@ -1,0 +1,160 @@
+{
+  "prompt": "A garden hedge maze with a minotaur hunting you",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "horror-chase",
+    "setting": "A garden hedge maze with winding passages and a central pavilion where a minotaur patrols.",
+    "role": "A lost visitor being hunted.",
+    "goal": "Escape through the exit gate before the minotaur catches you.",
+    "fail": "The minotaur tags or catches you.",
+    "mood": "Panic and urgency in a claustrophobic garden",
+    "pack": "maze",
+    "sub": [],
+    "safety": "arcade",
+    "headline": "Every dead end can trigger a face-to-face chase with the minotaur.",
+    "nouns": [
+      {
+        "noun": "hedge maze",
+        "hyper": "labyrinth"
+      },
+      {
+        "noun": "minotaur",
+        "hyper": "monster"
+      },
+      {
+        "noun": "gate",
+        "hyper": "exit"
+      },
+      {
+        "noun": "pavilion",
+        "hyper": "structure"
+      }
+    ],
+    "moodVec": {
+      "valence": -0.6,
+      "arousal": 0.8,
+      "tension": 0.85
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "db94dbada8cba4abe848b7bf2b488fbe7993ec0b3f53c370e640dcb6eb21d91b",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_chase",
+      "text": "Every dead end can trigger a face-to-face chase with the minotaur.",
+      "status": "counterexample",
+      "method": "kinematic reachability (jump apex model) + physics jump witness, 4 attempts per jump count"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 1 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "chain",
+          "text": "win unreachable in the rule graph"
+        },
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "counterexample",
+        "method": "static goal regression over rules",
+        "text": "no rule chain lets the player trigger the win",
+        "src": ""
+      },
+      {
+        "id": "T1:x_chase",
+        "tier": "T1",
+        "subject": {
+          "kind": "property",
+          "id": "x_chase"
+        },
+        "method": "kinematic reachability (jump apex model)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 1,
+        "status": "counterexample",
+        "text": "Every dead end can trigger a face-to-face chase with the minotaur.",
+        "cx": {
+          "where": null,
+          "have": 1.5,
+          "need": 0,
+          "unit": "m",
+          "text": "reachable with 1 jump: step 0 m ≤ apex 1.5 m"
+        }
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 0,
+        "src": "ai",
+        "ms": 5,
+        "status": "counterexample",
+        "text": "r_win fires exactly once",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "firings",
+          "text": "never fired when forced"
+        }
+      },
+      {
+        "id": "T3:x_chase",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "x_chase"
+        },
+        "status": "counterexample",
+        "method": "physics jump witness, 4 attempts per jump count",
+        "n": 4,
+        "k": 1,
+        "text": "Every dead end can trigger a face-to-face chase with the minotaur.: reached with 2 jumps 1 of 4, with 1 1 of 4",
+        "cx": {
+          "where": null,
+          "have": 1,
+          "need": 0,
+          "unit": "attempts",
+          "text": "reached with only 1 jump(s)"
+        },
+        "src": "ai",
+        "ms": 29
+      }
+    ],
+    "par": null,
+    "ms": 63
+  }
+}

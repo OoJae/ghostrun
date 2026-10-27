@@ -1,0 +1,25 @@
+{"op":"meta","mode":"play","lang":"en","pack":"maze","sub":[],"seed":91,"look":"haunted carnival midnight","mood":[-0.4,0.55,0.65],"timeOfDay":0,"weather":"foggy"}
+{"op":"zone","id":"z_start","slot":"start","tag":"outside","name":"Carnival entrance"}
+{"op":"zone","id":"z_maze","slot":"maze","tag":"attraction","name":"Midnight carnival lane"}
+{"op":"spawn","id":"sp_red","zone":"z_start","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"exit_goal","zone":"z_maze","anchor":"exit","noun":"funhouse exit","hyper":"door","team":"red"}
+{"op":"ent","id":"ticket1","kind":"pickup","noun":"ticket","hyper":"entry token","zone":"z_maze","anchor":"booth1","body":"dynamic","shape":"box","size":[0.2,0.2,0.1]}
+{"op":"ent","id":"ticket2","kind":"pickup","noun":"ticket","hyper":"entry token","zone":"z_maze","anchor":"booth2","body":"dynamic","shape":"box","size":[0.2,0.2,0.1]}
+{"op":"ent","id":"ticket3","kind":"pickup","noun":"ticket","hyper":"entry token","zone":"z_maze","anchor":"booth3","body":"dynamic","shape":"box","size":[0.2,0.2,0.1]}
+{"op":"ent","id":"booth1","kind":"prop","noun":"carnival booth","hyper":"game stand","zone":"z_maze","anchor":"dead_end_1","body":"fixed","shape":"box","size":[1,1,1]}
+{"op":"ent","id":"booth2","kind":"prop","noun":"carnival booth","hyper":"game stand","zone":"z_maze","anchor":"dead_end_2","body":"fixed","shape":"box","size":[1,1,1]}
+{"op":"ent","id":"booth3","kind":"prop","noun":"carnival booth","hyper":"game stand","zone":"z_maze","anchor":"dead_end_3","body":"fixed","shape":"box","size":[1,1,1]}
+{"op":"ent","id":"exit_door","kind":"door","noun":"funhouse door","hyper":"carnival attraction building","zone":"z_maze","anchor":"exit","body":"fixed","shape":"box"}
+{"op":"ent","id":"keeper_hazard","kind":"hazard","noun":"carnival keeper","hyper":"npc","zone":"z_maze","anchor":"center","body":"sensor","shape":"capsule"}
+{"op":"verb","id":"vb_timer","verb":"puzzle.timer","on":"player","params":{"seconds":180}}
+{"op":"verb","id":"vb_hazard","verb":"motion_hazards.hazard","on":"keeper_hazard","params":{"respawn":true}}
+{"op":"rule","id":"r_score1","when":{"t":"touch","a":"player","b":"ticket1"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_score2","when":{"t":"touch","a":"player","b":"ticket2"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_score3","when":{"t":"touch","a":"player","b":"ticket3"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_open_exit","when":{"t":"score_gte","a":"team:red","n":3},"then":[{"e":"set_state","target":"exit_door","v":"open"}],"once":true}
+{"op":"rule","id":"r_win","when":{"t":"enter","a":"player","b":"exit_goal"},"if":[{"l":"exit_door.state","op":"eq","r":"open"}],"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose_time","when":{"t":"timer_end","a":"player"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose_hazard","when":{"t":"hit","a":"player","b":"keeper_hazard"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"expect","id":"x_carnival","prop":"win_reachable","a":"sp_red","b":"exit_goal","headline":true,"text":"Must win three booth tickets, then reach the funhouse exit before it locks"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

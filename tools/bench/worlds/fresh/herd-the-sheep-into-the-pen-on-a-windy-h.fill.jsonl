@@ -1,0 +1,25 @@
+{"op":"meta","mode":"play","lang":"en","pack":"outdoor","sub":[],"seed":106,"look":"windy hillside farm","mood":[0.35,0.3,0.45],"timeOfDay":10,"weather":"windy"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Farm gate"}
+{"op":"zone","id":"z_pen","slot":"clearing","tag":"pen","name":"Central pen"}
+{"op":"zone","id":"z_west","slot":"clearing_w","tag":"pasture_west","name":"West pasture"}
+{"op":"zone","id":"z_east","slot":"clearing_e","tag":"pasture_east","name":"East pasture"}
+{"op":"spawn","id":"sp_red","zone":"z_entrance","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"pen_goal","zone":"z_pen","anchor":"goal","noun":"wooden pen","hyper":"enclosure","team":"red"}
+{"op":"ent","id":"sheep_1","kind":"npc","noun":"sheep","hyper":"flock","zone":"z_west","anchor":"center","body":"dynamic","shape":"capsule","size":[0.5,1.0,0.5]}
+{"op":"ent","id":"sheep_2","kind":"npc","noun":"sheep","hyper":"flock","zone":"z_east","anchor":"center","body":"dynamic","shape":"capsule","size":[0.5,1.0,0.5]}
+{"op":"ent","id":"sheep_3","kind":"npc","noun":"sheep","hyper":"flock","zone":"z_west","anchor":"flank_n","body":"dynamic","shape":"capsule","size":[0.5,1.0,0.5]}
+{"op":"ent","id":"wind_west","kind":"hazard","noun":"wind gust","hyper":"weather","zone":"z_west","anchor":"center","body":"sensor","shape":"box","size":[5,2,5]}
+{"op":"ent","id":"wind_east","kind":"hazard","noun":"wind gust","hyper":"weather","zone":"z_east","anchor":"center","body":"sensor","shape":"box","size":[5,2,5]}
+{"op":"verb","id":"vb_jump","verb":"locomotion.jump","on":"player","params":{"jumpsMax":2}}
+{"op":"verb","id":"vb_wind_west","verb":"motion_hazards.wind","on":"wind_west","params":{"x":-5,"z":0}}
+{"op":"verb","id":"vb_wind_east","verb":"motion_hazards.wind","on":"wind_east","params":{"x":5,"z":0}}
+{"op":"verb","id":"vb_inspect_pen","verb":"social.inspect","on":"pen_goal","params":{"text":"A sturdy wooden pen waiting for the flock."}}
+{"op":"rule","id":"r_score_s1","when":{"t":"enter","a":"sheep_1","b":"pen_goal"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_score_s2","when":{"t":"enter","a":"sheep_2","b":"pen_goal"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_score_s3","when":{"t":"enter","a":"sheep_3","b":"pen_goal"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_win","when":{"t":"score_gte","a":"team:red","n":3},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose_west","when":{"t":"enter","a":"sheep_1","b":"bank"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose_east","when":{"t":"enter","a":"sheep_2","b":"bank"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"expect","id":"x_wind_drift","prop":"headline","a":"sp_red","b":"pen_goal","headline":true,"text":"Wind drift pushes the flock off the pen"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

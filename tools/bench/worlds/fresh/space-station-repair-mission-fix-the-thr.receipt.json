@@ -1,0 +1,270 @@
+{
+  "prompt": "Space station repair mission: fix the three broken panels before oxygen runs out",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "Sci-Fi Survival / Time-management",
+    "setting": "Dying space station interior",
+    "role": "Astronaut/engineer",
+    "goal": "Repair three broken power panels before the oxygen timer reaches zero",
+    "fail": "Oxygen depletes before all three panels are repaired",
+    "mood": "Panicked urgency",
+    "pack": "floor_plan",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Oxygen timer forces a three-panel repair sprint through a station floor plan",
+    "nouns": [
+      {
+        "noun": "space station",
+        "hyper": "interior"
+      },
+      {
+        "noun": "panel",
+        "hyper": "mechanism"
+      },
+      {
+        "noun": "oxygen",
+        "hyper": "resource"
+      }
+    ],
+    "moodVec": {
+      "valence": -0.2,
+      "arousal": 0.9,
+      "tension": 0.95
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "39ff8ea18b5c11273c97c861e2e941c3166511d4f3cb97e8d5d27ce0b62da65d",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_oxygen",
+      "text": "Oxygen timer forces a three-panel repair sprint through a station floor plan",
+      "status": "counterexample",
+      "method": "static goal regression over rules + physics, 12 AI runners + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 1,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 9 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 1,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_all_on (panel_hall becomes on: use panel_hall) [after panel_sw on, panel_se on]",
+        "src": ""
+      },
+      {
+        "id": "T2:r_all_on",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_all_on"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_all_on fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_oxygen_done",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_oxygen_done"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_oxygen_done fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_ne",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_ne"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_corner_ne fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_ne_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_ne_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_corner_ne_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_nw",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_nw"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_corner_nw fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_nw_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_nw_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_corner_nw_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_se",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_se"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_corner_se fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_sw",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_sw"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_corner_sw fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it (AI par 2.7 s)",
+        "cx": null,
+        "src": "",
+        "ms": 39
+      },
+      {
+        "id": "T3:too_easy",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "counterexample",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 12,
+        "text": "won in 2.7 s: the win needs none of what the world asks for",
+        "cx": {
+          "where": null,
+          "have": 2.7,
+          "need": 3,
+          "unit": "s",
+          "text": "AI par 2.7 s < 3 s"
+        },
+        "src": "",
+        "ms": 0
+      }
+    ],
+    "par": {
+      "goldS": 2.7,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 79
+  }
+}

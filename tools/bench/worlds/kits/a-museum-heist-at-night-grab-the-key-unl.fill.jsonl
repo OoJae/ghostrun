@@ -1,0 +1,27 @@
+{"op":"meta","mode":"play","lang":"en","pack":"floor_plan","sub":[],"seed":102,"look":"grand dimly lit museum hall","mood":[-0.2,0.7,0.8],"timeOfDay":22,"weather":"clear"}
+{"op":"zone","id":"z_yard","slot":"yard","tag":"outside","name":"Museum exterior"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Main entrance hall"}
+{"op":"zone","id":"z_west","slot":"room_sw","tag":"room","name":"West alcove"}
+{"op":"zone","id":"z_east","slot":"room_se","tag":"room","name":"East gallery"}
+{"op":"zone","id":"z_north","slot":"room_nw","tag":"room","name":"North exhibition"}
+{"op":"zone","id":"z_hall","slot":"main_room","tag":"hall","name":"Great central hall"}
+{"op":"zone","id":"z_vault","slot":"room_ne","tag":"room","name":"Vault chamber"}
+{"op":"spawn","id":"sp_red","zone":"z_yard","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"exit","zone":"z_yard","anchor":"corner_w","noun":"quiet street","hyper":"exit","team":"red"}
+{"op":"ent","id":"key","kind":"pickup","noun":"rusty key","hyper":"key","zone":"z_entrance","anchor":"corner_sw","body":"dynamic","shape":"box","size":[0.2,0.4,0.1]}
+{"op":"ent","id":"vault_door","kind":"door","noun":"heavy vault door","hyper":"door","zone":"z_vault","anchor":"doorway_w","body":"fixed","shape":"box"}
+{"op":"ent","id":"gem","kind":"pickup","noun":"priceless gem","hyper":"gem","zone":"z_vault","anchor":"center","body":"dynamic","shape":"sphere","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"alarm","kind":"hazard","noun":"security alarm","hyper":"alarm","zone":"z_hall","anchor":"corner_ne","body":"sensor","shape":"box","size":[1,0.2,1]}
+{"op":"verb","id":"vb_carry_key","verb":"physics_props.carry","on":"key","params":{}}
+{"op":"verb","id":"vb_carry_gem","verb":"physics_props.carry","on":"gem","params":{}}
+{"op":"verb","id":"vb_lock_vault","verb":"puzzle.lock","on":"vault_door","params":{"key":"key"}}
+{"op":"verb","id":"vb_inspect_alarm","verb":"social.inspect","on":"alarm","params":{"text":"The alarm will trigger in 120 seconds. Disable it or escape quickly."}}
+{"op":"verb","id":"vb_alarm_timer","verb":"puzzle.timer","on":"player","params":{"seconds":120}}
+{"op":"verb","id":"vb_jump","verb":"locomotion.jump","on":"player","params":{"jumpsMax":2}}
+{"op":"rule","id":"r_unlock","when":{"t":"state_is","a":"vault_door","s":"open"},"then":[{"e":"emit","target":"vault_door","fx":"unlock_flash"}]}
+{"op":"rule","id":"r_escape","when":{"t":"enter","a":"gem","b":"exit"},"if":[{"l":"gem.carrier.team","op":"eq","r":"red"}],"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_alarm","when":{"t":"timer_end","a":"player"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"expect","id":"x_heist","prop":"win_reachable","a":"sp_red","b":"exit","headline":true,"text":"Heist requires finding the hidden key to unlock the vault."}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.8,"speed":5}}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

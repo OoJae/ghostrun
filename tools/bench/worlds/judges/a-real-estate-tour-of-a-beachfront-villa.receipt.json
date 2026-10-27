@@ -1,0 +1,88 @@
+{
+  "prompt": "a real-estate tour of a beachfront villa; the agent books a viewing at the end",
+  "intent": {
+    "lang": "en",
+    "mode": "wander",
+    "genre": "tour",
+    "setting": "beachfront villa, real-estate property",
+    "role": "property viewer",
+    "goal": "tour the villa and book a viewing with the agent",
+    "fail": "tour ends without a scheduled viewing",
+    "mood": "polished, aspirational",
+    "pack": "floor_plan",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Showcase beachfront villa and close with a booking call to the agent",
+    "nouns": [
+      {
+        "noun": "villa",
+        "hyper": "residence"
+      },
+      {
+        "noun": "beachfront",
+        "hyper": "coastal site"
+      },
+      {
+        "noun": "agent",
+        "hyper": "person"
+      },
+      {
+        "noun": "viewing",
+        "hyper": "appointment"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.6,
+      "arousal": 0.2,
+      "tension": 0.05
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "2b3aefca2b9264e137cce2ad02f6d9497b896e1630b19da1ab41aff4e48d5f29",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_tour",
+      "text": "Showcase beachfront villa and close with a booking call to the agent",
+      "status": "not_checkable",
+      "method": "none"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 0 rules reference existing things",
+        "src": ""
+      },
+      {
+        "id": "T3:tour",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "tour"
+        },
+        "status": "played",
+        "method": "physics, an AI visitor walks to and uses each",
+        "n": 7,
+        "k": 7,
+        "text": "walked to and inspected 7 of 7 things",
+        "cx": null,
+        "src": "",
+        "ms": 28
+      }
+    ],
+    "par": null,
+    "ms": 52
+  }
+}

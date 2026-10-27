@@ -21,6 +21,7 @@ export function splitObjects(line: string): string[] {
   let inStr = false;
   let esc = false;
   let start = -1;
+  let end = -1;
   for (let i = 0; i < line.length; i++) {
     const ch = line[i]!;
     if (inStr) {
@@ -36,9 +37,13 @@ export function splitObjects(line: string): string[] {
     } else if (ch === "}" && depth > 0 && --depth === 0 && start >= 0) {
       out.push(line.slice(start, i + 1));
       start = -1;
+      end = i + 1;
     }
   }
-  return out.length > 1 ? out : [line];
+  if (!out.length) return [line];
+  // whatever follows the last whole object (a cut-off one) stays as its own line, to be judged on its own
+  const rest = line.slice(end).trim();
+  return rest ? [...out, rest] : out.length === 1 ? [line] : out;
 }
 export const BUDGETS = { gameplay: 90, zone: 8, ent: 40, verb: 32, rule: 20, minded: 4, plainNpc: 8, expect: 6, dress: 40, poster: 4 } as const;
 

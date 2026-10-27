@@ -1,0 +1,100 @@
+{
+  "prompt": "A quiet Japanese zen garden with a koi pond and stone lanterns to explore",
+  "intent": {
+    "lang": "en",
+    "mode": "wander",
+    "genre": "exploration",
+    "setting": "A secluded Japanese garden featuring a koi pond, stone lanterns, and carefully raked sand.",
+    "role": "Visitor",
+    "goal": "Stroll through the garden and observe the decorative elements.",
+    "fail": "None",
+    "mood": "Calm and contemplative",
+    "pack": "outdoor",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Koi pond is central to the exploration path",
+    "nouns": [
+      {
+        "noun": "zen garden",
+        "hyper": "garden"
+      },
+      {
+        "noun": "koi pond",
+        "hyper": "pond"
+      },
+      {
+        "noun": "stone lanterns",
+        "hyper": "decorations"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.8,
+      "arousal": -0.6,
+      "tension": -0.5
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "e63a73453865ae4dbce35ac026ce32e3ade3e8021d7e3829bc786fa09d661270",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_explore",
+      "text": "Koi pond is central to the exploration path",
+      "status": "verified",
+      "method": "kinematic reachability (jump apex model)"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 0 rules reference existing things",
+        "src": ""
+      },
+      {
+        "id": "T1:x_explore",
+        "tier": "T1",
+        "subject": {
+          "kind": "property",
+          "id": "x_explore"
+        },
+        "method": "kinematic reachability (jump apex model)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "Koi pond is central to the exploration path",
+        "cx": null
+      },
+      {
+        "id": "T3:tour",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "tour"
+        },
+        "status": "played",
+        "method": "physics, an AI visitor walks to and uses each",
+        "n": 8,
+        "k": 8,
+        "text": "walked to and inspected 8 of 8 things",
+        "cx": null,
+        "src": "",
+        "ms": 29
+      }
+    ],
+    "par": null,
+    "ms": 306
+  }
+}

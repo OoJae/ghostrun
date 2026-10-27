@@ -124,7 +124,9 @@ export function t0(b: WorldBundle, playerTeam: "red" | "blue" = "red"): { chips:
       const team = /^team:(red|blue)(?:\.score)?$/.exec(c.l)?.[1];
       if (team && (c.op === "gt" || c.op === "gte")) {
         if (team !== playerTeam) return null; // it needs the rivals to score: nothing the player can plan
-        const need = typeof c.r === "number" ? (c.op === "gt" ? c.r + 1 : c.r) : 2; // a lead over another score: two to be safe
+        // a number (models sometimes write it as a string: "5"), or a lead over another score: two to be safe
+        const n = typeof c.r === "number" ? c.r : typeof c.r === "string" && c.r.trim() !== "" && Number.isFinite(Number(c.r)) ? Number(c.r) : null;
+        const need = n !== null ? (c.op === "gt" ? n + 1 : n) : 2;
         if (need <= 0) continue;
         // the same planning as "team reaches N" (several once-only scorers become one collect step)
         const sub = satTrigger(r, { ...w, t: "score_gte", a: `team:${team}`, n: need }, depth + 1, s2);

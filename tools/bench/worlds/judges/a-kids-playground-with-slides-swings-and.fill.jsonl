@@ -1,0 +1,23 @@
+{"op":"meta","mode":"wander","lang":"en","pack":"outdoor","sub":[],"seed":112,"look":"bright playground","mood":[0.8,0.5,-0.5],"timeOfDay":12,"weather":"clear"}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":6}}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Playground Entrance"}
+{"op":"zone","id":"z_hub","slot":"clearing","tag":"hub","name":"Central Hub"}
+{"op":"zone","id":"z_slide","slot":"clearing_w","tag":"slide_area","name":"Slide Area"}
+{"op":"zone","id":"z_swing","slot":"clearing_e","tag":"swing_area","name":"Swing Area"}
+{"op":"zone","id":"z_sandbox","slot":"camp","tag":"sandbox","name":"Sandbox"}
+{"op":"spawn","id":"sp_red","zone":"z_entrance","anchor":"spawn_pad","team":"red"}
+{"op":"ent","id":"slide_big","kind":"prop","noun":"large red slide","hyper":"playground equipment","zone":"z_slide","anchor":"spawn_pad","body":"fixed","shape":"box","size":[2,0.1,3]}
+{"op":"ent","id":"swing_set","kind":"prop","noun":"wooden swings","hyper":"playground equipment","zone":"z_swing","anchor":"spawn_pad","body":"fixed","shape":"box","size":[1.5,0.1,2]}
+{"op":"ent","id":"clue_one","kind":"prop","noun":"golden clue #1","hyper":"clue","zone":"z_hub","anchor":"center_n","body":"fixed","shape":"box","size":[0.2,0.2,0.05]}
+{"op":"ent","id":"clue_two","kind":"prop","noun":"golden clue #2","hyper":"clue","zone":"z_slide","anchor":"flank_n","body":"fixed","shape":"box","size":[0.2,0.2,0.05]}
+{"op":"ent","id":"clue_three","kind":"prop","noun":"golden clue #3","hyper":"clue","zone":"z_swing","anchor":"flank_s","body":"fixed","shape":"box","size":[0.2,0.2,0.05]}
+{"op":"ent","id":"treasure_toy","kind":"pickup","noun":"toy treasure","hyper":"treasure","zone":"z_sandbox","anchor":"goal","body":"dynamic","shape":"sphere","size":[0.3,0.3,0.3]}
+{"op":"verb","id":"vb_inspect_slide","verb":"social.inspect","on":"slide_big","params":{"text":"Zoom down the bright red slide!"}}
+{"op":"verb","id":"vb_inspect_swing","verb":"social.inspect","on":"swing_set","params":{"text":"Swing high on the wooden swings!"}}
+{"op":"verb","id":"vb_inspect_clue1","verb":"social.inspect","on":"clue_one","params":{"text":"First golden clue points to the slide."}}
+{"op":"verb","id":"vb_inspect_clue2","verb":"social.inspect","on":"clue_two","params":{"text":"Second clue hints at the swings."}}
+{"op":"verb","id":"vb_inspect_clue3","verb":"social.inspect","on":"clue_three","params":{"text":"Last clue leads to the sandbox."}}
+{"op":"npc","id":"guide_npc","role":"guide","zone":"z_hub","anchor":"center","team":"","menu":["guide.patrol"],"dflt":"guide.patrol"}
+{"op":"expect","id":"x_play","prop":"win_reachable","a":"sp_red","b":"z_sandbox","headline":true,"text":"Sandbox hides a specific toy treasure discoverable via three golden clues."}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

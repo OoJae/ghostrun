@@ -1,0 +1,88 @@
+{
+  "prompt": "a kids' playground with slides, swings and a treasure hunt",
+  "intent": {
+    "lang": "en",
+    "mode": "wander",
+    "genre": "family adventure",
+    "setting": "A bright, colorful outdoor playground next to a sandy pit, featuring a large red slide, wooden swings on a rusty frame, and a grassy area scattered with hidden clues.",
+    "role": "A cheerful child or a carefree adult guardian looking to enjoy the afternoon.",
+    "goal": "Find the toy treasure buried somewhere in the sandbox by following scattered golden clues and enjoying the playground equipment.",
+    "fail": "Missing all the clues to the treasure before hiding in the clouds.",
+    "mood": "playful, curious, sunny",
+    "pack": "outdoor",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Sandbox hides a specific toy treasure discoverable via three golden clues.",
+    "nouns": [
+      {
+        "noun": "slide",
+        "hyper": "playground equipment"
+      },
+      {
+        "noun": "swing",
+        "hyper": "playground equipment"
+      },
+      {
+        "noun": "treasure",
+        "hyper": "game objective"
+      },
+      {
+        "noun": "sandbox",
+        "hyper": "play area"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.8,
+      "arousal": 0.5,
+      "tension": -0.5
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "647966a0ff17ce172e09b7d081b9f5604a8d3f80ecc1b53f760e83b37908730f",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_play",
+      "text": "Sandbox hides a specific toy treasure discoverable via three golden clues.",
+      "status": "not_checkable",
+      "method": "none"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 0 rules reference existing things",
+        "src": ""
+      },
+      {
+        "id": "T3:tour",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "tour"
+        },
+        "status": "played",
+        "method": "physics, an AI visitor walks to and uses each",
+        "n": 6,
+        "k": 6,
+        "text": "walked to and inspected 6 of 6 things",
+        "cx": null,
+        "src": "",
+        "ms": 49
+      }
+    ],
+    "par": null,
+    "ms": 333
+  }
+}

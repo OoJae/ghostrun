@@ -672,3 +672,12 @@ kbd {
 .gallery-meta { font-size: 11px; color: var(--ink-faint); text-transform: capitalize; }
 .gallery-honest { color: var(--amber); text-transform: none; }
 .suggest .suggest-gallery { border-color: rgba(25, 227, 255, 0.35); }
+
+/* ---- why trust this ----------------------------------------------------------------------------- */
+.trust { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: min(820px, calc(100vw - 32px)); max-height: min(82vh, 780px); overflow: auto; padding: 16px 20px; background: rgba(12, 9, 26, 0.94); z-index: 20; font-size: 13px; line-height: 1.5; }
+.trust h3 { margin: 14px 0 6px; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-faint); }
+.trust ul { margin: 0; padding-left: 18px; display: grid; gap: 4px; }
+.trust code { font-size: 12px; }
+.trust-table { width: 100%; border-collapse: collapse; font-size: 12.5px; font-variant-numeric: tabular-nums; }
+.trust-table th, .trust-table td { text-align: left; padding: 5px 8px; border-bottom: 1px solid rgba(255, 255, 255, 0.08); }
+.trust-table th { color: var(--ink-dim); font-weight: 600; }

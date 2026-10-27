@@ -1,0 +1,282 @@
+{
+  "prompt": "Bumper cars arena: knock the other cars out of the ring",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "arcade sports",
+    "setting": "A circular, walled bumper car ring with a sparky floor and low surrounding guardrails, filled with a few other vehicles.",
+    "role": "Driver of a bumpy, electric bumper car.",
+    "goal": "Knock the opposing bumper cars out of the ring by ramming them.",
+    "fail": "Your own car is bumped out of the ring or it stops moving.",
+    "mood": "Lively, chaotic and fun.",
+    "pack": "arena",
+    "sub": [],
+    "safety": "arcade",
+    "headline": "Ring boundary must stay intact so cars can be knocked out but not into infinite space.",
+    "nouns": [
+      {
+        "noun": "bumper car",
+        "hyper": "vehicle"
+      },
+      {
+        "noun": "ring",
+        "hyper": "arena"
+      },
+      {
+        "noun": "guardrails",
+        "hyper": "boundary"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.7,
+      "arousal": 0.8,
+      "tension": 0.3
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "14820f1d54425d23b05448b8e1222d3057c509b32da6ac15f07985a76fcdf518",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_ring",
+      "text": "Ring boundary must stay intact so cars can be knocked out but not into infinite space.",
+      "status": "counterexample",
+      "method": "static goal regression over rules"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 12 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "chain",
+          "text": "win unreachable in the rule graph"
+        },
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "counterexample",
+        "method": "static goal regression over rules",
+        "text": "no rule chain lets the player trigger the win",
+        "src": ""
+      },
+      {
+        "id": "T2:r_lose_player",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_player"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_lose_player fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lose_player_east",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_player_east"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_lose_player_east fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_score_rival_east",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score_rival_east"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_score_rival_east fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_score_rival_mix",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score_rival_mix"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_score_rival_mix fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_score_rival_west",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score_rival_west"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_score_rival_west fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_center",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_center"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 9,
+        "status": "verified",
+        "text": "r_secret_center fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_center_n",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_center_n"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 7,
+        "status": "verified",
+        "text": "r_secret_center_n fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_center_s",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_center_s"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 6,
+        "status": "verified",
+        "text": "r_secret_center_s fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_n",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_n"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_secret_flank_n fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_n_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_n_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_secret_flank_n_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_s",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_s"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_flank_s fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      }
+    ],
+    "par": null,
+    "ms": 151
+  }
+}

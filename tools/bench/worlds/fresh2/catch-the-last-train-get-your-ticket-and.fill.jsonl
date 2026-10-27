@@ -1,0 +1,30 @@
+{"op":"meta","mode":"play","lang":"en","pack":"floor_plan","sub":[],"seed":109,"look":"railway hub at dusk","mood":[-0.1,0.7,0.8],"timeOfDay":19,"weather":"clear"}
+{"op":"zone","id":"z_yard","slot":"yard","tag":"outside","name":"Station outskirts"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Ticketing hall"}
+{"op":"zone","id":"z_ticket","slot":"room_sw","tag":"room","name":"Ticket kiosk"}
+{"op":"zone","id":"z_concourse","slot":"main_room","tag":"hall","name":"Concours"}
+{"op":"zone","id":"z_platform","slot":"room_ne","tag":"room","name":"Platform"}
+{"op":"spawn","id":"sp_red","zone":"z_yard","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"goal_platform","zone":"z_platform","anchor":"center","noun":"platform","hyper":"platform","team":"red"}
+{"op":"ent","id":"ticket","kind":"pickup","noun":"train ticket","hyper":"paper credential","zone":"z_ticket","anchor":"center","body":"dynamic","shape":"box","size":[0.2,0.1,0.02]}
+{"op":"ent","id":"kiosk","kind":"prop","noun":"ticket kiosk","hyper":"ticketing machine","zone":"z_ticket","anchor":"corner_sw","body":"fixed","shape":"box","size":[1.0,0.5,1.2]}
+{"op":"ent","id":"gate_scanner","kind":"door","noun":"ticket gate scanner","hyper":"ticket scanner","zone":"z_concourse","anchor":"doorway_w","body":"fixed","shape":"box"}
+{"op":"ent","id":"timer","kind":"prop","noun":"departure timer","hyper":"timer","zone":"z_platform","anchor":"corner_e","body":"sensor","shape":"box","size":[0.5,0.5,0.2]}
+{"op":"ent","id":"sign_info","kind":"sign","noun":"info sign","hyper":"sign","zone":"z_entrance","anchor":"corner_nw","body":"fixed","shape":"box","size":[0.5,0.5,0.2]}
+{"op":"ent","id":"hazard_spikes","kind":"hazard","noun":"spikes","hyper":"hazard","zone":"z_concourse","anchor":"corner_ne","body":"sensor","shape":"box","size":[1.0,0.1,0.5]}
+{"op":"ent","id":"plate_release","kind":"plate","noun":"pressure plate","hyper":"plate","zone":"z_concourse","anchor":"center","body":"sensor","shape":"box","size":[0.5,0.1,0.5]}
+{"op":"ent","id":"door_exit","kind":"door","noun":"exit door","hyper":"door","zone":"z_concourse","anchor":"doorway_e","body":"fixed","shape":"box"}
+{"op":"verb","id":"vb_carry_ticket","verb":"physics_props.carry","on":"ticket","params":{}}
+{"op":"verb","id":"vb_lock_gate","verb":"puzzle.lock","on":"gate_scanner","params":{"key":"ticket"}}
+{"op":"verb","id":"vb_timer","verb":"puzzle.timer","on":"player","params":{"seconds":90}}
+{"op":"verb","id":"vb_inspect_sign","verb":"social.inspect","on":"sign_info","params":{"text":"Train departs in 90 seconds. Get your ticket and rush to the platform!"}}
+{"op":"verb","id":"vb_hazard_spikes","verb":"motion_hazards.hazard","on":"hazard_spikes","params":{"respawn":true}}
+{"op":"verb","id":"vb_plate_release","verb":"puzzle.plate","on":"plate_release","params":{"latch":false}}
+{"op":"verb","id":"vb_open_exit","verb":"puzzle.lock","on":"door_exit","params":{"key":"ticket"}}
+{"op":"rule","id":"r_win","when":{"t":"enter","a":"player","b":"goal_platform"},"if":[{"l":"timer.state","op":"eq","r":"running"}],"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_timer_end","when":{"t":"timer_end","a":"player"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_plate_release","when":{"t":"state_is","a":"plate_release","s":"down"},"then":[{"e":"set_state","target":"door_exit","v":"open"}]}
+{"op":"expect","id":"x_route","prop":"win_reachable","a":"sp_red","b":"goal_platform","headline":true,"text":"Ticket gate and concourse route must be cleared before countdown ends"}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.5,"speed":5}}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

@@ -1,0 +1,246 @@
+{
+  "prompt": "Capture the enemy flag on a snowy mountain fort",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "Team combat",
+    "setting": "Snowy mountain fort",
+    "role": "Assault player",
+    "goal": "Capture the enemy flag",
+    "fail": "Being killed or taking too long",
+    "mood": "Tense winter battle",
+    "pack": "city_block",
+    "sub": [
+      "rooftop"
+    ],
+    "safety": "arcade",
+    "headline": "Snowy fort walls require climbing for capture",
+    "nouns": [
+      {
+        "noun": "snowy mountain fort",
+        "hyper": "fortification"
+      },
+      {
+        "noun": "enemy flag",
+        "hyper": "flag"
+      }
+    ],
+    "moodVec": {
+      "valence": -0.2,
+      "arousal": 0.6,
+      "tension": 0.5
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "e516b6913cbf5707f247ece07b1cc898575d097a30e74f7ea21df8fb08aa4ee4",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_fort",
+      "text": "Snowy fort walls require climbing for capture",
+      "status": "verified",
+      "method": "kinematic reachability (jump apex model) + physics jump witness, 4 attempts per jump count"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 7 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_capture (flag_enemy into goal_capture, carried by red) ← pick up flag_enemy",
+        "src": ""
+      },
+      {
+        "id": "T1:x_fort",
+        "tier": "T1",
+        "subject": {
+          "kind": "property",
+          "id": "x_fort"
+        },
+        "method": "kinematic reachability (jump apex model)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "Snowy fort walls require climbing for capture",
+        "cx": null
+      },
+      {
+        "id": "T2:r_capture",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_capture"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_capture fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_gate_open",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_gate_open"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_gate_open: no room to stand next to gate_door",
+        "cx": null
+      },
+      {
+        "id": "T2:r_hazard_ice",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_hazard_ice"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_hazard_ice fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_hazard_spike",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_hazard_spike"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_hazard_spike fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_edge",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_edge"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 6,
+        "status": "verified",
+        "text": "r_secret_edge fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_lane_end",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_lane_end"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 6,
+        "status": "verified",
+        "text": "r_secret_lane_end fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_timer",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_timer"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_timer fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners vs 1 bot",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it vs 1 bot (AI par 24.4 s)",
+        "cx": null,
+        "src": "",
+        "ms": 432
+      },
+      {
+        "id": "T3:x_fort",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "x_fort"
+        },
+        "status": "played",
+        "method": "physics jump witness, 4 attempts per jump count",
+        "n": 4,
+        "k": 4,
+        "text": "Snowy fort walls require climbing for capture: reached with 2 jumps 4 of 4, with 1 0 of 4",
+        "cx": null,
+        "src": "ai",
+        "ms": 70
+      }
+    ],
+    "par": {
+      "goldS": 24.4,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 620
+  }
+}

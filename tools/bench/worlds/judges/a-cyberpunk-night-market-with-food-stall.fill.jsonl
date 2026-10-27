@@ -1,0 +1,26 @@
+{"op":"meta","mode":"play","lang":"en","pack":"arena","sub":[],"seed":101,"look":"neon night market","mood":[-0.1,0.6,0.7],"timeOfDay":22,"weather":"clear"}\
+{"op":"zone","id":"z_midfield","slot":"midfield","tag":"market","name":"Central alleys"}\
+{"op":"zone","id":"z_west","slot":"west_half","tag":"west","name":"West stalls"}\
+{"op":"zone","id":"z_east","slot":"east_half","tag":"east","name":"East stalls"}\
+{"op":"zone","id":"z_north","slot":"north_deck","tag":"upper","name":"Upper promenade"}\
+{"op":"zone","id":"z_south","slot":"south_deck","tag":"lower","name":"Lower promenade"}\
+{"op":"spawn","id":"sp_red","zone":"z_west","anchor":"spawn_pad","team":"red"}\
+{"op":"goal","id":"exit_gate","zone":"z_east","anchor":"goal_ring","noun":"market exit","hyper":"exit","team":""}\
+{"op":"ent","id":"stall_w1","kind":"prop","noun":"food stall","hyper":"street vendor","zone":"z_west","anchor":"flank_n","body":"fixed","shape":"box","size":[2,2,2]}\
+{"op":"ent","id":"stall_w2","kind":"prop","noun":"food stall","hyper":"street vendor","zone":"z_west","anchor":"flank_s","body":"fixed","shape":"box","size":[2,2,2]}\
+{"op":"ent","id":"stall_e1","kind":"prop","noun":"food stall","hyper":"street vendor","zone":"z_east","anchor":"flank_n","body":"fixed","shape":"box","size":[2,2,2]}\
+{"op":"ent","id":"stall_e2","kind":"prop","noun":"food stall","hyper":"street vendor","zone":"z_east","anchor":"flank_s","body":"fixed","shape":"box","size":[2,2,2]}\
+{"op":"ent","id":"drone_1","kind":"hazard","noun":"delivery drone","hyper":"autonomous vehicle","zone":"z_midfield","anchor":"center","body":"sensor","shape":"sphere","size":[0.5,0.5,0.5]}\
+{"op":"ent","id":"drone_2","kind":"hazard","noun":"delivery drone","hyper":"autonomous vehicle","zone":"z_north","anchor":"deck_center","body":"sensor","shape":"sphere","size":[0.5,0.5,0.5]}\
+{"op":"ent","id":"thief","kind":"npc","noun":"pickpocket","hyper":"thief","zone":"z_midfield","anchor":"center","body":"dynamic","shape":"capsule"}\
+{"op":"verb","id":"vb_jump","verb":"locomotion.jump","on":"player","params":{"jumpsMax":2}}\
+{"op":"verb","id":"vb_drone_hazard","verb":"motion_hazards.hazard","on":"drone_1","params":{"respawn":true}}\
+{"op":"verb","id":"vb_drone2_hazard","verb":"motion_hazards.hazard","on":"drone_2","params":{"respawn":true}}\
+{"op":"rule","id":"r_catch","when":{"t":"touch","a":"player","b":"thief"},"then":[{"e":"win","target":"player"}],"once":true}\
+{"op":"rule","id":"r_escape","when":{"t":"enter","a":"thief","b":"exit_gate"},"then":[{"e":"lose","target":"player"}],"once":true}\
+{"op":"rule","id":"r_drone_hit","when":{"t":"hit","a":"player","b":"drone_1"},"then":[{"e":"lose","target":"player"}],"once":false}\
+{"op":"rule","id":"r_drone2_hit","when":{"t":"hit","a":"player","b":"drone_2"},"then":[{"e":"lose","target":"player"}],"once":false}\
+{"op":"expect","id":"x_chase","prop":"win_reachable","a":"sp_red","b":"exit_gate","headline":true,"text":"Pickpocket chase must survive drone traffic between stalls"}\
+{"op":"end","layer":"gameplay"}\
+{"op":"npc","id":"pickpocket_npc","role":"rival","zone":"z_midfield","anchor":"center","team":"","menu":["pursue"],"dflt":"pursue"}\
+{"op":"end","layer":"cosmetic"}

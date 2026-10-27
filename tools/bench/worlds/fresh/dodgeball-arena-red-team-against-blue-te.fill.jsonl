@@ -1,0 +1,24 @@
+{"op":"meta","mode":"play","lang":"en","pack":"arena","sub":[],"seed":111,"look":"dodgeball arena","mood":[0.45,0.8,0.6],"timeOfDay":14,"weather":"clear"}
+{"op":"zone","id":"z_midfield","slot":"midfield","tag":"center","name":"Arena center"}
+{"op":"zone","id":"z_west_base","slot":"west_half","tag":"base","name":"Red team base"}
+{"op":"zone","id":"z_east_base","slot":"east_half","tag":"base","name":"Blue team base"}
+{"op":"spawn","id":"sp_red","zone":"z_west_base","anchor":"spawn_pad","team":"red"}
+{"op":"spawn","id":"sp_blue","zone":"z_east_base","anchor":"spawn_pad","team":"blue"}
+{"op":"ent","id":"ball_1","kind":"pickup","noun":"dodgeball","hyper":"ball","zone":"z_midfield","anchor":"center","body":"dynamic","shape":"sphere","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"ball_2","kind":"pickup","noun":"dodgeball","hyper":"ball","zone":"z_midfield","anchor":"center_n","body":"dynamic","shape":"sphere","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"ball_3","kind":"pickup","noun":"dodgeball","hyper":"ball","zone":"z_midfield","anchor":"center_s","body":"dynamic","shape":"sphere","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"score_board","kind":"prop","noun":"score board","hyper":"score_display","zone":"z_midfield","anchor":"scoreboard","body":"fixed","shape":"box","size":[2,0.5,0.2]}
+{"op":"verb","id":"vb_carry_ball_1","verb":"physics_props.carry","on":"ball_1","params":{}}
+{"op":"verb","id":"vb_carry_ball_2","verb":"physics_props.carry","on":"ball_2","params":{}}
+{"op":"verb","id":"vb_carry_ball_3","verb":"physics_props.carry","on":"ball_3","params":{}}
+{"op":"verb","id":"vb_throw_ball","verb":"combat_sport.throw","on":"ball_1","params":{"range":15}}
+{"op":"verb","id":"vb_throw_ball_2","verb":"combat_sport.throw","on":"ball_2","params":{"range":15}}
+{"op":"verb","id":"vb_throw_ball_3","verb":"combat_sport.throw","on":"ball_3","params":{"range":15}}
+{"op":"rule","id":"r_hit_red","when":{"t":"hit","a":"player","b":"ball_1"},"if":[{"l":"ball_1.carrier.team","op":"eq","r":"blue"}],"then":[{"e":"score","target":"team:red","n":1}],"once":false}
+{"op":"rule","id":"r_hit_blue","when":{"t":"hit","a":"player","b":"ball_1"},"if":[{"l":"ball_1.carrier.team","op":"eq","r":"red"}],"then":[{"e":"score","target":"team:blue","n":1}],"once":false}
+{"op":"rule","id":"r_win_red","when":{"t":"score_gte","a":"team:red","n":5},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_win_blue","when":{"t":"score_gte","a":"team:blue","n":5},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"expect","id":"x_dodgeball","prop":"win_reachable","a":"sp_red","b":"score_board","headline":true,"text":"First to five hits determines the winning team"}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":6}}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

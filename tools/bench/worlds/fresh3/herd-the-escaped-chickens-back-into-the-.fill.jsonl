@@ -1,0 +1,23 @@
+{"op":"meta","mode":"play","lang":"en","pack":"outdoor","sub":[],"seed":99,"look":"rustic farmyard","mood":[0.2,0.7,0.6],"timeOfDay":12,"weather":"clear"}
+{"op":"zone","id":"z_gate","slot":"entrance","tag":"entrance","name":"Farm Gate"}
+{"op":"zone","id":"z_hub","slot":"clearing","tag":"hub","name":"Farmyard Hub"}
+{"op":"zone","id":"z_coop","slot":"clearing_w","tag":"coop","name":"Chicken Coop"}
+{"op":"zone","id":"z_field","slot":"clearing_e","tag":"field","name":"Open Field"}
+{"op":"zone","id":"z_pond","slot":"pond","tag":"pond","name":"Merry Pond"}
+{"op":"spawn","id":"sp_red","zone":"z_gate","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"coop_goal","zone":"z_coop","anchor":"goal","noun":"coop entrance","hyper":"structure","team":"red"}
+{"op":"ent","id":"chicken_1","kind":"pickup","noun":"chicken","hyper":"bird","zone":"z_hub","anchor":"center","body":"dynamic","shape":"sphere","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"chicken_2","kind":"pickup","noun":"chicken","hyper":"bird","zone":"z_hub","anchor":"center_n","body":"dynamic","shape":"sphere","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"chicken_3","kind":"pickup","noun":"chicken","hyper":"bird","zone":"z_hub","anchor":"center_s","body":"dynamic","shape":"sphere","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"fox_1","kind":"npc","noun":"fox","hyper":"animal","zone":"z_field","anchor":"goal","team":"","body":"kinematic","shape":"capsule"}
+{"op":"verb","id":"vb_carry_chicken_1","verb":"physics_props.carry","on":"chicken_1","params":{}}
+{"op":"verb","id":"vb_carry_chicken_2","verb":"physics_props.carry","on":"chicken_2","params":{}}
+{"op":"verb","id":"vb_carry_chicken_3","verb":"physics_props.carry","on":"chicken_3","params":{}}
+{"op":"verb","id":"vb_fox_move","verb":"motion_hazards.oscillate","on":"fox_1","params":{"axis":"x","travel":8,"period":12}}
+{"op":"verb","id":"vb_jump","verb":"locomotion.jump","on":"player","params":{"jumpsMax":2}}
+{"op":"rule","id":"r_win","when":{"t":"enter","a":"player","b":"coop_goal"},"if":[{"l":"chicken_1.carrier.team","op":"eq","r":"red"},{"l":"chicken_2.carrier.team","op":"eq","r":"red"},{"l":"chicken_3.carrier.team","op":"eq","r":"red"}],"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_fox_reach","when":{"t":"enter","a":"fox_1","b":"coop_goal"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"expect","id":"exp_herd","prop":"win_reachable","a":"sp_red","b":"coop_goal","headline":true,"text":"Keep chickens within a safety radius to prevent the fox from catching them."}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":6}}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

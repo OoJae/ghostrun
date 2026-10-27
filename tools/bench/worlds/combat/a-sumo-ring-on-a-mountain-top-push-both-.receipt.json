@@ -1,0 +1,276 @@
+{
+  "prompt": "A sumo ring on a mountain top: push both rivals out to win",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "Arena sports / sumo",
+    "setting": "A circular clay-and-snow sumo ring (dohyø) built on a windy, snow-dusted mountain peak under an open sky.",
+    "role": "A sumo rikishi",
+    "goal": "Push both rival rikishi out of the ring; last one standing wins the bout.",
+    "fail": "You are pushed out of the ring by a rival before removing both rivals.",
+    "mood": "Intense, ritual, elemental, proud",
+    "pack": "arena",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Round ring on a snowy mountain peak with an out-of-bounds win condition",
+    "nouns": [
+      {
+        "noun": "sumo ring",
+        "hyper": "circular arena"
+      },
+      {
+        "noun": "rivals",
+        "hyper": "opponents"
+      },
+      {
+        "noun": "mountain top",
+        "hyper": "highland plateau"
+      },
+      {
+        "noun": "snow",
+        "hyper": "precipitation"
+      },
+      {
+        "noun": "clay floor",
+        "hyper": "arena surface"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.35,
+      "arousal": 0.8,
+      "tension": 0.6
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "f04797c14cdde6c6d039969ce43f5d8e6a48cef59ad0d7b17fe57c601c1cb3ea",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_win",
+      "text": "Round ring on a snowy mountain peak with an out-of-bounds win condition",
+      "status": "counterexample",
+      "method": "static goal regression over rules"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 10 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "chain",
+          "text": "win unreachable in the rule graph"
+        },
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "counterexample",
+        "method": "static goal regression over rules",
+        "text": "no rule chain lets the player trigger the win",
+        "src": ""
+      },
+      {
+        "id": "T2:r_player_out",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_player_out"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 0,
+        "src": "ai",
+        "ms": 15,
+        "status": "counterexample",
+        "text": "r_player_out fires exactly once",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "firings",
+          "text": "never fired when forced"
+        }
+      },
+      {
+        "id": "T2:r_rival1_out",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_rival1_out"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 0,
+        "src": "ai",
+        "ms": 10,
+        "status": "counterexample",
+        "text": "r_rival1_out fires exactly once",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "firings",
+          "text": "never fired when forced"
+        }
+      },
+      {
+        "id": "T2:r_rival2_out",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_rival2_out"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 0,
+        "src": "ai",
+        "ms": 8,
+        "status": "counterexample",
+        "text": "r_rival2_out fires exactly once",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "firings",
+          "text": "never fired when forced"
+        }
+      },
+      {
+        "id": "T2:r_secret_center_n",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_center_n"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 6,
+        "status": "verified",
+        "text": "r_secret_center_n fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_center_s",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_center_s"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_secret_center_s fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_n",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_n"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_secret_flank_n fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_n_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_n_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_flank_n_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_s",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_s"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_flank_s fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_s_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_s_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_flank_s_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_win: nothing in the world makes rival_1 'out'",
+        "cx": null
+      }
+    ],
+    "par": null,
+    "ms": 170
+  }
+}

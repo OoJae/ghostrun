@@ -197,6 +197,7 @@ describe("glued objects", () => {
     ];
     expect(splitObjects(lines.join(""))).toEqual(lines);
     expect(splitObjects("not json")).toEqual(["not json"]);
+    expect(splitObjects(`${lines[0]}{"op":"zone","id":"z_b"`)).toEqual([lines[0], '{"op":"zone","id":"z_b"']); // a cut-off tail stays apart
     const glued = parseFill(lines.join(""), { seed: 3 });
     expect(glued.notes.filter((n) => n.kind === "invalid")).toEqual([]);
     expect(glued.draft.zones.map((z) => z.name)).toEqual(["The {middle}"]);

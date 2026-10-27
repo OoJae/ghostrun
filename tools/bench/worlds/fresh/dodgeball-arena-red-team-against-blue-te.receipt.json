@@ -1,0 +1,230 @@
+{
+  "prompt": "Dodgeball arena, red team against blue team, first to five hits",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "sports",
+    "setting": "Dodgeball arena with a walled symmetric field; red team base on one side, blue team base on the other; ball storage and score boards in the middle.",
+    "role": "player on one of the two teams (dodgeball player)",
+    "goal": "Score five hits on the opposing team before they score five on yours",
+    "fail": "Team takes the fifth hit (opponents reach five first)",
+    "mood": "competitive, energetic team sport",
+    "pack": "arena",
+    "sub": [],
+    "safety": "ok",
+    "headline": "First to five hits determines the winning team",
+    "nouns": [
+      {
+        "noun": "dodgeball",
+        "hyper": "ball sport"
+      },
+      {
+        "noun": "arena",
+        "hyper": "sports field"
+      },
+      {
+        "noun": "red team",
+        "hyper": "team"
+      },
+      {
+        "noun": "blue team",
+        "hyper": "team"
+      },
+      {
+        "noun": "base",
+        "hyper": "team area"
+      },
+      {
+        "noun": "score board",
+        "hyper": "score display"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.45,
+      "arousal": 0.8,
+      "tension": 0.6
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "2df2d6a3b414ccc1f8644a3c956a96da71818ee4ecca1938d443ae535cd5b32a",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_dodgeball",
+      "text": "First to five hits determines the winning team",
+      "status": "counterexample",
+      "method": "static goal regression over rules"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 8 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "chain",
+          "text": "win unreachable in the rule graph"
+        },
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "counterexample",
+        "method": "static goal regression over rules",
+        "text": "no rule chain lets the player trigger the win",
+        "src": ""
+      },
+      {
+        "id": "T2:r_hit_blue",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_hit_blue"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_hit_blue: no rival to throw ball_1 at",
+        "cx": null
+      },
+      {
+        "id": "T2:r_hit_red",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_hit_red"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_hit_red: no rival to throw ball_1 at",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_n",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_n"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 9,
+        "status": "verified",
+        "text": "r_secret_flank_n fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_n_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_n_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 6,
+        "status": "verified",
+        "text": "r_secret_flank_n_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_s",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_s"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_flank_s fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_s_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_s_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_flank_s_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win_blue",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win_blue"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_win_blue fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win_red",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win_red"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_win_red fires exactly once",
+        "cx": null
+      }
+    ],
+    "par": null,
+    "ms": 144
+  }
+}

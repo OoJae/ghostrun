@@ -1,0 +1,29 @@
+{"op":"meta","mode":"play","lang":"en","pack":"arena","sub":[],"seed":101,"look":"dodgeball court","mood":[0.6,0.8,0.6],"timeOfDay":14,"weather":"clear"}
+{"op":"zone","id":"z_midfield","slot":"midfield","tag":"center","name":"Center Court"}
+{"op":"zone","id":"z_west_half","slot":"west_half","tag":"base","name":"Red Base"}
+{"op":"zone","id":"z_east_half","slot":"east_half","tag":"base","name":"Blue Base"}
+{"op":"zone","id":"z_north_deck","slot":"north_deck","tag":"platform","name":"North Deck"}
+{"op":"zone","id":"z_south_deck","slot":"south_deck","tag":"platform","name":"South Deck"}
+{"op":"spawn","id":"sp_red","zone":"z_west_half","anchor":"spawn_pad","team":"red"}
+{"op":"spawn","id":"sp_blue","zone":"z_east_half","anchor":"spawn_pad","team":"blue"}
+{"op":"ent","id":"ball_1","kind":"pickup","noun":"dodgeball","hyper":"ball","zone":"z_midfield","anchor":"center","body":"dynamic","shape":"sphere","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"ball_2","kind":"pickup","noun":"dodgeball","hyper":"ball","zone":"z_midfield","anchor":"center_n","body":"dynamic","shape":"sphere","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"ball_3","kind":"pickup","noun":"dodgeball","hyper":"ball","zone":"z_midfield","anchor":"center_s","body":"dynamic","shape":"sphere","size":[0.3,0.3,0.3]}
+{"op":"verb","id":"vb_carry_ball_1","verb":"physics_props.carry","on":"ball_1","params":{}}
+{"op":"verb","id":"vb_carry_ball_2","verb":"physics_props.carry","on":"ball_2","params":{}}
+{"op":"verb","id":"vb_carry_ball_3","verb":"physics_props.carry","on":"ball_3","params":{}}
+{"op":"verb","id":"vb_throw_ball_1","verb":"combat_sport.throw","on":"ball_1","params":{"range":15}}
+{"op":"verb","id":"vb_throw_ball_2","verb":"combat_sport.throw","on":"ball_2","params":{"range":15}}
+{"op":"verb","id":"vb_throw_ball_3","verb":"combat_sport.throw","on":"ball_3","params":{"range":15}}
+{"op":"rule","id":"r_hit_red","when":{"t":"hit","a":"blue","b":"ball_1"},"then":[{"e":"score","target":"team:red","n":1}],"once":false}
+{"op":"rule","id":"r_hit_red_2","when":{"t":"hit","a":"blue","b":"ball_2"},"then":[{"e":"score","target":"team:red","n":1}],"once":false}
+{"op":"rule","id":"r_hit_red_3","when":{"t":"hit","a":"blue","b":"ball_3"},"then":[{"e":"score","target":"team:red","n":1}],"once":false}
+{"op":"rule","id":"r_hit_blue","when":{"t":"hit","a":"red","b":"ball_1"},"then":[{"e":"score","target":"team:blue","n":1}],"once":false}
+{"op":"rule","id":"r_hit_blue_2","when":{"t":"hit","a":"red","b":"ball_2"},"then":[{"e":"score","target":"team:blue","n":1}],"once":false}
+{"op":"rule","id":"r_hit_blue_3","when":{"t":"hit","a":"red","b":"ball_3"},"then":[{"e":"score","target":"team:blue","n":1}],"once":false}
+{"op":"rule","id":"r_win_red","when":{"t":"score_gte","a":"team:red","n":5},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose_red","when":{"t":"score_gte","a":"team:blue","n":5},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"expect","id":"x_hits","prop":"win_reachable","a":"sp_red","b":"ball_1","headline":true,"text":"First to five valid hits"}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":6}}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

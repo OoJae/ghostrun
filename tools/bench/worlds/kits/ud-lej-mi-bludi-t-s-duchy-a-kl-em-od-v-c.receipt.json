@@ -1,0 +1,186 @@
+{
+  "prompt": "udělej mi bludiště s duchy a klíčem od východu",
+  "intent": {
+    "lang": "cs",
+    "mode": "play",
+    "genre": "Horror Escape / Puzzle",
+    "setting": "Dark, foggy labyrinth with flickering torches.",
+    "role": "Wandering soul",
+    "goal": "Navigate the maze, avoid ghosts, and find the eastern exit key.",
+    "fail": "Touched by a ghost or lost in the fog without the key.",
+    "mood": "eerie, suspenseful, claustrophobic",
+    "pack": "maze",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Maze requires key to open eastern exit while dodging ghosts",
+    "nouns": [
+      {
+        "noun": "maze",
+        "hyper": "labyrinth"
+      },
+      {
+        "noun": "ghost",
+        "hyper": "entity"
+      },
+      {
+        "noun": "key",
+        "hyper": "artifact"
+      }
+    ],
+    "moodVec": {
+      "valence": -0.4,
+      "arousal": 0.7,
+      "tension": 0.8
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "033302a2293161507380c9b4e7da23c9041728017794784ee6c15b1efb733890",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_maze_key",
+      "text": "Maze requires key to open eastern exit while dodging ghosts",
+      "status": "counterexample",
+      "method": "static goal regression over rules"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 6 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "chain",
+          "text": "win unreachable in the rule graph"
+        },
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "counterexample",
+        "method": "static goal regression over rules",
+        "text": "no rule chain lets the player trigger the win",
+        "src": ""
+      },
+      {
+        "id": "T2:r_lose_ghost1",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_ghost1"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_lose_ghost1: nothing produces touch on ghost_1",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lose_ghost2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_ghost2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_lose_ghost2: nothing produces touch on ghost_2",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lose_ghost3",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_ghost3"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_lose_ghost3: nothing produces touch on ghost_3",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_center",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_center"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_secret_center fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_entrance",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_entrance"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_secret_entrance fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      }
+    ],
+    "par": null,
+    "ms": 33
+  }
+}

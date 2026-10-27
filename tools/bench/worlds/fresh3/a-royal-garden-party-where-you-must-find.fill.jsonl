@@ -1,0 +1,34 @@
+{"op":"meta","mode":"play","lang":"en","pack":"outdoor","sub":[],"seed":100,"look":"royal garden party","mood":[0.5,0.3,0.4],"timeOfDay":14,"weather":"clear"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Garden Gate"}
+{"op":"zone","id":"z_hub","slot":"clearing","tag":"clearing","name":"Central Lawn"}
+{"op":"zone","id":"z_west","slot":"clearing_w","tag":"base","name":"East Pavilion"}
+{"op":"zone","id":"z_east","slot":"clearing_e","tag":"base","name":"West Pavilion"}
+{"op":"zone","id":"z_pond","slot":"pond","tag":"pond","name":"Fountain Plaza"}
+{"op":"zone","id":"z_grove","slot":"grove","tag":"grove","name":"Hedge Maze"}
+{"op":"spawn","id":"sp_red","zone":"z_entrance","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"exit_gate","zone":"z_entrance","anchor":"gate","noun":"garden exit","hyper":"door","team":"red"}
+{"op":"ent","id":"crown","kind":"pickup","noun":"golden crown","hyper":"artifact","zone":"z_grove","anchor":"heart","body":"dynamic","shape":"sphere","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"fountain","kind":"prop","noun":"marble fountain","hyper":"sculpture","zone":"z_pond","anchor":"center","body":"fixed","shape":"hull"}
+{"op":"ent","id":"hedge_wall","kind":"prop","noun":"hedge wall","hyper":"planting","zone":"z_grove","anchor":"stump","body":"fixed","shape":"box","size":[2,1,0.5]}
+{"op":"ent","id":"coin_1","kind":"pickup","noun":"silver coin","hyper":"coin","zone":"z_hub","anchor":"center_n","body":"dynamic","shape":"box","size":[0.1,0.1,0.02]}
+{"op":"ent","id":"coin_2","kind":"pickup","noun":"silver coin","hyper":"coin","zone":"z_hub","anchor":"center_s","body":"dynamic","shape":"box","size":[0.1,0.1,0.02]}
+{"op":"ent","id":"gate_door","kind":"door","noun":"gate door","hyper":"door","zone":"z_entrance","anchor":"gate","body":"fixed","shape":"box"}
+{"op":"ent","id":"plate_jump","kind":"plate","noun":"jump pad","hyper":"plate","zone":"z_west","anchor":"flank_n","body":"sensor","shape":"box","size":[0.5,0.2,0.5]}
+{"op":"ent","id":"hazard_spikes","kind":"hazard","noun":"spike trap","hyper":"spikes","zone":"z_east","anchor":"flank_s","body":"sensor","shape":"box","size":[1,0.2,1]}
+{"op":"ent","id":"npc_butler","kind":"npc","noun":"butler","hyper":"npc","zone":"z_hub","anchor":"center","team":"","role":"guide","menu":["guide.patrol"],"dflt":"guide.patrol"}
+{"op":"verb","id":"vb_carry_crown","verb":"physics_props.carry","on":"crown","params":{}}
+{"op":"verb","id":"vb_jump_pad","verb":"locomotion.jump_pad","on":"plate_jump","params":{"height":5}}
+{"op":"verb","id":"vb_spike_hazard","verb":"motion_hazards.hazard","on":"hazard_spikes","params":{"respawn":true}}
+{"op":"verb","id":"vb_inspect_fountain","verb":"social.inspect","on":"fountain","params":{"text":"An ornate marble fountain, its water sparkling in the sunlight."}}
+{"op":"verb","id":"vb_collect_coin1","verb":"puzzle.collect","on":"coin_1","params":{}}
+{"op":"verb","id":"vb_collect_coin2","verb":"puzzle.collect","on":"coin_2","params":{}}
+{"op":"verb","id":"vb_timer","verb":"puzzle.timer","on":"player","params":{"seconds":180}}
+{"op":"rule","id":"r_win","when":{"t":"enter","a":"crown","b":"exit_gate"},"if":[{"l":"crown.carrier.team","op":"eq","r":"red"}],"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose_timer","when":{"t":"timer_end","a":"player"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_spike_kill","when":{"t":"hit","a":"player","b":"hazard_spikes"},"then":[{"e":"lose","target":"player"}],"once":false}
+{"op":"rule","id":"r_collect_coin1","when":{"t":"touch","a":"player","b":"coin_1"},"then":[{"e":"score","target":"team:red","n":10}],"once":true}
+{"op":"rule","id":"r_collect_coin2","when":{"t":"touch","a":"player","b":"coin_2"},"then":[{"e":"score","target":"team:red","n":10}],"once":true}
+{"op":"expect","id":"x_crown","prop":"win_reachable","a":"sp_red","b":"exit_gate","headline":true,"text":"Garden hide-and-seek quest for a hidden crown"}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":6}}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

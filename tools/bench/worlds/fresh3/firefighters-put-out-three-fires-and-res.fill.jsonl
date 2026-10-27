@@ -1,0 +1,34 @@
+{"op":"meta","mode":"play","lang":"en","pack":"city_block","sub":["rooftop"],"seed":101,"look":"urban fire scene","mood":[0.2,0.8,0.7],"timeOfDay":14,"weather":"clear"}
+{"op":"zone","id":"z_center","slot":"center","tag":"plaza","name":"Town Square"}
+{"op":"zone","id":"z_west","slot":"west_block","tag":"base","name":"West Building Base"}
+{"op":"zone","id":"z_east","slot":"east_block","tag":"base","name":"East Building Base"}
+{"op":"zone","id":"z_street_w","slot":"street_w","tag":"street","name":"West Street"}
+{"op":"zone","id":"z_street_e","slot":"street_e","tag":"street","name":"East Street"}
+{"op":"zone","id":"z_roof","slot":"roof_lane_a","tag":"rooftop","name":"Roof Lane"}
+{"op":"spawn","id":"sp_red","zone":"z_west","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"fire_goal_1","zone":"z_west","anchor":"goal_ring","noun":"extinguished fire 1","hyper":"goal","team":"","body":"sensor","shape":"box","size":[0.5,0.5,0.5]}
+{"op":"goal","id":"fire_goal_2","zone":"z_east","anchor":"goal_ring","noun":"extinguished fire 2","hyper":"goal","team":"","body":"sensor","shape":"box","size":[0.5,0.5,0.5]}
+{"op":"goal","id":"fire_goal_3","zone":"z_roof","anchor":"goal_ring","noun":"extinguished fire 3","hyper":"goal","team":"","body":"sensor","shape":"box","size":[0.5,0.5,0.5]}
+{"op":"ent","id":"fire_1","kind":"hazard","noun":"burning fire","hyper":"fire","zone":"z_west","anchor":"spawn_pad","body":"sensor","shape":"box","size":[1,1,1]}
+{"op":"ent","id":"fire_2","kind":"hazard","noun":"burning fire","hyper":"fire","zone":"z_east","anchor":"spawn_pad","body":"sensor","shape":"box","size":[1,1,1]}
+{"op":"ent","id":"fire_3","kind":"hazard","noun":"burning fire","hyper":"fire","zone":"z_roof","anchor":"lane_end","body":"sensor","shape":"box","size":[1,1,1]}
+{"op":"ent","id":"switch_1","kind":"switch","noun":"fire extinguisher switch","hyper":"switch","zone":"z_west","anchor":"spawn_pad","body":"fixed","shape":"box","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"switch_2","kind":"switch","noun":"fire extinguisher switch","hyper":"switch","zone":"z_east","anchor":"spawn_pad","body":"fixed","shape":"box","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"switch_3","kind":"switch","noun":"fire extinguisher switch","hyper":"switch","zone":"z_roof","anchor":"lane_end","body":"fixed","shape":"box","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"cat","kind":"pickup","noun":"stray cat","hyper":"cat","zone":"z_roof","anchor":"lane_mid","body":"dynamic","shape":"sphere","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"ladder","kind":"prop","noun":"fire ladder","hyper":"ladder","zone":"z_roof","anchor":"lane_start","body":"fixed","shape":"box","size":[0.2,2,0.2]}
+{"op":"verb","id":"vb_carry_cat","verb":"physics_props.carry","on":"cat","params":{}}
+{"op":"verb","id":"vb_switch_1","verb":"puzzle.switch","on":"switch_1","params":{"once":true}}
+{"op":"verb","id":"vb_switch_2","verb":"puzzle.switch","on":"switch_2","params":{"once":true}}
+{"op":"verb","id":"vb_switch_3","verb":"puzzle.switch","on":"switch_3","params":{"once":true}}
+{"op":"verb","id":"vb_hazard_1","verb":"motion_hazards.hazard","on":"fire_1","params":{"respawn":true}}
+{"op":"verb","id":"vb_hazard_2","verb":"motion_hazards.hazard","on":"fire_2","params":{"respawn":true}}
+{"op":"verb","id":"vb_hazard_3","verb":"motion_hazards.hazard","on":"fire_3","params":{"respawn":true}}
+{"op":"rule","id":"r_extinguish_1","when":{"t":"state_is","a":"switch_1","s":"on"},"then":[{"e":"set_state","target":"fire_goal_1","v":"reached"}],"once":true}
+{"op":"rule","id":"r_extinguish_2","when":{"t":"state_is","a":"switch_2","s":"on"},"then":[{"e":"set_state","target":"fire_goal_2","v":"reached"}],"once":true}
+{"op":"rule","id":"r_extinguish_3","when":{"t":"state_is","a":"switch_3","s":"on"},"then":[{"e":"set_state","target":"fire_goal_3","v":"reached"}],"once":true}
+{"op":"rule","id":"r_win","when":{"t":"enter","a":"cat","b":"plinth"},"if":[{"l":"fire_goal_1.state","op":"eq","r":"reached"},{"l":"fire_goal_2.state","op":"eq","r":"reached"},{"l":"fire_goal_3.state","op":"eq","r":"reached"}],"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":6}}
+{"op":"expect","id":"x_rooftop","prop":"requires","a":"sp_red","b":"z_roof","need":["jumps>=2"],"headline":true,"text":"Rooftop access is required to rescue the cat"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

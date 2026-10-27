@@ -1,0 +1,45 @@
+{"op":"meta","mode":"play","lang":"en","pack":"outdoor","sub":[],"seed":102,"look":"sunny beach","mood":[0.6,0.25,0.45],"timeOfDay":12,"weather":"clear"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Beach entrance"}
+{"op":"zone","id":"z_hub","slot":"clearing","tag":"outside","name":"Sandy clearing"}
+{"op":"zone","id":"z_dunes_w","slot":"clearing_w","tag":"outside","name":"Western dunes"}
+{"op":"zone","id":"z_dunes_e","slot":"clearing_e","tag":"outside","name":"Eastern dunes"}
+{"op":"zone","id":"z_pond","slot":"pond","tag":"outside","name":"Shallow tide pool"}
+{"op":"spawn","id":"sp_red","zone":"z_entrance","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"tide_hazard","zone":"z_pond","anchor":"water","noun":"rising tide","hyper":"hazard","team":""}
+{"op":"ent","id":"shell_1","kind":"pickup","noun":"seashell","hyper":"collected natural artifact","zone":"z_hub","anchor":"center","body":"dynamic","shape":"sphere","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"shell_2","kind":"pickup","noun":"seashell","hyper":"collected natural artifact","zone":"z_hub","anchor":"center_n","body":"dynamic","shape":"sphere","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"shell_3","kind":"pickup","noun":"seashell","hyper":"collected natural artifact","zone":"z_dunes_w","anchor":"spawn_pad","body":"dynamic","shape":"sphere","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"shell_4","kind":"pickup","noun":"seashell","hyper":"collected natural artifact","zone":"z_dunes_w","anchor":"flank_n","body":"dynamic","shape":"sphere","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"shell_5","kind":"pickup","noun":"seashell","hyper":"collected natural artifact","zone":"z_dunes_e","anchor":"spawn_pad","body":"dynamic","shape":"sphere","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"shell_6","kind":"pickup","noun":"seashell","hyper":"collected natural artifact","zone":"z_dunes_e","anchor":"flank_s","body":"dynamic","shape":"sphere","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"jump_pad_w","kind":"plate","noun":"jump pad","hyper":"plate","zone":"z_dunes_w","anchor":"flank_s","body":"sensor","shape":"box","size":[0.5,0.2,0.5]}
+{"op":"ent","id":"jump_pad_e","kind":"plate","noun":"jump pad","hyper":"plate","zone":"z_dunes_e","anchor":"flank_n","body":"sensor","shape":"box","size":[0.5,0.2,0.5]}
+{"op":"verb","id":"vb_carry_shell_1","verb":"physics_props.carry","on":"shell_1","params":{}}
+{"op":"verb","id":"vb_carry_shell_2","verb":"physics_props.carry","on":"shell_2","params":{}}
+{"op":"verb","id":"vb_carry_shell_3","verb":"physics_props.carry","on":"shell_3","params":{}}
+{"op":"verb","id":"vb_carry_shell_4","verb":"physics_props.carry","on":"shell_4","params":{}}
+{"op":"verb","id":"vb_carry_shell_5","verb":"physics_props.carry","on":"shell_5","params":{}}
+{"op":"verb","id":"vb_carry_shell_6","verb":"physics_props.carry","on":"shell_6","params":{}}
+{"op":"verb","id":"vb_collect_1","verb":"puzzle.collect","on":"shell_1","params":{}}
+{"op":"verb","id":"vb_collect_2","verb":"puzzle.collect","on":"shell_2","params":{}}
+{"op":"verb","id":"vb_collect_3","verb":"puzzle.collect","on":"shell_3","params":{}}
+{"op":"verb","id":"vb_collect_4","verb":"puzzle.collect","on":"shell_4","params":{}}
+{"op":"verb","id":"vb_collect_5","verb":"puzzle.collect","on":"shell_5","params":{}}
+{"op":"verb","id":"vb_collect_6","verb":"puzzle.collect","on":"shell_6","params":{}}
+{"op":"verb","id":"vb_jump_w","verb":"locomotion.jump_pad","on":"jump_pad_w","params":{"height":3}}
+{"op":"verb","id":"vb_jump_e","verb":"locomotion.jump_pad","on":"jump_pad_e","params":{"height":3}}
+{"op":"verb","id":"vb_timer","verb":"puzzle.timer","on":"player","params":{"seconds":120}}
+{"op":"verb","id":"vb_tide_hazard","verb":"motion_hazards.hazard","on":"tide_hazard","params":{"respawn":true}}
+{"op":"rule","id":"r_collect_1","when":{"t":"touch","a":"player","b":"shell_1"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_collect_2","when":{"t":"touch","a":"player","b":"shell_2"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_collect_3","when":{"t":"touch","a":"player","b":"shell_3"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_collect_4","when":{"t":"touch","a":"player","b":"shell_4"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_collect_5","when":{"t":"touch","a":"player","b":"shell_5"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_collect_6","when":{"t":"touch","a":"player","b":"shell_6"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_win","when":{"t":"score_gte","a":"team:red","n":6},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose_tide","when":{"t":"enter","a":"player","b":"tide_hazard"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose_timer","when":{"t":"timer_end","a":"player"},"if":[{"l":"team:red.score","op":"lt","r":6}],"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":6}}
+{"op":"expect","id":"x_beach","prop":"win_reachable","a":"sp_red","b":"tide_hazard","headline":true,"text":"Win is gated by the advancing tide line over the shell field."}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

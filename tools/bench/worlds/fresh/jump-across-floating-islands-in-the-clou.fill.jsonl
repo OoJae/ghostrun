@@ -1,0 +1,47 @@
+{"op":"meta","mode":"play","lang":"en","pack":"course","sub":[],"seed":105,"look":"cloud islands","mood":[0.7,0.5,0.5],"timeOfDay":12,"weather":"clear"}
+{"op":"zone","id":"z_start","slot":"start","tag":"outside","name":"Cloud archipelago start"}
+{"op":"zone","id":"z_seg1","slot":"seg_1","tag":"ledge","name":"First floating island"}
+{"op":"zone","id":"z_seg2","slot":"seg_2","tag":"beam","name":"Second island with springy plank"}
+{"op":"zone","id":"z_seg3","slot":"seg_3","tag":"pit","name":"Gap with perilous pit"}
+{"op":"zone","id":"z_seg4","slot":"seg_4","tag":"gaps","name":"Narrow ridge with locked gate"}
+{"op":"zone","id":"z_seg5","slot":"seg_5","tag":"beam","name":"Windy platform"}
+{"op":"zone","id":"z_seg6","slot":"seg_6","tag":"steps","name":"Final ascent"}
+{"op":"zone","id":"z_finish","slot":"finish","tag":"finish","name":"Sky Castle"}
+{"op":"spawn","id":"sp_red","zone":"z_start","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"goal_sky","zone":"z_finish","anchor":"goal","noun":"sky castle","hyper":"castle","team":"red","body":"sensor","shape":"box","size":[2,3,2]}
+{"op":"ent","id":"cp_1","kind":"checkpoint","noun":"checkpoint","hyper":"checkpoint","zone":"z_seg1","anchor":"cp_1","body":"fixed","shape":"box"}
+{"op":"ent","id":"coin_1","kind":"pickup","noun":"gold coin","hyper":"coin","zone":"z_seg1","anchor":"pickup_1","body":"dynamic","shape":"box","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"plat_move","kind":"platform","noun":"moving plank","hyper":"platform","zone":"z_seg2","anchor":"cp_2","body":"kinematic","shape":"box","size":[3,0.3,1]}
+{"op":"ent","id":"jump_pad_1","kind":"platform","noun":"jump pad","hyper":"jump_pad","zone":"z_seg2","anchor":"pickup_2","body":"kinematic","shape":"box","size":[1,0.2,1]}
+{"op":"ent","id":"pit_hazard","kind":"hazard","noun":"spike pit","hyper":"spikes","zone":"z_seg3","anchor":"pit_3","body":"sensor","shape":"box","size":[2,0.1,2]}
+{"op":"ent","id":"switch_1","kind":"switch","noun":"lever","hyper":"lever","zone":"z_seg3","anchor":"cp_3","body":"fixed","shape":"box"}
+{"op":"ent","id":"key_1","kind":"pickup","noun":"silver key","hyper":"key","zone":"z_seg3","anchor":"pickup_3","body":"dynamic","shape":"box","size":[0.2,0.2,0.05]}
+{"op":"ent","id":"door_1","kind":"door","noun":"gate door","hyper":"door","zone":"z_seg4","anchor":"cp_4","body":"fixed","shape":"box","size":[1,2,0.3]}
+{"op":"ent","id":"coin_2","kind":"pickup","noun":"emerald","hyper":"gem","zone":"z_seg4","anchor":"pickup_4","body":"dynamic","shape":"sphere","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"switch_2","kind":"switch","noun":"pressure plate","hyper":"plate","zone":"z_seg5","anchor":"cp_5","body":"fixed","shape":"box"}
+{"op":"ent","id":"jump_pad_2","kind":"platform","noun":"high jump pad","hyper":"jump_pad","zone":"z_seg5","anchor":"pickup_5","body":"kinematic","shape":"box","size":[1,0.2,1]}
+{"op":"ent","id":"coin_3","kind":"pickup","noun":"shining star","hyper":"star","zone":"z_seg6","anchor":"pickup_6","body":"dynamic","shape":"sphere","size":[0.25,0.25,0.25]}
+{"op":"ent","id":"trophy_castle","kind":"prop","noun":"castle trophy","hyper":"trophy","zone":"z_finish","anchor":"trophy","body":"fixed","shape":"box","size":[2,3,2]}
+{"op":"verb","id":"vb_jump","verb":"locomotion.jump","on":"player","params":{"jumpsMax":2}}
+{"op":"verb","id":"vb_carry_coin1","verb":"physics_props.carry","on":"coin_1","params":{}}
+{"op":"verb","id":"vb_carry_key","verb":"physics_props.carry","on":"key_1","params":{}}
+{"op":"verb","id":"vb_carry_coin2","verb":"physics_props.carry","on":"coin_2","params":{}}
+{"op":"verb","id":"vb_carry_coin3","verb":"physics_props.carry","on":"coin_3","params":{}}
+{"op":"verb","id":"vb_jump_pad1","verb":"locomotion.jump_pad","on":"jump_pad_1","params":{"height":5}}
+{"op":"verb","id":"vb_jump_pad2","verb":"locomotion.jump_pad","on":"jump_pad_2","params":{"height":8}}
+{"op":"verb","id":"vb_switch1","verb":"puzzle.switch","on":"switch_1","params":{"once":false}}
+{"op":"verb","id":"vb_switch2","verb":"puzzle.switch","on":"switch_2","params":{"once":false}}
+{"op":"verb","id":"vb_lock_door","verb":"puzzle.lock","on":"door_1","params":{"key":"key_1"}}
+{"op":"verb","id":"vb_collect_coin1","verb":"puzzle.collect","on":"coin_1","params":{}}
+{"op":"verb","id":"vb_collect_coin2","verb":"puzzle.collect","on":"coin_2","params":{}}
+{"op":"verb","id":"vb_collect_coin3","verb":"puzzle.collect","on":"coin_3","params":{}}
+{"op":"verb","id":"vb_hazard_pit","verb":"motion_hazards.hazard","on":"pit_hazard","params":{"respawn":true}}
+{"op":"rule","id":"r_win","when":{"t":"enter","a":"player","b":"goal_sky"},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose_fall","when":{"t":"hit","a":"player","b":"pit_hazard"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_open_gate","when":{"t":"state_is","a":"switch_1","s":"on"},"then":[{"e":"set_state","target":"door_1","v":"open"}]}
+{"op":"rule","id":"r_gate_close","when":{"t":"state_is","a":"switch_1","s":"off"},"then":[{"e":"set_state","target":"door_1","v":"closed"}]}
+{"op":"rule","id":"r_activate_plate","when":{"t":"state_is","a":"switch_2","s":"on"},"then":[{"e":"emit","target":"switch_2","fx":"glow"}]}
+{"op":"expect","id":"x_jump","prop":"win_reachable","a":"sp_red","b":"goal_sky","headline":true,"text":"Must successfully jump the gaps between cloud islands to reach the sky castle"}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":6}}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

@@ -1,0 +1,25 @@
+{"op":"meta","mode":"play","lang":"en","pack":"arena","sub":[],"seed":105,"look":"bumper car arena","mood":[0.7,0.8,0.3],"timeOfDay":14,"weather":"clear"}
+{"op":"zone","id":"z_ring","slot":"midfield","tag":"arena","name":"Bumper Car Ring"}
+{"op":"zone","id":"z_west","slot":"west_half","tag":"base","name":"West Base"}
+{"op":"zone","id":"z_east","slot":"east_half","tag":"base","name":"East Base"}
+{"op":"spawn","id":"sp_red","zone":"z_west","anchor":"spawn_pad","team":"red"}
+{"op":"spawn","id":"sp_blue1","zone":"z_east","anchor":"spawn_pad","team":"blue"}
+{"op":"spawn","id":"sp_blue2","zone":"z_east","anchor":"spawn_pad","team":"blue"}
+{"op":"spawn","id":"sp_blue3","zone":"z_west","anchor":"spawn_pad","team":"blue"}
+{"op":"goal","id":"exit_west","zone":"z_west","anchor":"goal_ring","noun":"exit ring","hyper":"arena","team":""}
+{"op":"goal","id":"exit_east","zone":"z_east","anchor":"goal_ring","noun":"exit ring","hyper":"arena","team":""}
+{"op":"ent","id":"guardrails","kind":"prop","noun":"guardrails","hyper":"boundary","zone":"z_ring","anchor":"deck_center","body":"fixed","shape":"box","size":[4,0.2,0.5]}
+{"op":"verb","id":"vb_jump","verb":"locomotion.jump","on":"player","params":{"jumpsMax":2}}
+{"op":"rule","id":"r_lose_player","when":{"t":"enter","a":"player","b":"exit_west"},"then":[{"e":"lose","target":"player"}],"once":false}
+{"op":"rule","id":"r_lose_player_east","when":{"t":"enter","a":"player","b":"exit_east"},"then":[{"e":"lose","target":"player"}],"once":false}
+{"op":"rule","id":"r_score_rival_west","when":{"t":"enter","a":"npc_rival_1","b":"exit_west"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_score_rival_east","when":{"t":"enter","a":"npc_rival_2","b":"exit_east"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_score_rival_mix","when":{"t":"enter","a":"npc_rival_3","b":"exit_west"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_win","when":{"t":"score_gte","a":"team:red","n":3},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"npc","id":"npc_rival_1","role":"rival","zone":"z_west","anchor":"spawn_pad","team":"blue","menu":["combat_sport.shove"],"dflt":"combat_sport.shove"}
+{"op":"npc","id":"npc_rival_2","role":"rival","zone":"z_east","anchor":"spawn_pad","team":"blue","menu":["combat_sport.shove"],"dflt":"combat_sport.shove"}
+{"op":"npc","id":"npc_rival_3","role":"rival","zone":"z_west","anchor":"spawn_pad","team":"blue","menu":["combat_sport.shove"],"dflt":"combat_sport.shove"}
+{"op":"expect","id":"x_ring","prop":"win_reachable","a":"sp_red","b":"exit_west","headline":true,"text":"Ring boundary must stay intact so cars can be knocked out but not into infinite space."}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":6}}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

@@ -1,0 +1,26 @@
+{"op":"meta","mode":"play","lang":"en","pack":"outdoor","sub":[],"seed":93,"look":"frozen lake","mood":[-0.4,0.7,0.9],"timeOfDay":14,"weather":"snow"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Lake shore"}
+{"op":"zone","id":"z_lake","slot":"clearing","tag":"outside","name":"Frozen lake"}
+{"op":"zone","id":"z_cabin","slot":"clearing_w","tag":"structure","name":"Cabin clearing"}
+{"op":"spawn","id":"sp_red","zone":"z_entrance","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"cabin_exit","zone":"z_cabin","anchor":"goal","noun":"cabin","hyper":"structure","team":"red"}
+{"op":"ent","id":"ice_hazard_1","kind":"hazard","noun":"thin ice patch","hyper":"ice","zone":"z_lake","anchor":"center_n","body":"sensor","shape":"box","size":[2,0.1,2]}
+{"op":"ent","id":"ice_hazard_2","kind":"hazard","noun":"thin ice patch","hyper":"ice","zone":"z_lake","anchor":"center_s","body":"sensor","shape":"box","size":[2,0.1,2]}
+{"op":"ent","id":"ice_hazard_3","kind":"hazard","noun":"thin ice patch","hyper":"ice","zone":"z_lake","anchor":"center_e","body":"sensor","shape":"box","size":[2,0.1,2]}
+{"op":"ent","id":"ice_hazard_4","kind":"hazard","noun":"thin ice patch","hyper":"ice","zone":"z_lake","anchor":"center_w","body":"sensor","shape":"box","size":[2,0.1,2]}
+{"op":"ent","id":"safe_platform","kind":"platform","noun":"stable ice","hyper":"ice","zone":"z_lake","anchor":"center","body":"fixed","shape":"box","size":[3,0.1,3]}
+{"op":"ent","id":"cabin_sign","kind":"sign","noun":"cabin sign","hyper":"sign","zone":"z_cabin","anchor":"center_n","body":"fixed","shape":"box","size":[0.5,0.2,0.1]}
+{"op":"verb","id":"vb_hazard_1","verb":"motion_hazards.hazard","on":"ice_hazard_1","params":{"respawn":true}}
+{"op":"verb","id":"vb_hazard_2","verb":"motion_hazards.hazard","on":"ice_hazard_2","params":{"respawn":true}}
+{"op":"verb","id":"vb_hazard_3","verb":"motion_hazards.hazard","on":"ice_hazard_3","params":{"respawn":true}}
+{"op":"verb","id":"vb_hazard_4","verb":"motion_hazards.hazard","on":"ice_hazard_4","params":{"respawn":true}}
+{"op":"verb","id":"vb_look_cabin","verb":"social.inspect","on":"cabin_sign","params":{"text":"A lonely cabin waiting for the explorer."}}
+{"op":"rule","id":"r_lose","when":{"t":"enter","a":"player","b":"ice_hazard_1"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose2","when":{"t":"enter","a":"player","b":"ice_hazard_2"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose3","when":{"t":"enter","a":"player","b":"ice_hazard_3"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose4","when":{"t":"enter","a":"player","b":"ice_hazard_4"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_win","when":{"t":"enter","a":"player","b":"cabin_exit"},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"expect","id":"x_cross","prop":"win_reachable","a":"sp_red","b":"cabin_exit","headline":true,"text":"Thin ice patches require careful pathfinding to avoid falling through"}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":5}}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

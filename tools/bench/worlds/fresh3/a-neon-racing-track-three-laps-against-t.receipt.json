@@ -1,0 +1,312 @@
+{
+  "prompt": "A neon racing track: three laps against two rival bikes",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "arcade racing",
+    "setting": "Neon-lit nighttime city circuit with glowing lanes, sharp corners, and elevated overpasses",
+    "role": "A racer on a high-performance futuristic bike",
+    "goal": "Complete three full laps of the circuit and finish ahead of two rival bikers",
+    "fail": "Getting knocked off course, colliding with another rider, or failing to finish a lap within a time limit",
+    "mood": "High-energy, competitive, cyberpunk",
+    "pack": "course",
+    "sub": [
+      "rooftop"
+    ],
+    "safety": "arcade",
+    "headline": "Three-lap neon circuit needs lap timing and two rival bike AI paths",
+    "nouns": [
+      {
+        "noun": "Neon racing track",
+        "hyper": "racing circuit"
+      },
+      {
+        "noun": "three laps",
+        "hyper": "race distance"
+      },
+      {
+        "noun": "two rival bikes",
+        "hyper": "rivals"
+      },
+      {
+        "noun": "bike",
+        "hyper": "racing vehicle"
+      },
+      {
+        "noun": "bikes",
+        "hyper": "racing vehicles"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.7,
+      "arousal": 0.9,
+      "tension": 0.7
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "e04e9b57c1ebb9a0d063345e93ad0bcfddddfd0175e5abbdd4870bfc30cb8539",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_circuit",
+      "text": "Three-lap neon circuit needs lap timing and two rival bike AI paths",
+      "status": "counterexample",
+      "method": "kinematic reachability (jump apex model) + physics jump witness, 4 attempts per jump count"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 10 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (player enters finish_goal) [after red scores 2]",
+        "src": ""
+      },
+      {
+        "id": "T1:x_circuit",
+        "tier": "T1",
+        "subject": {
+          "kind": "property",
+          "id": "x_circuit"
+        },
+        "method": "kinematic reachability (jump apex model)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "Three-lap neon circuit needs lap timing and two rival bike AI paths",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lap_score",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lap_score"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_lap_score fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lose_hazard",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_hazard"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_lose_hazard fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lose_time",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_time"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_lose_time: no timer on player",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_cp_4",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_cp_4"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_secret_cp_4 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_cp_5",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_cp_5"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_secret_cp_5 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_host",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_host"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_secret_host fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_pickup_5",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_pickup_5"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_secret_pickup_5 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_pickup_6",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_pickup_6"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_secret_pickup_6 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_trophy",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_trophy"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_secret_trophy fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it (AI par 17 s)",
+        "cx": null,
+        "src": "",
+        "ms": 136
+      },
+      {
+        "id": "T3:x_circuit",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "x_circuit"
+        },
+        "status": "counterexample",
+        "method": "physics jump witness, 4 attempts per jump count",
+        "n": 4,
+        "k": 0,
+        "text": "Three-lap neon circuit needs lap timing and two rival bike AI paths: reached with 2 jumps 0 of 4, with 1 0 of 4",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 0,
+          "unit": "attempts",
+          "text": "never reached with 2 jumps"
+        },
+        "src": "ai",
+        "ms": 10
+      }
+    ],
+    "par": {
+      "goldS": 17,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 502
+  }
+}

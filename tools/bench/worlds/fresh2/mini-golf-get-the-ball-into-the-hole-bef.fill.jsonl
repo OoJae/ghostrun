@@ -1,0 +1,15 @@
+{"op":"meta","mode":"play","lang":"en","pack":"arena","sub":[],"seed":104,"look":"mini golf","mood":[0.55,0.6,0.65],"timeOfDay":12,"weather":"clear"}
+{"op":"zone","id":"z_course","slot":"midfield","tag":"course","name":"Mini Golf Hole"}
+{"op":"spawn","id":"sp_red","zone":"z_course","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"hole","zone":"z_course","anchor":"center","noun":"hole","hyper":"hole","team":""}
+{"op":"ent","id":"golf_ball","kind":"pickup","noun":"golf ball","hyper":"ball","zone":"z_course","anchor":"center_n","body":"dynamic","shape":"sphere","size":[0.1,0.1,0.1]}
+{"op":"ent","id":"windmill","kind":"hazard","noun":"windmill","hyper":"windmill","zone":"z_course","anchor":"center_s","body":"sensor","shape":"box","size":[1,2,0.2]}
+{"op":"verb","id":"vb_carry_ball","verb":"physics_props.carry","on":"golf_ball","params":{}}
+{"op":"verb","id":"vb_throw_ball","verb":"combat_sport.throw","on":"golf_ball","params":{"range":10}}
+{"op":"verb","id":"vb_windmill_hazard","verb":"motion_hazards.hazard","on":"windmill","params":{"respawn":true}}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":6}}
+{"op":"rule","id":"r_win","when":{"t":"enter","a":"golf_ball","b":"hole"},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose","when":{"t":"hit","a":"golf_ball","b":"windmill"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"expect","id":"x_timing","prop":"win_reachable","a":"sp_red","b":"hole","headline":true,"text":"Timing a putt around a moving windmill gate"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

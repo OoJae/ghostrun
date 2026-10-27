@@ -1,0 +1,10 @@
+  · fill line 18: unresolved — 'rule' references an id that never arrived
+  · fill line 19: unresolved — 'rule' references an id that never arrived
+  · fill line 20: unresolved — 'rule' references an id that never arrived
+  · fill line 21: unresolved — 'rule' references an id that never arrived
+  · fill line 22: unresolved — 'rule' references an id that never arrived
+  · fill line 23: unresolved — 'rule' references an id that never arrived
+[1/4] {"prompt":"Dodgeball arena, red team against blue team, first to five hits","pack":"arena","intentMs":1690,"fillFirstTokenMs":2386,"firstEntityMs":2455,"gameplayEndMs":3016,"fillDoneMs":3017,"playableMs":3022,"proofMs":227,"outTok":1387,"invalid":0,"lines":29,"controls":9,"headline":"counterexample","t3win":"-","par":null,"tooEasy":false,"chips":10}
+[2/4] {"prompt":"A snowball fight in a winter village, first to ten hits wins","pack":"arena","intentMs":1348,"fillFirstTokenMs":2987,"firstEntityMs":3116,"gameplayEndMs":4020,"fillDoneMs":4020,"playableMs":4022,"proofMs":152,"outTok":1811,"invalid":0,"lines":29,"controls":8,"headline":"counterexample","t3win":"-","par":null,"tooEasy":false,"chips":12}
+[3/4] {"prompt":"Bumper cars arena: knock the other cars out of the ring","pack":"arena","intentMs":972,"fillFirstTokenMs":2936,"firstEntityMs":3023,"gameplayEndMs":3235,"fillDoneMs":3235,"playableMs":3237,"proofMs":158,"outTok":2112,"invalid":0,"lines":31,"controls":10,"headline":"counterexample","t3win":"-","par":null,"tooEasy":false,"chips":11}
+[4/4] {"prompt":"A sumo ring on a mountain top: push both rivals out to win","pack":"arena","intentMs":749,"fillFirstTokenMs":1833,"firstEntityMs":1833,"gameplayEndMs":2189,"fillDoneMs":2189,"playableMs":2190,"proofMs":170,"outTok":1106,"invalid":0,"lines":20,"controls":9,"headline":"counterexample","t3win":"-","par":null,"tooEasy":false,"chips":12}

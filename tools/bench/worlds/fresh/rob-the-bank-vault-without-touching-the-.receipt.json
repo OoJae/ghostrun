@@ -1,0 +1,81 @@
+{
+  "prompt": "Rob the bank vault without touching the laser tripwires",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "Stealth Heist",
+    "setting": "A high-security bank interior featuring a main lobby, an armory with side rooms, and the central vault.",
+    "role": "Master Thief",
+    "goal": "Reach the bank vault and extract the contents without triggering any of the red laser tripwires.",
+    "fail": "Touching or crossing a laser tripwire sounds the alarm and fails the run.",
+    "mood": "Tense and calculated",
+    "pack": "floor_plan",
+    "sub": [],
+    "safety": "ok",
+    "headline": "The path to the vault is strictly defined by un-touchable laser tripwires",
+    "nouns": [
+      {
+        "noun": "vault",
+        "hyper": "structure"
+      },
+      {
+        "noun": "laser tripwires",
+        "hyper": "security system"
+      }
+    ],
+    "moodVec": {
+      "valence": -0.2,
+      "arousal": 0.6,
+      "tension": 0.9
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "c865c4d1b632d24ff5d16135f87f6f4a5f3ef133d106bf768a38ac345fb23255",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": null,
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 0 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "chain",
+          "text": "win unreachable in the rule graph"
+        },
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "counterexample",
+        "method": "static goal regression over rules",
+        "text": "no rule ever wins the game",
+        "src": ""
+      }
+    ],
+    "par": null,
+    "ms": 14
+  }
+}

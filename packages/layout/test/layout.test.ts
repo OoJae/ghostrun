@@ -130,3 +130,26 @@ describe("zone areas", () => {
     expect(notes.some((n) => n.startsWith("z_roof: a rule enters or leaves the zone itself"))).toBe(true);
   });
 });
+
+describe("small repairs found by the third unseen set", () => {
+  it("one key for two locks is kept; a 0.5 m place you walk into grows to a stride", () => {
+    const fill = parseFill(
+      ctf
+        .replace('{"op":"verb","id":"vb_jump"', [
+          '{"op":"ent","id":"key_1","kind":"pickup","noun":"silver key","zone":"z_plaza","anchor":"wall_s"}',
+          '{"op":"ent","id":"door_a","kind":"door","noun":"door","zone":"z_red_base","anchor":"doorway_n"}',
+          '{"op":"ent","id":"door_b","kind":"door","noun":"door","zone":"z_blue_base","anchor":"doorway_n"}',
+          '{"op":"ent","id":"tiny","kind":"goal","noun":"spot","zone":"z_plaza","anchor":"wall_e","size":[0.5,0.5,0.5]}',
+          '{"op":"verb","id":"vb_jump"',
+        ].join("\n"))
+        .replace('{"op":"law"', '{"op":"verb","id":"vb_la","verb":"puzzle.lock","on":"door_a","params":{"key":"key_1"}}\n{"op":"verb","id":"vb_lb","verb":"puzzle.lock","on":"door_b","params":{"key":"key_1"}}\n{"op":"law"')
+        .replace('{"op":"rule","id":"r_pickup"', '{"op":"rule","id":"r_tiny","when":{"t":"enter","a":"player","b":"tiny"},"then":[{"e":"emit","target":"tiny","fx":"x"}]}\n{"op":"rule","id":"r_pickup"'),
+      { seed: 7 },
+    );
+    const layout = cityBlock.generate({ seed: 7, params: cityBlock.defaults, sub: fill.draft.pack.sub, laws: fill.draft.laws, harder: false });
+    const { bundle, notes } = placeWorld({ ...fill.draft, engine: "e".repeat(64) }, layout);
+    expect(bundle.verbs.filter((v) => v.verb === "puzzle.lock").map((v) => v.params.keep)).toEqual([true, true]);
+    expect(notes).toContain("key_1: opens 2 locks, so it is kept, not used up");
+    expect(bundle.entities.find((e) => e.id === "tiny")!.size).toEqual([1.6, 1.2, 1.6]);
+  });
+});

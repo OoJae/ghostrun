@@ -1,0 +1,29 @@
+{"op":"meta","mode":"wander","lang":"en","pack":"outdoor","sub":[],"seed":112,"look":"quiet Japanese zen garden","mood":[0.8,-0.6,-0.5],"timeOfDay":10,"weather":"clear"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Garden entrance"}
+{"op":"zone","id":"z_clearing","slot":"clearing","tag":"clearing","name":"Central clearing"}
+{"op":"zone","id":"z_pond","slot":"pond","tag":"pond","name":"Koi pond"}
+{"op":"zone","id":"z_grove","slot":"grove","tag":"grove","name":"Stone lantern grove"}
+{"op":"zone","id":"z_camp","slot":"camp","tag":"camp","name":"Tea house area"}
+{"op":"zone","id":"z_lookout","slot":"lookout","tag":"lookout","name":"Stone bridge overlook"}
+{"op":"spawn","id":"sp_red","zone":"z_entrance","anchor":"spawn_pad","team":"red"}
+{"op":"ent","id":"bench","kind":"prop","noun":"wooden bench","hyper":"bench","zone":"z_clearing","anchor":"center","body":"fixed","shape":"box","size":[1.2,0.4,0.5]}
+{"op":"ent","id":"lantern_n","kind":"prop","noun":"stone lantern","hyper":"lantern","zone":"z_grove","anchor":"heart","body":"fixed","shape":"box","size":[0.3,0.8,0.3]}
+{"op":"ent","id":"lantern_s","kind":"prop","noun":"stone lantern","hyper":"lantern","zone":"z_grove","anchor":"stump","body":"fixed","shape":"box","size":[0.3,0.8,0.3]}
+{"op":"ent","id":"lantern_e","kind":"prop","noun":"stone lantern","hyper":"lantern","zone":"z_grove","anchor":"hollow","body":"fixed","shape":"box","size":[0.3,0.8,0.3]}
+{"op":"ent","id":"lantern_w","kind":"prop","noun":"stone lantern","hyper":"lantern","zone":"z_grove","anchor":"roots","body":"fixed","shape":"box","size":[0.3,0.8,0.3]}
+{"op":"ent","id":"pond_water","kind":"prop","noun":"pond water","hyper":"water","zone":"z_pond","anchor":"water","body":"fixed","shape":"sphere","size":[3,0,3]}
+{"op":"ent","id":"bridge","kind":"prop","noun":"stone bridge","hyper":"bridge","zone":"z_lookout","anchor":"mid","body":"fixed","shape":"box","size":[4,0.2,2]}
+{"op":"ent","id":"guide_sign","kind":"sign","noun":"welcome sign","hyper":"sign","zone":"z_entrance","anchor":"sign","body":"fixed","shape":"box","size":[2,0.1,0.5]}
+{"op":"ent","id":"guide_npc","kind":"npc","noun":"garden guide","hyper":"guide","zone":"z_entrance","anchor":"guide","body":"kinematic","shape":"capsule","team":""}
+{"op":"verb","id":"vb_inspect_bench","verb":"social.inspect","on":"bench","params":{"text":"A simple wooden bench for quiet contemplation."}}
+{"op":"verb","id":"vb_inspect_lantern_n","verb":"social.inspect","on":"lantern_n","params":{"text":"A stone lantern casting a soft glow."}}
+{"op":"verb","id":"vb_inspect_lantern_s","verb":"social.inspect","on":"lantern_s","params":{"text":"A stone lantern casting a soft glow."}}
+{"op":"verb","id":"vb_inspect_lantern_e","verb":"social.inspect","on":"lantern_e","params":{"text":"A stone lantern casting a soft glow."}}
+{"op":"verb","id":"vb_inspect_lantern_w","verb":"social.inspect","on":"lantern_w","params":{"text":"A stone lantern casting a soft glow."}}
+{"op":"verb","id":"vb_inspect_pond","verb":"social.inspect","on":"pond_water","params":{"text":"Tranquil koi swim beneath the surface."}}
+{"op":"verb","id":"vb_inspect_bridge","verb":"social.inspect","on":"bridge","params":{"text":"A stone bridge crossing the pond."}}
+{"op":"verb","id":"vb_inspect_sign","verb":"social.inspect","on":"guide_sign","params":{"text":"Welcome to the zen garden. Please enjoy the silence."}}
+{"op":"npc","id":"guide_npc","role":"guide","zone":"z_entrance","anchor":"guide","team":"","menu":["guide.tour"],"dflt":"guide.tour"}
+{"op":"expect","id":"x_explore","prop":"reachable","a":"sp_red","b":"z_pond","headline":true,"text":"Koi pond is central to the exploration path"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

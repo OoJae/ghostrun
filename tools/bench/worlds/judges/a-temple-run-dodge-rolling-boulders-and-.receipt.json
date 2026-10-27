@@ -1,0 +1,292 @@
+{
+  "prompt": "a temple run: dodge rolling boulders and grab the idol",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "runner",
+    "setting": "A narrow stone tunnel at a temple entrance, carved into the rock face. The path winds through shadowed hallways lined with moss and ancient glyphs, then bursts out into a short, sunlit final dash before the idol pedestal.",
+    "role": "runner",
+    "goal": "Dodge rolling boulders and collect every glowing idol along the track; reach the pedestal before the timer runs out",
+    "fail": "Falling into a pit, getting crushed by a boulder, or letting the idol-drop timer hit zero",
+    "mood": "frantic, ancient, high-stakes",
+    "pack": "course",
+    "sub": [],
+    "safety": "arcade",
+    "headline": "The temple tunnel needs boulder patterns that force a precise double jump",
+    "nouns": [
+      {
+        "noun": "rolling boulder",
+        "hyper": "obstacle"
+      },
+      {
+        "noun": "stone tunnel",
+        "hyper": "path"
+      },
+      {
+        "noun": "glowing idol",
+        "hyper": "collectible"
+      },
+      {
+        "noun": "pedestal",
+        "hyper": "finish"
+      },
+      {
+        "noun": "stone pit",
+        "hyper": "trap"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.1,
+      "arousal": 0.9,
+      "tension": 0.85
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "8e94c5d4c6f563739c6208ee8092fa41e5a63236c8f11d01a9014da6742f2650",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_double_jump",
+      "text": "The temple tunnel needs boulder patterns that force a precise double jump",
+      "status": "counterexample",
+      "method": "kinematic reachability (jump apex model) + physics jump witness, 4 attempts per jump count"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 8 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (player enters pedestal)",
+        "src": ""
+      },
+      {
+        "id": "T1:x_double_jump",
+        "tier": "T1",
+        "subject": {
+          "kind": "property",
+          "id": "x_double_jump"
+        },
+        "method": "kinematic reachability (jump apex model)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "counterexample",
+        "text": "The temple tunnel needs boulder patterns that force a precise double jump",
+        "cx": {
+          "where": null,
+          "have": 1.5,
+          "need": 4.63,
+          "unit": "m",
+          "text": "reachable with 1 jump: step 4.63 m ≤ apex 1.5 m"
+        }
+      },
+      {
+        "id": "T2:r_lose_boulder",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_boulder"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_lose_boulder fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lose_boulder2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_boulder2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_lose_boulder2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lose_boulder3",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_boulder3"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_lose_boulder3 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lose_pit",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_pit"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_lose_pit fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lose_timer",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_timer"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_lose_timer fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_host",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_host"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_secret_host fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_trophy",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_trophy"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_trophy fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 0,
+        "src": "ai",
+        "ms": 3,
+        "status": "counterexample",
+        "text": "r_win fires exactly once",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "firings",
+          "text": "never fired when forced"
+        }
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "counterexample",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 0,
+        "text": "no AI runner could win",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "wins",
+          "text": "12 lost (hit the rolling boulder ×12)"
+        },
+        "src": "",
+        "ms": 119
+      },
+      {
+        "id": "T3:x_double_jump",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "x_double_jump"
+        },
+        "status": "counterexample",
+        "method": "physics jump witness, 4 attempts per jump count",
+        "n": 4,
+        "k": 0,
+        "text": "The temple tunnel needs boulder patterns that force a precise double jump: reached with 2 jumps 0 of 4, with 1 0 of 4",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 0,
+          "unit": "attempts",
+          "text": "never reached with 2 jumps"
+        },
+        "src": "ai",
+        "ms": 17
+      }
+    ],
+    "par": null,
+    "ms": 488
+  }
+}

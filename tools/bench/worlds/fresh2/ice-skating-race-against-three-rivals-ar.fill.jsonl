@@ -1,0 +1,31 @@
+{"op":"meta","mode":"play","lang":"en","pack":"arena","sub":[],"seed":111,"look":"snowy frozen lake","mood":[0.5,0.6,0.5],"timeOfDay":14,"weather":"clear"}
+{"op":"zone","id":"z_lake","slot":"midfield","tag":"track","name":"Frozen Lake Track"}
+{"op":"zone","id":"z_west","slot":"west_half","tag":"base","name":"West Start Base"}
+{"op":"zone","id":"z_east","slot":"east_half","tag":"base","name":"East Finish Base"}
+{"op":"zone","id":"z_north","slot":"north_deck","tag":"view","name":"North Viewing Deck"}
+{"op":"zone","id":"z_south","slot":"south_deck","tag":"view","name":"South Viewing Deck"}
+{"op":"spawn","id":"sp_red","zone":"z_west","anchor":"spawn_pad","team":"red"}
+{"op":"spawn","id":"sp_blue1","zone":"z_west","anchor":"spawn_pad","team":"blue"}
+{"op":"spawn","id":"sp_blue2","zone":"z_west","anchor":"spawn_pad","team":"blue"}
+{"op":"spawn","id":"sp_blue3","zone":"z_west","anchor":"spawn_pad","team":"blue"}
+{"op":"goal","id":"goal_finish","zone":"z_east","anchor":"goal_ring","noun":"finish line","hyper":"goal","team":""}
+{"op":"ent","id":"boost_pad1","kind":"plate","noun":"speed boost","hyper":"boost","zone":"z_lake","anchor":"flank_n","body":"sensor","shape":"box","size":[0.5,0.1,0.5]}
+{"op":"ent","id":"boost_pad2","kind":"plate","noun":"speed boost","hyper":"boost","zone":"z_lake","anchor":"flank_s","body":"sensor","shape":"box","size":[0.5,0.1,0.5]}
+{"op":"ent","id":"slip_patch","kind":"hazard","noun":"slippery ice","hyper":"hazard","zone":"z_lake","anchor":"center","body":"sensor","shape":"box","size":[2,0.1,2]}
+{"op":"ent","id":"checkpoint_mid","kind":"checkpoint","noun":"mid checkpoint","hyper":"checkpoint","zone":"z_lake","anchor":"center_n","body":"sensor","shape":"box","size":[1,0.1,1]}
+{"op":"verb","id":"vb_boost1","verb":"puzzle.collect","on":"boost_pad1","params":{}}
+{"op":"verb","id":"vb_boost2","verb":"puzzle.collect","on":"boost_pad2","params":{}}
+{"op":"verb","id":"vb_slip","verb":"motion_hazards.hazard","on":"slip_patch","params":{"respawn":true}}
+{"op":"verb","id":"vb_checkpoint","verb":"puzzle.checkpoint","on":"checkpoint_mid","params":{}}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":8}}
+{"op":"state","id":"slip_patch","state":"down"}
+{"op":"rule","id":"r_win","when":{"t":"enter","a":"player","b":"goal_finish"},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose_slip","when":{"t":"hit","a":"player","b":"slip_patch"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_boost1","when":{"t":"touch","a":"player","b":"boost_pad1"},"then":[{"e":"score","target":"team:red","n":5}],"once":true}
+{"op":"rule","id":"r_boost2","when":{"t":"touch","a":"player","b":"boost_pad2"},"then":[{"e":"score","target":"team:red","n":5}],"once":true}
+{"op":"npc","id":"rival_1","role":"rival","zone":"z_west","anchor":"spawn_pad","team":"blue","menu":["rival.patrol"],"dflt":"rival.patrol"}
+{"op":"npc","id":"rival_2","role":"rival","zone":"z_west","anchor":"spawn_pad","team":"blue","menu":["rival.patrol"],"dflt":"rival.patrol"}
+{"op":"npc","id":"rival_3","role":"rival","zone":"z_west","anchor":"spawn_pad","team":"blue","menu":["rival.patrol"],"dflt":"rival.patrol"}
+{"op":"expect","id":"x_race","prop":"win_reachable","a":"sp_red","b":"goal_finish","headline":true,"text":"The frozen lake track must support realistic sliding movement for 4 players"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

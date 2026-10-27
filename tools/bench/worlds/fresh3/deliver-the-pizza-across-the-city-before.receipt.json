@@ -1,0 +1,172 @@
+{
+  "prompt": "Deliver the pizza across the city before it gets cold",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "delivery-race",
+    "setting": "urban street network between a pizza shop and a customer's location, with tight time pressure",
+    "role": "delivery rider",
+    "goal": "reach the destination before the clock hits zero to serve the pizza while hot",
+    "fail": "the timer expires and the pizza is served cold",
+    "mood": "frantic urban sprint against the clock",
+    "pack": "city_block",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Delivery is only valid if the rider arrives before the timer expires",
+    "nouns": [
+      {
+        "noun": "pizza",
+        "hyper": "food"
+      },
+      {
+        "noun": "city",
+        "hyper": "location"
+      },
+      {
+        "noun": "customer",
+        "hyper": "role"
+      },
+      {
+        "noun": "clock",
+        "hyper": "timer"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.2,
+      "arousal": 0.85,
+      "tension": 0.75
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "c67f1925fdf752dd9bc9d98d4046aec3047534e13558e401d12261ccb12e4082",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "exp_delivery",
+      "text": "Delivery is only valid if the rider arrives before the timer expires",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 4 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (pizza_box into goal_ring, carried by red) ← pick up pizza_box",
+        "src": ""
+      },
+      {
+        "id": "T2:r_gate_open",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_gate_open"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 9,
+        "status": "verified",
+        "text": "r_gate_open fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lose_timer",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_timer"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_lose_timer fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_plate_speed",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_plate_speed"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 6,
+        "status": "verified",
+        "text": "r_plate_speed fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it (AI par 10.1 s)",
+        "cx": null,
+        "src": "",
+        "ms": 248
+      }
+    ],
+    "par": {
+      "goldS": 10.1,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 493
+  }
+}

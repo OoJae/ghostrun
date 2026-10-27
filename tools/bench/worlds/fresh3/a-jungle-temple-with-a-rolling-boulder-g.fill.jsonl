@@ -1,0 +1,34 @@
+{"op":"meta","mode":"play","lang":"en","pack":"course","sub":[],"seed":98,"look":"jungle temple","mood":[-0.3,0.8,0.9],"timeOfDay":12,"weather":"rain"}
+{"op":"zone","id":"z_start","slot":"start","tag":"outside","name":"Temple entrance"}
+{"op":"zone","id":"z_seg1","slot":"seg_1","tag":"side","name":"Fake idol chamber"}
+{"op":"zone","id":"z_seg2","slot":"seg_2","tag":"ledge","name":"Statue shrine"}
+{"op":"zone","id":"z_seg3","slot":"seg_3","tag":"corridor","name":"Jump‑gap corridor"}
+{"op":"zone","id":"z_seg4","slot":"seg_4","tag":"pit","name":"Boulder trigger pit"}
+{"op":"zone","id":"z_seg5","slot":"seg_5","tag":"gap","name":"Long bridge"}
+{"op":"zone","id":"z_seg6","slot":"seg_6","tag":"final","name":"River exit corridor"}
+{"op":"zone","id":"z_finish","slot":"finish","tag":"exit","name":"River exit"}
+{"op":"spawn","id":"sp_red","zone":"z_start","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"river_exit","zone":"z_finish","anchor":"goal","noun":"river exit","hyper":"river exit","team":"red","body":"sensor","shape":"box","size":[2,2,2]}
+{"op":"ent","id":"idol","kind":"pickup","noun":"golden idol","hyper":"idol","zone":"z_seg2","anchor":"cp_2","body":"dynamic","shape":"sphere","size":[0.4,0.4,0.4]}
+{"op":"ent","id":"fake_1","kind":"prop","noun":"fake idol","hyper":"decoy","zone":"z_seg1","anchor":"cp_1","body":"fixed","shape":"sphere","size":[0.4,0.4,0.4]}
+{"op":"ent","id":"fake_2","kind":"prop","noun":"fake idol","hyper":"decoy","zone":"z_seg1","anchor":"pickup_1","body":"fixed","shape":"sphere","size":[0.4,0.4,0.4]}
+{"op":"ent","id":"plate_boulder","kind":"plate","noun":"pressure plate","hyper":"plate","zone":"z_seg4","anchor":"cp_4","body":"sensor","shape":"box","size":[1,0.2,1]}
+{"op":"ent","id":"boulder","kind":"hazard","noun":"rolling boulder","hyper":"boulder","zone":"z_seg4","anchor":"pit_4","body":"sensor","shape":"hull","size":[2,2,2]}
+{"op":"ent","id":"jump_pad_1","kind":"plate","noun":"jump pad","hyper":"jump pad","zone":"z_seg3","anchor":"pickup_3","body":"sensor","shape":"box","size":[1,0.2,1]}
+{"op":"ent","id":"jump_pad_2","kind":"plate","noun":"jump pad","hyper":"jump pad","zone":"z_seg5","anchor":"pickup_5","body":"sensor","shape":"box","size":[1,0.2,1]}
+{"op":"ent","id":"torch","kind":"prop","noun":"flashlight","hyper":"tool","zone":"z_start","anchor":"sign","body":"fixed","shape":"box","size":[0.2,0.5,0.2]}
+{"op":"verb","id":"vb_carry_idol","verb":"physics_props.carry","on":"idol","params":{}}
+{"op":"verb","id":"vb_inspect_fake1","verb":"social.inspect","on":"fake_1","params":{"text":"A crudely carved idol, obviously a replica."}}
+{"op":"verb","id":"vb_inspect_fake2","verb":"social.inspect","on":"fake_2","params":{"text":"An idol covered in moss, looks fake."}}
+{"op":"verb","id":"vb_plate_trigger","verb":"puzzle.plate","on":"plate_boulder","params":{"latch":false}}
+{"op":"verb","id":"vb_boulder_hazard","verb":"motion_hazards.hazard","on":"boulder","params":{"respawn":false}}
+{"op":"verb","id":"vb_jump_pad1","verb":"locomotion.jump_pad","on":"jump_pad_1","params":{"height":3}}
+{"op":"verb","id":"vb_jump_pad2","verb":"locomotion.jump_pad","on":"jump_pad_2","params":{"height":4}}
+{"op":"verb","id":"vb_jump","verb":"locomotion.jump","on":"player","params":{"jumpsMax":2}}
+{"op":"rule","id":"r_win","when":{"t":"enter","a":"idol","b":"river_exit"},"if":[{"l":"idol.carrier.team","op":"eq","r":"red"}],"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose_boulder","when":{"t":"enter","a":"player","b":"boulder"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_plate_release","when":{"t":"state_is","a":"plate_boulder","s":"down"},"then":[{"e":"emit","target":"boulder","fx":"roll"}],"once":true}
+{"op":"expect","id":"x_idol","prop":"win_reachable","a":"sp_red","b":"river_exit","headline":true,"text":"Picked idol must be carried past the boulder to the river exit before it collapses"}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":6}}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

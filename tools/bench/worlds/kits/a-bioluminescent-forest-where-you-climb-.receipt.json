@@ -1,0 +1,110 @@
+{
+  "prompt": "a bioluminescent forest where you climb to an owl's lookout",
+  "intent": {
+    "lang": "en",
+    "mode": "wander",
+    "genre": "Fantasy Exploration",
+    "setting": "A dense, misty bioluminescent forest at night, characterized by glowing flora and towering trees.",
+    "role": "Naturalist / Explorer",
+    "goal": "Climb the trees to reach the hidden owl's lookout and observe the glowing canopy.",
+    "fail": "Losing your footing on the low branches in the dark or exhausting stamina.",
+    "mood": "Ethereal and mysterious",
+    "pack": "outdoor",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Climbing route must be vertical to the hollow",
+    "nouns": [
+      {
+        "noun": "forest",
+        "hyper": "environment"
+      },
+      {
+        "noun": "owl",
+        "hyper": "fauna"
+      },
+      {
+        "noun": "lookout",
+        "hyper": "vantage_point"
+      },
+      {
+        "noun": "climb",
+        "hyper": "action"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.6,
+      "arousal": -0.4,
+      "tension": 0.3
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "af58793fd9ce9ecb70b1c7ab69f93f126aed548af2ebf046b3680e45c27fbf35",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_route",
+      "text": "Climbing route must be vertical to the hollow",
+      "status": "not_checkable",
+      "method": "kinematic reachability (jump apex model)"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 0 rules reference existing things",
+        "src": ""
+      },
+      {
+        "id": "T1:x_route",
+        "tier": "T1",
+        "subject": {
+          "kind": "property",
+          "id": "x_route"
+        },
+        "method": "kinematic reachability (jump apex model)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "Climbing route must be vertical to the hollow: needs nothing stated, no checker for that yet",
+        "cx": null
+      },
+      {
+        "id": "T3:tour",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "tour"
+        },
+        "status": "counterexample",
+        "method": "physics, an AI visitor walks to and uses each",
+        "n": 5,
+        "k": 4,
+        "text": "walked to and inspected 4 of 5 things",
+        "cx": {
+          "where": null,
+          "have": 4,
+          "need": 5,
+          "unit": "things",
+          "text": "couldn't reach tree_1"
+        },
+        "src": "",
+        "ms": 19
+      }
+    ],
+    "par": null,
+    "ms": 303
+  }
+}

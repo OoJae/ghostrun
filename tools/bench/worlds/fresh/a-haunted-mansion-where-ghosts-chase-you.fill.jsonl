@@ -1,0 +1,27 @@
+{"op":"meta","mode":"play","lang":"en","pack":"floor_plan","sub":[],"seed":103,"look":"haunted mansion","mood":[0.2,0.6,0.8],"timeOfDay":22,"weather":"foggy"}
+{"op":"zone","id":"z_yard","slot":"yard","tag":"outside","name":"Mansion grounds"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Grand foyer"}
+{"op":"zone","id":"z_main","slot":"main_room","tag":"hall","name":"Great hall"}
+{"op":"zone","id":"z_nw","slot":"room_nw","tag":"room","name":"Northwest wing"}
+{"op":"zone","id":"z_se","slot":"room_se","slot":"room_se","tag":"room","name":"Southeast wing"}
+{"op":"spawn","id":"sp_red","zone":"z_yard","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"goal_none","zone":"z_yard","anchor":"corner_w","noun":"escape","hyper":"none","team":"red"}
+{"op":"ent","id":"candle_1","kind":"switch","noun":"candle","hyper":"candle","zone":"z_entrance","anchor":"corner_ne","body":"sensor","shape":"box","size":[0.2,0.5,0.2]}
+{"op":"ent","id":"candle_2","kind":"switch","noun":"candle","hyper":"candle","zone":"z_main","anchor":"center","body":"sensor","shape":"box","size":[0.2,0.5,0.2]}
+{"op":"ent","id":"candle_3","kind":"switch","noun":"candle","hyper":"candle","zone":"z_nw","anchor":"corner_sw","body":"sensor","shape":"box","size":[0.2,0.5,0.2]}
+{"op":"ent","id":"candle_4","kind":"switch","noun":"candle","hyper":"candle","zone":"z_se","anchor":"corner_se","body":"sensor","shape":"box","size":[0.2,0.5,0.2]}
+{"op":"ent","id":"ghost_1","kind":"npc","noun":"restless spirit","hyper":"ghost","zone":"z_entrance","anchor":"center","body":"dynamic","shape":"capsule"}
+{"op":"ent","id":"ghost_2","kind":"npc","noun":"restless spirit","hyper":"ghost","zone":"z_main","anchor":"corner_nw","body":"dynamic","shape":"capsule"}
+{"op":"verb","id":"vb_switch_1","verb":"puzzle.switch","on":"candle_1","params":{"once":false}}
+{"op":"verb","id":"vb_switch_2","verb":"puzzle.switch","on":"candle_2","params":{"once":false}}
+{"op":"verb","id":"vb_switch_3","verb":"puzzle.switch","on":"candle_3","params":{"once":false}}
+{"op":"verb","id":"vb_switch_4","verb":"puzzle.switch","on":"candle_4","params":{"once":false}}
+{"op":"verb","id":"vb_ghost_chase","verb":"puzzle.lock","on":"ghost_1","params":{"key":"candle_1"}}
+{"op":"verb","id":"vb_ghost_chase2","verb":"puzzle.lock","on":"ghost_2","params":{"key":"candle_2"}}
+{"op":"rule","id":"r_win","when":{"t":"state_is","a":"candle_1","s":"on"},"if":[{"l":"candle_2.state","op":"eq","r":"on"},{"l":"candle_3.state","op":"eq","r":"on"},{"l":"candle_4.state","op":"eq","r":"on"}],"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose_ghost1","when":{"t":"enter","a":"player","b":"ghost_1"},"then":[{"e":"lose","target":"player"}],"once":false}
+{"op":"rule","id":"r_lose_ghost2","when":{"t":"enter","a":"player","b":"ghost_2"},"then":[{"e":"lose","target":"player"}],"once":false}
+{"op":"expect","id":"x_candles","prop":"win_reachable","a":"sp_red","b":"goal_none","headline":true,"text":"Candles light correctly under ghost pressure"}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":5}}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

@@ -1,0 +1,58 @@
+{"op":"meta","mode":"play","lang":"en","pack":"course","sub":[],"seed":103,"look":"glowing cave","mood":[0.2,0.6,0.8],"timeOfDay":12,"weather":"clear"}
+{"op":"zone","id":"z_start","slot":"start","tag":"cave","name":"Cave entrance"}
+{"op":"zone","id":"z_seg_1","slot":"seg_1","tag":"ledge","name":"Luminous ledge"}
+{"op":"zone","id":"z_seg_2","slot":"seg_2","tag":"gaps","name":"Lava gaps"}
+{"op":"zone","id":"z_seg_3","slot":"seg_3","tag":"steps","name":"Stepping stones"}
+{"op":"zone","id":"z_seg_4","slot":"seg_4","tag":"pit","name":"Deep pit"}
+{"op":"zone","id":"z_seg_5","slot":"seg_5","tag":"beam","name":"Crystal beam"}
+{"op":"zone","id":"z_finish","slot":"finish","tag":"exit","name":"Cave exit"}
+{"op":"spawn","id":"sp_red","zone":"z_start","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"exit_goal","zone":"z_finish","anchor":"goal","noun":"cave exit","hyper":"exit","team":"red"}
+{"op":"ent","id":"crystal_1","kind":"pickup","noun":"glowing crystal","hyper":"crystal","zone":"z_start","anchor":"pickup_1","body":"dynamic","shape":"sphere","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"crystal_2","kind":"pickup","noun":"glowing crystal","hyper":"crystal","zone":"z_seg_1","anchor":"pickup_1","body":"dynamic","shape":"sphere","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"crystal_3","kind":"pickup","noun":"glowing crystal","hyper":"crystal","zone":"z_seg_1","anchor":"pickup_2","body":"dynamic","shape":"sphere","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"crystal_4","kind":"pickup","noun":"glowing crystal","hyper":"crystal","zone":"z_seg_2","anchor":"pickup_1","body":"dynamic","shape":"sphere","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"crystal_5","kind":"pickup","noun":"glowing crystal","hyper":"crystal","zone":"z_seg_2","anchor":"pickup_2","body":"dynamic","shape":"sphere","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"crystal_6","kind":"pickup","noun":"glowing crystal","hyper":"crystal","zone":"z_seg_3","anchor":"pickup_1","body":"dynamic","shape":"sphere","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"crystal_7","kind":"pickup","noun":"glowing crystal","hyper":"crystal","zone":"z_seg_3","anchor":"pickup_2","body":"dynamic","shape":"sphere","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"crystal_8","kind":"pickup","noun":"glowing crystal","hyper":"crystal","zone":"z_seg_4","anchor":"pickup_1","body":"dynamic","shape":"sphere","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"crystal_9","kind":"pickup","noun":"glowing crystal","hyper":"crystal","zone":"z_seg_4","anchor":"pickup_2","body":"dynamic","shape":"sphere","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"crystal_10","kind":"pickup","noun":"glowing crystal","hyper":"crystal","zone":"z_seg_5","anchor":"pickup_1","body":"dynamic","shape":"sphere","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"lava_1","kind":"hazard","noun":"lava stream","hyper":"lava","zone":"z_seg_2","anchor":"pit_4","body":"sensor","shape":"box","size":[2,0.5,2]}
+{"op":"ent","id":"lava_2","kind":"hazard","noun":"lava pool","hyper":"lava","zone":"z_seg_4","anchor":"pit_4","body":"sensor","shape":"box","size":[3,0.5,3]}
+{"op":"ent","id":"jump_pad_1","kind":"plate","noun":"jump pad","hyper":"jump_pad","zone":"z_seg_1","anchor":"cp_1","body":"sensor","shape":"box","size":[0.5,0.2,0.5]}
+{"op":"ent","id":"moving_plat_1","kind":"platform","noun":"moving platform","hyper":"platform","zone":"z_seg_3","anchor":"cp_3","body":"kinematic","shape":"box","size":[1,0.3,1]}
+{"op":"verb","id":"vb_carry_cr1","verb":"physics_props.carry","on":"crystal_1","params":{}}
+{"op":"verb","id":"vb_carry_cr2","verb":"physics_props.carry","on":"crystal_2","params":{}}
+{"op":"verb","id":"vb_carry_cr3","verb":"physics_props.carry","on":"crystal_3","params":{}}
+{"op":"verb","id":"vb_carry_cr4","verb":"physics_props.carry","on":"crystal_4","params":{}}
+{"op":"verb","id":"vb_carry_cr5","verb":"physics_props.carry","on":"crystal_5","params":{}}
+{"op":"verb","id":"vb_carry_cr6","verb":"physics_props.carry","on":"crystal_6","params":{}}
+{"op":"verb","id":"vb_carry_cr7","verb":"physics_props.carry","on":"crystal_7","params":{}}
+{"op":"verb","id":"vb_carry_cr8","verb":"physics_props.carry","on":"crystal_8","params":{}}
+{"op":"verb","id":"vb_carry_cr9","verb":"physics_props.carry","on":"crystal_9","params":{}}
+{"op":"verb","id":"vb_carry_cr10","verb":"physics_props.carry","on":"crystal_10","params":{}}
+{"op":"verb","id":"vb_jump","verb":"locomotion.jump","on":"player","params":{"jumpsMax":2}}
+{"op":"verb","id":"vb_timer","verb":"puzzle.timer","on":"player","params":{"seconds":120}}
+{"op":"verb","id":"vb_jump_pad_1","verb":"locomotion.jump_pad","on":"jump_pad_1","params":{"height":5}}
+{"op":"verb","id":"vb_move_plat_1","verb":"motion_hazards.oscillate","on":"moving_plat_1","params":{"axis":"x","travel":4,"period":6}}
+{"op":"verb","id":"vb_hazard_lava1","verb":"motion_hazards.hazard","on":"lava_1","params":{"respawn":true}}
+{"op":"verb","id":"vb_hazard_lava2","verb":"motion_hazards.hazard","on":"lava_2","params":{"respawn":true}}
+{"op":"rule","id":"r_collect_cr1","when":{"t":"touch","a":"player","b":"crystal_1"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_collect_cr2","when":{"t":"touch","a":"player","b":"crystal_2"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_collect_cr3","when":{"t":"touch","a":"player","b":"crystal_3"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_collect_cr4","when":{"t":"touch","a":"player","b":"crystal_4"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_collect_cr5","when":{"t":"touch","a":"player","b":"crystal_5"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_collect_cr6","when":{"t":"touch","a":"player","b":"crystal_6"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_collect_cr7","when":{"t":"touch","a":"player","b":"crystal_7"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_collect_cr8","when":{"t":"touch","a":"player","b":"crystal_8"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_collect_cr9","when":{"t":"touch","a":"player","b":"crystal_9"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_collect_cr10","when":{"t":"touch","a":"player","b":"crystal_10"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_win","when":{"t":"score_gte","a":"team:red","n":10},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose_timer","when":{"t":"timer_end","a":"player"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose_lava1","when":{"t":"hit","a":"player","b":"lava_1"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose_lava2","when":{"t":"hit","a":"player","b":"lava_2"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"expect","id":"x_cave","prop":"win_reachable","a":"sp_red","b":"exit_goal","headline":true,"text":"Cave route requires navigating lava gaps to reach 10 crystals in time"}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":6}}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

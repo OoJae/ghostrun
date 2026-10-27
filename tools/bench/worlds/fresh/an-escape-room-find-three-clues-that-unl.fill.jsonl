@@ -1,0 +1,22 @@
+{"op":"meta","mode":"play","lang":"en","pack":"floor_plan","sub":[],"seed":102,"look":"dim mansion room","mood":[-0.3,0.4,0.7],"timeOfDay":22,"weather":"clear"}
+{"op":"zone","id":"z_room","slot":"room_sw","tag":"room","name":"Locked chamber"}
+{"op":"spawn","id":"sp_red","zone":"z_room","anchor":"center","team":"red"}
+{"op":"goal","id":"exit","zone":"z_room","anchor":"doorway_n","noun":"exit door","hyper":"door","team":"red"}
+{"op":"ent","id":"door_main","kind":"door","noun":"main door","hyper":"door","zone":"z_room","anchor":"doorway_n","body":"fixed","shape":"box","size":[1.0,2.2,0.2],"state":"closed"}
+{"op":"ent","id":"clue1","kind":"pickup","noun":"scratched note","hyper":"item","zone":"z_room","anchor":"corner_sw","body":"dynamic","shape":"box","size":[0.2,0.2,0.01]}
+{"op":"ent","id":"clue2","kind":"pickup","noun":"etched key","hyper":"item","zone":"z_room","anchor":"corner_se","body":"dynamic","shape":"box","size":[0.2,0.2,0.01]}
+{"op":"ent","id":"clue3","kind":"pickup","noun":"hidden photo","hyper":"item","zone":"z_room","anchor":"corner_ne","body":"dynamic","shape":"box","size":[0.2,0.2,0.01]}
+{"op":"verb","id":"vb_collect1","verb":"puzzle.collect","on":"clue1","params":{}}
+{"op":"verb","id":"vb_collect2","verb":"puzzle.collect","on":"clue2","params":{}}
+{"op":"verb","id":"vb_collect3","verb":"puzzle.collect","on":"clue3","params":{}}
+{"op":"verb","id":"vb_timer","verb":"puzzle.timer","on":"player","params":{"seconds":120}}
+{"op":"rule","id":"r_score1","when":{"t":"touch","a":"player","b":"clue1"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_score2","when":{"t":"touch","a":"player","b":"clue2"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_score3","when":{"t":"touch","a":"player","b":"clue3"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_open_door","when":{"t":"score_gte","a":"team:red","n":3},"then":[{"e":"set_state","target":"door_main","v":"open"}],"once":true}
+{"op":"rule","id":"r_win","when":{"t":"state_is","a":"door_main","s":"open"},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose","when":{"t":"timer_end","a":"player"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":5}}
+{"op":"expect","id":"x_escape","prop":"win_reachable","a":"sp_red","b":"exit","headline":true,"text":"Three specific clues must be found to unlock the door before the timer runs out"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

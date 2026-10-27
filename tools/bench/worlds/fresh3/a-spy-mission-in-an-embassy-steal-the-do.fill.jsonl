@@ -1,0 +1,27 @@
+{"op":"meta","mode":"play","lang":"en","pack":"floor_plan","sub":[],"seed":96,"look":"embassy interior","mood":[-0.2,0.6,0.9],"timeOfDay":14,"weather":"clear"}
+{"op":"zone","id":"z_yard","slot":"yard","tag":"outside","name":"Embassy courtyard"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Main entrance lobby"}
+{"op":"zone","id":"z_hall","slot":"main_room","tag":"hall","name":"Reception hall"}
+{"op":"zone","id":"z_office_sw","slot":"room_sw","tag":"room","name":"Southwest office"}
+{"op":"zone","id":"z_office_ne","slot":"room_ne","tag":"room","name":"Northeast office"}
+{"op":"spawn","id":"sp_red","zone":"z_yard","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"exit_gate","zone":"z_yard","anchor":"corner_w","noun":"escape vehicle","hyper":"vehicle","team":"red"}
+{"op":"ent","id":"key","kind":"pickup","noun":"silver key","hyper":"key","zone":"z_office_sw","anchor":"corner_sw","body":"dynamic","shape":"box","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"safe_door","kind":"door","noun":"safe door","hyper":"door","zone":"z_office_ne","anchor":"doorway_w","body":"fixed","shape":"box","size":[1.0,2.0,0.2]}
+{"op":"ent","id":"documents","kind":"pickup","noun":"confidential documents","hyper":"paper items","zone":"z_office_ne","anchor":"center","body":"dynamic","shape":"box","size":[0.4,0.3,0.05]}
+{"op":"ent","id":"laser_grid","kind":"hazard","noun":"laser grid","hyper":"laser","zone":"z_hall","anchor":"corner_ne","body":"sensor","shape":"box","size":[3,0.2,3]}
+{"op":"ent","id":"door_main","kind":"door","noun":"main entrance door","hyper":"door","zone":"z_entrance","anchor":"doorway_s","body":"fixed","shape":"box","size":[1.2,2.5,0.2]}
+{"op":"ent","id":"guard_1","kind":"npc","noun":"security guard","hyper":"guard","zone":"z_hall","anchor":"center","body":"kinematic","shape":"capsule","size":[0.6,1.8,0.6]}
+{"op":"verb","id":"vb_carry_key","verb":"physics_props.carry","on":"key","params":{}}
+{"op":"verb","id":"vb_carry_docs","verb":"physics_props.carry","on":"documents","params":{}}
+{"op":"verb","id":"vb_lock_safe","verb":"puzzle.lock","on":"safe_door","params":{"key":"key"}}
+{"op":"verb","id":"vb_laser_hazard","verb":"motion_hazards.hazard","on":"laser_grid","params":{"respawn":true}}
+{"op":"verb","id":"vb_enter_main","verb":"puzzle.lock","on":"door_main","params":{"key":"key"}}
+{"op":"verb","id":"vb_look_guard","verb":"social.inspect","on":"guard_1","params":{"text":"The guard patrols the hall, eyes scanning for intruders."}}
+{"op":"rule","id":"r_win","when":{"t":"enter","a":"player","b":"exit_gate"},"if":[{"l":"documents.carrier.team","op":"eq","r":"red"}],"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_detect_laser","when":{"t":"hit","a":"player","b":"laser_grid"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_detect_guard","when":{"t":"enter","a":"player","b":"guard_1"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"expect","id":"x_stealth","prop":"win_reachable","a":"sp_red","b":"exit_gate","headline":true,"text":"Embassy safe requires stealth access"}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":5}}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

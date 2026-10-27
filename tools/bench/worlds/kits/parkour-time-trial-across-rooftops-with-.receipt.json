@@ -1,0 +1,103 @@
+{
+  "prompt": "parkour time trial across rooftops with checkpoints",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "parkour platformer",
+    "setting": "an urban rooftop circuit at dusk, neon signage",
+    "role": "a parkour runner",
+    "goal": "reach the finish pad before the timer runs out by hitting every checkpoint",
+    "fail": "falling off a rooftop or missing the timer",
+    "mood": "electric, tense but hopeful",
+    "pack": "city_block",
+    "sub": [
+      "rooftop"
+    ],
+    "safety": "ok",
+    "headline": "Rooftop route needs precise timing to clear gaps before the timer hits zero",
+    "nouns": [
+      {
+        "noun": "rooftop",
+        "hyper": "building"
+      },
+      {
+        "noun": "checkpoint",
+        "hyper": "marker"
+      },
+      {
+        "noun": "rooftop lane",
+        "hyper": "path"
+      },
+      {
+        "noun": "timer",
+        "hyper": "countdown"
+      },
+      {
+        "noun": "urban skyline",
+        "hyper": "view"
+      },
+      {
+        "noun": "gap",
+        "hyper": "jump"
+      },
+      {
+        "noun": "neon sign",
+        "hyper": "lighting"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.25,
+      "arousal": 0.85,
+      "tension": 0.7
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "856578945a6b1c37999c5f656d3c458a759c3bc5c1e671844a7ece4848a51c66",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": null,
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 0 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "chain",
+          "text": "win unreachable in the rule graph"
+        },
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "counterexample",
+        "method": "static goal regression over rules",
+        "text": "no rule ever wins the game",
+        "src": ""
+      }
+    ],
+    "par": null,
+    "ms": 97
+  }
+}

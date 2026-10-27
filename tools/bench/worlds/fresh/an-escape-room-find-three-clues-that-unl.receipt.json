@@ -1,0 +1,202 @@
+{
+  "prompt": "An escape room: find three clues that unlock the door before the time runs out",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "puzzle",
+    "setting": "A dim, locked room inside a generic mansion",
+    "role": "The trapped participant",
+    "goal": "Find three hidden clues to unlock the exit door before the timer expires",
+    "fail": "Time runs out before the door is opened",
+    "mood": "Claustrophobic and tense",
+    "pack": "floor_plan",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Three specific clues must be found to unlock the door before the timer runs out",
+    "nouns": [
+      {
+        "noun": "clue",
+        "hyper": "item"
+      },
+      {
+        "noun": "door",
+        "hyper": "object"
+      },
+      {
+        "noun": "room",
+        "hyper": "location"
+      }
+    ],
+    "moodVec": {
+      "valence": -0.3,
+      "arousal": 0.4,
+      "tension": 0.7
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "cd7aa124ba3f0300913de3702d6afa6ce9969205f5e82c9865c0d53812ad2936",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_escape",
+      "text": "Three specific clues must be found to unlock the door before the timer runs out",
+      "status": "counterexample",
+      "method": "static goal regression over rules"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 7 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "chain",
+          "text": "win unreachable in the rule graph"
+        },
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "counterexample",
+        "method": "static goal regression over rules",
+        "text": "no rule chain lets the player trigger the win",
+        "src": ""
+      },
+      {
+        "id": "T2:r_lose",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_lose fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_open_door",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_open_door"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_open_door fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_score1",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score1"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_score1 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_score2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_score2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_score3",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score3"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_score3 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_nw",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_nw"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_corner_nw fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_win: nothing in the world makes door_main 'open'",
+        "cx": null
+      }
+    ],
+    "par": null,
+    "ms": 41
+  }
+}

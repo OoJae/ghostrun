@@ -1,0 +1,25 @@
+{"op":"meta","mode":"wander","lang":"en","pack":"floor_plan","sub":[],"seed":104,"look":"luxury car showroom","mood":[0.6,0.3,-0.3],"timeOfDay":12,"weather":"clear"}
+{"op":"zone","id":"z_yard","slot":"yard","tag":"outside","name":"Showroom entrance plaza"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Main entrance hall"}
+{"op":"zone","id":"z_showroom","slot":"main_room","tag":"hall","name":"Showroom floor"}
+{"op":"zone","id":"z_exhibit","slot":"room_sw","tag":"room","name":"Exhibit wing"}
+{"op":"spawn","id":"sp_red","zone":"z_yard","anchor":"spawn_pad","team":"red"}
+{"op":"ent","id":"turntable","kind":"prop","noun":"turntable","hyper":"display_platform","zone":"z_showroom","anchor":"center","body":"fixed","shape":"box","size":[3,0.2,3]}
+{"op":"ent","id":"supercar","kind":"vehicle","noun":"supercar","hyper":"vehicle","zone":"z_showroom","anchor":"center","body":"dynamic","shape":"hull","size":[4,1.2,2]}
+{"op":"ent","id":"salesperson","kind":"npc","noun":"salesperson","hyper":"person","zone":"z_entrance","anchor":"doorway_n","body":"kinematic","shape":"box","size":[0.5,1.8,0.5]}
+{"op":"ent","id":"info_panel","kind":"sign","noun":"info panel","hyper":"sign","zone":"z_exhibit","anchor":"corner_sw","body":"fixed","shape":"box","size":[2,1,0.1]}
+{"op":"ent","id":"promo_banner","kind":"prop","noun":"promo banner","hyper":"banner","zone":"z_exhibit","anchor":"corner_ne","body":"fixed","shape":"box","size":[3,1,0.1]}
+{"op":"verb","id":"vb_inspect_car","verb":"social.inspect","on":"supercar","params":{"text":"A glossy red supercar, top speed 350km/h."}}
+{"op":"verb","id":"vb_inspect_turn","verb":"social.inspect","on":"turntable","params":{"text":"Rotating platform showcasing the car."}}
+{"op":"verb","id":"vb_inspect_panel","verb":"social.inspect","on":"info_panel","params":{"text":"Technical specs and price."}}
+{"op":"verb","id":"vb_inspect_banner","verb":"social.inspect","on":"promo_banner","params":{"text":"Limited edition release!"}}
+{"op":"verb","id":"vb_greet","verb":"social.inspect","on":"salesperson","params":{"text":"Welcome! Let me know if you'd like a test drive."}}
+{"op":"npc","id":"guide_1","role":"guide","zone":"z_entrance","anchor":"doorway_e","team":"","menu":["guide.patrol"],"dflt":"guide.patrol"}
+{"op":"npc","id":"guide_2","role":"guide","zone":"z_showroom","anchor":"doorway_w","team":"","menu":["guide.patrol"],"dflt":"guide.patrol"}
+{"op":"expect","id":"x_turntable","prop":"headline","a":"sp_red","b":"turntable","headline":true,"text":"Supercar is displayed on a turntable"}
+{"op":"end","layer":"gameplay"}
+{"op":"dress","id":"d_background","kind":"prop","noun":"background walls","hyper":"wall","zone":"z_yard","anchor":"corner_e","body":"fixed","shape":"box","size":[10,5,0.2]}
+{"op":"dress","id":"d_lighting","kind":"prop","noun":"ambient lighting","hyper":"light","zone":"z_showroom","anchor":"corner_w","body":"fixed","shape":"box","size":[5,0.1,5]}
+{"op":"poster","id":"p_car","zone":"z_showroom","anchor":"corner_se","text":"Supercar Model X – Experience Luxury"}
+{"op":"poster","id":"p_slogan","zone":"z_exhibit","anchor":"corner_nw","text":"Drive the Future Today"}
+{"op":"end","layer":"cosmetic"}

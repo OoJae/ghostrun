@@ -1,0 +1,252 @@
+{
+  "prompt": "a museum heist at night: grab the key, unlock the vault, steal the gem and escape before the alarm",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "stealth",
+    "setting": "floor_plan: A grand, dimly lit museum hall with high ceilings, display cases, shadowed alcoves, and a secure vault area behind a heavy locked door.",
+    "role": "you are a skilled thief",
+    "goal": "Steal the priceless gem from the vault and escape through the exit before the security alarm triggers.",
+    "fail": "You are caught by security if you trigger the alarm, or if you fail to reach the exit before the time limit expires.",
+    "mood": "tense and atmospheric",
+    "pack": "floor_plan",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Heist requires finding the hidden key to unlock the vault.",
+    "nouns": [
+      {
+        "noun": "key",
+        "hyper": "object"
+      },
+      {
+        "noun": "vault",
+        "hyper": "room"
+      },
+      {
+        "noun": "gem",
+        "hyper": "object"
+      },
+      {
+        "noun": "security alarm",
+        "hyper": "system"
+      }
+    ],
+    "moodVec": {
+      "valence": -0.2,
+      "arousal": 0.7,
+      "tension": 0.8
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "981a7190015b7cf54b7eefd8429dfc01fd610048b9d0049c374b86d90696e176",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_heist",
+      "text": "Heist requires finding the hidden key to unlock the vault.",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 9 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_escape (gem into exit, carried by red) ← pick up gem",
+        "src": ""
+      },
+      {
+        "id": "T2:r_alarm",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_alarm"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_alarm fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_escape",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_escape"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_escape fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_center",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_center"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 6,
+        "status": "verified",
+        "text": "r_secret_center fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_ne",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_ne"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 7,
+        "status": "verified",
+        "text": "r_secret_corner_ne fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_ne_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_ne_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_corner_ne_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_nw",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_nw"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_corner_nw fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_nw_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_nw_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_corner_nw_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_nw_3",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_nw_3"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_corner_nw_3 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_unlock",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_unlock"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_unlock fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it (AI par 13.7 s)",
+        "cx": null,
+        "src": "",
+        "ms": 191
+      }
+    ],
+    "par": {
+      "goldS": 13.7,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 241
+  }
+}

@@ -373,6 +373,7 @@ function clearDoors(r: Run, target: Vec3) {
       const e = r.sim.entity(d.id);
       if (!e || e.destroyed || e.state === "open" || !crosses(path[i - 1]!, path[i]!, d.pos, d.size)) continue;
       r.opened.add(d.id);
+      trace?.(`door ${d.id} blocks the way: opening it`);
       for (const st of r.openers.get(d.id) ?? []) if (perform(r, st) !== "ok") return;
     }
   }
@@ -396,7 +397,8 @@ const spotBy = (r: Run, id: string): Vec3 => {
   const feet: Vec3 = [p[0], p[1] - 0.9, p[2]];
   const [hx, hz] = [e.size[0] / 2 + 0.6, e.size[2] / 2 + 0.6];
   const sides: Vec3[] = [[e.pos[0], floor, e.pos[2] - hz], [e.pos[0], floor, e.pos[2] + hz], [e.pos[0] - hx, floor, e.pos[2]], [e.pos[0] + hx, floor, e.pos[2]]];
-  const spots = sides.map((q) => r.nav.nearest(q)).filter((q): q is Vec3 => q !== null && Math.abs(q[1] - floor) < 0.6);
+  // a side that only reaches the navmesh by snapping far away (into the wall beside a door) is no spot
+  const spots = sides.map((q) => [q, r.nav.nearest(q)] as const).filter(([q, n]) => n !== null && Math.abs(n[1] - floor) < 0.6 && d2h(q, n) < 0.25).map(([, n]) => n!);
   spots.sort((u, v) => d2h(u, p) - d2h(v, p));
   return spots.find((q) => r.nav.path(feet, q)) ?? spots[0] ?? r.nav.nearest([e.pos[0], floor, e.pos[2]]) ?? e.pos;
 };
@@ -454,7 +456,9 @@ function perform(r: Run, st: PlanStep): "ok" | "lost" | "stuck" {
       const fired = counter(sim, st.rule);
       const done = () => (st.want ? met(st.want) : st.rule ? fired() > 0 : sim.entity(st.at)?.state === "open");
       for (let attempt = 0; attempt < 3 && live(r) && !done(); attempt++) {
-        go(spotBy(r, st.at), () => sim.usable()?.on === st.at || done());
+        const spot = spotBy(r, st.at);
+        go(spot, () => sim.usable()?.on === st.at || done());
+        trace?.(`  use ${st.at} ${attempt}: spot ${v1(spot)}, at ${v1(sim.pos("player"))}, usable ${sim.usable()?.on ?? "-"}`);
         if (sim.usable()?.on !== st.at || !live(r)) continue;
         sim.step({ tick: sim.tick + 1, wx: 0, wz: 0, btn: BTN.USE });
         sim.step({ tick: sim.tick + 1, wx: 0, wz: 0, btn: 0 });
@@ -576,6 +580,7 @@ function witnessRun(R: Rapier, b: WorldBundle, nav: NavWorld, chain: WinChain, o
     lastTop = sim.tick;
     for (const st of chain.steps) {
       const res = perform(r, st);
+      trace?.(`step ${st.do} ${"item" in st ? st.item : "at" in st ? st.at : "sensor" in st ? st.sensor : ""} → ${res} at ${v1(r.sim.pos("player"))} t=${r.sim.tick}`);
       if (res === "lost") continue outer; // tagged on the way: go and win it back
       if (res === "stuck") {
         if (live(r)) stuck++;

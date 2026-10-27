@@ -1,0 +1,252 @@
+{
+  "prompt": "A haunted carnival: win three tickets at the booths, then escape through the funhouse",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "horror puzzle-arcade",
+    "setting": "An abandoned midnight carnival with lit game booths lining a cobblestone lane, a towering funhouse with glass-front corridors and trap-door exits at the far end, fog, crooked tents and a distant calliope.",
+    "role": "Night walker looking for tickets to get out",
+    "goal": "Win three tickets at the carnival booths, then reach and open the funhouse exit before it locks",
+    "fail": "Running out of time or getting captured by the carnival keeper before unlocking the funhouse exit",
+    "mood": "spooky carnival tension",
+    "pack": "maze",
+    "sub": [],
+    "safety": "arcade",
+    "headline": "Must win three booth tickets, then reach the funhouse exit before it locks",
+    "nouns": [
+      {
+        "noun": "haunted carnival",
+        "hyper": "event venue"
+      },
+      {
+        "noun": "ticket",
+        "hyper": "entry token"
+      },
+      {
+        "noun": "booth",
+        "hyper": "game stand"
+      },
+      {
+        "noun": "funhouse",
+        "hyper": "carnival attraction building"
+      }
+    ],
+    "moodVec": {
+      "valence": -0.4,
+      "arousal": 0.55,
+      "tension": 0.65
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "03443eff6976bee256167466bc174941310f2b73a186325040a851cc23e24b52",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_carnival",
+      "text": "Must win three booth tickets, then reach the funhouse exit before it locks",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 1,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 9 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 1,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (player enters exit_goal) [after exit_door open]",
+        "src": ""
+      },
+      {
+        "id": "T2:r_lose_hazard",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_hazard"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 54,
+        "status": "verified",
+        "text": "r_lose_hazard fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lose_time",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_time"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_lose_time fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_open_exit",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_open_exit"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 13,
+        "status": "verified",
+        "text": "r_open_exit fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_score1",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score1"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 7,
+        "status": "verified",
+        "text": "r_score1 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_score2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 7,
+        "status": "verified",
+        "text": "r_score2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_score3",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score3"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 7,
+        "status": "verified",
+        "text": "r_score3 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_dead_end_4",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_dead_end_4"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 7,
+        "status": "verified",
+        "text": "r_secret_dead_end_4 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_entrance",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_entrance"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 7,
+        "status": "verified",
+        "text": "r_secret_entrance fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 11,
+        "text": "AI runners won by playing it (AI par 35.4 s)",
+        "cx": null,
+        "src": "",
+        "ms": 1423
+      }
+    ],
+    "par": {
+      "goldS": 35.4,
+      "runs": 12,
+      "won": 11
+    },
+    "ms": 1618
+  }
+}

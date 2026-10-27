@@ -1,0 +1,28 @@
+{"op":"meta","mode":"wander","lang":"en","pack":"floor_plan","sub":[],"seed":105,"look":"beachfront villa","mood":[0.6,0.2,0.05],"timeOfDay":10,"weather":"clear"}
+{"op":"zone","id":"z_yard","slot":"yard","tag":"outside","name":"Beachfront Approach"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Villa Entrance Hall"}
+{"op":"zone","id":"z_living","slot":"room_sw","tag":"room","name":"Living Room"}
+{"op":"zone","id":"z_kitchen","slot":"room_se","tag":"room","name":"Open Kitchen"}
+{"op":"zone","id":"z_main","slot":"main_room","tag":"hall","name":"Great Hall"}
+{"op":"zone","id":"z_deck","slot":"room_ne","tag":"room","name":"Ocean View Deck"}
+{"op":"spawn","id":"sp_viewer","zone":"z_entrance","anchor":"center","team":"red"}
+{"op":"ent","id":"sofa","kind":"prop","noun":"plush sofa","hyper":"furniture","zone":"z_living","anchor":"center","body":"fixed","shape":"box","size":[2.5,1,0.8]}
+{"op":"ent","id":"coffee_table","kind":"prop","noun":"glass coffee table","hyper":"table","zone":"z_living","anchor":"corner_se","body":"fixed","shape":"box","size":[1.2,0.6,0.4]}
+{"op":"ent","id":"kitchen_island","kind":"prop","noun":"marble kitchen island","hyper":"counter","zone":"z_kitchen","anchor":"center","body":"fixed","shape":"box","size":[3,0.9,0.9]}
+{"op":"ent","id":"stove","kind":"prop","noun":"stainless steel stove","hyper":"appliance","zone":"z_kitchen","anchor":"corner_nw","body":"fixed","shape":"box","size":[1,0.8,0.8]}
+{"op":"ent","id":"pool","kind":"prop","noun":"infinity pool","hyper":"pool","zone":"z_main","anchor":"corner_w","body":"fixed","shape":"box","size":[5,0.2,3]}
+{"op":"ent","id":"deck_chairs","kind":"prop","noun":"tiki chairs","hyper":"furniture","zone":"z_deck","anchor":"center","body":"fixed","shape":"box","size":[3,0.5,0.5]}
+{"op":"ent","id":"agent_sign","kind":"sign","noun":"agent contact board","hyper":"sign","zone":"z_deck","anchor":"corner_e","body":"fixed","shape":"box","size":[1,0.2,0.5]}
+{"op":"ent","id":"agent","kind":"npc","noun":"property agent","hyper":"person","zone":"z_deck","anchor":"corner_ne","body":"kinematic","shape":"capsule","size":[0.6,1.8,0.6]}
+{"op":"verb","id":"vb_inspect_sofa","verb":"social.inspect","on":"sofa","params":{"text":"Spacious sofa with ocean view."}}
+{"op":"verb","id":"vb_inspect_table","verb":"social.inspect","on":"coffee_table","params":{"text":"Elegant glass coffee table."}}
+{"op":"verb","id":"vb_inspect_island","verb":"social.inspect","on":"kitchen_island","params":{"text":"Marble island with modern appliances."}}
+{"op":"verb","id":"vb_inspect_stove","verb":"social.inspect","on":"stove","params":{"text":"State‑of‑the‑art stainless steel stove."}}
+{"op":"verb","id":"vb_inspect_pool","verb":"social.inspect","on":"pool","params":{"text":"Infinity pool overlooking the sea."}}
+{"op":"verb","id":"vb_inspect_chairs","verb":"social.inspect","on":"deck_chairs","params":{"text":"Relaxing tiki chairs for sunset."}}
+{"op":"verb","id":"vb_inspect_sign","verb":"social.inspect","on":"agent_sign","params":{"text":"Call 555‑1234 to schedule a viewing."}}
+{"op":"npc","id":"guide_agent","role":"guide","zone":"z_deck","anchor":"corner_ne","team":"","menu":["guide.points"],"dflt":"guide.points"}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":5}}
+{"op":"expect","id":"x_tour","prop":"win_reachable","a":"sp_viewer","b":"agent_sign","headline":true,"text":"Showcase beachfront villa and close with a booking call to the agent"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

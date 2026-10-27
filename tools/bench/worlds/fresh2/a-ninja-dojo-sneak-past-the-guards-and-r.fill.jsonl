@@ -1,0 +1,23 @@
+{"op":"meta","mode":"play","lang":"en","pack":"floor_plan","sub":[],"seed":103,"look":"old wooden dojo at night","mood":[-0.2,0.6,0.8],"timeOfDay":22,"weather":"clear"}
+{"op":"zone","id":"z_yard","slot":"yard","tag":"outside","name":"Stone garden"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Dojo entrance"}
+{"op":"zone","id":"z_main","slot":"main_room","tag":"hall","name":"Main training hall"}
+{"op":"zone","id":"z_training","slot":"room_sw","tag":"room","name":"Western training area"}
+{"op":"zone","id":"z_bellroom","slot":"room_se","tag":"room","name":"Bell chamber"}
+{"op":"spawn","id":"sp_red","zone":"z_yard","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"bell","zone":"z_bellroom","anchor":"corner_w","noun":"training bell","hyper":"object","team":"red","body":"sensor","shape":"box","size":[0.4,0.4,0.2]}
+{"op":"ent","id":"guard_vision_1","kind":"goal","noun":"guard vision cone","hyper":"sensor","zone":"z_main","anchor":"corner_ne","body":"sensor","shape":"box","size":[2,2,2]}
+{"op":"ent","id":"guard_vision_2","kind":"goal","noun":"guard vision cone","hyper":"sensor","zone":"z_training","anchor":"corner_sw","body":"sensor","shape":"box","size":[2,2,2]}
+{"op":"ent","id":"guard_vision_3","kind":"goal","noun":"guard vision cone","hyper":"sensor","zone":"z_bellroom","anchor":"corner_se","body":"sensor","shape":"box","size":[2,2,2]}
+{"op":"npc","id":"guard_1","role":"guard","zone":"z_main","anchor":"center","team":"","menu":["guard.patrol"],"dflt":"guard.patrol"}
+{"op":"npc","id":"guard_2","role":"guard","zone":"z_training","anchor":"center","team":"","menu":["guard.patrol"],"dflt":"guard.patrol"}
+{"op":"npc","id":"guard_3","role":"guard","zone":"z_bellroom","anchor":"center","team":"","menu":["guard.patrol"],"dflt":"guard.patrol"}
+{"op":"verb","id":"vb_jump","verb":"locomotion.jump","on":"player","params":{"jumpsMax":2}}
+{"op":"rule","id":"r_win","when":{"t":"enter","a":"player","b":"bell"},"if":[],"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_caught_1","when":{"t":"enter","a":"player","b":"guard_vision_1"},"if":[],"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_caught_2","when":{"t":"enter","a":"player","b":"guard_vision_2"},"if":[],"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_caught_3","when":{"t":"enter","a":"player","b":"guard_vision_3"},"if":[],"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"expect","id":"x_stealth","prop":"win_reachable","a":"sp_red","b":"bell","headline":true,"text":"Stealth route through three guard patrols to one bell"}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":5}}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

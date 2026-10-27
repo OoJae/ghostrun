@@ -1,0 +1,20 @@
+{"op":"meta","mode":"wander","lang":"en","pack":"floor_plan","sub":[],"seed":107,"look":"dinosaur museum","mood":[0.4,0.2,-0.5],"timeOfDay":12,"weather":"clear"}
+{"op":"zone","id":"z_yard","slot":"yard","tag":"outside","name":"Museum entrance courtyard"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Museum foyer"}
+{"op":"zone","id":"z_west","slot":"room_sw","tag":"room","name":"West exhibit hall"}
+{"op":"zone","id":"z_east","slot":"room_se","tag":"room","name":"East exhibit hall"}
+{"op":"zone","id":"z_north","slot":"room_nw","tag":"room","name":"North exhibit hall"}
+{"op":"zone","id":"z_main","slot":"main_room","tag":"hall","name":"Central dinosaur hall"}
+{"op":"zone","id":"z_northeast","slot":"room_ne","tag":"room","name":"Northeast fossil wing"}
+{"op":"spawn","id":"sp_red","zone":"z_yard","anchor":"spawn_pad","team":"red"}
+{"op":"ent","id":"skeleton_tric","kind":"prop","noun":"Triceratops skeleton","hyper":"skeleton","zone":"z_west","anchor":"center","body":"fixed","shape":"hull"}
+{"op":"ent","id":"skeleton_rapt","kind":"prop","noun":"Velociraptor skeleton","hyper":"skeleton","zone":"z_east","anchor":"center","body":"fixed","shape":"hull"}
+{"op":"ent","id":"skeleton_brac","kind":"prop","noun":"Brachiosaurus skeleton","hyper":"skeleton","zone":"z_main","anchor":"center","body":"fixed","shape":"hull"}
+{"op":"ent","id":"guide_central","kind":"npc","noun":"Museum guide","hyper":"guide","zone":"z_main","anchor":"corner_ne","body":"kinematic","shape":"box"}
+{"op":"verb","id":"vb_inspect_tric","verb":"social.inspect","on":"skeleton_tric","params":{"text":"Triceratops: a three-horned herbivore from the Late Cretaceous."}}
+{"op":"verb","id":"vb_inspect_rapt","verb":"social.inspect","on":"skeleton_rapt","params":{"text":"Velociraptor: a swift predator famed for its sickle claw."}}
+{"op":"verb","id":"vb_inspect_brac","verb":"social.inspect","on":"skeleton_brac","params":{"text":"Brachiosaurus: a towering sauropod that ate from the treetops."}}
+{"op":"verb","id":"vb_guide_talk","verb":"social.inspect","on":"guide_central","params":{"text":"Welcome! Approach each skeleton for a briefing on its history."}}
+{"op":"expect","id":"x_brief","prop":"win_reachable","a":"sp_red","b":"z_main","headline":true,"text":"Each skeleton has an attached guide briefing"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

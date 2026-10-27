@@ -1,0 +1,330 @@
+{
+  "prompt": "An underwater reef: collect five pearls and get back to the boat before your air runs out",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "Action-Adventure Diving Quest",
+    "setting": "A vibrant, shallow underwater coral reef with scattered rock formations, sandy floor, and a small dive boat visible on the water's surface",
+    "role": "Diver",
+    "goal": "Collect five pearls hidden in the reef and return to the dive boat before your air supply is exhausted",
+    "fail": "Air supply runs out before you reach the dive boat",
+    "mood": "Tense and exploratory",
+    "pack": "outdoor",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Air limits the dive duration to force a tight return to the boat",
+    "nouns": [
+      {
+        "noun": "reef",
+        "hyper": "underwater landscape"
+      },
+      {
+        "noun": "pearls",
+        "hyper": "targets to collect"
+      },
+      {
+        "noun": "boat",
+        "hyper": "return point"
+      },
+      {
+        "noun": "air",
+        "hyper": "resource limit"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.2,
+      "arousal": 0.8,
+      "tension": 0.7
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "e5350153ae00215b9c8adc3994d111e40e1ea1bff41f8ba6ab724fa5dfa76814",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_air",
+      "text": "Air limits the dive duration to force a tight return to the boat",
+      "status": "counterexample",
+      "method": "kinematic reachability (jump apex model) + physics jump witness, 4 attempts per jump count"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 11 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (player enters boat_goal) [after red scores 2]",
+        "src": ""
+      },
+      {
+        "id": "T1:x_air",
+        "tier": "T1",
+        "subject": {
+          "kind": "property",
+          "id": "x_air"
+        },
+        "method": "kinematic reachability (jump apex model)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 1,
+        "status": "counterexample",
+        "text": "Air limits the dive duration to force a tight return to the boat",
+        "cx": {
+          "where": null,
+          "have": 1.5,
+          "need": 0.02,
+          "unit": "m",
+          "text": "reachable with 1 jump: step 0.02 m ≤ apex 1.5 m"
+        }
+      },
+      {
+        "id": "T2:r_lose",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_lose fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_score_1",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score_1"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 7,
+        "status": "verified",
+        "text": "r_score_1 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_score_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_score_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_score_3",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score_3"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_score_3 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_score_4",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score_4"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_score_4 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_score_5",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score_5"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_score_5 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_dock",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_dock"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_dock fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_hollow",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_hollow"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_hollow fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_stall_1",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_stall_1"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 6,
+        "status": "verified",
+        "text": "r_secret_stall_1 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_stump",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_stump"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_stump fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "counterexample",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 0,
+        "text": "no AI runner could win",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "wins",
+          "text": "12 got stuck (in the Reef clearing ×12)"
+        },
+        "src": "",
+        "ms": 154
+      },
+      {
+        "id": "T3:x_air",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "x_air"
+        },
+        "status": "counterexample",
+        "method": "physics jump witness, 4 attempts per jump count",
+        "n": 4,
+        "k": 3,
+        "text": "Air limits the dive duration to force a tight return to the boat: reached with 2 jumps 3 of 4, with 1 1 of 4",
+        "cx": {
+          "where": null,
+          "have": 1,
+          "need": 0,
+          "unit": "attempts",
+          "text": "reached with only 1 jump(s)"
+        },
+        "src": "ai",
+        "ms": 42
+      }
+    ],
+    "par": null,
+    "ms": 502
+  }
+}

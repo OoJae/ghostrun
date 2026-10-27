@@ -1,0 +1,27 @@
+{"op":"meta","mode":"play","lang":"en","pack":"floor_plan","sub":[],"seed":109,"look":"ancient temple","mood":[-0.2,0.5,0.9],"timeOfDay":12,"weather":"clear"}
+{"op":"zone","id":"z_yard","slot":"yard","tag":"outside","name":"Temple outskirts"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Temple entrance"}
+{"op":"zone","id":"z_sw","slot":"room_sw","tag":"room","name":"Southwest chamber"}
+{"op":"zone","id":"z_se","slot":"room_se","slot":"room_se","tag":"room","name":"Southeast chamber"}
+{"op":"zone","id":"z_main","slot":"main_room","tag":"hall","name":"Central hall"}
+{"op":"spawn","id":"sp_red","zone":"z_yard","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"exit_gate","zone":"z_yard","anchor":"corner_e","noun":"temple exit","hyper":"gate","team":"red"}
+{"op":"ent","id":"plate_sw","kind":"switch","noun":"pressure plate","hyper":"plate","zone":"z_sw","anchor":"center","body":"sensor","shape":"box","size":[0.5,0.1,0.5]}
+{"op":"ent","id":"plate_se","kind":"switch","noun":"pressure plate","hyper":"plate","zone":"z_se","anchor":"center","body":"sensor","shape":"box","size":[0.5,0.1,0.5]}
+{"op":"ent","id":"crumble_sw","kind":"platform","noun":"crumbling floor","hyper":"floor","zone":"z_sw","anchor":"center","body":"dynamic","shape":"box","size":[3,0.2,3]}
+{"op":"ent","id":"crumble_se","kind":"platform","noun":"crumbling floor","hyper":"floor","zone":"z_se","anchor":"center","body":"dynamic","shape":"box","size":[3,0.2,3]}
+{"op":"ent","id":"spike_hazard","kind":"hazard","noun":"spike pit","hyper":"spikes","zone":"z_main","anchor":"corner_sw","body":"sensor","shape":"box","size":[2,0.2,2]}
+{"op":"verb","id":"vb_plate_sw","verb":"puzzle.switch","on":"plate_sw","params":{"once":false}}
+{"op":"verb","id":"vb_plate_se","verb":"puzzle.switch","on":"plate_se","params":{"once":false}}
+{"op":"verb","id":"vb_crumble_sw","verb":"motion_hazards.crumble","on":"crumble_sw","params":{"delay":1,"back":5}}
+{"op":"verb","id":"vb_crumble_se","verb":"motion_hazards.crumble","on":"crumble_se","params":{"delay":1,"back":5}}
+{"op":"verb","id":"vb_spike","verb":"motion_hazards.hazard","on":"spike_hazard","params":{"respawn":true}}
+{"op":"verb","id":"vb_jump","verb":"locomotion.jump","on":"player","params":{"jumpsMax":2}}
+{"op":"rule","id":"r_fail_sw","when":{"t":"state_is","a":"crumble_sw","s":"destroyed"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_fail_se","when":{"t":"state_is","a":"crumble_se","s":"destroyed"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_fail_spike","when":{"t":"hit","a":"player","b":"spike_hazard"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_win","when":{"t":"enter","a":"player","b":"exit_gate"},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"expect","id":"x_temple","prop":"win_reachable","a":"sp_red","b":"exit_gate","headline":true,"text":"Floor collapse triggers require precise plate timing"}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":6}}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

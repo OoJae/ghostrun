@@ -1,0 +1,304 @@
+{
+  "prompt": "a dungeon with levers that open gates and a dragon guarding the treasure",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "puzzle-adventure",
+    "setting": "A single-storey dungeon composed of an entrance antechamber, a main hall, and side rooms containing the dragon's lair and the final treasure vault.",
+    "role": "A lone adventurer seeking a legendary hoard",
+    "goal": "Pull the three hidden levers in the side rooms in the correct order to open the gates, approach the dragon asleep over the treasure, and claim the gold.",
+    "fail": "Opening a gate out of sequence wakes the dragon, who attacks and ends the run, or running out of timed candles before reaching the exit.",
+    "mood": "Tense and mystical",
+    "pack": "floor_plan",
+    "sub": [],
+    "safety": "arcade",
+    "headline": "Three levers must be solved in order to open the dragon-guarded vault gate.",
+    "nouns": [
+      {
+        "noun": "dungeon",
+        "hyper": "interior environment"
+      },
+      {
+        "noun": "lever",
+        "hyper": "interactive object"
+      },
+      {
+        "noun": "gate",
+        "hyper": "barrier"
+      },
+      {
+        "noun": "dragon",
+        "hyper": "NPC"
+      },
+      {
+        "noun": "treasure",
+        "hyper": "collectible"
+      }
+    ],
+    "moodVec": {
+      "valence": 0,
+      "arousal": 0.6,
+      "tension": 0.8
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "eea7775dc5a75b1a7bd2248539642f543c07811786f0b25f4b1dfde87b2d03d3",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_levers",
+      "text": "Three levers must be solved in order to open the dragon-guarded vault gate.",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 1,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 12 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 1,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_collect_gold (touch gold)",
+        "src": ""
+      },
+      {
+        "id": "T2:r_collect_gold",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_collect_gold"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_collect_gold fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_dragon_attack",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_dragon_attack"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_dragon_attack fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_open_gate1",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_open_gate1"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 7,
+        "status": "verified",
+        "text": "r_open_gate1 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_open_gate2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_open_gate2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_open_gate2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_open_gate3",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_open_gate3"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_open_gate3 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_ne",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_ne"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_corner_ne fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_ne_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_ne_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_corner_ne_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_nw",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_nw"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_corner_nw fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_nw_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_nw_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_corner_nw_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_nw_3",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_nw_3"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_corner_nw_3 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_sw",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_sw"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_secret_corner_sw fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_timer_end",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_timer_end"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_timer_end fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it (AI par 6.1 s)",
+        "cx": null,
+        "src": "",
+        "ms": 104
+      }
+    ],
+    "par": {
+      "goldS": 6.1,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 157
+  }
+}

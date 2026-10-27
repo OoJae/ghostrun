@@ -1,0 +1,254 @@
+{
+  "prompt": "Herd the sheep into the pen on a windy hillside farm",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "farming / physics",
+    "setting": "windy hillside farm with a central pen and scattered pasture",
+    "role": "shepherd",
+    "goal": "Herd the wandering herd into the wooden pen before the flock scatters",
+    "fail": "Sheep drift off the hillside or into the wind, escaping the pen",
+    "mood": "calm wind-driven pastoral tension",
+    "pack": "outdoor",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Wind drift pushes the flock off the pen",
+    "nouns": [
+      {
+        "noun": "sheep",
+        "hyper": "flock"
+      },
+      {
+        "noun": "pen",
+        "hyper": "enclosure"
+      },
+      {
+        "noun": "hillside farm",
+        "hyper": "farm"
+      },
+      {
+        "noun": "wind",
+        "hyper": "weather"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.35,
+      "arousal": 0.3,
+      "tension": 0.45
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "0684bcc7899bc917bd66212249e2dd247e3019106a92c8e1ff52fb889a468476",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_wind_drift",
+      "text": "Wind drift pushes the flock off the pen",
+      "status": "counterexample",
+      "method": "static goal regression over rules"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 10 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "chain",
+          "text": "win unreachable in the rule graph"
+        },
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "counterexample",
+        "method": "static goal regression over rules",
+        "text": "no rule chain lets the player trigger the win",
+        "src": ""
+      },
+      {
+        "id": "T2:r_score_s1",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score_s1"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 24,
+        "status": "verified",
+        "text": "r_score_s1 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_score_s2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score_s2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 13,
+        "status": "verified",
+        "text": "r_score_s2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_score_s3",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score_s3"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 11,
+        "status": "verified",
+        "text": "r_score_s3 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_center_e",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_center_e"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_secret_center_e fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_center_n",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_center_n"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_secret_center_n fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_center_w",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_center_w"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_center_w fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_n",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_n"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_flank_n fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_s",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_s"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_flank_s fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_s_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_s_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_flank_s_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      }
+    ],
+    "par": null,
+    "ms": 333
+  }
+}

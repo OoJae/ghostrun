@@ -1,0 +1,18 @@
+{"op":"meta","mode":"play","lang":"cs","pack":"maze","sub":[],"seed":112,"look":"dark foggy labyrinth","mood":[-0.4,0.7,0.8],"timeOfDay":22,"weather":"foggy"}
+{"op":"zone","id":"z_start","slot":"start","tag":"outside","name":"Vstupní plocha"}
+{"op":"zone","id":"z_maze","slot":"maze","tag":"maze","name":"Záhadná bludiště"}
+{"op":"spawn","id":"sp_red","zone":"z_start","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"exit_door","zone":"z_maze","anchor":"exit","noun":"východní brána","hyper":"door","team":"red"}
+{"op":"ent","id":"key_artifact","kind":"pickup","noun":"klíč od východu","hyper":"key","zone":"z_maze","anchor":"dead_end_1","body":"dynamic","shape":"box","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"ghost_1","kind":"npc","noun":"strašidlo","hyper":"ghost","zone":"z_maze","anchor":"dead_end_2","body":"kinematic","shape":"capsule"}
+{"op":"ent","id":"ghost_2","kind":"npc","noun":"strašidlo","hyper":"ghost","zone":"z_maze","anchor":"dead_end_3","body":"kinematic","shape":"capsule"}
+{"op":"ent","id":"ghost_3","kind":"npc","noun":"strašidlo","hyper":"ghost","zone":"z_maze","anchor":"dead_end_4","body":"kinematic","shape":"capsule"}
+{"op":"verb","id":"vb_carry_key","verb":"physics_props.carry","on":"key_artifact","params":{}}
+{"op":"verb","id":"vb_lock_exit","verb":"puzzle.lock","on":"exit_door","params":{"key":"key_artifact"}}
+{"op":"rule","id":"r_win","when":{"t":"enter","a":"player","b":"exit_door"},"if":[{"l":"exit_door.state","op":"eq","r":"open"}],"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose_ghost1","when":{"t":"touch","a":"player","b":"ghost_1"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose_ghost2","when":{"t":"touch","a":"player","b":"ghost_2"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose_ghost3","when":{"t":"touch","a":"player","b":"ghost_3"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"expect","id":"x_maze_key","prop":"win_reachable","a":"sp_red","b":"exit_door","headline":true,"text":"Maze requires key to open eastern exit while dodging ghosts"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

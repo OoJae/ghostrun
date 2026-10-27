@@ -1,0 +1,266 @@
+{
+  "prompt": "A night at the observatory: align the three telescopes to open the dome",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "science-interaction",
+    "setting": "an astronomical observatory interior at night with a rotatable dome and three telescope mounts",
+    "role": "astrophysicist",
+    "goal": "align the three telescopes with their target stars to release and raise the observatory dome",
+    "fail": "the alignment drifts out of tolerance before all three are locked and the dome stays closed",
+    "mood": "quiet, focused, patient, wondrous",
+    "pack": "floor_plan",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Dome opens only after all three telescopes hold their star targets",
+    "nouns": [
+      {
+        "noun": "observatory",
+        "hyper": "building"
+      },
+      {
+        "noun": "dome",
+        "hyper": "structure"
+      },
+      {
+        "noun": "telescope",
+        "hyper": "instrument"
+      },
+      {
+        "noun": "mount",
+        "hyper": "structure"
+      },
+      {
+        "noun": "star",
+        "hyper": "celestial-object"
+      },
+      {
+        "noun": "reticle",
+        "hyper": "instrument"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.55,
+      "arousal": 0.25,
+      "tension": 0.2
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "656992c30abf804c083cd6c7524af65a6c7ca572cd15bc57febb47224f42583e",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_dome",
+      "text": "Dome opens only after all three telescopes hold their star targets",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 9 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_dome (tel_sw becomes on: use tel_sw) [after tel_se on, tel_ne on]",
+        "src": ""
+      },
+      {
+        "id": "T2:r_dome",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_dome"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_dome fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_fail",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_fail"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_fail: no timer on player",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_ne",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_ne"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_corner_ne fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_ne_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_ne_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_corner_ne_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_ne_3",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_ne_3"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_corner_ne_3 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_nw",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_nw"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_secret_corner_nw fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_nw_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_nw_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_secret_corner_nw_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_se",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_se"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_secret_corner_se fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_timer",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_timer"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 0,
+        "src": "ai",
+        "ms": 2,
+        "status": "counterexample",
+        "text": "r_timer fires exactly once",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "firings",
+          "text": "never fired when forced"
+        }
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 5,
+        "text": "AI runners won by playing it (AI par 9.7 s)",
+        "cx": null,
+        "src": "",
+        "ms": 125
+      }
+    ],
+    "par": {
+      "goldS": 9.7,
+      "runs": 12,
+      "won": 5
+    },
+    "ms": 161
+  }
+}

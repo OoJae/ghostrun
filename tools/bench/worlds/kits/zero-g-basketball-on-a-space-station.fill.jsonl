@@ -1,0 +1,19 @@
+{"op":"meta","mode":"play","lang":"en","pack":"arena","sub":[],"seed":110,"look":"zero-g basketball arena","mood":[0.7,0.6,0.2],"timeOfDay":12,"weather":"clear"}
+{"op":"zone","id":"z_midfield","slot":"midfield","tag":"center","name":"Gravity well room"}
+{"op":"zone","id":"z_west_half","slot":"west_half","tag":"west_base","name":"West hoop area"}
+{"op":"zone","id":"z_east_half","slot":"east_half","tag":"east_base","name":"East hoop area"}
+{"op":"spawn","id":"sp_red","zone":"z_midfield","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"hoop_west","zone":"z_west_half","anchor":"goal_ring","noun":"hoop","hyper":"sporting equipment","team":"","body":"sensor","shape":"box","size":[1,2,1]}
+{"op":"goal","id":"hoop_east","zone":"z_east_half","anchor":"goal_ring","noun":"hoop","hyper":"sporting equipment","team":"","body":"sensor","shape":"box","size":[1,2,1]}
+{"op":"ent","id":"ball","kind":"pickup","noun":"basketball","hyper":"ball","zone":"z_midfield","anchor":"center","body":"dynamic","shape":"sphere","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"timer_display","kind":"prop","noun":"timer display","hyper":"display","zone":"z_midfield","anchor":"scoreboard","body":"fixed","shape":"box","size":[1,0.2,0.2]}
+{"op":"verb","id":"vb_carry_ball","verb":"physics_props.carry","on":"ball","params":{}}
+{"op":"verb","id":"vb_throw_ball","verb":"combat_sport.throw","on":"ball","params":{"range":15}}
+{"op":"verb","id":"vb_timer","verb":"puzzle.timer","on":"player","params":{"seconds":45}}
+{"op":"rule","id":"r_score_west","when":{"t":"enter","a":"ball","b":"hoop_west"},"if":[{"l":"ball.carrier.team","op":"eq","r":"red"}],"then":[{"e":"score","target":"team:red","n":2},{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_score_east","when":{"t":"enter","a":"ball","b":"hoop_east"},"if":[{"l":"ball.carrier.team","op":"eq","r":"red"}],"then":[{"e":"score","target":"team:red","n":2},{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_timer_end","when":{"t":"timer_end","a":"player"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"expect","id":"x_zero_g","prop":"win_reachable","a":"sp_red","b":"hoop_west","headline":true,"text":"Ball physics in zero-g requires multi-directional hoop targeting"}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":6}}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

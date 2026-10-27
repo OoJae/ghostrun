@@ -1,0 +1,32 @@
+{"op":"meta","mode":"play","lang":"en","pack":"outdoor","sub":[],"seed":95,"look":"underwater reef","mood":[0.2,0.8,0.7],"timeOfDay":12,"weather":"clear"}
+{"op":"zone","id":"z_boat","slot":"entrance","tag":"entrance","name":"Dive boat dock"}
+{"op":"zone","id":"z_clearing","slot":"clearing","tag":"hub","name":"Reef clearing"}
+{"op":"zone","id":"z_pond","slot":"pond","tag":"water","name":"Shallow lagoon"}
+{"op":"zone","id":"z_grove","slot":"grove","tag":"trees","name":"Coral grove"}
+{"op":"zone","id":"z_camp","slot":"camp","tag":"camp","name":"Rocky outcrop"}
+{"op":"spawn","id":"sp_red","zone":"z_boat","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"boat_goal","zone":"z_boat","anchor":"goal","noun":"dive boat","hyper":"boat","team":"red","body":"sensor","shape":"box"}
+{"op":"ent","id":"pearl_1","kind":"pickup","noun":"pearl","hyper":"pearl","zone":"z_clearing","anchor":"center","body":"dynamic","shape":"sphere","size":[0.15,0.15,0.15]}
+{"op":"ent","id":"pearl_2","kind":"pickup","noun":"pearl","hyper":"pearl","zone":"z_pond","anchor":"water","body":"dynamic","shape":"sphere","size":[0.15,0.15,0.15]}
+{"op":"ent","id":"pearl_3","kind":"pickup","noun":"pearl","hyper":"pearl","zone":"z_grove","anchor":"heart","body":"dynamic","shape":"sphere","size":[0.15,0.15,0.15]}
+{"op":"ent","id":"pearl_4","kind":"pickup","noun":"pearl","hyper":"pearl","zone":"z_camp","anchor":"tent","body":"dynamic","shape":"sphere","size":[0.15,0.15,0.15]}
+{"op":"ent","id":"pearl_5","kind":"pickup","noun":"pearl","hyper":"pearl","zone":"z_clearing","anchor":"center_n","body":"dynamic","shape":"sphere","size":[0.15,0.15,0.15]}
+{"op":"ent","id":"air_timer","kind":"prop","noun":"air timer","hyper":"timer","zone":"z_boat","anchor":"sign","body":"fixed","shape":"box"}
+{"op":"verb","id":"vb_collect_1","verb":"puzzle.collect","on":"pearl_1","params":{}}
+{"op":"verb","id":"vb_collect_2","verb":"puzzle.collect","on":"pearl_2","params":{}}
+{"op":"verb","id":"vb_collect_3","verb":"puzzle.collect","on":"pearl_3","params":{}}
+{"op":"verb","id":"vb_collect_4","verb":"puzzle.collect","on":"pearl_4","params":{}}
+{"op":"verb","id":"vb_collect_5","verb":"puzzle.collect","on":"pearl_5","params":{}}
+{"op":"verb","id":"vb_air_timer","verb":"puzzle.timer","on":"air_timer","params":{"seconds":120}}
+{"op":"verb","id":"vb_jump","verb":"locomotion.jump","on":"player","params":{"jumpsMax":2}}
+{"op":"rule","id":"r_score_1","when":{"t":"touch","a":"player","b":"pearl_1"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_score_2","when":{"t":"touch","a":"player","b":"pearl_2"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_score_3","when":{"t":"touch","a":"player","b":"pearl_3"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_score_4","when":{"t":"touch","a":"player","b":"pearl_4"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_score_5","when":{"t":"touch","a":"player","b":"pearl_5"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_win","when":{"t":"enter","a":"player","b":"boat_goal"},"if":[{"l":"team:red.score","op":"gte","r":"5"}],"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose","when":{"t":"timer_end","a":"air_timer"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":5}}
+{"op":"expect","id":"x_air","prop":"requires","a":"sp_red","b":"boat_goal","need":["jumps>=2"],"headline":true,"text":"Air limits the dive duration to force a tight return to the boat"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

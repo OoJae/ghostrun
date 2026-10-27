@@ -1,0 +1,25 @@
+{"op":"meta","mode":"play","lang":"en","pack":"floor_plan","sub":[],"seed":103,"look":"observatory night","mood":[0.55,0.25,0.2],"timeOfDay":22,"weather":"clear"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Observatory Entrance"}
+{"op":"zone","id":"z_hall","slot":"main_room","tag":"hall","name":"Central Hall"}
+{"op":"zone","id":"z_tel_sw","slot":"room_sw","tag":"room","name":"Southwest Telescope Dome"}
+{"op":"zone","id":"z_tel_se","slot":"room_se","tag":"room","name":"Southeast Telescope Dome"}
+{"op":"zone","id":"z_tel_ne","slot":"room_ne","tag":"room","name":"Northeast Telescope Dome"}
+{"op":"spawn","id":"sp_red","zone":"z_entrance","anchor":"center","team":"red"}
+{"op":"goal","id":"dome","zone":"z_hall","anchor":"doorway_s","noun":"observatory dome","hyper":"structure","team":"","body":"sensor","shape":"box","size":[3,0.5,3]}
+{"op":"ent","id":"tel_sw","kind":"switch","noun":"southwest telescope","hyper":"instrument","zone":"z_tel_sw","anchor":"center","body":"fixed","shape":"box","size":[1,1,1]}
+{"op":"ent","id":"tel_se","kind":"switch","noun":"southeast telescope","hyper":"instrument","zone":"z_tel_se","anchor":"center","body":"fixed","shape":"box","size":[1,1,1]}
+{"op":"ent","id":"tel_ne","kind":"switch","noun":"northeast telescope","hyper":"instrument","zone":"z_tel_ne","anchor":"center","body":"fixed","shape":"box","size":[1,1,1]}
+{"op":"ent","id":"star_sw","kind":"prop","noun":"target star SW","hyper":"celestial-object","zone":"z_tel_sw","anchor":"corner_ne","body":"fixed","shape":"sphere","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"star_se","kind":"prop","noun":"target star SE","hyper":"celestial-object","zone":"z_tel_se","anchor":"corner_nw","body":"fixed","shape":"sphere","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"star_ne","kind":"prop","noun":"target star NE","hyper":"celestial-object","zone":"z_tel_ne","anchor":"corner_sw","body":"fixed","shape":"sphere","size":[0.2,0.2,0.2]}
+{"op":"verb","id":"vb_sw","verb":"puzzle.switch","on":"tel_sw","params":{"once":false}}
+{"op":"verb","id":"vb_se","verb":"puzzle.switch","on":"tel_se","params":{"once":false}}
+{"op":"verb","id":"vb_ne","verb":"puzzle.switch","on":"tel_ne","params":{"once":false}}
+{"op":"verb","id":"vb_jump","verb":"locomotion.jump","on":"player","params":{"jumpsMax":2}}
+{"op":"rule","id":"r_dome","when":{"t":"state_is","a":"tel_sw","s":"on"},"if":[{"l":"tel_se.state","op":"eq","r":"on"},{"l":"tel_ne.state","op":"eq","r":"on"}],"then":[{"e":"set_state","target":"dome","v":"open"},{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_fail","when":{"t":"timer_end","a":"player"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_timer","when":{"t":"enter","a":"sp_red","b":"z_hall"},"then":[{"e":"emit","target":"player","fx":"timer_start"}],"once":true}
+{"op":"expect","id":"x_dome","prop":"win_reachable","a":"sp_red","b":"dome","headline":true,"text":"Dome opens only after all three telescopes hold their star targets"}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":6}}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

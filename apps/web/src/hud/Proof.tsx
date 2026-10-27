@@ -33,7 +33,7 @@ export function ProofBadge({ proof, onOpen }: { proof: ProofState; onOpen: () =>
   );
 }
 
-export function ReceiptPanel({ proof, onClose, onShare, onWrong, onExport, reported }: { proof: ProofState; onClose: () => void; onShare?: () => void; onWrong?: (note: string) => void; onExport?: () => void; reported?: string | undefined }) {
+export function ReceiptPanel({ proof, onClose, onShare, onWrong, onExport, onTrust, reported }: { proof: ProofState; onClose: () => void; onShare?: () => void; onWrong?: (note: string) => void; onExport?: () => void; onTrust?: () => void; reported?: string | undefined }) {
   const r = proof.receipt;
   const [writing, setWriting] = useState(false);
   const [note, setNote] = useState("");
@@ -61,6 +61,7 @@ export function ReceiptPanel({ proof, onClose, onShare, onWrong, onExport, repor
       <div className="receipt-actions">
         {onShare && <button type="button" onClick={onShare} data-testid="share">Share this run</button>}
         {onExport && <button type="button" onClick={onExport} data-testid="export" title="glTF scene + logic.json (triggers, states, rules) + playtest report">Export</button>}
+        {onTrust && <button type="button" onClick={onTrust} data-testid="why-trust">Why trust this?</button>}
         {onWrong && !writing && <button type="button" onClick={() => setWriting(true)} data-testid="wrong">This is wrong</button>}
       </div>
       {writing && onWrong && (

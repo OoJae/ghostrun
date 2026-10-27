@@ -1,0 +1,23 @@
+{"op":"meta","mode":"play","lang":"en","pack":"arena","sub":[],"seed":102,"look":"symmetrical walled plaza","mood":[0.4,0.9,0.8],"timeOfDay":12,"weather":"clear"}
+{"op":"zone","id":"z_midfield","slot":"midfield","tag":"center","name":"Central arena"}
+{"op":"zone","id":"z_west_half","slot":"west_half","tag":"base","name":"West side arena"}
+{"op":"zone","id":"z_east_half","slot":"east_half","tag":"base","name":"East side arena"}
+{"op":"spawn","id":"sp_red","zone":"z_west_half","anchor":"spawn_pad","team":"red"}
+{"op":"spawn","id":"sp_blue","zone":"z_east_half","anchor":"spawn_pad","team":"blue"}
+{"op":"goal","id":"cz_mid","zone":"z_midfield","anchor":"center","noun":"capture zone","hyper":"objective marker","team":"","body":"sensor","shape":"box","size":[2,0.2,2]}
+{"op":"goal","id":"cz_west","zone":"z_west_half","anchor":"goal_ring","noun":"capture zone","hyper":"objective marker","team":"","body":"sensor","shape":"box","size":[2,0.2,2]}
+{"op":"goal","id":"cz_east","zone":"z_east_half","anchor":"goal_ring","noun":"capture zone","hyper":"objective marker","team":"","body":"sensor","shape":"box","size":[2,0.2,2]}
+{"op":"ent","id":"timer_clock","kind":"prop","noun":"timer","hyper":"clock interface","zone":"z_midfield","anchor":"scoreboard","body":"sensor","shape":"box","size":[1,0.1,1]}
+{"op":"verb","id":"vb_timer","verb":"puzzle.timer","on":"timer_clock","params":{"seconds":90}}
+{"op":"rule","id":"r_red_mid","when":{"t":"enter","a":"player","b":"cz_mid"},"if":[{"l":"player.team","op":"eq","r":"red"}],"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_red_west","when":{"t":"enter","a":"player","b":"cz_west"},"if":[{"l":"player.team","op":"eq","r":"red"}],"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_red_east","when":{"t":"enter","a":"player","b":"cz_east"},"if":[{"l":"player.team","op":"eq","r":"red"}],"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_blue_mid","when":{"t":"enter","a":"player","b":"cz_mid"},"if":[{"l":"player.team","op":"eq","r":"blue"}],"then":[{"e":"lose","target":"player"}],"once":false}
+{"op":"rule","id":"r_blue_west","when":{"t":"enter","a":"player","b":"cz_west"},"if":[{"l":"player.team","op":"eq","r":"blue"}],"then":[{"e":"lose","target":"player"}],"once":false}
+{"op":"rule","id":"r_blue_east","when":{"t":"enter","a":"player","b":"cz_east"},"if":[{"l":"player.team","op":"eq","r":"blue"}],"then":[{"e":"lose","target":"player"}],"once":false}
+{"op":"rule","id":"r_win","when":{"t":"score_gte","a":"team:red","n":3},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_timer_expire","when":{"t":"timer_end","a":"timer_clock"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"expect","id":"x_round","prop":"win_reachable","a":"sp_red","b":"cz_mid","headline":true,"text":"Round outcome hinges on holding all three capture zones before a strict 90-second timer expires"}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":6}}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

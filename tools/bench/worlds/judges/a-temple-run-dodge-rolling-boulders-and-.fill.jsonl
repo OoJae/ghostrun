@@ -1,0 +1,37 @@
+{"op":"meta","mode":"play","lang":"en","pack":"course","sub":[],"seed":106,"look":"temple tunnel","mood":[0.1,0.9,0.85],"timeOfDay":12,"weather":"clear"}
+{"op":"zone","id":"z_start","slot":"start","tag":"outside","name":"Temple entrance"}
+{"op":"zone","id":"z_seg_1","slot":"seg_1","tag":"ledge","name":"Carved ledge"}
+{"op":"zone","id":"z_seg_2","slot":"seg_2","tag":"steps","name":"Mossy steps"}
+{"op":"zone","id":"z_seg_3","slot":"seg_3","tag":"gaps","name":"Wide gaps"}
+{"op":"zone","id":"z_seg_4","slot":"seg_4","tag":"pit","name":"Deep pit"}
+{"op":"zone","id":"z_seg_5","slot":"seg_5","tag":"gaps","name":"Final gap"}
+{"op":"zone","id":"z_finish","slot":"finish","tag":"outside","name":"Sunlit altar"}
+{"op":"spawn","id":"sp_red","zone":"z_start","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"pedestal","zone":"z_finish","anchor":"goal","noun":"pedestal","hyper":"finish","team":"red"}
+{"op":"ent","id":"idol_1","kind":"pickup","noun":"glowing idol","hyper":"collectible","zone":"z_seg_1","anchor":"pickup_1","body":"dynamic","shape":"sphere","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"idol_2","kind":"pickup","noun":"glowing idol","hyper":"collectible","zone":"z_seg_2","anchor":"pickup_2","body":"dynamic","shape":"sphere","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"idol_3","kind":"pickup","noun":"glowing idol","hyper":"collectible","zone":"z_seg_3","anchor":"pickup_3","body":"dynamic","shape":"sphere","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"idol_4","kind":"pickup","noun":"glowing idol","hyper":"collectible","zone":"z_seg_5","anchor":"pickup_5","body":"dynamic","shape":"sphere","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"boulder_1","kind":"hazard","noun":"rolling boulder","hyper":"obstacle","zone":"z_seg_1","anchor":"cp_1","body":"sensor","shape":"box","size":[1.2,0.8,0.8]}
+{"op":"ent","id":"boulder_2","kind":"hazard","noun":"rolling boulder","hyper":"obstacle","zone":"z_seg_3","anchor":"cp_3","body":"sensor","shape":"box","size":[1.2,0.8,0.8]}
+{"op":"ent","id":"boulder_3","kind":"hazard","noun":"rolling boulder","hyper":"obstacle","zone":"z_seg_5","anchor":"cp_5","body":"sensor","shape":"box","size":[1.2,0.8,0.8]}
+{"op":"ent","id":"pit_trap","kind":"hazard","noun":"stone pit","hyper":"trap","zone":"z_seg_4","anchor":"pit_4","body":"sensor","shape":"box","size":[2,0.5,2]}
+{"op":"verb","id":"vb_jump","verb":"locomotion.jump","on":"player","params":{"jumpsMax":2}}
+{"op":"verb","id":"vb_carry_idol_1","verb":"physics_props.carry","on":"idol_1","params":{}}
+{"op":"verb","id":"vb_carry_idol_2","verb":"physics_props.carry","on":"idol_2","params":{}}
+{"op":"verb","id":"vb_carry_idol_3","verb":"physics_props.carry","on":"idol_3","params":{}}
+{"op":"verb","id":"vb_carry_idol_4","verb":"physics_props.carry","on":"idol_4","params":{}}
+{"op":"verb","id":"vb_hazard_boulder_1","verb":"motion_hazards.hazard","on":"boulder_1","params":{"respawn":true}}
+{"op":"verb","id":"vb_hazard_boulder_2","verb":"motion_hazards.hazard","on":"boulder_2","params":{"respawn":true}}
+{"op":"verb","id":"vb_hazard_boulder_3","verb":"motion_hazards.hazard","on":"boulder_3","params":{"respawn":true}}
+{"op":"verb","id":"vb_hazard_pit","verb":"motion_hazards.hazard","on":"pit_trap","params":{"respawn":true}}
+{"op":"verb","id":"vb_timer","verb":"puzzle.timer","on":"player","params":{"seconds":90}}
+{"op":"rule","id":"r_win","when":{"t":"enter","a":"player","b":"pedestal"},"if":[{"l":"player.carry_count","op":"eq","r":"4"}],"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose_boulder","when":{"t":"hit","a":"player","b":"boulder_1"},"then":[{"e":"lose","target":"player"}]}
+{"op":"rule","id":"r_lose_boulder2","when":{"t":"hit","a":"player","b":"boulder_2"},"then":[{"e":"lose","target":"player"}]}
+{"op":"rule","id":"r_lose_boulder3","when":{"t":"hit","a":"player","b":"boulder_3"},"then":[{"e":"lose","target":"player"}]}
+{"op":"rule","id":"r_lose_pit","when":{"t":"hit","a":"player","b":"pit_trap"},"then":[{"e":"lose","target":"player"}]}
+{"op":"rule","id":"r_lose_timer","when":{"t":"timer_end","a":"player"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"expect","id":"x_double_jump","prop":"requires","a":"sp_red","b":"z_seg_3","need":["jumps>=2"],"headline":true,"text":"The temple tunnel needs boulder patterns that force a precise double jump"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

@@ -1,0 +1,23 @@
+{"op":"meta","mode":"play","lang":"en","pack":"outdoor","sub":[],"seed":101,"look":"stormy ocean","mood":[0.1,0.9,0.9],"timeOfDay":18,"weather":"storm"}
+{"op":"zone","id":"z_player","slot":"entrance","tag":"outside","name":"Your Ship"}
+{"op":"zone","id":"z_ocean","slot":"pond","tag":"water","name":"Rough Sea"}
+{"op":"zone","id":"z_enemy","slot":"clearing_w","tag":"outside","name":"Enemy Ship Deck"}
+{"op":"zone","id":"z_cabin","slot":"clearing_e","tag":"outside","name":"Captain's Cabin"}
+{"op":"spawn","id":"sp_red","zone":"z_player","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"sink_timer","zone":"z_ocean","anchor":"water","noun":"sinking timer","hyper":"timer","team":""}
+{"op":"ent","id":"ladder","kind":"prop","noun":"boarding ladder","hyper":"access point","zone":"z_ocean","anchor":"shore","body":"fixed","shape":"box","size":[0.3,2,0.3]}
+{"op":"ent","id":"chest","kind":"pickup","noun":"treasure chest","hyper":"container","zone":"z_cabin","anchor":"center","body":"dynamic","shape":"box","size":[0.5,0.3,0.4]}
+{"op":"ent","id":"guard_1","kind":"npc","noun":"enemy crew","hyper":"personnel","zone":"z_enemy","anchor":"center_n","body":"kinematic","shape":"none","team":"blue"}
+{"op":"ent","id":"guard_2","kind":"npc","noun":"enemy crew","hyper":"personnel","zone":"z_enemy","anchor":"center_s","body":"kinematic","shape":"none","team":"blue"}
+{"op":"ent","id":"spike_trap","kind":"hazard","noun":"spike trap","hyper":"hazard","zone":"z_enemy","anchor":"center","body":"sensor","shape":"box","size":[1,0.2,1]}
+{"op":"verb","id":"vb_jump","verb":"locomotion.jump","on":"player","params":{"jumpsMax":2}}
+{"op":"verb","id":"vb_carry_chest","verb":"physics_props.carry","on":"chest","params":{}}
+{"op":"verb","id":"vb_timer","verb":"puzzle.timer","on":"sink_timer","params":{"seconds":90}}
+{"op":"verb","id":"vb_spike","verb":"motion_hazards.hazard","on":"spike_trap","params":{"respawn":true}}
+{"op":"rule","id":"r_win","when":{"t":"enter","a":"chest","b":"sp_red"},"if":[{"l":"chest.carrier.team","op":"eq","r":"red"}],"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose_timer","when":{"t":"timer_end","a":"sink_timer"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose_spike","when":{"t":"hit","a":"player","b":"spike_trap"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"expect","id":"x_cross","prop":"win_reachable","a":"sp_red","b":"chest","headline":true,"text":"Must cross between the two ships during a sinking timer and steal the chest"}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":6}}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

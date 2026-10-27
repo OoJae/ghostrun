@@ -273,6 +273,41 @@ async function main() {
       }
     }
     if (args.includes("--out")) writeFileSync(args[args.indexOf("--out") + 1]!, JSON.stringify(rows, null, 2));
+  } else if (cmd === "trust") {
+    // the numbers behind "Why trust this?": every committed eval set's first-pass live results
+    // (bench.json, as the live lane produced them) and its worlds re-proved with today's code
+    const root = args[0]!;
+    const out = args[args.indexOf("--out") + 1]!;
+    const R = await loadRapierNode();
+    await loadNavNode();
+    const sets: unknown[] = [];
+    for (const name of readdirSync(root).filter((d) => existsSync(join(root, d, "bench.json"))).sort()) {
+      const dir = join(root, name);
+      const bench = JSON.parse(readFileSync(join(dir, "bench.json"), "utf8")) as { prompt: string; t3win?: string; playableMs?: number; controls?: number }[];
+      const header = existsSync(join(root, "..", `prompts-${name}.txt`)) ? (readFileSync(join(root, "..", `prompts-${name}.txt`), "utf8").split("\n").find((l) => l.startsWith("#")) ?? "").replace(/^#\s*/, "") : "";
+      let play = 0, places = 0, firstPass = 0, now = 0;
+      const controls: number[] = [];
+      for (const f of readdirSync(dir).filter((x) => x.endsWith(".fill.jsonl")).sort()) {
+        const text = readFileSync(join(dir, f), "utf8");
+        const saved = JSON.parse(readFileSync(join(dir, f.replace(".fill.jsonl", ".receipt.json")), "utf8")) as { prompt: string; intent: IntentOut };
+        const seed = (JSON.parse(splitObjects(text.split("\n", 1)[0] ?? "{}")[0] ?? "{}") as { seed?: number }).seed ?? 7;
+        const placed = placeFromFill(text, seed, saved.intent.pack, saved.intent.mode);
+        if (saved.intent.mode === "wander") {
+          places++;
+          continue;
+        }
+        play++;
+        controls.push(controlsOf(placed.bundle));
+        const r = await prove(R, placed.bundle, { engine: ENGINE, runs: 12 });
+        if ((r.chips.find((c) => c.id === "T3:win")?.k ?? 0) >= 10) now++;
+        if (/^(1[0-2])\/12$/.test(bench.find((x) => x.prompt === saved.prompt)?.t3win ?? "")) firstPass++;
+      }
+      const ms = bench.map((x) => x.playableMs).filter((x): x is number => typeof x === "number").sort((x, y) => x - y);
+      const mid = (xs: number[]) => (xs.length ? xs[Math.floor(xs.length / 2)]! : null);
+      sets.push({ name, note: header, prompts: bench.length, play, places, firstPass, now, playableP50Ms: mid(ms), controlsP50: mid([...controls].sort((x, y) => x - y)) });
+      console.log(`${name}: ${play} play worlds, first pass ${firstPass}, now ${now}; ${places} places`);
+    }
+    writeFileSync(out, `${JSON.stringify({ generated: new Date().toISOString().slice(0, 10), won: "at least 10 of 12 AI runners win in physics", sets }, null, 1)}\n`);
   } else if (cmd === "bench") {
     const prompts = readFileSync(args[0]!, "utf8").split("\n").map((l) => l.trim()).filter((l) => l && !l.startsWith("#"));
     const outDir = args.includes("--out") ? args[args.indexOf("--out") + 1]! : "bench-out";

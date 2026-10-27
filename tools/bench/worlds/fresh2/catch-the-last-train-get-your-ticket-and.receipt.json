@@ -1,0 +1,210 @@
+{
+  "prompt": "Catch the last train: get your ticket and reach the platform before it leaves",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "puzzle-escape",
+    "setting": "A sprawling central railway hub at dusk: ticketing halls, ticket gates, a high concourse, a long corridor of waiting areas and a platform behind the track.",
+    "role": "Passenger rushing to catch the last train before it departs",
+    "goal": "Collect a valid ticket (the ticket kiosk is behind a row of counters with a security scanner), then navigate the concourse, pass through the ticket gate, cross the waiting hall and reach the platform before the countdown timer ends and the train leaves.",
+    "fail": "Run out of time before stepping onto the platform while the train is departing",
+    "mood": "Urgent, brisk, slightly anxious",
+    "pack": "floor_plan",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Ticket gate and concourse route must be cleared before countdown ends",
+    "nouns": [
+      {
+        "noun": "ticket",
+        "hyper": "paper credential"
+      },
+      {
+        "noun": "kiosk",
+        "hyper": "ticketing machine"
+      },
+      {
+        "noun": "concourae",
+        "hyper": "interior waiting hall"
+      },
+      {
+        "noun": "gate",
+        "hyper": "ticket scanner"
+      },
+      {
+        "noun": "platform",
+        "hyper": "train boarding area"
+      }
+    ],
+    "moodVec": {
+      "valence": -0.1,
+      "arousal": 0.7,
+      "tension": 0.8
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "6f7bc45549b22e027869b4310bb693d1c3f14ed2f3623d9cd5e801fe7c09b1b9",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_route",
+      "text": "Ticket gate and concourse route must be cleared before countdown ends",
+      "status": "counterexample",
+      "method": "static goal regression over rules"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 7 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "chain",
+          "text": "win unreachable in the rule graph"
+        },
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "counterexample",
+        "method": "static goal regression over rules",
+        "text": "no rule chain lets the player trigger the win",
+        "src": ""
+      },
+      {
+        "id": "T2:r_plate_release",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_plate_release"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_plate_release fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_ne",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_ne"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_corner_ne fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_nw",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_nw"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_corner_nw fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_nw_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_nw_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_corner_nw_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_se",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_se"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_corner_se fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_timer_end",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_timer_end"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_timer_end fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      }
+    ],
+    "par": null,
+    "ms": 41
+  }
+}

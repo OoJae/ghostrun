@@ -1,0 +1,89 @@
+{
+  "prompt": "a cyberpunk night market with food stalls, drones and a pickpocket you have to catch",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "cyberpunk arcade",
+    "setting": "a neon-lit cyberpunk night market at night, densely packed with glowing food stalls, overhead delivery drones and narrow alleyways",
+    "role": "a market security guard",
+    "goal": "spot and catch the pickpocket moving through the crowd before he escapes the market",
+    "fail": "the pickpocket slips out of the market or you fail to corner him",
+    "mood": "tense, gritty, neon-soaked vigilance",
+    "pack": "arena",
+    "sub": [],
+    "safety": "arcade",
+    "headline": "Pickpocket chase must survive drone traffic between stalls",
+    "nouns": [
+      {
+        "noun": "pickpocket",
+        "hyper": "thief"
+      },
+      {
+        "noun": "food stall",
+        "hyper": "street vendor"
+      },
+      {
+        "noun": "drone",
+        "hyper": "autonomous vehicle"
+      },
+      {
+        "noun": "night market",
+        "hyper": "marketplace"
+      }
+    ],
+    "moodVec": {
+      "valence": -0.1,
+      "arousal": 0.6,
+      "tension": 0.7
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "a614b94d0ee1ad58e8bf7c966f94138b0213dd65f8d3d195130e7f1560ad4de3",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": null,
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 0 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "chain",
+          "text": "win unreachable in the rule graph"
+        },
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "counterexample",
+        "method": "static goal regression over rules",
+        "text": "no rule ever wins the game",
+        "src": ""
+      }
+    ],
+    "par": null,
+    "ms": 141
+  }
+}

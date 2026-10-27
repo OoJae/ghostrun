@@ -1,0 +1,248 @@
+{
+  "prompt": "Create a capture-the-flag game in a neon city. Add double jump. Score when the orb reaches the goal.",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "team shooter / ctf",
+    "setting": "neon city streets with vertical rooftop lanes",
+    "role": "player (orb)",
+    "goal": "score by delivering the orb to the goal on your side of the arena without being caught",
+    "fail": "get caught or dropped",
+    "mood": "electric, frantic, neon",
+    "pack": "city_block",
+    "sub": [
+      "rooftop"
+    ],
+    "safety": "arcade",
+    "headline": "Double jump lets you scale the rooftop lane to take an alternate run to the orb goal",
+    "nouns": [
+      {
+        "noun": "orb",
+        "hyper": "collectible object"
+      },
+      {
+        "noun": "rooftop lane",
+        "hyper": "vertical path"
+      },
+      {
+        "noun": "neon city",
+        "hyper": "urban environment"
+      },
+      {
+        "noun": "goal",
+        "hyper": "score point target"
+      },
+      {
+        "noun": "double jump",
+        "hyper": "movement mechanic"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.6,
+      "arousal": 0.75,
+      "tension": 0.45
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "9fa03ebe7ced6690dfcb71a77395f23b84ae5695daac13645773ad412199c8c3",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "exp_double_jump",
+      "text": "Double jump lets you scale the rooftop lane to take an alternate run to the orb goal",
+      "status": "verified",
+      "method": "kinematic reachability (jump apex model) + physics jump witness, 4 attempts per jump count"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 1,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 6 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 1,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_score_orb (orb into goal_red, carried by red) ← pick up orb",
+        "src": ""
+      },
+      {
+        "id": "T1:exp_double_jump",
+        "tier": "T1",
+        "subject": {
+          "kind": "property",
+          "id": "exp_double_jump"
+        },
+        "method": "kinematic reachability (jump apex model)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "Double jump lets you scale the rooftop lane to take an alternate run to the orb goal",
+        "cx": null
+      },
+      {
+        "id": "T2:r_orb_hit_hazard",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_orb_hit_hazard"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 0,
+        "src": "ai",
+        "ms": 48,
+        "status": "counterexample",
+        "text": "r_orb_hit_hazard fires exactly once",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "firings",
+          "text": "never fired when forced"
+        }
+      },
+      {
+        "id": "T2:r_plate_activate",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_plate_activate"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_plate_activate fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_score_orb",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score_orb"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_score_orb fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_edge",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_edge"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_secret_edge fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_floor_ne",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_floor_ne"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_floor_ne fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_floor_sw",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_floor_sw"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 6,
+        "status": "verified",
+        "text": "r_secret_floor_sw fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it (AI par 10.5 s)",
+        "cx": null,
+        "src": "",
+        "ms": 156
+      },
+      {
+        "id": "T3:exp_double_jump",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "exp_double_jump"
+        },
+        "status": "played",
+        "method": "physics jump witness, 4 attempts per jump count",
+        "n": 4,
+        "k": 4,
+        "text": "Double jump lets you scale the rooftop lane to take an alternate run to the orb goal: reached with 2 jumps 4 of 4, with 1 0 of 4",
+        "cx": null,
+        "src": "ai",
+        "ms": 47
+      }
+    ],
+    "par": {
+      "goldS": 10.5,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 426
+  }
+}

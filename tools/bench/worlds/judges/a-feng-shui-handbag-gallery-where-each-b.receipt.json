@@ -1,0 +1,90 @@
+{
+  "prompt": "a Feng Shui handbag gallery where each bag sits in its proper place",
+  "intent": {
+    "lang": "en",
+    "mode": "wander",
+    "genre": "exhibition",
+    "setting": "Feng Shui handbag gallery where each bag sits in its proper place",
+    "role": "visitor",
+    "goal": "View handbags arranged according to Feng Shui principles",
+    "fail": "",
+    "mood": "serene",
+    "pack": "floor_plan",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Bags placed by Feng Shui flow",
+    "nouns": [
+      {
+        "noun": "handbag",
+        "hyper": "fashion_item"
+      },
+      {
+        "noun": "gallery",
+        "hyper": "exhibition_space"
+      },
+      {
+        "noun": "display",
+        "hyper": "exhibit"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.7,
+      "arousal": -0.2,
+      "tension": -0.6
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "e04cf081bf7fc95bcbd0732ae5dfa08e6ac6ca7728cbf53236271ddc9a327786",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_feng_shui",
+      "text": "Bags placed by Feng Shui flow",
+      "status": "not_checkable",
+      "method": "none"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 0 rules reference existing things",
+        "src": ""
+      },
+      {
+        "id": "T3:tour",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "tour"
+        },
+        "status": "counterexample",
+        "method": "physics, an AI visitor walks to and uses each",
+        "n": 6,
+        "k": 0,
+        "text": "walked to and inspected 0 of 6 things",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 6,
+          "unit": "things",
+          "text": "couldn't reach bag_center, bag_east_1, bag_east_2, bag_west_1…"
+        },
+        "src": "",
+        "ms": 349
+      }
+    ],
+    "par": null,
+    "ms": 370
+  }
+}

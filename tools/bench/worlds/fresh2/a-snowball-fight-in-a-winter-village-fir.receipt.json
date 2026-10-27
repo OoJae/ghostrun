@@ -1,0 +1,238 @@
+{
+  "prompt": "A snowball fight in a winter village, first to ten hits wins",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "team sports",
+    "setting": "A snow-dusted winter village square surrounded by snow-covered houses and a frozen pond",
+    "role": "A player in a snowball fight team",
+    "goal": "Land ten snowball hits on the opposing team before they land ten on yours",
+    "fail": "Your team gets ten hits before you do",
+    "mood": "Playful and energetic with a chill-agonizing edge",
+    "pack": "arena",
+    "sub": [],
+    "safety": "ok",
+    "headline": "First to ten snowball hits wins in a walled village square",
+    "nouns": [
+      {
+        "noun": "snowball",
+        "hyper": "projectile"
+      },
+      {
+        "noun": "winter village",
+        "hyper": "setting"
+      },
+      {
+        "noun": "hit",
+        "hyper": "strike"
+      },
+      {
+        "noun": "team",
+        "hyper": "group"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.55,
+      "arousal": 0.8,
+      "tension": 0.45
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "5cc9c46c3b628d61d360cb090f0d4d8d5a7fa14ab973adf27ffc5f4b85b5b6fc",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_fight",
+      "text": "First to ten snowball hits wins in a walled village square",
+      "status": "counterexample",
+      "method": "static goal regression over rules"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 9 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "chain",
+          "text": "win unreachable in the rule graph"
+        },
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "counterexample",
+        "method": "static goal regression over rules",
+        "text": "no rule chain lets the player trigger the win",
+        "src": ""
+      },
+      {
+        "id": "T2:r_hit_blue",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_hit_blue"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_hit_blue: no rival to throw sb_ball at",
+        "cx": null
+      },
+      {
+        "id": "T2:r_hit_red",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_hit_red"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_hit_red: no rival to throw sb_ball at",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lose_red",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_red"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_lose_red fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_center_s",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_center_s"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_secret_center_s fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_n",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_n"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_secret_flank_n fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_n_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_n_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_flank_n_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_s",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_s"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_flank_s fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_s_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_s_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_flank_s_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win_red",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win_red"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_win_red fires exactly once",
+        "cx": null
+      }
+    ],
+    "par": null,
+    "ms": 142
+  }
+}

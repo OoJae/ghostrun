@@ -1,0 +1,19 @@
+{"op":"meta","mode":"play","lang":"en","pack":"arena","sub":[],"seed":106,"look":"winter village square","mood":[0.55,0.8,0.45],"timeOfDay":12,"weather":"snow"}
+{"op":"zone","id":"z_square","slot":"midfield","tag":"square","name":"Village square"}
+{"op":"zone","id":"z_west","slot":"west_half","tag":"base","name":"West house"}
+{"op":"zone","id":"z_east","slot":"east_half","tag":"base","name":"East house"}
+{"op":"spawn","id":"sp_red","zone":"z_west","anchor":"spawn_pad","team":"red"}
+{"op":"spawn","id":"sp_blue","zone":"z_east","anchor":"spawn_pad","team":"blue"}
+{"op":"ent","id":"sb_ball","kind":"pickup","noun":"snowball","hyper":"projectile","zone":"z_square","anchor":"center","body":"dynamic","shape":"sphere","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"pond_hazard","kind":"hazard","noun":"frozen pond","hyper":"hazard","zone":"z_square","anchor":"center_n","body":"sensor","shape":"box","size":[4,0.1,4]}
+{"op":"verb","id":"vb_carry_ball","verb":"physics_props.carry","on":"sb_ball","params":{}}
+{"op":"verb","id":"vb_throw_ball","verb":"combat_sport.throw","on":"sb_ball","params":{"range":15}}
+{"op":"verb","id":"vb_pond","verb":"motion_hazards.hazard","on":"pond_hazard","params":{"respawn":true}}
+{"op":"rule","id":"r_hit_red","when":{"t":"hit","a":"player","b":"sb_ball"},"if":[{"l":"sb_ball.carrier.team","op":"eq","r":"red"}],"then":[{"e":"score","target":"team:red","n":1}],"once":false}
+{"op":"rule","id":"r_hit_blue","when":{"t":"hit","a":"player","b":"sb_ball"},"if":[{"l":"sb_ball.carrier.team","op":"eq","r":"blue"}],"then":[{"e":"score","target":"team:blue","n":1}],"once":false}
+{"op":"rule","id":"r_win_red","when":{"t":"score_gte","a":"team:red","n":10},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose_red","when":{"t":"score_gte","a":"team:blue","n":10},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"expect","id":"x_fight","prop":"win_reachable","a":"sp_red","b":"z_square","headline":true,"text":"First to ten snowball hits wins in a walled village square"}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":6}}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

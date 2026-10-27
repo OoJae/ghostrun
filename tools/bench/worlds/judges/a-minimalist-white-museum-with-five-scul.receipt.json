@@ -1,0 +1,102 @@
+{
+  "prompt": "a minimalist white museum with five sculptures and an audio guide",
+  "intent": {
+    "lang": "en",
+    "mode": "wander",
+    "genre": "virtual tour",
+    "setting": "A minimalist white-walled museum gallery featuring five modern sculptures and an interactive audio guide on walls or floors.",
+    "role": "Visitor with an audio guide",
+    "goal": "Listen to the audio guide entries and admire all five sculptures in the white museum",
+    "fail": "Disengaging from the experience",
+    "mood": "Calm, contemplative, artistic",
+    "pack": "floor_plan",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Audio guide triggers must activate near each of the five sculptures",
+    "nouns": [
+      {
+        "noun": "museum",
+        "hyper": "building"
+      },
+      {
+        "noun": "sculptures",
+        "hyper": "artworks"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.3,
+      "arousal": -0.2,
+      "tension": -0.6
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "201957f4d8940402db844536745bb116fe5523aab9ef0cb0f9d590327a0b5399",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "exp_audio",
+      "text": "Audio guide triggers must activate near each of the five sculptures",
+      "status": "not_checkable",
+      "method": "kinematic reachability (jump apex model)"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 0 rules reference existing things",
+        "src": ""
+      },
+      {
+        "id": "T1:exp_audio",
+        "tier": "T1",
+        "subject": {
+          "kind": "property",
+          "id": "exp_audio"
+        },
+        "method": "kinematic reachability (jump apex model)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "Audio guide triggers must activate near each of the five sculptures",
+        "cx": null
+      },
+      {
+        "id": "T3:tour",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "tour"
+        },
+        "status": "counterexample",
+        "method": "physics, an AI visitor walks to and uses each",
+        "n": 10,
+        "k": 8,
+        "text": "walked to and inspected 8 of 10 things",
+        "cx": {
+          "where": null,
+          "have": 8,
+          "need": 10,
+          "unit": "things",
+          "text": "couldn't reach sculpture_nw, sculpture_se"
+        },
+        "src": "",
+        "ms": 32
+      }
+    ],
+    "par": null,
+    "ms": 45
+  }
+}

@@ -1,0 +1,33 @@
+{"op":"meta","mode":"play","lang":"en","pack":"city_block","sub":["rooftop"],"seed":101,"look":"neon city","mood":[0.6,0.75,0.45],"timeOfDay":20,"weather":"clear"}
+{"op":"zone","id":"z_center","slot":"center","tag":"plaza","name":"Neon Plaza"}
+{"op":"zone","id":"z_west_block","slot":"west_block","tag":"base","name":"West Base"}
+{"op":"zone","id":"z_east_block","slot":"east_block","tag":"base","name":"East Base"}
+{"op":"zone","id":"z_street_w","slot":"street_w","tag":"street","name":"West Street"}
+{"op":"zone","id":"z_street_e","slot":"street_e","tag":"street","name":"East Street"}
+{"op":"zone","id":"z_roof_lane","slot":"roof_lane_a","tag":"rooftop","name":"Rooftop Lane"}
+{"op":"spawn","id":"sp_red","zone":"z_west_block","anchor":"spawn_pad","team":"red"}
+{"op":"spawn","id":"sp_blue","zone":"z_east_block","anchor":"spawn_pad","team":"blue"}
+{"op":"goal","id":"goal_red","zone":"z_roof_lane","anchor":"lane_end","noun":"orb goal","hyper":"goal","team":"red"}
+{"op":"ent","id":"orb","kind":"pickup","noun":"glowing orb","hyper":"collectible object","zone":"z_center","anchor":"plinth","body":"dynamic","shape":"sphere","size":[0.4,0.4,0.4]}
+{"op":"ent","id":"coin_w1","kind":"pickup","noun":"neon coin","hyper":"collectible object","zone":"z_street_w","anchor":"none","body":"dynamic","shape":"box","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"coin_w2","kind":"pickup","noun":"neon coin","hyper":"collectible object","zone":"z_street_w","anchor":"none","body":"dynamic","shape":"box","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"coin_e1","kind":"pickup","noun":"neon coin","hyper":"collectible object","zone":"z_street_e","anchor":"none","body":"dynamic","shape":"box","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"hazard_laser","kind":"hazard","noun":"laser beam","hyper":"hazard","zone":"z_street_e","anchor":"none","body":"sensor","shape":"box","size":[3,0.2,0.2]}
+{"op":"ent","id":"jump_pad_w","kind":"platform","noun":"jump pad","hyper":"jump pad","zone":"z_street_w","anchor":"none","body":"kinematic","shape":"box","size":[1,0.3,1]}
+{"op":"ent","id":"plate_roof","kind":"plate","noun":"pressure plate","hyper":"plate","zone":"z_roof_lane","anchor":"gap_mid","body":"sensor","shape":"box","size":[0.5,0.1,0.5]}
+{"op":"verb","id":"vb_carry_orb","verb":"physics_props.carry","on":"orb","params":{}}
+{"op":"verb","id":"vb_collect_coin_w1","verb":"puzzle.collect","on":"coin_w1","params":{}}
+{"op":"verb","id":"vb_collect_coin_w2","verb":"puzzle.collect","on":"coin_w2","params":{}}
+{"op":"verb","id":"vb_collect_coin_e1","verb":"puzzle.collect","on":"coin_e1","params":{}}
+{"op":"verb","id":"vb_hazard_laser","verb":"motion_hazards.hazard","on":"hazard_laser","params":{"respawn":true}}
+{"op":"verb","id":"vb_jump_pad_w","verb":"locomotion.jump_pad","on":"jump_pad_w","params":{"height":5}}
+{"op":"verb","id":"vb_plate_roof","verb":"puzzle.plate","on":"plate_roof","params":{"latch":false}}
+{"op":"verb","id":"vb_double_jump","verb":"locomotion.jump","on":"player","params":{"jumpsMax":2}}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":6}}
+{"op":"rule","id":"r_score_orb","when":{"t":"enter","a":"orb","b":"goal_red"},"if":[{"l":"orb.carrier.team","op":"eq","r":"red"}],"then":[{"e":"score","target":"team:red","n":1},{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_orb_hit_hazard","when":{"t":"hit","a":"orb","b":"hazard_laser"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_plate_activate","when":{"t":"state_is","a":"plate_roof","s":"down"},"then":[{"e":"emit","target":"plate_roof","fx":"neon_flash"}],"once":false}
+{"op":"expect","id":"exp_double_jump","prop":"requires","a":"sp_red","b":"z_roof_lane","need":["jumps>=2"],"headline":true,"text":"Double jump lets you scale the rooftop lane to take an alternate run to the orb goal"}
+{"op":"expect","id":"exp_score","prop":"win_reachable","a":"sp_red","b":"goal_red","headline":true,"text":"The orb can be carried to the goal for a score"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

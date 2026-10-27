@@ -1,0 +1,24 @@
+{"op":"meta","mode":"wander","lang":"en","pack":"floor_plan","sub":[],"seed":106,"look":"minimalist museum","mood":[0.4,0.15,0.05],"timeOfDay":12,"weather":"clear"}
+{"op":"zone","id":"z_yard","slot":"yard","tag":"outside","name":"Museum entrance courtyard"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Gallery entrance hall"}
+{"op":"zone","id":"z_west","slot":"room_sw","tag":"room","name":"West gallery"}
+{"op":"zone","id":"z_east","slot":"room_se","tag":"room","name":"East gallery"}
+{"op":"zone","id":"z_hall","slot":"main_room","tag":"hall","name":"Central exhibition hall"}
+{"op":"spawn","id":"sp_red","zone":"z_yard","anchor":"spawn_pad","team":"red"}
+{"op":"ent","id":"painting_w1","kind":"prop","noun":"abstract painting","hyper":"artwork","zone":"z_west","anchor":"center","body":"fixed","shape":"box","size":[1.2,1.8,0.1]}
+{"op":"ent","id":"painting_w2","kind":"prop","noun":"monochrome canvas","hyper":"artwork","zone":"z_west","anchor":"corner_ne","body":"fixed","shape":"box","size":[1.2,1.8,0.1]}
+{"op":"ent","id":"painting_e1","kind":"prop","noun":"minimalist landscape","hyper":"artwork","zone":"z_east","anchor":"center","body":"fixed","shape":"box","size":[1.2,1.8,0.1]}
+{"op":"ent","id":"painting_e2","kind":"prop","noun":"geometric study","hyper":"artwork","zone":"z_east","anchor":"corner_sw","body":"fixed","shape":"box","size":[1.2,1.8,0.1]}
+{"op":"ent","id":"painting_c1","kind":"prop","noun":"color field","hyper":"artwork","zone":"z_hall","anchor":"center","body":"fixed","shape":"box","size":[1.2,1.8,0.1]}
+{"op":"ent","id":"painting_c2","kind":"prop","noun":"line composition","hyper":"artwork","zone":"z_hall","anchor":"corner_nw","body":"fixed","shape":"box","size":[1.2,1.8,0.1]}
+{"op":"verb","id":"vb_inspect_w1","verb":"social.inspect","on":"painting_w1","params":{"text":"Cobalt swirls suggest oceanic depth."}}
+{"op":"verb","id":"vb_inspect_w2","verb":"social.inspect","on":"painting_w2","params":{"text":"Monochrome forms evoke stillness."}}
+{"op":"verb","id":"vb_inspect_e1","verb":"social.inspect","on":"painting_e1","params":{"text":"Sparse horizons invite contemplation."}}
+{"op":"verb","id":"vb_inspect_e2","verb":"social.inspect","on":"painting_e2","params":{"text":"Intersecting lines challenge perception."}}
+{"op":"verb","id":"vb_inspect_c1","verb":"social.inspect","on":"painting_c1","params":{"text":"Bold color field radiates quiet energy."}}
+{"op":"verb","id":"vb_inspect_c2","verb":"social.inspect","on":"painting_c2","params":{"text":"Delicate lines trace hidden geometry."}}
+{"op":"npc","id":"guide_1","role":"guide","zone":"z_hall","anchor":"doorway_n","team":"","menu":["guide.tour"],"dflt":"guide.tour"}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":5}}
+{"op":"expect","id":"x_inspect","prop":"win_reachable","a":"sp_red","b":"painting_c2","headline":true,"text":"Every painting must be inspectable up close"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

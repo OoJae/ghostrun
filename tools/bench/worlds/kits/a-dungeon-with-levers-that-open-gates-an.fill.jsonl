@@ -1,0 +1,31 @@
+{"op":"meta","mode":"play","lang":"en","pack":"floor_plan","sub":[],"seed":104,"look":"dungeon","mood":[0,0.6,0.8],"timeOfDay":12,"weather":"clear"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Dungeon entrance"}
+{"op":"zone","id":"z_antechamber","slot":"room_sw","tag":"room","name":"Antechamber"}
+{"op":"zone","id":"z_main_hall","slot":"main_room","tag":"hall","name":"Main hall"}
+{"op":"zone","id":"z_dragon_lair","slot":"room_sw","tag":"room","name":"Dragon's lair"}
+{"op":"zone","id":"z_treasure_vault","slot":"room_se","tag":"room","name":"Treasure vault"}
+{"op":"spawn","id":"sp_red","zone":"z_entrance","anchor":"center","team":"red"}
+{"op":"goal","id":"vault_gate","zone":"z_treasure_vault","anchor":"doorway_w","noun":"vault gate","hyper":"gate","team":"red"}
+{"op":"ent","id":"lever_1","kind":"switch","noun":"lever","hyper":"lever","zone":"z_dragon_lair","anchor":"corner_sw","body":"fixed","shape":"box","size":[0.2,0.5,0.2]}
+{"op":"ent","id":"lever_2","kind":"switch","noun":"lever","hyper":"lever","zone":"z_treasure_vault","anchor":"corner_se","body":"fixed","shape":"box","size":[0.2,0.5,0.2]}
+{"op":"ent","id":"lever_3","kind":"switch","noun":"lever","hyper":"lever","zone":"z_main_hall","anchor":"corner_ne","body":"fixed","shape":"box","size":[0.2,0.5,0.2]}
+{"op":"ent","id":"gate_1","kind":"door","noun":"gate to main hall","hyper":"gate","zone":"z_entrance","anchor":"doorway_e","body":"fixed","shape":"box"}
+{"op":"ent","id":"gate_2","kind":"door","noun":"gate to dragon lair","hyper":"gate","zone":"z_main_hall","anchor":"doorway_w","body":"fixed","shape":"box"}
+{"op":"ent","id":"gate_3","kind":"door","noun":"vault gate","hyper":"gate","zone":"z_main_hall","anchor":"doorway_e","body":"fixed","shape":"box"}
+{"op":"ent","id":"dragon","kind":"npc","noun":"sleeping dragon","hyper":"dragon","zone":"z_dragon_lair","anchor":"center","body":"kinematic","shape":"capsule"}
+{"op":"ent","id":"gold","kind":"pickup","noun":"hoard of gold","hyper":"treasure","zone":"z_treasure_vault","anchor":"center","body":"dynamic","shape":"box","size":[0.5,0.5,0.2]}
+{"op":"verb","id":"vb_switch_1","verb":"puzzle.switch","on":"lever_1","params":{"once":false}}
+{"op":"verb","id":"vb_switch_2","verb":"puzzle.switch","on":"lever_2","params":{"once":false}}
+{"op":"verb","id":"vb_switch_3","verb":"puzzle.switch","on":"lever_3","params":{"once":false}}
+{"op":"verb","id":"vb_timer","verb":"puzzle.timer","on":"player","params":{"seconds":180}}
+{"op":"rule","id":"r_open_gate1","when":{"t":"state_is","a":"lever_3","s":"on"},"then":[{"e":"set_state","target":"gate_1","v":"open"}],"once":true}
+{"op":"rule","id":"r_open_gate2","when":{"t":"state_is","a":"lever_1","s":"on"},"if":[{"l":"gate_1.state","op":"eq","r":"open"}],"then":[{"e":"set_state","target":"gate_2","v":"open"}],"once":true}
+{"op":"rule","id":"r_open_gate3","when":{"t":"state_is","a":"lever_2","s":"on"},"if":[{"l":"gate_2.state","op":"eq","r":"open"}],"then":[{"e":"set_state","target":"gate_3","v":"open"}],"once":true}
+{"op":"rule","id":"r_wrong_order_gate2","when":{"t":"state_is","a":"gate_2","s":"open"},"if":[{"l":"lever_1.state","op":"neq","r":"on"}],"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_wrong_order_gate3","when":{"t":"state_is","a":"gate_3","s":"open"},"if":[{"l":"lever_2.state","op":"neq","r":"on"}],"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_dragon_attack","when":{"t":"enter","a":"player","b":"dragon"},"then":[{"e":"lose","target":"player"}]}
+{"op":"rule","id":"r_collect_gold","when":{"t":"touch","a":"player","b":"gold"},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_timer_end","when":{"t":"timer_end","a":"player"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"expect","id":"x_levers","prop":"win_reachable","a":"sp_red","b":"lever_3","headline":true,"text":"Three levers must be solved in order to open the dragon-guarded vault gate."}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

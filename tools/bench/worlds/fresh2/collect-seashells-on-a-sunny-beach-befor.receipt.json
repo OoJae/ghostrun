@@ -1,0 +1,272 @@
+{
+  "prompt": "Collect seashells on a sunny beach before the tide comes in",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "casual collection",
+    "setting": "A wide sandy beach with rolling dunes, clear blue ocean, and a tide line rushing in over wet sand.",
+    "role": "Beach forager / casual explorer",
+    "goal": "Collect as many scattered seashells as possible before the advancing tide covers them.",
+    "fail": "The tide reaches the player’s location or the timer runs out while shells remain uncollected.",
+    "mood": "Relaxed, nostalgic, gentle tension against the clock",
+    "pack": "outdoor",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Win is gated by the advancing tide line over the shell field.",
+    "nouns": [
+      {
+        "noun": "seashells",
+        "hyper": "collected natural artifact"
+      },
+      {
+        "noun": "tidal waterline",
+        "hyper": "dynamic environmental hazard boundary"
+      },
+      {
+        "noun": "sandy beach",
+        "hyper": "flat natural terrain"
+      },
+      {
+        "noun": "dunes",
+        "hyper": "soft natural elevations"
+      },
+      {
+        "noun": "ocean swells",
+        "hyper": "periodic background waves"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.6,
+      "arousal": 0.25,
+      "tension": 0.45
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "ec47298eeab956cc6d00196004222b935a9e4ba493ec3b4cc31c34eef810be9f",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_beach",
+      "text": "Win is gated by the advancing tide line over the shell field.",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 1,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 10 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 1,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (team:red reaches 6) ← collect 6 of 6",
+        "src": ""
+      },
+      {
+        "id": "T2:r_collect_1",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_collect_1"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 9,
+        "status": "verified",
+        "text": "r_collect_1 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_collect_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_collect_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_collect_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_collect_3",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_collect_3"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_collect_3 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_collect_4",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_collect_4"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_collect_4 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_collect_5",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_collect_5"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_collect_5 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_collect_6",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_collect_6"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_collect_6 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lose_tide",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_tide"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_lose_tide fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lose_timer",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_timer"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_lose_timer fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_dock",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_dock"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_dock fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it (AI par 15.7 s)",
+        "cx": null,
+        "src": "",
+        "ms": 208
+      }
+    ],
+    "par": {
+      "goldS": 15.7,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 511
+  }
+}

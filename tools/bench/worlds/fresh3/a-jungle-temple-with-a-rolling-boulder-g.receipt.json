@@ -1,0 +1,222 @@
+{
+  "prompt": "A jungle temple with a rolling boulder: grab the idol and run for the exit",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "indie horror / platformer",
+    "setting": "A crumbling jungle temple with overgrown vines, mossy stone corridors and a churning river entrance, culminating in a carved stone altar and a boulder-topped tunnel. The layout follows a single looping path: side chambers of fake and real idols, a statue shrine where the idol is lifted, a long main corridor lined with jump-gap tiles, and a final plunge into the exit river.",
+    "role": "An archaeologist equipped with a flashlight and a backpack strap to carry the idol.",
+    "goal": "Locate the correct idol among decoys, lift it onto the strap, sprint through the corridor, clear the jump gaps, and toss the idol into the river exit before the boulder catches you.",
+    "fail": "Touch the boulder; drop the idol into a decoy pool; or step on a tile that triggers early boulder release and fail to make the last jump.",
+    "mood": "tense, cinematic, time-pressured adventure with moments of triumph when the idol lands safely in the river",
+    "pack": "course",
+    "sub": [],
+    "safety": "arcade",
+    "headline": "Picked idol must be carried past the boulder to the river exit before it collapses",
+    "nouns": [
+      {
+        "noun": "jungle temple",
+        "hyper": "architectural setting"
+      },
+      {
+        "noun": "boulder",
+        "hyper": "hazard"
+      },
+      {
+        "noun": "idol",
+        "hyper": "objective/loot"
+      },
+      {
+        "noun": "corridor",
+        "hyper": "passage"
+      },
+      {
+        "noun": "jump gap",
+        "hyper": "platforming obstacle"
+      },
+      {
+        "noun": "river exit",
+        "hyper": "fail-state / finish gate"
+      },
+      {
+        "noun": "flashlight",
+        "hyper": "tool/light"
+      },
+      {
+        "noun": "fakes",
+        "hyper": "decoration/decoy"
+      }
+    ],
+    "moodVec": {
+      "valence": -0.3,
+      "arousal": 0.8,
+      "tension": 0.9
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "c09db90b0d991f7208158c3c13e580ade17ea3f426511d64045ec6255fdce9c7",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_idol",
+      "text": "Picked idol must be carried past the boulder to the river exit before it collapses",
+      "status": "counterexample",
+      "method": "static goal regression over rules + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 6 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (idol into river_exit, carried by red) ← pick up idol",
+        "src": ""
+      },
+      {
+        "id": "T2:r_lose_boulder",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_boulder"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_lose_boulder fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_plate_release",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_plate_release"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_plate_release fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_host",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_host"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_secret_host fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_pickup_6",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_pickup_6"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_secret_pickup_6 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_trophy",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_trophy"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_secret_trophy fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "counterexample",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 0,
+        "text": "no AI runner could win",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "wins",
+          "text": "12 got stuck (in the Temple entrance ×12)"
+        },
+        "src": "",
+        "ms": 148
+      }
+    ],
+    "par": null,
+    "ms": 507
+  }
+}

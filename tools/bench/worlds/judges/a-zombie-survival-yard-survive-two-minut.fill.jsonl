@@ -1,0 +1,20 @@
+{"op":"meta","mode":"play","lang":"en","pack":"floor_plan","sub":[],"seed":111,"look":"fortified backyard","mood":[-0.6,0.8,0.9],"timeOfDay":18,"weather":"overcast"}
+{"op":"zone","id":"z_yard","slot":"yard","tag":"outside","name":"Quarantined backyard"}
+{"op":"zone","id":"z_house","slot":"entrance","tag":"entrance","name":"House entrance"}
+{"op":"spawn","id":"sp_red","zone":"z_yard","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"heli","zone":"z_yard","anchor":"corner_w","noun":"helicopter","hyper":"vehicle","team":"red"}
+{"op":"ent","id":"fence_gate","kind":"door","noun":"fence gate","hyper":"gate","zone":"z_yard","anchor":"corner_e","body":"fixed","shape":"box"}
+{"op":"ent","id":"medkit","kind":"pickup","noun":"medkit","hyper":"health","zone":"z_house","anchor":"corner_nw","body":"dynamic","shape":"box","size":[0.3,0.3,0.2]}
+{"op":"ent","id":"ammo_box","kind":"pickup","noun":"ammo box","hyper":"ammo","zone":"z_house","anchor":"corner_sw","body":"dynamic","shape":"box","size":[0.4,0.2,0.2]}
+{"op":"ent","id":"zombie_hazard","kind":"hazard","noun":"zombie swarm","hyper":"zombie","zone":"z_yard","anchor":"center","body":"sensor","shape":"hull"}
+{"op":"verb","id":"vb_carry_medkit","verb":"physics_props.carry","on":"medkit","params":{}}
+{"op":"verb","id":"vb_carry_ammo","verb":"physics_props.carry","on":"ammo_box","params":{}}
+{"op":"verb","id":"vb_open_gate","verb":"puzzle.lock","on":"fence_gate","params":{"key":"medkit"}}
+{"op":"verb","id":"vb_timer","verb":"puzzle.timer","on":"player","params":{"seconds":120}}
+{"op":"verb","id":"vb_hazard","verb":"motion_hazards.hazard","on":"zombie_hazard","params":{"respawn":true}}
+{"op":"rule","id":"r_win","when":{"t":"enter","a":"player","b":"heli"},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose_timer","when":{"t":"timer_end","a":"player"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose_hazard","when":{"t":"enter","a":"player","b":"zombie_hazard"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"expect","id":"exp_survival","prop":"win_reachable","a":"sp_red","b":"heli","headline":true,"text":"Two-minute survival timer and helicopter escape point"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

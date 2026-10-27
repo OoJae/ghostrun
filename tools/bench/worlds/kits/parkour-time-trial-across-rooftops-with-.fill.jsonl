@@ -1,0 +1,36 @@
+{"op":"meta","mode":"play","lang":"en","pack":"city_block","sub":["rooftop"],"seed":108,"look":"urban rooftop circuit at dusk","mood":[0.25,0.85,0.7],"timeOfDay":19,"weather":"clear"}\
+{"op":"zone","id":"z_center","slot":"center","tag":"outside","name":"Rooftop Plaza"}\
+{"op":"zone","id":"z_west","slot":"west_block","tag":"base","name":"West Rooftop"}\
+{"op":"zone","id":"z_east","slot":"east_block","tag":"base","name":"East Rooftop"}\
+{"op":"zone","id":"z_street_w","slot":"street_w","tag":"street","name":"West Street"}\
+{"op":"zone","id":"z_street_e","slot":"street_e","tag":"street","name":"East Street"}\
+{"op":"zone","id":"z_roof","slot":"roof_lane_a","tag":"rooftop","name":"Rooftop Lane"}\
+{"op":"spawn","id":"sp_red","zone":"z_west","anchor":"spawn_pad","team":"red"}\
+{"op":"goal","id":"finish_pad","zone":"z_east","anchor":"goal_ring","noun":"finish pad","hyper":"pad","team":"red"}\
+{"op":"ent","id":"cp_west","kind":"checkpoint","noun":"checkpoint west","hyper":"marker","zone":"z_west","body":"sensor","shape":"box","size":[0.5,0.5,0.2]}\
+{"op":"ent","id":"cp_center","kind":"checkpoint","noun":"checkpoint plaza","hyper":"marker","zone":"z_center","body":"sensor","shape":"box","size":[0.5,0.5,0.2]}\
+{"op":"ent","id":"cp_roof","kind":"checkpoint","noun":"checkpoint roof","hyper":"marker","zone":"z_roof","body":"sensor","shape":"box","size":[0.5,0.5,0.2]}\
+{"op":"ent","id":"cp_east","kind":"checkpoint","noun":"checkpoint east","hyper":"marker","zone":"z_east","body":"sensor","shape":"box","size":[0.5,0.5,0.2]}\
+{"op":"ent","id":"spike_roof","kind":"hazard","noun":"spike trap","hyper":"spikes","zone":"z_roof","anchor":"gap_mid","body":"sensor","shape":"box","size":[1,0.2,0.5]}\
+{"op":"ent","id":"platform_osc","kind":"platform","noun":"moving platform","hyper":"platform","zone":"z_roof","anchor":"lane_start","body":"kinematic","shape":"box","size":[2,0.3,0.3]}\
+{"op":"ent","id":"jump_pad_edge","kind":"plate","noun":"jump pad","hyper":"pad","zone":"z_roof","anchor":"edge","body":"sensor","shape":"box","size":[1,0.2,0.2]}\
+{"op":"ent","id":"neon_sign","kind":"prop","noun":"neon sign","hyper":"lighting","zone":"z_center","anchor":"wall_n","body":"fixed","shape":"box","size":[2,0.5,0.1]}\
+{"op":"verb","id":"vb_jump","verb":"locomotion.jump","on":"player","params":{"jumpsMax":2}}\
+{"op":"verb","id":"vb_osc","verb":"motion_hazards.oscillate","on":"platform_osc","params":{"axis":"x","travel":4,"period":3}}\
+{"op":"verb","id":"vb_spike","verb":"motion_hazards.hazard","on":"spike_roof","params":{"respawn":true}}\
+{"op":"verb","id":"vb_jump_pad","verb":"locomotion.jump_pad","on":"jump_pad_edge","params":{"height":8}}\
+{"op":"verb","id":"vb_cp_west","verb":"puzzle.checkpoint","on":"cp_west","params":{}}\
+{"op":"verb","id":"vb_cp_center","verb":"puzzle.checkpoint","on":"cp_center","params":{}}\
+{"op":"verb","id":"vb_cp_roof","verb":"puzzle.checkpoint","on":"cp_roof","params":{}}\
+{"op":"verb","id":"vb_cp_east","verb":"puzzle.checkpoint","on":"cp_east","params":{}}\
+{"op":"verb","id":"vb_timer","verb":"puzzle.timer","on":"player","params":{"seconds":60}}\
+{"op":"rule","id":"r_score_west","when":{"t":"enter","a":"sp_red","b":"cp_west"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}\
+{"op":"rule","id":"r_score_center","when":{"t":"enter","a":"sp_red","b":"cp_center"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}\
+{"op":"rule","id":"r_score_roof","when":{"t":"enter","a":"sp_red","b":"cp_roof"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}\
+{"op":"rule","id":"r_score_east","when":{"t":"enter","a":"sp_red","b":"cp_east"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}\
+{"op":"rule","id":"r_timer_end","when":{"t":"timer_end","a":"player"},"then":[{"e":"lose","target":"player"}],"once":true}\
+{"op":"rule","id":"r_finish","when":{"t":"enter","a":"sp_red","b":"finish_pad"},"if":[{"l":"team:red.score","op":"gte","r":4}],"then":[{"e":"win","target":"player"}],"once":true}\
+{"op":"expect","id":"x_route","prop":"win_reachable","a":"sp_red","b":"finish_pad","headline":true,"text":"Rooftop route needs precise timing to clear gaps before the timer hits zero"}\
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":6}}\
+{"op":"end","layer":"gameplay"}\
+{"op":"end","layer":"cosmetic"}

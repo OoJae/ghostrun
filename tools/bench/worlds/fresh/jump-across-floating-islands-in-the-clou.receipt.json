@@ -1,0 +1,184 @@
+{
+  "prompt": "Jump across floating islands in the clouds to reach the sky castle",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "Platformer / Sky Odyssey",
+    "setting": "A high-altitude cluster of floating archipelagos suspended in a sea of clouds, with gaps of open air and a distant, towering sky castle.",
+    "role": "Sky Traveler",
+    "goal": "Jump across the floating islands to reach the sky castle.",
+    "fail": "Falling off the islands into the clouds.",
+    "mood": "Wonder, focused tension",
+    "pack": "course",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Must successfully jump the gaps between cloud islands to reach the sky castle",
+    "nouns": [
+      {
+        "noun": "islands",
+        "hyper": "terrain"
+      },
+      {
+        "noun": "clouds",
+        "hyper": "environment"
+      },
+      {
+        "noun": "castle",
+        "hyper": "structure"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.7,
+      "arousal": 0.5,
+      "tension": 0.5
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "87b42bcd1efd8da0ff51517f3417e77723d7a6de9b603dd17d98295475591e80",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_jump",
+      "text": "Must successfully jump the gaps between cloud islands to reach the sky castle",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 5 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (player enters goal_sky)",
+        "src": ""
+      },
+      {
+        "id": "T2:r_activate_plate",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_activate_plate"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 9,
+        "status": "verified",
+        "text": "r_activate_plate fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_gate_close",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_gate_close"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_gate_close: nothing in the world makes switch_1 'off'",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lose_fall",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_fall"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_lose_fall fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_open_gate",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_open_gate"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_open_gate fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it (AI par 25.1 s)",
+        "cx": null,
+        "src": "",
+        "ms": 249
+      }
+    ],
+    "par": {
+      "goldS": 25.1,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 614
+  }
+}

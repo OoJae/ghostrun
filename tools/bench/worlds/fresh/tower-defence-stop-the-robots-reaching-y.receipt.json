@@ -1,0 +1,284 @@
+{
+  "prompt": "Tower defence: stop the robots reaching your base by flipping the bridge switches",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "Strategy",
+    "setting": "A fortress gate surrounded by a grid of mechanical, reconfigurable bridges and turrets.",
+    "role": "Commander",
+    "goal": "Prevent a continuous wave of hostile robots from destroying your base by strategically toggling bridge switches to redirect them.",
+    "fail": "Any robot successfully navigating the bridge layout and reaching the base's core.",
+    "mood": "Tense, strategic, and urgent",
+    "pack": "maze",
+    "sub": [],
+    "safety": "arcade",
+    "headline": "Puzzle-solving requires manipulating bridge switches to prevent pathing to the base.",
+    "nouns": [
+      {
+        "noun": "robot",
+        "hyper": "enemy"
+      },
+      {
+        "noun": "base",
+        "hyper": "objective"
+      },
+      {
+        "noun": "bridge switch",
+        "hyper": "puzzle mechanism"
+      },
+      {
+        "noun": "bridge",
+        "hyper": "path"
+      }
+    ],
+    "moodVec": {
+      "valence": -0.4,
+      "arousal": 0.7,
+      "tension": 0.8
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "f464b52b6e8f14a157b32f2cb0c89bca4dc6f8d51e21cb62e705ad00cd6a1113",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_puzzle",
+      "text": "Puzzle-solving requires manipulating bridge switches to prevent pathing to the base.",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners vs 1 bot"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 11 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win_timer (the timer runs out)",
+        "src": ""
+      },
+      {
+        "id": "T2:r_robot_reach",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_robot_reach"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_robot_reach fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_exit",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_exit"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 8,
+        "status": "verified",
+        "text": "r_secret_exit fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_switch_a_close",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_switch_a_close"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_switch_a_close: nothing in the world makes switch_a 'off'",
+        "cx": null
+      },
+      {
+        "id": "T2:r_switch_a_open",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_switch_a_open"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 6,
+        "status": "verified",
+        "text": "r_switch_a_open fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_switch_b_close",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_switch_b_close"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_switch_b_close: nothing in the world makes switch_b 'off'",
+        "cx": null
+      },
+      {
+        "id": "T2:r_switch_b_open",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_switch_b_open"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_switch_b_open fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_switch_c_close",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_switch_c_close"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_switch_c_close: nothing in the world makes switch_c 'off'",
+        "cx": null
+      },
+      {
+        "id": "T2:r_switch_c_open",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_switch_c_open"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_switch_c_open fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_switch_d_close",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_switch_d_close"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_switch_d_close: nothing in the world makes switch_d 'off'",
+        "cx": null
+      },
+      {
+        "id": "T2:r_switch_d_open",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_switch_d_open"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_switch_d_open fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win_timer",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win_timer"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_win_timer fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners vs 1 bot",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it vs 1 bot (AI par 180 s)",
+        "cx": null,
+        "src": "",
+        "ms": 2170
+      }
+    ],
+    "par": {
+      "goldS": 180,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 2224
+  }
+}

@@ -1,0 +1,24 @@
+{"op":"meta","mode":"play","lang":"en","pack":"arena","sub":[],"seed":94,"look":"warehouse","mood":[0.6,0.8,0.7],"timeOfDay":14,"weather":"clear"}
+{"op":"zone","id":"z_midfield","slot":"midfield","tag":"arena","name":"Center arena"}
+{"op":"zone","id":"z_west","slot":"west_half","tag":"arena","name":"West side"}
+{"op":"zone","id":"z_east","slot":"east_half","tag":"arena","name":"East side"}
+{"op":"zone","id":"z_north","slot":"north_deck","tag":"arena","name":"North platform"}
+{"op":"zone","id":"z_south","slot":"south_deck","tag":"arena","name":"South platform"}
+{"op":"spawn","id":"sp_red","zone":"z_west","anchor":"spawn_pad","team":"red"}
+{"op":"spawn","id":"sp_blue","zone":"z_east","anchor":"spawn_pad","team":"blue"}
+{"op":"ent","id":"crate_1","kind":"prop","noun":"wooden crate","hyper":"objects","zone":"z_west","anchor":"flank_n","body":"fixed","shape":"box","size":[1,1,1]}
+{"op":"ent","id":"crate_2","kind":"prop","noun":"wooden crate","hyper":"objects","zone":"z_west","anchor":"flank_s","body":"fixed","shape":"box","size":[1,1,1]}
+{"op":"ent","id":"crate_3","kind":"prop","noun":"wooden crate","hyper":"objects","zone":"z_east","anchor":"flank_n","body":"fixed","shape":"box","size":[1,1,1]}
+{"op":"ent","id":"crate_4","kind":"prop","noun":"wooden crate","hyper":"objects","zone":"z_east","anchor":"flank_s","body":"fixed","shape":"box","size":[1,1,1]}
+{"op":"ent","id":"pillar_n","kind":"prop","noun":"steel pillar","hyper":"objects","zone":"z_north","anchor":"deck_center","body":"fixed","shape":"box","size":[0.5,3,0.5]}
+{"op":"ent","id":"pillar_s","kind":"prop","noun":"steel pillar","hyper":"objects","zone":"z_south","anchor":"deck_center","body":"fixed","shape":"box","size":[0.5,3,0.5]}
+{"op":"npc","id":"blue_1","role":"rival","zone":"z_east","anchor":"flank_n","team":"blue","menu":["combat_sport.tag_drop"],"dflt":"combat_sport.tag_drop"}
+{"op":"npc","id":"blue_2","role":"rival","zone":"z_east","anchor":"flank_s","team":"blue","menu":["combat_sport.tag_drop"],"dflt":"combat_sport.tag_drop"}
+{"op":"verb","id":"vb_tag","verb":"combat_sport.tag_drop","on":"player","params":{"radius":3}}
+{"op":"rule","id":"r_tag_score","when":{"t":"enter","a":"player","b":"blue_1"},"if":[],"then":[{"e":"score","target":"team:red","n":1}],"once":false}
+{"op":"rule","id":"r_tag_score2","when":{"t":"enter","a":"player","b":"blue_2"},"if":[],"then":[{"e":"score","target":"team:red","n":1}],"once":false}
+{"op":"rule","id":"r_win_red","when":{"t":"score_gte","a":"team:red","n":5},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose_red","when":{"t":"score_gte","a":"team:blue","n":5},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"expect","id":"x_cover","prop":"win_reachable","a":"sp_red","b":"z_midfield","headline":true,"text":"Warehouse cover dictates tag range"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

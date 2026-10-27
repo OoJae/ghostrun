@@ -1,0 +1,94 @@
+{
+  "prompt": "a car showroom with a supercar on a turntable and a salesperson",
+  "intent": {
+    "lang": "en",
+    "mode": "wander",
+    "genre": "showroom",
+    "setting": "luxury car showroom",
+    "role": "visitor",
+    "goal": "explore the showroom",
+    "fail": "none",
+    "mood": "sleek",
+    "pack": "floor_plan",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Supercar is displayed on a turntable",
+    "nouns": [
+      {
+        "noun": "showroom",
+        "hyper": "interior"
+      },
+      {
+        "noun": "supercar",
+        "hyper": "vehicle"
+      },
+      {
+        "noun": "turntable",
+        "hyper": "display_platform"
+      },
+      {
+        "noun": "salesperson",
+        "hyper": "person"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.6,
+      "arousal": 0.3,
+      "tension": -0.3
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "f9c80a54320c33ca138f8389e0b312db5074461ffccaf4bf9a027f5be96036f1",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_turntable",
+      "text": "Supercar is displayed on a turntable",
+      "status": "not_checkable",
+      "method": "none"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 0 rules reference existing things",
+        "src": ""
+      },
+      {
+        "id": "T3:tour",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "tour"
+        },
+        "status": "counterexample",
+        "method": "physics, an AI visitor walks to and uses each",
+        "n": 5,
+        "k": 4,
+        "text": "walked to and inspected 4 of 5 things",
+        "cx": {
+          "where": null,
+          "have": 4,
+          "need": 5,
+          "unit": "things",
+          "text": "couldn't reach supercar"
+        },
+        "src": "",
+        "ms": 26
+      }
+    ],
+    "par": null,
+    "ms": 46
+  }
+}

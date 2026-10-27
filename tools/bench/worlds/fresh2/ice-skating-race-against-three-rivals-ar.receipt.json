@@ -1,0 +1,216 @@
+{
+  "prompt": "Ice skating race against three rivals around the frozen lake",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "Sports",
+    "setting": "A large frozen lake enclosed by snow-covered trees and distant mountains",
+    "role": "Ice Skate Racer",
+    "goal": "Finish the race before three rival competitors",
+    "fail": "Slipping and falling behind the rivals or not crossing the finish line first",
+    "mood": "Competitive and crisp",
+    "pack": "arena",
+    "sub": [],
+    "safety": "ok",
+    "headline": "The frozen lake track must support realistic sliding movement for 4 players",
+    "nouns": [
+      {
+        "noun": "frozen lake",
+        "hyper": "surface"
+      },
+      {
+        "noun": "ice skates",
+        "hyper": "footwear"
+      },
+      {
+        "noun": "rivals",
+        "hyper": "competitors"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.5,
+      "arousal": 0.6,
+      "tension": 0.5
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "365e002110502fcee9625e446e9eb75e3987395d66de329c98641fcecee02763",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_race",
+      "text": "The frozen lake track must support realistic sliding movement for 4 players",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners vs 3 bots"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 7 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (player enters goal_finish)",
+        "src": ""
+      },
+      {
+        "id": "T2:r_boost1",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_boost1"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 9,
+        "status": "verified",
+        "text": "r_boost1 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_boost2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_boost2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 7,
+        "status": "verified",
+        "text": "r_boost2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lose_slip",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_slip"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_lose_slip fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_deck_e",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_deck_e"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 6,
+        "status": "verified",
+        "text": "r_secret_deck_e fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_n",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_n"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_secret_flank_n fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_s",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_s"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_secret_flank_s fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners vs 3 bots",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it vs 3 bots (AI par 4.4 s)",
+        "cx": null,
+        "src": "",
+        "ms": 299
+      }
+    ],
+    "par": {
+      "goldS": 4.4,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 447
+  }
+}

@@ -1,0 +1,62 @@
+[1/14] {"prompt":"Board the enemy pirate ship and steal their treasure chest before they sink you","pack":"outdoor","intentMs":1445,"fillFirstTokenMs":2558,"firstEntityMs":3042,"gameplayEndMs":3601,"fillDoneMs":3602,"playableMs":3610,"proofMs":704,"outTok":1469,"invalid":0,"lines":23,"controls":9,"headline":"counterexample","t3win":"0/12","par":null,"tooEasy":false,"chips":12}
+[2/14] {"prompt":"An escape room: find three clues that unlock the door before the time runs out","pack":"floor_plan","intentMs":607,"fillFirstTokenMs":2301,"firstEntityMs":2301,"gameplayEndMs":2303,"fillDoneMs":2303,"playableMs":2304,"proofMs":41,"outTok":1547,"invalid":0,"lines":22,"controls":4,"headline":"counterexample","t3win":"-","par":null,"tooEasy":false,"chips":9}
+  · fill line 1: invalid — weather: Invalid type: Expected ("clear" | "rain" | "snow" | "fog" | "storm") but received "foggy"
+[3/14] {"prompt":"A haunted mansion where ghosts chase you; light all the candles to banish them","pack":"floor_plan","intentMs":851,"fillFirstTokenMs":2023,"firstEntityMs":2024,"gameplayEndMs":3490,"fillDoneMs":3491,"playableMs":3492,"proofMs":71,"outTok":1485,"invalid":1,"lines":27,"controls":10,"headline":"counterexample","t3win":"0/12","par":null,"tooEasy":false,"chips":12}
+  · fill line 32: invalid — noun: Invalid key: Expected "noun" but received undefined
+  · fill line 33: invalid — noun: Invalid key: Expected "noun" but received undefined
+  · fill line 34: invalid — prompt: Invalid key: Expected "prompt" but received undefined
+  · fill line 35: invalid — prompt: Invalid key: Expected "prompt" but received undefined
+[4/14] {"prompt":"A 3 versus 3 soccer match on a rooftop at sunset","pack":"city_block","intentMs":1451,"fillFirstTokenMs":2823,"firstEntityMs":2824,"gameplayEndMs":3123,"fillDoneMs":3937,"playableMs":3939,"proofMs":346,"outTok":1866,"invalid":4,"lines":36,"controls":9,"headline":"verified","t3win":"12/12","par":19.9,"tooEasy":false,"chips":11}
+[5/14] {"prompt":"Jump across floating islands in the clouds to reach the sky castle","pack":"course","intentMs":735,"fillFirstTokenMs":3196,"firstEntityMs":3197,"gameplayEndMs":3200,"fillDoneMs":3200,"playableMs":3201,"proofMs":614,"outTok":2872,"invalid":0,"lines":47,"controls":11,"headline":"verified","t3win":"12/12","par":25.1,"tooEasy":false,"chips":8}
+  · fill line 1: invalid — weather: Invalid type: Expected ("clear" | "rain" | "snow" | "fog" | "storm") but received "windy"
+  · fill line 23: repaired — coerced field types/enums
+  · fill line 21: unresolved — 'rule' references an id that never arrived
+  · fill line 22: unresolved — 'rule' references an id that never arrived
+[6/14] {"prompt":"Herd the sheep into the pen on a windy hillside farm","pack":"outdoor","intentMs":1412,"fillFirstTokenMs":4345,"firstEntityMs":4345,"gameplayEndMs":6846,"fillDoneMs":6846,"playableMs":6854,"proofMs":333,"outTok":1513,"invalid":1,"lines":25,"controls":9,"headline":"counterexample","t3win":"-","par":null,"tooEasy":false,"chips":12}
+  · fill line 39: unresolved — 'rule' references an id that never arrived
+[7/14] {"prompt":"Race through a desert canyon, hitting every checkpoint before the sandstorm","pack":"outdoor","intentMs":844,"fillFirstTokenMs":1967,"firstEntityMs":1969,"gameplayEndMs":2505,"fillDoneMs":2640,"playableMs":2644,"proofMs":690,"outTok":2037,"invalid":0,"lines":42,"controls":12,"headline":"verified","t3win":"12/12","par":23.9,"tooEasy":false,"chips":9}
+  · fill line 23: invalid — type: Invalid key: Expected "type" but received undefined
+  · fill line 24: invalid — type: Invalid key: Expected "type" but received undefined
+  · fill line 25: invalid — type: Invalid key: Expected "type" but received undefined
+[8/14] {"prompt":"Hide and seek in an old library: the librarian is looking for you","pack":"floor_plan","intentMs":749,"fillFirstTokenMs":1672,"firstEntityMs":1742,"gameplayEndMs":2333,"fillDoneMs":2333,"playableMs":2335,"proofMs":946,"outTok":1588,"invalid":3,"lines":32,"controls":9,"headline":"verified","t3win":"12/12","par":120,"tooEasy":false,"chips":13}
+[9/14] {"prompt":"A cooking game: grab ingredients and deliver three dishes to the customers","pack":"floor_plan","intentMs":816,"fillFirstTokenMs":2129,"firstEntityMs":2130,"gameplayEndMs":2848,"fillDoneMs":2848,"playableMs":2849,"proofMs":3966,"outTok":2020,"invalid":0,"lines":34,"controls":10,"headline":"counterexample","t3win":"0/12","par":null,"tooEasy":false,"chips":11}
+  · fill line 1: invalid — not JSON
+  · fill line 2: invalid — not JSON
+  · fill line 3: invalid — not JSON
+  · fill line 4: invalid — not JSON
+  · fill line 5: invalid — not JSON
+  · fill line 6: invalid — not JSON
+  · fill line 7: invalid — not JSON
+  · fill line 8: invalid — not JSON
+  · fill line 9: invalid — not JSON
+  · fill line 10: invalid — not JSON
+  · fill line 11: invalid — not JSON
+  · fill line 12: invalid — not JSON
+  · fill line 13: invalid — not JSON
+  · fill line 14: invalid — not JSON
+  · fill line 15: invalid — not JSON
+  · fill line 16: invalid — not JSON
+  · fill line 17: invalid — not JSON
+  · fill line 18: invalid — not JSON
+  · fill line 19: invalid — not JSON
+  · fill line 20: invalid — not JSON
+  · fill line 21: invalid — not JSON
+  · fill line 22: invalid — not JSON
+  · fill line 23: invalid — not JSON
+  · fill line 24: invalid — not JSON
+  · fill line 25: invalid — not JSON
+  · fill line 26: invalid — not JSON
+  · fill line 27: invalid — not JSON
+  · fill line 28: invalid — not JSON
+  · fill line 29: invalid — not JSON
+  · fill line 30: invalid — not JSON
+  · fill line 31: invalid — not JSON
+  · fill line 32: invalid — not JSON
+  · fill line 33: invalid — not JSON
+  · fill line 34: invalid — not JSON
+[10/14] {"prompt":"Rob the bank vault without touching the laser tripwires","pack":"floor_plan","intentMs":833,"fillFirstTokenMs":1785,"firstEntityMs":-1,"gameplayEndMs":2610,"fillDoneMs":2610,"playableMs":2611,"proofMs":14,"outTok":1788,"invalid":34,"lines":35,"controls":0,"headline":"none","t3win":"-","par":null,"tooEasy":false,"chips":2}
+[11/14] {"prompt":"Dodgeball arena, red team against blue team, first to five hits","pack":"arena","intentMs":838,"fillFirstTokenMs":1887,"firstEntityMs":1888,"gameplayEndMs":2290,"fillDoneMs":2290,"playableMs":2293,"proofMs":144,"outTok":1063,"invalid":0,"lines":24,"controls":7,"headline":"counterexample","t3win":"-","par":null,"tooEasy":false,"chips":10}
+  · fill line 26: invalid — duplicate id 'guide_npc'
+[12/14] {"prompt":"A quiet Japanese zen garden with a koi pond and stone lanterns to explore","pack":"outdoor","intentMs":606,"fillFirstTokenMs":1798,"firstEntityMs":2130,"gameplayEndMs":2175,"fillDoneMs":2176,"playableMs":2183,"proofMs":306,"outTok":1528,"invalid":1,"lines":29,"controls":8,"headline":"verified","t3win":"-","par":null,"tooEasy":false,"chips":3}
+[13/14] {"prompt":"Space station repair mission: fix the three broken panels before oxygen runs out","pack":"floor_plan","intentMs":1323,"fillFirstTokenMs":2195,"firstEntityMs":2248,"gameplayEndMs":2416,"fillDoneMs":2545,"playableMs":2546,"proofMs":79,"outTok":1149,"invalid":0,"lines":22,"controls":9,"headline":"counterexample","t3win":"12/12","par":2.7,"tooEasy":true,"chips":13}
+[14/14] {"prompt":"Tower defence: stop the robots reaching your base by flipping the bridge switches","pack":"maze","intentMs":581,"fillFirstTokenMs":2305,"firstEntityMs":2705,"gameplayEndMs":2721,"fillDoneMs":2860,"playableMs":2862,"proofMs":2224,"outTok":1889,"invalid":0,"lines":36,"controls":9,"headline":"verified","t3win":"12/12","par":180,"tooEasy":false,"chips":14}

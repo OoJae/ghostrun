@@ -1,0 +1,36 @@
+{"op":"meta","mode":"play","lang":"en","pack":"city_block","sub":["rooftop"],"seed":104,"look":"rooftop arena","mood":[0.8,0.6,0.4],"timeOfDay":19,"weather":"clear"}
+{"op":"zone","id":"z_center","slot":"center","tag":"field","name":"Rooftop soccer field"}
+{"op":"zone","id":"z_west","slot":"west_block","tag":"goal_area","name":"West goal area"}
+{"op":"zone","id":"z_east","slot":"east_block","tag":"goal_area","name":"East goal area"}
+{"op":"zone","id":"z_street_w","slot":"street_w","tag":"access","name":"West street access"}
+{"op":"zone","id":"z_street_e","slot":"street_e","tag":"access","name":"East street access"}
+{"op":"zone","id":"z_roof_lane","slot":"roof_lane_a","tag":"runway","name":"Rooftop walk lane"}
+{"op":"spawn","id":"sp_red","zone":"z_west","anchor":"spawn_pad","team":"red"}
+{"op":"spawn","id":"sp_blue","zone":"z_east","anchor":"spawn_pad","team":"blue"}
+{"op":"goal","id":"goal_west","zone":"z_west","anchor":"goal_ring","noun":"west goal","hyper":"goal","team":"red"}
+{"op":"goal","id":"goal_east","zone":"z_east","anchor":"goal_ring","noun":"east goal","hyper":"goal","team":"blue"}
+{"op":"ent","id":"ball","kind":"pickup","noun":"soccer ball","hyper":"ball","zone":"z_center","anchor":"center","body":"dynamic","shape":"sphere","size":[0.22,0.22,0.22]}
+{"op":"ent","id":"obstacle_spike","kind":"hazard","noun":"spike trap","hyper":"spike","zone":"z_center","anchor":"floor_ne","body":"sensor","shape":"box","size":[0.5,0.2,0.5]}
+{"op":"ent","id":"door_mid","kind":"door","noun":"midfield gate","hyper":"door","zone":"z_center","anchor":"wall_n","body":"fixed","shape":"box","size":[1,2,0.2]}
+{"op":"ent","id":"switch_gate","kind":"switch","noun":"gate switch","hyper":"switch","zone":"z_center","anchor":"floor_sw","body":"fixed","shape":"box","size":[0.3,0.3,0.1]}
+{"op":"ent","id":"plate_jump","kind":"plate","noun":"jump pad","hyper":"jump_pad","zone":"z_center","anchor":"floor_sw","body":"sensor","shape":"box","size":[0.4,0.1,0.4]}
+{"op":"ent","id":"inspect_sign","kind":"sign","noun":"match info sign","hyper":"sign","zone":"z_roof_lane","anchor":"lane_start","body":"fixed","shape":"box","size":[1,0.2,0.3]}
+{"op":"verb","id":"vb_carry_ball","verb":"physics_props.carry","on":"ball","params":{}}
+{"op":"verb","id":"vb_jump","verb":"locomotion.jump","on":"player","params":{"jumpsMax":2}}
+{"op":"verb","id":"vb_gate_switch","verb":"puzzle.switch","on":"switch_gate","params":{"once":false}}
+{"op":"verb","id":"vb_gate_lock","verb":"puzzle.lock","on":"door_mid","params":{"key":"none"}}
+{"op":"verb","id":"vb_jump_pad","verb":"locomotion.jump_pad","on":"plate_jump","params":{"height":5}}
+{"op":"verb","id":"vb_inspect","verb":"social.inspect","on":"inspect_sign","params":{"text":"3v3 rooftop soccer – first to 3 goals wins"}}
+{"op":"verb","id":"vb_spike_haz","verb":"motion_hazards.hazard","on":"obstacle_spike","params":{"respawn":true}}
+{"op":"rule","id":"r_score_red","when":{"t":"enter","a":"ball","b":"goal_east"},"if":[],"then":[{"e":"score","target":"team:red","n":1}],"once":false}
+{"op":"rule","id":"r_score_blue","when":{"t":"enter","a":"ball","b":"goal_west"},"if":[],"then":[{"e":"score","target":"team:blue","n":1}],"once":false}
+{"op":"rule","id":"r_win_red","when":{"t":"score_gte","a":"team:red","n":3},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose_red","when":{"t":"score_gte","a":"team:blue","n":3},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_gate_open","when":{"t":"state_is","a":"switch_gate","s":"on"},"then":[{"e":"open","target":"door_mid"}],"once":false}
+{"op":"expect","id":"x_match","prop":"win_reachable","a":"sp_red","b":"goal_east","headline":true,"text":"3v3 soccer match set on an elevated rooftop"}
+{"op":"end","layer":"gameplay"}
+{"op":"dress","id":"player_red","zone":"z_west","anchor":"spawn_pad","team":"red","model":"player_red"}
+{"op":"dress","id":"player_blue","zone":"z_east","anchor":"spawn_pad","team":"blue","model":"player_blue"}
+{"op":"poster","id":"poster_0","zone":"z_center","anchor":"center","text":"Sunset Soccer – Let the game begin!"}
+{"op":"poster","id":"poster_2","zone":"z_roof_lane","anchor":"lane_end","text":"Score 3 to win"}
+{"op":"end","layer":"cosmetic"}

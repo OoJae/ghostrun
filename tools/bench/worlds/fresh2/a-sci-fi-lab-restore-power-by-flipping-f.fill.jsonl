@@ -1,0 +1,27 @@
+{"op":"meta","mode":"play","lang":"en","pack":"floor_plan","sub":[],"seed":110,"look":"sterile lab","mood":[-0.1,0.6,0.6],"timeOfDay":14,"weather":"clear"}
+{"op":"zone","id":"z_yard","slot":"yard","tag":"outside","name":"Lab exterior"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Main entrance corridor"}
+{"op":"zone","id":"z_room_sw","slot":"room_sw","tag":"room","name":"Control wing SW"}
+{"op":"zone","id":"z_room_se","slot":"room_se","tag":"room","name":"Control wing SE"}
+{"op":"zone","id":"z_main","slot":"main_room","tag":"hall","name":"Central hub"}
+{"op":"spawn","id":"sp_red","zone":"z_yard","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"airlock","zone":"z_entrance","anchor":"doorway_n","noun":"airlock","hyper":"lock","team":"red"}
+{"op":"ent","id":"breaker_a","kind":"switch","noun":"circuit breaker A","hyper":"control","zone":"z_room_sw","anchor":"center","body":"fixed","shape":"box","size":[0.4,0.4,0.2]}
+{"op":"ent","id":"breaker_b","kind":"switch","noun":"circuit breaker B","hyper":"control","zone":"z_room_sw","anchor":"corner_ne","body":"fixed","shape":"box","size":[0.4,0.4,0.2]}
+{"op":"ent","id":"breaker_c","kind":"switch","noun":"circuit breaker C","hyper":"control","zone":"z_room_se","anchor":"center","body":"fixed","shape":"box","size":[0.4,0.4,0.2]}
+{"op":"ent","id":"breaker_d","kind":"switch","noun":"circuit breaker D","hyper":"control","zone":"z_room_se","anchor":"corner_ne","body":"fixed","shape":"box","size":[0.4,0.4,0.2]}
+{"op":"ent","id":"airlock_door","kind":"door","noun":"airlock door","hyper":"lock","zone":"z_entrance","anchor":"doorway_n","body":"fixed","shape":"box","size":[1.0,2.0,0.3]}
+{"op":"ent","id":"panel","kind":"prop","noun":"status panel","hyper":"panel","zone":"z_main","anchor":"center","body":"fixed","shape":"box","size":[1.2,0.8,0.2]}
+{"op":"verb","id":"vb_switch_a","verb":"puzzle.switch","on":"breaker_a","params":{"once":false}}
+{"op":"verb","id":"vb_switch_b","verb":"puzzle.switch","on":"breaker_b","params":{"once":false}}
+{"op":"verb","id":"vb_switch_c","verb":"puzzle.switch","on":"breaker_c","params":{"once":false}}
+{"op":"verb","id":"vb_switch_d","verb":"puzzle.switch","on":"breaker_d","params":{"once":false}}
+{"op":"verb","id":"vb_jump","verb":"locomotion.jump","on":"player","params":{"jumpsMax":2}}
+{"op":"rule","id":"r_power_open","when":{"t":"state_is","a":"breaker_a","s":"on"},"if":[{"l":"breaker_b.state","op":"eq","r":"on"},{"l":"breaker_c.state","op":"eq","r":"on"},{"l":"breaker_d.state","op":"eq","r":"on"}],"then":[{"e":"set_state","target":"airlock_door","v":"open"}],"once":true}
+{"op":"rule","id":"r_escape","when":{"t":"enter","a":"player","b":"airlock"},"if":[{"l":"airlock_door.state","op":"eq","r":"open"}],"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_fail_timer","when":{"t":"timer_end","a":"player"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"verb","id":"vb_timer","verb":"puzzle.timer","on":"player","params":{"seconds":180}}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":5}}
+{"op":"expect","id":"x_power","prop":"win_reachable","a":"sp_red","b":"airlock","headline":true,"text":"Airlock remains dead until all four breakers are flipped"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}
