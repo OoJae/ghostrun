@@ -26,6 +26,18 @@ const FIRST_PROMPT = FIXTURE_PROMPTS[FIXTURE] ?? BRIEF;
 const params0 = new URLSearchParams(window.location.search);
 const TOUCH_PARAM = params0.get("touch");
 
+/** One-click prompts: the organizer's brief, the recorded worlds, and live-only stretches. */
+const SUGGESTIONS: readonly { label: string; prompt: string; live?: true }[] = [
+  { label: "The organizer's CTF brief", prompt: BRIEF },
+  { label: "Museum heist", prompt: FIXTURE_PROMPTS.vault! },
+  { label: "Glowing forest climb", prompt: FIXTURE_PROMPTS.forest! },
+  { label: "Parkour time trial", prompt: FIXTURE_PROMPTS.parkour! },
+  { label: "Coin rush, mind the lava", prompt: FIXTURE_PROMPTS["coin-rush"]! },
+  { label: "Minimalist museum tour", prompt: "A minimalist white museum with five sculptures and a guide who explains each one.", live: true },
+  { label: "Wizard duel", prompt: "A wizard duel on floating islands: knock your rival off the edge before they knock you off.", live: true },
+  { label: "Bludiště s duchy (Czech)", prompt: "Bludiště s duchy: najdi klíč a uteč východem, než tě chytí.", live: true },
+];
+
 type Status = "booting" | "building" | "playing" | "error";
 type Mode = "checking" | "live" | "fixture";
 
@@ -50,6 +62,7 @@ export function App() {
   const [error, setError] = useState<string>();
   const [notice, setNotice] = useState<string>();
   const [collapsed, setCollapsed] = useState(false);
+  const [typing, setTyping] = useState(false);
   const [hint, setHint] = useState(false);
   const [proof, setProof] = useState<ProofState>({ status: "idle", chips: [], receipt: null });
   const [receiptOpen, setReceiptOpen] = useState(false);
@@ -235,7 +248,9 @@ export function App() {
         setNotice(`Live AI unavailable (${r.reason.slice(0, 60)}): showing the fixture world instead.`);
         setMode("fixture");
       }
-      await show(buildWorld(text, FIXTURE), id, startedAt, extraSplits);
+      // offline: a recorded world's own prompt opens that world (the URL's fixture otherwise)
+      const recorded = Object.entries(FIXTURE_PROMPTS).find(([, p]) => p === text)?.[0];
+      await show(buildWorld(text, recorded ?? FIXTURE), id, startedAt, extraSplits);
     },
     [show],
   );
@@ -547,11 +562,13 @@ export function App() {
             timing={timing}
             busy={status === "building" || status === "booting"}
             source={SOURCE[mode]}
+            suggestions={SUGGESTIONS.filter((x) => mode === "live" || !x.live)}
+            onFocusChange={setTyping}
           />
         </div>
         {notice && <div className="glass notice" role="status">{notice}</div>}
-        {!collapsed && intent && <IntentCard intent={intent} specHash={specHash} />}
-        {current.current && status !== "booting" && (!collapsed || edit.status === "editing" || edit.status === "racing" || edit.status === "proving") && (
+        {!collapsed && !typing && intent && <IntentCard intent={intent} specHash={specHash} />}
+        {current.current && status !== "booting" && !typing && (!collapsed || edit.status === "editing" || edit.status === "racing" || edit.status === "proving") && (
           <EditBox state={edit} enabled={mode === "live"} suggestions={suggestionsFor(current.current.bundle)} canUndo={history.current.length > 0} onEdit={(c) => void editWorld(c)} onUndo={undo} />
         )}
         {(score.red > 0 || score.blue > 0 || score.result || clock !== null) && (

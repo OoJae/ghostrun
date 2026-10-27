@@ -72,6 +72,9 @@ for (const sim of ["rapier", "stub"] as const) test(`headline: the rooftop ledge
   const errors = collectErrors(page);
   await page.goto(`/?gl=webgl2&fx=0&dpr=0.5&prewarm=0${sim === "stub" ? "&sim=stub" : ""}`); // low-res, no background prewarm: keep key timing tight
   await page.waitForFunction(() => window.__GHOSTRUN__?.ready === true, null, { timeout: 90_000 });
+  // the device proof runs whichever simulation plays on the main thread; let it finish first so
+  // its worker doesn't compete with the key timing below
+  await expect(page.getByTestId("proof-badge")).toContainText("Rooftop lane needs double jump: verified", { timeout: 60_000 });
   const at = () => probe(page).then((p) => p.player!);
   const until = (fn: () => boolean, timeout = 15_000) => page.waitForFunction(fn, null, { polling: 16, timeout });
 
@@ -94,12 +97,25 @@ for (const sim of ["rapier", "stub"] as const) test(`headline: the rooftop ledge
   expect(p[2]).toBeLessThan(8);
 
   // Two jumps: up onto the lane (feet at 2.6 m → capsule centre at 3.5 m). The second press has to
-  // land while airborne; under a slow software-GL frame it can arrive late, so allow three tries.
+  // land high in the first jump's arc: it is timed inside the page, on the frame the player rises
+  // past 2 m (a round trip through the test runner can miss that window under software GL).
+  const secondPress = () =>
+    page.evaluate(
+      () =>
+        new Promise<void>((resolve) => {
+          const key = (type: string) => window.dispatchEvent(new KeyboardEvent(type, { code: "Space", key: " " }));
+          const wait = () => {
+            if (window.__GHOSTRUN__.player![1] <= 2.0) return void requestAnimationFrame(wait);
+            key("keydown");
+            setTimeout(() => (key("keyup"), resolve()), 50);
+          };
+          wait();
+        }),
+    );
   let onLane = false;
   for (let attempt = 0; attempt < 3 && !onLane; attempt++) {
     await page.keyboard.press("Space");
-    await until(() => window.__GHOSTRUN__.player![1] > 2.0);
-    await page.keyboard.press("Space");
+    await secondPress();
     onLane = await until(() => {
       const q = window.__GHOSTRUN__.player!;
       return q[2] > 8.3 && Math.abs(q[1] - 3.5) < 0.05;
@@ -108,8 +124,6 @@ for (const sim of ["rapier", "stub"] as const) test(`headline: the rooftop ledge
   }
   expect(onLane).toBe(true);
   await page.keyboard.up("KeyD");
-  // the device proof runs whichever simulation plays on the main thread
-  await expect(page.getByTestId("proof-badge")).toContainText("Rooftop lane needs double jump: verified", { timeout: 60_000 });
   expect(errors).toEqual([]);
 });
 
@@ -372,4 +386,37 @@ test("the Host: a loss explains itself from the causal log, answers questions fr
   await expect(result).toContainText("You lose", { timeout: 20_000 });
   expect(Math.abs(((await probe(page)).tick ?? 0) - ended)).toBeLessThan(5);
   expect(errors.filter((e) => !e.includes("503"))).toEqual([]);
+});
+
+test("first ten seconds: try-one suggestions open a world in one click; a spoken prompt builds too", async ({ page }) => {
+  const errors = collectErrors(page);
+  // the browser's speech recognition, stubbed: it "hears" the coin rush prompt
+  await page.addInitScript(() => {
+    const w = window as unknown as { webkitSpeechRecognition: unknown; SpeechRecognition: unknown };
+    w.SpeechRecognition = w.webkitSpeechRecognition = class {
+      onresult: ((e: unknown) => void) | null = null;
+      onend: (() => void) | null = null;
+      onerror: ((e: unknown) => void) | null = null;
+      start() {
+        setTimeout(() => {
+          this.onresult?.({ results: [Object.assign([{ transcript: "Collect five gold coins in a neon arena before the clock runs out. Mind the lava." }], { isFinal: true })] });
+          this.onend?.();
+        }, 100);
+      }
+      stop() {}
+    };
+  });
+  await page.goto("/?gl=webgl2&fx=0&dpr=0.5&prewarm=0");
+  await page.waitForFunction(() => window.__GHOSTRUN__?.ready === true, null, { timeout: 90_000 });
+  await page.getByRole("textbox", { name: "Describe a world" }).click();
+  const suggest = page.getByTestId("suggest");
+  await expect(suggest).toContainText("The organizer's CTF brief");
+  await expect(suggest).not.toContainText("Wizard duel"); // live-only prompts hide without the live lane
+  await suggest.getByRole("button", { name: "Museum heist" }).click();
+  await expect(page.getByTestId("intent-card")).toContainText("floor_plan", { timeout: 30_000 });
+  await page.getByTestId("mic").click();
+  await expect(page.getByRole("textbox", { name: "Describe a world" })).toHaveValue(/Collect five gold coins/);
+  await expect(page.getByTestId("intent-card")).toContainText("arena", { timeout: 30_000 });
+  await expect(page.getByRole("status").filter({ hasText: "speech service" })).toBeVisible();
+  expect(errors).toEqual([]);
 });

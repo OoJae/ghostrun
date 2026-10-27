@@ -638,3 +638,19 @@ kbd {
   color: inherit; background: rgba(255, 255, 255, 0.07); border: 1px solid rgba(255, 255, 255, 0.18);
 }
 .glass.result { background: rgba(10, 7, 22, 0.84); }
+
+/* ---- prompt suggestions and voice ------------------------------------------------------------- */
+.promptbar { position: relative; }
+.top { z-index: 10; }
+.suggest { position: absolute; top: calc(100% + 8px); left: 0; right: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 10px 12px; animation: drop-in 200ms ease-out; z-index: 5; background: rgba(14, 10, 28, 0.9); }
+.suggest .eyebrow { margin-right: 4px; }
+.suggest button {
+  font: inherit; font-size: 12px; padding: 5px 10px; border-radius: 999px; cursor: pointer; color: inherit;
+  background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.16);
+}
+.suggest button:hover { border-color: rgba(25, 227, 255, 0.5); background: rgba(25, 227, 255, 0.08); }
+.mic { flex: none; width: 32px; height: 32px; display: grid; place-items: center; border-radius: 999px; cursor: pointer; color: var(--ink-dim); background: none; border: 1px solid transparent; }
+.mic svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.4; stroke-linecap: round; }
+.mic:hover { color: var(--ink); border-color: rgba(255, 255, 255, 0.16); }
+.mic.on { color: #ff3b5c; border-color: rgba(255, 59, 92, 0.5); animation: pulse 1s ease-in-out infinite alternate; }
+.voice-note { position: absolute; top: calc(100% + 8px); right: 0; max-width: 360px; padding: 8px 12px; font-size: 12px; border-radius: 10px; background: var(--glass); border: 1px solid var(--glass-edge); cursor: pointer; z-index: 6; }
