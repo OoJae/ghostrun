@@ -81,10 +81,11 @@ for (const r of results) {
   const firstBad = r.checkpoints.findIndex((c, i) => c !== ref.checkpoints[i]);
   const navSame = r.navq.nav.hash === ref.navq.nav.hash && r.navq.nav.paths === ref.navq.nav.paths;
   const qjsSame = r.navq.qjs.hash === ref.navq.qjs.hash;
-  const same = r.final === ref.final && firstBad === -1 && navSame && qjsSame;
+  const ctfSame = r.ctf.hash === ref.ctf.hash && r.ctf.log === ref.ctf.log;
+  const same = r.final === ref.final && firstBad === -1 && navSame && qjsSame && ctfSame;
   ok &&= same;
   console.log(
-    `${same ? "MATCH " : "DIFFER"}  phys ${r.final}  nav ${r.navq.nav.hash}/${r.navq.nav.paths} (${r.navq.nav.polys} polys, ${r.navq.nav.buildMs} ms)  qjs ${r.navq.qjs.hash} (int@${r.navq.qjs.interruptedAfter}, mem ${r.navq.qjs.memLimitHit ? "capped" : "UNCAPPED"})  ${String(r.ms).padStart(5)} ms  ${r.runtime}` +
+    `${same ? "MATCH " : "DIFFER"}  phys ${r.final}  nav ${r.navq.nav.hash}/${r.navq.nav.paths} (${r.navq.nav.polys} polys, ${r.navq.nav.buildMs} ms)  qjs ${r.navq.qjs.hash} (int@${r.navq.qjs.interruptedAfter}, mem ${r.navq.qjs.memLimitHit ? "capped" : "UNCAPPED"})  ctf ${r.ctf.hash}/${r.ctf.log} (${r.ctf.events} ev, ${r.ctf.scores})  ${String(r.ms).padStart(5)} ms  ${r.runtime}` +
       (same ? "" : `  (first divergent checkpoint: tick ${(firstBad + 1) * 100})`),
   );
 }

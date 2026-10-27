@@ -11,6 +11,10 @@
   "dependencies": {
     "@dimforge/rapier3d-deterministic": "catalog:",
     "@ghostrun/detmath": "workspace:*",
+    "@ghostrun/ir": "workspace:*",
+    "@ghostrun/layout": "workspace:*",
+    "@ghostrun/pack-city-block": "workspace:*",
+    "@ghostrun/sim": "workspace:*",
     "@jitl/quickjs-wasmfile-release-sync": "0.32.0",
     "@recast-navigation/core": "0.43.1",
     "@recast-navigation/generators": "0.43.1",

@@ -18,6 +18,18 @@
   "references": [
     {
       "path": "../../packages/detmath"
+    },
+    {
+      "path": "../../packages/sim"
+    },
+    {
+      "path": "../../packages/ir"
+    },
+    {
+      "path": "../../packages/layout"
+    },
+    {
+      "path": "../../packages/packs/city-block"
     }
   ]
 }

@@ -14,19 +14,10 @@ export const WASM = {
   "recast-navigation.wasm.wasm": resolve(dirname(require.resolve("@recast-navigation/wasm/wasm")), "recast-navigation.wasm.wasm"),
   "emscripten-module.wasm": require.resolve("@jitl/quickjs-wasmfile-release-sync/wasm"),
 };
-const glue = resolve(root, "src/rapier-glue.ts");
+// The product's own shim (resolves the module-only entry, redirects the wasm import).
+const { rapierWasmShim } = await import("../../../packages/sim/src/rapier/vite-plugin.ts");
 
-// rapier_wasm3d.js imports the .wasm as an ES module; send every runtime to our glue instead.
-const rapierShim = {
-  name: "rapier-wasm-shim",
-  enforce: "pre",
-  resolveId(source, importer) {
-    if (importer?.includes("rapier3d-deterministic") && /(^|\/)rapier_wasm3d(\.js)?$/.test(source)) return glue;
-    return null;
-  },
-};
-
-const common = { root, configFile: false, logLevel: "warn", plugins: [rapierShim] };
+const common = { root, configFile: false, logLevel: "warn", plugins: [rapierWasmShim()] };
 const single = { output: { codeSplitting: false } };
 const copyWasm = (dir) => {
   mkdirSync(resolve(root, dir), { recursive: true });

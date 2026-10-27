@@ -85,3 +85,13 @@ Run it yourself: `pnpm --filter @ghostrun/detcheck quick` (2k ticks) or `full` (
   - Fixed: T3 jump links. When the target is on a raised surface the navmesh can't reach on foot, runners walk to its nearest face, jump, air-jump at the apex and land on top. Re-verified: **12/12 won, AI par 9.3 s**.
   - Also fixed: any entity targeted by an enter/exit trigger is now forced to a sensor. A solid "spike trap" could never be entered in play, yet its forced-state test passed.
 - Coverage: the intent picks floor_plan for castles and space stations because only two packs exist. The arena, outdoor and maze packs are next (Build A).
+
+## S0c: the product's own SimWorld is bit-identical on every runtime: **GO** (2026-10-27)
+
+`tools/detcheck/src/fixture-ctf.ts` builds the organizer's CTF brief the way the product does (fill → city_block → placer). It then plays it in `SimWorld` for 2,000 ticks with scripted inputs: the KCC with coyote time, jump buffer and air jumps; carry; enter and pickup triggers; rule cascades with score and reset; score_gte → win/lose.
+
+| Runtime | State hash | Event-log hash | Events | Scores |
+|---|---|---|---|---|
+| Node 26 · workerd · Chromium 156 · Firefox 157 · WebKit 27.2 | `74928a5b` | `ae80c6d3` | 79 | red 2, blue 0 |
+
+All five are identical. **A proof computed at the edge is valid in the judge's browser**, and share-link replays are bit-exact.

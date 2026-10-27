@@ -279,6 +279,18 @@ importers:
       '@ghostrun/detmath':
         specifier: workspace:*
         version: link:../../packages/detmath
+      '@ghostrun/ir':
+        specifier: workspace:*
+        version: link:../../packages/ir
+      '@ghostrun/layout':
+        specifier: workspace:*
+        version: link:../../packages/layout
+      '@ghostrun/pack-city-block':
+        specifier: workspace:*
+        version: link:../../packages/packs/city-block
+      '@ghostrun/sim':
+        specifier: workspace:*
+        version: link:../../packages/sim
       '@jitl/quickjs-wasmfile-release-sync':
         specifier: 0.32.0
         version: 0.32.0
