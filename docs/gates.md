@@ -52,6 +52,6 @@ The memory cap held everywhere.
 **Decisions.**
 - **Navigation:** use recast-navigation everywhere (builder and queries; DetourCrowd for groups once tested). It loads in workerd through Emscripten's `instantiateWasm` hook with the pre-compiled module, so **navcat and its trig patch are not needed**. Navcat stays the documented fallback.
 - **Script budget:** the QuickJS interrupt count is deterministic across engines, so an AI-written script's budget can be "N interrupt calls" rather than wall time. That keeps sandboxed behaviours replayable. The wall-clock watchdog is only a backstop.
-- **Licences to confirm:** Recast/Detour (Zlib) and the Emscripten runtime (NCSA) are permissive and attribution-only, but they are not on the MIT/Apache/BSD/ISC/CC0 list. They are awaiting the user's approval (`docs/strategy/OVERNIGHT.md`).
+- **Licences:** Recast/Detour (Zlib), the Emscripten runtime (NCSA) and the fdlibm SunPro notice were approved by the user on 2026-10-27 as documented permissive exceptions. They are attribution-only and must be credited in THIRD_PARTY_NOTICES.
 
 Run it yourself: `pnpm --filter @ghostrun/detcheck quick` (2k ticks) or `full` (10k ticks).
