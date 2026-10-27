@@ -511,6 +511,13 @@ export function App() {
             onClose={() => setReceiptOpen(false)}
             reported={reported}
             onShare={shareRun}
+            onExport={async () => {
+              const w = current.current;
+              if (!w || !specHash) return setToast("Nothing to export yet.");
+              const { exportWorld } = await import("./export"); // loaded on demand: the exporter is a separate three build
+              await exportWorld(w.bundle, specHash, proof.receipt, prompt);
+              setToast("Exported: the scene (.glb), its logic (.logic.json) and the playtest report (.html).");
+            }}
             onWrong={async (note) => {
               const sim = engine.current?.rapierSim;
               if (!specHash) return;

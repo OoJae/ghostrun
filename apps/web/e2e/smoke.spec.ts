@@ -243,3 +243,27 @@ test("result card: a win shows the time against the AI par, and R plays again", 
   await page.waitForFunction(() => (window.__GHOSTRUN__.tick ?? 999) < 300, null, { timeout: 10_000 });
   expect(errors).toEqual([]);
 });
+
+test("export: the scene as glTF, the logic as logic.json, and the playtest report", async ({ page }) => {
+  const errors = collectErrors(page);
+  await page.goto("/?gl=webgl2&fx=0&dpr=0.5&prewarm=0");
+  await page.waitForFunction(() => window.__GHOSTRUN__?.ready === true, null, { timeout: 90_000 });
+  await expect(page.getByTestId("proof-badge")).toContainText("verified", { timeout: 60_000 });
+  await page.keyboard.press("KeyS");
+  await page.keyboard.press("KeyP");
+  const files: Record<string, Buffer> = {};
+  page.on("download", async (d) => {
+    const path = await d.path();
+    files[d.suggestedFilename()] = (await import("node:fs")).readFileSync(path);
+  });
+  await page.getByTestId("export").click();
+  await expect.poll(() => Object.keys(files).length, { timeout: 20_000 }).toBe(3);
+  const glb = Object.entries(files).find(([n]) => n.endsWith(".glb"))![1];
+  expect(glb.subarray(0, 4).toString("ascii")).toBe("glTF");
+  const logic = JSON.parse(Object.entries(files).find(([n]) => n.endsWith(".logic.json"))![1].toString("utf8")) as { format: string; rules: { text: string; proof: string }[] };
+  expect(logic.format).toBe("ghostrun.logic/1");
+  expect(logic.rules).toHaveLength(5);
+  expect(logic.rules.every((r) => r.text.startsWith("WHEN ") && r.proof === "verified")).toBe(true);
+  expect(Object.entries(files).find(([n]) => n.endsWith(".report.html"))![1].toString("utf8")).toContain("Rooftop lane needs double jump");
+  expect(errors).toEqual([]);
+});
