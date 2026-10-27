@@ -1,36 +1,179 @@
+import { createHmac } from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { FillParser } from "@ghostrun/ir";
-import { handle } from "../src/handler";
+import type { DoNamespace } from "../src/cf";
+import { costMicroUsd, FILL_MODEL, INTENT_MODEL } from "../src/cost";
+import { capsFromEnv, Governor, localCall, MemoryLedger, type Caps } from "../src/governor";
+import { handle, PAUSE_FLAG, type Env } from "../src/handler";
+import { fakeFetch, governorNs, readSse, silentNs, TURNSTILE, waiter, type Upstream } from "./fakes";
 
+// Only read the gitignored keys file when the live test is explicitly requested.
 function key(): string | undefined {
   const f = new URL("../../../.dev.vars", import.meta.url);
   if (!existsSync(f)) return undefined;
   return /^CEREBRAS_API_KEY=(.+)$/m.exec(readFileSync(f, "utf8"))?.[1];
 }
 
-async function readSse(res: Response): Promise<{ event: string; data: any }[]> {
-  const text = await res.text();
-  return text.split("\n\n").filter(Boolean).map((block) => {
-    const event = /^event: (.+)$/m.exec(block)?.[1] ?? "";
-    const data = JSON.parse(/^data: (.+)$/m.exec(block)?.[1] ?? "null");
-    return { event, data };
-  });
+const JKEY = "judge-key-for-tests-only";
+const TOKEN = "judge_token_0123456789abcdef";
+const SECRET = "session-secret-for-tests-only-0123456789";
+const mac = (t: string) => createHmac("sha256", JKEY).update(t).digest("hex");
+let ipN = 0;
+const freshIp = () => `203.0.113.${++ipN}`;
+
+function world(opts: { caps?: Partial<Caps["pool"]>; up?: Upstream; ns?: (g: Governor) => DoNamespace; env?: Partial<Env> } = {}) {
+  const c = capsFromEnv({});
+  const gov = new Governor(new MemoryLedger(), { ...c, pool: { ...c.pool, ...opts.caps } });
+  const ns = opts.ns ? opts.ns(gov) : governorNs(gov);
+  const f = fakeFetch(opts.up);
+  vi.stubGlobal("fetch", f.fn);
+  const env: Env = { CEREBRAS_API_KEY: "k", TURNSTILE_SECRET: TURNSTILE.secretPass, SESSION_SECRET: SECRET, JUDGE_TOKEN_KEY: JKEY, JUDGE_TOKEN_HASHES: mac(TOKEN), GOVERNOR: ns, GOVERNOR_TIMEOUT_MS: "50", ...opts.env };
+  const pool = (p: string) => gov.status().pools.find((x) => x.pool === p)!;
+  const build = async (headers: Record<string, string>, body: unknown = { prompt: "a maze with ghosts and a key that opens the exit", seed: 11 }) => {
+    const ctx = waiter();
+    const res = await handle(new Request("https://g.example/v1/build", { method: "POST", headers: { "cf-connecting-ip": freshIp(), ...headers }, body: JSON.stringify(body) }), env, ctx);
+    return { res, ctx };
+  };
+  return { gov, ns, f, env, pool, build };
 }
+
+const judge = { "x-judge-token": TOKEN };
+const metered = costMicroUsd(INTENT_MODEL, 1000, 200) + costMicroUsd(FILL_MODEL, 3000, 1500);
+
+afterEach(() => vi.unstubAllGlobals());
 
 describe("edge API", () => {
   it("health and input validation", async () => {
-    const h = await handle(new Request("http://x/v1/health"), { CEREBRAS_API_KEY: "k" });
-    expect(await h.json()).toMatchObject({ ok: true, llm: true });
-    const empty = await handle(new Request("http://x/v1/build", { method: "POST", body: JSON.stringify({ prompt: "  " }) }), { CEREBRAS_API_KEY: "k" });
+    const dev: Env = { CEREBRAS_API_KEY: "k", DEV_OPEN: "1" };
+    const h = await handle(new Request("http://localhost/v1/health"), dev);
+    expect(await h.json()).toMatchObject({ ok: true, llm: true, gate: "dev", sitekey: null });
+    const empty = await handle(new Request("http://localhost/v1/build", { method: "POST", body: JSON.stringify({ prompt: "  " }) }), dev);
     expect(empty.status).toBe(400);
+    const bad = await handle(new Request("http://localhost/v1/build", { method: "POST", body: "{" }), dev);
+    expect(bad.status).toBe(400);
+    expect((await handle(new Request("http://localhost/v1/nope"), dev)).status).toBe(404);
+  });
+
+  it("the gate is closed by default, and DEV_OPEN only opens it on localhost", async () => {
+    const req = (u: string) => new Request(u, { method: "POST", body: JSON.stringify({ prompt: "x" }) });
+    expect((await handle(req("https://g.example/v1/build"), { CEREBRAS_API_KEY: "k" })).status).toBe(503);
+    expect((await handle(req("https://g.example/v1/build"), { CEREBRAS_API_KEY: "k", DEV_OPEN: "1" })).status).toBe(503);
+    expect(await (await handle(new Request("https://g.example/v1/health"), { CEREBRAS_API_KEY: "k", DEV_OPEN: "1" })).json()).toMatchObject({ gate: "closed" });
+    const { build } = world();
+    const anon = await build({});
+    expect(anon.res.status).toBe(401);
+    expect(await anon.res.json()).toMatchObject({ need: "turnstile" });
+  });
+
+  it("reserves before calling the model and commits the metered cost from usage", async () => {
+    const w = world();
+    const { res, ctx } = await w.build(judge);
+    expect(res.headers.get("content-type")).toBe("text/event-stream");
+    const events = await readSse(res);
+    expect(events.map((e) => e.event)).toEqual(["intent", "op", "op", "op", "done"]);
+    await ctx.settled();
+    expect((w.ns as ReturnType<typeof governorNs>).calls).toEqual(["/reserve", "/commit"]);
+    expect(w.pool("judge")).toMatchObject({ spent: metered, held: 0 });
+    expect(w.f.to("api.cerebras.ai").length).toBe(2);
+  });
+
+  it("a budget denial is a 429 and costs nothing upstream", async () => {
+    const w = world({ caps: { judge: 1000 } });
+    const { res } = await w.build(judge);
+    expect(res.status).toBe(429);
+    expect(await res.json()).toEqual({ error: "budget", reason: "pool_cap", retryable: false });
+    expect(w.f.to("api.cerebras.ai").length).toBe(0);
+  });
+
+  it("governor silent: tokenless traffic fails closed with 503 retryable; a judge token falls back", async () => {
+    const w = world({ ns: () => silentNs() });
+    const cookie = await session(w.env);
+    const t0 = performance.now();
+    const anon = await w.build({ cookie });
+    expect(anon.res.status).toBe(503);
+    expect(await anon.res.json()).toEqual({ error: "governor unavailable", retryable: true });
+    expect(performance.now() - t0).toBeLessThan(1000);
+    expect(w.f.to("api.cerebras.ai").length).toBe(0);
+    const j = await w.build(judge);
+    expect(j.res.status).toBe(200);
+    expect((await readSse(j.res)).at(-1)!.event).toBe("done");
+  });
+
+  it("judge fallback is bounded per isolate and recorded when the governor comes back for /record", async () => {
+    // Reserve never answers; record does.
+    const own = { "x-judge-token": "judge_token_fallback_only_01" }; // the bucket is per token, per isolate
+    const w = world({
+      env: { JUDGE_FALLBACK_PER_WINDOW: "2", JUDGE_TOKEN_HASHES: mac(own["x-judge-token"]) },
+      ns: (g) => {
+        const call = localCall(g);
+        return { idFromName: (n: string) => n, get: () => ({ fetch: (u: string, init?: RequestInit) => (u.endsWith("/reserve") ? new Promise<Response>(() => {}) : call(new URL(u).pathname, JSON.parse(String(init!.body)))) }) };
+      },
+    });
+    for (let i = 0; i < 2; i++) {
+      const { res, ctx } = await w.build(own);
+      expect(res.status).toBe(200);
+      await readSse(res);
+      await ctx.settled();
+    }
+    expect(w.pool("judge")).toMatchObject({ spent: 2 * metered, held: 0 });
+    expect((await w.build(own)).res.status).toBe(429);
+  });
+
+  it("POST /v1/session verifies Turnstile server-side and its cookie opens /v1/build (public pool)", async () => {
+    const w = world();
+    const cookie = await session(w.env);
+    const { res, ctx } = await w.build({ cookie });
+    expect((await readSse(res)).at(-1)!.event).toBe("done");
+    await ctx.settled();
+    expect(w.pool("public")).toMatchObject({ spent: metered, held: 0 });
+    const fail = await handle(new Request("https://g.example/v1/session", { method: "POST", body: JSON.stringify({ token: TURNSTILE.dummyToken }) }), { ...w.env, TURNSTILE_SECRET: TURNSTILE.secretFail });
+    expect(fail.status).toBe(403);
+    expect(fail.headers.get("set-cookie")).toBeNull();
+    const spent = await handle(new Request("https://g.example/v1/session", { method: "POST", body: JSON.stringify({ token: TURNSTILE.dummyToken }) }), { ...w.env, TURNSTILE_SECRET: TURNSTILE.secretSpent });
+    expect(await spent.json()).toMatchObject({ codes: ["timeout-or-duplicate"] });
+  });
+
+  it("the FLAGS kill switch pauses builds before any reservation", async () => {
+    const w = world({ env: { FLAGS: { get: async (k: string) => (k === PAUSE_FLAG ? "1" : null) } } });
+    const { res } = await w.build(judge);
+    expect(res.status).toBe(503);
+    expect(await res.json()).toMatchObject({ error: "builds paused", retryable: true });
+    expect((w.ns as ReturnType<typeof governorNs>).calls).toEqual([]);
+  });
+
+  it("an upstream HTTP error is free; a stream without usage is charged at its estimate", async () => {
+    const e = world({ up: { intent: { inTok: 0, outTok: 0, status: 429 } } });
+    const r1 = await e.build(judge);
+    const ev = await readSse(r1.res);
+    expect(ev.at(-1)).toMatchObject({ event: "error", data: { retryable: true } });
+    await r1.ctx.settled();
+    expect(e.pool("judge")).toMatchObject({ spent: 0, held: 0 });
+
+    const n = world({ up: { fill: { inTok: 3000, outTok: 1500, usage: false } } });
+    const r2 = await n.build(judge);
+    await readSse(r2.res);
+    await r2.ctx.settled();
+    expect(n.pool("judge").spent).toBeGreaterThan(metered); // intent metered + fill at its (higher) estimate
+  });
+
+  it("a client that disconnects aborts the upstream call", async () => {
+    const w = world();
+    const { res, ctx } = await w.build(judge);
+    const reader = res.body!.getReader();
+    await reader.read(); // the intent event
+    await reader.cancel();
+    await ctx.settled();
+    const fill = w.f.to("api.cerebras.ai")[1];
+    expect(fill?.signal?.aborted).toBe(true);
+    expect(w.pool("judge").held).toBe(0);
   });
 
   // Live LLM test: opt-in (LIVE=1) so the default suite stays free and deterministic.
-  it.skipIf(!key() || !process.env.LIVE)("streams intent then fill ops that parse into a world (live Cerebras)", async () => {
+  it.skipIf(!process.env.LIVE || !key())("streams intent then fill ops that parse into a world (live Cerebras)", async () => {
     const res = await handle(
-      new Request("http://x/v1/build", { method: "POST", body: JSON.stringify({ prompt: "a maze with ghosts and a key that opens the exit", seed: 11 }) }),
-      { CEREBRAS_API_KEY: key()! },
+      new Request("http://localhost/v1/build", { method: "POST", body: JSON.stringify({ prompt: "a maze with ghosts and a key that opens the exit", seed: 11 }) }),
+      { CEREBRAS_API_KEY: key()!, DEV_OPEN: "1" },
     );
     expect(res.headers.get("content-type")).toBe("text/event-stream");
     const events = await readSse(res);
@@ -45,3 +188,9 @@ describe("edge API", () => {
     expect(events.at(-1)!.event).toBe("done");
   }, 60_000);
 });
+
+async function session(env: Env): Promise<string> {
+  const res = await handle(new Request("https://g.example/v1/session", { method: "POST", headers: { "cf-connecting-ip": freshIp() }, body: JSON.stringify({ token: TURNSTILE.dummyToken }) }), env);
+  expect(res.status).toBe(200);
+  return res.headers.get("set-cookie")!.split(";")[0]!;
+}
