@@ -143,6 +143,12 @@ export function placeWorld(input: WorldBundle, layout: PackLayout): PlaceResult 
       }
     }
     const solid = e.body === "fixed" || e.body === "kinematic" || e.body === "dynamic";
+    // a course is built from its own pads, steps and gaps: a solid box a fill puts on the way only
+    // blocks the jumps it was laid out for (moving platforms keep their collider and their verb)
+    if (layout.packId === "course" && (e.kind === "platform" || e.kind === "prop") && solid && !b.verbs.some((v) => v.on === e.id && /oscillate|crumble|carry|jump_pad/.test(v.verb))) {
+      e.body = "none";
+      notes.push(`${e.id}: decor on the course (a solid ${e.kind} would block its jumps)`);
+    }
     // signs are decor unless a rule needs to touch them; inspecting works by proximity
     if (e.kind === "sign" && solid && !b.rules.some((r) => r.when.b === e.id || r.when.a === e.id)) {
       e.body = "none";
@@ -166,7 +172,85 @@ export function placeWorld(input: WorldBundle, layout: PackLayout): PlaceResult 
     if (e.kind === "door" && /^doorway_[ew]$/.test(e.anchor) && e.size[0] > e.size[2]) e.size = [e.size[2], e.size[1], e.size[0]];
   }
   notes.push(...repairKits(b), ...repairTriggers(b), ...repairVerbs(b), ...repairWin(b), ...repairExpects(b));
+  notes.push(...repairDeliveries(b, layout, bound), ...addSecrets(b, layout, bound));
   return { bundle: b, notes };
+}
+
+/**
+ * Something you must carry into a place never starts inside it (the chest on the goal's own anchor:
+ * no "enter" ever happens). It moves to the nearest free anchor something stands on, outside the
+ * place. Logged.
+ */
+export function repairDeliveries(b: WorldBundle, layout: PackLayout, bound: Map<string, ZoneSpec>): string[] {
+  const notes: string[] = [];
+  const inside = (p: Vec3, s: Entity) => Math.abs(p[0] - s.pos[0]) < s.size[0] / 2 + 0.5 && Math.abs(p[2] - s.pos[2]) < s.size[2] / 2 + 0.5 && Math.abs(p[1] - s.pos[1]) < s.size[1] / 2 + 1;
+  const standable = (p: Vec3) => layout.statics.some((st) => st.surf !== "wall" && Math.abs(p[0] - st.pos[0]) <= st.size[0] / 2 && Math.abs(p[2] - st.pos[2]) <= st.size[2] / 2 && Math.abs(st.pos[1] + st.size[1] / 2 - p[1]) < 0.3);
+  for (const r of b.rules) {
+    if (r.when.t !== "enter" || r.when.a === "player") continue;
+    const item = b.entities.find((e) => e.id === r.when.a);
+    const place = b.entities.find((e) => e.id === r.when.b);
+    if (!item || !place || item.kind === "npc" || !inside(item.pos, place)) continue;
+    const used = new Set(b.entities.map((e) => `${e.zone}/${e.anchor}`));
+    let best: { zone: string; anchor: string; pos: Vec3; d: number } | null = null;
+    for (const z of b.zones) {
+      const spec = bound.get(z.id);
+      if (!spec) continue;
+      for (const [anchor, pos] of Object.entries(spec.anchors)) {
+        if (used.has(`${z.id}/${anchor}`) || /^(doorway|spawn|goal)/.test(anchor) || !standable(pos) || inside(pos, place)) continue;
+        const d = (pos[0] - item.pos[0]) * (pos[0] - item.pos[0]) + (pos[2] - item.pos[2]) * (pos[2] - item.pos[2]);
+        if (!best || d < best.d || (d === best.d && z.id + anchor < best.zone + best.anchor)) best = { zone: z.id, anchor, pos, d };
+      }
+    }
+    if (!best) continue;
+    notes.push(`${item.id}: started inside ${place.id}, where it must be carried: moved to ${best.zone}:${best.anchor}`);
+    item.zone = best.zone;
+    item.anchor = best.anchor;
+    item.pos = [best.pos[0], best.pos[1] + item.size[1] / 2, best.pos[2]];
+  }
+  return notes;
+}
+
+/** What a secret is called in each pack (cosmetic: the rule and the count are the same everywhere). */
+const SECRET_NOUN: Record<string, string> = { city_block: "neon shard", outdoor: "glow seed", floor_plan: "gold coin", arena: "star token", maze: "rune stone", course: "time gem" };
+
+/**
+ * A play world with few things to touch gets secrets: themed bonus collectibles on anchors nothing
+ * else uses, high and far ones first (a reason to climb the rooftop lane). They never touch the
+ * win: each one only sparkles and counts toward its own tally ("★ 2/5"), and the proof force-tests
+ * their rules like any other. Logged.
+ */
+export function addSecrets(b: WorldBundle, layout: PackLayout, bound: Map<string, ZoneSpec>, want = 10): string[] {
+  if (b.mode !== "play") return [];
+  // a rule that fires on touching (or picking up) anything would count a secret toward the win
+  if (b.rules.some((r) => (r.when.t === "touch" || r.when.t === "pickup") && !(r.when.t === "touch" ? r.when.b : r.when.a))) return [];
+  const using = new Set(b.verbs.filter((v) => v.on !== "player").map((v) => v.on));
+  for (const c of b.cast) using.add(c.npc);
+  const need = Math.min(6, want - using.size);
+  if (need <= 0) return [];
+  const used = new Set(b.entities.map((e) => `${e.zone}/${e.anchor}`));
+  const spawn = b.entities.find((e) => e.kind === "spawn" && e.team === "red") ?? b.entities.find((e) => e.kind === "spawn");
+  // only anchors something stands on (never a wall-height spot)
+  const standable = (p: Vec3) => layout.statics.some((st) => st.surf !== "wall" && Math.abs(p[0] - st.pos[0]) <= st.size[0] / 2 && Math.abs(p[2] - st.pos[2]) <= st.size[2] / 2 && Math.abs(st.pos[1] + st.size[1] / 2 - p[1]) < 0.3);
+  const cands: { zone: string; anchor: string; pos: Vec3; score: number }[] = [];
+  for (const z of b.zones) {
+    const spec = bound.get(z.id);
+    if (!spec) continue;
+    for (const [anchor, pos] of Object.entries(spec.anchors)) {
+      if (used.has(`${z.id}/${anchor}`) || /^(doorway|spawn|goal)/.test(anchor) || !standable(pos)) continue;
+      const far = spawn ? Math.sqrt((pos[0] - spawn.pos[0]) * (pos[0] - spawn.pos[0]) + (pos[2] - spawn.pos[2]) * (pos[2] - spawn.pos[2])) : 0;
+      cands.push({ zone: z.id, anchor, pos, score: (pos[1] - spec.floorY) * 8 + far });
+    }
+  }
+  cands.sort((p, q) => q.score - p.score || (p.zone + p.anchor < q.zone + q.anchor ? -1 : 1));
+  const noun = SECRET_NOUN[layout.packId] ?? "bonus gem";
+  const picked = cands.slice(0, need);
+  for (const c of picked) {
+    const id = uniqueId(b, `secret_${c.anchor}`);
+    b.entities.push({ id, src: "template", layer: "gameplay", kind: "pickup", zone: c.zone, anchor: c.anchor, pos: [c.pos[0], c.pos[1] + 0.6, c.pos[2]], rotY: 0, size: [0.4, 0.4, 0.4], noun, hyper: "gem", asset: "", body: "sensor", shape: "sphere", team: "", tags: ["bonus"], states: [], init: "", props: {} });
+    b.verbs.push(vb(uniqueId(b, `vb_collect_${id}`), "puzzle.collect", id));
+    b.rules.push({ id: uniqueId(b, `r_${id}`), src: "template", layer: "gameplay", when: { t: "touch", a: "player", b: id, s: "", n: 0, act: "" }, if: [], then: [{ e: "emit", target: id, v: "", n: 0, fx: "sparkle" }], once: true, cooldownS: 0, prio: 0 });
+  }
+  return picked.length ? [`added ${picked.length} secret ${noun}s on unused anchors (the world had ${using.size} things to use; they count apart from the win)`] : [];
 }
 
 /**
@@ -379,6 +463,15 @@ export function repairWin(b: WorldBundle): string[] {
 /** A verb that needs a particular body (a plate or a coin must be a sensor) gets it. Logged. */
 export function repairVerbs(b: WorldBundle): string[] {
   const notes: string[] = [];
+  // something a rule waits for you to walk into stays a sensor: a verb that needs it solid (a lock
+  // on the goal itself) goes, or the repairs would flip it back and the win could never fire
+  const entered = new Set(b.rules.filter((r) => r.when.t === "enter" || r.when.t === "exit").map((r) => r.when.b));
+  b.verbs = b.verbs.filter((vb) => {
+    const need = verb(vb.verb)?.body;
+    if (!need || need === "sensor" || !entered.has(vb.on)) return true;
+    notes.push(`${vb.on}: dropped ${vb.verb} (it needs a solid body, and ${vb.on} is a place you walk into)`);
+    return false;
+  });
   for (const vb of b.verbs) {
     const need = verb(vb.verb)?.body;
     const e = b.entities.find((x) => x.id === vb.on);

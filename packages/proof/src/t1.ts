@@ -10,21 +10,30 @@ export interface Surface {
   top: number;
   min: [number, number];
   max: [number, number];
+  /** A jump pad: stepping on it throws you this many metres straight up. */
+  launch?: number;
 }
 
 const EULER_LOSS = 0.06; // fixed-step integration reaches slightly less than the analytic apex
 
 export function surfaces(b: WorldBundle): Surface[] {
-  return b.statics
-    .filter((s) => s.surf === "floor" || s.surf === "ledge" || s.surf === "roof" || s.surf === "wall")
-    .map((s) => ({
-      id: s.id,
-      zone: s.zone,
-      top: s.pos[1] + s.size[1] / 2,
-      min: [s.pos[0] - s.size[0] / 2, s.pos[2] - s.size[2] / 2] as [number, number],
-      max: [s.pos[0] + s.size[0] / 2, s.pos[2] + s.size[2] / 2] as [number, number],
-    }))
-    .sort((a, b) => (a.id < b.id ? -1 : 1));
+  const box = (id: string, zone: string, pos: readonly number[], size: readonly number[]): Surface => ({
+    id,
+    zone,
+    top: pos[1]! + size[1]! / 2,
+    min: [pos[0]! - size[0]! / 2, pos[2]! - size[2]! / 2] as [number, number],
+    max: [pos[0]! + size[0]! / 2, pos[2]! + size[2]! / 2] as [number, number],
+  });
+  // a platform or prop that never moves is somewhere to stand too (a crate to climb, a step a fill
+  // put on a course); moving and crumbling ones are not ground anyone can plan on
+  const moving = new Set(b.verbs.filter((v) => /oscillate|crumble|carry/.test(v.verb)).map((v) => v.on));
+  const pads = new Map(b.verbs.filter((v) => v.verb === "locomotion.jump_pad").map((v) => [v.on, Math.min(12, Math.max(1, Number(v.params.height ?? 4) || 4))]));
+  return [
+    // a pad is a launch surface lying on the floor it stands on
+    ...b.entities.filter((e) => pads.has(e.id)).map((e) => ({ ...box(e.id, e.zone, [e.pos[0], e.pos[1] - e.size[1] / 2, e.pos[2]], [e.size[0], 0, e.size[2]]), launch: pads.get(e.id)! })),
+    ...b.statics.filter((s) => s.surf === "floor" || s.surf === "ledge" || s.surf === "roof" || s.surf === "wall").map((s) => box(s.id, s.zone, s.pos, s.size)),
+    ...b.entities.filter((e) => (e.kind === "platform" || e.kind === "prop") && (e.body === "fixed" || e.body === "kinematic") && e.shape === "box" && !moving.has(e.id)).map((e) => box(e.id, e.zone, e.pos, e.size)),
+  ].sort((a, b) => (a.id < b.id ? -1 : 1));
 }
 
 /** Horizontal gap between two footprints (0 if they touch or overlap). */
@@ -66,21 +75,42 @@ export function reachAt(laws: Laws, jumps: number, rise: number): number {
 }
 
 /** Can a runner get from s onto t with up to `jumps` jumps (walking when they touch at step height)? */
-export function hopOk(s: Surface, t: Surface, laws: Laws, jumps: number): boolean {
+/** From a pad: anything within its launch height, and as far as the fall from it drifts. */
+function launchReach(s: Surface, t: Surface, laws: Laws): boolean {
+  const g = 9.81 * Math.max(0.05, laws.gravityScale);
+  const H = s.launch! * (1 - EULER_LOSS);
   const rise = t.top - s.top;
-  if (rise > apex(laws, jumps) + 1e-9) return false;
+  if (rise > H + 1e-9) return false;
+  const v = Math.sqrt(2 * g * H);
+  const time = (v + Math.sqrt(v * v - 2 * g * rise)) / g;
+  return gap(s, t) <= laws.speed * time * 0.85;
+}
+
+export function hopOk(s: Surface, t: Surface, laws: Laws, jumps: number, margin = 0): boolean {
+  if (s.launch) return launchReach(s, t, laws);
+  const rise = t.top - s.top;
+  if (rise > apex(laws, jumps) - margin + 1e-9) return false;
   const limit = Math.abs(rise) < 0.41 ? 0.01 : reachAt(laws, jumps, rise);
   return limit >= 0 && gap(s, t) <= limit;
 }
 
-/** Fewest-hop route between two surfaces over floors, ledges and roofs (T3 runners follow it). */
+/**
+ * Fewest-hop route between two surfaces over floors, ledges and roofs (T3 runners follow it).
+ * Hops that need the very top of a jump are avoided when a route with room to spare exists (a
+ * 2.9 m ledge under a 3.0 m apex works on paper and fails in physics); the exact model is the
+ * fallback, so a route is found whenever one exists.
+ */
 export function hopRoute(ss: Surface[], start: Surface, goal: Surface, laws: Laws): Surface[] | null {
+  return route(ss, start, goal, laws, 0.3) ?? route(ss, start, goal, laws, 0);
+}
+
+function route(ss: Surface[], start: Surface, goal: Surface, laws: Laws, margin: number): Surface[] | null {
   const parent = new Map<string, Surface | null>([[start.id, null]]);
   const queue = [start];
   while (queue.length && !parent.has(goal.id)) {
     const s = queue.shift()!;
     for (const t of ss) {
-      if (parent.has(t.id) || !hopOk(s, t, laws, laws.jumpsMax)) continue;
+      if (parent.has(t.id) || !hopOk(s, t, laws, laws.jumpsMax, margin)) continue;
       parent.set(t.id, s);
       queue.push(t);
     }
@@ -100,6 +130,10 @@ function reachable(ss: Surface[], start: Surface, laws: Laws, jumps: number): Se
     const s = queue.shift()!;
     for (const t of ss) {
       if (seen.has(t.id)) continue;
+      if (s.launch) {
+        if (launchReach(s, t, laws)) (seen.add(t.id), queue.push(t));
+        continue;
+      }
       const rise = t.top - s.top;
       if (rise > up + 1e-9) continue;
       // walking: touching footprints within step height; jumping/dropping: ballistic reach

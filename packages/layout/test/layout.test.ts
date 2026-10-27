@@ -96,3 +96,25 @@ describe("win repairs", () => {
     expect(notes).toContain("rule r_lose: blue reaching 3 made you win → you lose (you play red)");
   });
 });
+
+describe("placement repairs for live fills", () => {
+  const place = (lines: string[], edit: (s: string) => string = (s) => s) => {
+    const fill = parseFill(edit(ctf.split("\n").map((l) => l).join("\n")).replace('{"op":"end","layer":"gameplay"}', `${lines.join("\n")}\n{"op":"end","layer":"gameplay"}`), { seed: 7 });
+    const layout = cityBlock.generate({ seed: 7, params: cityBlock.defaults, sub: fill.draft.pack.sub, laws: fill.draft.laws, harder: false });
+    return placeWorld({ ...fill.draft, engine: "e".repeat(64) }, layout);
+  };
+  it("a sparse play world gets secrets that never touch the win; a touch-anything rule gets none", () => {
+    const { bundle, notes } = ctfWorld();
+    const secrets = bundle.entities.filter((e) => e.tags.includes("bonus"));
+    expect(secrets.length).toBe(5); // the CTF has 5 things to use: up to 10
+    expect(new Set(secrets.map((e) => e.noun))).toEqual(new Set(["neon shard"]));
+    for (const e of secrets) {
+      const r = bundle.rules.find((x) => x.when.b === e.id)!;
+      expect(r.then.map((x) => x.e)).toEqual(["emit"]);
+      expect(bundle.verbs.some((v) => v.on === e.id && v.verb === "puzzle.collect")).toBe(true);
+    }
+    expect(notes.some((n) => n.startsWith("added 5 secret neon shards"))).toBe(true);
+    const any = place([], (s) => s.replace('{"op":"rule","id":"r_pickup"', '{"op":"rule","id":"r_any","when":{"t":"touch","a":"player","b":""},"then":[{"e":"emit","target":"orb","fx":"x"}]}\n{"op":"rule","id":"r_pickup"'));
+    expect(any.bundle.entities.filter((e) => e.tags.includes("bonus"))).toEqual([]);
+  });
+});

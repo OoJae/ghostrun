@@ -553,10 +553,17 @@ export class SimWorld {
     return val;
   }
 
+  /** A condition's right side may name something too ("team:blue.score", "door_1.state"). */
+  #operand(r: Rule["if"][number]["r"]): string | number | boolean {
+    if (typeof r !== "string" || !r.includes(".")) return r;
+    const head = r.split(".")[0]!;
+    return head === "team:red" || head === "team:blue" || this.ents.has(head) ? this.#resolve(r) : r;
+  }
+
   #cond(r: Rule): boolean {
     return r.if.every((c) => {
       const l = this.#resolve(c.l);
-      const rv = c.r;
+      const rv = this.#operand(c.r);
       switch (c.op) {
         case "eq": return l === rv;
         case "ne": return l !== rv;

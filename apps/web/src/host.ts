@@ -217,6 +217,11 @@ export function facts(b: WorldBundle, log: readonly SimEvent[], trail: readonly 
   for (const m of s?.moments ?? []) out.push({ text: `${clock(m.tick)} ${m.text}`, tick: m.tick });
   const room = Math.max(0, max - out.length - 8);
   out.push(...run.slice(-room));
+  const bonus = b.entities.filter((e) => e.tags.includes("bonus"));
+  if (bonus.length) {
+    const found = new Set(log.filter((e) => e.k === "touch" && e.a === "player" && bonus.some((x) => x.id === e.b)).map((e) => e.b)).size;
+    out.push({ text: `You found ${found} of the ${bonus.length} secrets (${bonus[0]!.noun}s, which don't count toward the win)`, tick: null });
+  }
   const jumps = log.filter((e) => e.k === "jump" && e.a === "player").length;
   const air = log.filter((e) => e.k === "air_jump" && e.a === "player").length;
   if (jumps) out.push({ text: `You jumped ${jumps} times (${air} of them double jumps)`, tick: null });

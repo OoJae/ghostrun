@@ -278,7 +278,7 @@ test("export: the scene as glTF, the logic as logic.json, and the playtest repor
   expect(glb.subarray(0, 4).toString("ascii")).toBe("glTF");
   const logic = JSON.parse(Object.entries(files).find(([n]) => n.endsWith(".logic.json"))![1].toString("utf8")) as { format: string; rules: { text: string; proof: string }[] };
   expect(logic.format).toBe("ghostrun.logic/1");
-  expect(logic.rules).toHaveLength(5);
+  expect(logic.rules).toHaveLength(10); // the brief's 5 rules and its 5 secrets: the export keeps every rule
   expect(logic.rules.every((r) => r.text.startsWith("WHEN ") && r.proof === "verified")).toBe(true);
   expect(Object.entries(files).find(([n]) => n.endsWith(".report.html"))![1].toString("utf8")).toContain("Rooftop lane needs double jump");
   expect(errors).toEqual([]);
@@ -414,8 +414,9 @@ test("first ten seconds: try-one suggestions open a world in one click; a spoken
   await expect(suggest).not.toContainText("Wizard duel"); // live-only prompts hide without the live lane
   await suggest.getByRole("button", { name: "Museum heist" }).click();
   await expect(page.getByTestId("intent-card")).toContainText("floor_plan", { timeout: 30_000 });
+  await expect(page.getByText("building world…")).toHaveCount(0, { timeout: 30_000 }); // speak once the world has finished building
   await page.getByTestId("mic").click();
-  await expect(page.getByRole("textbox", { name: "Describe a world" })).toHaveValue(/Collect five gold coins/);
+  await expect(page.getByRole("textbox", { name: "Describe a world" })).toHaveValue(/Collect five gold coins/, { timeout: 10_000 });
   await expect(page.getByTestId("intent-card")).toContainText("arena", { timeout: 30_000 });
   await expect(page.getByRole("status").filter({ hasText: "speech service" })).toBeVisible();
   expect(errors).toEqual([]);

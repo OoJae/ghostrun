@@ -54,7 +54,8 @@ function plan(sim: SimWorld, b: WorldBundle, r: Rule, playerTeam: string): strin
       const carrier = team === undefined || team === playerTeam ? "player" : b.entities.find((e) => e.kind === "npc" && e.team === team)?.id;
       if (!carrier) return `no agent on team ${String(team)} to carry ${w.a}`;
       sim.attach(w.a, carrier);
-      sim.teleport(carrier, [centre[0], carrier === "player" ? 0.95 : sensor.pos[1], centre[2]]);
+      // stand on the sensor's own floor (a goal on a course's finish platform is 10 m up, not at 0)
+      sim.teleport(carrier, [centre[0], carrier === "player" ? sensor.pos[1] - sensor.size[1] / 2 + 0.95 : sensor.pos[1], centre[2]]);
       return null;
     }
     case "pickup": {
@@ -98,6 +99,17 @@ export function t2(R: Rapier, b: WorldBundle, playerTeam: "red" | "blue" = "red"
     for (const c of r.if) {
       const m = /^([a-z][a-z0-9_]*)\.state$/.exec(c.l);
       if (m && c.op === "eq") sim.forceState(m[1]!, String(c.r));
+      // score conditions ("red ahead of blue", "red has at least 2"): set the scores that meet them
+      const t = /^(team:(?:red|blue))(?:\.score)?$/.exec(c.l)?.[1];
+      if (t) {
+        const other = typeof c.r === "string" ? /^(team:(?:red|blue))(?:\.score)?$/.exec(c.r)?.[1] : undefined;
+        const rv = other ? (sim.scores[other] ?? 0) : Number(c.r);
+        if (Number.isFinite(rv)) {
+          const want = c.op === "gt" ? rv + 1 : c.op === "gte" || c.op === "eq" ? rv : c.op === "lt" || c.op === "lte" ? Math.max(0, rv - (c.op === "lt" ? 1 : 0)) : null;
+          if (want !== null && (c.op !== "lt" || rv > 0)) sim.setScore(t, want);
+          else if (other && (c.op === "lt" || c.op === "lte")) sim.setScore(other, (sim.scores[t] ?? 0) + (c.op === "lt" ? 1 : 0));
+        }
+      }
     }
     const how = plan(sim, b, r, playerTeam);
     const why = typeof how === "string" ? how : null;

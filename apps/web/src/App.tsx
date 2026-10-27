@@ -70,6 +70,8 @@ export function App() {
   const [vrOk, setVrOk] = useState(false);
   const [inVr, setInVr] = useState(false);
   const [score, setScore] = useState<{ red: number; blue: number; result: string | null }>({ red: 0, blue: 0, result: null });
+  /** Secrets found / placed (bonus collectibles that count apart from the win). */
+  const [secrets, setSecrets] = useState<{ found: number; of: number }>({ found: 0, of: 0 });
   const [teams, setTeams] = useState(true);
   const [useHint, setUseHint] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
@@ -176,6 +178,8 @@ export function App() {
       if (!e) return;
       setIntent(world.intent);
       setScore({ red: 0, blue: 0, result: null });
+      const bonus = new Set(world.bundle.entities.filter((e) => e.tags.includes("bonus")).map((e) => e.id));
+      setSecrets({ found: 0, of: bonus.size });
       current.current = world;
       setReported(undefined);
       setResult(null);
@@ -203,6 +207,7 @@ export function App() {
               void directorFor(world, sim.trail, res, id);
             }
             if (ev.k === "touch" && ev.a === "player" && ev.v) setToast(String(ev.v)); // an inspected exhibit's text
+            if (ev.k === "touch" && ev.a === "player" && bonus.has(ev.b)) setSecrets((x) => ({ ...x, found: x.found + 1 }));
           }
         };
         sim.onHint = setUseHint;
@@ -571,7 +576,7 @@ export function App() {
         {current.current && status !== "booting" && !typing && (!collapsed || edit.status === "editing" || edit.status === "racing" || edit.status === "proving") && (
           <EditBox state={edit} enabled={mode === "live"} suggestions={suggestionsFor(current.current.bundle)} canUndo={history.current.length > 0} onEdit={(c) => void editWorld(c)} onUndo={undo} />
         )}
-        {(score.red > 0 || score.blue > 0 || score.result || clock !== null) && (
+        {(score.red > 0 || score.blue > 0 || score.result || clock !== null || secrets.found > 0) && (
           <div className={`glass scoreline ${score.result ?? ""}`} data-testid="score">
             {teams ? (
               <>
@@ -581,6 +586,7 @@ export function App() {
               <span className="red">SCORE {score.red}</span>
             )}
             {clock !== null && !score.result && <span className="clock"> · {Math.floor(clock / 60)}:{String(Math.floor(clock % 60)).padStart(2, "0")}</span>}
+            {secrets.of > 0 && secrets.found > 0 && <span className="secrets" title="Secrets found (they don't count toward the win)"> · ★ {secrets.found}/{secrets.of}</span>}
             {score.result && <strong>{score.result === "win" ? " · You win!" : " · You lose"}</strong>}
           </div>
         )}

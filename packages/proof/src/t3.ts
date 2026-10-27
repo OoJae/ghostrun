@@ -13,12 +13,21 @@ import type { Chip } from "./types";
 const RUN_TICKS = 120 * 60; // two minutes of play per run (a world's own timer still ends it sooner)
 const TOO_EASY_S = 3;
 
+/** Opt-in trace of the runners' moves (diagnosis only: it never changes what they do). */
+let trace: ((line: string) => void) | null = null;
+export function traceRunners(fn: ((line: string) => void) | null) {
+  trace = fn;
+}
+const v1 = (p: Vec3) => p.map((x) => x.toFixed(1)).join(",");
+
 interface RunResult {
   won: boolean;
   ticks: number;
   stuck: number;
   /** The rule that fired the loss, when the run was lost (null: it won, or ran out of steps). */
   lostBy: string | null;
+  /** Where a stuck run stopped (the player's position), or null. */
+  stuckAt: Vec3 | null;
 }
 
 type Target = Vec3 | (() => Vec3);
@@ -123,18 +132,19 @@ function airTicks(laws: Laws, jumps: number, rise: number): number {
  * Jump link: when the target is on a raised surface the navmesh can't reach on foot, walk to the
  * closest face of that surface, jump (and air-jump at the apex), then land on top.
  */
-function climbOnto(sim: SimWorld, nav: NavWorld, b: WorldBundle, target: Vec3, rng: () => number, budget: { ticks: number }): boolean {
-  const s = surfaceUnder(b, [target[0], target[1] + 0.1, target[2]]);
-  if (!s) return false;
-  const top = s.pos[1] + s.size[1] / 2;
+function climbOnto(sim: SimWorld, nav: NavWorld, b: WorldBundle, target: Vec3, rng: () => number, budget: { ticks: number }, onto?: Surface): boolean {
+  const s = onto ? null : surfaceUnder(b, [target[0], target[1] + 0.1, target[2]]);
+  if (!onto && !s) return false;
+  const top = onto ? onto.top : s!.pos[1] + s!.size[1] / 2;
   const p = sim.pos("player");
-  const [minX, maxX, minZ, maxZ] = [s.pos[0] - s.size[0] / 2, s.pos[0] + s.size[0] / 2, s.pos[2] - s.size[2] / 2, s.pos[2] + s.size[2] / 2];
+  const [minX, maxX, minZ, maxZ] = onto ? [onto.min[0], onto.max[0], onto.min[1], onto.max[1]] : [s!.pos[0] - s!.size[0] / 2, s!.pos[0] + s!.size[0] / 2, s!.pos[2] - s!.size[2] / 2, s!.pos[2] + s!.size[2] / 2];
   const clampX = Math.min(maxX - 0.8, Math.max(minX + 0.8, target[0]));
   const clampZ = Math.min(maxZ - 0.8, Math.max(minZ + 0.8, target[2]));
   // candidate approach points 0.7 m outside each face, nearest walkable one first
+  const feet = p[1] - 0.9;
   const faces: { at: Vec3; dir: [number, number] }[] = [
-    { at: [clampX, 0, minZ - 0.7], dir: [0, 1] }, { at: [clampX, 0, maxZ + 0.7], dir: [0, -1] },
-    { at: [minX - 0.7, 0, clampZ], dir: [1, 0] }, { at: [maxX + 0.7, 0, clampZ], dir: [-1, 0] },
+    { at: [clampX, feet, minZ - 0.7], dir: [0, 1] }, { at: [clampX, feet, maxZ + 0.7], dir: [0, -1] },
+    { at: [minX - 0.7, feet, clampZ], dir: [1, 0] }, { at: [maxX + 0.7, feet, clampZ], dir: [-1, 0] },
   ];
   const d2 = (a: Vec3) => (a[0] - p[0]) * (a[0] - p[0]) + (a[2] - p[2]) * (a[2] - p[2]);
   faces.sort((u, v) => d2(u.at) - d2(v.at));
@@ -198,12 +208,15 @@ const clampTo = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo,
  * One hop between surfaces: walk across when they touch at step height, walk off when the next
  * one is below, otherwise jump with the fewest jumps the T1 model needs and air-jump at each apex.
  */
-function hop(sim: SimWorld, nav: NavWorld, a: Surface, n: Surface, budget: { ticks: number }): boolean {
+function hop(sim: SimWorld, nav: NavWorld, b: WorldBundle, a: Surface, n: Surface, budget: { ticks: number }): boolean {
   const laws = sim.laws;
   const rise = n.top - a.top;
   const on = () => {
     const q = sim.pos("player");
-    return sim.player.grounded && q[0] >= n.min[0] && q[0] <= n.max[0] && q[2] >= n.min[1] && q[2] <= n.max[1] && q[1] - 0.9 > n.top - 0.15;
+    const inside = q[0] >= n.min[0] && q[0] <= n.max[0] && q[2] >= n.min[1] && q[2] <= n.max[1];
+    // a pad is reached the moment it throws you up
+    if (n.launch) return inside && (sim.player.grounded || sim.player.vy > 0.5);
+    return sim.player.grounded && inside && q[1] - 0.9 > n.top - 0.15;
   };
   // take-off: the point of a nearest n, 0.3 m inside a; aim: the point of n nearest that, pushed in
   const ncx = (n.min[0] + n.max[0]) / 2;
@@ -228,10 +241,24 @@ function hop(sim: SimWorld, nav: NavWorld, a: Surface, n: Surface, budget: { tic
     }
     return false;
   };
+  if (a.launch) {
+    // on the pad: let it throw you up (step onto its middle if it hasn't yet), then drift to the aim
+    const [pcx, pcz] = [(a.min[0] + a.max[0]) / 2, (a.min[1] + a.max[1]) / 2];
+    for (let t = 0; t < 120 && budget.ticks > 0 && !sim.result && sim.player.grounded; t++) steer(pcx, pcz, 120, 0);
+    for (let t = 0; t < 600 && budget.ticks > 0 && !sim.result; t++) {
+      steer(ax, az, 1e9, 0);
+      if (t > 10 && on()) return true;
+      if (sim.pos("player")[1] - 0.9 < Math.min(a.top, n.top) - 1.5) return false; // fell
+    }
+    return on();
+  }
   if (gap(a, n) <= 0.01 && Math.abs(rise) < 0.41) {
     for (let t = 0; t < 900 && budget.ticks > 0 && !sim.result && !on(); t++) steer(ax, az, 120, 0);
     return on();
   }
+  // a block standing on (or against) the ground you're on: walk up to one of its faces and climb
+  // it (a take-off "nearest its middle" would be inside the block itself)
+  if (gap(a, n) <= 0.01 && rise >= 0.41) return climbOnto(sim, nav, b, [ax, n.top, az], stream(sim.tick, "t3:climb"), budget, n) && on();
   let jumps = rise <= 0 && gap(a, n) <= reachAt(laws, 0, rise) ? 0 : 1;
   while (jumps > 0 && jumps < laws.jumpsMax && !(rise <= apex(laws, jumps) + 1e-9 && gap(a, n) <= reachAt(laws, jumps, rise))) jumps++;
   // a big surface (the ground) is crossed on the navmesh; pads are crossed straight
@@ -256,10 +283,20 @@ function hopTo(sim: SimWorld, nav: NavWorld, b: WorldBundle, target: Vec3, budge
   const from = surfaceAt(ss, [p[0], p[1] - 0.8, p[2]]);
   const to = surfaceAt(ss, [target[0], target[1] + 0.1, target[2]]);
   if (!from || !to) return false;
-  const route = hopRoute(ss, from, to, sim.laws);
-  if (!route) return false;
-  for (let i = 1; i < route.length; i++) if (!hop(sim, nav, route[i - 1]!, route[i]!, budget)) return false;
-  return true;
+  let route = hopRoute(ss, from, to, sim.laws);
+  trace?.(`  hop route ${route ? route.map((x) => x.id).join(">") : "none"}`);
+  // a hop that lands on something else solid (a step a fill put in the way) carries on from there
+  for (let replans = 0; route; ) {
+    let i = 1;
+    for (; i < route.length; i++) if (!hop(sim, nav, b, route[i - 1]!, route[i]!, budget)) break;
+    if (i === route.length) return true;
+    const q = sim.pos("player");
+    const here = sim.player.grounded ? surfaceAt(ss, [q[0], q[1] - 0.8, q[2]]) : undefined;
+    trace?.(`  hop ${route[i - 1]!.id}>${route[i]!.id} failed at ${v1(q)}${here ? ` on ${here.id}` : ""}`);
+    if (!here || replans++ >= 3 || here.top < Math.min(route[i - 1]!.top, route[i]!.top) - 0.5 || sim.result) return false;
+    route = hopRoute(ss, here, to, sim.laws);
+  }
+  return false;
 }
 
 /**
@@ -276,6 +313,7 @@ function goTo(sim: SimWorld, nav: NavWorld, b: WorldBundle, target: Target, rng:
   };
   if (typeof target !== "function" && !nav.path([p[0], p[1] - 0.9, p[2]], t) && !stop()) {
     const below = t[1] < p[1] - 0.9 - 1;
+    trace?.(`goTo ${v1(t)} from ${v1(p)}${below ? " (below)" : ""}`);
     const down = () => dropDown(sim, b, t, budget) && walkable();
     const across = () => climbOnto(sim, nav, b, t, rng, budget) || hopTo(sim, nav, b, t, budget);
     if (!(below ? down() || across() : across() || down()) && !walkable()) return stop();
@@ -380,7 +418,17 @@ function perform(r: Run, st: PlanStep): "ok" | "lost" | "stuck" {
         const c = sim.entity(st.item)!.carrier;
         return c ? sim.pos(c) : sim.pos(st.item);
       };
-      if (!sim.entity(st.item)!.carrier) clearDoors(r, sim.pos(st.item));
+      if (!sim.entity(st.item)!.carrier) {
+        clearDoors(r, sim.pos(st.item));
+        // lying somewhere the navmesh can't reach (on a platform): climb or hop to it first, unless
+        // someone takes it; reachable on foot, chase it as it moves (a bumped or carried orb)
+        const p = sim.pos("player");
+        const it = sim.pos(st.item);
+        if (!nav.path([p[0], p[1] - 0.9, p[2]], it)) {
+          go(it, () => has() || Boolean(sim.entity(st.item)!.carrier));
+          if (has()) return "ok";
+        }
+      }
       return go(where, has) ? "ok" : "stuck";
     }
     case "deliver": {
@@ -468,6 +516,7 @@ function witnessRun(R: Rapier, b: WorldBundle, nav: NavWorld, chain: WinChain, o
   const ticks = Math.min(600 * 60, Math.max(RUN_TICKS, Math.round((timer + 60) * 60)));
   const r: Run = { sim, nav, b, rng, speed: 0.85 + rng() * 0.15, budget: { ticks }, openers, opened: new Set() };
   let stuck = 0;
+  let stuckAt: Vec3 | null = null;
   let lastTop = -1;
   outer: while (live(r)) {
     if (sim.tick === lastTop) break; // a whole pass without a tick: never spin
@@ -477,6 +526,7 @@ function witnessRun(R: Rapier, b: WorldBundle, nav: NavWorld, chain: WinChain, o
       if (res === "lost") continue outer; // tagged on the way: go and win it back
       if (res === "stuck") {
         if (live(r)) stuck++;
+        stuckAt = sim.pos("player");
         break outer;
       }
       if (sim.result) break outer;
@@ -485,13 +535,13 @@ function witnessRun(R: Rapier, b: WorldBundle, nav: NavWorld, chain: WinChain, o
   }
   // how a lost run ended: the rule that fired the loss
   const lostBy = sim.result === "lose" ? (sim.log.findLast((e) => e.k === "lose")?.rule ?? "") : null;
-  const out = { won: sim.result === "win", ticks: sim.tick, stuck, lostBy };
+  const out = { won: sim.result === "win", ticks: sim.tick, stuck, lostBy, stuckAt: sim.result ? null : stuckAt };
   sim.free();
   return out;
 }
 
 /** Why runs didn't win, counted: "8 lost (hit the lava ×6, the timer ran out ×2), 4 got stuck". */
-function endings(b: WorldBundle, results: readonly { won: boolean; stuck: number; lostBy: string | null }[]): string {
+function endings(b: WorldBundle, results: readonly RunResult[]): string {
   const lost = new Map<string, number>();
   for (const r of results) if (r.lostBy !== null) lost.set(r.lostBy, (lost.get(r.lostBy) ?? 0) + 1);
   const words = (id: string) => {
@@ -501,10 +551,17 @@ function endings(b: WorldBundle, results: readonly { won: boolean; stuck: number
     return w.t === "hit" ? `hit the ${name(w.b)}` : w.t === "timer_end" ? "the timer ran out" : w.t === "score_gte" ? `${w.a.replace("team:", "")} reached ${w.n}` : w.t === "enter" ? `${name(w.a)} reached the ${name(w.b)}` : `${id}`;
   };
   const nLost = [...lost.values()].reduce((a, x) => a + x, 0);
-  const stuck = results.filter((r) => !r.won && r.lostBy === null).length;
+  const stuckRuns = results.filter((r) => !r.won && r.lostBy === null);
+  const ss = surfaces(b);
+  const where = new Map<string, number>();
+  for (const r of stuckRuns) {
+    const z = r.stuckAt && surfaceAt(ss, [r.stuckAt[0], r.stuckAt[1] - 0.8, r.stuckAt[2]])?.zone;
+    const name = z ? b.zones.find((x) => x.id === z)?.name || z.replace(/^z_/, "").replace(/_/g, " ") : "";
+    if (name) where.set(name, (where.get(name) ?? 0) + 1);
+  }
   const parts = [];
   if (nLost) parts.push(`${nLost} lost (${[...lost].sort((p, q) => q[1] - p[1]).map(([id, n]) => `${words(id)} ×${n}`).join(", ")})`);
-  if (stuck) parts.push(`${stuck} got stuck`);
+  if (stuckRuns.length) parts.push(`${stuckRuns.length} got stuck${where.size ? ` (in ${[...where].sort((p, q) => q[1] - p[1] || (p[0] < q[0] ? -1 : 1)).map(([n, k]) => `the ${n} ×${k}`).join(", ")})` : ""}`);
   return parts.join(", ") || "no run finished";
 }
 
@@ -547,7 +604,7 @@ function jumpWitness(R: Rapier, b: WorldBundle, nav: NavWorld, x: Expect, jumps:
  * The reason names the lowest step up out of reach. Null when the model can't explain it.
  */
 function outOfReach(b: WorldBundle, chain: WinChain, playerTeam: "red" | "blue", navw?: NavWorld): string | null {
-  if (b.verbs.some((v) => /jump_pad|portal/.test(v.verb))) return null;
+  if (b.verbs.some((v) => /portal/.test(v.verb))) return null;
   const laws = clampLaws(b.laws);
   const ss = surfaces(b).filter((x) => !b.statics.some((st) => st.id === x.id && st.surf === "wall"));
   const spawn = b.entities.find((e) => e.kind === "spawn" && e.team === playerTeam) ?? b.entities.find((e) => e.kind === "spawn");

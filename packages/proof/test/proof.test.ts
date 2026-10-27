@@ -120,3 +120,20 @@ describe("T0 references", () => {
     expect(t0(bundle).chips.filter((c) => c.id.startsWith("T0:refs") && c.status === "counterexample")).toEqual([]);
   });
 });
+
+describe("score comparisons (a timed match: win if red is ahead when the clock runs out)", () => {
+  it("the sim compares two scores, T0 plans the lead before the clock, T2 forces the scores the rule needs", async () => {
+    const { t0 } = await import("../src/t0");
+    const { t2 } = await import("../src/t2");
+    const timed = ctf
+      .replace('{"op":"rule","id":"r_win","when":{"t":"score_gte","a":"team:red","n":3},"then":[{"e":"win","target":"player"}],"once":true}', '{"op":"rule","id":"r_win","when":{"t":"timer_end","a":"player"},"if":[{"l":"team:red.score","op":"gt","r":"team:blue.score"}],"then":[{"e":"win","target":"player"}],"once":true}')
+      .replace('{"op":"law"', '{"op":"verb","id":"vb_clock","verb":"puzzle.timer","on":"player","params":{"seconds":30}}\n{"op":"law"');
+    const fill = parseFill(timed, { seed: 7 });
+    const layout = cityBlock.generate({ seed: 7, params: cityBlock.defaults, sub: fill.draft.pack.sub, laws: fill.draft.laws, harder: false });
+    const b = placeWorld({ ...fill.draft, engine: ENGINE }, layout).bundle;
+    const chain = t0(b).chain!;
+    expect(chain.explain).toContain("[after red scores 2]");
+    expect(chain.steps.map((s) => s.do)).toEqual(["pickup", "deliver", "wait"]);
+    expect(t2(R, b).find((c) => c.id === "T2:r_win")).toMatchObject({ status: "verified" });
+  }, 60_000);
+});

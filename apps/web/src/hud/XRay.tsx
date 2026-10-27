@@ -78,21 +78,32 @@ function Sentence({ r, b, chip, onFocus }: { r: Rule; b: WorldBundle; chip: Chip
 }
 
 export function XRay({ bundle, chips, onFocus, onClose }: { bundle: WorldBundle; chips: Chip[]; onFocus(id: string | null): void; onClose(): void }) {
-  const kitVerbs = bundle.verbs.filter((v) => v.on !== "player" || v.verb === "puzzle.timer");
+  // secrets read as one line, not five copies of "touch it, it sparkles" (logic.json keeps every rule)
+  const bonus = new Set(bundle.entities.filter((e) => e.tags.includes("bonus")).map((e) => e.id));
+  const secretRules = bundle.rules.filter((r) => bonus.has(r.when.b));
+  const secretsOk = secretRules.length > 0 && secretRules.every((r) => chips.find((c) => c.id === `T2:${r.id}`)?.status === "verified");
+  const shown = bundle.rules.filter((r) => !bonus.has(r.when.b));
+  const kitVerbs = bundle.verbs.filter((v) => (v.on !== "player" || v.verb === "puzzle.timer") && !bonus.has(v.on));
   return (
     <div className="glass xray" role="dialog" aria-label="Logic X-ray" data-testid="xray">
       <div className="xray-head">
         <strong>Logic X-ray</strong>
-        <span className="muted">{bundle.rules.length} rules · {kitVerbs.length} verbs · triggers, states and rules</span>
+        <span className="muted">{shown.length} rules{secretRules.length ? ` + ${secretRules.length} secrets` : ""} · {kitVerbs.length} verbs · triggers, states and rules</span>
         <button type="button" onClick={onClose} aria-label="close">×</button>
       </div>
       <ul className="rules">
-        {[...bundle.rules]
+        {[...shown]
           .sort((a, b) => (a.then.some((e) => e.e === "win" || e.e === "lose") ? 1 : 0) - (b.then.some((e) => e.e === "win" || e.e === "lose") ? 1 : 0))
           .map((r) => (
             <Sentence key={r.id} r={r} b={bundle} chip={chips.find((c) => c.id === `T2:${r.id}`)} onFocus={onFocus} />
           ))}
       </ul>
+      {secretRules.length > 0 && (
+        <p className="xray-secrets" data-testid="xray-secrets">
+          ★ {secretRules.length} secret {bundle.entities.find((e) => bonus.has(e.id))?.noun ?? "gem"}s: WHEN you touch one THEN it sparkles (once). They count apart from the win.
+          <span className={secretsOk ? "proofmark verified" : "proofmark"}> {secretsOk ? "✓ force-tested" : "…"}</span>
+        </p>
+      )}
       {kitVerbs.length > 0 && (
         <>
           <div className="xray-sub">Verbs</div>
