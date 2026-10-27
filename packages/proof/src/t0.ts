@@ -2,10 +2,49 @@
 // by goal regression (win ← score_gte ← score effect ← enter with carrier ← pickup …).
 import type { Rule, WorldBundle } from "@ghostrun/ir";
 import { SPECIAL_REFS } from "@ghostrun/ir";
+import { verb } from "@ghostrun/kits";
+import { clampParams, type Cause, type Produces } from "@ghostrun/plugin-api";
 import type { Chip } from "./types";
 
-/** One step of the abstract plan T3 executes: pick up `item`, or bring `item` into `sensor`. */
-export type PlanStep = { do: "pickup"; item: string; rule: string } | { do: "deliver"; item: string; sensor: string; rule: string; times: number };
+/** One step of the abstract plan T3 executes. */
+export type PlanStep =
+  | { do: "pickup"; item: string; rule: string } // pick up `item`
+  | { do: "deliver"; item: string; sensor: string; rule: string; times: number } // bring `item` (or the player) into `sensor`
+  | { do: "use"; at: string; rule: string } // stand by `at` and press USE
+  | { do: "touch"; at: string; rule: string } // touch `at`
+  | { do: "collect"; items: string[]; rule: string; times: number } // touch `times` of `items`
+  | { do: "wait"; rule: string }; // let time run (a timer)
+
+/** What each kit verb in the world can produce, and how an agent causes it. */
+export function producers(b: WorldBundle): Produces[] {
+  const out: Produces[] = [];
+  for (const vb of [...b.verbs].sort((x, y) => (x.id < y.id ? -1 : 1))) {
+    const p = verb(vb.verb);
+    if (p?.produces) out.push(...p.produces({ id: vb.id, on: vb.on, params: clampParams(p.params, vb.params), mem: {} }));
+  }
+  return out;
+}
+
+/** Entities the world's verbs make carryable (carry, and a lock's key). */
+export function carryables(b: WorldBundle): Set<string> {
+  const out = new Set(b.verbs.filter((v) => v.verb.endsWith(".carry")).map((v) => v.on));
+  for (const vb of b.verbs) {
+    const p = verb(vb.verb);
+    for (const id of p?.carries?.({ id: vb.id, on: vb.on, params: clampParams(p.params, vb.params), mem: {} }) ?? []) out.add(id);
+  }
+  return out;
+}
+
+export function causeSteps(c: Cause, rule: string): PlanStep[] {
+  switch (c.do) {
+    case "use":
+      return [...(c.holding ? [{ do: "pickup" as const, item: c.holding, rule: "" }] : []), { do: "use", at: c.at, rule }];
+    case "enter":
+      return [{ do: "deliver", item: "player", sensor: c.at, rule, times: 1 }];
+    case "touch":
+      return [{ do: "touch", at: c.at, rule }];
+  }
+}
 
 export interface WinChain {
   winRule: string;
@@ -15,13 +54,14 @@ export interface WinChain {
 
 const chip = (c: Omit<Chip, "tier" | "n" | "k" | "cx" | "ms"> & Partial<Chip>): Chip => ({ tier: "T0", n: 0, k: 0, cx: null, ms: 0, ...c });
 
-export function t0(b: WorldBundle, playerTeam: "red" | "blue" = "red"): { chips: Chip[]; chain: WinChain | null } {
+export function t0(b: WorldBundle, playerTeam: "red" | "blue" = "red"): { chips: Chip[]; chain: WinChain | null; openers: Map<string, PlanStep[]> } {
   const t = performanceNow();
   const chips: Chip[] = [];
   const ents = new Map(b.entities.map((e) => [e.id, e]));
   const ids = new Set([...b.entities.map((e) => e.id), ...b.zones.map((z) => z.id), ...b.states.map((s) => s.id), ...b.rules.map((r) => r.id)]);
   const ok = (ref: string) => ref === "" || (SPECIAL_REFS as readonly string[]).includes(ref) || ref.startsWith("tag:") || ids.has(ref.split(".")[0]!);
-  const carryable = new Set(b.verbs.filter((v) => v.verb.endsWith(".carry")).map((v) => v.on));
+  const carryable = carryables(b);
+  const made = producers(b);
 
   // 1. references
   let bad = 0;
@@ -55,7 +95,7 @@ export function t0(b: WorldBundle, playerTeam: "red" | "blue" = "red"): { chips:
           if (!sub) continue;
           const per = fx.n || 1;
           const times = Math.max(1, Math.ceil(w.n / per));
-          const steps = sub.steps.map((st) => (st.do === "deliver" ? { ...st, times } : st));
+          const steps = sub.steps.map((st) => (st.do === "deliver" || st.do === "collect" ? { ...st, times } : st));
           return { steps, explain: `${r.id} (${w.a} reaches ${w.n}) ← ${sub.explain}` };
         }
         return null;
@@ -74,10 +114,43 @@ export function t0(b: WorldBundle, playerTeam: "red" | "blue" = "red"): { chips:
         return carryable.has(w.a) ? { steps: [{ do: "pickup", item: w.a, rule: r.id }], explain: `${r.id} (pick up ${w.a})` } : null;
       case "every":
         return { steps: [], explain: `${r.id} (every ${w.n} s)` };
+      case "state_is": {
+        const p = made.find((x) => x.k === "state" && x.a === w.a && x.s === w.s && x.cause);
+        return p ? { steps: causeSteps(p.cause!, r.id), explain: `${r.id} (${w.a} becomes ${w.s}: ${p.cause!.do} ${p.cause!.at})` } : null;
+      }
+      case "touch":
+      case "hit": {
+        if (w.a && w.a !== "player") return null;
+        const ps = made.filter((x) => x.k === w.t && (!w.b || x.b === w.b) && x.cause);
+        if (!ps.length) return null;
+        if (w.b || ps.length === 1) return { steps: causeSteps(ps[0]!.cause!, r.id), explain: `${r.id} (${w.t} ${ps[0]!.b})` };
+        const items = ps.map((x) => x.b!);
+        return { steps: [{ do: "collect", items, rule: r.id, times: 1 }], explain: `${r.id} (${w.t} any of ${items.length})` };
+      }
+      case "timer_end":
+        return made.some((x) => x.k === "timer_end" && x.a === w.a) ? { steps: [{ do: "wait", rule: r.id }], explain: `${r.id} (the timer runs out)` } : null;
       default:
         return null;
     }
   };
+
+  // How to open each door, for runners whose path it blocks: its lock, or any rule that opens it.
+  const openers = new Map<string, PlanStep[]>();
+  for (const d of [...ents.values()].filter((e) => e.kind === "door").sort((x, y) => (x.id < y.id ? -1 : 1))) {
+    const lock = made.find((x) => x.k === "state" && x.a === d.id && x.s === "open" && x.cause);
+    if (lock) {
+      openers.set(d.id, causeSteps(lock.cause!, ""));
+      continue;
+    }
+    for (const r of rules) {
+      if (!r.then.some((e) => e.e === "open" && e.target === d.id)) continue;
+      const s = sat(r, 1, new Set());
+      if (s) {
+        openers.set(d.id, s.steps);
+        break;
+      }
+    }
+  }
 
   let chain: WinChain | null = null;
   const wins = rules.filter((r) => r.then.some((e) => e.e === "win"));
@@ -96,7 +169,7 @@ export function t0(b: WorldBundle, playerTeam: "red" | "blue" = "red"): { chips:
     );
   }
   for (const c of chips) c.ms = Math.round(performanceNow() - t);
-  return { chips, chain };
+  return { chips, chain, openers };
 }
 
 // Works in browsers, workers, workerd and Node; only used for reporting durations.

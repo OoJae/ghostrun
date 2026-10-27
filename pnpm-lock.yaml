@@ -221,6 +221,15 @@ importers:
         specifier: 'catalog:'
         version: 1.5.0(typescript@6.0.3)
 
+  packages/kits:
+    dependencies:
+      '@ghostrun/ir':
+        specifier: workspace:*
+        version: link:../ir
+      '@ghostrun/plugin-api':
+        specifier: workspace:*
+        version: link:../plugin-api
+
   packages/layout:
     dependencies:
       '@ghostrun/detmath':
@@ -229,6 +238,9 @@ importers:
       '@ghostrun/ir':
         specifier: workspace:*
         version: link:../ir
+      '@ghostrun/kits':
+        specifier: workspace:*
+        version: link:../kits
       '@ghostrun/plugin-api':
         specifier: workspace:*
         version: link:../plugin-api
@@ -242,6 +254,9 @@ importers:
       '@ghostrun/ir':
         specifier: workspace:*
         version: link:../ir
+      '@ghostrun/kits':
+        specifier: workspace:*
+        version: link:../kits
       '@ghostrun/plugin-api':
         specifier: workspace:*
         version: link:../plugin-api
@@ -357,9 +372,15 @@ importers:
       '@ghostrun/ir':
         specifier: workspace:*
         version: link:../ir
+      '@ghostrun/kits':
+        specifier: workspace:*
+        version: link:../kits
       '@ghostrun/nav':
         specifier: workspace:*
         version: link:../nav
+      '@ghostrun/plugin-api':
+        specifier: workspace:*
+        version: link:../plugin-api
       '@ghostrun/sim':
         specifier: workspace:*
         version: link:../sim
@@ -367,6 +388,9 @@ importers:
       '@ghostrun/layout':
         specifier: workspace:*
         version: link:../layout
+      '@ghostrun/pack-arena':
+        specifier: workspace:*
+        version: link:../packs/arena
       '@ghostrun/pack-city-block':
         specifier: workspace:*
         version: link:../packs/city-block
@@ -400,6 +424,12 @@ importers:
       '@ghostrun/ir':
         specifier: workspace:*
         version: link:../ir
+      '@ghostrun/kits':
+        specifier: workspace:*
+        version: link:../kits
+      '@ghostrun/plugin-api':
+        specifier: workspace:*
+        version: link:../plugin-api
     devDependencies:
       '@ghostrun/layout':
         specifier: workspace:*

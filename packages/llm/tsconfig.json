@@ -1,6 +1,29 @@
 {
   "extends": "../../tsconfig.base.json",
-  "compilerOptions": { "outDir": "dist/types", "rootDir": ".", "types": ["node"], "lib": ["ES2023", "DOM"] },
-  "include": ["src", "test"],
-  "references": [{ "path": "../ir" }, { "path": "../plugin-api" }]
+  "compilerOptions": {
+    "outDir": "dist/types",
+    "rootDir": ".",
+    "types": [
+      "node"
+    ],
+    "lib": [
+      "ES2023",
+      "DOM"
+    ]
+  },
+  "include": [
+    "src",
+    "test"
+  ],
+  "references": [
+    {
+      "path": "../kits"
+    },
+    {
+      "path": "../ir"
+    },
+    {
+      "path": "../plugin-api"
+    }
+  ]
 }

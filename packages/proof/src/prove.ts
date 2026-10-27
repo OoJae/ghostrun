@@ -34,12 +34,12 @@ export async function prove(R: Rapier, b: WorldBundle, opts: ProveOptions): Prom
   emit(t2(R, b, team));
   const nav = buildNav(b);
   try {
-    const s3 = t3(R, b, nav, s0.chain, opts.runs ?? 12, team);
+    const s3 = t3(R, b, nav, s0.chain, opts.runs ?? 12, team, s0.openers);
     emit(s3.chips);
     const headlineExpect = b.expects.find((x) => x.headline);
     let headline: Receipt["headline"] = null;
     if (headlineExpect) {
-      const mine = chips.filter((c) => c.subject.id === headlineExpect.id);
+      const mine = chips.filter((c) => c.subject.id === headlineExpect.id || (headlineExpect.prop === "win_reachable" && c.subject.id === "win_reachable"));
       const status: ChipStatus = mine.some((c) => c.status === "counterexample")
         ? "counterexample"
         : mine.some((c) => c.status === "verified")

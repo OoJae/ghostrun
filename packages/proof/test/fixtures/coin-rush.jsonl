@@ -1,0 +1,33 @@
+{"op":"meta","mode":"play","lang":"en","pack":"arena","sub":[],"seed":11,"look":"neon","mood":[0.6,0.7,0.4],"timeOfDay":20,"weather":"clear"}
+{"op":"zone","id":"z_mid","slot":"midfield","tag":"center","name":"Midfield"}
+{"op":"zone","id":"z_west","slot":"west_half","tag":"base","name":"West end"}
+{"op":"zone","id":"z_east","slot":"east_half","tag":"base","name":"East end"}
+{"op":"zone","id":"z_deck","slot":"north_deck","tag":"platform","name":"North deck"}
+{"op":"spawn","id":"sp_red","zone":"z_west","anchor":"spawn_pad","team":"red"}
+{"op":"ent","id":"coin_1","kind":"pickup","noun":"gold coin","hyper":"coin","zone":"z_mid","anchor":"center_n","body":"sensor","shape":"sphere"}
+{"op":"ent","id":"coin_2","kind":"pickup","noun":"gold coin","hyper":"coin","zone":"z_mid","anchor":"center_s","body":"sensor","shape":"sphere"}
+{"op":"ent","id":"coin_3","kind":"pickup","noun":"gold coin","hyper":"coin","zone":"z_east","anchor":"flank_n","body":"sensor","shape":"sphere"}
+{"op":"ent","id":"coin_4","kind":"pickup","noun":"gold coin","hyper":"coin","zone":"z_east","anchor":"flank_s","body":"sensor","shape":"sphere"}
+{"op":"ent","id":"coin_5","kind":"pickup","noun":"gold coin","hyper":"coin","zone":"z_deck","anchor":"deck_center","body":"sensor","shape":"sphere"}
+{"op":"ent","id":"pad_1","kind":"plate","noun":"jump pad","hyper":"pad","zone":"z_mid","anchor":"center","body":"sensor"}
+{"op":"ent","id":"lava_1","kind":"hazard","noun":"lava pool","hyper":"pool","zone":"z_west","anchor":"flank_n","body":"sensor"}
+{"op":"ent","id":"sw_lights","kind":"switch","noun":"floodlight switch","hyper":"switch","zone":"z_west","anchor":"flank_s","body":"fixed"}
+{"op":"verb","id":"vb_jump","verb":"locomotion.jump","on":"player","params":{"jumpsMax":2}}
+{"op":"verb","id":"vb_c1","verb":"puzzle.collect","on":"coin_1","params":{}}
+{"op":"verb","id":"vb_c2","verb":"puzzle.collect","on":"coin_2","params":{}}
+{"op":"verb","id":"vb_c3","verb":"puzzle.collect","on":"coin_3","params":{}}
+{"op":"verb","id":"vb_c4","verb":"puzzle.collect","on":"coin_4","params":{}}
+{"op":"verb","id":"vb_c5","verb":"puzzle.collect","on":"coin_5","params":{}}
+{"op":"verb","id":"vb_pad","verb":"locomotion.jump_pad","on":"pad_1","params":{"height":5}}
+{"op":"verb","id":"vb_lava","verb":"motion_hazards.hazard","on":"lava_1","params":{"respawn":true}}
+{"op":"verb","id":"vb_sw","verb":"puzzle.switch","on":"sw_lights","params":{}}
+{"op":"verb","id":"vb_clock","verb":"puzzle.timer","on":"player","params":{"seconds":120}}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6}}
+{"op":"rule","id":"r_coin","when":{"t":"touch","a":"player"},"then":[{"e":"score","target":"team:red","n":1},{"e":"emit","target":"player","fx":"chime"}]}
+{"op":"rule","id":"r_win","when":{"t":"score_gte","a":"team:red","n":5},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_late","when":{"t":"timer_end","a":"player"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_lava","when":{"t":"hit","a":"player","b":"lava_1"},"then":[{"e":"emit","target":"lava_1","fx":"sizzle"}]}
+{"op":"rule","id":"r_lights","when":{"t":"state_is","a":"sw_lights","s":"on"},"then":[{"e":"emit","target":"sw_lights","fx":"floodlights"}]}
+{"op":"expect","id":"x_win","prop":"win_reachable","a":"sp_red","b":"z_mid","headline":true,"text":"All 5 coins before the clock runs out"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

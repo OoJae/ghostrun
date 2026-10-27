@@ -10,7 +10,9 @@
   "dependencies": {
     "@dimforge/rapier3d-deterministic": "catalog:",
     "@ghostrun/detmath": "workspace:*",
-    "@ghostrun/ir": "workspace:*"
+    "@ghostrun/ir": "workspace:*",
+    "@ghostrun/kits": "workspace:*",
+    "@ghostrun/plugin-api": "workspace:*"
   },
   "devDependencies": {
     "@ghostrun/layout": "workspace:*",

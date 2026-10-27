@@ -1,6 +1,7 @@
 // Prompt builders for the fast lane. Wire schemas stay constant across worlds (warm grammar
 // cache): flat, every field required, no unions, no field named reasoning/thinking/trace.
 import * as v from "valibot";
+import { VERBS } from "@ghostrun/kits";
 import type { PackLayout } from "@ghostrun/plugin-api";
 
 export const IntentOut = v.object({
@@ -72,12 +73,18 @@ export function intentMessages(prompt: string, packs: { id: string; blurb: strin
 
 /** Runtime-supported vocabulary today. The list grows as kits land; the LLM only sees what runs. */
 export const SUPPORTED = {
-  verbs: [
-    { id: "locomotion.jump", line: 'player jump; params {"jumpsMax":1-3}; also set the law line' },
-    { id: "physics_props.carry", line: "on an item entity: the player picks it up by touching it and carries it" },
-    { id: "motion_hazards.oscillate", line: 'on a platform entity: moves back and forth; params {"axis":"x"|"z","travel":metres,"period":seconds}' },
+  verbs: VERBS.map((v) => ({ id: v.id, line: v.line })),
+  triggers: [
+    "enter (a=moving thing or 'player', b=sensor entity like a goal)",
+    "exit",
+    "pickup (a=item, b='player')",
+    "state_is (a=entity, s=state it changes to: a switch 'on', a plate 'down', a door 'open', a checkpoint 'reached')",
+    "touch (a='player', b=thing collected or inspected; leave b empty for any)",
+    "hit (a='player', b=hazard)",
+    "timer_end (a=the id the timer verb is bound on, e.g. 'player')",
+    "score_gte (a='team:red'|'team:blue', n=threshold)",
+    "every (n=seconds)",
   ],
-  triggers: ["enter (a=moving thing or 'player', b=sensor entity like a goal)", "exit", "pickup (a=item, b='player')", "score_gte (a='team:red'|'team:blue', n=threshold)", "every (n=seconds)"],
   effects: ["score (target 'team:red'|'team:blue', n=points)", "win (target 'player')", "lose (target 'player')", "reset (target=entity: back to its start)", "set_state (target, v=state)", "emit (target, fx=visual effect name)", "destroy (target)", "open/close (target door)", "teleport (target, v=destination entity id)"],
   conditions: "if: [{\"l\":\"orb.carrier.team\",\"op\":\"eq\",\"r\":\"red\"}] — paths: <id>.team, <id>.state, <id>.carrier.team, team:red.score",
 };
@@ -101,6 +108,7 @@ export function fillMessages(prompt: string, intent: IntentOut, layout: PackLayo
         "- shape: none | box | capsule | sphere | hull   - team: \"\" | red | blue   (no team = \"\")",
         "- expect prop: win_reachable | reachable | unreachable | requires | fair_teams   (\"headline\" is a boolean field, not a prop)",
         "Goals are sensors; pickups are carried with the carry verb.",
+        "Make it interactive: 10-20 things the player can use, collect, step on or dodge (switches, plates, locked doors and keys, coins, hazards, jump pads, portals, exhibits to inspect), each bound to its verb and wired with rules so it matters.",
         `Verbs:\n${SUPPORTED.verbs.map((x) => `- ${x.id}: ${x.line}`).join("\n")}`,
         `Rule triggers: ${SUPPORTED.triggers.join("; ")}.`,
         `Rule effects: ${SUPPORTED.effects.join("; ")}.`,
@@ -108,7 +116,7 @@ export function fillMessages(prompt: string, intent: IntentOut, layout: PackLayo
         "Laws line for movement: {\"op\":\"law\",\"player\":{\"jumpsMax\":2,\"jumpH\":1.6,\"speed\":6}}.",
         "Play worlds MUST have: a red spawn for the player, a way to win and a way to lose, and an expect line with \"headline\":true stating the prompt-specific property (props: requires (need [\"jumps>=2\"]), win_reachable, reachable, unreachable, fair_teams).",
         "Expect lines name things by id: a = where the player starts (the spawn id), b = the ZONE id (or goal entity id) the property is about. Example: {\"op\":\"expect\",\"id\":\"x_roof\",\"prop\":\"requires\",\"a\":\"sp_red\",\"b\":\"z_roof\",\"need\":[\"jumps>=2\"],\"headline\":true,\"text\":\"Rooftop lane needs double jump\"}. Never use a verb id or 'player' in a or b.",
-        "Budgets: ≤8 zones, ≤40 entities, ≤12 verbs, ≤16 rules, ≤4 minded npcs + 8 plain, ≤6 expects.",
+        "Budgets: ≤8 zones, ≤40 entities, ≤32 verbs, ≤20 rules, ≤4 minded npcs + 8 plain, ≤6 expects.",
         "NPC line: {\"op\":\"npc\",\"id\":\"guard_1\",\"role\":\"guard|merchant|guide|rival|teammate|creature|citizen\",\"zone\":\"...\",\"anchor\":\"...\",\"team\":\"\",\"menu\":[\"guard.patrol\"],\"dflt\":\"guard.patrol\"}.",
         "Example for a different prompt (copy the style, not the content):",
         example.trim(),

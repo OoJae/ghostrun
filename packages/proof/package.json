@@ -9,11 +9,14 @@
     "@ghostrun/bots": "workspace:*",
     "@ghostrun/detmath": "workspace:*",
     "@ghostrun/ir": "workspace:*",
+    "@ghostrun/kits": "workspace:*",
     "@ghostrun/nav": "workspace:*",
+    "@ghostrun/plugin-api": "workspace:*",
     "@ghostrun/sim": "workspace:*"
   },
   "devDependencies": {
     "@ghostrun/layout": "workspace:*",
+    "@ghostrun/pack-arena": "workspace:*",
     "@ghostrun/pack-city-block": "workspace:*"
   }
 }

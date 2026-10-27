@@ -3,11 +3,13 @@
 // id order, rules in (prio desc, id) order — so the same bundle + seed + inputs give bit-identical
 // event logs and state hashes everywhere.
 import { hex32, xxh32 } from "@ghostrun/detmath";
+import { verb as kitVerb } from "@ghostrun/kits";
+import { clampParams, type Bound, type VerbCtx, type VerbPlugin } from "@ghostrun/plugin-api";
 import type { Effect, Entity, Laws, Rule, Vec3, WorldBundle } from "@ghostrun/ir";
 import { clampLaws } from "@ghostrun/ir";
-import { PLAYER_HALF_HEIGHT, PLAYER_RADIUS, PlayerController } from "./controller";
+import { launch, PLAYER_HALF_HEIGHT, PLAYER_RADIUS, PlayerController } from "./controller";
 import type { Rapier } from "./rapier/load";
-import { DT, type InputFrame, type Pose, type Result, type SimEvent } from "./types";
+import { BTN, DT, type InputFrame, type Pose, type Result, type SimEvent } from "./types";
 
 type RigidBody = InstanceType<Rapier["RigidBody"]>;
 type Collider = InstanceType<Rapier["Collider"]>;
@@ -72,6 +74,13 @@ export class SimWorld {
   #brain: Brain | undefined;
   #tagRadius = 0; // > 0 when the world has a tag_drop verb: any agent tags an enemy carrier
   #noPickup = new Map<string, number>(); // agent → first tick it may pick up again (after a tag)
+  /** Kit verbs bound in this world, in binding-id order. */
+  readonly verbs: { plugin: VerbPlugin; bound: Bound }[] = [];
+  #ctx!: VerbCtx;
+  #emit: (k: string, a: string, b?: string, v?: number | string) => void = () => {};
+  #checkpoint = new Map<string, Vec3>();
+  #useHeld = new Set<string>();
+  #agents: string[] = [];
 
   constructor(R: Rapier, bundle: WorldBundle, opts: SimOptions = {}) {
     this.R = R;
@@ -88,7 +97,14 @@ export class SimWorld {
       this.world.createCollider(R.ColliderDesc.cuboid(s.size[0] / 2, s.size[1] / 2, s.size[2] / 2).setTranslation(s.pos[0], s.pos[1], s.pos[2]), fixed);
     }
 
+    for (const v of byId(bundle.verbs)) {
+      const plugin = kitVerb(v.verb);
+      if (plugin && (plugin.use || plugin.tick || plugin.init || plugin.initial || plugin.carries)) {
+        this.verbs.push({ plugin, bound: { id: v.id, on: v.on, params: clampParams(plugin.params, v.params), mem: {} } });
+      }
+    }
     const carryable = new Set(bundle.verbs.filter((v) => v.verb.endsWith(".carry")).map((v) => v.on));
+    for (const { plugin, bound } of this.verbs) for (const id of plugin.carries?.(bound) ?? []) carryable.add(id);
     const osc = new Map(bundle.verbs.filter((v) => v.verb.endsWith(".oscillate")).map((v) => [v.on, v.params]));
 
     for (const e of byId(bundle.entities)) {
@@ -113,7 +129,104 @@ export class SimWorld {
 
     this.order.push(...[...this.ents.keys()].sort());
     for (const id of this.order) if (this.ents.get(id)!.sensor) this.#inside.set(id, new Set());
+    this.#agents = this.order.filter((id) => id === "player" || this.npcs.has(id));
     this.#rules = [...bundle.rules].sort((a, b) => b.prio - a.prio || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
+    for (const { plugin, bound } of this.verbs) {
+      const e = this.ents.get(bound.on);
+      if (e && !e.init && plugin.initial) e.state = e.init = plugin.initial;
+    }
+    this.#ctx = this.#makeCtx();
+    for (const { plugin, bound } of this.verbs) plugin.init?.(this.#ctx, bound);
+  }
+
+  #makeCtx(): VerbCtx {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
+    const w = this;
+    const ctrl = (id: string) => (id === "player" ? w.player : w.npcs.get(id));
+    return {
+      get tick() {
+        return w.tick;
+      },
+      laws: w.laws,
+      pos: (id) => w.pos(id),
+      ent: (id) => w.ents.get(id),
+      agents: () => w.#agents,
+      near: (a, b, r) => w.#near(a, b, r),
+      inside: (m, box) => w.#within(m, box),
+      standingOn: (a, box) => {
+        const e = w.ents.get(box);
+        if (!e || e.destroyed) return false;
+        const p = w.pos(a);
+        const c = w.pos(box);
+        const feet = p[1] - PLAYER_HALF_HEIGHT - PLAYER_RADIUS;
+        return Math.abs(feet - (c[1] + e.size[1] / 2)) < 0.15 && Math.abs(p[0] - c[0]) <= e.size[0] / 2 + 0.2 && Math.abs(p[2] - c[2]) <= e.size[2] / 2 + 0.2;
+      },
+      setState: (id, st) => {
+        const e = w.ents.get(id);
+        if (!e || e.state === st) return;
+        e.state = st;
+        w.#emit("state", id, "", st);
+      },
+      setSolid: (id, on) => w.ents.get(id)?.col?.setEnabled(on),
+      emit: (k, a, b = "", v = "") => w.#emit(k, a, b, v),
+      destroy: (id) => w.#destroy(id),
+      teleport: (id, p) => w.teleport(id, p),
+      launch: (id, vy) => {
+        const c = ctrl(id);
+        if (c) launch(c, vy);
+      },
+      shove: (id, vx, vz) => {
+        const c = ctrl(id);
+        if (c) ((c.shoveX += vx), (c.shoveZ += vz));
+      },
+      respawn: (id) => w.#respawn(id),
+      setCheckpoint: (id, p) => w.#checkpoint.set(id, p),
+    };
+  }
+
+  #destroy(id: string): boolean {
+    const e = this.ents.get(id);
+    if (!e || e.destroyed) return false;
+    e.destroyed = true;
+    e.col?.setEnabled(false);
+    if (e.carrier) {
+      this.ents.get(e.carrier)!.carrying = "";
+      e.carrier = "";
+    }
+    this.#emit("destroy", id);
+    return true;
+  }
+
+  /** Back to the last checkpoint (or home); whatever it carried goes back to where it started. */
+  #respawn(id: string) {
+    const e = this.ents.get(id);
+    if (!e) return;
+    if (e.carrying) {
+      const item = this.ents.get(e.carrying)!;
+      e.carrying = "";
+      item.carrier = "";
+      item.body?.setBodyType(this.R.RigidBodyType.Dynamic, true);
+      this.teleport(item.id, item.home);
+      this.#emit("reset", item.id);
+    }
+    this.teleport(id, this.#checkpoint.get(id) ?? e.home);
+    this.#emit("respawn", id);
+  }
+
+  /** The nearest verb this agent could USE right now (the HUD's "F: flip switch"). */
+  usable(agent = "player"): { verb: string; on: string; label: string } | null {
+    let best: { verb: string; on: string; label: string } | null = null;
+    let bestD = Infinity;
+    for (const { plugin, bound } of this.verbs) {
+      const u = plugin.use;
+      const e = this.ents.get(bound.on);
+      if (!u || !e || e.destroyed || !this.#near(agent, bound.on, u.radius + Math.max(e.size[0], e.size[2]) / 2)) continue;
+      const p = this.pos(agent);
+      const q = this.pos(bound.on);
+      const d = (p[0] - q[0]) * (p[0] - q[0]) + (p[2] - q[2]) * (p[2] - q[2]);
+      if (d < bestD) ((bestD = d), (best = { verb: bound.id, on: bound.on, label: u.label }));
+    }
+    return best;
   }
 
   #kcc(): Kcc {
@@ -215,6 +328,7 @@ export class SimWorld {
       evs.push({ tick: t, k, a, b, v, rule, cause });
     };
 
+    this.#emit = (k, a, b = "", v = "") => push(k, a, b, v);
     // 0. the cast decides from where everything stood at the end of the last tick
     const npcIn = this.#brain?.think(this);
 
@@ -243,6 +357,22 @@ export class SimWorld {
 
     // 3. physics
     this.world.step();
+
+    // 3b. anyone who fell out of the world comes back (a pit, or off the edge of a platform)
+    for (const id of this.#agents) if (!this.ents.get(id)!.destroyed && this.pos(id)[1] < -20) this.#respawn(id);
+
+    // 3c. USE: a fresh press runs the nearest usable verb in reach
+    for (const id of this.#agents) {
+      const btn = id === "player" ? (input?.btn ?? 0) : (npcIn?.get(id)?.btn ?? 0);
+      const down = (btn & BTN.USE) !== 0;
+      if (down && !this.#useHeld.has(id)) {
+        const u = this.usable(id);
+        const v = u && this.verbs.find((x) => x.bound.id === u.verb);
+        if (v) v.plugin.use!.run(this.#ctx, v.bound, id);
+      }
+      if (down) this.#useHeld.add(id);
+      else this.#useHeld.delete(id);
+    }
 
     // 4. triggers, in id order. Tags first: an agent within reach of an enemy carrier knocks the
     // item loose on the floor between them, so the tagger can take it this tick.
@@ -296,6 +426,7 @@ export class SimWorld {
     for (const r of this.#rules) {
       if (r.when.t === "every" && r.when.n > 0 && t % Math.max(1, Math.round(r.when.n * 60)) === 0) push("every", r.id);
     }
+    for (const { plugin, bound } of this.verbs) plugin.tick?.(this.#ctx, bound);
 
     // 5. rules (events may cascade; score_gte is checked after each pass)
     for (let i = 0; i < evs.length && i < 512; i++) {
@@ -427,7 +558,7 @@ export class SimWorld {
   #fire(ev: SimEvent, idx: number, push: (k: string, a: string, b?: string, v?: number | string, rule?: string, cause?: number) => void, only?: Rule) {
     for (const r of only ? [only] : this.#rules) {
       const w = r.when;
-      if (w.t !== ev.k) continue;
+      if (w.t === "state_is" ? ev.k !== "state" || String(ev.v) !== w.s : w.t !== ev.k) continue;
       if (w.t !== "every" && w.a && w.a !== ev.a) continue;
       if (w.t === "every" && ev.a !== r.id) continue;
       if (w.b && w.b !== ev.b) continue;
@@ -486,6 +617,10 @@ export class SimWorld {
         if (!e || e.destroyed) break;
         e.destroyed = true;
         e.col?.setEnabled(false);
+        if (e.carrier) {
+          this.ents.get(e.carrier)!.carrying = "";
+          e.carrier = "";
+        }
         push("destroy", target, "", "", rule, cause);
         break;
       }

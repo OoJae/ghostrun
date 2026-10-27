@@ -23,6 +23,9 @@ export class PlayerController {
   vz = 0;
   grounded = false;
   jumpsUsed = 0;
+  /** Extra horizontal velocity for the next step only (wind, conveyors), m/s. */
+  shoveX = 0;
+  shoveZ = 0;
   #coyote = 0;
   #buffer = 0;
   #prevBtn = 0;
@@ -95,6 +98,13 @@ export class PlayerController {
     if (!this.grounded || this.vy > 0) this.vy = Math.max(-50, this.vy - this.#g * DT);
 
     const want = { x: this.vx * DT, y: this.vy * DT, z: this.vz * DT };
+    if (this.shoveX !== 0 || this.shoveZ !== 0) {
+      // only when shoved: adding +0 would flip a −0 velocity to +0, and the KCC branches on it
+      want.x += this.shoveX * DT;
+      want.z += this.shoveZ * DT;
+      this.shoveX = 0;
+      this.shoveZ = 0;
+    }
     this.kcc.computeColliderMovement(this.collider, want, undefined, undefined, (c) => !exclude(c));
     const mv = this.kcc.computedMovement();
     const wasGrounded = this.grounded;
@@ -120,4 +130,11 @@ export class PlayerController {
   static feetY(centreY: number): number {
     return centreY - PLAYER_HALF_HEIGHT - PLAYER_RADIUS;
   }
+}
+
+/** Launch straight up (jump pads): airborne now, and any remaining air jumps still count. */
+export function launch(c: PlayerController, vy: number) {
+  c.vy = vy;
+  c.grounded = false;
+  if (c.jumpsUsed === 0) c.jumpsUsed = 1;
 }

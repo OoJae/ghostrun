@@ -10,7 +10,7 @@ import {
 } from "./vocab";
 
 export const MAX_LINE_BYTES = 1024;
-export const BUDGETS = { gameplay: 60, zone: 8, ent: 40, verb: 12, rule: 16, minded: 4, plainNpc: 8, expect: 6, dress: 40, poster: 4 } as const;
+export const BUDGETS = { gameplay: 90, zone: 8, ent: 40, verb: 32, rule: 20, minded: 4, plainNpc: 8, expect: 6, dress: 40, poster: 4 } as const;
 
 const id = v.pipe(v.string(), v.regex(/^[a-z][a-z0-9_]{0,31}$/));
 const lit = v.union([v.string(), v.number(), v.boolean()]);

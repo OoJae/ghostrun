@@ -51,3 +51,23 @@ describe("proof ladder on the organizer's CTF brief", () => {
     expect(receipt.headline?.status).toBe("counterexample");
   }, 60_000);
 });
+
+describe("proof ladder on kit verbs (coin rush: collect, timer, hazard, switch, jump pad)", () => {
+  it("regresses the win to collecting coins, forces every kit trigger, and runners collect all five", async () => {
+    const { arena } = await import("@ghostrun/pack-arena");
+    const text = readFileSync(new URL("./fixtures/coin-rush.jsonl", import.meta.url), "utf8");
+    const fill = parseFill(text, { seed: 11 });
+    expect(fill.notes.filter((n) => n.kind === "invalid" || n.kind === "unresolved")).toEqual([]);
+    const layout = arena.generate({ seed: 11, params: arena.defaults, sub: [], laws: fill.draft.laws, harder: false });
+    const placed = placeWorld({ ...fill.draft, engine: ENGINE }, layout);
+    const receipt = await prove(R, placed.bundle, { engine: ENGINE, runs: 6 });
+    console.log(["", `coin rush · ${receipt.ms} ms`, ...receipt.chips.map(chipLine), `par: ${JSON.stringify(receipt.par)}`, ...placed.notes].join("\n"));
+    expect(receipt.chips.find((c) => c.id === "T0:win_chain")).toMatchObject({ status: "verified" });
+    expect(receipt.chips.find((c) => c.id === "T0:win_chain")!.text).toContain("touch any of 5");
+    const t2 = receipt.chips.filter((c) => c.tier === "T2");
+    expect(t2.map((c) => [c.subject.id, c.status])).toEqual(placed.bundle.rules.map((r) => [r.id, "verified"]).sort());
+    const win = receipt.chips.find((c) => c.id === "T3:win")!;
+    expect(win.k).toBeGreaterThanOrEqual(5); // ≥5 of 6 runners collect all five in time
+    expect(receipt.headline).toMatchObject({ expect: "x_win", status: "verified" });
+  }, 120_000);
+});

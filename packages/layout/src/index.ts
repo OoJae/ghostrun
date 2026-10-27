@@ -2,6 +2,7 @@
 // The LLM chooses relations (zone + anchor), never coordinates (Holodeck/LayoutVLM lesson).
 import { stream } from "@ghostrun/detmath";
 import type { Entity, Static, Vec3, WorldBundle, Zone } from "@ghostrun/ir";
+import { verb } from "@ghostrun/kits";
 import type { PackLayout, ZoneSpec } from "@ghostrun/plugin-api";
 
 /** Default physical sizes per entity kind, used when the fill gives none (all metres). */
@@ -98,7 +99,7 @@ export function placeWorld(input: WorldBundle, layout: PackLayout): PlaceResult 
     const lift = e.kind === "spawn" ? 0 : e.size[1] / 2;
     e.pos = alongZ ? [base[0], base[1] + lift, base[2] + offset] : [base[0] + offset, base[1] + lift, base[2]];
   }
-  notes.push(...repairTriggers(b), ...repairExpects(b));
+  notes.push(...repairTriggers(b), ...repairVerbs(b), ...repairExpects(b));
   return { bundle: b, notes };
 }
 
@@ -116,6 +117,19 @@ export function repairTriggers(b: WorldBundle): string[] {
       e.body = "sensor";
       if (e.size[0] === 1 && e.size[1] === 1 && e.size[2] === 1) e.size = [1.6, 1.2, 1.6];
     }
+  }
+  return notes;
+}
+
+/** A verb that needs a particular body (a plate or a coin must be a sensor) gets it. Logged. */
+export function repairVerbs(b: WorldBundle): string[] {
+  const notes: string[] = [];
+  for (const vb of b.verbs) {
+    const need = verb(vb.verb)?.body;
+    const e = b.entities.find((x) => x.id === vb.on);
+    if (!need || !e || e.body === need) continue;
+    notes.push(`${e.id}: body '${e.body}' → '${need}' (${vb.verb} needs it)`);
+    e.body = need;
   }
   return notes;
 }

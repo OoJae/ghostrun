@@ -55,7 +55,8 @@ export function buildNav(b: WorldBundle): NavWorld {
   const idx: number[] = [];
   for (const s of [...b.statics].sort((x, y) => (x.id < y.id ? -1 : 1))) pushBox(pos, idx, s.pos, s.size);
   for (const e of [...b.entities].sort((x, y) => (x.id < y.id ? -1 : 1))) {
-    if (e.kind !== "npc" && e.body === "fixed" && e.shape !== "none") pushBox(pos, idx, e.pos, e.size);
+    // NPCs move and doors open: both are obstacles for the KCC, never baked in
+    if (e.kind !== "npc" && e.kind !== "door" && e.body === "fixed" && e.shape !== "none") pushBox(pos, idx, e.pos, e.size);
   }
   const { success, navMesh } = generateSoloNavMesh(pos, idx, {
     cs: CS,
