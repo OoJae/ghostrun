@@ -1,0 +1,234 @@
+{
+  "prompt": "A quiz room with three doors, only one of them leads out",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "Riddle / Trivia",
+    "setting": "A single interior room containing three distinct doorways, one of which is the correct exit.",
+    "role": "Seeker",
+    "goal": "Select the one door that leads out of the room.",
+    "fail": "Choosing one of the two sealed or false doors.",
+    "mood": "Cerebral, suspenseful",
+    "pack": "floor_plan",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Exactly one out of three doors is an exit",
+    "nouns": [
+      {
+        "noun": "quiz room",
+        "hyper": "interior_room"
+      },
+      {
+        "noun": "door",
+        "hyper": "doorway"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.1,
+      "arousal": -0.2,
+      "tension": 0.5
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "3904296836b681475a75863e591f89261aafe3f8eaf82b0b1b0f0e7a654ce716",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_exit",
+      "text": "Exactly one out of three doors is an exit",
+      "status": "counterexample",
+      "method": "static goal regression over rules + physics, 12 AI runners + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 7 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (player enters door_exit)",
+        "src": ""
+      },
+      {
+        "id": "T2:r_lose_1",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_1"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_lose_1 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lose_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_lose_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_ne",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_ne"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_secret_corner_ne fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_nw",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_nw"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 6,
+        "status": "verified",
+        "text": "r_secret_corner_nw fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_se",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_se"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_corner_se fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_sw",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_sw"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_corner_sw fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it (AI par 0.5 s)",
+        "cx": null,
+        "src": "",
+        "ms": 31
+      },
+      {
+        "id": "T3:too_easy",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "counterexample",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 12,
+        "text": "won in 0.5 s: over almost before it starts",
+        "cx": {
+          "where": null,
+          "have": 0.5,
+          "need": 3,
+          "unit": "s",
+          "text": "AI par 0.5 s < 3 s"
+        },
+        "src": "",
+        "ms": 0
+      }
+    ],
+    "par": {
+      "goldS": 0.5,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 69
+  }
+}

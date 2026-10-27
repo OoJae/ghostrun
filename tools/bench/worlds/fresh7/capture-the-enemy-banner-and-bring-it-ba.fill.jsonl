@@ -1,0 +1,33 @@
+{"op":"meta","mode":"play","lang":"en","pack":"city_block","sub":[],"seed":18,"look":"open battlefield","mood":[0.2,0.6,0.5],"timeOfDay":14,"weather":"clear"}
+{"op":"zone","id":"z_center","slot":"center","tag":"plaza","name":"Central Plaza"}
+{"op":"zone","id":"z_west","slot":"west_block","tag":"base","name":"Red Base"}
+{"op":"zone","id":"z_east","slot":"east_block","tag":"base","name":"Blue Base"}
+{"op":"zone","id":"z_street_w","slot":"street_w","tag":"street","name":"West Street"}
+{"op":"zone","id":"z_street_e","slot":"street_e","tag":"street","name":"East Street"}
+{"op":"spawn","id":"sp_red","zone":"z_west","anchor":"spawn_pad","team":"red"}
+{"op":"spawn","id":"sp_red_tm","zone":"z_west","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"goal_red_base","zone":"z_west","anchor":"goal_ring","noun":"home base","hyper":"base","team":"red"}
+{"op":"ent","id":"banner","kind":"pickup","noun":"enemy banner","hyper":"objective_item","zone":"z_east","anchor":"center","body":"dynamic","shape":"box","size":[0.5,0.1,1.5]}
+{"op":"ent","id":"coin_1","kind":"pickup","noun":"gold coin","hyper":"coin","zone":"z_street_w","anchor":"spawn_pad","body":"dynamic","shape":"sphere","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"coin_2","kind":"pickup","noun":"silver coin","hyper":"coin","zone":"z_street_e","anchor":"spawn_pad","body":"dynamic","shape":"sphere","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"switch_gate","kind":"switch","noun":"gate switch","hyper":"switch","zone":"z_center","anchor":"floor_ne","body":"sensor","shape":"box","size":[0.3,0.1,0.3]}
+{"op":"ent","id":"gate_door","kind":"door","noun":"gate door","hyper":"door","zone":"z_center","anchor":"wall_n","body":"fixed","shape":"box"}
+{"op":"ent","id":"jump_pad","kind":"plate","noun":"jump pad","hyper":"jump_pad","zone":"z_center","anchor":"floor_sw","body":"sensor","shape":"box","size":[0.5,0.1,0.5]}
+{"op":"ent","id":"hazard_lava","kind":"hazard","noun":"lava pool","hyper":"lava","zone":"z_street_w","anchor":"floor_ne","body":"sensor","shape":"box","size":[2,0.2,2]}
+{"op":"ent","id":"platform_osc","kind":"platform","noun":"moving platform","hyper":"platform","zone":"z_street_e","anchor":"floor_sw","body":"kinematic","shape":"box","size":[1,0.2,1]}
+{"op":"verb","id":"vb_carry_banner","verb":"physics_props.carry","on":"banner","params":{}}
+{"op":"verb","id":"vb_carry_coin1","verb":"physics_props.carry","on":"coin_1","params":{}}
+{"op":"verb","id":"vb_carry_coin2","verb":"physics_props.carry","on":"coin_2","params":{}}
+{"op":"verb","id":"vb_switch_gate","verb":"puzzle.switch","on":"switch_gate","params":{"once":false}}
+{"op":"verb","id":"vb_lock_gate","verb":"puzzle.lock","on":"gate_door","params":{"key":"coin_1","keep":false}}
+{"op":"verb","id":"vb_jump_pad","verb":"locomotion.jump_pad","on":"jump_pad","params":{"height":5}}
+{"op":"verb","id":"vb_osc_platform","verb":"motion_hazards.oscillate","on":"platform_osc","params":{"axis":"x","travel":4,"period":6}}
+{"op":"verb","id":"vb_lava_hazard","verb":"motion_hazards.hazard","on":"hazard_lava","params":{"respawn":true}}
+{"op":"rule","id":"r_win","when":{"t":"enter","a":"banner","b":"goal_red_base"},"if":[{"l":"banner.carrier.team","op":"eq","r":"red"}],"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose_drop","when":{"t":"state_is","a":"banner","s":"down"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_gate_open","when":{"t":"state_is","a":"switch_gate","s":"on"},"then":[{"e":"set_state","target":"gate_door","v":"open"}],"once":false}
+{"op":"rule","id":"r_gate_close","when":{"t":"state_is","a":"switch_gate","s":"off"},"then":[{"e":"set_state","target":"gate_door","v":"closed"}],"once":false}
+{"op":"expect","id":"exp_banner","prop":"win_reachable","a":"sp_red","b":"goal_red_base","headline":true,"text":"Banner must be held and delivered to base to win"}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":6}}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

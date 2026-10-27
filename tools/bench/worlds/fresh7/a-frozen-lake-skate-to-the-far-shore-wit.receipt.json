@@ -1,0 +1,268 @@
+{
+  "prompt": "A frozen lake: skate to the far shore without falling through the thin ice",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "Winter platformer / survival",
+    "setting": "A frozen lake divided by rivers and cracks in the ice, with a stable far shore beyond the hazard zone.",
+    "role": "Skater",
+    "goal": "Skate from the near shore to the far shore without falling through any thin ice patches.",
+    "fail": "Fall through thin ice; the run ends and the skater must restart from the last safe footing.",
+    "mood": "Tense, cold, focused",
+    "pack": "course",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Thin-ice gaps must force a precise route, any slip ends the run",
+    "nouns": [
+      {
+        "noun": "frozen lake",
+        "hyper": "frozen lake"
+      },
+      {
+        "noun": "thin ice",
+        "hyper": "thin ice"
+      },
+      {
+        "noun": "crack",
+        "hyper": "crack"
+      },
+      {
+        "noun": "skater",
+        "hyper": "skater"
+      },
+      {
+        "noun": "far shore",
+        "hyper": "far shore"
+      },
+      {
+        "noun": "near shore",
+        "hyper": "near shore"
+      }
+    ],
+    "moodVec": {
+      "valence": -0.1,
+      "arousal": 0.45,
+      "tension": 0.75
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "99f34933b35838705e9710b20cb2febf191cd051306c4349cb8c3d959c687ad1",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_ice",
+      "text": "Thin-ice gaps must force a precise route, any slip ends the run",
+      "status": "counterexample",
+      "method": "static goal regression over rules + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 9 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (player enters goal_shore)",
+        "src": ""
+      },
+      {
+        "id": "T2:r_fail_hazard_1",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_fail_hazard_1"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_fail_hazard_1 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_fail_hazard_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_fail_hazard_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "counterexample",
+        "text": "r_fail_hazard_2 fires exactly once",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "firings",
+          "text": "never fired when forced"
+        }
+      },
+      {
+        "id": "T2:r_fail_hazard_3",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_fail_hazard_3"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_fail_hazard_3 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_fail_hazard_4",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_fail_hazard_4"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_fail_hazard_4 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_host",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_host"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_host fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_pickup_5",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_pickup_5"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_pickup_5 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_pickup_6",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_pickup_6"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_secret_pickup_6 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_trophy",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_trophy"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_secret_trophy fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "counterexample",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 0,
+        "text": "no AI runner could win",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "wins",
+          "text": "12 lost (player reached the thin ice ×12)"
+        },
+        "src": "",
+        "ms": 900
+      }
+    ],
+    "par": null,
+    "ms": 1442
+  }
+}

@@ -1,0 +1,122 @@
+{
+  "prompt": "A villa tour with an agent who can book a viewing",
+  "intent": {
+    "lang": "en",
+    "mode": "wander",
+    "genre": "real-estate tour",
+    "setting": "A single-storey villa with a yard, entrance, main living area and four side rooms, staged for viewing",
+    "role": "Home visitor / prospective buyer",
+    "goal": "Tour the villa room by room and confirm a booking for a full viewing with the on-site agent",
+    "fail": "Miss the agent or fail to confirm a booking for your visit",
+    "mood": "Relaxed",
+    "pack": "floor_plan",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Must reach and book the on-site agent inside the villa",
+    "nouns": [
+      {
+        "noun": "villa",
+        "hyper": "single-storey dwelling"
+      },
+      {
+        "noun": "agent",
+        "hyper": "person"
+      },
+      {
+        "noun": "viewing",
+        "hyper": "event"
+      },
+      {
+        "noun": "yard",
+        "hyper": "outdoor space"
+      },
+      {
+        "noun": "entrance",
+        "hyper": "doorway"
+      },
+      {
+        "noun": "main room",
+        "hyper": "interior space"
+      },
+      {
+        "noun": "side room",
+        "hyper": "interior space"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.5,
+      "arousal": 0.2,
+      "tension": 0.1
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "ad1ff4ec689ba5e3ba64fec83d00bb94f8c224c69835098cc942c122587489d0",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_booking",
+      "text": "Must reach and book the on-site agent inside the villa",
+      "status": "not_checkable",
+      "method": "kinematic reachability (jump apex model)"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 0 rules reference existing things",
+        "src": ""
+      },
+      {
+        "id": "T1:x_booking",
+        "tier": "T1",
+        "subject": {
+          "kind": "property",
+          "id": "x_booking"
+        },
+        "method": "kinematic reachability (jump apex model)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "Must reach and book the on-site agent inside the villa: needs nothing stated, no checker for that yet",
+        "cx": null
+      },
+      {
+        "id": "T3:tour",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "tour"
+        },
+        "status": "counterexample",
+        "method": "physics, an AI visitor walks to and uses each",
+        "n": 6,
+        "k": 4,
+        "text": "walked to and inspected 4 of 6 things",
+        "cx": {
+          "where": null,
+          "have": 4,
+          "need": 6,
+          "unit": "things",
+          "text": "couldn't reach coffee_nw, plant_se"
+        },
+        "src": "",
+        "ms": 374
+      }
+    ],
+    "par": null,
+    "ms": 387
+  }
+}

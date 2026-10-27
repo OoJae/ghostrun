@@ -1,0 +1,38 @@
+{"op":"meta","mode":"wander","lang":"pt","pack":"floor_plan","sub":[],"seed":42,"look":"sunny greenhouse","mood":[0.8,0.3,0.1],"timeOfDay":12,"weather":"clear"}
+{"op":"zone","id":"z_yard","slot":"yard","tag":"outside","name":"Greenhouse entrance"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Main entrance"}
+{"op":"zone","id":"z_row1","slot":"room_sw","tag":"room","name":"Pot row A"}
+{"op":"zone","id":"z_row2","slot":"room_se","tag":"room","name":"Pot row B"}
+{"op":"zone","id":"z_shelf","slot":"room_nw","tag":"room","name":"Shelf area"}
+{"op":"spawn","id":"sp_red","zone":"z_yard","anchor":"spawn_pad","team":"red"}
+{"op":"ent","id":"seed_1","kind":"pickup","noun":"seed","hyper":"seedling","zone":"z_row1","anchor":"corner_ne","body":"dynamic","shape":"sphere","size":[0.1,0.1,0.1]}
+{"op":"ent","id":"seed_2","kind":"pickup","noun":"seed","hyper":"seedling","zone":"z_row1","anchor":"corner_se","body":"dynamic","shape":"sphere","size":[0.1,0.1,0.1]}
+{"op":"ent","id":"seed_3","kind":"pickup","noun":"seed","hyper":"seedling","zone":"z_row2","anchor":"corner_ne","body":"dynamic","shape":"sphere","size":[0.1,0.1,0.1]}
+{"op":"ent","id":"seed_4","kind":"pickup","noun":"seed","hyper":"seedling","zone":"z_row2","anchor":"corner_sw","body":"dynamic","shape":"sphere","size":[0.1,0.1,0.1]}
+{"op":"ent","id":"seed_5","kind":"pickup","noun":"seed","hyper":"seedling","zone":"z_shelf","anchor":"corner_nw","body":"dynamic","shape":"sphere","size":[0.1,0.1,0.1]}
+{"op":"ent","id":"pot_a1","kind":"prop","noun":"pot","hyper":"container","zone":"z_row1","anchor":"corner_ne","body":"fixed","shape":"box","size":[0.3,0.3,0.4]}
+{"op":"ent","id":"pot_a2","kind":"prop","noun":"pot","hyper":"container","zone":"z_row1","anchor":"corner_se","body":"fixed","shape":"box","size":[0.3,0.3,0.4]}
+{"op":"ent","id":"pot_b1","kind":"prop","noun":"pot","hyper":"container","zone":"z_row2","anchor":"corner_ne","body":"fixed","shape":"box","size":[0.3,0.3,0.4]}
+{"op":"ent","id":"pot_b2","kind":"prop","noun":"pot","hyper":"container","zone":"z_row2","anchor":"corner_sw","body":"fixed","shape":"box","size":[0.3,0.3,0.4]}
+{"op":"ent","id":"pot_s1","kind":"prop","noun":"pot","hyper":"container","zone":"z_shelf","anchor":"corner_nw","body":"fixed","shape":"box","size":[0.3,0.3,0.4]}
+{"op":"ent","id":"guide_npc","kind":"npc","noun":"gardener","hyper":"guide","zone":"z_entrance","anchor":"center","team":"","menu":["guide.talk"],"dflt":"guide.talk"}
+{"op":"verb","id":"vb_carry_seed1","verb":"physics_props.carry","on":"seed_1","params":{}}
+{"op":"verb","id":"vb_carry_seed2","verb":"physics_props.carry","on":"seed_2","params":{}}
+{"op":"verb","id":"vb_carry_seed3","verb":"physics_props.carry","on":"seed_3","params":{}}
+{"op":"verb","id":"vb_carry_seed4","verb":"physics_props.carry","on":"seed_4","params":{}}
+{"op":"verb","id":"vb_carry_seed5","verb":"physics_props.carry","on":"seed_5","params":{}}
+{"op":"verb","id":"vb_inspect_pot_a1","verb":"social.inspect","on":"pot_a1","params":{"text":"A small clay pot, ready for a seed."}}
+{"op":"verb","id":"vb_inspect_pot_a2","verb":"social.inspect","on":"pot_a2","params":{"text":"A small clay pot, waiting for planting."}}
+{"op":"verb","id":"vb_inspect_pot_b1","verb":"social.inspect","on":"pot_b1","params":{"text":"A small clay pot, empty and hopeful."}}
+{"op":"verb","id":"vb_inspect_pot_b2","verb":"social.inspect","on":"pot_b2","params":{"text":"A small clay pot, empty and hopeful."}}
+{"op":"verb","id":"vb_inspect_pot_s1","verb":"social.inspect","on":"pot_s1","params":{"text":"A small clay pot placed on the shelf."}}
+{"op":"verb","id":"vb_inspect_seed_1","verb":"social.inspect","on":"seed_1","params":{"text":"A bright seed, ready to be planted."}}
+{"op":"verb","id":"vb_inspect_seed_2","verb":"social.inspect","on":"seed_2","params":{"text":"A bright seed, ready to be planted."}}
+{"op":"verb","id":"vb_inspect_seed_3","verb":"social.inspect","on":"seed_3","params":{"text":"A bright seed, ready to be planted."}}
+{"op":"verb","id":"vb_inspect_seed_4","verb":"social.inspect","on":"seed_4","params":{"text":"A bright seed, ready to be planted."}}
+{"op":"verb","id":"vb_inspect_seed_5","verb":"social.inspect","on":"seed_5","params":{"text":"A bright seed, ready to be planted."}}
+{"op":"verb","id":"vb_inspect_guide","verb":"social.inspect","on":"guide_npc","params":{"text":"The friendly guide will show you where to plant."}}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.2,"speed":5}}
+{"op":"expect","id":"exp_pots","prop":"win_reachable","a":"sp_red","b":"z_yard","headline":true,"text":"Every pot must be filled with a seed"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

@@ -1,0 +1,26 @@
+{"op":"meta","mode":"wander","lang":"en","pack":"outdoor","sub":[],"seed":25,"look":"cyberpunk market","mood":[0.35,0.7,0.15],"timeOfDay":22,"weather":"clear"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Market Entrance"}
+{"op":"zone","id":"z_central","slot":"clearing","tag":"hub","name":"Central Plaza"}
+{"op":"zone","id":"z_west","slot":"clearing_w","tag":"stalls","name":"West Neon Stalls"}
+{"op":"zone","id":"z_east","slot":"clearing_e","tag":"stalls","name":"East Neon Stalls"}
+{"op":"zone","id":"z_grove","slot":"grove","tag":"neon_grove","name":"Neon Grove"}
+{"op":"spawn","id":"sp_red","zone":"z_entrance","anchor":"spawn_pad","team":"red"}
+{"op":"ent","id":"stall_w1","kind":"prop","noun":"neon stall","hyper":"stall","zone":"z_west","anchor":"center_n","body":"fixed","shape":"box","size":[2,3,0.5]}
+{"op":"ent","id":"stall_w2","kind":"prop","noun":"neon stall","hyper":"stall","zone":"z_west","anchor":"center_s","body":"fixed","shape":"box","size":[2,3,0.5]}
+{"op":"ent","id":"stall_e1","kind":"prop","noun":"neon stall","hyper":"stall","zone":"z_east","anchor":"center_n","body":"fixed","shape":"box","size":[2,3,0.5]}
+{"op":"ent","id":"stall_e2","kind":"prop","noun":"neon stall","hyper":"stall","zone":"z_east","anchor":"center_s","body":"fixed","shape":"box","size":[2,3,0.5]}
+{"op":"ent","id":"neon_sign1","kind":"prop","noun":"neon sign","hyper":"neon","zone":"z_central","anchor":"center_e","body":"fixed","shape":"box","size":[1,0.2,0.2]}
+{"op":"ent","id":"neon_sign2","kind":"prop","noun":"neon sign","hyper":"neon","zone":"z_central","anchor":"center_w","body":"fixed","shape":"box","size":[1,0.2,0.2]}
+{"op":"npc","id":"guide_1","role":"guide","zone":"z_central","anchor":"center","team":"","menu":["guide.tour"],"dflt":"guide.tour"}
+{"op":"npc","id":"vendor_bot","role":"vendor","zone":"z_grove","anchor":"heart","team":"","menu":["vendor.sell"],"dflt":"vendor.sell"}
+{"op":"verb","id":"vb_inspect_w1","verb":"social.inspect","on":"stall_w1","params":{"text":"A stall selling chrome accessories."}}
+{"op":"verb","id":"vb_inspect_w2","verb":"social.inspect","on":"stall_w2","params":{"text":"A stall offering cybernetic implants."}}
+{"op":"verb","id":"vb_inspect_e1","verb":"social.inspect","on":"stall_e1","params":{"text":"A stall with glowing synth-food."}}
+{"op":"verb","id":"vb_inspect_e2","verb":"social.inspect","on":"stall_e2","params":{"text":"A stall showcasing VR goggles."}}
+{"op":"verb","id":"vb_inspect_sign1","verb":"social.inspect","on":"neon_sign1","params":{"text":"Neon: \"Future Now\""}}
+{"op":"verb","id":"vb_inspect_sign2","verb":"social.inspect","on":"neon_sign2","params":{"text":"Neon: \"Tech Bazaar\""}}
+{"op":"verb","id":"vb_inspect_vendor","verb":"social.inspect","on":"vendor_bot","params":{"text":"Robotic vendor humming, ready to trade."}}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":5}}
+{"op":"expect","id":"x_market","prop":"win_reachable","a":"sp_red","b":"z_central","headline":true,"text":"Robot vendor interaction in neon-lit market"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

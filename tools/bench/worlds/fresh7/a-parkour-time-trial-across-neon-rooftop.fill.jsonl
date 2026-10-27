@@ -1,0 +1,44 @@
+{"op":"meta","mode":"play","lang":"en","pack":"city_block","sub":["rooftop"],"seed":8,"look":"neon rooftops","mood":[0.7,0.8,0.6],"timeOfDay":22,"weather":"clear"}
+{"op":"zone","id":"z_center","slot":"center","tag":"plaza","name":"Neon Plaza"}
+{"op":"zone","id":"z_west","slot":"west_block","tag":"base","name":"West Rooftop"}
+{"op":"zone","id":"z_east","slot":"east_block","tag":"base","name":"East Rooftop"}
+{"op":"zone","id":"z_street_w","slot":"street_w","tag":"street","name":"Street West"}
+{"op":"zone","id":"z_street_e","slot":"street_e","tag":"street","name":"Street East"}
+{"op":"zone","id":"z_roof_lane","slot":"roof_lane_a","tag":"rooftop","name":"Rooftop Lane"}
+{"op":"spawn","id":"sp_red","zone":"z_west","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"finish_pad","zone":"z_east","anchor":"goal_ring","noun":"finish pad","hyper":"goal marker","team":"red"}
+{"op":"ent","id":"jump_pad_w","kind":"platform","noun":"launch pad","hyper":"jump pad","zone":"z_west","anchor":"spawn_pad","body":"fixed","shape":"box","size":[1,0.5,1]}
+{"op":"ent","id":"osc_plate","kind":"platform","noun":"moving plate","hyper":"oscillating platform","zone":"z_roof_lane","anchor":"lane_start","body":"kinematic","shape":"box","size":[1,0.2,1]}
+{"op":"ent","id":"spike_haz","kind":"hazard","noun":"spike strip","hyper":"hazard","zone":"z_roof_lane","anchor":"gap_mid","body":"sensor","shape":"box","size":[2,0.1,2]}
+{"op":"ent","id":"crumble_pl","kind":"platform","noun":"crumble platform","hyper":"platform","zone":"z_roof_lane","anchor":"lane_end","body":"kinematic","shape":"box","size":[1,0.2,1]}
+{"op":"ent","id":"door_gate","kind":"door","noun":"gate door","hyper":"door","zone":"z_center","anchor":"wall_n","body":"fixed","shape":"box"}
+{"op":"ent","id":"switch_gate","kind":"switch","noun":"gate switch","hyper":"switch","zone":"z_center","anchor":"floor_ne","body":"fixed","shape":"box","size":[0.3,0.3,0.1]}
+{"op":"ent","id":"key_gate","kind":"pickup","noun":"copper key","hyper":"key","zone":"z_center","anchor":"floor_sw","body":"dynamic","shape":"box","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"coin_1","kind":"pickup","noun":"neon coin","hyper":"coin","zone":"z_street_w","anchor":"none","body":"dynamic","shape":"sphere","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"coin_2","kind":"pickup","noun":"neon coin","hyper":"coin","zone":"z_street_e","anchor":"none","body":"dynamic","shape":"sphere","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"sign_info","kind":"sign","noun":"info sign","hyper":"sign","zone":"z_center","anchor":"floor_ne","body":"fixed","shape":"box","size":[1,0.5,0.1]}
+{"op":"ent","id":"portal_short","kind":"portal","noun":"shortcut portal","hyper":"portal","zone":"z_roof_lane","anchor":"edge","body":"sensor","shape":"box","size":[0.5,1,0.5]}
+{"op":"ent","id":"portal_exit","kind":"portal","noun":"return portal","hyper":"portal","zone":"z_center","anchor":"floor_sw","body":"sensor","shape":"box","size":[0.5,1,0.5]}
+{"op":"verb","id":"vb_jump","verb":"locomotion.jump","on":"player","params":{"jumpsMax":2}}
+{"op":"verb","id":"vb_jump_pad","verb":"locomotion.jump_pad","on":"jump_pad_w","params":{"height":5}}
+{"op":"verb","id":"vb_osc","verb":"motion_hazards.oscillate","on":"osc_plate","params":{"axis":"x","travel":4,"period":3}}
+{"op":"verb","id":"vb_haz","verb":"motion_hazards.hazard","on":"spike_haz","params":{"respawn":true}}
+{"op":"verb","id":"vb_crumble","verb":"motion_hazards.crumble","on":"crumble_pl","params":{"delay":0.5,"back":5}}
+{"op":"verb","id":"vb_lock_gate","verb":"puzzle.lock","on":"door_gate","params":{"key":"key_gate","keep":false}}
+{"op":"verb","id":"vb_switch_gate","verb":"puzzle.switch","on":"switch_gate","params":{"once":true}}
+{"op":"verb","id":"vb_carry_key","verb":"physics_props.carry","on":"key_gate","params":{}}
+{"op":"verb","id":"vb_collect_coin1","verb":"puzzle.collect","on":"coin_1","params":{}}
+{"op":"verb","id":"vb_collect_coin2","verb":"puzzle.collect","on":"coin_2","params":{}}
+{"op":"verb","id":"vb_inspect_sign","verb":"social.inspect","on":"sign_info","params":{"text":"Neon rooftops: finish in 60 secs!"}}
+{"op":"verb","id":"vb_portal_short","verb":"puzzle.portal","on":"portal_short","params":{"to":"portal_exit"}}
+{"op":"verb","id":"vb_timer","verb":"puzzle.timer","on":"player","params":{"seconds":60}}
+{"op":"rule","id":"r_win","when":{"t":"enter","a":"player","b":"finish_pad"},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose_timer","when":{"t":"timer_end","a":"player"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose_haz","when":{"t":"hit","a":"player","b":"spike_haz"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_gate_open","when":{"t":"state_is","a":"switch_gate","s":"on"},"then":[{"e":"set_state","target":"door_gate","v":"open"}]}
+{"op":"rule","id":"r_collect_coin","when":{"t":"touch","a":"player","b":"coin_1"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_collect_coin2","when":{"t":"touch","a":"player","b":"coin_2"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"expect","id":"x_time_trial","prop":"win_reachable","a":"sp_red","b":"finish_pad","headline":true,"text":"Neon rooftop time trial must be beatable in under 60 seconds"}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":6}}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

@@ -1,0 +1,350 @@
+{
+  "prompt": "A relay race: carry the baton to each of the three checkpoints",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "sports / race",
+    "setting": "Open outdoor terrain with clear views and natural obstacles: dirt paths wind from an entrance to a central clearing; a calm pond off one path, a shaded grove on a knoll with fireflies, a small camp with a stone table nearby, two side open spaces serve as team bases, and a lookout up a steep side slope is reached only by jumping.",
+    "role": "Runner",
+    "goal": "Successive players each run from their team base on the course, pick up the baton, and carry it to three designated checkpoints along the nature trail in order, then hand it to the next teammate who continues on an identical route. The team whose last runner touches the finish pad first with the baton wins.",
+    "fail": "The relay fails if any runner drops the baton and does not pick it up again before reaching the next checkpoint, or if a runner leaves the marked path for more than a few steps (course penalty).",
+    "mood": "Energetic, competitive, outdoorsy",
+    "pack": "outdoor",
+    "sub": [
+      "rooftop"
+    ],
+    "safety": "ok",
+    "headline": "Relay route must include three sequential baton checkpoints with a drop penalty.",
+    "nouns": [
+      {
+        "noun": "baton",
+        "hyper": "relay object"
+      },
+      {
+        "noun": "checkpoints",
+        "hyper": "course markers"
+      },
+      {
+        "noun": "team base",
+        "hyper": "outdoor bases"
+      },
+      {
+        "noun": "relays",
+        "hyper": "competitive events"
+      },
+      {
+        "noun": "runner",
+        "hyper": "player role"
+      },
+      {
+        "noun": "nature trail",
+        "hyper": "outdoor path"
+      },
+      {
+        "noun": "pond",
+        "hyper": "water feature"
+      },
+      {
+        "noun": "grove",
+        "hyper": "wooded area"
+      },
+      {
+        "noun": "knoll",
+        "hyper": "terrain feature"
+      },
+      {
+        "noun": "camp",
+        "hyper": "outdoor shelter"
+      },
+      {
+        "noun": "lookout",
+        "hyper": "elevated view"
+      },
+      {
+        "noun": "finish pad",
+        "hyper": "race endpoint"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.6,
+      "arousal": 0.75,
+      "tension": 0.35
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "c119d3b0570370cffb6ac783068bcf02b6c13e022a2552816ca2d355530b9880",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_relay",
+      "text": "Relay route must include three sequential baton checkpoints with a drop penalty.",
+      "status": "verified",
+      "method": "kinematic reachability (jump apex model) + physics jump witness, 4 attempts per jump count"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 11 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_finish (baton into finish_pad, carried by red) ← pick up baton [after chk3 on]",
+        "src": ""
+      },
+      {
+        "id": "T1:x_relay",
+        "tier": "T1",
+        "subject": {
+          "kind": "property",
+          "id": "x_relay"
+        },
+        "method": "kinematic reachability (jump apex model)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "Relay route must include three sequential baton checkpoints with a drop penalty.",
+        "cx": null
+      },
+      {
+        "id": "T2:r_chk1",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_chk1"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_chk1 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_chk2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_chk2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 6,
+        "status": "verified",
+        "text": "r_chk2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_chk3",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_chk3"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_chk3 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_drop",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_drop"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_drop: nothing knocks baton out of chk1",
+        "cx": null
+      },
+      {
+        "id": "T2:r_finish",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_finish"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_finish fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_dock",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_dock"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_dock fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_heart",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_heart"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_secret_heart fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_hollow",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_hollow"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 7,
+        "status": "verified",
+        "text": "r_secret_hollow fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_stall_1",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_stall_1"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 6,
+        "status": "verified",
+        "text": "r_secret_stall_1 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_stump",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_stump"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_secret_stump fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_tent",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_tent"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_tent fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it (AI par 11.1 s)",
+        "cx": null,
+        "src": "",
+        "ms": 224
+      },
+      {
+        "id": "T3:x_relay",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "x_relay"
+        },
+        "status": "played",
+        "method": "physics jump witness, 4 attempts per jump count",
+        "n": 4,
+        "k": 2,
+        "text": "Relay route must include three sequential baton checkpoints with a drop penalty.: reached with 2 jumps 2 of 4, with 1 0 of 4",
+        "cx": null,
+        "src": "ai",
+        "ms": 49
+      }
+    ],
+    "par": {
+      "goldS": 11.1,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 730
+  }
+}

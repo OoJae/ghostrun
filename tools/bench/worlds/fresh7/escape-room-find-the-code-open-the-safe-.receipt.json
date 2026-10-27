@@ -1,0 +1,236 @@
+{
+  "prompt": "Escape room: find the code, open the safe, take the key, unlock the door",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "puzzle",
+    "setting": "A single-storey interior divided into a yard, an entrance, a main room and four side rooms, forming a multi-step escape room",
+    "role": "Escape-room solver",
+    "goal": "Find the numeric code, open the safe, take the key, and unlock the exit door",
+    "fail": "Run out of time/lockout without reaching the unlocked exit door",
+    "mood": "Tense, methodical, focused",
+    "pack": "floor_plan",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Four linked puzzle beats: code -> safe -> key -> locked door",
+    "nouns": [
+      {
+        "noun": "code",
+        "hyper": "puzzle"
+      },
+      {
+        "noun": "safe",
+        "hyper": "container"
+      },
+      {
+        "noun": "key",
+        "hyper": "tool"
+      },
+      {
+        "noun": "door",
+        "hyper": "exit"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.2,
+      "arousal": 0.5,
+      "tension": 0.7
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "cfe5f12af2addee19dbdef982a34300a26e7299e0b7a91eeeffb3944a54b0a45",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_escape",
+      "text": "Four linked puzzle beats: code -> safe -> key -> locked door",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 8 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_exit_win (exit_door becomes open: use exit_door)",
+        "src": ""
+      },
+      {
+        "id": "T2:r_exit_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_exit_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_exit_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_safe_open",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_safe_open"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_safe_open fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_ne",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_ne"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_corner_ne fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_ne_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_ne_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_corner_ne_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_ne_3",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_ne_3"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_corner_ne_3 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_nw",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_nw"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_secret_corner_nw fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_nw_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_nw_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_corner_nw_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_nw_3",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_nw_3"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_corner_nw_3 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it (AI par 8.4 s)",
+        "cx": null,
+        "src": "",
+        "ms": 149
+      }
+    ],
+    "par": {
+      "goldS": 8.4,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 189
+  }
+}

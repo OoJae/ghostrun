@@ -1,0 +1,27 @@
+{"op":"meta","mode":"play","lang":"en","pack":"arena","sub":[],"seed":7,"look":"elevated arena","mood":[0.3,0.9,0.8],"timeOfDay":12,"weather":"clear"}
+{"op":"zone","id":"z_mid","slot":"midfield","tag":"center","name":"Central Platform"}
+{"op":"zone","id":"z_west","slot":"west_half","tag":"base","name":"West Base"}
+{"op":"zone","id":"z_east","slot":"east_half","tag":"base","name":"East Base"}
+{"op":"zone","id":"z_north","slot":"north_deck","tag":"platform","name":"North Deck"}
+{"op":"zone","id":"z_south","slot":"south_deck","tag":"platform","name":"South Deck"}
+{"op":"spawn","id":"sp_red","zone":"z_west","anchor":"spawn_pad","team":"red"}
+{"op":"spawn","id":"sp_blue","zone":"z_east","anchor":"spawn_pad","team":"blue"}
+{"op":"goal","id":"capture_zone","zone":"z_mid","anchor":"center","noun":"capture zone","hyper":"arena area","team":"","body":"sensor","shape":"box","size":[4,0.5,4]}
+{"op":"ent","id":"timer_zone","kind":"prop","noun":"capture timer","hyper":"timer","zone":"z_mid","anchor":"center","body":"none","shape":"none"}
+{"op":"ent","id":"coin_1","kind":"pickup","noun":"gold coin","hyper":"coin","zone":"z_west","anchor":"flank_n","body":"dynamic","shape":"sphere","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"coin_2","kind":"pickup","noun":"gold coin","hyper":"coin","zone":"z_east","anchor":"flank_s","body":"dynamic","shape":"sphere","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"spike_north","kind":"hazard","noun":"spike trap","hyper":"spikes","zone":"z_north","anchor":"deck_center","body":"sensor","shape":"box","size":[3,0.2,3]}
+{"op":"ent","id":"spike_south","kind":"hazard","noun":"spike trap","hyper":"spikes","zone":"z_south","anchor":"deck_center","body":"sensor","shape":"box","size":[3,0.2,3]}
+{"op":"verb","id":"vb_timer","verb":"puzzle.timer","on":"timer_zone","params":{"seconds":20}}
+{"op":"verb","id":"vb_jump","verb":"locomotion.jump","on":"player","params":{"jumpsMax":2}}
+{"op":"verb","id":"vb_hazard_north","verb":"motion_hazards.hazard","on":"spike_north","params":{"respawn":true}}
+{"op":"verb","id":"vb_hazard_south","verb":"motion_hazards.hazard","on":"spike_south","params":{"respawn":true}}
+{"op":"rule","id":"r_start_timer","when":{"t":"enter","a":"player","b":"capture_zone"},"then":[{"e":"set_state","target":"timer_zone","v":"running"}],"once":false}
+{"op":"rule","id":"r_win","when":{"t":"state_is","a":"timer_zone","s":"done"},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose_exit","when":{"t":"exit","a":"player","b":"capture_zone"},"then":[{"e":"lose","target":"player"}],"once":false}
+{"op":"expect","id":"x_capture","prop":"win_reachable","a":"sp_red","b":"capture_zone","headline":true,"text":"Capture zone must be contested by push-off mechanics for a 20-second timer"}
+{"op":"end","layer":"gameplay"}
+{"op":"npc","id":"rival_w","role":"rival","zone":"z_west","anchor":"spawn_pad","team":"blue","menu":["rival.patrol"],"dflt":"rival.patrol"}
+{"op":"npc","id":"rival_e","role":"rival","zone":"z_east","anchor":"spawn_pad","team":"blue","menu":["rival.patrol"],"dflt":"rival.patrol"}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":6}}
+{"op":"end","layer":"cosmetic"}

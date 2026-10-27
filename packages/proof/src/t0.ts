@@ -223,7 +223,9 @@ export function t0(b: WorldBundle, playerTeam: "red" | "blue" = "red"): { chips:
         // set by another rule ("three clues found → the door opens"): whatever fires that rule
         const setter = rules.find((r2) => r2.id !== r.id && r2.then.some((e) => (e.e === "set_state" && e.target === w.a && String(e.v) === w.s) || (e.e === "open" && e.target === w.a && w.s === "open") || (e.e === "close" && e.target === w.a && w.s === "closed")));
         const sub = setter && sat(setter, depth + 1, s2);
-        return sub ? { steps: sub.steps, explain: `${r.id} (${w.a} becomes ${w.s}) ← ${sub.explain}` } : null;
+        if (sub) return { steps: sub.steps, explain: `${r.id} (${w.a} becomes ${w.s}) ← ${sub.explain}` };
+        // a state that comes by itself in time (a countdown's "done"): wait for it
+        return made.some((x) => x.k === "state" && x.a === w.a && x.s === w.s && !x.cause) ? { steps: [{ do: "wait", rule: r.id }], explain: `${r.id} (${w.a} becomes ${w.s} when its countdown runs out)` } : null;
       }
       case "exit": {
         // someone knocked out of a ring (a shove)

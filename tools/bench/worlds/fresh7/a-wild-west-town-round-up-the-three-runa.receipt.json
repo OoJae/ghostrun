@@ -1,0 +1,204 @@
+{
+  "prompt": "A wild west town: round up the three runaway horses into the corral",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "Western / Hunting",
+    "setting": "Open dirt square in a Wild West town with a wooden livery and corral fence",
+    "role": "Cowboy",
+    "goal": "Chase down and herd 3 runaway horses into the corral",
+    "fail": "If the horses stray too far from the corral or too much time elapses",
+    "mood": "Tense and frantic",
+    "pack": "outdoor",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Three horses must be chased simultaneously",
+    "nouns": [
+      {
+        "noun": "horse",
+        "hyper": "animal"
+      },
+      {
+        "noun": "corral",
+        "hyper": "enclosure"
+      },
+      {
+        "noun": "town",
+        "hyper": "settlement"
+      },
+      {
+        "noun": "cowboy",
+        "hyper": "person"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.4,
+      "arousal": 0.6,
+      "tension": 0.8
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "f57935b5bb82575044901f64bc28bb26054f6eb010041302f7426a6bf9a5a477",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_horses",
+      "text": "Three horses must be chased simultaneously",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners vs 3 bots"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 6 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (team:red reaches 3) ← r_horse1_capture (horse_1 knocked into goal_corral) + r_horse2_capture (horse_2 knocked into goal_corral) + r_horse3_capture (horse_3 knocked into goal_corral)",
+        "src": ""
+      },
+      {
+        "id": "T2:r_horse1_capture",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_horse1_capture"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 9,
+        "status": "verified",
+        "text": "r_horse1_capture fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_horse2_capture",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_horse2_capture"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 7,
+        "status": "verified",
+        "text": "r_horse2_capture fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_horse3_capture",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_horse3_capture"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 6,
+        "status": "verified",
+        "text": "r_horse3_capture fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lever_opens",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lever_opens"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_lever_opens fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lose_timer",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_timer"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_lose_timer fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners vs 3 bots",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it vs 3 bots (AI par 28.7 s)",
+        "cx": null,
+        "src": "",
+        "ms": 1256
+      }
+    ],
+    "par": {
+      "goldS": 28.7,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 1727
+  }
+}

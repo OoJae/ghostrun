@@ -1,0 +1,230 @@
+{
+  "prompt": "King of the hill: hold the capture zone for 20 seconds while rivals try to push you off",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "competitive game",
+    "setting": "elevated central platform in a fenced arena",
+    "role": "zone holder",
+    "goal": "hold the capture zone for 20 continuous seconds while preventing rivals from pushing you off",
+    "fail": "You are pushed out of the zone or held for less than 20 seconds",
+    "mood": "tense",
+    "pack": "arena",
+    "sub": [],
+    "safety": "arcade",
+    "headline": "Capture zone must be contested by push-off mechanics for a 20-second timer",
+    "nouns": [
+      {
+        "noun": "capture zone",
+        "hyper": "arena area"
+      },
+      {
+        "noun": "rivals",
+        "hyper": "opponents"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.3,
+      "arousal": 0.9,
+      "tension": 0.8
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "ae6b7c00c7a9f3709cf34fde0b43ed4465e331458d5943a2b6e6f3825e4b111b",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_capture",
+      "text": "Capture zone must be contested by push-off mechanics for a 20-second timer",
+      "status": "counterexample",
+      "method": "static goal regression over rules"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 1,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 9 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "chain",
+          "text": "win unreachable in the rule graph"
+        },
+        "ms": 1,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "counterexample",
+        "method": "static goal regression over rules",
+        "text": "no rule chain lets the player trigger the win",
+        "src": ""
+      },
+      {
+        "id": "T2:r_lose_exit",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_exit"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_lose_exit: nothing knocks player out of capture_zone",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_deck_e",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_deck_e"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 50,
+        "status": "verified",
+        "text": "r_secret_deck_e fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_deck_e_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_deck_e_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_deck_e_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_deck_w",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_deck_w"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_deck_w fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_deck_w_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_deck_w_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_deck_w_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_n",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_n"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_secret_flank_n fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_s",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_s"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 8,
+        "status": "verified",
+        "text": "r_secret_flank_s fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_start_timer",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_start_timer"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 6,
+        "status": "verified",
+        "text": "r_start_timer fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_win: nothing in the world makes timer_zone 'done'",
+        "cx": null
+      }
+    ],
+    "par": null,
+    "ms": 232
+  }
+}

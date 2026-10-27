@@ -1,0 +1,254 @@
+{
+  "prompt": "Mini golf: get the ball into the hole on the windmill course",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "sports",
+    "setting": "A miniature golf course featuring a windmill-themed hole with an 18-inch cup, sand bunkers, and a rotating central obstacle.",
+    "role": "golf player",
+    "goal": "Putt the ball from the starting mat into the hole in as few strokes as possible.",
+    "fail": "The ball exits the course boundary or comes to rest in a hazard (like water or a deep bunker) that requires a penalty drop.",
+    "mood": "Relaxed but focused on precision",
+    "pack": "course",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Ball must navigate rotating windmill arm into the hole",
+    "nouns": [
+      {
+        "noun": "ball",
+        "hyper": "sphere"
+      },
+      {
+        "noun": "hole",
+        "hyper": "cavity"
+      },
+      {
+        "noun": "windmill",
+        "hyper": "structure"
+      },
+      {
+        "noun": "course",
+        "hyper": "landscape"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.6,
+      "arousal": 0.4,
+      "tension": 0.3
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "d99d26fdd386b1be1ceb69865f25b74bcb5c920d2b62a470d26ed75536706070",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_windmill",
+      "text": "Ball must navigate rotating windmill arm into the hole",
+      "status": "counterexample",
+      "method": "static goal regression over rules + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 9 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (ball into hole) ← pick up ball",
+        "src": ""
+      },
+      {
+        "id": "T2:r_lose_sand",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_sand"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_lose_sand fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lose_water",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_water"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_lose_water fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_cp_4",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_cp_4"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 6,
+        "status": "verified",
+        "text": "r_secret_cp_4 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_cp_5",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_cp_5"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_cp_5 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_host",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_host"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_host fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_pickup_4",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_pickup_4"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_pickup_4 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_pickup_5",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_pickup_5"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_pickup_5 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_trophy",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_trophy"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_trophy fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "counterexample",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 0,
+        "text": "no AI runner could win",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "wins",
+          "text": "12 got stuck (in the Tee area ×12): no route reaches the hole: a 0.3 m step on the way, and 0 jumps reach 0 m"
+        },
+        "src": "",
+        "ms": 871
+      }
+    ],
+    "par": null,
+    "ms": 1237
+  }
+}

@@ -1,0 +1,84 @@
+{
+  "prompt": "A greenhouse where you plant the seeds in every pot",
+  "intent": {
+    "lang": "pt",
+    "mode": "wander",
+    "genre": "idle gardening",
+    "setting": "a sunny greenhouse with rows of empty pots and shelves",
+    "role": "gardener",
+    "goal": "plant a seed in every pot to complete the greenhouse",
+    "fail": "no defined fail state; progress simply remains incomplete",
+    "mood": "calm and cozy",
+    "pack": "floor_plan",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Every pot must be filled with a seed",
+    "nouns": [
+      {
+        "noun": "greenhouse",
+        "hyper": "interior space"
+      },
+      {
+        "noun": "pot",
+        "hyper": "container"
+      },
+      {
+        "noun": "seed",
+        "hyper": "seedling"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.8,
+      "arousal": 0.3,
+      "tension": 0.1
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "82dd90c278845f1e1c16043ec3c49cb9fb440238ddea36423f368904487d4739",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "exp_pots",
+      "text": "Every pot must be filled with a seed",
+      "status": "not_checkable",
+      "method": "none"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 0 rules reference existing things",
+        "src": ""
+      },
+      {
+        "id": "T3:tour",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "tour"
+        },
+        "status": "played",
+        "method": "physics, an AI visitor walks to and uses each",
+        "n": 11,
+        "k": 11,
+        "text": "walked to and inspected 11 of 11 things",
+        "cx": null,
+        "src": "",
+        "ms": 68
+      }
+    ],
+    "par": null,
+    "ms": 87
+  }
+}

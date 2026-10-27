@@ -1,0 +1,190 @@
+{
+  "prompt": "A space dock: refuel the ship by carrying three fuel cells to it",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "puzzle",
+    "setting": "off-world space dock",
+    "role": "deckhand",
+    "goal": "Carry three fuel cells to the ship to refuel it",
+    "fail": "The ship’s hold remains empty and the docking bay is closed",
+    "mood": "focused",
+    "pack": "floor_plan",
+    "sub": [],
+    "safety": "ok",
+    "headline": "The ship only unlocks once three fuel cells are placed in the hold",
+    "nouns": [
+      {
+        "noun": "ship",
+        "hyper": "vehicle"
+      },
+      {
+        "noun": "fuel cells",
+        "hyper": "fuel containers"
+      },
+      {
+        "noun": "dock",
+        "hyper": "structure"
+      },
+      {
+        "noun": "crew",
+        "hyper": "people"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.2,
+      "arousal": 0.4,
+      "tension": 0.4
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "af3749f98d19dba40c1dc6ecb25e3674c7bbc6dbaf1f81710df1946c0026420b",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_refuel",
+      "text": "The ship only unlocks once three fuel cells are placed in the hold",
+      "status": "counterexample",
+      "method": "static goal regression over rules + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 5 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (fuel_cell_3 into ship_exit, carried by red) ← pick up fuel_cell_3 [after holding fuel_cell_1, holding fuel_cell_2]",
+        "src": ""
+      },
+      {
+        "id": "T2:r_secret_corner_nw",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_nw"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_secret_corner_nw fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_se",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_se"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_secret_corner_se fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_sw",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_sw"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_corner_sw fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_unlock_hatch",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_unlock_hatch"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_unlock_hatch fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "counterexample",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 0,
+        "text": "no AI runner could win",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "wins",
+          "text": "12 got stuck (in the Hangar bay ×12)"
+        },
+        "src": "",
+        "ms": 167
+      }
+    ],
+    "par": null,
+    "ms": 204
+  }
+}

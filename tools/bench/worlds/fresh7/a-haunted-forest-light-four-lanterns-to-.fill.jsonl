@@ -1,0 +1,26 @@
+{"op":"meta","mode":"play","lang":"en","pack":"outdoor","sub":[],"seed":20,"look":"haunted forest","mood":[-0.65,0.75,0.9],"timeOfDay":22,"weather":"mist"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Forest edge"}
+{"op":"zone","id":"z_clearing","slot":"clearing","tag":"hub","name":"Central clearing"}
+{"op":"zone","id":"z_grove","slot":"grove","tag":"trees","name":"Ancient grove"}
+{"op":"zone","id":"z_west","slot":"clearing_w","tag":"base","name":"West lantern post"}
+{"op":"zone","id":"z_east","slot":"clearing_e","tag":"base","name":"East lantern post"}
+{"op":"spawn","id":"sp_red","zone":"z_entrance","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"dawn_timer","zone":"z_clearing","anchor":"center","noun":"dawn","hyper":"time gate","team":"red"}
+{"op":"ent","id":"lantern_w1","kind":"switch","noun":"lantern","hyper":"light source","zone":"z_west","anchor":"flank_n","body":"fixed","shape":"box","size":[0.3,0.5,0.3]}
+{"op":"ent","id":"lantern_w2","kind":"switch","noun":"lantern","hyper":"light source","zone":"z_west","anchor":"flank_s","body":"fixed","shape":"box","size":[0.3,0.5,0.3]}
+{"op":"ent","id":"lantern_e1","kind":"switch","noun":"lantern","hyper":"light source","zone":"z_east","anchor":"flank_n","body":"fixed","shape":"box","size":[0.3,0.5,0.3]}
+{"op":"ent","id":"lantern_e2","kind":"switch","noun":"lantern","hyper":"light source","zone":"z_east","anchor":"flank_s","body":"fixed","shape":"box","size":[0.3,0.5,0.3]}
+{"op":"ent","id":"wolf_hunt","kind":"hazard","noun":"wolf pack","hyper":"creatures","zone":"z_clearing","anchor":"center","body":"sensor","shape":"box","size":[3,1,3]}
+{"op":"verb","id":"vb_jump","verb":"locomotion.jump","on":"player","params":{"jumpsMax":2}}
+{"op":"verb","id":"vb_sw_w1","verb":"puzzle.switch","on":"lantern_w1","params":{"once":false}}
+{"op":"verb","id":"vb_sw_w2","verb":"puzzle.switch","on":"lantern_w2","params":{"once":false}}
+{"op":"verb","id":"vb_sw_e1","verb":"puzzle.switch","on":"lantern_e1","params":{"once":false}}
+{"op":"verb","id":"vb_sw_e2","verb":"puzzle.switch","on":"lantern_e2","params":{"once":false}}
+{"op":"verb","id":"vb_timer","verb":"puzzle.timer","on":"dawn_timer","params":{"seconds":180}}
+{"op":"verb","id":"vb_wolf_hazard","verb":"motion_hazards.hazard","on":"wolf_hunt","params":{"respawn":true}}
+{"op":"rule","id":"r_win","when":{"t":"state_is","a":"lantern_w1","s":"on"},"if":[{"l":"lantern_w1.state","op":"eq","r":"on"},{"l":"lantern_w2.state","op":"eq","r":"on"},{"l":"lantern_e1.state","op":"eq","r":"on"},{"l":"lantern_e2.state","op":"eq","r":"on"}],"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_dawn_lose","when":{"t":"timer_end","a":"dawn_timer"},"if":[{"l":"lantern_w1.state","op":"neq","r":"on"},{"l":"lantern_w2.state","op":"neq","r":"on"},{"l":"lantern_e1.state","op":"neq","r":"on"},{"l":"lantern_e2.state","op":"neq","r":"on"}],"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"expect","id":"x_wolves","prop":"win_reachable","a":"sp_red","b":"z_clearing","headline":true,"text":"Wolves close in over time unless a nearby lantern is lit."}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":6}}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

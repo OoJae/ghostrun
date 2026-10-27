@@ -1,0 +1,15 @@
+{"op":"meta","mode":"play","lang":"en","pack":"floor_plan","sub":[],"seed":12,"look":"quiz room","mood":[0.1,0.5,0.2],"timeOfDay":12,"weather":"clear"}
+{"op":"zone","id":"z_room","slot":"main_room","tag":"hall","name":"Quiz Chamber"}
+{"op":"spawn","id":"sp_red","zone":"z_room","anchor":"center","team":"red"}
+{"op":"goal","id":"door_exit","zone":"z_room","anchor":"doorway_w","noun":"exit door","hyper":"doorway","team":"red"}
+{"op":"ent","id":"door_false_1","kind":"door","noun":"sealed door","hyper":"doorway","zone":"z_room","anchor":"doorway_e","body":"fixed","shape":"box","size":[1,2,0.2]}
+{"op":"ent","id":"door_false_2","kind":"door","noun":"sealed door","hyper":"doorway","zone":"z_room","anchor":"doorway_s","body":"fixed","shape":"box","size":[1,2,0.2]}
+{"op":"ent","id":"panel","kind":"prop","noun":"quiz panel","hyper":"panel","zone":"z_room","anchor":"center","body":"fixed","shape":"box","size":[2,1,0.1]}
+{"op":"verb","id":"vb_inspect_panel","verb":"social.inspect","on":"panel","params":{"text":"Answer the riddle: Which door leads out?"}}
+{"op":"rule","id":"r_win","when":{"t":"enter","a":"sp_red","b":"door_exit"},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose_1","when":{"t":"enter","a":"sp_red","b":"door_false_1"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose_2","when":{"t":"enter","a":"sp_red","b":"door_false_2"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"expect","id":"x_exit","prop":"win_reachable","a":"sp_red","b":"door_exit","headline":true,"text":"Exactly one out of three doors is an exit"}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":6}}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

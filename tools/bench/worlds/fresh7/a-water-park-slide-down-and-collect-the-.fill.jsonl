@@ -1,0 +1,24 @@
+{"op":"meta","mode":"play","lang":"en","pack":"outdoor","sub":[],"seed":21,"look":"sunny water park","mood":[0.7,0.3,0.1],"timeOfDay":12,"weather":"clear"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Park entrance"}
+{"op":"zone","id":"z_central","slot":"clearing","tag":"hub","name":"Central hub"}
+{"op":"zone","id":"z_pool","slot":"pond","tag":"pool","name":"Main pool"}
+{"op":"spawn","id":"sp_red","zone":"z_entrance","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"g_timer","zone":"z_central","anchor":"center","noun":"timer buzzer","hyper":"timer","team":"","body":"sensor","shape":"box"}
+{"op":"ent","id":"slide","kind":"platform","noun":"water slide","hyper":"slide","zone":"z_central","anchor":"center","body":"kinematic","shape":"box","size":[3,0.5,1]}
+{"op":"ent","id":"duck_1","kind":"pickup","noun":"rubber duck","hyper":"toy","zone":"z_pool","anchor":"water","body":"dynamic","shape":"sphere","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"duck_2","kind":"pickup","noun":"rubber duck","hyper":"toy","zone":"z_pool","anchor":"water","body":"dynamic","shape":"sphere","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"duck_3","kind":"pickup","noun":"rubber duck","hyper":"toy","zone":"z_pool","anchor":"water","body":"dynamic","shape":"sphere","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"duck_4","kind":"pickup","noun":"rubber duck","hyper":"toy","zone":"z_pool","anchor":"water","body":"dynamic","shape":"sphere","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"duck_5","kind":"pickup","noun":"rubber duck","hyper":"toy","zone":"z_pool","anchor":"water","body":"dynamic","shape":"sphere","size":[0.3,0.3,0.3]}
+{"op":"verb","id":"vb_carry_duck_1","verb":"physics_props.carry","on":"duck_1","params":{}}
+{"op":"verb","id":"vb_carry_duck_2","verb":"physics_props.carry","on":"duck_2","params":{}}
+{"op":"verb","id":"vb_carry_duck_3","verb":"physics_props.carry","on":"duck_3","params":{}}
+{"op":"verb","id":"vb_carry_duck_4","verb":"physics_props.carry","on":"duck_4","params":{}}
+{"op":"verb","id":"vb_carry_duck_5","verb":"physics_props.carry","on":"duck_5","params":{}}
+{"op":"verb","id":"vb_jump_slide","verb":"locomotion.jump","on":"slide","params":{"jumpsMax":2}}
+{"op":"verb","id":"vb_timer","verb":"puzzle.timer","on":"player","params":{"seconds":30}}
+{"op":"rule","id":"r_win","when":{"t":"score_gte","a":"team:red","n":5},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose","when":{"t":"timer_end","a":"player"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"expect","id":"x_slide","prop":"win_reachable","a":"sp_red","b":"duck_5","headline":true,"text":"Slide drop must steer skiers into a pool crowded with floating targets"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

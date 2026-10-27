@@ -1,0 +1,24 @@
+{"op":"meta","mode":"wander","lang":"en","pack":"floor_plan","sub":[],"seed":28,"look":"villa tour","mood":[0.5,0.2,0.1],"timeOfDay":10,"weather":"clear"}
+{"op":"zone","id":"z_yard","slot":"yard","tag":"outside","name":"Villa yard"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Front entrance"}
+{"op":"zone","id":"z_main","slot":"main_room","tag":"hall","name":"Main living area"}
+{"op":"zone","id":"z_sw","slot":"room_sw","tag":"room","name":"South‑west side room"}
+{"op":"zone","id":"z_se","slot":"room_se","slot":"room_se","tag":"room","name":"South‑east side room"}
+{"op":"zone","id":"z_nw","slot":"room_nw","tag":"room","name":"North‑west side room"}
+{"op":"zone","id":"z_ne","slot":"room_ne","tag":"room","name":"North‑east side room"}
+{"op":"spawn","id":"sp_red","zone":"z_yard","anchor":"spawn_pad","team":"red"}
+{"op":"ent","id":"brochure","kind":"prop","noun":"brochure","hyper":"paper","zone":"z_main","anchor":"center","body":"fixed","shape":"box","size":[0.2,0.3,0.01]}
+{"op":"ent","id":"painting_sw","kind":"prop","noun":"landscape painting","hyper":"painting","zone":"z_sw","anchor":"center","body":"fixed","shape":"box","size":[1.2,0.8,0.05]}
+{"op":"ent","id":"plant_se","kind":"prop","noun":"potted plant","hyper":"plant","zone":"z_se","anchor":"corner_ne","body":"fixed","shape":"box","size":[0.5,0.5,0.7]}
+{"op":"ent","id":"coffee_nw","kind":"prop","noun":"coffee table","hyper":"table","zone":"z_nw","anchor":"center","body":"fixed","shape":"box","size":[0.8,0.6,0.4]}
+{"op":"ent","id":"lamp_ne","kind":"prop","noun":"floor lamp","hyper":"lamp","zone":"z_ne","anchor":"corner_sw","body":"fixed","shape":"box","size":[0.3,0.3,1.8]}
+{"op":"ent","id":"agent","kind":"npc","noun":"on‑site agent","hyper":"person","zone":"z_main","anchor":"doorway_w","team":"","menu":["guide.talk"],"dflt":"guide.talk"}
+{"op":"verb","id":"vb_inspect_brochure","verb":"social.inspect","on":"brochure","params":{"text":"The brochure lists amenities and pricing."}}
+{"op":"verb","id":"vb_inspect_paint_sw","verb":"social.inspect","on":"painting_sw","params":{"text":"A serene lake at sunset, staged to showcase window views."}}
+{"op":"verb","id":"vb_inspect_plant_se","verb":"social.inspect","on":"plant_se","params":{"text":"A tall ficus, adding a touch of greenery."}}
+{"op":"verb","id":"vb_inspect_coffee_nw","verb":"social.inspect","on":"coffee_nw","params":{"text":"A sleek glass coffee table with a magazine."}}
+{"op":"verb","id":"vb_inspect_lamp_ne","verb":"social.inspect","on":"lamp_ne","params":{"text":"Modern floor lamp casting warm light."}}
+{"op":"verb","id":"vb_talk_agent","verb":"social.inspect","on":"agent","params":{"text":"Ready to schedule your full viewing. Just let me know!"}}
+{"op":"expect","id":"x_booking","prop":"requires","a":"sp_red","b":"z_main","headline":true,"text":"Must reach and book the on-site agent inside the villa"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

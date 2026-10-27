@@ -1,0 +1,30 @@
+{"op":"meta","mode":"wander","lang":"en","pack":"outdoor","sub":[],"seed":26,"look":"bioluminescent forest","mood":[0.8,-0.5,-0.9],"timeOfDay":22,"weather":"clear"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"outside","name":"Forest Entrance"}
+{"op":"zone","id":"z_clearing","slot":"clearing","tag":"outside","name":"Central Clearing"}
+{"op":"zone","id":"z_grove","slot":"grove","tag":"outside","name":"Mushroom Grove"}
+{"op":"zone","id":"z_pond","slot":"pond","tag":"outside","name":"Glowing Pond"}
+{"op":"zone","id":"z_camp","slot":"camp","tag":"outside","name":"Riverside Camp"}
+{"op":"zone","id":"z_lookout","slot":"lookout","tag":"outside","name":"Hilltop Lookout"}
+{"op":"spawn","id":"sp_red","zone":"z_entrance","anchor":"spawn_pad","team":"red"}
+{"op":"ent","id":"mushroom_1","kind":"prop","noun":"glowing mushroom","hyper":"mushroom","zone":"z_grove","anchor":"heart","body":"fixed","shape":"sphere","size":[0.4,0.4,0.4]}
+{"op":"ent","id":"mushroom_2","kind":"prop","noun":"glowing mushroom","hyper":"mushroom","zone":"z_grove","anchor":"stump","body":"fixed","shape":"sphere","size":[0.5,0.5,0.5]}
+{"op":"ent","id":"mushroom_3","kind":"prop","noun":"glowing mushroom","hyper":"mushroom","zone":"z_grove","anchor":"hollow","body":"fixed","shape":"sphere","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"mushroom_4","kind":"prop","noun":"glowing mushroom","hyper":"mushroom","zone":"z_clearing","anchor":"center","body":"fixed","shape":"sphere","size":[0.45,0.45,0.45]}
+{"op":"ent","id":"mushroom_5","kind":"prop","noun":"glowing mushroom","hyper":"mushroom","zone":"z_clearing","anchor":"center_n","body":"fixed","shape":"sphere","size":[0.35,0.35,0.35]}
+{"op":"ent","id":"plant_1","kind":"prop","noun":"luminescent fern","hyper":"plant","zone":"z_pond","anchor":"shore","body":"fixed","shape":"box","size":[0.6,1.2,0.2]}
+{"op":"ent","id":"plant_2","kind":"prop","noun":"glowing lily","hyper":"plant","zone":"z_pond","anchor":"water","body":"fixed","shape":"box","size":[0.4,0.3,0.2]}
+{"op":"ent","id":"campfire","kind":"prop","noun":"warm campfire","hyper":"fire","zone":"z_camp","anchor":"fire","body":"fixed","shape":"cylinder","size":[0.5,0.3,0.5]}
+{"op":"ent","id":"sign_guide","kind":"sign","noun":"visitor guide sign","hyper":"sign","zone":"z_entrance","anchor":"sign","body":"fixed","shape":"box","size":[1,0.2,0.5]}
+{"op":"verb","id":"vb_inspect_m1","verb":"social.inspect","on":"mushroom_1","params":{"text":"A mushroom pulsing soft teal light."}}
+{"op":"verb","id":"vb_inspect_m2","verb":"social.inspect","on":"mushroom_2","params":{"text":"Bright orange spores glow gently."}}
+{"op":"verb","id":"vb_inspect_m3","verb":"social.inspect","on":"mushroom_3","params":{"text":"Tiny violet caps flicker like fireflies."}}
+{"op":"verb","id":"vb_inspect_m4","verb":"social.inspect","on":"mushroom_4","params":{"text":"A large amber mushroom sways in the breeze."}}
+{"op":"verb","id":"vb_inspect_m5","verb":"social.inspect","on":"mushroom_5","params":{"text":"Pale blue caps glow under moonlight."}}
+{"op":"verb","id":"vb_inspect_plant1","verb":"social.inspect","on":"plant_1","params":{"text":"Fern fronds emit a soothing green glow."}}
+{"op":"verb","id":"vb_inspect_plant2","verb":"social.inspect","on":"plant_2","params":{"text":"Lily petals shimmer with pink luminescence."}}
+{"op":"verb","id":"vb_inspect_campfire","verb":"social.inspect","on":"campfire","params":{"text":"Crackling fire provides warmth amid the glow."}}
+{"op":"verb","id":"vb_inspect_sign","verb":"social.inspect","on":"sign_guide","params":{"text":"Welcome! Follow the glowing path to explore."}}
+{"op":"npc","id":"guide_npc","role":"guide","zone":"z_clearing","anchor":"center_s","team":"","menu":["guide.talk"],"dflt":"guide.talk"}
+{"op":"expect","id":"x_forest","prop":"win_reachable","a":"sp_red","b":"z_clearing","headline":true,"text":"Forest is bioluminescent with visible glowing mushrooms"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

@@ -1,0 +1,184 @@
+{
+  "prompt": "Capture the enemy banner and bring it back to your base, with a teammate helping",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "team_strategy",
+    "setting": "open battlefield between two team bases",
+    "role": "captain leading a two-person strike team",
+    "goal": "Capture the enemy banner and bring it back to your base with a teammate helping",
+    "fail": "Die on objective or drop the banner before reaching your base",
+    "mood": "urgent cooperative tactical",
+    "pack": "city_block",
+    "sub": [],
+    "safety": "arcade",
+    "headline": "Banner must be held and delivered to base to win",
+    "nouns": [
+      {
+        "noun": "banner",
+        "hyper": "objective_item"
+      },
+      {
+        "noun": "base",
+        "hyper": "team_structure"
+      },
+      {
+        "noun": "teammate",
+        "hyper": "cooperative_character"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.2,
+      "arousal": 0.6,
+      "tension": 0.5
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "b31b717c02c72d3a57db39805a780e501b25681793eed4673fcbf7d7df97d820",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "exp_banner",
+      "text": "Banner must be held and delivered to base to win",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 5 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (banner into goal_red_base, carried by red) ← pick up banner",
+        "src": ""
+      },
+      {
+        "id": "T2:r_gate_close",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_gate_close"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_gate_close: nothing in the world makes switch_gate 'off'",
+        "cx": null
+      },
+      {
+        "id": "T2:r_gate_open",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_gate_open"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 10,
+        "status": "verified",
+        "text": "r_gate_open fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lose_drop",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_drop"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_lose_drop: nothing in the world makes banner 'down'",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_plinth",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_plinth"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_plinth fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it (AI par 18.4 s)",
+        "cx": null,
+        "src": "",
+        "ms": 422
+      }
+    ],
+    "par": {
+      "goldS": 18.4,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 552
+  }
+}

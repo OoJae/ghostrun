@@ -1,0 +1,33 @@
+{"op":"meta","mode":"play","lang":"en","pack":"course","sub":[],"seed":17,"look":"frozen lake","mood":[-0.1,0.45,0.75],"timeOfDay":10,"weather":"snow"}
+{"op":"zone","id":"z_start","slot":"start","tag":"shore","name":"Near shore"}
+{"op":"zone","id":"z_seg1","slot":"seg_1","tag":"ledge","name":"Ice ledge"}
+{"op":"zone","id":"z_seg2","slot":"seg_2","tag":"gaps","name":"Thin ice gaps"}
+{"op":"zone","id":"z_seg3","slot":"seg_3","tag":"steps","name":"Cracked steps"}
+{"op":"zone","id":"z_seg4","slot":"seg_4","tag":"pit","name":"Deep cracks"}
+{"op":"zone","id":"z_seg5","slot":"seg_5","tag":"beam","name":"Narrow ice beam"}
+{"op":"zone","id":"z_seg6","slot":"seg_6","tag":"steps","name":"Final stretch"}
+{"op":"zone","id":"z_finish","slot":"finish","tag":"shore","name":"Far shore"}
+{"op":"spawn","id":"sp_red","zone":"z_start","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"goal_shore","zone":"z_finish","anchor":"goal","noun":"far shore","hyper":"far shore","team":"red"}
+{"op":"ent","id":"haz_thin_1","kind":"hazard","noun":"thin ice","hyper":"thin ice","zone":"z_seg2","anchor":"cp_1","body":"sensor","shape":"box","size":[2,0.1,2]}
+{"op":"ent","id":"haz_thin_2","kind":"hazard","noun":"thin ice","hyper":"thin ice","zone":"z_seg2","anchor":"pickup_1","body":"sensor","shape":"box","size":[2,0.1,2]}
+{"op":"ent","id":"haz_thin_3","kind":"hazard","noun":"thin ice","hyper":"thin ice","zone":"z_seg4","anchor":"cp_4","body":"sensor","shape":"box","size":[3,0.1,3]}
+{"op":"ent","id":"haz_thin_4","kind":"hazard","noun":"thin ice","hyper":"thin ice","zone":"z_seg5","anchor":"cp_5","body":"sensor","shape":"box","size":[2,0.1,2]}
+{"op":"ent","id":"cp_start","kind":"checkpoint","noun":"safe footing","hyper":"checkpoint","zone":"z_start","anchor":"host","body":"sensor","shape":"box","size":[1,0.2,1]}
+{"op":"ent","id":"cp_mid","kind":"checkpoint","noun":"safe footing","hyper":"checkpoint","zone":"z_seg3","anchor":"cp_3","body":"sensor","shape":"box","size":[1,0.2,1]}
+{"op":"verb","id":"vb_hazard_1","verb":"motion_hazards.hazard","on":"haz_thin_1","params":{"respawn":true}}
+{"op":"verb","id":"vb_hazard_2","verb":"motion_hazards.hazard","on":"haz_thin_2","params":{"respawn":true}}
+{"op":"verb","id":"vb_hazard_3","verb":"motion_hazards.hazard","on":"haz_thin_3","params":{"respawn":true}}
+{"op":"verb","id":"vb_hazard_4","verb":"motion_hazards.hazard","on":"haz_thin_4","params":{"respawn":true}}
+{"op":"verb","id":"vb_jump","verb":"locomotion.jump","on":"player","params":{"jumpsMax":2}}
+{"op":"verb","id":"vb_checkpoint_start","verb":"puzzle.checkpoint","on":"cp_start","params":{}}
+{"op":"verb":"vb_checkpoint_mid","verb":"puzzle.checkpoint","on":"cp_mid","params":{}}
+{"op":"rule","id":"r_fail_hazard_1","when":{"t":"enter","a":"player","b":"haz_thin_1"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_fail_hazard_2","when":{"t":"enter","a":"player","b":"haz_thin_2"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_fail_hazard_3","when":{"t":"enter","a":"player","b":"haz_thin_3"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_fail_hazard_4","when":{"t":"enter","a":"player","b":"haz_thin_4"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_win","when":{"t":"enter","a":"player","b":"goal_shore"},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"expect","id":"x_ice","prop":"win_reachable","a":"sp_red","b":"goal_shore","headline":true,"text":"Thin-ice gaps must force a precise route, any slip ends the run"}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":6}}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

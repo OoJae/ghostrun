@@ -1,0 +1,41 @@
+{"op":"meta","mode":"play","lang":"en","pack":"outdoor","sub":[],"seed":19,"look":"wild west town","mood":[0.4,0.6,0.8],"timeOfDay":14,"weather":"clear"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Town Gate"}
+{"op":"zone","id":"z_square","slot":"clearing","tag":"outside","name":"Dusty Main Square"}
+{"op":"zone","id":"z_corral","slot":"clearing_w","tag":"corral","name":"Western Corral"}
+{"op":"zone","id":"z_livery","slot":"clearing_e","tag":"livery","name":"Livery Stable"}
+{"op":"zone","id":"z_pond","slot":"pond","tag":"pond","name":"Ranch Pond"}
+{"op":"zone","id":"z_grove","slot":"grove","tag":"grove","name":"Shade Grove"}
+{"op":"spawn","id":"sp_red","zone":"z_entrance","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"goal_corral","zone":"z_corral","anchor":"goal","noun":"corral gate","hyper":"gate","team":"red"}
+{"op":"ent","id":"horse_1","kind":"npc","noun":"runaway horse","hyper":"animal","zone":"z_square","anchor":"center_n","body":"dynamic","shape":"capsule"}
+{"op":"ent","id":"horse_2","kind":"npc","noun":"runaway horse","hyper":"animal","zone":"z_square","anchor":"center_s","body":"dynamic","shape":"capsule"}
+{"op":"ent","id":"horse_3","kind":"npc","noun":"runaway horse","hyper":"animal","zone":"z_square","anchor":"center_e","body":"dynamic","shape":"capsule"}
+{"op":"ent","id":"corral_gate","kind":"door","noun":"corral gate","hyper":"door","zone":"z_corral","anchor":"flank_n","body":"fixed","shape":"box"}
+{"op":"ent","id":"lever_gate","kind":"switch","noun":"lever","hyper":"lever","zone":"z_livery","anchor":"center","body":"fixed","shape":"box"}
+{"op":"ent","id":"whiskey","kind":"pickup","noun":"whiskey bottle","hyper":"drink","zone":"z_square","anchor":"flank_n","body":"dynamic","shape":"box","size":[0.2,0.5,0.2]}
+{"op":"ent","id":"coin","kind":"pickup","noun":"gold coin","hyper":"coin","zone":"z_square","anchor":"flank_s","body":"dynamic","shape":"sphere","size":[0.1,0.1,0.1]}
+{"op":"ent","id":"jump_pad","kind":"plate","noun":"jump pad","hyper":"jump_pad","zone":"z_entrance","anchor":"gate","body":"sensor","shape":"box"}
+{"op":"ent","id":"spikes","kind":"hazard","noun":"spike trap","hyper":"spikes","zone":"z_square","anchor":"center_w","body":"sensor","shape":"box","size":[2,0.2,2]}
+{"op":"ent","id":"checkpoint_tent","kind":"checkpoint","noun":"checkpoint tent","hyper":"tent","zone":"z_livery","anchor":"center_w","body":"sensor","shape":"box"}
+{"op":"ent","id":"sign_info","kind":"sign","noun":"info sign","hyper":"sign","zone":"z_entrance","anchor":"lead","body":"fixed","shape":"box"}
+{"op":"verb","id":"vb_carry_whiskey","verb":"physics_props.carry","on":"whiskey","params":{}}
+{"op":"verb","id":"vb_carry_coin","verb":"physics_props.carry","on":"coin","params":{}}
+{"op":"verb","id":"vb_lever_gate","verb":"puzzle.switch","on":"lever_gate","params":{"once":false}}
+{"op":"verb","id":"vb_jump_pad","verb":"locomotion.jump_pad","on":"jump_pad","params":{"height":4}}
+{"op":"verb","id":"vb_spikes","verb":"motion_hazards.hazard","on":"spikes","params":{"respawn":true}}
+{"op":"verb","id":"vb_inspect_sign","verb":"social.inspect","on":"sign_info","params":{"text":"Welcome to Dusty Creek. Keep your horse in the corral!"}}
+{"op":"verb","id":"vb_timer","verb":"puzzle.timer","on":"player","params":{"seconds":120}}
+{"op":"rule","id":"r_lever_opens","when":{"t":"state_is","a":"lever_gate","s":"on"},"then":[{"e":"open","target":"corral_gate"}]}
+{"op":"rule","id":"r_horse1_capture","when":{"t":"enter","a":"horse_1","b":"goal_corral"},"then":[{"e":"score","target":"team:red","n":1}]}
+{"op":"rule","id":"r_horse2_capture","when":{"t":"enter","a":"horse_2","b":"goal_corral"},"then":[{"e":"score","target":"team:red","n":1}]}
+{"op":"rule","id":"r_horse3_capture","when":{"t":"enter","a":"horse_3","b":"goal_corral"},"then":[{"e":"score","target":"team:red","n":1}]}
+{"op":"rule","id":"r_win","when":{"t":"score_gte","a":"team:red","n":3},"then":[{"e":"win","target":"player"}]}
+{"op":"rule","id":"r_lose_timer","when":{"t":"timer_end","a":"player"},"then":[{"e":"lose","target":"player"}]}
+{"op":"expect","id":"x_horses","prop":"win_reachable","a":"sp_red","b":"goal_corral","headline":true,"text":"Three horses must be chased simultaneously"}
+{"op":"end","layer":"gameplay"}
+{"op":"dress","id":"d_horse_1","zone":"z_square","anchor":"center_n","item":"horse_1","scale":1}
+{"op":"dress","id":"d_horse_2","zone":"z_square","anchor":"center_s","item":"horse_2","scale":1}
+{"op":"dress","id":"d_horse_3","zone":"z_square","anchor":"center_e","item":"horse_3","scale":1}
+{"op":"poster","id":"p_sign","zone":"z_entrance","anchor":"lead","text":"Dusty Creek"}
+{"op":"poster","id":"p_banner","zone":"z_livery","anchor":"center_w","text":"Livery Stable"}
+{"op":"end","layer":"cosmetic"}

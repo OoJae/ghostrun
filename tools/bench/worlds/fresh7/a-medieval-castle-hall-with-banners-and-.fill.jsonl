@@ -1,0 +1,20 @@
+{"op":"meta","mode":"wander","lang":"en","pack":"floor_plan","sub":[],"seed":31,"look":"medieval castle hall","mood":[0.2,0.3,0.1],"timeOfDay":12,"weather":"clear"}
+{"op":"zone","id":"z_yard","slot":"yard","tag":"outside","name":"Castle courtyard"}
+{"op":"zone","id":"z_hall","slot":"main_room","tag":"hall","name":"Great hall"}
+{"op":"spawn","id":"sp_red","zone":"z_yard","anchor":"spawn_pad","team":"red"}
+{"op":"ent","id":"throne","kind":"prop","noun":"ornate throne","hyper":"furniture","zone":"z_hall","anchor":"center","body":"fixed","shape":"box","size":[2,2,2]}
+{"op":"ent","id":"banner_nw","kind":"prop","noun":"royal banner","hyper":"decorations","zone":"z_hall","anchor":"corner_nw","body":"fixed","shape":"box","size":[1,2,0.1]}
+{"op":"ent","id":"banner_ne","kind":"prop","noun":"royal banner","hyper":"decorations","zone":"z_hall","anchor":"corner_ne","body":"fixed","shape":"box","size":[1,2,0.1]}
+{"op":"ent","id":"banner_sw","kind":"prop","noun":"royal banner","hyper":"decorations","zone":"z_hall","anchor":"corner_sw","body":"fixed","shape":"box","size":[1,2,0.1]}
+{"op":"ent","id":"banner_se","kind":"prop","noun":"royal banner","hyper":"decorations","zone":"z_hall","anchor":"corner_se","body":"fixed","shape":"box","size":[1,2,0.1]}
+{"op":"ent","id":"guide","kind":"npc","noun":"hall guide","hyper":"citizen","zone":"z_hall","anchor":"doorway_s","body":"kinematic","shape":"none","team":"","role":"guide","menu":["guide.talk"],"dflt":"guide.talk"}
+{"op":"verb","id":"vb_inspect_throne","verb":"social.inspect","on":"throne","params":{"text":"The throne dominates the hall, its carvings telling tales of ancient kings."}}
+{"op":"verb","id":"vb_inspect_bnw","verb":"social.inspect","on":"banner_nw","params":{"text":"A banner bearing the golden lion, emblem of the realm."}}
+{"op":"verb","id":"vb_inspect_bne","verb":"social.inspect","on":"banner_ne","params":{"text":"A banner depicting the crest of the royal family."}}
+{"op":"verb","id":"vb_inspect_bsw","verb":"social.inspect","on":"banner_sw","params":{"text":"A banner showcasing the victorious battle of 1345."}}
+{"op":"verb","id":"vb_inspect_bse","verb":"social.inspect","on":"banner_se","params":{"text":"A banner fluttering with the motto: Unity and Honor."}}
+{"op":"verb","id":"vb_guide_talk","verb":"social.inspect","on":"guide","params":{"text":"Welcome, visitor. Take your time to admire the throne and banners."}}
+{"op":"law","player":{"jumpsMax":1,"jumpH":1.5,"speed":5}}
+{"op":"expect","id":"x_throne","prop":"win_reachable","a":"sp_red","b":"throne","headline":true,"text":"Throne must dominate the main hall"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

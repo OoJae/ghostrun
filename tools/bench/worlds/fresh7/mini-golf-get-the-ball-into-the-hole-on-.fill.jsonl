@@ -1,0 +1,25 @@
+{"op":"meta","mode":"play","lang":"en","pack":"course","sub":[],"seed":23,"look":"mini golf","mood":[0.6,0.4,0.3],"timeOfDay":12,"weather":"clear"}
+{"op":"zone","id":"z_start","slot":"start","tag":"grass","name":"Tee area"}
+{"op":"zone","id":"z_seg_1","slot":"seg_1","tag":"ledge","name":"First ledge"}
+{"op":"zone","id":"z_seg_2","slot":"seg_2","tag":"beam","name":"Windmill bridge"}
+{"op":"zone","id":"z_seg_3","slot":"seg_3","tag":"gaps","name":"Sand bunker area"}
+{"op":"zone","id":"z_seg_4","slot":"seg_4","tag":"pit","name":"Water hazard"}
+{"op":"zone","id":"z_seg_5","slot":"seg_5","tag":"gaps","name":"Final approach"}
+{"op":"zone","id":"z_finish","slot":"finish","tag":"green","name":"Putting green"}
+{"op":"spawn","id":"sp_red","zone":"z_start","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"hole","zone":"z_finish","anchor":"goal","noun":"hole","hyper":"cavity","team":"","body":"sensor","shape":"none"}
+{"op":"ent","id":"ball","kind":"pickup","noun":"golf ball","hyper":"sphere","zone":"z_start","anchor":"pickup_1","body":"dynamic","shape":"sphere","size":[0.04,0.04,0.04]}
+{"op":"ent","id":"windmill_arm","kind":"prop","noun":"windmill arm","hyper":"structure","zone":"z_seg_2","anchor":"cp_2","body":"kinematic","shape":"box","size":[0.2,0.02,1.0]}
+{"op":"ent","id":"sand_bunker","kind":"hazard","noun":"sand bunker","hyper":"sand","zone":"z_seg_3","anchor":"cp_3","body":"sensor","shape":"box","size":[3,0.5,2]}
+{"op":"ent","id":"water_hazard","kind":"hazard","noun":"water hazard","hyper":"water","zone":"z_seg_4","anchor":"pit_4","body":"sensor","shape":"box","size":[4,0.5,2]}
+{"op":"verb","id":"vb_carry_ball","verb":"physics_props.carry","on":"ball","params":{}}
+{"op":"verb","id":"vb_rotate_windmill","verb":"motion_hazards.oscillate","on":"windmill_arm","params":{"axis":"z","travel":0.8,"period":4}}
+{"op":"verb","id":"vb_hazard_sand","verb":"motion_hazards.hazard","on":"sand_bunker","params":{"respawn":true}}
+{"op":"verb","id":"vb_hazard_water","verb":"motion_hazards.hazard","on":"water_hazard","params":{"respawn":true}}
+{"op":"rule","id":"r_win","when":{"t":"enter","a":"ball","b":"hole"},"if":[],"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose_sand","when":{"t":"enter","a":"ball","b":"sand_bunker"},"if":[],"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose_water","when":{"t":"enter","a":"ball","b":"water_hazard"},"if":[],"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"expect","id":"x_windmill","prop":"win_reachable","a":"sp_red","b":"hole","headline":true,"text":"Ball must navigate rotating windmill arm into the hole"}
+{"op":"law","player":{"jumpsMax":0,"jumpH":0,"speed":5}}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

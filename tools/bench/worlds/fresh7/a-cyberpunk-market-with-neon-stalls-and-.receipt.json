@@ -1,0 +1,94 @@
+{
+  "prompt": "A cyberpunk market with neon stalls and a robot vendor",
+  "intent": {
+    "lang": "en",
+    "mode": "wander",
+    "genre": "Cyberpunk",
+    "setting": "A bustling cyberpunk night market with stalls illuminated by various neon lights.",
+    "role": "Visitor",
+    "goal": "explore the market and interact with the robotic vendor",
+    "fail": "n/a",
+    "mood": "futuristic, busy, electric",
+    "pack": "outdoor",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Robot vendor interaction in neon-lit market",
+    "nouns": [
+      {
+        "noun": "market",
+        "hyper": "area"
+      },
+      {
+        "noun": "stall",
+        "hyper": "structure"
+      },
+      {
+        "noun": "vendor",
+        "hyper": "entity"
+      },
+      {
+        "noun": "neon",
+        "hyper": "light"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.35,
+      "arousal": 0.7,
+      "tension": 0.15
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "cae3b61811b9b0d02db58d0f94d618c1122ad9906e3075e68642b1b8d4ed2ca1",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_market",
+      "text": "Robot vendor interaction in neon-lit market",
+      "status": "not_checkable",
+      "method": "none"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 0 rules reference existing things",
+        "src": ""
+      },
+      {
+        "id": "T3:tour",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "tour"
+        },
+        "status": "counterexample",
+        "method": "physics, an AI visitor walks to and uses each",
+        "n": 6,
+        "k": 5,
+        "text": "walked to and inspected 5 of 6 things",
+        "cx": {
+          "where": null,
+          "have": 5,
+          "need": 6,
+          "unit": "things",
+          "text": "couldn't reach stall_w1"
+        },
+        "src": "",
+        "ms": 23
+      }
+    ],
+    "par": null,
+    "ms": 299
+  }
+}

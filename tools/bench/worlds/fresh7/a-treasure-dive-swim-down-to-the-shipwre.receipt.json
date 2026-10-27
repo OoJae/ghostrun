@@ -1,0 +1,280 @@
+{
+  "prompt": "A treasure dive: swim down to the shipwreck and bring up the pearl",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "underwater adventure",
+    "setting": "Oceana, a sun-dappled submerged clearing; below it the timbers of the old galleon *Windward* resting on the silt, brackish silt and schools of silver shoals; above, a rope up to the surface and the *Gull's Rest* dock to the east.",
+    "role": "a deep-sea diver tasked with recovering the pearl from the Windward",
+    "goal": "Swim down to the galleon Windward, locate and lift the pearl from its hold, then surface to the dock to deliver it",
+    "fail": "running out of air before surfacing, or disturbing a reef-guardian octopus that seals the exit channel",
+    "mood": "brisk, a touch hushed underwater, hopeful at the surface",
+    "pack": "outdoor",
+    "sub": [],
+    "safety": "ok",
+    "headline": "The dive needs a timed breath meter so the pearl retrieval becomes a run against air and the octopus",
+    "nouns": [
+      {
+        "noun": "ocean clearing",
+        "hyper": "body of water"
+      },
+      {
+        "noun": "galleon shipwreck",
+        "hyper": "structure"
+      },
+      {
+        "noun": "silt",
+        "hyper": "sediment"
+      },
+      {
+        "noun": "reef-guardian octopus",
+        "hyper": "aquatic creature"
+      },
+      {
+        "noun": "pearl",
+        "hyper": "gem"
+      },
+      {
+        "noun": "dock",
+        "hyper": "structure"
+      },
+      {
+        "noun": "diver",
+        "hyper": "person (generic)"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.5,
+      "arousal": 0.45,
+      "tension": 0.35
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "b9d3b595dfec977b71ae404249abc5313ca15e5388b6af407d103b5484aebb44",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_dive",
+      "text": "The dive needs a timed breath meter so the pearl retrieval becomes a run against air and the octopus",
+      "status": "not_checkable",
+      "method": "kinematic reachability (jump apex model)"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 9 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (pearl into goal_dock, carried by red) ← pick up pearl",
+        "src": ""
+      },
+      {
+        "id": "T1:x_dive",
+        "tier": "T1",
+        "subject": {
+          "kind": "property",
+          "id": "x_dive"
+        },
+        "method": "kinematic reachability (jump apex model)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "The dive needs a timed breath meter so the pearl retrieval becomes a run against air and the octopus",
+        "cx": null
+      },
+      {
+        "id": "T2:r_octopus_lose",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_octopus_lose"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_octopus_lose fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_bank",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_bank"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 6,
+        "status": "verified",
+        "text": "r_secret_bank fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_center_e",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_center_e"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 7,
+        "status": "verified",
+        "text": "r_secret_center_e fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_center_s",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_center_s"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_center_s fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_center_w",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_center_w"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_center_w fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_dock",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_dock"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_dock fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_water",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_water"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_water fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_timer_lose",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_timer_lose"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_timer_lose fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it (AI par 14.3 s)",
+        "cx": null,
+        "src": "",
+        "ms": 201
+      }
+    ],
+    "par": {
+      "goldS": 14.3,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 503
+  }
+}

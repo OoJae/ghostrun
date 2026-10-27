@@ -95,6 +95,16 @@ export function placeWorld(input: WorldBundle, layout: PackLayout): PlaceResult 
         base = spec.anchors[pick];
       }
     }
+    // on a course, a hazard (thin ice, lava) anchored on a lane platform it nearly fills leaves no
+    // way across: it goes below the walkway with the rest of the pit hazards
+    if (base && e.kind === "hazard" && layout.packId === "course") {
+      const [x, y, z] = base;
+      const under = layout.statics.find((st) => st.surf !== "wall" && Math.abs(x - st.pos[0]) <= st.size[0] / 2 && Math.abs(z - st.pos[2]) <= st.size[2] / 2 && Math.abs(st.pos[1] + st.size[1] / 2 - y) < 0.3);
+      if (under && under.pos[1] + under.size[1] / 2 > spec.floorY - 0.5 && Math.max(e.size[0], e.size[2]) >= 0.6 * Math.min(under.size[0], under.size[2])) {
+        notes.push(`${e.id}: covers the lane platform it stood on (no way across), so it lies below the walkway`);
+        base = undefined;
+      }
+    }
     if (!base && e.kind === "hazard") {
       // a hazard with no such anchor lies low: on a floor below this zone's walkway (a course's lava
       // under its platforms), never dropped across the way the route must go
@@ -998,7 +1008,9 @@ export function repairWin(b: WorldBundle): string[] {
   const carriable = new Set(b.verbs.filter((v) => v.verb.endsWith(".carry")).map((v) => v.on));
   for (const r of [...b.rules]) {
     const held = r.if.filter((c) => c.op === "eq" && c.r === mine && /^([a-z][a-z0-9_]*)\.carrier\.team$/.test(c.l) && carriable.has(c.l.split(".")[0]!));
-    if (r.when.t !== "enter" || r.when.a !== "player" || held.length < 2 || !r.then.some((e) => e.e === "win")) continue;
+    // (the player reaching it, or one of the things being brought in: "fuel cell 3 enters the ship
+    // while all three cells are carried")
+    if (r.when.t !== "enter" || (r.when.a !== "player" && !held.some((c) => c.l.split(".")[0] === r.when.a)) || held.length < 2 || !r.then.some((e) => e.e === "win")) continue;
     const rest = r.if.filter((c) => !held.includes(c));
     b.rules.splice(b.rules.indexOf(r), 1);
     for (const c of held) {

@@ -465,6 +465,10 @@ function hop(sim: SimWorld, nav: NavWorld, b: WorldBundle, a: Surface, n: Surfac
     return on();
   }
   if (gap(a, n) <= 0.01 && Math.abs(rise) < 0.41) {
+    // a big surface (the fall floor among the course's pillars) is crossed on the navmesh
+    const p0 = sim.pos("player");
+    const path = nav.path([p0[0], p0[1] - 0.9, p0[2]], [ax, n.top, az]);
+    if (path) for (const w of path.slice(1, -1)) walkTo(w[0], w[2], 0.45);
     walkTo(ax, az, 0.3); // round anything standing in the way first
     for (let t = 0; t < 900 && budget.ticks > 0 && !sim.result && !on(); t++) steer(ax, az, 120, 0);
     return on();

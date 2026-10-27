@@ -1,0 +1,184 @@
+{
+  "prompt": "Find the hidden key under one of the five flower pots and open the shed",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "point-and-click puzzle / hide and seek",
+    "setting": "A small backyard or garden area with a shed and five flower pots placed around it.",
+    "role": "Player exploring the garden to locate a hidden item.",
+    "goal": "Search the five flower pots, find the one hiding the key, and use it to open the shed.",
+    "fail": "Running out of time, using excessive moves, or failing to identify the correct pot.",
+    "mood": "Curious, light-hearted, slightly suspenseful",
+    "pack": "outdoor",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Hidden key must be under exactly one of five indistinguishable flower pots",
+    "nouns": [
+      {
+        "noun": "key",
+        "hyper": "pickable item"
+      },
+      {
+        "noun": "flower pot",
+        "hyper": "container / hiding spot"
+      },
+      {
+        "noun": "shed",
+        "hyper": "lockable structure / goal object"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.4,
+      "arousal": 0.3,
+      "tension": 0.35
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "432d6f30f39829d831d4ea5ff23a4c9b619657859ff2862eba2838e22fe084f5",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_key",
+      "text": "Hidden key must be under exactly one of five indistinguishable flower pots",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 5 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (shed_door becomes open: use shed_door)",
+        "src": ""
+      },
+      {
+        "id": "T2:r_lose_timer",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_timer"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_lose_timer: no timer on player",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_n",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_n"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 7,
+        "status": "verified",
+        "text": "r_secret_flank_n fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_s",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_s"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_secret_flank_s fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_sign",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_sign"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_secret_sign fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it (AI par 9.4 s)",
+        "cx": null,
+        "src": "",
+        "ms": 251
+      }
+    ],
+    "par": {
+      "goldS": 9.4,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 707
+  }
+}

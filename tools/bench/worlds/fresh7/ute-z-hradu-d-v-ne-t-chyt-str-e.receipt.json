@@ -1,0 +1,258 @@
+{
+  "prompt": "Uteč z hradu dřív, než tě chytí stráže",
+  "intent": {
+    "lang": "cs",
+    "mode": "play",
+    "genre": "escape",
+    "setting": "Medieval castle interior with stone corridors, hidden passages, and guard patrols",
+    "role": "Prisoner",
+    "goal": "Reach the exit of the castle before being caught by the guards",
+    "fail": "Guard makes contact with the player",
+    "mood": "Urgent, stealthy, tense",
+    "pack": "floor_plan",
+    "sub": [],
+    "safety": "arcade",
+    "headline": "Path to exit must be navigable while avoiding guard patrols",
+    "nouns": [
+      {
+        "noun": "castle",
+        "hyper": "building"
+      },
+      {
+        "noun": "guard",
+        "hyper": "enemy npcs"
+      },
+      {
+        "noun": "exit",
+        "hyper": "goal location"
+      },
+      {
+        "noun": "corridor",
+        "hyper": "path"
+      }
+    ],
+    "moodVec": {
+      "valence": -0.2,
+      "arousal": 0.6,
+      "tension": 0.8
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "35cf72235663351682415e474cf42781aa6c8b6ee58eb6e6764cdc8fa9d03f36",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_escape",
+      "text": "Path to exit must be navigable while avoiding guard patrols",
+      "status": "counterexample",
+      "method": "static goal regression over rules + physics, 12 AI runners vs 2 bots + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 8 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (player enters exit_gate)",
+        "src": ""
+      },
+      {
+        "id": "T2:r_lose_guard",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_guard"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_lose_guard: sensor not found",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lose_guard2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_guard2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_lose_guard2: sensor not found",
+        "cx": null
+      },
+      {
+        "id": "T2:r_open_gate",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_open_gate"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_open_gate fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_ne",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_ne"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_corner_ne fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_ne_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_ne_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_corner_ne_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_nw",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_nw"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_corner_nw fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_nw_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_nw_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_corner_nw_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners vs 2 bots",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it vs 2 bots (AI par 0.7 s)",
+        "cx": null,
+        "src": "",
+        "ms": 17
+      },
+      {
+        "id": "T3:too_easy",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "counterexample",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 12,
+        "text": "won in 0.7 s: over almost before it starts",
+        "cx": {
+          "where": null,
+          "have": 0.7,
+          "need": 3,
+          "unit": "s",
+          "text": "AI par 0.7 s < 3 s"
+        },
+        "src": "",
+        "ms": 0
+      }
+    ],
+    "par": {
+      "goldS": 0.7,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 45
+  }
+}

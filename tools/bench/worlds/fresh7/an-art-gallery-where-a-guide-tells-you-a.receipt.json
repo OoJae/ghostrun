@@ -1,0 +1,106 @@
+{
+  "prompt": "An art gallery where a guide tells you about each painting",
+  "intent": {
+    "lang": "en",
+    "mode": "wander",
+    "genre": "museums",
+    "setting": "An indoor art gallery with multiple exhibition rooms",
+    "role": "Visitor",
+    "goal": "Explore the gallery and listen to the guide describe each painting",
+    "fail": "None, leisurely traversal without fail state",
+    "mood": "Calm, educational, appreciative",
+    "pack": "floor_plan",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Guide must narrate each painting in its designated room",
+    "nouns": [
+      {
+        "noun": "gallery",
+        "hyper": "building"
+      },
+      {
+        "noun": "guide",
+        "hyper": "person"
+      },
+      {
+        "noun": "painting",
+        "hyper": "artwork"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.6,
+      "arousal": 0.2,
+      "tension": -0.2
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "300b9015add0cbe0d1938ff9c3736978605b4960290f1f24fbd2abf7c2858644",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_guide",
+      "text": "Guide must narrate each painting in its designated room",
+      "status": "not_checkable",
+      "method": "kinematic reachability (jump apex model)"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 0 rules reference existing things",
+        "src": ""
+      },
+      {
+        "id": "T1:x_guide",
+        "tier": "T1",
+        "subject": {
+          "kind": "property",
+          "id": "x_guide"
+        },
+        "method": "kinematic reachability (jump apex model)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "Guide must narrate each painting in its designated room: needs nothing stated, no checker for that yet",
+        "cx": null
+      },
+      {
+        "id": "T3:tour",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "tour"
+        },
+        "status": "counterexample",
+        "method": "physics, an AI visitor walks to and uses each",
+        "n": 9,
+        "k": 8,
+        "text": "walked to and inspected 8 of 9 things",
+        "cx": {
+          "where": null,
+          "have": 8,
+          "need": 9,
+          "unit": "things",
+          "text": "couldn't reach painting_west"
+        },
+        "src": "",
+        "ms": 45
+      }
+    ],
+    "par": null,
+    "ms": 59
+  }
+}

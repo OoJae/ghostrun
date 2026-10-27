@@ -1,0 +1,26 @@
+{"op":"meta","mode":"play","lang":"en","pack":"outdoor","sub":[],"seed":14,"look":"garden","mood":[0.4,0.3,0.35],"timeOfDay":12,"weather":"clear"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Garden entry"}
+{"op":"zone","id":"z_clearing","slot":"clearing","tag":"hub","name":"Central garden"}
+{"op":"zone","id":"z_shed","slot":"clearing_w","tag":"shed_base","name":"Shed area"}
+{"op":"spawn","id":"sp_red","zone":"z_entrance","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"shed_exit","zone":"z_shed","anchor":"goal","noun":"open shed","hyper":"goal","team":"red"}
+{"op":"ent","id":"pot_n","kind":"prop","noun":"flower pot","hyper":"pot","zone":"z_clearing","anchor":"center_n","body":"fixed","shape":"box","size":[0.5,0.5,0.5]}
+{"op":"ent","id":"pot_s","kind":"prop","noun":"flower pot","hyper":"pot","zone":"z_clearing","anchor":"center_s","body":"fixed","shape":"box","size":[0.5,0.5,0.5]}
+{"op":"ent","id":"pot_e","kind":"prop","noun":"flower pot","hyper":"pot","zone":"z_clearing","anchor":"center_e","body":"fixed","shape":"box","size":[0.5,0.5,0.5]}
+{"op":"ent","id":"pot_w","kind":"prop","noun":"flower pot","hyper":"pot","zone":"z_clearing","anchor":"center_w","body":"fixed","shape":"box","size":[0.5,0.5,0.5]}
+{"op":"ent","id":"pot_c","kind":"prop","noun":"flower pot","hyper":"pot","zone":"z_clearing","anchor":"center","body":"fixed","shape":"box","size":[0.5,0.5,0.5]}
+{"op":"ent","id":"key","kind":"pickup","noun":"rusty key","hyper":"key","zone":"z_clearing","anchor":"center_n","body":"dynamic","shape":"box","size":[0.2,0.2,0.05]}
+{"op":"ent","id":"shed_door","kind":"door","noun":"shed door","hyper":"door","zone":"z_shed","anchor":"spawn_pad","body":"fixed","shape":"box"}
+{"op":"verb","id":"vb_carry_key","verb":"physics_props.carry","on":"key","params":{}}
+{"op":"verb","id":"vb_lock_shed","verb":"puzzle.lock","on":"shed_door","params":{"key":"key"}}
+{"op":"verb","id":"vb_inspect_pot_n","verb":"social.inspect","on":"pot_n","params":{"text":"A plain terracotta pot, nothing seems out of the ordinary."}}
+{"op":"verb","id":"vb_inspect_pot_s","verb":"social.inspect","on":"pot_s","params":{"text":"A plain terracotta pot, nothing seems out of the ordinary."}}
+{"op":"verb","id":"vb_inspect_pot_e","verb":"social.inspect","on":"pot_e","params":{"text":"A plain terracotta pot, nothing seems out of the ordinary."}}
+{"op":"verb","id":"vb_inspect_pot_w","verb":"social.inspect","on":"pot_w","params":{"text":"A plain terracotta pot, nothing seems out of the ordinary."}}
+{"op":"verb","id":"vb_inspect_pot_c","verb":"social.inspect","on":"pot_c","params":{"text":"A plain terracotta pot, nothing seems out of the ordinary."}}
+{"op":"rule","id":"r_win","when":{"t":"state_is","a":"shed_door","s":"open"},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose_timer","when":{"t":"timer_end","a":"player"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":5}}
+{"op":"expect","id":"x_key","prop":"win_reachable","a":"sp_red","b":"shed_exit","headline":true,"text":"Hidden key must be under exactly one of five indistinguishable flower pots"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

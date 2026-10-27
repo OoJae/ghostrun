@@ -54,6 +54,9 @@ describe("recorded unseen worlds", () => {
     ["fresh6", "a-tiny-town-fire", "'when fire1 is destroyed' fires when it is"],
     ["fresh6", "a-medieval-tournament", "the bridge you mustn't leave isn't a hazard, you start on it, and so does the knight"],
     ["fresh6", "climb-the-beanstalk", "a switch named as a lock's key isn't carried, and a carried thing never takes USE"],
+    ["fresh7", "king-of-the-hill", "a win waiting for a countdown's 'done' waits for it"],
+    ["fresh7", "a-frozen-lake", "thin ice covering a lane platform lies below the walkway instead"],
+    ["fresh7", "a-space-dock", "'fuel cell 3 enters the ship while all three are carried' means bringing each in"],
   ])("%s %s: %s", async (set, prefix) => {
     const w = recorded(set, prefix);
     const r = await prove(R, w.bundle, { engine: ENGINE_HASH, runs: 12 });

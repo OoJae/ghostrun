@@ -1,0 +1,34 @@
+{"op":"meta","mode":"wander","lang":"en","pack":"floor_plan","sub":[],"seed":27,"look":"art gallery","mood":[0.6,0.2,-0.2],"timeOfDay":12,"weather":"clear"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Gallery Entrance"}
+{"op":"zone","id":"z_west","slot":"room_sw","tag":"room","name":"West Exhibition"}
+{"op":"zone","id":"z_east","slot":"room_se","tag":"room","name":"East Exhibition"}
+{"op":"zone","id":"z_north","slot":"room_nw","tag":"room","name":"North Hall"}
+{"op":"zone","id":"z_south","slot":"room_ne","tag":"room","name":"South Hall"}
+{"op":"zone","id":"z_main","slot":"main_room","tag":"hall","name":"Central Hall"}
+{"op":"spawn","id":"sp_red","zone":"z_entrance","anchor":"spawn_pad","team":"red"}
+{"op":"ent","id":"painting_west","kind":"prop","noun":"landscape painting","hyper":"painting","zone":"z_west","anchor":"center","body":"fixed","shape":"box","size":[1.2,1.6,0.1]}
+{"op":"ent","id":"painting_east","kind":"prop","noun":"abstract canvas","hyper":"painting","zone":"z_east","anchor":"center","body":"fixed","shape":"box","size":[1.0,1.5,0.1]}
+{"op":"ent","id":"painting_north","kind":"prop","noun":"portrait","hyper":"painting","zone":"z_north","anchor":"center","body":"fixed","shape":"box","size":[0.8,1.2,0.1]}
+{"op":"ent","id":"painting_south","kind":"prop","noun":"still life","hyper":"painting","zone":"z_south","anchor":"center","body":"fixed","shape":"box","size":[1.1,1.4,0.1]}
+{"op":"ent","id":"guide_west","kind":"npc","noun":"gallery guide","hyper":"guide","zone":"z_west","anchor":"center","body":"kinematic","shape":"none","team":""}
+{"op":"ent","id":"guide_east","kind":"npc","noun":"gallery guide","hyper":"guide","zone":"z_east","anchor":"center","body":"kinematic","shape":"none","team":""}
+{"op":"ent","id":"guide_north","kind":"npc","noun":"gallery guide","hyper":"guide","zone":"z_north","anchor":"center","body":"kinematic","shape":"none","team":""}
+{"op":"ent","id":"guide_south","kind":"npc","noun":"gallery guide","hyper":"guide","zone":"z_south","anchor":"center","body":"kinematic","shape":"none","team":""}
+{"op":"ent","id":"guide_central","kind":"npc","noun":"gallery guide","hyper":"guide","zone":"z_main","anchor":"center","body":"kinematic","shape":"none","team":""}
+{"op":"verb","id":"vb_inspect_west","verb":"social.inspect","on":"painting_west","params":{"text":"A serene landscape of rolling hills at dusk."}}
+{"op":"verb","id":"vb_inspect_east","verb":"social.inspect","on":"painting_east","params":{"text":"An explosive abstract with vibrant colors."}}
+{"op":"verb","id":"vb_inspect_north","verb":"social.inspect","on":"painting_north","params":{"text":"A formal portrait of a 19th‑century patron."}}
+{"op":"verb","id":"vb_inspect_south","verb":"social.inspect","on":"painting_south","params":{"text":"A detailed still life of fruit and pottery."}}
+{"op":"verb","id":"vb_guide_west","verb":"social.inspect","on":"guide_west","params":{"text":"Welcome to the West wing. Here you'll find classic landscapes."}}
+{"op":"verb","id":"vb_guide_east","verb":"social.inspect","on":"guide_east","params":{"text":"This East room showcases modern abstract works."}}
+{"op":"verb","id":"vb_guide_north","verb":"social.inspect","on":"guide_north","params":{"text":"In the North hall, admire this portrait of a historic figure."}}
+{"op":"verb","id":"vb_guide_south","verb":"social.inspect","on":"guide_south","params":{"text":"South hall displays a vibrant still life collection."}}
+{"op":"verb","id":"vb_guide_central","verb":"social.inspect","on":"guide_central","params":{"text":"The central hall connects the exhibitions and houses the main information desk."}}
+{"op":"npc","id":"guide_west_npc","role":"guide","zone":"z_west","anchor":"center","team":"","menu":["guide.west"],"dflt":"guide.west"}
+{"op":"npc","id":"guide_east_npc","role":"guide","zone":"z_east","anchor":"center","team":"","menu":["guide.east"],"dflt":"guide.east"}
+{"op":"npc","id":"guide_north_npc","role":"guide","zone":"z_north","anchor":"center","team":"","menu":["guide.north"],"dflt":"guide.north"}
+{"op":"npc","id":"guide_south_npc","role":"guide","zone":"z_south","anchor":"center","team":"","menu":["guide.south"],"dflt":"guide.south"}
+{"op":"npc","id":"guide_central_npc","role":"guide","zone":"z_main","anchor":"center","team":"","menu":["guide.central"],"dflt":"guide.central"}
+{"op":"expect","id":"x_guide","prop":"requires","a":"sp_red","b":"z_main","headline":true,"text":"Guide must narrate each painting in its designated room"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

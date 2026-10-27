@@ -1,0 +1,84 @@
+{
+  "prompt": "A bioluminescent forest at night with glowing mushrooms to look at",
+  "intent": {
+    "lang": "en",
+    "mode": "wander",
+    "genre": "atmospheric exploration",
+    "setting": "A bioluminescent forest at night filled with glowing flora and fungi",
+    "role": "A visitor or explorer",
+    "goal": "Stroll through the forest and observe the bioluminescent mushrooms and plants",
+    "fail": "There is no fail state; the experience is open-ended",
+    "mood": "Serene, magical, and contemplative",
+    "pack": "outdoor",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Forest is bioluminescent with visible glowing mushrooms",
+    "nouns": [
+      {
+        "noun": "forest",
+        "hyper": "bioluminescent"
+      },
+      {
+        "noun": "mushrooms",
+        "hyper": "glowing"
+      },
+      {
+        "noun": "night",
+        "hyper": "atmospheric"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.8,
+      "arousal": -0.5,
+      "tension": -0.9
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "ba442b9daee0ae05b25ba0be1aef507d980169f9e1d91e96d46e9f3b26d2bdca",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_forest",
+      "text": "Forest is bioluminescent with visible glowing mushrooms",
+      "status": "not_checkable",
+      "method": "none"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 0 rules reference existing things",
+        "src": ""
+      },
+      {
+        "id": "T3:tour",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "tour"
+        },
+        "status": "played",
+        "method": "physics, an AI visitor walks to and uses each",
+        "n": 9,
+        "k": 9,
+        "text": "walked to and inspected 9 of 9 things",
+        "cx": null,
+        "src": "",
+        "ms": 37
+      }
+    ],
+    "par": null,
+    "ms": 346
+  }
+}

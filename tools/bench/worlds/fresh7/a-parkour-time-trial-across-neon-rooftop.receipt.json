@@ -1,0 +1,206 @@
+{
+  "prompt": "A parkour time trial across neon rooftops: reach the finish in under a minute",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "parkour",
+    "setting": "Neon-lit city skyline at night with narrow rooftops and gaps between buildings",
+    "role": "Runner or stunt athlete",
+    "goal": "Complete a parkour route across the neon rooftops and cross the finish pad in under one minute",
+    "fail": "Fall off a rooftop, miss a required jump, or exceed the 60-second time limit",
+    "mood": "High-energy, stylish, and tense",
+    "pack": "city_block",
+    "sub": [
+      "rooftop"
+    ],
+    "safety": "ok",
+    "headline": "Neon rooftop time trial must be beatable in under 60 seconds",
+    "nouns": [
+      {
+        "noun": "rooftops",
+        "hyper": "urban building surfaces"
+      },
+      {
+        "noun": "neon",
+        "hyper": "lighting"
+      },
+      {
+        "noun": "finish",
+        "hyper": "goal marker"
+      },
+      {
+        "noun": "time trial",
+        "hyper": "objective"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.7,
+      "arousal": 0.8,
+      "tension": 0.6
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "3914d682e777b49948b9435dc920a8bdcce18f13cc23218705d18b39985696ff",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_time_trial",
+      "text": "Neon rooftop time trial must be beatable in under 60 seconds",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 6 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (player enters finish_pad)",
+        "src": ""
+      },
+      {
+        "id": "T2:r_collect_coin",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_collect_coin"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 10,
+        "status": "verified",
+        "text": "r_collect_coin fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_collect_coin2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_collect_coin2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 8,
+        "status": "verified",
+        "text": "r_collect_coin2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_gate_open",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_gate_open"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_gate_open fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lose_haz",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_haz"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_lose_haz fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lose_timer",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_timer"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_lose_timer fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it (AI par 10.3 s)",
+        "cx": null,
+        "src": "",
+        "ms": 130
+      }
+    ],
+    "par": {
+      "goldS": 10.3,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 276
+  }
+}

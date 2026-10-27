@@ -1,0 +1,116 @@
+{
+  "prompt": "A planetarium with a model of the solar system",
+  "intent": {
+    "lang": "en",
+    "mode": "wander",
+    "genre": "educational sim",
+    "setting": "Dark indoor planetarium with a ceiling starfield and a large central rotunda; a scaled model of the Sun and the planets arranged on orbital rings suspended above a walkway",
+    "role": "Visitor / explorer",
+    "goal": "Walk the aisles, observe the rotating solar system model, and read the exhibit plaques",
+    "fail": "No explicit fail; leaving the planetarium ends the session",
+    "mood": "quiet, wondrous, contemplative",
+    "pack": "floor_plan",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Room contains a rotating model of the solar system with scaled planets on orbital rings",
+    "nouns": [
+      {
+        "noun": "planetarium",
+        "hyper": "building"
+      },
+      {
+        "noun": "solar system model",
+        "hyper": "exhibit"
+      },
+      {
+        "noun": "planets",
+        "hyper": "celestial bodies"
+      },
+      {
+        "noun": "orbital rings",
+        "hyper": "scaffolding"
+      },
+      {
+        "noun": "starfield",
+        "hyper": "ceiling installation"
+      },
+      {
+        "noun": "aisle",
+        "hyper": "walkway"
+      },
+      {
+        "noun": "plaque",
+        "hyper": "signage"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.6,
+      "arousal": 0.2,
+      "tension": 0.05
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "4781bd6705506bbc0c10428c9c1d0e795e16eac2e36a980e513ab33dfdd7c004",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_rotunda",
+      "text": "Room contains a rotating model of the solar system with scaled planets on orbital rings",
+      "status": "verified",
+      "method": "kinematic reachability (jump apex model)"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 0 rules reference existing things",
+        "src": ""
+      },
+      {
+        "id": "T1:x_rotunda",
+        "tier": "T1",
+        "subject": {
+          "kind": "property",
+          "id": "x_rotunda"
+        },
+        "method": "kinematic reachability (jump apex model)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "Room contains a rotating model of the solar system with scaled planets on orbital rings",
+        "cx": null
+      },
+      {
+        "id": "T3:tour",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "tour"
+        },
+        "status": "played",
+        "method": "physics, an AI visitor walks to and uses each",
+        "n": 8,
+        "k": 8,
+        "text": "walked to and inspected 8 of 8 things",
+        "cx": null,
+        "src": "",
+        "ms": 20
+      }
+    ],
+    "par": null,
+    "ms": 44
+  }
+}

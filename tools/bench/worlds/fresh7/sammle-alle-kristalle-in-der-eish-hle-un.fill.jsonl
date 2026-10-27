@@ -1,0 +1,28 @@
+{"op":"meta","mode":"play","lang":"de","pack":"maze","sub":[],"seed":34,"look":"Eishöhle mit glitzernden Kristallen","mood":[0.1,0.2,0.3],"timeOfDay":12,"weather":"clear"}
+{"op":"zone","id":"z_start","slot":"start","tag":"outside","name":"Eishöhle Eingang"}
+{"op":"zone","id":"z_maze","slot":"maze","tag":"maze","name":"Eishöhle Labyrinth"}
+{"op":"spawn","id":"sp_red","zone":"z_start","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"exit_goal","zone":"z_maze","anchor":"exit","noun":"Ausgang","hyper":"Tür","team":"red","body":"sensor","shape":"box"}
+{"op":"ent","id":"crystal_center","kind":"pickup","noun":"Kristall","hyper":"Mineralien","zone":"z_maze","anchor":"center","body":"dynamic","shape":"sphere","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"crystal_dead_end_1","kind":"pickup","noun":"Kristall","hyper":"Mineralien","zone":"z_maze","anchor":"dead_end_1","body":"dynamic","shape":"sphere","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"crystal_dead_end_2","kind":"pickup","noun":"Kristall","hyper":"Mineralien","zone":"z_maze","anchor":"dead_end_2","body":"dynamic","shape":"sphere","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"crystal_dead_end_3","kind":"pickup","noun":"Kristall","hyper":"Mineralien","zone":"z_maze","anchor":"dead_end_3","body":"dynamic","shape":"sphere","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"crystal_dead_end_4","kind":"pickup","noun":"Kristall","hyper":"Mineralien","zone":"z_maze","anchor":"dead_end_4","body":"dynamic","shape":"sphere","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"ice_spike","kind":"hazard","noun":"Eisfalle","hyper":"Spikes","zone":"z_maze","anchor":"entrance","body":"sensor","shape":"box","size":[1,0.2,1]}
+{"op":"ent","id":"jump_pad","kind":"plate","noun":"Sprungplattform","hyper":"Plate","zone":"z_maze","anchor":"entrance","body":"sensor","shape":"box","size":[0.5,0.2,0.5]}
+{"op":"verb","id":"vb_carry_center","verb":"physics_props.carry","on":"crystal_center","params":{}}
+{"op":"verb","id":"vb_carry_de1","verb":"physics_props.carry","on":"crystal_dead_end_1","params":{}}
+{"op":"verb","id":"vb_carry_de2","verb":"physics_props.carry","on":"crystal_dead_end_2","params":{}}
+{"op":"verb","id":"vb_carry_de3","verb":"physics_props.carry","on":"crystal_dead_end_3","params":{}}
+{"op":"verb","id":"vb_carry_de4","verb":"physics_props.carry","on":"crystal_dead_end_4","params":{}}
+{"op":"verb","id":"vb_collect_center","verb":"puzzle.collect","on":"crystal_center","params":{}}
+{"op":"verb","id":"vb_collect_de1","verb":"puzzle.collect","on":"crystal_dead_end_1","params":{}}
+{"op":"verb","id":"vb_collect_de2","verb":"puzzle.collect","on":"crystal_dead_end_2","params":{}}
+{"op":"verb","id":"vb_collect_de3","verb":"puzzle.collect","on":"crystal_dead_end_3","params":{}}
+{"op":"verb","id":"vb_collect_de4","verb":"puzzle.collect","on":"crystal_dead_end_4","params":{}}
+{"op":"verb","id":"vb_hazard_spike","verb":"motion_hazards.hazard","on":"ice_spike","params":{"respawn":true}}
+{"op":"verb","id":"vb_jump_pad","verb":"locomotion.jump_pad","on":"jump_pad","params":{"height":5}}
+{"op":"rule","id":"r_win","when":{"t":"enter","a":"player","b":"exit_goal"},"if":[],"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"expect","id":"x_crystals","prop":"win_reachable","a":"sp_red","b":"exit_goal","headline":true,"text":"Eishöhle-Kristallsammlung plus Ausgang finden in einem Labyrinth"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

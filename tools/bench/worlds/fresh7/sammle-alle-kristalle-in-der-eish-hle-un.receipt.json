@@ -1,0 +1,120 @@
+{
+  "prompt": "Sammle alle Kristalle in der Eishöhle und finde den Ausgang",
+  "intent": {
+    "lang": "de",
+    "mode": "play",
+    "genre": "cave exploration",
+    "setting": "Eishöhle mit glitzernden Kristallen und Felseinschnitten",
+    "role": "Freiberger:in",
+    "goal": "Alle Kristalle einsammeln und den Ausgang der Höhle finden",
+    "fail": "Verlorene Zeit, falls man den Ausgang nicht rechtzeitig findet",
+    "mood": "kühl, still, mysteriös",
+    "pack": "maze",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Eishöhle-Kristallsammlung plus Ausgang finden in einem Labyrinth",
+    "nouns": [
+      {
+        "noun": "Kristalle",
+        "hyper": "Mineralien"
+      },
+      {
+        "noun": "Eishöhle",
+        "hyper": "Höhle"
+      },
+      {
+        "noun": "Ausgang",
+        "hyper": "Tür"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.1,
+      "arousal": 0.2,
+      "tension": 0.3
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "7dcc73cfb48bb00b9022b82bf1510184c7d57fb9d520435dff1cf79a9fbd4dc3",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_crystals",
+      "text": "Eishöhle-Kristallsammlung plus Ausgang finden in einem Labyrinth",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 1 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (player enters exit_goal)",
+        "src": ""
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it (AI par 23.8 s)",
+        "cx": null,
+        "src": "",
+        "ms": 403
+      }
+    ],
+    "par": {
+      "goldS": 23.8,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 433
+  }
+}

@@ -1,0 +1,264 @@
+{
+  "prompt": "A dance studio where you hit the glowing tiles in order",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "rhythm",
+    "setting": "A dim, neon-lit indoor dance studio with a floor grid of reactive tiles and mirrored walls",
+    "role": "Dancer",
+    "goal": "Step on the glowing tiles in the exact sequence before the music cue ends to keep the combo",
+    "fail": "Stepping on a black tile, missing a beat, or breaking the combo",
+    "mood": "Electric, hypnotic, rhythmic",
+    "pack": "arena",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Floor tiles must glow sequentially matching the beat",
+    "nouns": [
+      {
+        "noun": "tile",
+        "hyper": "receptor_panel"
+      },
+      {
+        "noun": "dancer",
+        "hyper": "player"
+      },
+      {
+        "noun": "studio",
+        "hyper": "indoor_arena"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.8,
+      "arousal": 0.8,
+      "tension": 0.4
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "fb352e240f9e9629846306d02fc468ed6318a558a0ddac02212a44bccacd2984",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_seq",
+      "text": "Floor tiles must glow sequentially matching the beat",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 10 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (player enters goal_combo) [after tile_5 on]",
+        "src": ""
+      },
+      {
+        "id": "T2:r_secret_flank_n",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_n"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 9,
+        "status": "verified",
+        "text": "r_secret_flank_n fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_n_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_n_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_flank_n_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_s",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_s"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_flank_s fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_s_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_s_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_secret_flank_s_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_tile1",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_tile1"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_tile1 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_tile2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_tile2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_tile2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_tile3",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_tile3"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_tile3 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_tile4",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_tile4"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_tile4 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_tile5",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_tile5"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_tile5 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it (AI par 15 s)",
+        "cx": null,
+        "src": "",
+        "ms": 269
+      }
+    ],
+    "par": {
+      "goldS": 15,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 489
+  }
+}

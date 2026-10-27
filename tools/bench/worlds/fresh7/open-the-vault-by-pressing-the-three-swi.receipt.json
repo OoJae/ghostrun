@@ -1,0 +1,232 @@
+{
+  "prompt": "Open the vault by pressing the three switches, then grab the gold",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "heist",
+    "setting": "A bank vault interior with three pressure switches and a gold safe",
+    "role": "Heist operative",
+    "goal": "Open the vault by pressing the three switches to grab the gold",
+    "fail": "Trigger the alarm before all switches are pressed",
+    "mood": "Tense, stealthy, focused",
+    "pack": "floor_plan",
+    "sub": [],
+    "safety": "arcade",
+    "headline": "Three switches unlock the vault",
+    "nouns": [
+      {
+        "noun": "vault",
+        "hyper": "secure room"
+      },
+      {
+        "noun": "switches",
+        "hyper": "controlled mechanisms"
+      },
+      {
+        "noun": "gold",
+        "hyper": "valuables"
+      }
+    ],
+    "moodVec": {
+      "valence": 0,
+      "arousal": 0.4,
+      "tension": 0.7
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "b9b275dbc5e9c12d9abee98eaa56090b1d4a7d31b88fa078c1d90ed078fa9780",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_vault",
+      "text": "Three switches unlock the vault",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 8 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win_goal (player enters gold)",
+        "src": ""
+      },
+      {
+        "id": "T2:r_alarm",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_alarm"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_alarm fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_open_vault",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_open_vault"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 6,
+        "status": "verified",
+        "text": "r_open_vault fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_center",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_center"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_secret_center fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_e",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_e"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_corner_e fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_ne",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_ne"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_secret_corner_ne fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_nw",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_nw"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_corner_nw fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_w",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_w"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_corner_w fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win_goal",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win_goal"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_win_goal fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 10,
+        "text": "AI runners won by playing it (AI par 9.3 s)",
+        "cx": null,
+        "src": "",
+        "ms": 1175
+      }
+    ],
+    "par": {
+      "goldS": 9.3,
+      "runs": 12,
+      "won": 10
+    },
+    "ms": 1217
+  }
+}

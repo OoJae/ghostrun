@@ -1,0 +1,210 @@
+{
+  "prompt": "A haunted forest: light four lanterns to keep the wolves away until dawn",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "survival-horror",
+    "setting": "A dark, misty forest at night with a central grove, a clearing, scattered lamp posts and a distant pine knoll",
+    "role": "Survivor",
+    "goal": "Light all four lanterns to keep the wolves away until dawn breaks.",
+    "fail": "The wolves close in when you're in the open without a lit lantern nearby, or if you fail to light a lantern before night fully falls.",
+    "mood": "Tense, eerie, suspenseful",
+    "pack": "outdoor",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Wolves close in over time unless a nearby lantern is lit.",
+    "nouns": [
+      {
+        "noun": "forest",
+        "hyper": "outdoor nature"
+      },
+      {
+        "noun": "lantern",
+        "hyper": "light source"
+      },
+      {
+        "noun": "wolves",
+        "hyper": "creatures"
+      },
+      {
+        "noun": "dawn",
+        "hyper": "time gate"
+      }
+    ],
+    "moodVec": {
+      "valence": -0.65,
+      "arousal": 0.75,
+      "tension": 0.9
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "852655ac0a57d5c9a740676431fb4c75a7e1620db47b7ed00276565bea5840a6",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_wolves",
+      "text": "Wolves close in over time unless a nearby lantern is lit.",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 6 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (lantern_w1 becomes on: use lantern_w1) [after lantern_w1 on, lantern_w2 on, lantern_e1 on, lantern_e2 on]",
+        "src": ""
+      },
+      {
+        "id": "T2:r_dawn_lose",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_dawn_lose"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_dawn_lose fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_heart",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_heart"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 7,
+        "status": "verified",
+        "text": "r_secret_heart fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_hollow",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_hollow"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 7,
+        "status": "verified",
+        "text": "r_secret_hollow fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_roots",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_roots"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_roots fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_stump",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_stump"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_stump fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 0,
+        "src": "ai",
+        "ms": 2,
+        "status": "counterexample",
+        "text": "r_win fires exactly once",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "firings",
+          "text": "never fired when forced"
+        }
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it (AI par 19.5 s)",
+        "cx": null,
+        "src": "",
+        "ms": 426
+      }
+    ],
+    "par": {
+      "goldS": 19.5,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 869
+  }
+}

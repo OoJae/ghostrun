@@ -1,0 +1,126 @@
+{
+  "prompt": "A bookshop café with cosy reading corners",
+  "intent": {
+    "lang": "en",
+    "mode": "wander",
+    "genre": "exploration tour",
+    "setting": "A multi-zone bookshop café combining a book-lined retail floor and a cosy café with plush reading corners, warm lamps and scattered cushions.",
+    "role": "Visitor browsing and relaxing",
+    "goal": "Explore the shop, browse the bookshelves, and settle into a cosy reading corner by the window.",
+    "fail": "No explicit failure; leaving the tour unsatisfied.",
+    "mood": "cozy, warm, relaxed",
+    "pack": "floor_plan",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Reading corners need warm seating and good book visibility",
+    "nouns": [
+      {
+        "noun": "bookshop",
+        "hyper": "retail interior"
+      },
+      {
+        "noun": "café",
+        "hyper": "seating area"
+      },
+      {
+        "noun": "reading corner",
+        "hyper": "cozy nook"
+      },
+      {
+        "noun": "bookshelf",
+        "hyper": "storage fixture"
+      },
+      {
+        "noun": "table",
+        "hyper": "furniture"
+      },
+      {
+        "noun": "window",
+        "hyper": "architectural element"
+      },
+      {
+        "noun": "cushion",
+        "hyper": "soft furnishing"
+      },
+      {
+        "noun": "lamp",
+        "hyper": "lighting fixture"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.8,
+      "arousal": 0.2,
+      "tension": -0.1
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "fd9c8e4e4b8f07a28d7b0c6dab426a446f9dcaa64a964dd58a014ffd521374f2",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_corners",
+      "text": "Reading corners need warm seating and good book visibility",
+      "status": "not_checkable",
+      "method": "kinematic reachability (jump apex model)"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 0 rules reference existing things",
+        "src": ""
+      },
+      {
+        "id": "T1:x_corners",
+        "tier": "T1",
+        "subject": {
+          "kind": "property",
+          "id": "x_corners"
+        },
+        "method": "kinematic reachability (jump apex model)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "Reading corners need warm seating and good book visibility: needs nothing stated, no checker for that yet",
+        "cx": null
+      },
+      {
+        "id": "T3:tour",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "tour"
+        },
+        "status": "counterexample",
+        "method": "physics, an AI visitor walks to and uses each",
+        "n": 9,
+        "k": 1,
+        "text": "walked to and inspected 1 of 9 things",
+        "cx": {
+          "where": null,
+          "have": 1,
+          "need": 9,
+          "unit": "things",
+          "text": "couldn't reach bookshelf_a, cafe_table, cushion_1, cushion_2…"
+        },
+        "src": "",
+        "ms": 2111
+      }
+    ],
+    "par": null,
+    "ms": 2138
+  }
+}

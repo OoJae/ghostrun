@@ -1,0 +1,156 @@
+{
+  "prompt": "A water park: slide down and collect the rubber ducks in the pool",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "arcade",
+    "setting": "a sunny water park with a large central pool surrounded by a slide",
+    "role": "water polo mascot",
+    "goal": "Slide into the pool and collect the loose rubber ducks before the buzzer",
+    "fail": "Miss the last duck or let the timer run out with rubber ducks floating away",
+    "mood": "breezy, playful, bubbly",
+    "pack": "outdoor",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Slide drop must steer skiers into a pool crowded with floating targets",
+    "nouns": [
+      {
+        "noun": "water park",
+        "hyper": "amusement park"
+      },
+      {
+        "noun": "slide",
+        "hyper": "water slide"
+      },
+      {
+        "noun": "pool",
+        "hyper": "swimming pool"
+      },
+      {
+        "noun": "rubber duck",
+        "hyper": "toy"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.7,
+      "arousal": 0.3,
+      "tension": 0.1
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "1dc4e5fb46cd1b9b17aabac702123d89a28ba7a07f96b2fd5e3d611df8dccf14",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_slide",
+      "text": "Slide drop must steer skiers into a pool crowded with floating targets",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 1,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 3 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 1,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (team:red reaches 5) ← r_collect_score (touch any of 5)",
+        "src": ""
+      },
+      {
+        "id": "T2:r_collect_score",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_collect_score"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 7,
+        "status": "verified",
+        "text": "r_collect_score fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lose",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_lose fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it (AI par 8.1 s)",
+        "cx": null,
+        "src": "",
+        "ms": 109
+      }
+    ],
+    "par": {
+      "goldS": 8.1,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 394
+  }
+}

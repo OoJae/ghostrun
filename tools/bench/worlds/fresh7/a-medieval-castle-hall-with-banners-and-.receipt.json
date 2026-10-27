@@ -1,0 +1,94 @@
+{
+  "prompt": "A medieval castle hall with banners and a throne",
+  "intent": {
+    "lang": "en",
+    "mode": "wander",
+    "genre": "medieval castle",
+    "setting": "A great hall in a medieval castle, hung with banners and dominated by a central throne",
+    "role": "visitor",
+    "goal": "Stroll through the hall, gaze at the banners and admire the throne",
+    "fail": "leaving without looking at the throne",
+    "mood": "majestic, hushed",
+    "pack": "floor_plan",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Throne must dominate the main hall",
+    "nouns": [
+      {
+        "noun": "hall",
+        "hyper": "interior"
+      },
+      {
+        "noun": "banners",
+        "hyper": "decorations"
+      },
+      {
+        "noun": "throne",
+        "hyper": "furniture"
+      },
+      {
+        "noun": "castle",
+        "hyper": "building"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.2,
+      "arousal": 0.3,
+      "tension": 0.1
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "fea0add0b9bc0712e44726c0cb2aa59d583c25170fd6a60aad5d6ed7c4d1d01d",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_throne",
+      "text": "Throne must dominate the main hall",
+      "status": "not_checkable",
+      "method": "none"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 0 rules reference existing things",
+        "src": ""
+      },
+      {
+        "id": "T3:tour",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "tour"
+        },
+        "status": "counterexample",
+        "method": "physics, an AI visitor walks to and uses each",
+        "n": 6,
+        "k": 5,
+        "text": "walked to and inspected 5 of 6 things",
+        "cx": {
+          "where": null,
+          "have": 5,
+          "need": 6,
+          "unit": "things",
+          "text": "couldn't reach banner_se"
+        },
+        "src": "",
+        "ms": 37
+      }
+    ],
+    "par": null,
+    "ms": 50
+  }
+}

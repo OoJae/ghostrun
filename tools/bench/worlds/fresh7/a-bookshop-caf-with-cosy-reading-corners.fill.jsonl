@@ -1,0 +1,29 @@
+{"op":"meta","mode":"wander","lang":"en","pack":"floor_plan","sub":[],"seed":29,"look":"bookshop cafe","mood":[0.8,0.2,-0.1],"timeOfDay":14,"weather":"clear"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Shop entrance"}
+{"op":"zone","id":"z_retail","slot":"main_room","tag":"hall","name":"Retail floor"}
+{"op":"zone","id":"z_cafe","slot":"room_sw","tag":"room","name":"Café area"}
+{"op":"zone","id":"z_corner_nw","slot":"room_nw","tag":"room","name":"Cozy reading corner by window"}
+{"op":"zone","id":"z_corner_se","slot":"room_se","tag":"room","name":"Cozy reading corner by window"}
+{"op":"spawn","id":"sp_red","zone":"z_entrance","anchor":"doorway_n","team":"red"}
+{"op":"ent","id":"bookshelf_a","kind":"prop","noun":"bookshelf","hyper":"bookshelf","zone":"z_retail","anchor":"wall_n","body":"fixed","shape":"box","size":[2,0.4,0.8]}
+{"op":"ent","id":"bookshelf_b","kind":"prop","noun":"bookshelf","hyper":"bookshelf","zone":"z_retail","anchor":"wall_s","body":"fixed","shape":"box","size":[2,0.4,0.8]}
+{"op":"ent","id":"cafe_table","kind":"prop","noun":"café table","hyper":"table","zone":"z_cafe","anchor":"center","body":"fixed","shape":"box","size":[1.2,0.6,0.4]}
+{"op":"ent","id":"cushion_1","kind":"prop","noun":"plush cushion","hyper":"cushion","zone":"z_corner_nw","anchor":"corner_ne","body":"fixed","shape":"box","size":[0.4,0.4,0.2]}
+{"op":"ent","id":"cushion_2","kind":"prop","noun":"plush cushion","hyper":"cushion","zone":"z_corner_se","anchor":"corner_sw","body":"fixed","shape":"box","size":[0.4,0.4,2]}
+{"op":"ent","id":"lamp_nw","kind":"prop","noun":"warm lamp","hyper":"lamp","zone":"z_corner_nw","anchor":"corner_nw","body":"fixed","shape":"box","size":[0.2,0.5,0.2]}
+{"op":"ent","id":"lamp_se","kind":"prop","noun":"warm lamp","hyper":"lamp","zone":"z_corner_se","anchor":"corner_se","body":"fixed","shape":"box","size":[0.2,0.5,0.2]}
+{"op":"ent","id":"window_nw","kind":"prop","noun":"large window","hyper":"window","zone":"z_corner_nw","anchor":"corner_ne","body":"fixed","shape":"box","size":[2,1,0.1]}
+{"op":"ent","id":"window_se","kind":"prop","noun":"large window","hyper":"window","zone":"z_corner_se","anchor":"corner_sw","body":"fixed","shape":"box","size":[2,1,0.1]}
+{"op":"verb","id":"vb_inspect_bookshelf_a","verb":"social.inspect","on":"bookshelf_a","params":{"text":"Rows of classic novels and modern tales."}}
+{"op":"verb","id":"vb_inspect_bookshelf_b","verb":"social.inspect","on":"bookshelf_b","params":{"text":"Shelves stocked with travel guides and poetry."}}
+{"op":"verb","id":"vb_inspect_cafe_table","verb":"social.inspect","on":"cafe_table","params":{"text":"A small table with a fresh pot of coffee."}}
+{"op":"verb","id":"vb_inspect_cushion_1","verb":"social.inspect","on":"cushion_1","params":{"text":"Soft cushion perfect for a quick read."}}
+{"op":"verb","id":"vb_inspect_cushion_2","verb":"social.inspect","on":"cushion_2","params":{"text":"Plush seat inviting you to linger."}}
+{"op":"verb","id":"vb_inspect_lamp_nw","verb":"social.inspect","on":"lamp_nw","params":{"text":"Warm lamp casting a gentle glow."}}
+{"op":"verb","id":"vb_inspect_lamp_se","verb":"social.inspect","on":"lamp_se","params":{"text":"Warm lamp casting a gentle glow."}}
+{"op":"verb","id":"vb_inspect_window_nw","verb":"social.inspect","on":"window_nw","params":{"text":"Sunlight streams onto the cozy nook."}}
+{"op":"verb","id":"vb_inspect_window_se","verb":"social.inspect","on":"window_se","params":{"text":"Sunlight streams onto the cozy nook."}}
+{"op":"npc","id":"npc_guide","role":"guide","zone":"z_retail","anchor":"center","team":"","menu":["guide.tour"],"dflt":"guide.tour"}
+{"op":"expect","id":"x_corners","prop":"requires","a":"sp_red","b":"z_corner_nw","headline":true,"text":"Reading corners need warm seating and good book visibility"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

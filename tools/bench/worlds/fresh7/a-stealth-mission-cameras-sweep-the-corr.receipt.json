@@ -1,0 +1,248 @@
+{
+  "prompt": "A stealth mission: cameras sweep the corridor, reach the exit without being seen",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "stealth puzzle",
+    "setting": "an indoor corridor lined with sweeping security cameras",
+    "role": "a sneaky agent",
+    "goal": "pass the corridors and reach the exit without being seen by the cameras",
+    "fail": "getting spotted by a camera",
+    "mood": "tense and focused",
+    "pack": "floor_plan",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Camera sweeps time the corridors",
+    "nouns": [
+      {
+        "noun": "cameras",
+        "hyper": "security devices"
+      },
+      {
+        "noun": "corridor",
+        "hyper": "indoor passageway"
+      },
+      {
+        "noun": "exit",
+        "hyper": "doorway"
+      }
+    ],
+    "moodVec": {
+      "valence": -0.3,
+      "arousal": 0.7,
+      "tension": 0.7
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "0f4fc7f8ba6554c36f84099b9a760726d0e366de355c08ac8f3954f24e1a2db5",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_stealth",
+      "text": "Camera sweeps time the corridors",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 9 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_escape (player enters exit_door)",
+        "src": ""
+      },
+      {
+        "id": "T2:r_escape",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_escape"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_escape fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_center",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_center"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_center fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_e",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_e"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_corner_e fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_w",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_w"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_corner_w fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_gate",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_gate"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_gate fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_spotted_ne",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_spotted_ne"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_spotted_ne fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_spotted_nw",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_spotted_nw"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_spotted_nw fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_spotted_se",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_spotted_se"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_spotted_se fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_spotted_sw",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_spotted_sw"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_spotted_sw fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it (AI par 4.1 s)",
+        "cx": null,
+        "src": "",
+        "ms": 50
+      }
+    ],
+    "par": {
+      "goldS": 4.1,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 87
+  }
+}

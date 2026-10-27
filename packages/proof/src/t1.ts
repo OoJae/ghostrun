@@ -93,6 +93,8 @@ function launchReach(s: Surface, t: Surface, laws: Laws, margin = 0): boolean {
 export function hopOk(s: Surface, t: Surface, laws: Laws, jumps: number, margin = 0): boolean {
   if (s.launch) return launchReach(s, t, laws, margin);
   const rise = t.top - s.top;
+  // a step the character controller walks up (autostep 0.4 m) needs no jump, touching edge to edge
+  if (rise <= 0.4 && rise > -0.41 && gap(s, t) <= 0.01) return true;
   if (rise > apex(laws, jumps) - margin + 1e-9) return false;
   const limit = Math.abs(rise) < 0.41 ? 0.01 : reachAt(laws, jumps, rise);
   return limit >= 0 && gap(s, t) <= limit;

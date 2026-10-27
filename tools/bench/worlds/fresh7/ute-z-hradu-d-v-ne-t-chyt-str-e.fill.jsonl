@@ -1,0 +1,28 @@
+{"op":"meta","mode":"play","lang":"cs","pack":"floor_plan","sub":[],"seed":32,"look":"medieval castle interior","mood":[-0.2,0.6,0.8],"timeOfDay":14,"weather":"clear"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Hlavní vstup"}
+{"op":"zone","id":"z_hall","slot":"main_room","tag":"hall","name":"Velká síň"}
+{"op":"zone","id":"z_west","slot":"room_sw","tag":"room","name":"Západní klenba"}
+{"op":"zone","id":"z_east","slot":"room_se","tag":"room","name":"Východní věž"}
+{"op":"zone","id":"z_dungeon","slot":"room_nw","tag":"room","name":"Podzemí"}
+{"op":"spawn","id":"sp_red","zone":"z_entrance","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"exit_gate","zone":"z_entrance","anchor":"corner_w","noun":"východ z hradu","hyper":"exit","team":"red"}
+{"op":"ent","id":"key_iron","kind":"pickup","noun":"železný klíč","hyper":"key","zone":"z_west","anchor":"corner_sw","body":"dynamic","shape":"box","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"door_cell","kind":"door","noun":"cely dveře","hyper":"door","zone":"z_dungeon","anchor":"doorway_w","body":"fixed","shape":"box"}
+{"op":"ent","id":"lever_gate","kind":"switch","noun":"přepínač brány","hyper":"lever","zone":"z_hall","anchor":"corner_ne","body":"fixed","shape":"box"}
+{"op":"ent","id":"spike_trap","kind":"hazard","noun":"ostny past","hyper":"spikes","zone":"z_west","anchor":"corner_ne","body":"sensor","shape":"box","size":[1,0.2,1]}
+{"op":"ent","id":"guard_1","kind":"npc","noun":"strážník","hyper":"guard","zone":"z_hall","anchor":"center","body":"kinematic","shape":"capsule","team":""}
+{"op":"ent","id":"guard_2","kind":"npc","noun":"strážník","hyper":"guard","zone":"z_west","anchor":"center","body":"kinematic","shape":"capsule","team":""}
+{"op":"verb","id":"vb_carry_key","verb":"physics_props.carry","on":"key_iron","params":{}}
+{"op":"verb","id":"vb_lock_cell","verb":"puzzle.lock","on":"door_cell","params":{"key":"key_iron","keep":false}}
+{"op":"verb","id":"vb_open_lever","verb":"puzzle.switch","on":"lever_gate","params":{"once":false}}
+{"op":"verb","id":"vb_spike_hazard","verb":"motion_hazards.hazard","on":"spike_trap","params":{"respawn":true}}
+{"op":"verb","id":"vb_guard_patrol_1","verb":"puzzle.lock","on":"guard_1","params":{}}
+{"op":"verb","id":"vb_guard_patrol_2","verb":"puzzle.lock","on":"guard_2","params":{}}
+{"op":"rule","id":"r_win","when":{"t":"enter","a":"player","b":"exit_gate"},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose_guard","when":{"t":"enter","a":"guard_1","b":"player"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose_guard2","when":{"t":"enter","a":"guard_2","b":"player"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_open_gate","when":{"t":"state_is","a":"lever_gate","s":"on"},"then":[{"e":"set_state","target":"door_cell","v":"open"}]}
+{"op":"expect","id":"x_escape","prop":"win_reachable","a":"sp_red","b":"exit_gate","headline":true,"text":"Path to exit must be navigable while avoiding guard patrols"}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":5}}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

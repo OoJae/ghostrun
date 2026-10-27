@@ -80,6 +80,17 @@
    "controlsP50": 10
   },
   {
+   "name": "fresh7",
+   "note": "Seventh unseen set (27 Oct, after triage of six sets): 28 prompts incl. organizer-style briefs, puzzles and three non-English prompts",
+   "prompts": 28,
+   "play": 20,
+   "places": 8,
+   "firstPass": 15,
+   "now": 18,
+   "playableP50Ms": 2564,
+   "controlsP50": 10
+  },
+  {
    "name": "judges",
    "note": "Judge-style prompts (internal; written by us, never part of the external eval set)",
    "prompts": 12,
