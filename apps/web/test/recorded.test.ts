@@ -68,6 +68,8 @@ describe("recorded unseen worlds", () => {
     ["fresh9", "a-wine-cellar", "a place: a guide standing in the doorway steps aside"],
     ["fresh9", "a-rooftop-greenhouse", "a place: a pane above a shelf is looked at from the floor in front"],
     ["fresh7", "a-wild-west-town", "horses the game is about don't step aside like bystanders"],
+    ["fresh9", "light-the-four-torches", "runners walk round the gate the torches open until it opens"],
+    ["fresh7", "open-the-vault", "a waist-high vault door is hopped, plates are big enough to stand on, shut doors are walked round"],
   ])("%s %s: %s", async (set, prefix) => {
     const w = recorded(set, prefix);
     const r = await prove(R, w.bundle, { engine: ENGINE_HASH, runs: 12 });

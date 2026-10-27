@@ -25,6 +25,22 @@ interface Leap {
   free(): void;
 }
 let leap: Leap | null = null;
+
+/** Navmeshes with the doors shut right now baked in, by which doors (built when first needed). */
+let shutNavs: Map<string, NavWorld> | null = null;
+function shutNav(b: WorldBundle, closed: string[]): NavWorld {
+  const key = closed.join(",");
+  let n = shutNavs?.get(key);
+  if (!n) {
+    n = buildNav(b, { closed });
+    (shutNavs ??= new Map()).set(key, n);
+  }
+  return n;
+}
+const freeShut = () => {
+  for (const n of shutNavs?.values() ?? []) n.destroy();
+  shutNavs = null;
+};
 function leapFor(b: WorldBundle): Leap | null {
   const boxes = lowHazards(b);
   if (!boxes.length) return null;
@@ -710,6 +726,14 @@ function perform(r: Run, st: PlanStep): "ok" | "lost" | "stuck" {
   const { sim, nav, b, rng, speed, budget } = r;
   const go = (t: Vec3 | (() => Vec3), stop: () => boolean) => {
     if (typeof t !== "function") clearDoors(r, t);
+    // doors still shut after that (a gate that opens later): walk round them when there's a way
+    const closed = b.entities.filter((d) => d.kind === "door" && sim.entity(d.id)?.col?.isEnabled()).map((d) => d.id).sort();
+    if (closed.length) {
+      const n = shutNav(b, closed);
+      const p = sim.pos("player");
+      const q = typeof t === "function" ? t() : t;
+      if (n.path([p[0], p[1] - 0.9, p[2]], q)) return goTo(sim, n, b, t, rng, speed, budget, stop);
+    }
     return goTo(sim, nav, b, t, rng, speed, budget, stop);
   };
   const gone = (id: string) => sim.entity(id)?.destroyed === true;
@@ -1096,6 +1120,7 @@ export function t3(R: Rapier, b: WorldBundle, nav: NavWorld, chain: WinChain | n
   } finally {
     leap?.free();
     leap = null;
+    freeShut();
   }
 }
 
@@ -1191,6 +1216,7 @@ export function tour(R: Rapier, b: WorldBundle, nav: NavWorld, openers: Readonly
   } finally {
     leap?.free();
     leap = null;
+    freeShut();
   }
 }
 

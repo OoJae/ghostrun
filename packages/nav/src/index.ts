@@ -76,13 +76,19 @@ export function lowHazards(b: WorldBundle): { id: string; pos: Vec3; size: Vec3 
  * Build the walking navmesh: statics plus fixed solid entities (props) as obstacles. With `leap`,
  * the low hazards (lowHazards) are left out: paths that jump them.
  */
-export function buildNav(b: WorldBundle, opts: { leap?: boolean } = {}): NavWorld {
+export function buildNav(b: WorldBundle, opts: { leap?: boolean; closed?: readonly string[] } = {}): NavWorld {
   const pos: number[] = [];
   const idx: number[] = [];
   for (const s of [...b.statics].sort((x, y) => (x.id < y.id ? -1 : 1))) pushBox(pos, idx, s.pos, s.size);
   const losing = losingOf(b);
   const low = new Set(opts.leap ? lowHazards(b).map((h) => h.id) : []);
+  const shut = new Set(opts.closed ?? []);
   for (const e of [...b.entities].sort((x, y) => (x.id < y.id ? -1 : 1))) {
+    // a door known to be shut right now (the gate the torches open): a wall, for this navmesh only
+    if (e.kind === "door" && shut.has(e.id)) {
+      pushBox(pos, idx, e.pos, [Math.max(e.size[0], 0.4), e.size[1], Math.max(e.size[2], 0.4)]);
+      continue;
+    }
     // NPCs move and doors open: both are obstacles for the KCC, never baked in
     if (e.kind !== "npc" && e.kind !== "door" && e.body === "fixed" && e.shape !== "none") pushBox(pos, idx, e.pos, e.size);
     // a standing hazard (lava, spikes) is no place to walk: AI paths go around it, as a player
