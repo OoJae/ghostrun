@@ -167,5 +167,120 @@
   "prompt": "A sumo ring on a mountain top: push both rivals out to win",
   "pack": "arena",
   "mode": "play"
+ },
+ {
+  "slug": "a-snowball-fight-in-a-winter-village-fir",
+  "prompt": "A snowball fight in a winter village, first to ten hits wins",
+  "pack": "arena",
+  "mode": "play"
+ },
+ {
+  "slug": "dodgeball-arena-red-team-against-blue-te",
+  "prompt": "Dodgeball arena, red team against blue team, first to five hits",
+  "pack": "arena",
+  "mode": "play"
+ },
+ {
+  "slug": "smuggle-the-diamond-past-the-laser-grid-",
+  "prompt": "Smuggle the diamond past the laser grid in the museum",
+  "pack": "floor_plan",
+  "mode": "play"
+ },
+ {
+  "slug": "a-wizard-school-brew-the-potion-from-thr",
+  "prompt": "A wizard school: brew the potion from three ingredients in the cauldron",
+  "pack": "floor_plan",
+  "mode": "play"
+ },
+ {
+  "slug": "a-zombie-school-find-the-principal-s-key",
+  "prompt": "A zombie school: find the principal's key and escape through the gym",
+  "pack": "floor_plan",
+  "mode": "play"
+ },
+ {
+  "slug": "a-lighthouse-on-a-stormy-cliff-climb-to-",
+  "prompt": "A lighthouse on a stormy cliff: climb to the lamp and light it before the ship crashes",
+  "pack": "course",
+  "mode": "play",
+  "honest": true
+ },
+ {
+  "slug": "a-space-station-flip-the-three-breakers-",
+  "prompt": "A space station: flip the three breakers to restore power, then reach the escape pod",
+  "pack": "floor_plan",
+  "mode": "play"
+ },
+ {
+  "slug": "a-circus-big-top-bounce-on-the-trampolin",
+  "prompt": "A circus big top: bounce on the trampolines to grab the balloons",
+  "pack": "course",
+  "mode": "play"
+ },
+ {
+  "slug": "penalty-shootout-score-three-goals-past-",
+  "prompt": "Penalty shootout: score three goals past the keeper",
+  "pack": "arena",
+  "mode": "play"
+ },
+ {
+  "slug": "bowling-alley-knock-down-all-the-pins",
+  "prompt": "Bowling alley: knock down all the pins",
+  "pack": "floor_plan",
+  "mode": "play"
+ },
+ {
+  "slug": "a-haunted-library-return-the-cursed-book",
+  "prompt": "A haunted library: return the cursed books to their shelves",
+  "pack": "floor_plan",
+  "mode": "play"
+ },
+ {
+  "slug": "a-neon-arcade-collect-tokens-and-beat-th",
+  "prompt": "A neon arcade: collect tokens and beat the high score of 10",
+  "pack": "arena",
+  "mode": "play"
+ },
+ {
+  "slug": "climb-the-beanstalk-to-the-giant-s-castl",
+  "prompt": "Climb the beanstalk to the giant's castle and grab the golden harp",
+  "pack": "course",
+  "mode": "play"
+ },
+ {
+  "slug": "a-desert-temple-with-pressure-plates-tha",
+  "prompt": "A desert temple with pressure plates that open the inner sanctum",
+  "pack": "maze",
+  "mode": "play"
+ },
+ {
+  "slug": "a-candy-factory-sort-the-sweets-into-the",
+  "prompt": "A candy factory: sort the sweets into the right boxes",
+  "pack": "floor_plan",
+  "mode": "play"
+ },
+ {
+  "slug": "basketball-shoot-five-hoops-before-the-b",
+  "prompt": "Basketball: shoot five hoops before the buzzer",
+  "pack": "arena",
+  "mode": "play"
+ },
+ {
+  "slug": "a-cozy-coffee-shop-where-you-can-order-a",
+  "prompt": "A cozy coffee shop where you can order a latte",
+  "pack": "floor_plan",
+  "mode": "wander"
+ },
+ {
+  "slug": "a-science-museum-with-a-dinosaur-skeleto",
+  "prompt": "A science museum with a dinosaur skeleton and a planetarium",
+  "pack": "floor_plan",
+  "mode": "wander"
+ },
+ {
+  "slug": "a-japanese-tea-house-in-the-rain",
+  "prompt": "A Japanese tea house in the rain",
+  "pack": "floor_plan",
+  "mode": "wander"
  }
 ]

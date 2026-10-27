@@ -344,6 +344,35 @@ async function main() {
     // the planted-bug results (ghostrun fool) are kept until that is run again
     const fool = existsSync(out) ? (JSON.parse(readFileSync(out, "utf8")) as { fool?: unknown }).fool : undefined;
     writeFileSync(out, `${JSON.stringify({ generated: new Date().toISOString().slice(0, 10), won: "at least 10 of 12 AI runners win in physics", sets, ...(fool ? { fool } : {}) }, null, 1)}\n`);
+  } else if (cmd === "gallery-add") {
+    // recorded live worlds into the web gallery, unedited: each is proved first and only a won one
+    // goes in ("honest receipt" when runners win but the world's own headline claim fails)
+    const dir = resolve(import.meta.dirname, "../../web/src/gallery");
+    const index = JSON.parse(readFileSync(join(dir, "index.json"), "utf8")) as { slug: string; prompt: string; pack: string; mode: string; honest?: boolean }[];
+    const R = await loadRapierNode();
+    await loadNavNode();
+    for (const f of args.filter((x) => x.endsWith(".fill.jsonl"))) {
+      const text = readFileSync(f, "utf8");
+      const saved = JSON.parse(readFileSync(f.replace(".fill.jsonl", ".receipt.json"), "utf8")) as { prompt: string; intent: IntentOut };
+      const slug = saved.prompt.toLowerCase().replace(/[^a-z0-9]+/g, "-").slice(0, 40);
+      if (index.some((e) => e.slug === slug || e.prompt === saved.prompt)) {
+        console.log(`  already in: ${saved.prompt}`);
+        continue;
+      }
+      const seed = (JSON.parse(splitObjects(text.split("\n", 1)[0] ?? "{}")[0] ?? "{}") as { seed?: number }).seed ?? 7;
+      const { bundle } = placeFromFill(text, seed, saved.intent.pack, saved.intent.mode);
+      const r = await prove(R, bundle, { engine: ENGINE, runs: 12 });
+      const place = saved.intent.mode === "wander";
+      if (!place && !provedWon(r)) {
+        console.log(`  not won, left out: ${saved.prompt}`);
+        continue;
+      }
+      const honest = !place && r.headline?.status === "counterexample";
+      writeFileSync(join(dir, "worlds", `${slug}.json`), JSON.stringify({ prompt: saved.prompt, intent: saved.intent, fill: text }));
+      index.push({ slug, prompt: saved.prompt, pack: saved.intent.pack, mode: saved.intent.mode, ...(honest ? { honest: true } : {}) });
+      console.log(`  added${honest ? " (honest receipt)" : ""}: ${saved.prompt}`);
+    }
+    writeFileSync(join(dir, "index.json"), `${JSON.stringify(index, null, 1)}\n`);
   } else if (cmd === "fool") {
     // "Try to fool it", at scale: plant every bug that applies (the goal 40 m up, the key gone, a
     // condition nothing meets, a 5 s countdown, no jumping on a course) in every committed world the

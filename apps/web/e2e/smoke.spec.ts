@@ -448,13 +448,14 @@ test("repair loop: a broken promise goes back to the model, the fix is re-proved
   expect(errors.filter((e) => !e.includes("503"))).toEqual([]);
 });
 
-test("gallery: G opens 28 recorded live worlds; one opens, is rebuilt and re-proved on the device", async ({ page }) => {
+test("gallery: G opens the recorded live worlds; one opens, is rebuilt and re-proved on the device", async ({ page }) => {
   const errors = collectErrors(page);
   await page.goto("/?gl=webgl2&fx=0&dpr=0.5&prewarm=0");
   await page.waitForFunction(() => window.__GHOSTRUN__?.ready === true, null, { timeout: 90_000 });
   await page.keyboard.press("KeyG");
   const gallery = page.getByTestId("gallery");
-  await expect(gallery.getByRole("listitem")).toHaveCount(28);
+  const worlds = (JSON.parse(readFileSync(resolve(here, "../src/gallery/index.json"), "utf8")) as unknown[]).length;
+  await expect(gallery.getByRole("listitem")).toHaveCount(worlds);
   await expect(gallery).toContainText("honest receipt");
   await gallery.getByTestId("gallery-board-the-enemy-pirate-ship-and-steal-th").click();
   await expect(gallery).toHaveCount(0);
