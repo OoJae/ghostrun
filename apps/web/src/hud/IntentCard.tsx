@@ -15,7 +15,23 @@ export function IntentCard({ intent, specHash }: { intent: Intent; specHash: str
         <span className="eyebrow">Intent</span>
         <span className="mode">{intent.mode}</span>
       </header>
-      <dl>
+      {intent.live && (
+        <dl className="card10">
+          <dt>You are</dt>
+          <dd>{intent.live.role}</dd>
+          <dt>Goal</dt>
+          <dd>{intent.live.goal}</dd>
+          {intent.live.fail && (
+            <>
+              <dt>Fail</dt>
+              <dd>{intent.live.fail}</dd>
+            </>
+          )}
+          <dt>Cast</dt>
+          <dd>{castLine(intent.cast)}</dd>
+        </dl>
+      )}
+      <dl className={intent.live ? "tech" : ""}>
         <dt>Pack</dt>
         <dd>
           {intent.pack}
@@ -37,11 +53,6 @@ export function IntentCard({ intent, specHash }: { intent: Intent; specHash: str
           {intent.look} <span className="dim">· {intent.weather}</span>
         </dd>
       </dl>
-      {intent.live && (
-        <p className="dim live-intent">
-          {intent.live.role} · goal: {intent.live.goal}
-        </p>
-      )}
       {intent.headline && (
         <div className="headline">
           <span className="eyebrow">Headline expectation</span>

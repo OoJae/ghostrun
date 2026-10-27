@@ -121,15 +121,16 @@ function worldRules(layout: PackLayout): string[] {
   ];
 }
 
-export function fillMessages(prompt: string, intent: IntentOut, layout: PackLayout, example: string, seed: number): Msg[] {
+export function fillMessages(prompt: string, intent: IntentOut, layout: PackLayout, example: string | string[], seed: number): Msg[] {
+  const examples = Array.isArray(example) ? example : [example];
+  const label = (i: number) => (examples.length > 1 ? `Example ${i + 1} for a different prompt (copy the style and the kinds of verbs and rules, not the content):` : "Example for a different prompt (copy the style, not the content):");
   return [
     {
       role: "system",
       content: [
         "You compile a game description into GHOSTRUN world ops. Output ONLY JSON Lines: one JSON object per line, no prose, no code fences.",
         ...worldRules(layout),
-        "Example for a different prompt (copy the style, not the content):",
-        example.trim(),
+        ...examples.flatMap((e, i) => [label(i), e.trim()]),
       ].join("\n"),
     },
     {

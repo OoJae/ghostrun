@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { DEFAULT_LAWS } from "@ghostrun/ir";
 import { fillMessages, intentMessages, type IntentOut } from "@ghostrun/llm";
 import { PACKS } from "@ghostrun/registry";
-import EXAMPLE from "../../../packages/ir/fixtures/ctf-neon.jsonl?raw";
+import EXAMPLE from "../../../packages/ir/fixtures/vault-heist.jsonl?raw";
 import { buildEstimate, costMicroUsd, FILL_MAX_IN, FILL_MAX_OUT, FILL_MODEL, inputBound, INTENT_MAX_OUT, INTENT_MODEL } from "../src/cost";
 import { INTENT } from "./fakes";
 

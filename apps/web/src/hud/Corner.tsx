@@ -17,6 +17,12 @@ export function KeyHint({ visible }: { visible: boolean }) {
       <kbd>F</kbd>
       <span>use</span>
       <span className="sep">·</span>
+      <kbd>P</kbd>
+      <span>receipt</span>
+      <span className="sep">·</span>
+      <kbd>X</kbd>
+      <span>logic</span>
+      <span className="sep">·</span>
       <span>drag to orbit</span>
     </div>
   );

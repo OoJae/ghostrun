@@ -8,7 +8,9 @@ import { DEFAULT_LAWS, gameplayLines } from "@ghostrun/ir";
 import { chatJson, fillMessages, IntentOut, intentJsonSchema, intentMessages, LlmError, repairMessages, streamChat } from "@ghostrun/llm";
 import { ALL_SUBS, PACKS, packFor } from "@ghostrun/registry";
 import * as v from "valibot";
-import EXAMPLE from "../../../packages/ir/fixtures/ctf-neon.jsonl?raw";
+// the vault heist teaches goal-dependent wins, doorway doors, keys and inspectable exhibits (an A/B
+// on six live prompts: 5 of 5 headlines verified vs 1 of 6 with the CTF example, which got copied)
+import EXAMPLE from "../../../packages/ir/fixtures/vault-heist.jsonl?raw";
 import { Buckets, intVar, WINDOW_MS } from "./buckets";
 import type { DoNamespace, KvNamespace, R2Bucket, WaitUntil } from "./cf";
 import { buildEstimate, costMicroUsd, FILL_MAX_OUT, FILL_MODEL, INTENT_MAX_OUT, INTENT_MODEL, REPAIR_MAX_IN, REPAIR_MAX_OUT } from "./cost";
