@@ -80,6 +80,8 @@ export interface VerbCtx {
   shove(id: string, vx: number, vz: number): void;
   /** Characters: back to the last checkpoint (or spawn); a carried item goes home. */
   respawn(id: string): void;
+  /** Its carrier lets go of `item`; it lands at `p`, and the carrier can't grab it back for a second. */
+  release(item: string, p: Vec3): void;
   setCheckpoint(id: string, p: Vec3): void;
 }
 
@@ -107,11 +109,13 @@ export interface Bound {
 export type Cause =
   | { do: "use"; at: string; holding?: string } // stand within reach of `at` (holding an item) and press USE
   | { do: "enter"; at: string } // move into `at`
-  | { do: "touch"; at: string }; // touch `at` (it is collected or inspected)
+  | { do: "touch"; at: string } // touch `at` (it is collected or inspected)
+  | { do: "throw"; item: string } // carry `item` within range of a rival and press USE
+  | { do: "shove"; at: string }; // get beside `at` (a character) and press USE
 
 /** An event a bound verb can produce. `cause` null: no agent causes it (a timer running out). */
 export interface Produces {
-  k: "state" | "touch" | "hit" | "timer_end" | "enter";
+  k: "state" | "touch" | "hit" | "timer_end" | "enter" | "exit";
   a: string;
   b?: string;
   s?: string;

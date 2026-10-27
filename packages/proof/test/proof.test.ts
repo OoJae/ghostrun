@@ -155,3 +155,32 @@ describe("holding something as a condition (reach the platform IF the ticket is 
     expect(t2(R, b).find((c) => c.id === "T2:r_win")).toMatchObject({ status: "verified" });
   }, 60_000);
 });
+
+describe("throwing and shoving (dodgeball, a sumo ring)", () => {
+  const load = async (name: string) => {
+    const { arena } = await import("@ghostrun/pack-arena");
+    const fill = parseFill(readFileSync(new URL(`../../kits/test/fixtures/${name}.jsonl`, import.meta.url), "utf8"), { seed: 5 });
+    expect(fill.notes.filter((n) => n.kind === "invalid" || n.kind === "unresolved")).toEqual([]);
+    const layout = arena.generate({ seed: 5, params: arena.defaults, sub: [], laws: fill.draft.laws, harder: false });
+    return placeWorld({ ...fill.draft, engine: ENGINE }, layout).bundle;
+  };
+  it("dodgeball: three hits win; the plan throws the ball at rivals three times, and runners do it", async () => {
+    const { t0 } = await import("../src/t0");
+    const b = await load("dodgeball");
+    const chain = t0(b).chain!;
+    expect(chain.steps.map((s) => s.do)).toEqual(["pickup", "throw"]);
+    expect(chain.steps[1]).toMatchObject({ item: "ball", times: 3 });
+    const r = await prove(R, b, { engine: ENGINE, runs: 4 });
+    expect(r.chips.find((c) => c.id === "T2:r_hit")).toMatchObject({ status: "verified" });
+    expect(r.chips.find((c) => c.id === "T3:win")!.k).toBeGreaterThanOrEqual(3);
+  }, 120_000);
+  it("sumo: shoving both rivals out of the ring wins; each exit rule is force-tested, runners push them out", async () => {
+    const { t0 } = await import("../src/t0");
+    const b = await load("sumo");
+    const chain = t0(b).chain!;
+    expect(chain.explain).toContain("knocked out of ring");
+    const r = await prove(R, b, { engine: ENGINE, runs: 4 });
+    expect(r.chips.filter((c) => c.id.startsWith("T2:r_out")).map((c) => c.status)).toEqual(["verified", "verified"]);
+    expect(r.chips.find((c) => c.id === "T3:win")!.k).toBeGreaterThanOrEqual(3);
+  }, 120_000);
+});

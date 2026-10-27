@@ -186,6 +186,24 @@ describe("fill repairs from the S2 bench", () => {
   });
 });
 
+describe("glued objects", () => {
+  it("a whole world on one line (no newlines) parses like one object per line; strings with braces stay whole", async () => {
+    const { parseFill, splitObjects } = await import("../src");
+    const lines = [
+      '{"op":"meta","mode":"play","pack":"arena","seed":3}',
+      '{"op":"zone","id":"z_a","slot":"midfield","tag":"center","name":"The {middle}"}',
+      '{"op":"spawn","id":"sp","zone":"z_a","team":"red"}',
+      '{"op":"end","layer":"gameplay"}',
+    ];
+    expect(splitObjects(lines.join(""))).toEqual(lines);
+    expect(splitObjects("not json")).toEqual(["not json"]);
+    const glued = parseFill(lines.join(""), { seed: 3 });
+    expect(glued.notes.filter((n) => n.kind === "invalid")).toEqual([]);
+    expect(glued.draft.zones.map((z) => z.name)).toEqual(["The {middle}"]);
+    expect(glued.gameplayDone).toBe(true);
+  });
+});
+
 describe("references", () => {
   it("rule conditions on special refs with a path (player.team, team:red.score) are kept", async () => {
     const { parseFill } = await import("../src");

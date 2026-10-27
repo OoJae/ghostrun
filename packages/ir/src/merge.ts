@@ -5,6 +5,8 @@
 // fields, but never touches its expectations: the proof keeps checking what the world promised,
 // so a change that breaks a promise shows up as a counterexample instead of quietly rewriting it.
 
+import { splitObjects } from "./fill";
+
 const ORDER = ["meta", "zone", "spawn", "goal", "ent", "verb", "law", "state", "rule", "npc", "expect", "end"] as const;
 
 interface Line {
@@ -15,7 +17,7 @@ interface Line {
 
 function parse(text: string): Line[] {
   const out: Line[] = [];
-  for (const raw of text.split("\n")) {
+  for (const raw of text.split("\n").flatMap(splitObjects)) {
     const t = raw.trim();
     if (!t) continue;
     try {

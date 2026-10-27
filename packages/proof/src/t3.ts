@@ -462,6 +462,57 @@ function perform(r: Run, st: PlanStep): "ok" | "lost" | "stuck" {
       }
       return done() ? "ok" : "stuck";
     }
+    case "throw": {
+      // holding the ball, close in on the nearest rival and throw; pick it up again after a miss
+      const fired = counter(sim, st.rule);
+      const done = () => (st.want ? met(st.want) : fired() >= (st.times ?? 1));
+      const mine = sim.entity("player")?.team ?? "";
+      const rival = () => {
+        const p = sim.pos("player");
+        let best: Vec3 = p;
+        let bestD = Infinity;
+        for (const e of b.entities) {
+          if (e.kind !== "npc" || (mine && e.team === mine) || sim.entity(e.id)?.destroyed) continue;
+          const q = sim.pos(e.id);
+          const d = d2h(p, q);
+          if (d < bestD) ((bestD = d), (best = q));
+        }
+        return best;
+      };
+      for (let attempt = 0; attempt < 8 * (st.times ?? 1) && live(r) && !done(); attempt++) {
+        if (sim.entity(st.item)?.carrier !== "player") go(() => sim.pos(st.item), () => sim.entity(st.item)?.carrier === "player" || done());
+        if (sim.entity(st.item)?.carrier !== "player") continue;
+        go(rival, () => d2h(sim.pos("player"), rival()) < 25 || done()); // within 5 m: well inside any throw's range
+        trace?.(`throw ${attempt}: at ${v1(sim.pos("player"))}, rival ${v1(rival())}, holding ${sim.entity(st.item)?.carrier === "player"}, usable ${sim.usable()?.on ?? "-"}, fired ${fired()}`);
+        sim.step({ tick: sim.tick + 1, wx: 0, wz: 0, btn: BTN.USE });
+        sim.step({ tick: sim.tick + 1, wx: 0, wz: 0, btn: 0 });
+        budget.ticks -= 2;
+      }
+      return done() ? "ok" : "stuck";
+    }
+    case "shove": {
+      // stand on the inner side of the target (between it and the ring's middle) and shove outward
+      const fired = counter(sim, st.rule);
+      const done = () => (st.want ? met(st.want) : fired() >= (st.times ?? 1));
+      const ring = st.from ? b.entities.find((e) => e.id === st.from) : undefined;
+      const inner = (): Vec3 => {
+        const t = sim.pos(st.at);
+        if (!ring) return t;
+        const [dx, dz] = [t[0] - ring.pos[0], t[2] - ring.pos[2]];
+        const len = Math.sqrt(dx * dx + dz * dz) || 1;
+        return [t[0] - (dx / len) * 1.1, t[1], t[2] - (dz / len) * 1.1];
+      };
+      for (let attempt = 0; attempt < 10 * (st.times ?? 1) && live(r) && !done(); attempt++) {
+        go(inner, () => sim.usable()?.on === st.at || done());
+        trace?.(`shove ${attempt}: at ${v1(sim.pos("player"))}, ${st.at} at ${v1(sim.pos(st.at))}, usable ${sim.usable()?.on ?? "-"}, fired ${fired()}`);
+        if (sim.usable()?.on !== st.at || done()) continue;
+        sim.step({ tick: sim.tick + 1, wx: 0, wz: 0, btn: BTN.USE });
+        sim.step({ tick: sim.tick + 1, wx: 0, wz: 0, btn: 0 });
+        budget.ticks -= 2;
+        for (let k = 0; k < 40 && live(r) && !done(); k++, budget.ticks--) sim.step(null); // let the knock-back carry them
+      }
+      return done() ? "ok" : "stuck";
+    }
     case "touch": {
       const fired = counter(sim, st.rule);
       const done = () => (st.want ? met(st.want) : fired() > 0 || gone(st.at));

@@ -10,6 +10,36 @@ import {
 } from "./vocab";
 
 export const MAX_LINE_BYTES = 1024;
+
+/**
+ * Objects a model glued onto one line ("}{", sometimes a whole world without a newline) split back
+ * into one per line; braces inside strings don't count. Anything else is returned as it was.
+ */
+export function splitObjects(line: string): string[] {
+  const out: string[] = [];
+  let depth = 0;
+  let inStr = false;
+  let esc = false;
+  let start = -1;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i]!;
+    if (inStr) {
+      if (esc) esc = false;
+      else if (ch === "\\") esc = true;
+      else if (ch === '"') inStr = false;
+      continue;
+    }
+    if (ch === '"') inStr = true;
+    else if (ch === "{") {
+      if (depth === 0) start = i;
+      depth++;
+    } else if (ch === "}" && depth > 0 && --depth === 0 && start >= 0) {
+      out.push(line.slice(start, i + 1));
+      start = -1;
+    }
+  }
+  return out.length > 1 ? out : [line];
+}
 export const BUDGETS = { gameplay: 90, zone: 8, ent: 40, verb: 32, rule: 20, minded: 4, plainNpc: 8, expect: 6, dress: 40, poster: 4 } as const;
 
 const id = v.pipe(v.string(), v.regex(/^[a-z][a-z0-9_]{0,31}$/));
@@ -240,8 +270,10 @@ export class FillParser {
     while ((nl = this.#buf.indexOf("\n")) >= 0) {
       const line = this.#buf.slice(0, nl);
       this.#buf = this.#buf.slice(nl + 1);
-      const ev = this.#line_(line);
-      if (ev) out.push(...ev);
+      for (const one of splitObjects(line)) {
+        const ev = this.#line_(one);
+        if (ev) out.push(...ev);
+      }
     }
     return out;
   }
@@ -249,7 +281,7 @@ export class FillParser {
   /** End of stream: flush the last line and resolve anything still held. */
   end(): FillEvent[] {
     const out: FillEvent[] = [];
-    if (this.#buf.trim()) out.push(...(this.#line_(this.#buf) ?? []));
+    if (this.#buf.trim()) for (const one of splitObjects(this.#buf)) out.push(...(this.#line_(one) ?? []));
     this.#buf = "";
     if (!this.#gameplayDone) out.push(...this.#closeGameplay(this.#line));
     return out;

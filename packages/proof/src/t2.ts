@@ -19,6 +19,7 @@ function clear(b: WorldBundle, p: Vec3): boolean {
 
 /** Put the player where the verb's cause happens; true when USE must be pressed on the first tick. */
 function force(sim: SimWorld, b: WorldBundle, c: Cause): string | boolean {
+  if (c.do === "throw" || c.do === "shove") return `${c.do} needs a target (handled by its trigger)`;
   const e = b.entities.find((x) => x.id === c.at);
   if (!e) return `${c.at} not found`;
   const floor = e.pos[1] - e.size[1] / 2;
@@ -76,7 +77,28 @@ function plan(sim: SimWorld, b: WorldBundle, r: Rule, playerTeam: string): strin
     case "touch":
     case "hit": {
       const p = producers(b).find((x) => x.k === w.t && (!w.b || x.b === w.b) && x.cause);
+      if (p?.cause?.do === "throw") {
+        // holding the ball, a few metres from the rival the rule names (or any rival): throw
+        const target = b.entities.find((e) => e.kind === "npc" && (w.a ? e.id === w.a : e.team !== playerTeam));
+        if (!target) return `no rival to throw ${p.cause.item} at`;
+        sim.attach(p.cause.item, "player");
+        const t = sim.pos(target.id);
+        sim.teleport("player", [t[0] + 2.5, t[1], t[2]]);
+        return true;
+      }
       return p ? force(sim, b, p.cause!) : `nothing produces ${w.t}${w.b ? ` on ${w.b}` : ""}`;
+    }
+    case "exit": {
+      // knocked out of a ring: the target just inside its edge, the player on the inner side, shove
+      const p = producers(b).find((x) => x.k === "exit" && (!w.a || x.a === w.a) && x.cause?.do === "shove");
+      const ring = b.entities.find((e) => e.id === w.b);
+      if (!p || p.cause?.do !== "shove") return `nothing knocks ${w.a || "anyone"} out of ${w.b || "anything"}`;
+      if (!ring) return `${w.b} not found`;
+      const y = ring.pos[1] - ring.size[1] / 2 + 0.95;
+      const edge = Math.max(0.5, ring.size[0] / 2 - 0.8);
+      sim.teleport(p.cause.at, [ring.pos[0] + edge, y, ring.pos[2]]);
+      sim.teleport("player", [ring.pos[0] + edge - 1.2, y, ring.pos[2]]);
+      return true;
     }
     case "timer_end": {
       const v = sim.verbs.find((x) => x.bound.on === w.a && x.plugin.id === "puzzle.timer");

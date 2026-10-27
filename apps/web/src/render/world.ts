@@ -260,6 +260,7 @@ export function buildWorldView(bundle: WorldBundle, look: LookStyle): WorldView 
   const kits = new Map<string, KitActor>();
 
   for (const e of bundle.entities) {
+    if (e.tags.includes("area")) continue; // an invisible sensor covering a zone ("when you enter the vault")
     const team = TEAM_HEX[e.team] ?? PALETTE.cyan;
     let obj: Object3D | undefined;
     const kit = kitActor(e, verbsOn.get(e.id) ?? [], keys.has(e.id), { keep, animated });

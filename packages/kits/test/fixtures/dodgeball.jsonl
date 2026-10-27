@@ -1,0 +1,14 @@
+{"op":"meta","mode":"play","pack":"arena","seed":5,"look":"neon"}
+{"op":"zone","id":"z_mid","slot":"midfield","tag":"center","name":"Court"}
+{"op":"zone","id":"z_west","slot":"west_half","tag":"base","name":"Red side"}
+{"op":"zone","id":"z_east","slot":"east_half","tag":"base","name":"Blue side"}
+{"op":"spawn","id":"sp_red","zone":"z_west","anchor":"spawn_pad","team":"red"}
+{"op":"spawn","id":"sp_blue","zone":"z_east","anchor":"spawn_pad","team":"blue"}
+{"op":"ent","id":"ball","kind":"pickup","noun":"dodgeball","zone":"z_mid","anchor":"center","body":"dynamic","shape":"sphere","size":[0.4,0.4,0.4]}
+{"op":"verb","id":"vb_throw","verb":"combat_sport.throw","on":"ball","params":{"range":10}}
+{"op":"rule","id":"r_hit","when":{"t":"hit","a":"","b":"ball"},"then":[{"e":"score","target":"team:red","n":1}]}
+{"op":"rule","id":"r_win","when":{"t":"score_gte","a":"team:red","n":3},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"npc","id":"rival_1","role":"rival","zone":"z_east","anchor":"flank_n","team":"blue","menu":["rival.defend"],"dflt":"rival.defend"}
+{"op":"npc","id":"rival_2","role":"rival","zone":"z_east","anchor":"flank_s","team":"blue","menu":["rival.defend"],"dflt":"rival.defend"}
+{"op":"expect","id":"x_win","prop":"win_reachable","a":"sp_red","b":"z_mid","headline":true,"text":"Three hits win the match"}
+{"op":"end","layer":"gameplay"}

@@ -13,7 +13,9 @@ export type PlanStep =
   | { do: "use"; at: string; rule: string; want?: Want } // stand by `at` and press USE
   | { do: "touch"; at: string; rule: string; want?: Want } // touch `at`
   | { do: "collect"; items: string[]; rule: string; times: number; rules?: string[] } // touch `items` until the rule(s) fired `times` in all
-  | { do: "wait"; rule: string; want?: Want }; // let time run (a timer)
+  | { do: "wait"; rule: string; want?: Want } // let time run (a timer)
+  | { do: "throw"; item: string; rule: string; times?: number; want?: Want } // carrying `item`, get a rival in range and press USE
+  | { do: "shove"; at: string; from: string; rule: string; times?: number; want?: Want }; // knock `at` (out of `from`, a sensor)
 
 /** A precondition step is done when `id` is in state `s` (it has no rule of its own to watch). */
 export interface Want {
@@ -57,8 +59,15 @@ export function causeSteps(c: Cause, rule: string, want?: Want): PlanStep[] {
       return [{ do: "deliver", item: "player", sensor: c.at, rule, times: 1, ...w }];
     case "touch":
       return [{ do: "touch", at: c.at, rule, ...w }];
+    case "throw":
+      return [{ do: "pickup", item: c.item, rule: "" }, { do: "throw", item: c.item, rule, ...w }];
+    case "shove":
+      return [{ do: "shove", at: c.at, from: "", rule, ...w }];
   }
 }
+
+/** A cause in a few words, for a chain's explanation. */
+const said = (c: Cause) => (c.do === "throw" ? `throw ${c.item}` : `${c.do} ${c.at}`);
 
 export interface WinChain {
   winRule: string;
@@ -155,18 +164,29 @@ export function t0(b: WorldBundle, playerTeam: "red" | "blue" = "red"): { chips:
           if (times > items.length) return null; // not enough to collect: the goal can't be met
           return { steps: [{ do: "collect", items, rule: scorers[0]!.id, rules: scorers.map((x) => x.id), times }], explain: `${r.id} (${w.a} reaches ${w.n}) ← collect ${times} of ${items.length}` };
         }
+        // a scorer that can fire again is repeated; once-only scorers (one per rival knocked out)
+        // are chained until the points add up
+        // each scorer fires once in turn (knock out every rival, not one rival twice); if that falls
+        // short, the first one that can fire again makes up the rest
+        const ways: { sub: { steps: PlanStep[]; explain: string }; per: number; once: boolean }[] = [];
         for (const r2 of rules) {
           if (r2.id === r.id) continue;
           const fx = r2.then.find((e) => e.e === "score" && e.target === w.a);
-          if (!fx) continue;
-          const sub = sat(r2, depth + 1, s2);
-          if (!sub) continue;
-          const per = fx.n || 1;
-          const times = Math.max(1, Math.ceil(w.n / per));
-          const steps = sub.steps.map((st) => (st.do === "deliver" || st.do === "collect" ? { ...st, times } : st));
-          return { steps, explain: `${r.id} (${w.a} reaches ${w.n}) ← ${sub.explain}` };
+          const sub = fx && sat(r2, depth + 1, s2);
+          if (sub) ways.push({ sub, per: fx!.n || 1, once: r2.once });
         }
-        return null;
+        const times = ways.map(() => 0);
+        let pts = 0;
+        for (let i = 0; i < ways.length && pts < w.n; i++) ((times[i] = 1), (pts += ways[i]!.per));
+        const again = ways.findIndex((x) => !x.once);
+        if (pts < w.n && again >= 0) {
+          const more = Math.ceil((w.n - pts) / ways[again]!.per);
+          times[again]! += more;
+          pts += more * ways[again]!.per;
+        }
+        if (pts < w.n) return null;
+        const steps = ways.flatMap((x, i) => (times[i] ? x.sub.steps.map((st) => (st.do === "deliver" || st.do === "collect" || st.do === "throw" || st.do === "shove" ? { ...st, times: times[i]! } : st)) : []));
+        return { steps, explain: `${r.id} (${w.a} reaches ${w.n}) ← ${ways.filter((_, i) => times[i]).map((x) => x.sub.explain).join(" + ")}` };
       }
       case "enter": {
         const sensor = ents.get(w.b);
@@ -184,12 +204,24 @@ export function t0(b: WorldBundle, playerTeam: "red" | "blue" = "red"): { chips:
         return { steps: [], explain: `${r.id} (every ${w.n} s)` };
       case "state_is": {
         const p = made.find((x) => x.k === "state" && x.a === w.a && x.s === w.s && x.cause);
-        return p ? { steps: causeSteps(p.cause!, r.id), explain: `${r.id} (${w.a} becomes ${w.s}: ${p.cause!.do} ${p.cause!.at})` } : null;
+        return p ? { steps: causeSteps(p.cause!, r.id), explain: `${r.id} (${w.a} becomes ${w.s}: ${said(p.cause!)})` } : null;
+      }
+      case "exit": {
+        // someone knocked out of a ring (a shove)
+        const p = made.find((x) => x.k === "exit" && (!w.a || x.a === w.a) && x.cause?.do === "shove");
+        if (!p || p.cause?.do !== "shove") return null;
+        return { steps: [{ do: "shove", at: p.cause.at, from: w.b, rule: r.id }], explain: `${r.id} (${p.cause.at} knocked out of ${w.b || "the area"})` };
       }
       case "touch":
       case "hit": {
+        // a rival hit by something thrown
+        if (w.t === "hit" && w.a !== "player") {
+          const p = made.find((x) => x.k === "hit" && x.cause?.do === "throw" && (!w.b || x.b === w.b));
+          if (p && p.cause?.do === "throw") return { steps: causeSteps(p.cause, r.id), explain: `${r.id} (${w.a || "a rival"} hit by ${p.cause.item})` };
+        }
         if (w.a && w.a !== "player") return null;
-        const ps = made.filter((x) => x.k === w.t && (!w.b || x.b === w.b) && x.cause);
+        // the player is never hit by their own throw
+        const ps = made.filter((x) => x.k === w.t && (!w.b || x.b === w.b) && x.cause && !(w.t === "hit" && x.cause.do === "throw"));
         if (!ps.length) return null;
         if (w.b || ps.length === 1) return { steps: causeSteps(ps[0]!.cause!, r.id), explain: `${r.id} (${w.t} ${ps[0]!.b})` };
         // "any of": collect the things you touch; if none are collectible, use the first one

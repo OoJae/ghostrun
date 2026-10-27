@@ -197,7 +197,7 @@ export function placeWorld(input: WorldBundle, layout: PackLayout): PlaceResult 
     // a door in an east/west wall's doorway turns to fill the gap across z
     if (e.kind === "door" && /^doorway_[ew]$/.test(e.anchor) && e.size[0] > e.size[2]) e.size = [e.size[2], e.size[1], e.size[0]];
   }
-  notes.push(...repairKits(b), ...repairTriggers(b), ...repairVerbs(b), ...repairWin(b), ...repairExpects(b));
+  notes.push(...repairAreas(b, bound), ...repairKits(b), ...repairTriggers(b), ...repairVerbs(b), ...repairWin(b), ...repairExpects(b));
   notes.push(...repairDeliveries(b, layout, bound), ...addSecrets(b, layout, bound));
   return { bundle: b, notes };
 }
@@ -211,6 +211,18 @@ export function repairDeliveries(b: WorldBundle, layout: PackLayout, bound: Map<
   const notes: string[] = [];
   const inside = (p: Vec3, s: Entity) => Math.abs(p[0] - s.pos[0]) < s.size[0] / 2 + 0.5 && Math.abs(p[2] - s.pos[2]) < s.size[2] / 2 + 0.5 && Math.abs(p[1] - s.pos[1]) < s.size[1] / 2 + 1;
   const standable = (p: Vec3) => layout.statics.some((st) => st.surf !== "wall" && Math.abs(p[0] - st.pos[0]) <= st.size[0] / 2 && Math.abs(p[2] - st.pos[2]) <= st.size[2] / 2 && Math.abs(st.pos[1] + st.size[1] / 2 - p[1]) < 0.3);
+  // someone a rule waits to see leave a place (knocked out of a ring) starts inside it
+  let k = 0;
+  for (const r of b.rules) {
+    if (r.when.t !== "exit") continue;
+    const who = b.entities.find((e) => e.id === r.when.a && e.kind === "npc");
+    const place = b.entities.find((e) => e.id === r.when.b);
+    if (!who || !place || inside(who.pos, place)) continue;
+    const off = ((k++ % 3) - 1) * Math.min(1.6, place.size[0] / 4);
+    who.pos = [place.pos[0] + off, place.pos[1] - place.size[1] / 2 + who.size[1] / 2, place.pos[2] + (k % 2 ? 1 : -1) * Math.min(1.6, place.size[2] / 4)];
+    who.zone = place.zone;
+    notes.push(`${who.id}: must be able to leave ${place.id}, so it starts inside it`);
+  }
   for (const r of b.rules) {
     if (r.when.t !== "enter" || r.when.a === "player") continue;
     const item = b.entities.find((e) => e.id === r.when.a);
@@ -277,6 +289,34 @@ export function addSecrets(b: WorldBundle, layout: PackLayout, bound: Map<string
     b.rules.push({ id: uniqueId(b, `r_${id}`), src: "template", layer: "gameplay", when: { t: "touch", a: "player", b: id, s: "", n: 0, act: "" }, if: [], then: [{ e: "emit", target: id, v: "", n: 0, fx: "sparkle" }], once: true, cooldownS: 0, prio: 0 });
   }
   return picked.length ? [`added ${picked.length} secret ${noun}s on unused anchors (the world had ${using.size} things to use; they count apart from the win)`] : [];
+}
+
+/**
+ * "When you enter the vault", "when a rival leaves the ring": an enter/exit rule naming a ZONE gets
+ * an invisible sensor covering that zone, and the rule is pointed at it (only entities can be
+ * entered or left). Logged.
+ */
+export function repairAreas(b: WorldBundle, bound: Map<string, ZoneSpec>): string[] {
+  const notes: string[] = [];
+  const zones = new Set(b.zones.map((z) => z.id));
+  const made = new Map<string, string>();
+  for (const r of b.rules) {
+    const w = r.when;
+    if ((w.t !== "enter" && w.t !== "exit") || !zones.has(w.b) || b.entities.some((e) => e.id === w.b)) continue;
+    let id = made.get(w.b);
+    if (!id) {
+      const spec = bound.get(w.b);
+      if (!spec) continue;
+      const { min, max } = spec.bounds;
+      id = uniqueId(b, `area_${w.b.replace(/^z_/, "")}`);
+      const zone = b.zones.find((z) => z.id === w.b)!;
+      b.entities.push({ id, src: "template", layer: "gameplay", kind: "goal", zone: w.b, anchor: "", pos: [(min[0] + max[0]) / 2, spec.floorY + 1.5, (min[2] + max[2]) / 2], rotY: 0, size: [max[0] - min[0], 3, max[2] - min[2]], noun: zone.name || w.b.replace(/_/g, " "), hyper: "area", asset: "", body: "sensor", shape: "box", team: "", tags: ["area"], states: [], init: "", props: {} });
+      made.set(w.b, id);
+      notes.push(`${w.b}: a rule enters or leaves the zone itself, so it got an invisible sensor '${id}' covering it`);
+    }
+    w.b = id;
+  }
+  return notes;
 }
 
 /**
@@ -357,6 +397,12 @@ export function repairKits(b: WorldBundle): string[] {
     for (const c of r.if) if (c.l.includes(".carrier")) delivered.add(c.l.split(".")[0]!);
   }
   for (const v of b.verbs) if (v.verb === "puzzle.lock" && v.params.key) delivered.add(String(v.params.key));
+  // a thrown ball is carried, never collected (collecting it would destroy it)
+  for (const id of new Set(b.verbs.filter((v) => v.verb === "combat_sport.throw").map((v) => v.on))) {
+    const n = b.verbs.length;
+    b.verbs = b.verbs.filter((v) => !(v.on === id && v.verb === "puzzle.collect"));
+    if (b.verbs.length < n) notes.push(`${id}: dropped puzzle.collect (it is thrown, so it is carried)`);
+  }
   // carry and collect on one thing: delivered somewhere → carried; otherwise → collected
   for (const id of new Set(b.verbs.filter((v) => v.verb === "puzzle.collect").map((v) => v.on))) {
     if (!b.verbs.some((v) => v.on === id && v.verb.endsWith(".carry"))) continue;
@@ -365,8 +411,9 @@ export function repairKits(b: WorldBundle): string[] {
     notes.push(`${id}: both carried and collected → ${keep === ".carry" ? "carried (it is delivered somewhere)" : "collected (nothing delivers it)"}`);
   }
   const groups = new Map<string, string[]>();
+  const thrown = new Set(b.verbs.filter((v) => v.verb === "combat_sport.throw").map((v) => v.on));
   for (const v of b.verbs) {
-    if (!v.verb.endsWith(".carry") || delivered.has(v.on)) continue;
+    if (!v.verb.endsWith(".carry") || delivered.has(v.on) || thrown.has(v.on)) continue; // a ball you throw is carried, not collected
     const e = b.entities.find((x) => x.id === v.on);
     if (!e) continue;
     const key = e.noun || e.hyper || "item";

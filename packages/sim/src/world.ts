@@ -182,6 +182,16 @@ export class SimWorld {
         if (c) ((c.shoveX += vx), (c.shoveZ += vz));
       },
       respawn: (id) => w.#respawn(id),
+      release: (item, p) => {
+        const it = w.ents.get(item);
+        if (!it?.carrier) return;
+        const from = it.carrier;
+        it.carrier = "";
+        w.ents.get(from)!.carrying = "";
+        it.body?.setBodyType(w.R.RigidBodyType.Dynamic, true);
+        w.teleport(item, p);
+        w.#noPickup.set(from, w.tick + 60);
+      },
       setCheckpoint: (id, p) => w.#checkpoint.set(id, p),
     };
   }

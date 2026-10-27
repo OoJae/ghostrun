@@ -2,6 +2,7 @@
 // them, and the simulation runs them. Core verbs (jump, carry, oscillate, tag_drop) live in the
 // sim and have no hooks here.
 import type { VerbPlugin } from "@ghostrun/plugin-api";
+import { COMBAT } from "./combat";
 import { HAZARDS } from "./hazards";
 import { MOVEMENT } from "./movement";
 import { PUZZLE } from "./puzzle";
@@ -13,7 +14,7 @@ const CORE: VerbPlugin[] = [
   { id: "combat_sport.tag_drop", line: 'on "player": touching an enemy carrier knocks the item loose; params {"radius":0.5-3}', on: ["player"], params: { radius: { def: 1.2, min: 0.5, max: 3 } } },
 ];
 
-export const VERBS: readonly VerbPlugin[] = [...CORE, ...PUZZLE, ...HAZARDS, ...MOVEMENT];
+export const VERBS: readonly VerbPlugin[] = [...CORE, ...PUZZLE, ...HAZARDS, ...MOVEMENT, ...COMBAT];
 
 const byId = new Map(VERBS.map((v) => [v.id, v]));
 
@@ -21,4 +22,4 @@ export function verb(id: string): VerbPlugin | undefined {
   return byId.get(id);
 }
 
-export { HAZARDS, MOVEMENT, PUZZLE };
+export { COMBAT, HAZARDS, MOVEMENT, PUZZLE };

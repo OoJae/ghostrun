@@ -1,0 +1,14 @@
+{"op":"meta","mode":"play","pack":"arena","seed":5,"look":"neon"}
+{"op":"zone","id":"z_mid","slot":"midfield","tag":"center","name":"Ring"}
+{"op":"zone","id":"z_west","slot":"west_half","tag":"base","name":"Red side"}
+{"op":"spawn","id":"sp_red","zone":"z_west","anchor":"spawn_pad","team":"red"}
+{"op":"ent","id":"ring","kind":"goal","noun":"sumo ring","zone":"z_mid","anchor":"center","body":"sensor","size":[10,2,10]}
+{"op":"npc","id":"rival_1","role":"rival","zone":"z_mid","anchor":"center_n","team":"blue","menu":["rival.idle"],"dflt":"rival.idle"}
+{"op":"npc","id":"rival_2","role":"rival","zone":"z_mid","anchor":"center_s","team":"blue","menu":["rival.idle"],"dflt":"rival.idle"}
+{"op":"verb","id":"vb_shove_1","verb":"combat_sport.shove","on":"rival_1","params":{}}
+{"op":"verb","id":"vb_shove_2","verb":"combat_sport.shove","on":"rival_2","params":{}}
+{"op":"rule","id":"r_out_1","when":{"t":"exit","a":"rival_1","b":"ring"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_out_2","when":{"t":"exit","a":"rival_2","b":"ring"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_win","when":{"t":"score_gte","a":"team:red","n":2},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"expect","id":"x_win","prop":"win_reachable","a":"sp_red","b":"z_mid","headline":true,"text":"Both rivals can be pushed out"}
+{"op":"end","layer":"gameplay"}

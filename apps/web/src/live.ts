@@ -1,7 +1,7 @@
 // Client for the live fast lane: POST /v1/build streams the intent, then one JSONL fill line per
 // SSE event. We parse lines as they land and hand over as soon as the gameplay layer is complete
 // (the cosmetic tail never blocks play).
-import { FillParser } from "@ghostrun/ir";
+import { FillParser, splitObjects } from "@ghostrun/ir";
 import { api } from "./api";
 
 export interface LiveIntent {
@@ -78,7 +78,7 @@ export async function liveBuild(prompt: string, onIntent?: (i: LiveIntent, ms: n
           return { kind: "unavailable", reason: String(payload.message) };
         } else if (event === "op" && parser && intent) {
           const line = String(payload.line);
-          fill += `${line}\n`;
+          fill += splitObjects(line).map((one) => `${one}\n`).join(""); // one object per line, even when glued
           parser.push(`${line}\n`);
           onLine?.(++lines);
           if (parser.gameplayDone) {

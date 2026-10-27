@@ -3,7 +3,7 @@
 // comparisons).
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
-import { FillParser, layoutLaws, mergeFill, parseFill, pinLayout, type WorldBundle } from "@ghostrun/ir";
+import { FillParser, layoutLaws, mergeFill, parseFill, pinLayout, splitObjects, type WorldBundle } from "@ghostrun/ir";
 import { placeWorld } from "@ghostrun/layout";
 import { chatJson, editMessages, fillMessages, IntentOut, intentJsonSchema, intentMessages, repairMessages, streamChat } from "@ghostrun/llm";
 import { loadNavNode } from "@ghostrun/nav/node";
@@ -138,6 +138,7 @@ async function build(prompt: string, seed: number, outDir: string | null): Promi
     }
   }
   parser.end();
+  fillText = fillText.split("\n").flatMap(splitObjects).join("\n"); // one object per line, as stored
   const fillDoneMs = Math.round(now() - t0);
   if (gameplayEndMs < 0) gameplayEndMs = fillDoneMs;
 

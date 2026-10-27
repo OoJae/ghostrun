@@ -118,3 +118,15 @@ describe("placement repairs for live fills", () => {
     expect(any.bundle.entities.filter((e) => e.tags.includes("bonus"))).toEqual([]);
   });
 });
+
+describe("zone areas", () => {
+  it("a rule that enters a zone itself gets an invisible sensor covering the zone, and points at it", () => {
+    const fill = parseFill(ctf.replace('{"op":"rule","id":"r_pickup"', '{"op":"rule","id":"r_roof","when":{"t":"enter","a":"player","b":"z_roof"},"then":[{"e":"emit","target":"player","fx":"cheer"}]}\n{"op":"rule","id":"r_pickup"'), { seed: 7 });
+    const layout = cityBlock.generate({ seed: 7, params: cityBlock.defaults, sub: fill.draft.pack.sub, laws: fill.draft.laws, harder: false });
+    const { bundle, notes } = placeWorld({ ...fill.draft, engine: "e".repeat(64) }, layout);
+    const area = bundle.entities.find((e) => e.tags.includes("area"))!;
+    expect(area).toMatchObject({ id: "area_roof", body: "sensor", zone: "z_roof" });
+    expect(bundle.rules.find((r) => r.id === "r_roof")!.when.b).toBe("area_roof");
+    expect(notes.some((n) => n.startsWith("z_roof: a rule enters or leaves the zone itself"))).toBe(true);
+  });
+});
