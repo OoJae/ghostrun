@@ -277,6 +277,31 @@ importers:
         specifier: workspace:*
         version: link:../../plugin-api
 
+  packages/packs/course:
+    dependencies:
+      '@ghostrun/detmath':
+        specifier: workspace:*
+        version: link:../../detmath
+      '@ghostrun/ir':
+        specifier: workspace:*
+        version: link:../../ir
+      '@ghostrun/plugin-api':
+        specifier: workspace:*
+        version: link:../../plugin-api
+    devDependencies:
+      '@ghostrun/layout':
+        specifier: workspace:*
+        version: link:../../layout
+      '@ghostrun/nav':
+        specifier: workspace:*
+        version: link:../../nav
+      '@ghostrun/proof':
+        specifier: workspace:*
+        version: link:../../proof
+      '@ghostrun/sim':
+        specifier: workspace:*
+        version: link:../../sim
+
   packages/packs/floor-plan:
     dependencies:
       '@ghostrun/detmath':
@@ -315,6 +340,31 @@ importers:
         specifier: workspace:*
         version: link:../../nav
 
+  packages/packs/outdoor:
+    dependencies:
+      '@ghostrun/detmath':
+        specifier: workspace:*
+        version: link:../../detmath
+      '@ghostrun/ir':
+        specifier: workspace:*
+        version: link:../../ir
+      '@ghostrun/plugin-api':
+        specifier: workspace:*
+        version: link:../../plugin-api
+    devDependencies:
+      '@ghostrun/layout':
+        specifier: workspace:*
+        version: link:../../layout
+      '@ghostrun/nav':
+        specifier: workspace:*
+        version: link:../../nav
+      '@ghostrun/proof':
+        specifier: workspace:*
+        version: link:../../proof
+      '@ghostrun/sim':
+        specifier: workspace:*
+        version: link:../../sim
+
   packages/plugin-api:
     dependencies:
       '@ghostrun/ir':
@@ -351,12 +401,18 @@ importers:
       '@ghostrun/pack-city-block':
         specifier: workspace:*
         version: link:../packs/city-block
+      '@ghostrun/pack-course':
+        specifier: workspace:*
+        version: link:../packs/course
       '@ghostrun/pack-floor-plan':
         specifier: workspace:*
         version: link:../packs/floor-plan
       '@ghostrun/pack-maze':
         specifier: workspace:*
         version: link:../packs/maze
+      '@ghostrun/pack-outdoor':
+        specifier: workspace:*
+        version: link:../packs/outdoor
       '@ghostrun/plugin-api':
         specifier: workspace:*
         version: link:../plugin-api
