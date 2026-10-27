@@ -1,0 +1,168 @@
+{
+  "prompt": "An underwater city: swim through the rings and reach the palace",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "Puzzle / Platformer (Underwater)",
+    "setting": "A sunken underwater city with a central palace at the end.",
+    "role": "A free-swimming explorer or water-dweller.",
+    "goal": "Navigate through a series of water rings to reach the central palace.",
+    "fail": "Falling off the intended path or reaching the edge of the playable area without collecting the rings or reaching the target.",
+    "mood": "Enchanting, tranquil, and mysterious.",
+    "pack": "outdoor",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Swimming path through a ring gauge.",
+    "nouns": [
+      {
+        "noun": "underwater city",
+        "hyper": "environment"
+      },
+      {
+        "noun": "ring",
+        "hyper": "game object"
+      },
+      {
+        "noun": "palace",
+        "hyper": "goal zone"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.5,
+      "arousal": 0.3,
+      "tension": 0.2
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "4c8fe178add53ce98f7ccd780e8fb71960570bba2b90182f5e71b2159b272b27",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_path",
+      "text": "Swimming path through a ring gauge.",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 4 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win_goal (player enters palace_gate)",
+        "src": ""
+      },
+      {
+        "id": "T2:r_secret_hollow",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_hollow"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_hollow fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_stall_1",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_stall_1"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_stall_1 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_tent",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_tent"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_tent fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win_goal",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win_goal"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_win_goal fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it (AI par 5.9 s)",
+        "cx": null,
+        "src": "",
+        "ms": 81
+      }
+    ],
+    "par": {
+      "goldS": 5.9,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 353
+  }
+}

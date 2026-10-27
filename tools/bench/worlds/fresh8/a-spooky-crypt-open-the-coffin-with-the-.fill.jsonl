@@ -1,0 +1,32 @@
+{"op":"meta","mode":"play","lang":"en","pack":"floor_plan","sub":[],"seed":10,"look":"spooky crypt","mood":[-0.7,0.55,0.85],"timeOfDay":22,"weather":"dark"}
+{"op":"zone","id":"z_yard","slot":"yard","tag":"outside","name":"Crypt entrance yard"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Crypt entry hall"}
+{"op":"zone","id":"z_main","slot":"main_room","tag":"hall","name":"Central crypt chamber"}
+{"op":"zone","id":"z_side","slot":"room_sw","tag":"room","name":"Side alcove"}
+{"op":"zone","id":"z_altar","slot":"room_se","tag":"room","name":"Altar chamber"}
+{"op":"spawn","id":"sp_red","zone":"z_yard","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"exit_gate","zone":"z_yard","anchor":"corner_w","noun":"creaky exit","hyper":"exit","team":"red"}
+{"op":"ent","id":"silver_key","kind":"pickup","noun":"silver key","hyper":"key","zone":"z_side","anchor":"corner_sw","body":"dynamic","shape":"box","size":[0.2,0.2,0.05]}
+{"op":"ent","id":"coffin_door","kind":"door","noun":"coffin lid","hyper":"coffin","zone":"z_main","anchor":"doorway_e","body":"fixed","shape":"box"}
+{"op":"ent","id":"candle_1","kind":"prop","noun":"trembling candle","hyper":"candlelight","zone":"z_main","anchor":"corner_ne","body":"fixed","shape":"box","size":[0.1,0.3,0.1]}
+{"op":"ent","id":"candle_2","kind":"prop","noun":"flickering candle","hyper":"candlelight","zone":"z_main","anchor":"corner_nw","body":"fixed","shape":"box","size":[0.1,0.3,0.1]}
+{"op":"ent","id":"plate_hidden","kind":"plate","noun":"pressure plate","hyper":"plate","zone":"z_side","anchor":"center","body":"sensor","shape":"box","size":[0.3,0.1,0.3]}
+{"op":"ent","id":"spike_trap","kind":"hazard","noun":"spike trap","hyper":"spikes","zone":"z_altar","anchor":"center","body":"sensor","shape":"box","size":[1,0.2,1]}
+{"op":"ent","id":"jump_pad","kind":"plate","noun":"jump pad","hyper":"jump_pad","zone":"z_altar","anchor":"corner_se","body":"sensor","shape":"box","size":[0.4,0.1,0.4]}
+{"op":"ent","id":"vampire","kind":"npc","noun":"vampire","hyper":"creature","zone":"z_altar","anchor":"corner_ne","team":"blue"}
+{"op":"verb","id":"vb_carry_key","verb":"physics_props.carry","on":"silver_key","params":{}}
+{"op":"verb","id":"vb_lock_coffin","verb":"puzzle.lock","on":"coffin_door","params":{"key":"silver_key"}}
+{"op":"verb","id":"vb_inspect_candle1","verb":"social.inspect","on":"candle_1","params":{"text":"A lone candle sputters, casting wavering shadows."}}
+{"op":"verb","id":"vb_inspect_candle2","verb":"social.inspect","on":"candle_2","params":{"text":"The flame dances as if breathing."}}
+{"op":"verb","id":"vb_plate_hidden","verb":"puzzle.plate","on":"plate_hidden","params":{"latch":false}}
+{"op":"verb","id":"vb_spike_hazard","verb":"motion_hazards.hazard","on":"spike_trap","params":{"respawn":true}}
+{"op":"verb","id":"vb_jump_pad","verb":"locomotion.jump_pad","on":"jump_pad","params":{"height":4}}
+{"op":"verb","id":"vb_timer","verb":"puzzle.timer","on":"player","params":{"seconds":60}}
+{"op":"rule","id":"r_timer_lose","when":{"t":"timer_end","a":"player"},"if":[],"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_coffin_open_win","when":{"t":"state_is","a":"coffin_door","s":"open"},"if":[],"then":[{"e":"set_state","target":"coffin_door","v":"open"},{"e":"emit","target":"coffin_door","fx":"dust"},{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_exit_after_open","when":{"t":"enter","a":"player","b":"exit_gate"},"if":[{"l":"coffin_door.state","op":"eq","r":"open"}],"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_plate_hidden","when":{"t":"state_is","a":"plate_hidden","s":"down"},"if":[],"then":[{"e":"open","target":"coffin_door"}]}
+{"op":"rule","id":"r_vampire_appear","when":{"t":"timer_end","a":"player"},"if":[],"then":[{"e":"emit","target":"vampire","fx":"appear"},{"e":"set_state","target":"vampire","v":"active"}]}
+{"op":"expect","id":"x_crypt_escape","prop":"requires","a":"sp_red","b":"coffin_door","need":["key"],"headline":true,"text":"Crypt escape needs the silver key to unseal the coffin before the timer runs out"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

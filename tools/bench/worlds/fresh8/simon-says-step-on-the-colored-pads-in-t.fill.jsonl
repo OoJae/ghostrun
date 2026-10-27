@@ -1,0 +1,25 @@
+{"op":"meta","mode":"play","lang":"en","pack":"arena","sub":[],"seed":13,"look":"open arena","mood":[0.3,0.5,0.4],"timeOfDay":12,"weather":"clear"}
+{"op":"zone","id":"z_midfield","slot":"midfield","tag":"center","name":"Central arena"}
+{"op":"zone","id":"z_west","slot":"west_half","tag":"base","name":"West base"}
+{"op":"zone","id":"z_east","slot":"east_half","tag":"base","name":"East base"}
+{"op":"spawn","id":"sp_red","zone":"z_west","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"goal_end","zone":"z_east","anchor":"goal_ring","noun":"exit","hyper":"exit","team":"red"}
+{"op":"ent","id":"pad1","kind":"switch","noun":"red pad","hyper":"interactive floor","zone":"z_west","anchor":"flank_n","body":"sensor","shape":"box","size":[1,0.2,1]}
+{"op":"ent","id":"pad2","kind":"switch","noun":"blue pad","hyper":"interactive floor","zone":"z_west","anchor":"flank_s","body":"sensor","shape":"box","size":[1,0.2,1]}
+{"op":"ent","id":"pad3","kind":"switch","noun":"green pad","hyper":"interactive floor","zone":"z_east","anchor":"flank_n","body":"sensor","shape":"box","size":[1,0.2,1]}
+{"op":"ent","id":"pad4","kind":"switch","noun":"yellow pad","hyper":"interactive floor","zone":"z_east","anchor":"flank_s","body":"sensor","shape":"box","size":[1,0.2,1]}
+{"op":"verb","id":"vb_switch_pad1","verb":"puzzle.switch","on":"pad1","params":{"once":true}}
+{"op":"verb","id":"vb_switch_pad2","verb":"puzzle.switch","on":"pad2","params":{"once":true}}
+{"op":"verb","id":"vb_switch_pad3","verb":"puzzle.switch","on":"pad3","params":{"once":true}}
+{"op":"verb","id":"vb_switch_pad4","verb":"puzzle.switch","on":"pad4","params":{"once":true}}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":6}}
+{"op":"rule","id":"r_start","when":{"t":"state_is","a":"pad1","s":"on"},"then":[{"e":"set_state","target":"pad2","v":"on"}],"once":true}
+{"op":"rule","id":"r_step2","when":{"t":"state_is","a":"pad2","s":"on"},"then":[{"e":"set_state","target":"pad3","v":"on"}],"once":true}
+{"op":"rule","id":"r_step3","when":{"t":"state_is","a":"pad3","s":"on"},"then":[{"e":"set_state","target":"pad4","v":"on"}],"once":true}
+{"op":"rule","id":"r_win","when":{"t":"state_is","a":"pad4","s":"on"},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_fail2","when":{"t":"enter","a":"player","b":"pad2"},"if":[{"l":"pad1.state","op":"neq","r":"on"}],"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_fail3","when":{"t":"enter","a":"player","b":"pad3"},"if":[{"l":"pad2.state","op":"neq","r":"on"}],"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_fail4","when":{"t":"enter","a":"player","b":"pad4"},"if":[{"l":"pad3.state","op":"neq","r":"on"}],"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"expect","id":"x_seq","prop":"win_reachable","a":"sp_red","b":"goal_end","headline":true,"text":"Pads light sequence must be walked in exact order"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

@@ -1,0 +1,18 @@
+{"op":"meta","mode":"play","lang":"en","pack":"floor_plan","sub":[],"seed":17,"look":"living room lava","mood":[0.1,0.6,0.8],"timeOfDay":14,"weather":"clear"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Entry hallway"}
+{"op":"zone","id":"z_living","slot":"main_room","tag":"room","name":"Living room"}
+{"op":"spawn","id":"sp_red","zone":"z_entrance","anchor":"corner_w","team":"red"}
+{"op":"goal","id":"goal_exit","zone":"z_entrance","anchor":"corner_e","noun":"other side","hyper":"goal","team":"red"}
+{"op":"ent","id":"lava_floor","kind":"hazard","noun":"molten lava","hyper":"lava","zone":"z_living","anchor":"center","body":"sensor","shape":"box","size":[8,0.2,4]}
+{"op":"ent","id":"sofa","kind":"prop","noun":"sofa","hyper":"furniture","zone":"z_living","anchor":"corner_sw","body":"fixed","shape":"box","size":[2,1,0.8]}
+{"op":"ent","id":"coffee_table","kind":"prop","noun":"coffee table","hyper":"furniture","zone":"z_living","anchor":"center","body":"fixed","shape":"box","size":[1.2,0.5,0.6]}
+{"op":"ent","id":"armchair","kind":"prop","noun":"armchair","hyper":"furniture","zone":"z_living","anchor":"corner_se","body":"fixed","shape":"box","size":[1.5,1,0.7]}
+{"op":"ent","id":"lamp","kind":"prop","noun":"tall lamp","hyper":"furniture","zone":"z_living","anchor":"corner_ne","body":"fixed","shape":"box","size":[0.4,2,0.4]}
+{"op":"verb","id":"vb_jump","verb":"locomotion.jump","on":"player","params":{"jumpsMax":2}}
+{"op":"verb","id":"vb_lava","verb":"motion_hazards.hazard","on":"lava_floor","params":{"respawn":true}}
+{"op":"rule","id":"r_win","when":{"t":"enter","a":"sp_red","b":"goal_exit"},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose_lava","when":{"t":"hit","a":"player","b":"lava_floor"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"expect","id":"x_furniture","prop":"win_reachable","a":"sp_red","b":"goal_exit","headline":true,"text":"Furniture hops are spaced so one wrong step means lava contact"}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":6}}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

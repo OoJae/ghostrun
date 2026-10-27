@@ -1,0 +1,20 @@
+{"op":"meta","mode":"wander","lang":"en","pack":"floor_plan","sub":[],"seed":31,"look":"lighthouse museum","mood":[0.34,0.2,0.1],"timeOfDay":12,"weather":"clear"}
+{"op":"zone","id":"z_yard","slot":"yard","tag":"outside","name":"Lighthouse grounds"}
+{"op":"zone","id":"z_foyer","slot":"entrance","tag":"entrance","name":"Museum foyer"}
+{"op":"zone","id":"z_gallery_sw","slot":"room_sw","tag":"room","name":"South gallery"}
+{"op":"zone","id":"z_gallery_se","slot":"room_se","slot":"room_se","tag":"room","name":"East gallery"}
+{"op":"zone","id":"z_stair_hall","slot":"main_room","tag":"hall","name":"Spiral staircase hall"}
+{"op":"zone","id":"z_gallery_ne","slot":"room_ne","tag":"room","name":"North gallery"}
+{"op":"spawn","id":"sp_red","zone":"z_yard","anchor":"spawn_pad","team":"red"}
+{"op":"ent","id":"model_sloop","kind":"prop","noun":"model sloop","hyper":"ship_model","zone":"z_gallery_sw","anchor":"center","body":"fixed","shape":"box","size":[0.8,0.4,0.2]}
+{"op":"ent","id":"model_clipper","kind":"prop","noun":"model clipper","hyper":"ship_model","zone":"z_gallery_se","anchor":"center","body":"fixed","shape":"box","size":[1.0,0.5,0.2]}
+{"op":"ent","id":"model_galleon","kind":"prop","noun":"model galleon","hyper":"ship_model","zone":"z_gallery_ne","anchor":"center","body":"fixed","shape":"box","size":[1.2,0.6,0.2]}
+{"op":"ent","id":"staircase","kind":"prop","noun":"spiral staircase","hyper":"spiral_staircase","zone":"z_stair_hall","anchor":"center","body":"fixed","shape":"hull","size":[2,4,2]}
+{"op":"verb","id":"vb_inspect_sloop","verb":"social.inspect","on":"model_sloop","params":{"text":"A wooden sloop from 1803, rigged on a miniature mast."}}
+{"op":"verb","id":"vb_inspect_clipper","verb":"social.inspect","on":"model_clipper","params":{"text":"Fast clipper that crossed the Atlantic in 1850."}}
+{"op":"verb","id":"vb_inspect_galleon","verb":"social.inspect","on":"model_galleon","params":{"text":"Spanish galleon, heavily armed, circa 1620."}}
+{"op":"verb","id":"vb_inspect_staircase","verb":"social.inspect","on":"staircase","params":{"text":"Spiral stone staircase winding up through the lighthouse tower."}}
+{"op":"npc","id":"guide_1","role":"guide","zone":"z_foyer","anchor":"center","team":"","menu":["guide.tour"],"dflt":"guide.tour"}
+{"op":"expect","id":"x_stair","prop":"win_reachable","a":"sp_red","b":"staircase","headline":true,"text":"Spiral staircase connects museum levels"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

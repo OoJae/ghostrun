@@ -1,0 +1,22 @@
+{"op":"meta","mode":"play","lang":"en","pack":"floor_plan","sub":[],"seed":19,"look":"cozy industrial bakery","mood":[0.9,0.2,0.1],"timeOfDay":10,"weather":"clear"}
+{"op":"zone","id":"z_yard","slot":"yard","tag":"outside","name":"Bakery exterior"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Bakery entrance"}
+{"op":"zone","id":"z_oven","slot":"room_sw","tag":"room","name":"Oven area"}
+{"op":"zone","id":"z_counter","slot":"room_se","tag":"room","name":"Service counter"}
+{"op":"zone","id":"z_main","slot":"main_room","tag":"hall","name":"Main bakery floor"}
+{"op":"spawn","id":"sp_red","zone":"z_entrance","anchor":"center","team":"red"}
+{"op":"goal","id":"counter_goal","zone":"z_counter","anchor":"doorway_w","noun":"service counter","hyper":"counter","team":"red"}
+{"op":"ent","id":"bread","kind":"pickup","noun":"loaf of bread","hyper":"bread","zone":"z_main","anchor":"center","body":"dynamic","shape":"box","size":[0.3,0.1,0.8]}
+{"op":"ent","id":"oven","kind":"prop","noun":"oven","hyper":"oven","zone":"z_oven","anchor":"center","body":"fixed","shape":"box","size":[1.2,0.6,0.8]}
+{"op":"ent","id":"oven_switch","kind":"switch","noun":"oven lever","hyper":"switch","zone":"z_oven","anchor":"doorway_n","body":"fixed","shape":"box"}
+{"op":"ent","id":"timer_oven","kind":"goal","noun":"oven timer","hyper":"timer","zone":"z_oven","anchor":"corner_ne","body":"sensor","shape":"none"}
+{"op":"verb","id":"vb_carry_bread","verb":"physics_props.carry","on":"bread","params":{}}
+{"op":"verb","id":"vb_oven_bake","verb":"puzzle.switch","on":"oven_switch","params":{"once":false}}
+{"op":"verb","id":"vb_oven_timer","verb":"puzzle.timer","on":"timer_oven","params":{"seconds":45}}
+{"op":"rule","id":"r_bake_start","when":{"t":"enter","a":"bread","b":"oven"},"then":[{"e":"set_state","target":"oven_switch","v":"on"}],"once":true}
+{"op":"rule","id":"r_win","when":{"t":"enter","a":"bread","b":"counter_goal"},"if":[{"l":"oven_switch.state","op":"eq","r":"on"}],"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_burn","when":{"t":"timer_end","a":"timer_oven"},"if":[{"l":"oven_switch.state","op":"eq","r":"on"}],"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"expect","id":"x_bread","prop":"win_reachable","a":"sp_red","b":"counter_goal","headline":true,"text":"Player must navigate from the oven to the counter without dropping the hot loaf"}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":4}}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

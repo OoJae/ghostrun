@@ -85,7 +85,9 @@ export function placeWorld(input: WorldBundle, layout: PackLayout): PlaceResult 
     if (!spec) continue;
     let base = spec.anchors[e.anchor];
     // a door is meant to guard a way through: "the gate in the east wall" stands in that doorway
-    if (e.kind === "door" && (!e.anchor.startsWith("doorway_") || !spec.anchors[e.anchor])) {
+    // (a robot's head slot made a door only so a part can unlock it stays where it was put)
+    const doorish = /door|gate|hatch|portcullis|grate|shutter|entrance|exit|barrier|vault/.test(`${e.id} ${e.noun} ${e.hyper}`.toLowerCase());
+    if (e.kind === "door" && doorish && (!e.anchor.startsWith("doorway_") || !spec.anchors[e.anchor])) {
       const doors = Object.keys(spec.anchors).filter((k) => k.startsWith("doorway_")).sort();
       const side = /^wall_([nsew])$/.exec(e.anchor)?.[1];
       const pick = (side && spec.anchors[`doorway_${side}`] ? `doorway_${side}` : undefined) ?? doors[0];
@@ -662,6 +664,11 @@ export function repairKits(b: WorldBundle): string[] {
       b.verbs.push(vb(uniqueId(b, `vb_${e.id}`), kit, e.id, kit === "motion_hazards.hazard" ? { respawn: true } : {}));
       notes.push(`${e.id}: added ${kit} (a ${e.kind} with no verb)`);
     }
+    // a door nothing opens (no lock, no rule) would be a wall across the way: it opens with USE
+    if (e.kind === "door" && !bound(e.id) && !b.rules.some((r) => r.then.some((x) => (x.e === "open" || (x.e === "set_state" && String(x.v) === "open")) && x.target === e.id))) {
+      b.verbs.push(vb(uniqueId(b, `vb_${e.id}`), "puzzle.lock", e.id, { key: "" }));
+      notes.push(`${e.id}: a door nothing opens; it opens with USE`);
+    }
     if ((e.kind === "platform" || e.kind === "prop") && /crumbl|collaps|fragile|breakable|cracked/.test(`${e.noun} ${e.hyper} ${e.id}`) && !bound(e.id)) {
       b.verbs.push(vb(uniqueId(b, `vb_${e.id}`), "motion_hazards.crumble", e.id));
       notes.push(`${e.id}: added motion_hazards.crumble (it is described as crumbling)`);
@@ -740,6 +747,15 @@ export function repairKits(b: WorldBundle): string[] {
       n++;
     }
     if (n) notes.push(`rule ${r.id}: '${w.a} is ${st}' happens when it is destroyed; ${n} way${n > 1 ? "s" : ""} of destroying it now say so`);
+  }
+  // "when the snitch is carried" (state_is snitch carried): picking something up sets no state; it
+  // means the moment it's picked up
+  const carriedNow = new Set([...b.verbs.filter((v) => v.verb.endsWith(".carry")).map((v) => v.on)]);
+  for (const r of b.rules) {
+    const w = r.when;
+    if (w.t !== "state_is" || !carriedNow.has(w.a) || !/^(carried|held|picked_?up|grabbed|caught|taken|in_hand)$/.test(w.s)) continue;
+    notes.push(`rule ${r.id}: '${w.a} is ${w.s}' is the moment it's picked up`);
+    r.when = { ...w, t: "pickup", b: "", s: "" };
   }
   // 1c. a rule waiting on an event nothing could produce: what it touches is collected (or, if
   // not a pickup, inspected); what it picks up is carried
@@ -1018,6 +1034,18 @@ export function repairWin(b: WorldBundle): string[] {
       b.rules.push({ ...structuredClone(r), id: uniqueId(b, `${r.id}_${item}`), when: { ...r.when, a: item }, if: [...structuredClone(rest), { ...c }] });
     }
     notes.push(`rule ${r.id}: reaching ${r.when.b} holding ${held.length} things at once can't happen (one pair of hands); it means bringing each of them in`);
+  }
+  // "win when the three wires are off" with switches that start off: nothing to do, so the model
+  // means making them off: those switches start on (cutting each one is the job)
+  for (const r of b.rules) {
+    if (!r.then.some((e) => e.e === "win")) continue;
+    for (const c of r.if) {
+      const m = /^([a-z][a-z0-9_]*)\.state$/.exec(c.l);
+      const sw = m && c.op === "eq" ? b.entities.find((e) => e.id === m[1] && b.verbs.some((v) => v.on === e.id && v.verb === "puzzle.switch")) : undefined;
+      if (!sw || (sw.init || "off") !== String(c.r) || !["on", "off"].includes(String(c.r))) continue;
+      sw.init = String(c.r) === "off" ? "on" : "off";
+      notes.push(`${sw.id}: rule ${r.id} wins once it is ${String(c.r)}, which it already was; it starts ${sw.init}, so flipping it is the job`);
+    }
   }
   // several rules each winning when a different thing is brought to the same place ("brew the
   // potion from three ingredients": the root into the cauldron wins, the scale into the cauldron

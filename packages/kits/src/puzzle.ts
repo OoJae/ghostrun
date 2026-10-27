@@ -29,7 +29,11 @@ export const switchVerb: VerbPlugin = {
       c.setState(b.on, on ? "off" : "on");
     },
   },
-  produces: (b) => [{ k: "state", a: b.on, s: "on", cause: { do: "use", at: b.on } }],
+  // USE flips it: from on (a switch that starts on, a wire to cut) it goes off
+  produces: (b) => [
+    { k: "state", a: b.on, s: "on", cause: { do: "use", at: b.on } },
+    { k: "state", a: b.on, s: "off", cause: { do: "use", at: b.on } },
+  ],
 };
 
 export const plateVerb: VerbPlugin = {

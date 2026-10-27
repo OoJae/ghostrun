@@ -1,0 +1,262 @@
+{
+  "prompt": "Simon says: step on the colored pads in the order they light up",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "memory puzzle",
+    "setting": "open area with sequence of colored floor pads",
+    "role": "player",
+    "goal": "step on colored pads in the exact order they light up",
+    "fail": "out-of-order step or wrong pad ends the round",
+    "mood": "focused, playful",
+    "pack": "arena",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Pads light sequence must be walked in exact order",
+    "nouns": [
+      {
+        "noun": "colored pads",
+        "hyper": "interactive floor"
+      },
+      {
+        "noun": "light-up order",
+        "hyper": "memory rule"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.3,
+      "arousal": 0.5,
+      "tension": 0.4
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "10718d54ef5b85986567194d53cfaaebc6d58148aeecf3771e1718d27600350d",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_seq",
+      "text": "Pads light sequence must be walked in exact order",
+      "status": "counterexample",
+      "method": "static goal regression over rules + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 10 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (pad4 becomes on: use pad4)",
+        "src": ""
+      },
+      {
+        "id": "T2:r_fail2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_fail2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_fail2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_fail3",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_fail3"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_fail3 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_fail4",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_fail4"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_fail4 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_center",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_center"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_center fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_center_n",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_center_n"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_center_n fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_center_s",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_center_s"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_center_s fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_start",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_start"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_start fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_step2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_step2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_step2: no room to stand next to pad2",
+        "cx": null
+      },
+      {
+        "id": "T2:r_step3",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_step3"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_step3: no room to stand next to pad3",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_win: no room to stand next to pad4",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "counterexample",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 0,
+        "text": "no AI runner could win",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "wins",
+          "text": "12 lost (player reached the green pad ×12)"
+        },
+        "src": "",
+        "ms": 58
+      }
+    ],
+    "par": null,
+    "ms": 193
+  }
+}

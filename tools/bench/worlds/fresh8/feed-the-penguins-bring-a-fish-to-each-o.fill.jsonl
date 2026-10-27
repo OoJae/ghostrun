@@ -1,0 +1,46 @@
+{"op":"meta","mode":"play","lang":"en","pack":"outdoor","sub":[],"seed":9,"look":"frozen arctic island","mood":[0.7,0.3,0.1],"timeOfDay":10,"weather":"snow"}
+{"op":"zone","id":"z_beach","slot":"entrance","tag":"entrance","name":"Central Beach"}
+{"op":"zone","id":"z_floe1","slot":"clearing_w","tag":"ice_floe","name":"Ice Floe North"}
+{"op":"zone","id":"z_floe2","slot":"clearing_e","tag":"ice_floe","name":"Ice Floe South"}
+{"op":"zone","id":"z_floe3","slot":"grove","tag":"ice_floe","name":"Ice Floe East"}
+{"op":"zone","id":"z_floe4","slot":"lookout","tag":"ice_floe","name":"Ice Floe West"}
+{"op":"zone","id":"z_pond","slot":"pond","tag":"pond","name":"Shallow Pond"}
+{"op":"spawn","id":"sp_red","zone":"z_beach","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"peng1","zone":"z_floe1","anchor":"spawn_pad","noun":"penguin","hyper":"bird","kind":"goal","body":"sensor","shape":"box"}
+{"op":"goal","id":"peng2","zone":"z_floe2","anchor":"spawn_pad","noun":"penguin","hyper":"bird","kind":"goal","body":"sensor","shape":"box"}
+{"op":"goal","id":"peng3","zone":"z_floe3","anchor":"heart","noun":"penguin","hyper":"bird","kind":"goal","body":"sensor","shape":"box"}
+{"op":"goal","id":"peng4","zone":"z_floe4","anchor":"ledge","noun":"penguin","hyper":"bird","kind":"goal","body":"sensor","shape":"box"}
+{"op":"ent","id":"fish1","kind":"pickup","noun":"fish","hyper":"food","zone":"z_pond","anchor":"water","body":"dynamic","shape":"box","size":[0.2,0.1,0.1]}
+{"op":"ent","id":"fish2","kind":"pickup","noun":"fish","hyper":"food","zone":"z_pond","anchor":"shore","body":"dynamic","shape":"box","size":[0.2,0.1,0.1]}
+{"op":"ent","id":"fish3","kind":"pickup","noun":"fish","hyper":"food","zone":"z_pond","anchor":"dock","body":"dynamic","shape":"box","size":[0.2,0.1,0.1]}
+{"op":"ent","id":"fish4","kind":"pickup","noun":"fish","hyper":"food","zone":"z_pond","anchor":"bank","body":"dynamic","shape":"box","size":[0.2,0.1,0.1]}
+{"op":"ent","id":"sled","kind":"prop","noun":"sled","hyper":"tool","zone":"z_beach","anchor":"center","body":"fixed","shape":"box","size":[0.5,0.3,0.2]}
+{"op":"ent","id":"gate_pond","kind":"door","noun":"gate","hyper":"gate","zone":"z_beach","anchor":"gate","body":"fixed","shape":"box"}
+{"op":"ent","id":"switch_gate","kind":"switch","noun":"lever","hyper":"lever","zone":"z_beach","anchor":"sign","body":"fixed","shape":"box"}
+{"op":"ent","id":"plate_open","kind":"plate","noun":"pressure plate","hyper":"plate","zone":"z_pond","anchor":"dock","body":"fixed","shape":"box"}
+{"op":"ent","id":"spike_hazard","kind":"hazard","noun":"spike","hyper":"spike","zone":"z_floe3","anchor":"stump","body":"sensor","shape":"box"}
+{"op":"ent","id":"jump_pad","kind":"platform","noun":"jump pad","hyper":"pad","zone":"z_floe4","anchor":"mid","body":"fixed","shape":"box"}
+{"op":"ent","id":"coin1","kind":"pickup","noun":"coin","hyper":"coin","zone":"z_floe2","anchor":"center_n","body":"dynamic","shape":"box","size":[0.1,0.1,0.02]}
+{"op":"verb","id":"vb_carry_fish1","verb":"physics_props.carry","on":"fish1","params":{}}
+{"op":"verb","id":"vb_carry_fish2","verb":"physics_props.carry","on":"fish2","params":{}}
+{"op":"verb","id":"vb_carry_fish3","verb":"physics_props.carry","on":"fish3","params":{}}
+{"op":"verb","id":"vb_carry_fish4","verb":"physics_props.carry","on":"fish4","params":{}}
+{"op":"verb","id":"vb_lock_gate","verb":"puzzle.lock","on":"gate_pond","params":{"key":"sled","keep":true}}
+{"op":"verb","id":"vb_use_switch","verb":"puzzle.switch","on":"switch_gate","params":{"once":false}}
+{"op":"verb","id":"vb_use_plate","verb":"puzzle.plate","on":"plate_open","params":{"latch":false}}
+{"op":"verb","id":"vb_hazard_spike","verb":"motion_hazards.hazard","on":"spike_hazard","params":{"respawn":true}}
+{"op":"verb","id":"vb_jump_pad","verb":"locomotion.jump_pad","on":"jump_pad","params":{"height":3}}
+{"op":"verb","id":"vb_collect_coin1","verb":"puzzle.collect","on":"coin1","params":{}}
+{"op":"rule","id":"r_gate_switch","when":{"t":"state_is","a":"switch_gate","s":"on"},"then":[{"e":"set_state","target":"gate_pond","v":"open"}],"once":false}
+{"op":"rule","id":"r_gate_plate","when":{"t":"state_is","a":"plate_open","s":"down"},"then":[{"e":"set_state","target":"gate_pond","v":"open"}],"once":false}
+{"op":"rule","id":"r_feed1","when":{"t":"enter","a":"player","b":"peng1"},"if":[{"l":"fish1.carrier.team","op":"eq","r":"red"}],"then":[{"e":"set_state","target":"peng1","v":"fed"},{"e":"destroy","target":"fish1"},{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_feed2","when":{"t":"enter","a":"player","b":"peng2"},"if":[{"l":"fish2.carrier.team","op":"eq","r":"red"}],"then":[{"e":"set_state","target":"peng2","v":"fed"},{"e":"destroy","target":"fish2"},{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_feed3","when":{"t":"enter","a":"player","b":"peng3"},"if":[{"l":"fish3.carrier.team","op":"eq","r":"red"}],"then":[{"e":"set_state","target":"peng3","v":"fed"},{"e":"destroy","target":"fish3"},{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_feed4","when":{"t":"enter","a":"player","b":"peng4"},"if":[{"l":"fish4.carrier.team","op":"eq","r":"red"}],"then":[{"e":"set_state","target":"peng4","v":"fed"},{"e":"destroy","target":"fish4"},{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_collect_coin","when":{"t":"touch","a":"player","b":"coin1"},"then":[{"e":"score","target":"team:red","n":1},{"e":"destroy","target":"coin1"}],"once":true}
+{"op":"rule","id":"r_spike_hit","when":{"t":"hit","a":"player","b":"spike_hazard"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_win","when":{"t":"score_gte","a":"team:red","n":4},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"expect","id":"x_feed","prop":"win_reachable","a":"sp_red","b":"peng1","headline":true,"text":"Four penguins each need a fish delivered from the pond"}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":5}}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

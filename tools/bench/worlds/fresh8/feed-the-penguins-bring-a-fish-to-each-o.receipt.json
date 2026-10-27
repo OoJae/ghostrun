@@ -1,0 +1,272 @@
+{
+  "prompt": "Feed the penguins: bring a fish to each of the four penguins",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "puzzle adventure",
+    "setting": "A frozen arctic island with four ice floes and rock outcrops, a central beach, and a shallow pond where fish can be caught.",
+    "role": "Player is a penguin caretaker carrying a small sled for fish.",
+    "goal": "Catch or collect a fish and deliver one to each of the four penguins standing on separate floes before they wander off.",
+    "fail": "A penguin loses patience and walks away before being fed.",
+    "mood": "cozy, gentle, wintry",
+    "pack": "outdoor",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Four penguins each need a fish delivered from the pond",
+    "nouns": [
+      {
+        "noun": "penguin",
+        "hyper": "bird"
+      },
+      {
+        "noun": "fish",
+        "hyper": "food"
+      },
+      {
+        "noun": "ice floe",
+        "hyper": "terrain feature"
+      },
+      {
+        "noun": "pond",
+        "hyper": "water feature"
+      },
+      {
+        "noun": "sled",
+        "hyper": "tool"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.7,
+      "arousal": 0.3,
+      "tension": 0.1
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "6ae751bb2ba2dcf5a73a42d3242417004ad05aa50a17d7e129ab19414f4c4adc",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_feed",
+      "text": "Four penguins each need a fish delivered from the pond",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 1,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 10 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 1,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (team:red reaches 4) ← r_collect_coin (touch coin1) + r_feed1 (player enters peng1) [after holding fish1] + r_feed2 (player enters peng2) [after holding fish2] + r_feed3 (player enters peng3) [after holding fish3]",
+        "src": ""
+      },
+      {
+        "id": "T2:r_collect_coin",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_collect_coin"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 13,
+        "status": "verified",
+        "text": "r_collect_coin fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_feed1",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_feed1"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 8,
+        "status": "verified",
+        "text": "r_feed1 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_feed2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_feed2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 8,
+        "status": "verified",
+        "text": "r_feed2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_feed3",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_feed3"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_feed3 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_feed4",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_feed4"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_feed4 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_gate_plate",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_gate_plate"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_gate_plate fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_gate_switch",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_gate_switch"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_gate_switch fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_hollow",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_hollow"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_hollow fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_spike_hit",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_spike_hit"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_spike_hit fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it (AI par 36.9 s)",
+        "cx": null,
+        "src": "",
+        "ms": 757
+      }
+    ],
+    "par": {
+      "goldS": 36.9,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 1079
+  }
+}

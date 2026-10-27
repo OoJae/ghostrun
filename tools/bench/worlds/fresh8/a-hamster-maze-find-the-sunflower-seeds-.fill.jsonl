@@ -1,0 +1,37 @@
+{"op":"meta","mode":"play","lang":"en","pack":"maze","sub":[],"seed":16,"look":"hamster maze","mood":[0.6,0.2,0.3],"timeOfDay":12,"weather":"clear"}
+{"op":"zone","id":"z_start","slot":"start","tag":"outside","name":"Nest area"}
+{"op":"zone","id":"z_maze","slot":"maze","tag":"maze","name":"Winding hamster maze"}
+{"op":"spawn","id":"sp_red","zone":"z_start","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"nest_goal","zone":"z_start","anchor":"sign","noun":"nest","hyper":"nest","team":"red"}
+{"op":"ent","id":"seed_cache","kind":"pickup","noun":"sunflower seeds","hyper":"seed","zone":"z_maze","anchor":"dead_end_3","body":"dynamic","shape":"box","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"coin_1","kind":"pickup","noun":"coin","hyper":"coin","zone":"z_maze","anchor":"center","body":"dynamic","shape":"sphere","size":[0.1,0.1,0.1]}
+{"op":"ent","id":"coin_2","kind":"pickup","noun":"coin","hyper":"coin","zone":"z_maze","anchor":"dead_end_1","body":"dynamic","shape":"sphere","size":[0.1,0.1,0.1]}
+{"op":"ent","id":"switch_1","kind":"switch","noun":"lever","hyper":"lever","zone":"z_maze","anchor":"entrance","body":"fixed","shape":"box"}
+{"op":"ent","id":"door_1","kind":"door","noun":"wooden door","hyper":"door","zone":"z_maze","anchor":"dead_end_2","body":"fixed","shape":"box"}
+{"op":"ent","id":"plate_1","kind":"plate","noun":"pressure plate","hyper":"plate","zone":"z_maze","anchor":"center","body":"fixed","shape":"box"}
+{"op":"ent","id":"spike_1","kind":"hazard","noun":"spike pit","hyper":"spike","zone":"z_maze","anchor":"dead_end_4","body":"sensor","shape":"box","size":[1,0.2,1]}
+{"op":"ent","id":"jump_pad_1","kind":"plate","noun":"jump pad","hyper":"jump_pad","zone":"z_maze","anchor":"entrance","body":"fixed","shape":"box"}
+{"op":"ent","id":"portal_1","kind":"portal","noun":"magic tunnel","hyper":"portal","zone":"z_maze","anchor":"center","body":"sensor","shape":"box"}
+{"op":"ent","id":"crumble_plat","kind":"platform","noun":"crumbling platform","hyper":"platform","zone":"z_maze","anchor":"dead_end_1","body":"kinematic","shape":"box"}
+{"op":"verb","id":"vb_carry_seed","verb":"physics_props.carry","on":"seed_cache","params":{}}
+{"op":"verb","id":"vb_carry_coin1","verb":"physics_props.carry","on":"coin_1","params":{}}
+{"op":"verb","id":"vb_carry_coin2","verb":"physics_props.carry","on":"coin_2","params":{}}
+{"op":"verb","id":"vb_switch_1","verb":"puzzle.switch","on":"switch_1","params":{"once":false}}
+{"op":"verb","id":"vb_door_lock","verb":"puzzle.lock","on":"door_1","params":{"key":"seed_cache","keep":false}}
+{"op":"verb","id":"vb_plate_1","verb":"puzzle.plate","on":"plate_1","params":{"latch":false}}
+{"op":"verb","id":"vb_hazard_spike","verb":"motion_hazards.hazard","on":"spike_1","params":{"respawn":true}}
+{"op":"verb","id":"vb_jump_pad","verb":"locomotion.jump_pad","on":"jump_pad_1","params":{"height":3}}
+{"op":"verb","id":"vb_portal","verb":"puzzle.portal","on":"portal_1","params":{"to":"sp_red"}}
+{"op":"verb","id":"vb_crumble","verb":"motion_hazards.crumble","on":"crumble_plat","params":{"delay":0.5,"back":5}}
+{"op":"verb","id":"vb_collect_coin1","verb":"puzzle.collect","on":"coin_1","params":{}}
+{"op":"verb","id":"vb_collect_coin2","verb":"puzzle.collect","on":"coin_2","params":{}}
+{"op":"rule","id":"r_win","when":{"t":"enter","a":"seed_cache","b":"nest_goal"},"if":[{"l":"seed_cache.carrier.team","op":"eq","r":"red"}],"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_spike","when":{"t":"hit","a":"player","b":"spike_1"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_switch_open","when":{"t":"state_is","a":"switch_1","s":"on"},"then":[{"e":"set_state","target":"door_1","v":"open"}],"once":false}
+{"op":"rule","id":"r_plate_down","when":{"t":"state_is","a":"plate_1","s":"down"},"then":[{"e":"emit","target":"plate_1","fx":"light"}],"once":false}
+{"op":"rule","id":"r_collect_coin1","when":{"t":"touch","a":"player","b":"coin_1"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_collect_coin2","when":{"t":"touch","a":"player","b":"coin_2"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":5}}
+{"op":"expect","id":"x_seed","prop":"win_reachable","a":"sp_red","b":"seed_cache","headline":true,"text":"Maze must have a reachable seed cache and a return path to the nest"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

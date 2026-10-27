@@ -1,0 +1,57 @@
+{"op":"meta","mode":"play","lang":"en","pack":"course","sub":[],"seed":15,"look":"moon base","mood":[0.6,0.5,0.3],"timeOfDay":22,"weather":"clear"}
+{"op":"zone","id":"z_start","slot":"start","tag":"outside","name":"Moon base"}
+{"op":"zone","id":"z_seg_1","slot":"seg_1","tag":"crater","name":"Crater 1"}
+{"op":"zone","id":"z_seg_2","slot":"seg_2","tag":"crater","name":"Crater 2"}
+{"op":"zone","id":"z_seg_3","slot":"seg_3","tag":"crater","name":"Crater 3"}
+{"op":"zone","id":"z_seg_4","slot":"seg_4","tag":"crater","name":"Crater 4"}
+{"op":"zone","id":"z_seg_5","slot":"seg_5","tag":"crater","name":"Crater 5"}
+{"op":"zone","id":"z_seg_6","slot":"seg_6","tag":"pit","name":"Deep Pit"}
+{"op":"zone","id":"z_finish","slot":"finish","tag":"tower","name":"Radio tower"}
+{"op":"spawn","id":"sp_red","zone":"z_start","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"tower_goal","zone":"z_finish","anchor":"trophy","noun":"radio tower platform","hyper":"tower","team":"red"}
+{"op":"ent","id":"pad_1","kind":"platform","noun":"jump pad","hyper":"jump_pad","zone":"z_seg_1","anchor":"cp_1","body":"fixed","shape":"box","size":[1,0.2,1]}
+{"op":"ent","id":"pad_2","kind":"platform","noun":"jump pad","hyper":"jump_pad","zone":"z_seg_2","anchor":"cp_2","body":"fixed","shape":"box","size":[1,0.2,1]}
+{"op":"ent","id":"pad_3","kind":"platform","noun":"jump pad","hyper":"jump_pad","zone":"z_seg_3","anchor":"cp_3","body":"fixed","shape":"box","size":[1,0.2,1]}
+{"op":"ent","id":"pad_4","kind":"platform","noun":"jump pad","hyper":"jump_pad","zone":"z_seg_4","anchor":"cp_4","body":"fixed","shape":"box","size":[1,0.2,1]}
+{"op":"ent","id":"pad_5","kind":"platform","noun":"jump pad","hyper":"jump_pad","zone":"z_seg_5","anchor":"cp_5","body":"fixed","shape":"box","size":[1,0.2,1]}
+{"op":"ent","id":"pad_6","kind":"platform","noun":"jump pad","hyper":"jump_pad","zone":"z_seg_6","anchor":"pit_6","body":"fixed","shape":"box","size":[1,0.2,1]}
+{"op":"ent","id":"cell_1","kind":"pickup","noun":"energy cell","hyper":"cell","zone":"z_seg_1","anchor":"pickup_1","body":"dynamic","shape":"box","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"cell_2","kind":"pickup","noun":"energy cell","hyper":"cell","zone":"z_seg_2","anchor":"pickup_2","body":"dynamic","shape":"box","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"cell_3","kind":"pickup","noun":"energy cell","hyper":"cell","zone":"z_seg_3","anchor":"pickup_3","body":"dynamic","shape":"box","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"cell_4","kind":"pickup","noun":"energy cell","hyper":"cell","zone":"z_seg_4","anchor":"pickup_4","body":"dynamic","shape":"box","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"hazard_1","kind":"hazard","noun":"spike pit","hyper":"spikes","zone":"z_seg_2","anchor":"cp_2","body":"sensor","shape":"box","size":[2,0.2,2]}
+{"op":"ent","id":"hazard_2","kind":"hazard","noun":"spike pit","hyper":"spikes","zone":"z_seg_5","anchor":"cp_5","body":"sensor","shape":"box","size":[2,0.2,2]}
+{"op":"ent","id":"checkpoint_1","kind":"checkpoint","noun":"checkpoint","hyper":"checkpoint","zone":"z_seg_4","anchor":"cp_4","body":"sensor","shape":"box","size":[1,0.2,1]}
+{"op":"ent","id":"door_1","kind":"door","noun":"tower gate","hyper":"door","zone":"z_finish","anchor":"goal","body":"fixed","shape":"box"}
+{"op":"ent","id":"switch_1","kind":"switch","noun":"control switch","hyper":"switch","zone":"z_seg_5","anchor":"pickup_5","body":"fixed","shape":"box","size":[0.5,0.5,0.2]}
+{"op":"verb","id":"vb_carry_cell_1","verb":"physics_props.carry","on":"cell_1","params":{}}
+{"op":"verb","id":"vb_carry_cell_2","verb":"physics_props.carry","on":"cell_2","params":{}}
+{"op":"verb","id":"vb_carry_cell_3","verb":"physics_props.carry","on":"cell_3","params":{}}
+{"op":"verb","id":"vb_carry_cell_4","verb":"physics_props.carry","on":"cell_4","params":{}}
+{"op":"verb","id":"vb_jump_pad_1","verb":"locomotion.jump_pad","on":"pad_1","params":{"height":5}}
+{"op":"verb","id":"vb_jump_pad_2","verb":"locomotion.jump_pad","on":"pad_2","params":{"height":5}}
+{"op":"verb","id":"vb_jump_pad_3","verb":"locomotion.jump_pad","on":"pad_3","params":{"height":5}}
+{"op":"verb","id":"vb_jump_pad_4","verb":"locomotion.jump_pad","on":"pad_4","params":{"height":5}}
+{"op":"verb","id":"vb_jump_pad_5","verb":"locomotion.jump_pad","on":"pad_5","params":{"height":5}}
+{"op":"verb","id":"vb_jump_pad_6","verb":"locomotion.jump_pad","on":"pad_6","params":{"height":5}}
+{"op":"verb","id":"vb_hazard_1","verb":"motion_hazards.hazard","on":"hazard_1","params":{"respawn":true}}
+{"op":"verb","id":"vb_hazard_2","verb":"motion_hazards.hazard","on":"hazard_2","params":{"respawn":true}}
+{"op":"verb","id":"vb_checkpoint_1","verb":"puzzle.checkpoint","on":"checkpoint_1","params":{}}
+{"op":"verb","id":"vb_switch_1","verb":"puzzle.switch","on":"switch_1","params":{"once":true}}
+{"op":"verb","id":"vb_lock_1","verb":"puzzle.lock","on":"door_1","params":{"key":"cell_4","keep":false}}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.8,"speed":5}}
+{"op":"state","id":"door_1_state","entity":"door_1","state":"closed"}
+{"op":"state","id":"switch_1_state","entity":"switch_1","state":"off"}
+{"op":"rule","id":"r_win","when":{"t":"enter","a":"player","b":"tower_goal"},"if":[{"l":"player.team","op":"eq","r":"red"}],"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose_hazard_1","when":{"t":"hit","a":"player","b":"hazard_1"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose_hazard_2","when":{"t":"hit","a":"player","b":"hazard_2"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_lock_open","when":{"t":"state_is","a":"switch_1","s":"on"},"then":[{"e":"set_state","target":"door_1","v":"open"}]}
+{"op":"rule","id":"r_collect_cell","when":{"t":"pickup","a":"cell_1","b":"player"},"then":[{"e":"score","target":"team:red","n":10}]}
+{"op":"rule","id":"r_collect_cell2","when":{"t":"pickup","a":"cell_2","b":"player"},"then":[{"e":"score","target":"team:red","n":10}]}
+{"op":"rule","id":"r_collect_cell3","when":{"t":"pickup","a":"cell_3","b":"player"},"then":[{"e":"score","target":"team:red","n":10}]}
+{"op":"rule","id":"r_collect_cell4","when":{"t":"pickup","a":"cell_4","b":"player"},"then":[{"e":"score","target":"team:red","n":10}]}
+{"op":"expect","id":"x_trajectory","prop":"win_reachable","a":"sp_red","b":"tower_goal","headline":true,"text":"Trajectory must land the astronaut on the radio tower platform"}
+{"op":"end","layer":"gameplay"}
+{"op":"dress","id":"moon_sky","kind":"prop","noun":"starfield","hyper":"sky","zone":"z_start","anchor":"sign","body":"fixed","shape":"box","size":[50,0.1,50]}
+{"op":"poster","id":"poster_1","zone":"z_start","anchor":"sign","text":"Welcome to Lunar Base Alpha"}
+{"op":"end","layer":"cosmetic"}

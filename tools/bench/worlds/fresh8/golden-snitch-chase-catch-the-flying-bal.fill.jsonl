@@ -1,0 +1,38 @@
+{"op":"meta","mode":"play","lang":"en","pack":"arena","sub":[],"seed":27,"look":"stadium arena","mood":[0.5,0.8,0.7],"timeOfDay":14,"weather":"clear"}
+{"op":"zone","id":"z_midfield","slot":"midfield","tag":"center","name":"Midfield arena floor"}
+{"op":"zone","id":"z_west","slot":"west_half","tag":"base","name":"West tier base"}
+{"op":"zone","id":"z_east","slot":"east_half","tag":"base","name":"East tier base"}
+{"op":"zone","id":"z_north","slot":"north_deck","tag":"platform","name":"North spectator deck"}
+{"op":"zone","id":"z_south","slot":"south_deck","tag":"platform","name":"South spectator deck"}
+{"op":"spawn","id":"sp_seeker_red","zone":"z_west","anchor":"spawn_pad","team":"red"}
+{"op":"spawn","id":"sp_seeker_blue","zone":"z_east","anchor":"spawn_pad","team":"blue"}
+{"op":"goal","id":"snitch_goal","zone":"z_midfield","anchor":"center","noun":"golden snitch","hyper":"goal_object","team":"","body":"sensor","shape":"sphere","size":[0.5,0.5,0.5]}
+{"op":"ent","id":"snitch_ball","kind":"pickup","noun":"golden snitch","hyper":"goal_object","zone":"z_midfield","anchor":"center","body":"dynamic","shape":"sphere","size":[0.4,0.4,0.4]}
+{"op":"ent","id":"barrier_1","kind":"prop","noun":"low barrier","hyper":"barrier","zone":"z_midfield","anchor":"flank_n","body":"fixed","shape":"box","size":[2,0.3,0.5]}
+{"op":"ent","id":"barrier_2","kind":"prop","noun":"low barrier","hyper":"barrier","zone":"z_midfield","anchor":"flank_s","body":"fixed","shape":"box","size":[2,0.3,0.5]}
+{"op":"ent","id":"switch_1","kind":"switch","noun":"switch panel","hyper":"switch","zone":"z_west","anchor":"flank_n","body":"fixed","shape":"box"}
+{"op":"ent","id":"plate_1","kind":"plate","noun":"pressure plate","hyper":"plate","zone":"z_east","anchor":"flank_s","body":"sensor","shape":"box"}
+{"op":"ent","id":"door_1","kind":"door","noun":"gate door","hyper":"door","zone":"z_midfield","anchor":"goal_ring","body":"fixed","shape":"box"}
+{"op":"ent","id":"key_1","kind":"pickup","noun":"metal key","hyper":"key","zone":"z_north","anchor":"deck_center","body":"dynamic","shape":"box","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"coin_1","kind":"pickup","noun":"gold coin","hyper":"coin","zone":"z_south","anchor":"deck_center","body":"dynamic","shape":"sphere","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"hazard_lava","kind":"hazard","noun":"lava pool","hyper":"hazard","zone":"z_midfield","anchor":"center_n","body":"sensor","shape":"box","size":[3,0.5,3]}
+{"op":"ent","id":"jump_pad_1","kind":"plate","noun":"jump pad","hyper":"jump_pad","zone":"z_west","anchor":"flank_s","body":"sensor","shape":"box"}
+{"op":"verb","id":"vb_carry_snitch","verb":"physics_props.carry","on":"snitch_ball","params":{}}
+{"op":"verb","id":"vb_switch_1","verb":"puzzle.switch","on":"switch_1","params":{"once":false}}
+{"op":"verb","id":"vb_plate_1","verb":"puzzle.plate","on":"plate_1","params":{"latch":false}}
+{"op":"verb","id":"vb_lock_door","verb":"puzzle.lock","on":"door_1","params":{"key":"key_1","keep":false}}
+{"op":"verb","id":"vb_collect_coin","verb":"puzzle.collect","on":"coin_1","params":{}}
+{"op":"verb","id":"vb_hazard_lava","verb":"motion_hazards.hazard","on":"hazard_lava","params":{"respawn":true}}
+{"op":"verb","id":"vb_jump_pad","verb":"locomotion.jump_pad","on":"jump_pad_1","params":{"height":5}}
+{"op":"verb","id":"vb_look_door","verb":"social.inspect","on":"door_1","params":{"text":"A heavy gate that blocks the central lane."}}
+{"op":"verb","id":"vb_look_switch","verb":"social.inspect","on":"switch_1","params":{"text":"Activates the gate when toggled."}}
+{"op":"verb","id":"vb_look_plate","verb":"social.inspect","on":"plate_1","params":{"text":"Stepping here raises the gate temporarily."}}
+{"op":"rule","id":"r_gate_open","when":{"t":"state_is","a":"switch_1","s":"on"},"then":[{"e":"set_state","target":"door_1","v":"open"}],"once":false}
+{"op":"rule","id":"r_gate_plate","when":{"t":"state_is","a":"plate_1","s":"down"},"then":[{"e":"set_state","target":"door_1","v":"open"}],"once":false}
+{"op":"rule","id":"r_gate_close","when":{"t":"state_is","a":"door_1","s":"open"},"if":[{"l":"timer.elapsed","op":"gt","r":"5"}],"then":[{"e":"set_state","target":"door_1","v":"closed"}],"once":false}
+{"op":"rule","id":"r_win","when":{"t":"state_is","a":"snitch_ball","s":"carried"},"if":[{"l":"snitch_ball.carrier.team","op":"eq","r":"red"}],"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose","when":{"t":"state_is","a":"snitch_ball","s":"carried"},"if":[{"l":"snitch_ball.carrier.team","op":"eq","r":"blue"}],"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"expect","id":"x_chase","prop":"win_reachable","a":"sp_seeker_red","b":"snitch_goal","headline":true,"text":"Chase requires maneuvering through arena cover to intercept the fast-moving ball"}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":6}}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

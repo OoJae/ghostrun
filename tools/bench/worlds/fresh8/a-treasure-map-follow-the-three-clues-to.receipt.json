@@ -1,0 +1,232 @@
+{
+  "prompt": "A treasure map: follow the three clues to find the chest",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "exploration / quest",
+    "setting": "a scattered set of clue sites across an outdoor area, ending at a hidden treasure chest",
+    "role": "treasure hunter / adventurer",
+    "goal": "follow three clues in sequence to locate each site and finally open the treasure chest",
+    "fail": "choosing the wrong clue location or exhausting clues without finding the chest",
+    "mood": "curious, playful, mildly tense",
+    "pack": "outdoor",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Chest only reachable after visiting all three clue sites in order",
+    "nouns": [
+      {
+        "noun": "treasure map",
+        "hyper": "guiding item"
+      },
+      {
+        "noun": "clue",
+        "hyper": "puzzle marker"
+      },
+      {
+        "noun": "chest",
+        "hyper": "objective object"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.6,
+      "arousal": 0.5,
+      "tension": 0.4
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "59b18141a924dbf1dd9547b0e17e0e98aa2946ddc6654be09c6cab1d3da3655f",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "exp_chest",
+      "text": "Chest only reachable after visiting all three clue sites in order",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 8 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_chest_win (player enters chest_goal) [after clue3_sw on]",
+        "src": ""
+      },
+      {
+        "id": "T2:r_chest_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_chest_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_chest_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_clue1",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_clue1"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_clue1 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_clue2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_clue2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_clue2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_clue3",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_clue3"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_clue3 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_fail_wrong_clue",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_fail_wrong_clue"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_fail_wrong_clue fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_stall_1",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_stall_1"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_secret_stall_1 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_tent",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_tent"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_secret_tent fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_water",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_water"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_secret_water fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it (AI par 8.9 s)",
+        "cx": null,
+        "src": "",
+        "ms": 138
+      }
+    ],
+    "par": {
+      "goldS": 8.9,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 416
+  }
+}

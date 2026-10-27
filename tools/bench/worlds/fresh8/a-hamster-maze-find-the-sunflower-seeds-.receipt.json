@@ -1,0 +1,204 @@
+{
+  "prompt": "A hamster maze: find the sunflower seeds and get back to the nest",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "maze / escape",
+    "setting": "A hamster-sized maze with winding walls, dead ends, a sunflower seed cache in one corner and a cozy nest at the start pad",
+    "role": "A curious hamster exploring the maze from its nest",
+    "goal": "Find the sunflower seeds hidden somewhere in the maze and carry them back to the nest at the start pad",
+    "fail": "Getting lost in the maze without a path back, running out of stamina, or failing to reach the nest before the day ends",
+    "mood": "Cozy, gentle curiosity with a light puzzle edge",
+    "pack": "maze",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Maze must have a reachable seed cache and a return path to the nest",
+    "nouns": [
+      {
+        "noun": "hamster",
+        "hyper": "rodent pet"
+      },
+      {
+        "noun": "maze",
+        "hyper": "labyrinth structure"
+      },
+      {
+        "noun": "sunflower seeds",
+        "hyper": "food reward"
+      },
+      {
+        "noun": "nest",
+        "hyper": "home base"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.6,
+      "arousal": 0.2,
+      "tension": 0.3
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "afc272bfaf7a66f851b51af0e88ca5858488076b1e7f3a46ba86dbafc40354dd",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_seed",
+      "text": "Maze must have a reachable seed cache and a return path to the nest",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 6 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (seed_cache into nest_goal, carried by red) ← pick up seed_cache",
+        "src": ""
+      },
+      {
+        "id": "T2:r_collect_coin1",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_collect_coin1"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_collect_coin1 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_collect_coin2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_collect_coin2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_collect_coin2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_plate_down",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_plate_down"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_plate_down fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_spike",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_spike"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_spike fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_switch_open",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_switch_open"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_switch_open fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it (AI par 42.7 s)",
+        "cx": null,
+        "src": "",
+        "ms": 654
+      }
+    ],
+    "par": {
+      "goldS": 42.7,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 692
+  }
+}

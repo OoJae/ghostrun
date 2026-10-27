@@ -57,6 +57,9 @@ describe("recorded unseen worlds", () => {
     ["fresh7", "king-of-the-hill", "a win waiting for a countdown's 'done' waits for it"],
     ["fresh7", "a-frozen-lake", "thin ice covering a lane platform lies below the walkway instead"],
     ["fresh7", "a-space-dock", "'fuel cell 3 enters the ship while all three are carried' means bringing each in"],
+    ["fresh8", "defuse-the-bomb", "a door nothing opens opens with USE; wires a win wants off start on, and USE cuts them"],
+    ["fresh8", "a-robot-factory", "slots made doors stay put; a used-up part and an already-done step don't stall the run"],
+    ["fresh8", "golden-snitch", "'the snitch is carried' is the moment it's picked up"],
   ])("%s %s: %s", async (set, prefix) => {
     const w = recorded(set, prefix);
     const r = await prove(R, w.bundle, { engine: ENGINE_HASH, runs: 12 });

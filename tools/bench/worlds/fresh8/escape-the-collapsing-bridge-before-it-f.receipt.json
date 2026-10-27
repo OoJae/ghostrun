@@ -1,0 +1,280 @@
+{
+  "prompt": "Escape the collapsing bridge before it falls",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "survival",
+    "setting": "A large, archaic stone suspension bridge over a deep canyon, groaning and crumbling in real-time.",
+    "role": "A lone traveler",
+    "goal": "Run from one end of the bridge to the other before it completely collapses into the abyss.",
+    "fail": "Getting crushed by falling stone, falling into the void as the bridge parts below you, or running out of time.",
+    "mood": "Panic",
+    "pack": "course",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Bridge deck requires continuous traversal before tiles vanish",
+    "nouns": [
+      {
+        "noun": "bridge",
+        "hyper": "structure"
+      },
+      {
+        "noun": "stone",
+        "hyper": "material"
+      },
+      {
+        "noun": "canyon",
+        "hyper": "terrain"
+      }
+    ],
+    "moodVec": {
+      "valence": -0.8,
+      "arousal": 0.9,
+      "tension": 0.9
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "bc977d1d47154674a5b044398817c181d6c3b3b6087195daa10a2987a97a378d",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_bridge",
+      "text": "Bridge deck requires continuous traversal before tiles vanish",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 11 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (player enters goal_exit)",
+        "src": ""
+      },
+      {
+        "id": "T2:r_lose_fall",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_fall"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_lose_fall: nothing produces hit on tile_1",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lose_fall_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_fall_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_lose_fall_2: nothing produces hit on tile_2",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lose_fall_3",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_fall_3"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_lose_fall_3: nothing produces hit on tile_3",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lose_fall_4",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_fall_4"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_lose_fall_4: nothing produces hit on tile_4",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lose_fall_5",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_fall_5"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_lose_fall_5: nothing produces hit on tile_5",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lose_fall_6",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_fall_6"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_lose_fall_6: nothing produces hit on tile_6",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lose_timer",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_timer"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_lose_timer fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_host",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_host"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_secret_host fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_pickup_5",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_pickup_5"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_pickup_5 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_trophy",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_trophy"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_trophy fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it (AI par 23 s)",
+        "cx": null,
+        "src": "",
+        "ms": 189
+      }
+    ],
+    "par": {
+      "goldS": 23,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 559
+  }
+}

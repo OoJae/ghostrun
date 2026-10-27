@@ -1,0 +1,260 @@
+{
+  "prompt": "Lava floor game: cross the living room on the furniture without touching the floor",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "puzzle-platformer",
+    "setting": "A single-storey living room whose floor is glowing molten lava",
+    "role": "Player",
+    "goal": "Cross the room from one side to the other using only the arranged furniture without touching the molten floor",
+    "fail": "Touching the lava floor",
+    "mood": "Tense focus on balance",
+    "pack": "floor_plan",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Furniture hops are spaced so one wrong step means lava contact",
+    "nouns": [
+      {
+        "noun": "furniture",
+        "hyper": "indoor object"
+      },
+      {
+        "noun": "living room",
+        "hyper": "indoor space"
+      },
+      {
+        "noun": "lava floor",
+        "hyper": "hazard surface"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.1,
+      "arousal": 0.6,
+      "tension": 0.8
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "2303d17c320aaed04b29dd6a09802bc8d98294f9f9fe1f3d3ef27ea3c03d2f1e",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_furniture",
+      "text": "Furniture hops are spaced so one wrong step means lava contact",
+      "status": "counterexample",
+      "method": "static goal regression over rules + physics, 12 AI runners + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 8 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (player enters goal_exit)",
+        "src": ""
+      },
+      {
+        "id": "T2:r_lose_lava",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_lava"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_lose_lava fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_center",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_center"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 0,
+        "src": "template",
+        "ms": 0,
+        "status": "counterexample",
+        "text": "r_secret_center fires exactly once",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "firings",
+          "text": "never fired when forced"
+        }
+      },
+      {
+        "id": "T2:r_secret_corner_ne",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_ne"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_secret_corner_ne fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_nw",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_nw"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_corner_nw fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_nw_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_nw_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_corner_nw_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_se",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_se"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_corner_se fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_sw",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_sw"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_corner_sw fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it (AI par 0.4 s)",
+        "cx": null,
+        "src": "",
+        "ms": 7
+      },
+      {
+        "id": "T3:too_easy",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "counterexample",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 12,
+        "text": "won in 0.4 s: over almost before it starts",
+        "cx": {
+          "where": null,
+          "have": 0.4,
+          "need": 3,
+          "unit": "s",
+          "text": "AI par 0.4 s < 3 s"
+        },
+        "src": "",
+        "ms": 0
+      }
+    ],
+    "par": {
+      "goldS": 0.4,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 47
+  }
+}

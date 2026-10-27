@@ -1,0 +1,176 @@
+{
+  "prompt": "A pizza delivery across town before the pizza gets cold",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "chase, time-trial",
+    "setting": "City streets in the evenings, with shop fronts and traffic",
+    "role": "Pizza delivery rider",
+    "goal": "Deliver the pizza across town before the timer runs out and it gets cold",
+    "fail": "Delivery completed after the timer expires, meaning the pizza is cold",
+    "mood": "Rush, urgency, urban grittiness with a slice of fun",
+    "pack": "city_block",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Pizza must be delivered across town before the cold-timer expires",
+    "nouns": [
+      {
+        "noun": "pizza",
+        "hyper": "food"
+      },
+      {
+        "noun": "city",
+        "hyper": "setting"
+      },
+      {
+        "noun": "timer",
+        "hyper": "mechanic"
+      },
+      {
+        "noun": "delivery",
+        "hyper": "quest"
+      },
+      {
+        "noun": "street",
+        "hyper": "terrain"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.2,
+      "arousal": 0.6,
+      "tension": 0.5
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "8ea4f8cacae6c8495fa247149b30c30860953465726c7e23581e34292ae595c4",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_delivery",
+      "text": "Pizza must be delivered across town before the cold-timer expires",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 4 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (pizza_box into goal_ring, carried by red) ← pick up pizza_box",
+        "src": ""
+      },
+      {
+        "id": "T2:r_gate_open",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_gate_open"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_gate_open fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lose_timer",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_timer"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_lose_timer fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_plinth",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_plinth"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_plinth fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it (AI par 10.2 s)",
+        "cx": null,
+        "src": "",
+        "ms": 102
+      }
+    ],
+    "par": {
+      "goldS": 10.2,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 229
+  }
+}

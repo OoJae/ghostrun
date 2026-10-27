@@ -1,0 +1,108 @@
+{
+  "prompt": "A rooftop bar at sunset with a city view",
+  "intent": {
+    "lang": "en",
+    "mode": "wander",
+    "genre": "ambient experience",
+    "setting": "An open-air rooftop bar on a skyscraper at golden hour, overlooking a sprawling illuminated metropolis.",
+    "role": "Guest",
+    "goal": "Explore the bar area, enjoy the sunset views, and soak in the ambience.",
+    "fail": "Falling off the unguarded roof edge.",
+    "mood": "Relaxed, atmospheric, urban",
+    "pack": "outdoor",
+    "sub": [
+      "rooftop"
+    ],
+    "safety": "ok",
+    "headline": "Rooftop bar scene requires a safe skybox or edge barrier to support viewing without fall damage",
+    "nouns": [
+      {
+        "noun": "rooftop bar",
+        "hyper": "outdoor_structure"
+      },
+      {
+        "noun": "city",
+        "hyper": "urban_environment"
+      },
+      {
+        "noun": "sunset",
+        "hyper": "sky_visuals"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.8,
+      "arousal": 0.2,
+      "tension": 0.1
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "fc96de940e7d6dcfb02a23a49cd3737aef1048d2ecdee7780e1c6f9040edcb0f",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_bar",
+      "text": "Rooftop bar scene requires a safe skybox or edge barrier to support viewing without fall damage",
+      "status": "not_checkable",
+      "method": "kinematic reachability (jump apex model)"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 0 rules reference existing things",
+        "src": ""
+      },
+      {
+        "id": "T1:x_bar",
+        "tier": "T1",
+        "subject": {
+          "kind": "property",
+          "id": "x_bar"
+        },
+        "method": "kinematic reachability (jump apex model)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "Rooftop bar scene requires a safe skybox or edge barrier to support viewing without fall damage: needs nothing stated, no checker for that yet",
+        "cx": null
+      },
+      {
+        "id": "T3:tour",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "tour"
+        },
+        "status": "counterexample",
+        "method": "physics, an AI visitor walks to and uses each",
+        "n": 5,
+        "k": 3,
+        "text": "walked to and inspected 3 of 5 things",
+        "cx": {
+          "where": null,
+          "have": 3,
+          "need": 5,
+          "unit": "things",
+          "text": "couldn't reach music_speaker, view_sign"
+        },
+        "src": "",
+        "ms": 8
+      }
+    ],
+    "par": null,
+    "ms": 266
+  }
+}

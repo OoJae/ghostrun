@@ -1,0 +1,90 @@
+{
+  "prompt": "A sunflower field with a scarecrow to walk around",
+  "intent": {
+    "lang": "en",
+    "mode": "wander",
+    "genre": "Scenic / Exploration",
+    "setting": "Vast field of sunflowers",
+    "role": "Visitor",
+    "goal": "Explore the sunflower field",
+    "fail": "N/A",
+    "mood": "Serene",
+    "pack": "outdoor",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Field layout allows walking among sunflowers",
+    "nouns": [
+      {
+        "noun": "sunflower",
+        "hyper": "plant"
+      },
+      {
+        "noun": "scarecrow",
+        "hyper": "prop"
+      },
+      {
+        "noun": "field",
+        "hyper": "terrain"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.9,
+      "arousal": 0.2,
+      "tension": 0
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "4813bf57d246b714855056d3d8ba867a3d90031ed1f68bd32e0c4660af80d6e8",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_field",
+      "text": "Field layout allows walking among sunflowers",
+      "status": "not_checkable",
+      "method": "none"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 0 rules reference existing things",
+        "src": ""
+      },
+      {
+        "id": "T3:tour",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "tour"
+        },
+        "status": "counterexample",
+        "method": "physics, an AI visitor walks to and uses each",
+        "n": 5,
+        "k": 4,
+        "text": "walked to and inspected 4 of 5 things",
+        "cx": {
+          "where": null,
+          "have": 4,
+          "need": 5,
+          "unit": "things",
+          "text": "couldn't reach sunflower_e"
+        },
+        "src": "",
+        "ms": 9
+      }
+    ],
+    "par": null,
+    "ms": 298
+  }
+}

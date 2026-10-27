@@ -1,0 +1,240 @@
+{
+  "prompt": "Musical chairs: be on a chair when the music stops",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "Party mini-game",
+    "setting": "A circular dance floor surrounded by a ring of chairs facing the centre",
+    "role": "Dancing player waiting for the chairs",
+    "goal": "Be seated when the music stops; outlast rivals by claiming a chair",
+    "fail": "Still standing after the music cuts, or no chair remains",
+    "mood": "excited",
+    "pack": "arena",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Final beat has a chair for each player minus one",
+    "nouns": [
+      {
+        "noun": "music",
+        "hyper": "audio track"
+      },
+      {
+        "noun": "chair",
+        "hyper": "seat object"
+      },
+      {
+        "noun": "dancer",
+        "hyper": "player avatar"
+      },
+      {
+        "noun": "circle",
+        "hyper": "game zone"
+      },
+      {
+        "noun": "round",
+        "hyper": "game phase"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.6,
+      "arousal": 0.7,
+      "tension": 0.6
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "93db84b402ec3e04f681f92eda6073566b292c81ccc8caf049b09cfd3472af13",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_chair",
+      "text": "Final beat has a chair for each player minus one",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 1,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 8 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 1,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_check_win (the timer runs out) [after chair_1 occupied, chair_2 occupied, chair_3 occupied, chair_4 occupied]",
+        "src": ""
+      },
+      {
+        "id": "T2:r_check_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_check_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 53,
+        "status": "verified",
+        "text": "r_check_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lose",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_lose fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_n",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_n"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 10,
+        "status": "verified",
+        "text": "r_secret_flank_n fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_s",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_s"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_secret_flank_s fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win_1",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win_1"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 8,
+        "status": "verified",
+        "text": "r_win_1 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_win_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win_3",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win_3"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_win_3 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win_4",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win_4"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 6,
+        "status": "verified",
+        "text": "r_win_4 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it (AI par 30 s)",
+        "cx": null,
+        "src": "",
+        "ms": 254
+      }
+    ],
+    "par": {
+      "goldS": 30,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 523
+  }
+}

@@ -1,0 +1,34 @@
+{"op":"meta","mode":"play","lang":"en","pack":"arena","sub":[],"seed":28,"look":"skate park","mood":[0.4,0.7,0.5],"timeOfDay":14,"weather":"clear"}
+{"op":"zone","id":"z_midfield","slot":"midfield","tag":"center","name":"Central half-pipe"}
+{"op":"zone","id":"z_west_half","slot":"west_half","tag":"base","name":"West ramp area"}
+{"op":"zone","id":"z_east_half","slot":"east_half","tag":"base","name":"East ramp area"}
+{"op":"zone","id":"z_north_deck","slot":"north_deck","tag":"platform","name":"North platform"}
+{"op":"zone","id":"z_south_deck","slot":"south_deck","tag":"platform","name":"South platform"}
+{"op":"spawn","id":"sp_red","zone":"z_west_half","anchor":"spawn_pad","team":"red"}
+{"op":"ent","id":"ramp_mid","kind":"prop","noun":"half-pipe","hyper":"ramp","zone":"z_midfield","anchor":"center","body":"fixed","shape":"box","size":[4,2,1]}
+{"op":"ent","id":"ramp_west","kind":"prop","noun":"ramp","hyper":"ramp","zone":"z_west_half","anchor":"spawn_pad","body":"fixed","shape":"box","size":[3,1.5,1]}
+{"op":"ent","id":"ramp_east","kind":"prop","noun":"ramp","hyper":"ramp","zone":"z_east_half","anchor":"spawn_pad","body":"fixed","shape":"box","size":[3,1.5,1]}
+{"op":"ent","id":"coin_1","kind":"pickup","noun":"gold coin","hyper":"coin","zone":"z_midfield","anchor":"center_n","body":"dynamic","shape":"sphere","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"coin_2","kind":"pickup","noun":"gold coin","hyper":"coin","zone":"z_west_half","anchor":"goal_ring","body":"dynamic","shape":"sphere","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"coin_3","kind":"pickup","noun":"gold coin","hyper":"coin","zone":"z_east_half","anchor":"goal_ring","body":"dynamic","shape":"sphere","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"coin_4","kind":"pickup","noun":"gold coin","hyper":"coin","zone":"z_north_deck","anchor":"deck_center","body":"dynamic","shape":"sphere","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"coin_5","kind":"pickup","noun":"gold coin","hyper":"coin","zone":"z_south_deck","anchor":"deck_center","body":"dynamic","shape":"sphere","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"timer","kind":"prop","noun":"timer","hyper":"timer","zone":"z_midfield","anchor":"scoreboard","body":"sensor","shape":"box","size":[0.5,0.5,0.5]}
+{"op":"verb","id":"vb_carry_coin_1","verb":"physics_props.carry","on":"coin_1","params":{}}
+{"op":"verb","id":"vb_carry_coin_2","verb":"physics_props.carry","on":"coin_2","params":{}}
+{"op":"verb","id":"vb_carry_coin_3","verb":"physics_props.carry","on":"coin_3","params":{}}
+{"op":"verb","id":"vb_carry_coin_4","verb":"physics_props.carry","on":"coin_4","params":{}}
+{"op":"verb","id":"vb_carry_coin_5","verb":"physics_props.carry","on":"coin_5","params":{}}
+{"op":"verb","id":"vb_timer","verb":"puzzle.timer","on":"timer","params":{"seconds":120}}
+{"op":"verb","id":"vb_jump","verb":"locomotion.jump","on":"player","params":{"jumpsMax":2}}
+{"op":"rule","id":"r_score_1","when":{"t":"touch","a":"player","b":"coin_1"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_score_2","when":{"t":"touch","a":"player","b":"coin_2"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_score_3","when":{"t":"touch","a":"player","b":"coin_3"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_score_4","when":{"t":"touch","a":"player","b":"coin_4"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_score_5","when":{"t":"touch","a":"player","b":"coin_5"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_finish","when":{"t":"timer_end","a":"timer"},"if":[{"l":"team:red.score","op":"gte","r":5}],"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_fail","when":{"t":"timer_end","a":"timer"},"if":[{"l":"team:red.score","op":"lt","r":5}],"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"expect","id":"x_collect","prop":"win_reachable","a":"sp_red","b":"z_midfield","headline":true,"text":"Coin collection requires precise mid-air timing on ramp obstacles"}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":6}}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

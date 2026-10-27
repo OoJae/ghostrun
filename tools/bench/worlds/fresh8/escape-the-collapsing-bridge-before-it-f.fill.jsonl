@@ -1,0 +1,37 @@
+{"op":"meta","mode":"play","lang":"en","pack":"course","sub":[],"seed":25,"look":"ancient stone bridge","mood":[-0.8,0.9,0.9],"timeOfDay":12,"weather":"storm"}
+{"op":"zone","id":"z_start","slot":"start","tag":"start","name":"Bridge start"}
+{"op":"zone","id":"z_seg_1","slot":"seg_1","tag":"ledge","name":"Bridge segment 1"}
+{"op":"zone","id":"z_seg_2","slot":"seg_2","tag":"gaps","name":"Bridge segment 2"}
+{"op":"zone","id":"z_seg_3","slot":"seg_3","tag":"beam","name":"Bridge segment 3"}
+{"op":"zone","id":"z_seg_4","slot":"seg_4","tag":"steps","name":"Bridge segment 4"}
+{"op":"zone","id":"z_seg_5","slot":"seg_5","tag":"pit","name":"Bridge segment 5"}
+{"op":"zone","id":"z_seg_6","slot":"seg_6","tag":"beam","name":"Bridge segment 6"}
+{"op":"zone","id":"z_finish","slot":"finish","tag":"finish","name":"Bridge finish"}
+{"op":"spawn","id":"sp_red","zone":"z_start","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"goal_exit","zone":"z_finish","anchor":"goal","noun":"escape point","hyper":"exit","team":"red"}
+{"op":"ent","id":"tile_1","kind":"hazard","noun":"unstable stone","hyper":"stone","zone":"z_seg_1","anchor":"cp_1","body":"sensor","shape":"box","size":[2,0.2,2]}
+{"op":"ent","id":"tile_2","kind":"hazard","noun":"unstable stone","hyper":"stone","zone":"z_seg_2","anchor":"cp_2","body":"sensor","shape":"box","size":[2,0.2,2]}
+{"op":"ent","id":"tile_3","kind":"hazard","noun":"unstable stone","hyper":"stone","zone":"z_seg_3","anchor":"cp_3","body":"sensor","shape":"box","size":[2,0.2,2]}
+{"op":"ent","id":"tile_4","kind":"hazard","noun":"unstable stone","hyper":"stone","zone":"z_seg_4","anchor":"cp_4","body":"sensor","shape":"box","size":[2,0.2,2]}
+{"op":"ent","id":"tile_5","kind":"hazard","noun":"unstable stone","hyper":"stone","zone":"z_seg_5","anchor":"cp_5","body":"sensor","shape":"box","size":[2,0.2,2]}
+{"op":"ent","id":"tile_6","kind":"hazard","noun":"unstable stone","hyper":"stone","zone":"z_seg_6","anchor":"pickup_6","body":"sensor","shape":"box","size":[2,0.2,2]}
+{"op":"ent","id":"bridge_timer","kind":"prop","noun":"collapse timer","hyper":"timer","zone":"z_start","anchor":"sign","body":"fixed","shape":"none"}
+{"op":"verb","id":"vb_crumble_1","verb":"motion_hazards.crumble","on":"tile_1","params":{"delay":0.5,"back":5}}
+{"op":"verb","id":"vb_crumble_2","verb":"motion_hazards.crumble","on":"tile_2","params":{"delay":0.7,"back":5}}
+{"op":"verb","id":"vb_crumble_3","verb":"motion_hazards.crumble","on":"tile_3","params":{"delay":0.9,"back":5}}
+{"op":"verb","id":"vb_crumble_4","verb":"motion_hazards.crumble","on":"tile_4","params":{"delay":1.1,"back":5}}
+{"op":"verb","id":"vb_crumble_5","verb":"motion_hazards.crumble","on":"tile_5","params":{"delay":1.3,"back":5}}
+{"op":"verb","id":"vb_crumble_6","verb":"motion_hazards.crumble","on":"tile_6","params":{"delay":1.5,"back":5}}
+{"op":"verb","id":"vb_timer","verb":"puzzle.timer","on":"bridge_timer","params":{"seconds":30}}
+{"op":"rule","id":"r_win","when":{"t":"enter","a":"sp_red","b":"goal_exit"},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose_timer","when":{"t":"timer_end","a":"bridge_timer"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose_fall","when":{"t":"hit","a":"player","b":"tile_1"},"then":[{"e":"lose","target":"player"}]}
+{"op":"rule","id":"r_lose_fall_2","when":{"t":"hit","a":"player","b":"tile_2"},"then":[{"e":"lose","target":"player"}]}
+{"op":"rule","id":"r_lose_fall_3","when":{"t":"hit","a":"player","b":"tile_3"},"then":[{"e":"lose","target":"player"}]}
+{"op":"rule","id":"r_lose_fall_4","when":{"t":"hit","a":"player","b":"tile_4"},"then":[{"e":"lose","target":"player"}]}
+{"op":"rule","id":"r_lose_fall_5","when":{"t":"hit","a":"player","b":"tile_5"},"then":[{"e":"lose","target":"player"}]}
+{"op":"rule","id":"r_lose_fall_6","when":{"t":"hit","a":"player","b":"tile_6"},"then":[{"e":"lose","target":"player"}]}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.8,"speed":5}}
+{"op":"expect","id":"x_bridge","prop":"win_reachable","a":"sp_red","b":"goal_exit","headline":true,"text":"Bridge deck requires continuous traversal before tiles vanish"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

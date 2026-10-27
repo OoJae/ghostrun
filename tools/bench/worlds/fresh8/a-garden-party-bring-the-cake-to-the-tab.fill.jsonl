@@ -1,0 +1,39 @@
+{"op":"meta","mode":"play","lang":"en","pack":"outdoor","sub":[],"seed":24,"look":"garden party","mood":[0.6,0.4,0.5],"timeOfDay":14,"weather":"clear"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Garden entry"}
+{"op":"zone","id":"z_clearing","slot":"clearing","tag":"hub","name":"Central lawn"}
+{"op":"zone","id":"z_clearing_w","slot":"clearing_w","tag":"base","name":"West side table area"}
+{"op":"zone","id":"z_pond","slot":"pond","tag":"water","name":"Flower pond"}
+{"op":"zone","id":"z_grove","slot":"grove","tag":"trees","name":"Shade grove"}
+{"op":"zone","id":"z_camp","slot":"camp","tag":"camp","name":"Picnic camp"}
+{"op":"zone","id":"z_lookout","slot":"lookout","tag":"high_ground","name":"Hilltop view"}
+{"op":"spawn","id":"sp_red","zone":"z_entrance","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"tbl_main","zone":"z_clearing_w","anchor":"goal","noun":"main table","hyper":"table","team":"red"}
+{"op":"ent","id":"cake","kind":"pickup","noun":"birthday cake","hyper":"cake","zone":"z_entrance","anchor":"center","body":"dynamic","shape":"box","size":[0.5,0.5,0.5]}
+{"op":"ent","id":"guest_1","kind":"npc","noun":"guest","hyper":"guest","zone":"z_clearing","anchor":"center_n","body":"kinematic","shape":"capsule"}
+{"op":"ent","id":"guest_2","kind":"npc","noun":"guest","hyper":"guest","zone":"z_clearing","anchor":"center_s","body":"kinematic","shape":"capsule"}
+{"op":"ent","id":"guest_3","kind":"npc","noun":"guest","hyper":"guest","zone":"z_clearing","anchor":"center_e","body":"kinematic","shape":"capsule"}
+{"op":"ent","id":"guest_4","kind":"npc","noun":"guest","hyper":"guest","zone":"z_clearing","anchor":"center_w","body":"kinematic","shape":"capsule"}
+{"op":"ent","id":"plate_jump","kind":"plate","noun":"jump pad","hyper":"jump_pad","zone":"z_grove","anchor":"shore","body":"fixed","shape":"box","size":[0.4,0.1,0.4]}
+{"op":"ent","id":"hazard_spike","kind":"hazard","noun":"spike trap","hyper":"spike","zone":"z_camp","anchor":"fire","body":"sensor","shape":"box","size":[1,0.2,1]}
+{"op":"verb","id":"vb_carry_cake","verb":"physics_props.carry","on":"cake","params":{}}
+{"op":"verb","id":"vb_inspect_plate","verb":"social.inspect","on":"plate_jump","params":{"text":"A springy platform that launches you up."}}
+{"op":"verb","id":"vb_jump_pad","verb":"locomotion.jump_pad","on":"plate_jump","params":{"height":5}}
+{"op":"verb","id":"vb_spike_hazard","verb":"motion_hazards.hazard","on":"hazard_spike","params":{"respawn":true}}
+{"op":"verb","id":"vb_guest_patrol_1","verb":"npc.patrol","on":"guest_1","params":{}}
+{"op":"verb","id":"vb_guest_patrol_2","verb":"npc.patrol","on":"guest_2","params":{}}
+{"op":"verb","id":"vb_guest_patrol_3","verb":"npc.patrol","on":"guest_3","params":{}}
+{"op":"verb","id":"vb_guest_patrol_4","verb":"npc.patrol","on":"guest_4","params":{}}
+{"op":"rule","id":"r_win","when":{"t":"enter","a":"cake","b":"tbl_main"},"if":[{"l":"cake.carrier.team","op":"eq","r":"red"}],"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose_touch_guest","when":{"t":"touch","a":"player","b":"guest_1"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose_touch_guest2","when":{"t":"touch","a":"player","b":"guest_2"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose_touch_guest3","when":{"t":"touch","a":"player","b":"guest_3"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose_touch_guest4","when":{"t":"touch","a":"player","b":"guest_4"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"expect","id":"x_cake","prop":"win_reachable","a":"sp_red","b":"tbl_main","headline":true,"text":"Navigating a populated garden requires avoiding guest collisions"}
+{"op":"end","layer":"gameplay"}
+{"op":"npc","id":"guest_1","role":"citizen","zone":"z_clearing","anchor":"center_n","team":"","menu":["guest.patrol"],"dflt":"guest.patrol"}
+{"op":"npc","id":"guest_2","role":"citizen","zone":"z_clearing","anchor":"center_s","team":"","menu":["guest.patrol"],"dflt":"guest.patrol"}
+{"op":"npc","id":"guest_3","role":"citizen","zone":"z_clearing","anchor":"center_e","team":"","menu":["guest.patrol"],"dflt":"guest.patrol"}
+{"op":"npc","id":"guest_4","role":"citizen","zone":"z_clearing","anchor":"center_w","team":"","menu":["guest.patrol"],"dflt":"guest.patrol"}
+{"op":"dress","id":"d_cake","entity":"cake","color":"pink","detail":"candles"}
+{"op":"poster","id":"p_party","text":"Welcome to the Garden Party! Please keep the cake safe."}
+{"op":"end","layer":"cosmetic"}

@@ -1,0 +1,288 @@
+{
+  "prompt": "A skate ramp park where you grab coins in mid-air",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "Sports Action",
+    "setting": "A fenced skate park featuring half-pipes, grinders, and varied ramps with coins scattered at strategic jump points",
+    "role": "Skater",
+    "goal": "Collect as many coins as possible by performing aerial tricks on the ramps, attempting to secure all coins before running out of time or coins",
+    "fail": "Failing a trick or losing momentum means missing the high-value coins in mid-air and ending the run with a lower score",
+    "mood": "Adrenaline, rhythm, and playful challenge",
+    "pack": "arena",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Coin collection requires precise mid-air timing on ramp obstacles",
+    "nouns": [
+      {
+        "noun": "Skate ramp park",
+        "hyper": "Recreational facility"
+      },
+      {
+        "noun": "Ramps",
+        "hyper": "Obstacles"
+      },
+      {
+        "noun": "Coins",
+        "hyper": "Collectibles"
+      },
+      {
+        "noun": "Mid-air",
+        "hyper": "Spatial position"
+      },
+      {
+        "noun": "Tricks",
+        "hyper": "Actions"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.4,
+      "arousal": 0.7,
+      "tension": 0.5
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "24fba2885bf19433b6e54bfd61c3ee727b7f5873141e695283df1967876e5024",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_collect",
+      "text": "Coin collection requires precise mid-air timing on ramp obstacles",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 11 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_finish (the timer runs out) [after red scores 5]",
+        "src": ""
+      },
+      {
+        "id": "T2:r_fail",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_fail"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_fail fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_finish",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_finish"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_finish fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_score_1",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score_1"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_score_1 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_score_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_score_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_score_3",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score_3"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_score_3 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_score_4",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score_4"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_score_4 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_score_5",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score_5"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_score_5 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_deck_e",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_deck_e"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_secret_deck_e fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_deck_e_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_deck_e_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_secret_deck_e_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_n",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_n"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_secret_flank_n fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_s",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_s"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_secret_flank_s fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it (AI par 120 s)",
+        "cx": null,
+        "src": "",
+        "ms": 765
+      }
+    ],
+    "par": {
+      "goldS": 120,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 909
+  }
+}

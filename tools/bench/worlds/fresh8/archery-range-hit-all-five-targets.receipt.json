@@ -1,0 +1,280 @@
+{
+  "prompt": "Archery range: hit all five targets",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "sports simulation / skill challenge",
+    "setting": "A bright outdoor archery range with five individual shooting stations and targets set up at varying standard distances (18m, 30m, 50m)",
+    "role": "A competitive archer competing in a qualification match.",
+    "goal": "Hit the bullseye on all five targets, one by one, to complete the challenge.",
+    "fail": "Missing a target's scoring area results in a failed shot and a reset of that specific target.",
+    "mood": "Focused, competitive, calm, precise",
+    "pack": "arena",
+    "sub": [],
+    "safety": "ok",
+    "headline": "All five targets must be hit to win.",
+    "nouns": [
+      {
+        "noun": "Archery range",
+        "hyper": "outdoor field/sports facility"
+      },
+      {
+        "noun": "Targets",
+        "hyper": "objects/items"
+      },
+      {
+        "noun": "Archers",
+        "hyper": "people/agents"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.2,
+      "arousal": 0.4,
+      "tension": 0.3
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "33fad59548211c03b288aad62cbc7c9d4e42ff77fd2b42ea31153f15716159d5",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_range",
+      "text": "All five targets must be hit to win.",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 11 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (team:red reaches 5) ← collect 5 of 5",
+        "src": ""
+      },
+      {
+        "id": "T2:r_hit1",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_hit1"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 9,
+        "status": "verified",
+        "text": "r_hit1 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_hit2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_hit2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 6,
+        "status": "verified",
+        "text": "r_hit2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_hit3",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_hit3"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_hit3 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_hit4",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_hit4"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_hit4 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_hit5",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_hit5"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_hit5 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_deck_center",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_deck_center"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_deck_center fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_deck_center_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_deck_center_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_deck_center_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_deck_e",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_deck_e"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_deck_e fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_deck_e_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_deck_e_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_deck_e_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_n",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_n"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_flank_n fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it (AI par 8 s)",
+        "cx": null,
+        "src": "",
+        "ms": 82
+      }
+    ],
+    "par": {
+      "goldS": 8,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 238
+  }
+}

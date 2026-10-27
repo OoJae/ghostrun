@@ -1,0 +1,262 @@
+{
+  "prompt": "A spooky crypt: open the coffin with the silver key and escape before the vampire wakes",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "horror-puzzle",
+    "setting": "A dim, dust-littered crypt with a locked silver coffin, candlelight, and creaking stone walls.",
+    "role": "A tomb raider trapped in a haunted underground vault.",
+    "goal": "Open the coffin using the silver key to find the exit before the vampire awakens.",
+    "fail": "If the vampire wakes before the coffin is opened and the escape is completed.",
+    "mood": "eerie, tense, spooky",
+    "pack": "floor_plan",
+    "sub": [],
+    "safety": "arcade",
+    "headline": "Crypt escape needs the silver key to unseal the coffin before the timer runs out",
+    "nouns": [
+      {
+        "noun": "crypt",
+        "hyper": "underground chamber"
+      },
+      {
+        "noun": "coffin",
+        "hyper": "container"
+      },
+      {
+        "noun": "silver key",
+        "hyper": "key and token"
+      },
+      {
+        "noun": "vampire",
+        "hyper": "creature enemy"
+      },
+      {
+        "noun": "candlelight",
+        "hyper": "lighting effect"
+      }
+    ],
+    "moodVec": {
+      "valence": -0.7,
+      "arousal": 0.55,
+      "tension": 0.85
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "9b589b08269366e084ce59cae2742066d81ff8947266db0d9634ee503ced524a",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_crypt_escape",
+      "text": "Crypt escape needs the silver key to unseal the coffin before the timer runs out",
+      "status": "not_checkable",
+      "method": "kinematic reachability (jump apex model)"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 8 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_coffin_open_win (coffin_door becomes open: use coffin_door)",
+        "src": ""
+      },
+      {
+        "id": "T1:x_crypt_escape",
+        "tier": "T1",
+        "subject": {
+          "kind": "property",
+          "id": "x_crypt_escape"
+        },
+        "method": "kinematic reachability (jump apex model)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "Crypt escape needs the silver key to unseal the coffin before the timer runs out",
+        "cx": null
+      },
+      {
+        "id": "T2:r_coffin_open_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_coffin_open_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_coffin_open_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_exit_after_open",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_exit_after_open"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_exit_after_open fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_plate_hidden",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_plate_hidden"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_plate_hidden fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_center",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_center"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_secret_center fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_e",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_e"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_corner_e fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_nw",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_nw"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_corner_nw fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_timer_lose",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_timer_lose"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_timer_lose fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_vampire_appear",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_vampire_appear"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "counterexample",
+        "text": "r_vampire_appear fires exactly once",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "firings",
+          "text": "never fired when forced"
+        }
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners vs 1 bot",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it vs 1 bot (AI par 7.2 s)",
+        "cx": null,
+        "src": "",
+        "ms": 127
+      }
+    ],
+    "par": {
+      "goldS": 7.2,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 156
+  }
+}

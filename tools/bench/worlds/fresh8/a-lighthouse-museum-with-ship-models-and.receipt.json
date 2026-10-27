@@ -1,0 +1,90 @@
+{
+  "prompt": "A lighthouse museum with ship models and a spiral staircase",
+  "intent": {
+    "lang": "en",
+    "mode": "wander",
+    "genre": "museum",
+    "setting": "A historic lighthouse building displaying a collection of ship models, with a spiral staircase as the main vertical circulation element.",
+    "role": "visitor",
+    "goal": "Explore the lighthouse museum, examine the ship models, and ascend the spiral staircase.",
+    "fail": "none",
+    "mood": "Historic, quiet, educational",
+    "pack": "floor_plan",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Spiral staircase connects museum levels",
+    "nouns": [
+      {
+        "noun": "model",
+        "hyper": "ship_model"
+      },
+      {
+        "noun": "staircase",
+        "hyper": "spiral_staircase"
+      },
+      {
+        "noun": "lighthouse",
+        "hyper": "lighthouse_building"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.34,
+      "arousal": 0.2,
+      "tension": 0.1
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "57cc59ba7784ab91cf23a1d6ed4a9d39dd194a33d9f9b5625fa83eb6c9641402",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_stair",
+      "text": "Spiral staircase connects museum levels",
+      "status": "not_checkable",
+      "method": "none"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 0 rules reference existing things",
+        "src": ""
+      },
+      {
+        "id": "T3:tour",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "tour"
+        },
+        "status": "counterexample",
+        "method": "physics, an AI visitor walks to and uses each",
+        "n": 4,
+        "k": 1,
+        "text": "walked to and inspected 1 of 4 things",
+        "cx": {
+          "where": null,
+          "have": 1,
+          "need": 4,
+          "unit": "things",
+          "text": "couldn't reach model_clipper, model_galleon, staircase"
+        },
+        "src": "",
+        "ms": 297
+      }
+    ],
+    "par": null,
+    "ms": 310
+  }
+}

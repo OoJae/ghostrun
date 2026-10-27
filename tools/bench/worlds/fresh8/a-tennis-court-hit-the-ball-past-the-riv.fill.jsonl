@@ -1,0 +1,23 @@
+{"op":"meta","mode":"play","lang":"en","pack":"arena","sub":[],"seed":8,"look":"standard outdoor tennis court","mood":[0.4,0.7,0.5],"timeOfDay":14,"weather":"clear"}
+{"op":"zone","id":"z_court","slot":"midfield","tag":"court","name":"Tennis court"}
+{"op":"zone","id":"z_west_base","slot":"west_half","tag":"base","name":"West side"}
+{"op":"zone","id":"z_east_base","slot":"east_half","tag":"base","name":"East side"}
+{"op":"zone","id":"z_north_stand","slot":"north_deck","tag":"stand","name":"North spectator stand"}
+{"op":"zone","id":"z_south_stand","slot":"south_deck","tag":"stand","name":"South spectator stand"}
+{"op":"spawn","id":"sp_red","zone":"z_west_base","anchor":"spawn_pad","team":"red"}
+{"op":"spawn","id":"sp_blue","zone":"z_east_base","anchor":"spawn_pad","team":"blue"}
+{"op":"goal","id":"goal_point","zone":"z_east_base","anchor":"goal_ring","noun":"point","hyper":"goal","team":""}
+{"op":"ent","id":"tennis_ball","kind":"pickup","noun":"tennis ball","hyper":"sports object","zone":"z_court","anchor":"center","body":"dynamic","shape":"sphere","size":[0.07,0.07,0.07]}
+{"op":"ent","id":"net_obstacle","kind":"prop","noun":"net","hyper":"obstacle","zone":"z_court","anchor":"center_n","body":"fixed","shape":"box","size":[10,0.1,0.5]}
+{"op":"ent","id":"rival_npc","kind":"npc","noun":"rival player","hyper":"entity","zone":"z_east_base","anchor":"spawn_pad","team":"blue","body":"kinematic","shape":"capsule"}
+{"op":"verb","id":"vb_carry_ball","verb":"physics_props.carry","on":"tennis_ball","params":{}}
+{"op":"verb","id":"vb_throw_ball","verb":"combat_sport.throw","on":"tennis_ball","params":{"range":15,"at":"rival_npc"}}
+{"op":"verb","id":"vb_inspect_net","verb":"social.inspect","on":"net_obstacle","params":{"text":"The net splits the court, must clear it each rally."}}
+{"op":"verb","id":"vb_rival_catch","verb":"combat_sport.catch","on":"rival_npc","params":{}}
+{"op":"rule","id":"r_point","when":{"t":"enter","a":"tennis_ball","b":"goal_point"},"if":[],"then":[{"e":"score","target":"team:red","n":1}],"once":false}
+{"op":"rule","id":"r_win","when":{"t":"score_gte","a":"team:red","n":3},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose","when":{"t":"pickup","a":"tennis_ball","b":"rival_npc"},"if":[{"l":"team:red.score","op":"lt","r":3}],"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"expect","id":"x_rally","prop":"win_reachable","a":"sp_red","b":"goal_point","headline":true,"text":"Net divides the court and three successful point wins end the rally"}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.2,"speed":5}}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

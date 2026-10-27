@@ -5,6 +5,7 @@ import { stream } from "@ghostrun/detmath";
 import { clampLaws, type Expect, type Laws, type Vec3, type WorldBundle } from "@ghostrun/ir";
 import { buildNav, lowHazards, type NavWorld } from "@ghostrun/nav";
 import { castBrain } from "@ghostrun/bots";
+import { verb } from "@ghostrun/kits";
 import { BTN, SimWorld, type Rapier } from "@ghostrun/sim";
 import { carryables, type PlanStep, type Want, type WinChain } from "./t0";
 import { apex, gap, hopOk, hopRoute, reachAt, surfaceUnder as surfaceAt, surfaces, type Surface } from "./t1";
@@ -589,7 +590,9 @@ function clearDoors(r: Run, target: Vec3) {
     for (const d of r.b.entities) {
       if (d.kind !== "door" || r.opened.has(d.id)) continue;
       const e = r.sim.entity(d.id);
-      if (!e || e.destroyed || e.state === "open" || !crosses(path[i - 1]!, path[i]!, d.pos, d.size)) continue;
+      // open is a door you can walk through, whatever its state is called ("occupied")
+      const passable = e?.state === "open" || (e?.col ? !e.col.isEnabled() : false);
+      if (!e || e.destroyed || passable || !crosses(path[i - 1]!, path[i]!, d.pos, d.size)) continue;
       r.opened.add(d.id);
       trace?.(`door ${d.id} blocks the way: opening it`);
       for (const st of r.openers.get(d.id) ?? []) if (perform(r, st) !== "ok") return;
@@ -608,9 +611,12 @@ const spotBy = (r: Run, id: string): Vec3 => {
   const floor = e.pos[1] - e.size[1] / 2;
   if (!solid) {
     const near = r.nav.nearest([e.pos[0], floor, e.pos[2]]);
+    // something you use (a pad you mustn't step on) only needs you within its reach
+    const use = Math.max(0, ...r.b.verbs.filter((v) => v.on === id).map((v) => verb(v.verb)?.use?.radius ?? 0));
+    const reach = use ? use + Math.max(e.size[0], e.size[2]) / 2 - 0.3 : 1;
     // ground too narrow for the navmesh (a beam), or the walkable ground found is the floor below a
     // deck it lies on: stand on the thing's own spot and get there by climbing or hops
-    return near && d2h(near, e.pos) <= 1 && near[1] > floor - 1.2 ? near : [e.pos[0], floor, e.pos[2]];
+    return near && d2h(near, e.pos) <= Math.max(1, reach * reach) && near[1] > floor - 1.2 ? near : [e.pos[0], floor, e.pos[2]];
   }
   const p = r.sim.pos("player");
   const feet: Vec3 = [p[0], p[1] - 0.9, p[2]];
@@ -634,6 +640,9 @@ function perform(r: Run, st: PlanStep): "ok" | "lost" | "stuck" {
   switch (st.do) {
     case "pickup": {
       if (!sim.entity(st.item)) return "stuck"; // nothing by that name in the world
+      // already used up (a part that went into its slot, a key a lock kept): the step it was for
+      // has happened; the next step checks its own goal
+      if (sim.entity(st.item)!.destroyed) return "ok";
       const has = () => sim.entity(st.item)?.carrier === "player";
       // it may be in someone else's hands: chase the carrier (a tag knocks it loose)
       const where = () => {
@@ -707,7 +716,12 @@ function perform(r: Run, st: PlanStep): "ok" | "lost" | "stuck" {
     }
     case "use": {
       const fired = counter(sim, st.rule);
-      const done = () => (st.want ? met(st.want) : st.rule ? fired() > 0 : sim.entity(st.at)?.state === "open");
+      // a step the plan repeats (two conditions both needed the head in its slot) is done when what
+      // its rule does already holds, or its once-only rule already fired
+      const rule = st.rule ? b.rules.find((x) => x.id === st.rule) : undefined;
+      const sets = rule?.then.filter((e) => e.e === "set_state") ?? [];
+      const already = () => Boolean(rule && ((rule.once && (sim.fires.get(rule.id) ?? 0) > 0) || (sets.length && sets.every((e) => sim.entity(e.target)?.state === String(e.v)))));
+      const done = () => (st.want ? met(st.want) : st.rule ? fired() > 0 || already() : sim.entity(st.at)?.state === "open");
       const someone = b.entities.find((e) => e.id === st.at)?.kind === "npc";
       for (let attempt = 0; attempt < (someone ? 8 : 3) && live(r) && !done(); attempt++) {
         // someone to catch moves: chase them where they are, not to where they started

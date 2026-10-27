@@ -1,0 +1,40 @@
+{"op":"meta","mode":"play","lang":"en","pack":"course","sub":[],"seed":11,"look":"linear obstacle course","mood":[0.8,0.4,0.5],"timeOfDay":12,"weather":"clear"}
+{"op":"zone","id":"z_start","slot":"start","tag":"start","name":"Start platform"}
+{"op":"zone","id":"z_seg_1","slot":"seg_1","tag":"ledge","name":"First ledge"}
+{"op":"zone","id":"z_seg_2","slot":"seg_2","tag":"steps","name":"Stepping stones"}
+{"op":"zone","id":"z_seg_3","slot":"seg_3","tag":"beam","name":"Balancing beam"}
+{"op":"zone","id":"z_seg_4","slot":"seg_4","tag":"steps","name":"Second steps"}
+{"op":"zone","id":"z_seg_5","slot":"seg_5","tag":"pit","name":"Pit segment"}
+{"op":"zone","id":"z_seg_6","slot":"seg_6","tag":"gaps","name":"Gapped stretch"}
+{"op":"zone","id":"z_finish","slot":"finish","tag":"finish","name":"Final bucket area"}
+{"op":"spawn","id":"sp_red","zone":"z_start","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"bucket_goal","zone":"z_finish","anchor":"goal","noun":"bucket","hyper":"bucket","team":"red"}
+{"op":"ent","id":"domino_1","kind":"pickup","noun":"domino","hyper":"domino","zone":"z_start","anchor":"pickup_1","body":"dynamic","shape":"box","size":[0.1,0.02,0.05]}
+{"op":"ent","id":"domino_2","kind":"pickup","noun":"domino","hyper":"domino","zone":"z_seg_1","anchor":"pickup_2","body":"dynamic","shape":"box","size":[0.1,0.02,0.05]}
+{"op":"ent","id":"domino_3","kind":"pickup","noun":"domino","hyper":"domino","zone":"z_seg_2","anchor":"pickup_3","body":"dynamic","shape":"box","size":[0.1,0.02,0.05]}
+{"op":"ent","id":"domino_4","kind":"pickup","noun":"domino","hyper":"domino","zone":"z_seg_3","anchor":"pickup_4","body":"dynamic","shape":"box","size":[0.1,0.02,0.05]}
+{"op":"ent","id":"domino_5","kind":"pickup","noun":"domino","hyper":"domino","zone":"z_seg_4","anchor":"pickup_5","body":"dynamic","shape":"box","size":[0.1,0.02,0.05]}
+{"op":"ent","id":"domino_6","kind":"pickup","noun":"domino","hyper":"domino","zone":"z_seg_5","anchor":"pickup_6","body":"dynamic","shape":"box","size":[0.1,0.02,0.05]}
+{"op":"ent","id":"domino_7","kind":"pickup","noun":"domino","hyper":"domino","zone":"z_seg_6","anchor":"pickup_7","body":"dynamic","shape":"box","size":[0.1,0.02,0.05]}
+{"op":"verb","id":"vb_carry_1","verb":"physics_props.carry","on":"domino_1","params":{}}
+{"op":"verb","id":"vb_carry_2","verb":"physics_props.carry","on":"domino_2","params":{}}
+{"op":"verb","id":"vb_carry_3","verb":"physics_props.carry","on":"domino_3","params":{}}
+{"op":"verb","id":"vb_carry_4","verb":"physics_props.carry","on":"domino_4","params":{}}
+{"op":"verb","id":"vb_carry_5","verb":"physics_props.carry","on":"domino_5","params":{}}
+{"op":"verb","id":"vb_carry_6","verb":"physics_props.carry","on":"domino_6","params":{}}
+{"op":"verb","id":"vb_carry_7","verb":"physics_props.carry","on":"domino_7","params":{}}
+{"op":"verb","id":"vb_push_start","verb":"puzzle.switch","on":"domino_1","params":{"once":false}}
+{"op":"verb","id":"vb_jump","verb":"locomotion.jump","on":"player","params":{"jumpsMax":2}}
+{"op":"rule","id":"r_chain_1","when":{"t":"pickup","a":"domino_1","b":"player"},"then":[{"e":"set_state","target":"domino_1","v":"carried"}]}
+{"op":"rule","id":"r_chain_2","when":{"t":"pickup","a":"domino_2","b":"player"},"then":[{"e":"set_state","target":"domino_2","v":"carried"}]}
+{"op":"rule","id":"r_chain_3","when":{"t":"pickup","a":"domino_3","b":"player"},"then":[{"e":"set_state","target":"domino_3","v":"carried"}]}
+{"op":"rule","id":"r_chain_4","when":{"t":"pickup","a":"domino_4","b":"player"},"then":[{"e":"set_state","target":"domino_4","v":"carried"}]}
+{"op":"rule","id":"r_chain_5","when":{"t":"pickup","a":"domino_5","b":"player"},"then":[{"e":"set_state","target":"domino_5","v":"carried"}]}
+{"op":"rule","id":"r_chain_6","when":{"t":"pickup","a":"domino_6","b":"player"},"then":[{"e":"set_state","target":"domino_6","v":"carried"}]}
+{"op":"rule","id":"r_chain_7","when":{"t":"pickup","a":"domino_7","b":"player"},"then":[{"e":"set_state","target":"domino_7","v":"carried"}]}
+{"op":"rule","id":"r_win","when":{"t":"enter","a":"domino_7","b":"bucket_goal"},"if":[{"l":"domino_7.carrier.team","op":"eq","r":"red"}],"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose","when":{"t":"state_is","a":"domino_7","s":"down"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"expect","id":"exp_domino","prop":"win_reachable","a":"sp_red","b":"bucket_goal","headline":true,"text":"domino chain must stay aligned all the way to the bucket"}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":6}}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

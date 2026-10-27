@@ -1,0 +1,26 @@
+{"op":"meta","mode":"play","lang":"en","pack":"outdoor","sub":[],"seed":14,"look":"grassland trial","mood":[0.4,0.45,0.35],"timeOfDay":10,"weather":"clear"}
+{"op":"zone","id":"z_start","slot":"entrance","tag":"entrance","name":"Start pen"}
+{"op":"zone","id":"z_paddock","slot":"clearing","tag":"clearing","name":"Working paddock"}
+{"op":"zone","id":"z_gate","slot":"clearing_w","tag":"gate_enclosure","name":"Gate enclosure"}
+{"op":"spawn","id":"sp_dog","zone":"z_start","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"gate_goal","zone":"z_gate","anchor":"goal","noun":"target gate","hyper":"gate","team":"red"}
+{"op":"ent","id":"sheep_1","kind":"npc","noun":"sheep","hyper":"sheep","zone":"z_paddock","anchor":"center_n","body":"dynamic","shape":"capsule","size":[0.5,0.8,0.5]}
+{"op":"ent","id":"sheep_2","kind":"npc","noun":"sheep","hyper":"sheep","zone":"z_paddock","anchor":"center_s","body":"dynamic","shape":"capsule","size":[0.5,0.8,0.5]}
+{"op":"ent","id":"sheep_3","kind":"npc","noun":"sheep","hyper":"sheep","zone":"z_paddock","anchor":"center_e","body":"dynamic","shape":"capsule","size":[0.5,0.8,0.5]}
+{"op":"ent","id":"gate_door","kind":"door","noun":"gate door","hyper":"gate","zone":"z_gate","anchor":"gate","body":"fixed","shape":"box","size":[2,1,0.2]}
+{"op":"verb","id":"vb_lock_gate","verb":"puzzle.lock","on":"gate_door","params":{"key":"dog_whistle","keep":true}}
+{"op":"verb","id":"vb_timer","verb":"puzzle.timer","on":"player","params":{"seconds":60}}
+{"op":"verb","id":"vb_jump","verb":"locomotion.jump","on":"player","params":{"jumpsMax":2}}
+{"op":"verb","id":"vb_inspect_gate","verb":"social.inspect","on":"gate_door","params":{"text":"Open the gate to channel the flock."}}
+{"op":"rule","id":"r_win","when":{"t":"enter","a":"sheep_1","b":"gate_goal"},"then":[{"e":"set_state","target":"sheep_1","v":"in_gate"}],"once":false}
+{"op":"rule","id":"r_win2","when":{"t":"enter","a":"sheep_2","b":"gate_goal"},"then":[{"e":"set_state","target":"sheep_2","v":"in_gate"}],"once":false}
+{"op":"rule","id":"r_win3","when":{"t":"enter","a":"sheep_3","b":"gate_goal"},"then":[{"e":"set_state","target":"sheep_3","v":"in_gate"}],"once":false}
+{"op":"rule","id":"r_all_in","when":{"t":"state_is","a":"sheep_1","s":"in_gate"},"if":[{"l":"sheep_2.state","op":"eq","r":"in_gate"},{"l":"sheep_3.state","op":"eq","r":"in_gate"}],"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_timer_end","when":{"t":"timer_end","a":"player"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"expect","id":"x_flock","prop":"win_reachable","a":"sp_dog","b":"gate_goal","headline":true,"text":"Flock must be steered through the gate without straying"}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":6}}
+{"op":"end","layer":"gameplay"}
+{"op":"dress","id":"d_sheep_texture","target":"sheep_1","prop":"texture","value":"sheep_fur"}
+{"op":"dress","id":"d_gate_texture","target":"gate_door","prop":"texture","value":"wooden_gate"}
+{"op":"poster","id":"p_info","text":"Guide the flock efficiently. Use the dog to herd sheep into the gate before time runs out."}
+{"op":"end","layer":"cosmetic"}

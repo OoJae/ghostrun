@@ -1,0 +1,31 @@
+{"op":"meta","mode":"play","lang":"en","pack":"outdoor","sub":[],"seed":29,"look":"forest clearing","mood":[0.6,0.5,0.4],"timeOfDay":12,"weather":"clear"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"outside","name":"Forest entrance"}
+{"op":"zone","id":"z_clearing","slot":"clearing","tag":"outside","name":"Central clearing"}
+{"op":"zone","id":"z_pond","slot":"pond","tag":"outside","name":"Misty pond"}
+{"op":"zone","id":"z_grove","slot":"grove","tag":"outside","name":"Ancient grove"}
+{"op":"zone","id":"z_camp","slot":"camp","tag":"outside","name":"Hidden camp"}
+{"op":"spawn","id":"sp_red","zone":"z_entrance","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"chest_goal","zone":"z_camp","anchor":"goal","noun":"treasure chest","hyper":"chest","team":"red"}
+{"op":"ent","id":"map_item","kind":"pickup","noun":"treasure map","hyper":"guiding_item","zone":"z_entrance","anchor":"sign","body":"dynamic","shape":"box","size":[0.3,0.2,0.01]}
+{"op":"ent","id":"clue1_sw","kind":"switch","noun":"clue marker 1","hyper":"puzzle_marker","zone":"z_clearing","anchor":"center","body":"sensor","shape":"box","size":[0.5,0.5,0.2],"state":"off"}
+{"op":"ent","id":"clue2_sw","kind":"switch","noun":"clue marker 2","hyper":"puzzle_marker","zone":"z_pond","anchor":"dock","body":"sensor","shape":"box","size":[0.5,0.5,0.2],"state":"off"}
+{"op":"ent","id":"clue3_sw","kind":"switch","noun":"clue marker 3","hyper":"puzzle_marker","zone":"z_grove","anchor":"heart","body":"sensor","shape":"box","size":[0.5,0.5,0.2],"state":"off"}
+{"op":"ent","id":"coin1","kind":"pickup","noun":"gold coin","hyper":"coin","zone":"z_clearing","anchor":"center_n","body":"dynamic","shape":"sphere","size":[0.1,0.1,0.1]}
+{"op":"ent","id":"coin2","kind":"pickup","noun":"gold coin","hyper":"coin","zone":"z_pond","anchor":"shore","body":"dynamic","shape":"sphere","size":[0.1,0.1,0.1]}
+{"op":"ent","id":"spike_haz","kind":"hazard","noun":"spike trap","hyper":"spike","zone":"z_grove","anchor":"stump","body":"sensor","shape":"box","size":[1,0.2,0.5]}
+{"op":"verb","id":"vb_carry_map","verb":"physics_props.carry","on":"map_item","params":{}}
+{"op":"verb","id":"vb_switch1","verb":"puzzle.switch","on":"clue1_sw","params":{"once":false}}
+{"op":"verb","id":"vb_switch2","verb":"puzzle.switch","on":"clue2_sw","params":{"once":false}}
+{"op":"verb","id":"vb_switch3","verb":"puzzle.switch","on":"clue3_sw","params":{"once":false}}
+{"op":"verb","id":"vb_collect_coin1","verb":"puzzle.collect","on":"coin1","params":{}}
+{"op":"verb","id":"vb_collect_coin2","verb":"puzzle.collect","on":"coin2","params":{}}
+{"op":"verb","id":"vb_hazard_spike","verb":"motion_hazards.hazard","on":"spike_haz","params":{"respawn":true}}
+{"op":"rule","id":"r_clue1","when":{"t":"enter","a":"player","b":"clue1_sw"},"then":[{"e":"set_state","target":"clue1_sw","v":"on"}],"once":true}
+{"op":"rule","id":"r_clue2","when":{"t":"enter","a":"player","b":"clue2_sw"},"if":[{"l":"clue1_sw.state","op":"eq","r":"on"}],"then":[{"e":"set_state","target":"clue2_sw","v":"on"}],"once":true}
+{"op":"rule","id":"r_clue3","when":{"t":"enter","a":"player","b":"clue3_sw"},"if":[{"l":"clue2_sw.state","op":"eq","r":"on"}],"then":[{"e":"set_state","target":"clue3_sw","v":"on"}],"once":true}
+{"op":"rule","id":"r_chest_win","when":{"t":"enter","a":"player","b":"chest_goal"},"if":[{"l":"clue3_sw.state","op":"eq","r":"on"}],"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_fail_wrong_clue","when":{"t":"enter","a":"player","b":"clue2_sw"},"if":[{"l":"clue1_sw.state","op":"neq","r":"on"}],"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"expect","id":"exp_chest","prop":"win_reachable","a":"sp_red","b":"chest_goal","headline":true,"text":"Chest only reachable after visiting all three clue sites in order"}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":6}}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

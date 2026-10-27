@@ -1,0 +1,19 @@
+{"op":"meta","mode":"wander","lang":"en","pack":"outdoor","sub":["rooftop"],"seed":34,"look":"rooftop bar at sunset","mood":[0.8,0.2,0.1],"timeOfDay":19,"weather":"clear"}
+{"op":"zone","id":"z_rooftop","slot":"lookout","tag":"high_ground","name":"Rooftop Bar"}
+{"op":"spawn","id":"sp_red","zone":"z_rooftop","anchor":"ledge","team":"red"}
+{"op":"ent","id":"bar_counter","kind":"prop","noun":"bar counter","hyper":"outdoor_structure","zone":"z_rooftop","anchor":"mid","body":"fixed","shape":"box","size":[3,1,0.5]}
+{"op":"ent","id":"drink_cocktail","kind":"pickup","noun":"cocktail","hyper":"drink","zone":"z_rooftop","anchor":"mid","body":"dynamic","shape":"cylinder","size":[0.2,0.2,0.3]}
+{"op":"ent","id":"music_speaker","kind":"prop","noun":"music speaker","hyper":"speaker","zone":"z_rooftop","anchor":"top","body":"fixed","shape":"box","size":[1,0.5,0.5]}
+{"op":"ent","id":"view_sign","kind":"sign","noun":"view sign","hyper":"sign","zone":"z_rooftop","anchor":"ledge","body":"fixed","shape":"box","size":[1,0.2,0.2]}
+{"op":"ent","id":"plant_pot","kind":"prop","noun":"plant pot","hyper":"plant","zone":"z_rooftop","anchor":"mid","body":"fixed","shape":"box","size":[0.5,0.5,0.5]}
+{"op":"verb","id":"vb_inspect_counter","verb":"social.inspect","on":"bar_counter","params":{"text":" polished wooden bar overlooking the city"}}
+{"op":"verb","id":"vb_inspect_cocktail","verb":"social.inspect","on":"drink_cocktail","params":{"text":" vibrant red cocktail with a citrus twist"}}
+{"op":"verb","id":"vb_inspect_speaker","verb":"social.inspect","on":"music_speaker","params":{"text":" soft jazz playing from the speaker"}}
+{"op":"verb","id":"vb_inspect_sign","verb":"social.inspect","on":"view_sign","params":{"text":" \"Panoramic City View\""}}
+{"op":"verb","id":"vb_inspect_plant","verb":"social.inspect","on":"plant_pot","params":{"text":" a small potted succulent adding greenery"}}
+{"op":"npc","id":"guide_anna","role":"guide","zone":"z_rooftop","anchor":"mid","team":"","menu":["guide.tour"],"dflt":"guide.tour"}
+{"op":"expect","id":"x_bar","prop":"requires","a":"sp_red","b":"z_rooftop","headline":true,"text":"Rooftop bar scene requires a safe skybox or edge barrier to support viewing without fall damage"}
+{"op":"end","layer":"gameplay"}
+{"op":"dress","id":"d_skybox","type":"skybox","value":"sunset_city"}
+{"op":"poster","id":"p_bar","type":"banner","value":"Welcome to Skyline Lounge"}
+{"op":"end","layer":"cosmetic"}

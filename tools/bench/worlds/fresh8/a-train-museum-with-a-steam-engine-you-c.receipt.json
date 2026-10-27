@@ -1,0 +1,102 @@
+{
+  "prompt": "A train museum with a steam engine you can climb into",
+  "intent": {
+    "lang": "en",
+    "mode": "wander",
+    "genre": "museum",
+    "setting": "A historic train museum featuring a restored steam engine on display.",
+    "role": "visitor",
+    "goal": "Explore the museum and climb into the steam engine's cabin.",
+    "fail": "None (exploratory sandbox)",
+    "mood": "Nostalgic and curious",
+    "pack": "floor_plan",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Steam engine cabin is climb-able",
+    "nouns": [
+      {
+        "noun": "train museum",
+        "hyper": "museum"
+      },
+      {
+        "noun": "steam engine",
+        "hyper": "vehicle"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.6,
+      "arousal": 0.3,
+      "tension": -0.6
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "ba0ee3fbb24d8e27539551c783ea5e2fe61239a7864e21a8ca36c416a402e9bb",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_engine",
+      "text": "Steam engine cabin is climb-able",
+      "status": "counterexample",
+      "method": "kinematic reachability (jump apex model)"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 0 rules reference existing things",
+        "src": ""
+      },
+      {
+        "id": "T1:x_engine",
+        "tier": "T1",
+        "subject": {
+          "kind": "property",
+          "id": "x_engine"
+        },
+        "method": "kinematic reachability (jump apex model)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "counterexample",
+        "text": "Steam engine cabin is climb-able",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "route",
+          "text": "no route found"
+        }
+      },
+      {
+        "id": "T3:tour",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "tour"
+        },
+        "status": "played",
+        "method": "physics, an AI visitor walks to and uses each",
+        "n": 5,
+        "k": 5,
+        "text": "walked to and inspected 5 of 5 things",
+        "cx": null,
+        "src": "",
+        "ms": 62
+      }
+    ],
+    "par": null,
+    "ms": 80
+  }
+}

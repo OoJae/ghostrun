@@ -1,0 +1,28 @@
+{"op":"meta","mode":"play","lang":"en","pack":"floor_plan","sub":[],"seed":18,"look":"bomb room","mood":[-0.4,0.8,0.9],"timeOfDay":12,"weather":"none"}
+{"op":"zone","id":"z_yard","slot":"yard","tag":"outside","name":"Loading Dock"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Entry Hall"}
+{"op":"zone","id":"z_main","slot":"main_room","tag":"hall","name":"Bomb Room"}
+{"op":"spawn","id":"sp_red","zone":"z_yard","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"defuse_goal","zone":"z_main","anchor":"corner_sw","noun":"defused bomb","hyper":"goal","team":"red"}
+{"op":"ent","id":"door_main","kind":"door","noun":"steel door","hyper":"door","zone":"z_entrance","anchor":"doorway_s","body":"fixed","shape":"box","size":[1.5,2.5,0.2]}
+{"op":"ent","id":"timer_clock","kind":"goal","noun":"digital timer","hyper":"timer","zone":"z_main","anchor":"corner_ne","body":"sensor","shape":"box","size":[0.5,0.5,0.2]}
+{"op":"ent","id":"wire_a","kind":"switch","noun":"red wire","hyper":"wire","zone":"z_main","anchor":"corner_nw","body":"sensor","shape":"box","size":[0.1,0.1,0.1],"state":"on"}
+{"op":"ent","id":"wire_b","kind":"switch","noun":"blue wire","hyper":"wire","zone":"z_main","anchor":"corner_se","body":"sensor","shape":"box","size":[0.1,0.1,0.1],"state":"on"}
+{"op":"ent","id":"wire_c","kind":"switch","noun":"green wire","hyper":"wire","zone":"z_main","anchor":"center","body":"sensor","shape":"box","size":[0.1,0.1,0.1],"state":"on"}
+{"op":"ent","id":"plate_start","kind":"plate","noun":"start plate","hyper":"plate","zone":"z_entrance","anchor":"doorway_n","body":"sensor","shape":"box","size":[0.5,0.2,0.5]}
+{"op":"ent","id":"hazard_spikes","kind":"hazard","noun":"spike trap","hyper":"spikes","zone":"z_main","anchor":"wall_e","body":"sensor","shape":"box","size":[2,0.2,0.2]}
+{"op":"ent","id":"inspect_panel","kind":"prop","noun":"control panel","hyper":"panel","zone":"z_main","anchor":"wall_n","body":"fixed","shape":"box","size":[1,0.5,0.2]}
+{"op":"verb","id":"vb_jump","verb":"locomotion.jump","on":"player","params":{"jumpsMax":2}}
+{"op":"verb","id":"vb_cut_a","verb":"puzzle.switch","on":"wire_a","params":{"once":false}}
+{"op":"verb","id":"vb_cut_b","verb":"puzzle.switch","on":"wire_b","params":{"once":false}}
+{"op":"verb","id":"vb_cut_c","verb":"puzzle.switch","on":"wire_c","params":{"once":false}}
+{"op":"verb","id":"vb_start_timer","verb":"puzzle.timer","on":"player","params":{"seconds":45}}
+{"op":"verb","id":"vb_inspect","verb":"social.inspect","on":"inspect_panel","params":{"text":"The bomb requires cutting the red, then blue, then green wire."}}
+{"op":"verb","id":"vb_spike_hazard","verb":"motion_hazards.hazard","on":"hazard_spikes","params":{"respawn":true}}
+{"op":"rule","id":"r_start","when":{"t":"enter","a":"player","b":"plate_start"},"then":[{"e":"set_state","target":"timer_clock","v":"running"}],"once":true}
+{"op":"rule","id":"r_timer_end","when":{"t":"timer_end","a":"player"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_win","when":{"t":"enter","a":"player","b":"defuse_goal"},"if":[{"l":"wire_a.state","op":"eq","r":"off"},{"l":"wire_b.state","op":"eq","r":"off"},{"l":"wire_c.state","op":"eq","r":"off"}],"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"expect","id":"x_defuse","prop":"win_reachable","a":"sp_red","b":"defuse_goal","headline":true,"text":"Timer forces a fast search of three specific wires"}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":6}}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

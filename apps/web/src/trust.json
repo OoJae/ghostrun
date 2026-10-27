@@ -91,6 +91,17 @@
    "controlsP50": 10
   },
   {
+   "name": "fresh8",
+   "note": "Eighth unseen set (27 Oct, after triage of seven sets): 28 more prompts, as varied as we could think of",
+   "prompts": 28,
+   "play": 23,
+   "places": 5,
+   "firstPass": 19,
+   "now": 22,
+   "playableP50Ms": 3154,
+   "controlsP50": 10
+  },
+  {
    "name": "judges",
    "note": "Judge-style prompts (internal; written by us, never part of the external eval set)",
    "prompts": 12,

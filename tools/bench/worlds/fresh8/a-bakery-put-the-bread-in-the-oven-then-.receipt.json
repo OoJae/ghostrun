@@ -1,0 +1,252 @@
+{
+  "prompt": "A bakery: put the bread in the oven, then take it to the counter",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "simulation",
+    "setting": "A cozy industrial-style bakery with an oven station in the back and a serving counter in the front.",
+    "role": "Baker",
+    "goal": "Bake the bread in the oven and deliver the warm loaf to the service counter.",
+    "fail": "The bread burns or cools down if you take too long in the oven or during transport.",
+    "mood": "Cozy, domestic, methodical",
+    "pack": "floor_plan",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Player must navigate from the oven to the counter without dropping the hot loaf",
+    "nouns": [
+      {
+        "noun": "bakery",
+        "hyper": "food establishment"
+      },
+      {
+        "noun": "bread",
+        "hyper": "food item"
+      },
+      {
+        "noun": "oven",
+        "hyper": "appliance"
+      },
+      {
+        "noun": "counter",
+        "hyper": "furniture"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.9,
+      "arousal": 0.2,
+      "tension": 0.1
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "9374fb166b84e2e6f0f88430314f57ba56cfd35d8d5ee0ba072afca862bc7744",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_bread",
+      "text": "Player must navigate from the oven to the counter without dropping the hot loaf",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 9 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (bread into counter_goal, carried by red) ← pick up bread [after oven_switch on]",
+        "src": ""
+      },
+      {
+        "id": "T2:r_bake_start",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_bake_start"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 6,
+        "status": "verified",
+        "text": "r_bake_start fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_burn",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_burn"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_burn fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_e",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_e"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 6,
+        "status": "verified",
+        "text": "r_secret_corner_e fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_ne",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_ne"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_corner_ne fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_ne_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_ne_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_corner_ne_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_nw",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_nw"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_corner_nw fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_se",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_se"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_corner_se fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_w",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_w"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_corner_w fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it (AI par 10.3 s)",
+        "cx": null,
+        "src": "",
+        "ms": 133
+      }
+    ],
+    "par": {
+      "goldS": 10.3,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 177
+  }
+}

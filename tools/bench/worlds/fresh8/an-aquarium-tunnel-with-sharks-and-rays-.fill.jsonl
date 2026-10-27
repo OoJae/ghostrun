@@ -1,0 +1,22 @@
+{"op":"meta","mode":"wander","lang":"en","pack":"floor_plan","sub":[],"seed":32,"look":"aquarium tunnel","mood":[0.6,0.15,0.1],"timeOfDay":12,"weather":"clear"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Tunnel entrance"}
+{"op":"zone","id":"z_main","slot":"main_room","tag":"hall","name":"Curving glass tunnel"}
+{"op":"zone","id":"z_observe","slot":"room_sw","tag":"room","name":"Observation bay"}
+{"op":"zone","id":"z_alcove","slot":"room_se","tag":"room","name":"Tide-pool alcove"}
+{"op":"spawn","id":"sp_red","zone":"z_entrance","anchor":"center","team":"red"}
+{"op":"ent","id":"shark_1","kind":"prop","noun":"great white shark","hyper":"animal","zone":"z_main","anchor":"corner_ne","body":"fixed","shape":"box","size":[2,1,4]}
+{"op":"ent","id":"ray_1","kind":"prop","noun":"manta ray","hyper":"animal","zone":"z_main","anchor":"corner_nw","body":"fixed","shape":"box","size":[3,1,5]}
+{"op":"ent","id":"jelly_1","kind":"prop","noun":"jellyfish","hyper":"animal","zone":"z_main","anchor":"center","body":"fixed","shape":"sphere","size":[0.5,0.5,0.5]}
+{"op":"ent","id":"info_entrance","kind":"sign","noun":"welcome sign","hyper":"sign","zone":"z_entrance","anchor":"wall_n","body":"fixed","shape":"box","size":[1,0.2,0.5]}
+{"op":"ent","id":"info_observe","kind":"sign","noun":"observation bay sign","hyper":"sign","zone":"z_observe","anchor":"wall_s","body":"fixed","shape":"box","size":[1,0.2,0.5]}
+{"op":"ent","id":"info_alcove","kind":"sign","noun":"tide-pool alcove sign","hyper":"sign","zone":"z_alcove","anchor":"wall_w","body":"fixed","shape":"box","size":[1,0.2,0.5]}
+{"op":"verb","id":"vb_look_shark","verb":"social.inspect","on":"shark_1","params":{"text":"A sleek predator gliding silently above."}}
+{"op":"verb","id":"vb_look_ray","verb":"social.inspect","on":"ray_1","params":{"text":"A massive manta ray gliding gracefully."}}
+{"op":"verb","id":"vb_look_jelly","verb":"social.inspect","on":"jelly_1","params":{"text":"A translucent jellyfish drifting gently."}}
+{"op":"verb","id":"vb_look_entrance","verb":"social.inspect","on":"info_entrance","params":{"text":"Welcome to the underwater tunnel experience."}}
+{"op":"verb","id":"vb_look_observe","verb":"social.inspect","on":"info_observe","params":{"text":"Pause here to watch the marine life overhead."}}
+{"op":"verb","id":"vb_look_alcove","verb":"social.inspect","on":"info_alcove","params":{"text":"Explore the tide-pool with native sea creatures."}}
+{"op":"npc","id":"guide_1","role":"guide","zone":"z_entrance","anchor":"doorway_n","team":"","menu":["guide.intro"],"dflt":"guide.intro"}
+{"op":"expect","id":"x_sharks","prop":"headline","a":"sp_red","b":"z_main","headline":true,"text":"Tunnel must include sharks and rays overhead"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

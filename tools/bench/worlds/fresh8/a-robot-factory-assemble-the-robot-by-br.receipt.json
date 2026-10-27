@@ -1,0 +1,246 @@
+{
+  "prompt": "A robot factory: assemble the robot by bringing its head, body and legs to the workbench",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "puzzle / simulation",
+    "setting": "Indoor robot factory floor with a central assembly workbench surrounded by storage racks holding head, body, and leg modules",
+    "role": "Factory technician",
+    "goal": "Bring the robot's head, body, and legs from the racks to the workbench and place them in the correct order to complete the assembly",
+    "fail": "Assembling the robot in the wrong order, placing a part on the wrong mount, or failing to deliver all three core modules puts the unit together incorrectly and the shift ends in a defect.",
+    "mood": "Methodical, industrial, mildly tense",
+    "pack": "floor_plan",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Assembly sequence must follow head body legs on the workbench",
+    "nouns": [
+      {
+        "noun": "head",
+        "hyper": "robot part"
+      },
+      {
+        "noun": "body",
+        "hyper": "robot part"
+      },
+      {
+        "noun": "legs",
+        "hyper": "robot part"
+      },
+      {
+        "noun": "workbench",
+        "hyper": "industrial equipment"
+      },
+      {
+        "noun": "factory",
+        "hyper": "industrial space"
+      },
+      {
+        "noun": "technician",
+        "hyper": "worker"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.2,
+      "arousal": 0.3,
+      "tension": 0.4
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "5f3a7bb78239683d5b1f2b55d67b0bc7b7ecf02bd05f07a2088c1eca81c18062",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_assembly",
+      "text": "Assembly sequence must follow head body legs on the workbench",
+      "status": "counterexample",
+      "method": "static goal regression over rules + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 8 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (slot_legs becomes occupied) ← r_place_legs (slot_legs becomes open: use slot_legs) [after slot_body occupied] [after slot_body occupied, slot_head occupied]",
+        "src": ""
+      },
+      {
+        "id": "T2:r_place_body",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_place_body"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_place_body fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_place_head",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_place_head"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_place_head fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_place_legs",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_place_legs"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_place_legs fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_ne",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_ne"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_corner_ne fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_ne_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_ne_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_corner_ne_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_nw",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_nw"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_secret_corner_nw fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_nw_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_nw_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_secret_corner_nw_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_win: nothing in the world makes slot_legs 'occupied'",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "counterexample",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 0,
+        "text": "no AI runner could win",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "wins",
+          "text": "12 got stuck (in the Assembly workbench ×12)"
+        },
+        "src": "",
+        "ms": 793
+      }
+    ],
+    "par": null,
+    "ms": 832
+  }
+}

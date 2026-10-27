@@ -1,0 +1,174 @@
+{
+  "prompt": "Hide and seek: hide from the seeker until the time runs out",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "party/social",
+    "setting": "multi-level suburban neighborhood with interiors and rooftops",
+    "role": "seeker or hider",
+    "goal": "survive the timer without being spotted",
+    "fail": "detected by seeker before clock hits zero",
+    "mood": "tense, playful, anxious",
+    "pack": "city_block",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Dodge the seeker's line of sight until the timer expires.",
+    "nouns": [
+      {
+        "noun": "seeker",
+        "hyper": "entity"
+      },
+      {
+        "noun": "hider",
+        "hyper": "entity"
+      },
+      {
+        "noun": "timer",
+        "hyper": "object"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.2,
+      "arousal": 0.7,
+      "tension": 0.9
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "e6a6dd832730bf1bba38d427d0eb16074146ee18de816ab7179d9e4d541713ad",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_hide_seek",
+      "text": "Dodge the seeker's line of sight until the timer expires.",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 4 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (the timer runs out)",
+        "src": ""
+      },
+      {
+        "id": "T2:r_detect",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_detect"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 0,
+        "src": "ai",
+        "ms": 5,
+        "status": "counterexample",
+        "text": "r_detect fires exactly once",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "firings",
+          "text": "never fired when forced"
+        }
+      },
+      {
+        "id": "T2:r_plate_east",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_plate_east"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 6,
+        "status": "verified",
+        "text": "r_plate_east fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_plate_west",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_plate_west"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_plate_west fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it (AI par 120 s)",
+        "cx": null,
+        "src": "",
+        "ms": 798
+      }
+    ],
+    "par": {
+      "goldS": 120,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 937
+  }
+}

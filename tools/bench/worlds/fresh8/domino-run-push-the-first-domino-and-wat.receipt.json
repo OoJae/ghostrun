@@ -1,0 +1,292 @@
+{
+  "prompt": "Domino run: push the first domino and watch them all fall into the bucket",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "puzzle",
+    "setting": "a linear obstacle course on a flat track",
+    "role": "first domino",
+    "goal": "push the first domino to trigger a chain reaction that drops every piece into the bucket at the end",
+    "fail": "the chain breaks or any domino misses the bucket",
+    "mood": "anticipation and satisfaction",
+    "pack": "course",
+    "sub": [],
+    "safety": "ok",
+    "headline": "domino chain must stay aligned all the way to the bucket",
+    "nouns": [
+      {
+        "noun": "domino",
+        "hyper": "mechanics"
+      },
+      {
+        "noun": "bucket",
+        "hyper": "mechanics"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.8,
+      "arousal": 0.4,
+      "tension": 0.5
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "66eea9a88a5f077e658309381d0b8f1ade8420a6958cb9592793490c8d9d94ff",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "exp_domino",
+      "text": "domino chain must stay aligned all the way to the bucket",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 12 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (domino_7 into bucket_goal, carried by red) ← pick up domino_7",
+        "src": ""
+      },
+      {
+        "id": "T2:r_chain_1",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_chain_1"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_chain_1 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_chain_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_chain_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_chain_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_chain_3",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_chain_3"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_chain_3 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_chain_4",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_chain_4"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_chain_4 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_chain_5",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_chain_5"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_chain_5 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_chain_6",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_chain_6"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_chain_6 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_chain_7",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_chain_7"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_chain_7 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lose",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_lose: nothing in the world makes domino_7 'down'",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_cp_5",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_cp_5"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_secret_cp_5 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_host",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_host"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_secret_host fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_pickup_6",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_pickup_6"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_secret_pickup_6 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it (AI par 27 s)",
+        "cx": null,
+        "src": "",
+        "ms": 227
+      }
+    ],
+    "par": {
+      "goldS": 27,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 596
+  }
+}

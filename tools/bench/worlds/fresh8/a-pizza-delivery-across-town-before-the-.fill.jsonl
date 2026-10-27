@@ -1,0 +1,30 @@
+{"op":"meta","mode":"play","lang":"en","pack":"city_block","sub":[],"seed":12,"look":"city streets evening","mood":[0.2,0.6,0.5],"timeOfDay":19,"weather":"clear"}
+{"op":"zone","id":"z_center","slot":"center","tag":"plaza","name":"Central plaza"}
+{"op":"zone","id":"z_west","slot":"west_block","tag":"base","name":"West delivery hub"}
+{"op":"zone","id":"z_east","slot":"east_block","tag":"base","name":"East delivery zone"}
+{"op":"zone","id":"z_street_w","slot":"street_w","tag":"street","name":"West avenue"}
+{"op":"zone","id":"z_street_e","slot":"street_e","tag":"street","name":"East avenue"}
+{"op":"spawn","id":"sp_red","zone":"z_west","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"goal_ring","zone":"z_east","anchor":"goal_ring","noun":"delivery exit","hyper":"exit","team":"red"}
+{"op":"ent","id":"pizza_box","kind":"pickup","noun":"pizza box","hyper":"food","zone":"z_west","anchor":"plinth","body":"dynamic","shape":"box","size":[0.4,0.4,0.3]}
+{"op":"ent","id":"traffic_hazard","kind":"hazard","noun":"traffic spikes","hyper":"spikes","zone":"z_street_w","anchor":"floor_ne","body":"sensor","shape":"box","size":[2,0.2,2]}
+{"op":"ent","id":"gate_door","kind":"door","noun":"gate door","hyper":"door","zone":"z_street_e","anchor":"wall_n","body":"fixed","shape":"box"}
+{"op":"ent","id":"gate_switch","kind":"switch","noun":"gate switch","hyper":"switch","zone":"z_street_w","anchor":"floor_sw","body":"sensor","shape":"box"}
+{"op":"ent","id":"jump_pad","kind":"plate","noun":"jump pad","hyper":"pad","zone":"z_center","anchor":"floor_sw","body":"sensor","shape":"box"}
+{"op":"ent","id":"checkpoint","kind":"checkpoint","noun":"checkpoint","hyper":"checkpoint","zone":"z_center","anchor":"floor_ne","body":"sensor","shape":"box"}
+{"op":"ent","id":"timer_clock","kind":"prop","noun":"timer clock","hyper":"timer","zone":"z_center","anchor":"wall_n","body":"fixed","shape":"box","size":[0.3,0.5,0.2]}
+{"op":"verb","id":"vb_carry_pizza","verb":"physics_props.carry","on":"pizza_box","params":{}}
+{"op":"verb","id":"vb_hazard_traffic","verb":"motion_hazards.hazard","on":"traffic_hazard","params":{"respawn":true}}
+{"op":"verb","id":"vb_gate_lock","verb":"puzzle.lock","on":"gate_door","params":{"key":"pizza_box","keep":false}}
+{"op":"verb","id":"vb_gate_switch","verb":"puzzle.switch","on":"gate_switch","params":{"once":false}}
+{"op":"verb","id":"vb_jump_pad","verb":"locomotion.jump_pad","on":"jump_pad","params":{"height":5}}
+{"op":"verb","id":"vb_checkpoint","verb":"puzzle.checkpoint","on":"checkpoint","params":{}}
+{"op":"verb","id":"vb_timer","verb":"puzzle.timer","on":"player","params":{"seconds":120}}
+{"op":"verb","id":"vb_jump","verb":"locomotion.jump","on":"player","params":{"jumpsMax":2}}
+{"op":"rule","id":"r_win","when":{"t":"enter","a":"pizza_box","b":"goal_ring"},"if":[{"l":"pizza_box.carrier.team","op":"eq","r":"red"}],"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose_timer","when":{"t":"timer_end","a":"player"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_gate_open","when":{"t":"state_is","a":"gate_switch","s":"on"},"then":[{"e":"set_state","target":"gate_door","v":"open"}]}
+{"op":"expect","id":"x_delivery","prop":"win_reachable","a":"sp_red","b":"goal_ring","headline":true,"text":"Pizza must be delivered across town before the cold-timer expires"}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":6}}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

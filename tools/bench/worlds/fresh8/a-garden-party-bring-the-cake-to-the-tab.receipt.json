@@ -1,0 +1,236 @@
+{
+  "prompt": "A garden party: bring the cake to the table without bumping into the guests",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "casual puzzle game",
+    "setting": "A festive garden party with guests mingling",
+    "role": "A waiter or guest carrying a delicate cake",
+    "goal": "Bring the cake to the main table",
+    "fail": "Bumping into a guest or dropping the cake",
+    "mood": "Playful and festive",
+    "pack": "outdoor",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Navigating a populated garden requires avoiding guest collisions",
+    "nouns": [
+      {
+        "noun": "garden party",
+        "hyper": "outdoor event"
+      },
+      {
+        "noun": "cake",
+        "hyper": "object to transport"
+      },
+      {
+        "noun": "table",
+        "hyper": "destination"
+      },
+      {
+        "noun": "guests",
+        "hyper": "obstacles or NPCs"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.6,
+      "arousal": 0.4,
+      "tension": 0.5
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "9a91bc3e2e96ceda259a2237f10100ff0492c5255a229bcb3fd338979b3f461a",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_cake",
+      "text": "Navigating a populated garden requires avoiding guest collisions",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners vs 4 bots"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 8 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (cake into tbl_main, carried by red) ← pick up cake",
+        "src": ""
+      },
+      {
+        "id": "T2:r_lose_touch_guest",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_touch_guest"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_lose_touch_guest: nothing produces touch on guest_1",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lose_touch_guest2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_touch_guest2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_lose_touch_guest2: nothing produces touch on guest_2",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lose_touch_guest3",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_touch_guest3"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_lose_touch_guest3: nothing produces touch on guest_3",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lose_touch_guest4",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_touch_guest4"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_lose_touch_guest4: nothing produces touch on guest_4",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_stall_1",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_stall_1"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 13,
+        "status": "verified",
+        "text": "r_secret_stall_1 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_tent",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_tent"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 9,
+        "status": "verified",
+        "text": "r_secret_tent fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_water",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_water"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 7,
+        "status": "verified",
+        "text": "r_secret_water fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners vs 4 bots",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it vs 4 bots (AI par 4.4 s)",
+        "cx": null,
+        "src": "",
+        "ms": 138
+      }
+    ],
+    "par": {
+      "goldS": 4.4,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 445
+  }
+}

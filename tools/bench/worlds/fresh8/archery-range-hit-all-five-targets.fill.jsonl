@@ -1,0 +1,27 @@
+{"op":"meta","mode":"play","lang":"en","pack":"arena","sub":[],"seed":23,"look":"archery range","mood":[0.2,0.4,0.3],"timeOfDay":12,"weather":"clear"}
+{"op":"zone","id":"z_midfield","slot":"midfield","tag":"center","name":"Central shooting lane"}
+{"op":"zone","id":"z_west_half","slot":"west_half","tag":"base","name":"West shooting station"}
+{"op":"zone","id":"z_east_half","slot":"east_half","tag":"base","name":"East shooting station"}
+{"op":"zone","id":"z_north_deck","slot":"north_deck","tag":"platform","name":"North platform station"}
+{"op":"zone","id":"z_south_deck","slot":"south_deck","tag":"platform","name":"South platform station"}
+{"op":"spawn","id":"sp_red","zone":"z_west_half","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"t_target1","zone":"z_west_half","anchor":"goal_ring","noun":"target 18m","hyper":"target","team":"","body":"sensor","shape":"box","size":[0.5,0.5,0.1]}
+{"op":"goal","id":"t_target2","zone":"z_west_half","anchor":"flank_n","noun":"target 30m","hyper":"target","team":"","body":"sensor","shape":"box","size":[0.5,0.5,0.1]}
+{"op":"goal","id":"t_target3","zone":"z_midfield","anchor":"center","noun":"target 50m","hyper":"target","team":"","body":"sensor","shape":"box","size":[0.5,0.5,0.1]}
+{"op":"goal","id":"t_target4","zone":"z_east_half","anchor":"goal_ring","noun":"target 30m","hyper":"target","team":"","body":"sensor","shape":"box","size":[0.5,0.5,0.1]}
+{"op":"goal","id":"t_target5","zone":"z_east_half","anchor":"flank_s","noun":"target 18m","hyper":"target","team":"","body":"sensor","shape":"box","size":[0.5,0.5,0.1]}
+{"op":"verb","id":"vb_shoot","verb":"puzzle.collect","on":"t_target1","params":{}}
+{"op":"verb","id":"vb_shoot2","verb":"puzzle.collect","on":"t_target2","params":{}}
+{"op":"verb","id":"vb_shoot3","verb":"puzzle.collect","on":"t_target3","params":{}}
+{"op":"verb","id":"vb_shoot4","verb":"puzzle.collect","on":"t_target4","params":{}}
+{"op":"verb","id":"vb_shoot5","verb":"puzzle.collect","on":"t_target5","params":{}}
+{"op":"rule","id":"r_hit1","when":{"t":"touch","a":"player","b":"t_target1"},"then":[{"e":"set_state","target":"t_target1","v":"hit"},{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_hit2","when":{"t":"touch","a":"player","b":"t_target2"},"then":[{"e":"set_state","target":"t_target2","v":"hit"},{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_hit3","when":{"t":"touch","a":"player","b":"t_target3"},"then":[{"e":"set_state","target":"t_target3","v":"hit"},{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_hit4","when":{"t":"touch","a":"player","b":"t_target4"},"then":[{"e":"set_state","target":"t_target4","v":"hit"},{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_hit5","when":{"t":"touch","a":"player","b":"t_target5"},"then":[{"e":"set_state","target":"t_target5","v":"hit"},{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_win","when":{"t":"score_gte","a":"team:red","n":5},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"expect","id":"x_range","prop":"win_reachable","a":"sp_red","b":"t_target5","headline":true,"text":"All five targets must be hit to win."}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":6}}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

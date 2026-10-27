@@ -1,0 +1,23 @@
+{"op":"meta","mode":"wander","lang":"en","pack":"floor_plan","sub":[],"seed":33,"look":"train museum","mood":[0.6,0.3,-0.6],"timeOfDay":10,"weather":"clear"}
+{"op":"zone","id":"z_yard","slot":"yard","tag":"outside","name":"Museum grounds"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Main entrance hall"}
+{"op":"zone","id":"z_exhibit_sw","slot":"room_sw","tag":"room","name":"South exhibit hall"}
+{"op":"zone","id":"z_engine_room","slot":"room_ne","tag":"room","name":"Steam engine display"}
+{"op":"zone","id":"z_hall","slot":"main_room","tag":"hall","name":"Central hall"}
+{"op":"spawn","id":"sp_red","zone":"z_yard","anchor":"spawn_pad","team":"red"}
+{"op":"ent","id":"info_board","kind":"sign","noun":"information board","hyper":"sign","zone":"z_entrance","anchor":"center","body":"fixed","shape":"box","size":[2,0.5,1]}
+{"op":"ent","id":"engine_cabin","kind":"prop","noun":"engine cabin","hyper":"vehicle","zone":"z_engine_room","anchor":"center","body":"fixed","shape":"box","size":[2,2,2]}
+{"op":"ent","id":"lever","kind":"switch","noun":"lever","hyper":"lever","zone":"z_exhibit_sw","anchor":"corner_sw","body":"fixed","shape":"box"}
+{"op":"ent","id":"old_ticket","kind":"pickup","noun":"old ticket","hyper":"ticket","zone":"z_exhibit_sw","anchor":"corner_se","body":"dynamic","shape":"box","size":[0.2,0.1,0.05]}
+{"op":"ent","id":"rail_spike","kind":"hazard","noun":"rail spikes","hyper":"spike","zone":"z_exhibit_sw","anchor":"wall_n","body":"sensor","shape":"box","size":[3,0.2,0.2]}
+{"op":"ent","tunnel_1","kind":"portal","noun":"tunnel","hyper":"portal","zone":"z_hall","anchor":"doorway_e","body":"fixed","shape":"box"}
+{"op":"verb","id":"vb_inspect_info","verb":"social.inspect","on":"info_board","params":{"text":"Welcome to the historic train museum."}}
+{"op":"verb","id":"vb_inspect_engine","verb":"social.inspect","on":"engine_cabin","params":{"text":"The steam engine's cabin is open for climbing."}}
+{"op":"verb","id":"vb_inspect_ticket","verb":"social.inspect","on":"old_ticket","params":{"text":"A faded ticket from 1923."}}
+{"op":"verb","id":"vb_inspect_spike","verb":"social.inspect","on":"rail_spike","params":{"text":"Sharp metal spikes line the rails."}}
+{"op":"verb","id":"vb_use_lever","verb":"puzzle.switch","on":"lever","params":{"once":false}}
+{"op":"npc","id":"guide_jane","role":"guide","zone":"z_entrance","anchor":"doorway_n","team":"","menu":["guide.tour"],"dflt":"guide.tour"}
+{"op":"npc","id":"curator_mike","role":"merchant","zone":"z_hall","anchor":"center","team":"","menu":["curator.info"],"dflt":"curator.info"}
+{"op":"expect","id":"x_engine","prop":"reachable","a":"sp_red","b":"z_engine_room","headline":true,"text":"Steam engine cabin is climb-able"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

@@ -1,0 +1,232 @@
+{
+  "prompt": "Low gravity moon base: bounce between the craters to reach the radio tower",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "Platformer",
+    "setting": "Low gravity moon surface with craters and a distant radio tower",
+    "role": "Astronaut",
+    "goal": "Use low gravity to bounce across the terrain and land on the radio tower platform",
+    "fail": "Falling into a deep crater or losing momentum before reaching the tower",
+    "mood": "Floating and scientific",
+    "pack": "course",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Trajectory must land the astronaut on the radio tower platform",
+    "nouns": [
+      {
+        "noun": "moon base",
+        "hyper": "location"
+      },
+      {
+        "noun": "craters",
+        "hyper": "environment feature"
+      },
+      {
+        "noun": "radio tower",
+        "hyper": "object"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.6,
+      "arousal": 0.5,
+      "tension": 0.3
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "162c476c1618cd106c1e631256718f9bb7eec9a65e51698fad259a2395a92fc2",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_trajectory",
+      "text": "Trajectory must land the astronaut on the radio tower platform",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 8 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (player enters tower_goal)",
+        "src": ""
+      },
+      {
+        "id": "T2:r_collect_cell",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_collect_cell"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_collect_cell fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_collect_cell2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_collect_cell2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_collect_cell2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_collect_cell3",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_collect_cell3"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_collect_cell3 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_collect_cell4",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_collect_cell4"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_collect_cell4 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lock_open",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lock_open"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_lock_open fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lose_hazard_1",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_hazard_1"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_lose_hazard_1 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lose_hazard_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_hazard_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_lose_hazard_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it (AI par 24.5 s)",
+        "cx": null,
+        "src": "",
+        "ms": 604
+      }
+    ],
+    "par": {
+      "goldS": 24.5,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 978
+  }
+}

@@ -1,0 +1,284 @@
+{
+  "prompt": "A sheepdog trial: guide the sheep through the gate",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "herding challenge",
+    "setting": "A grassy rural sheep trial course with a start pen, a central working paddock, and a gate enclosure.",
+    "role": "Sheepdog handler",
+    "goal": "Use the dog to herd a small flock of sheep into the target gate within one try.",
+    "fail": "The sheep escape the paddock, get stuck, or the timer runs out.",
+    "mood": "Focused and pastoral",
+    "pack": "outdoor",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Flock must be steered through the gate without straying",
+    "nouns": [
+      {
+        "noun": "gate",
+        "hyper": "gate"
+      },
+      {
+        "noun": "sheep",
+        "hyper": "sheep"
+      },
+      {
+        "noun": "dog",
+        "hyper": "dog"
+      },
+      {
+        "noun": "paddock",
+        "hyper": "paddock"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.4,
+      "arousal": 0.45,
+      "tension": 0.35
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "3dbbde421a7db32db5b2c0627152b2179e31575e97ac48c0f24146de3235027a",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_flock",
+      "text": "Flock must be steered through the gate without straying",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners vs 3 bots"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 11 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_all_in (sheep_1 becomes in_gate) ← r_win (sheep_1 knocked into gate_goal) [after sheep_2 in_gate, sheep_3 in_gate]",
+        "src": ""
+      },
+      {
+        "id": "T2:r_all_in",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_all_in"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_all_in: nothing in the world makes sheep_1 'in_gate'",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_center",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_center"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 6,
+        "status": "verified",
+        "text": "r_secret_center fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_center_w",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_center_w"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 6,
+        "status": "verified",
+        "text": "r_secret_center_w fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_n",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_n"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_secret_flank_n fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_s",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_s"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_flank_s fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_gate",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_gate"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_gate fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_sign",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_sign"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_sign fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_timer_end",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_timer_end"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_timer_end fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 6,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_win2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win3",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win3"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_win3 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners vs 3 bots",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it vs 3 bots (AI par 27.2 s)",
+        "cx": null,
+        "src": "",
+        "ms": 771
+      }
+    ],
+    "par": {
+      "goldS": 27.2,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 1083
+  }
+}

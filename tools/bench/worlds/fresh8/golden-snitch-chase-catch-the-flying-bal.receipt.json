@@ -1,0 +1,208 @@
+{
+  "prompt": "Golden snitch chase: catch the flying ball before the rival seeker does",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "Action / Race",
+    "setting": "A circular arena with elevated tiered stands on all sides and a flat midfield with scattered low barriers, evoking a stadium atmosphere.",
+    "role": "A seeker equipped with a catching glove",
+    "goal": "Catch the flying golden ball before the rival seeker does",
+    "fail": "The rival seeker catches the ball first",
+    "mood": "Urgent, high-energy, and focused",
+    "pack": "arena",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Chase requires maneuvering through arena cover to intercept the fast-moving ball",
+    "nouns": [
+      {
+        "noun": "snitch",
+        "hyper": "goal_object"
+      },
+      {
+        "noun": "seeker",
+        "hyper": "player"
+      },
+      {
+        "noun": "arena",
+        "hyper": "environment"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.5,
+      "arousal": 0.8,
+      "tension": 0.7
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "ce61f3d2b39b1a1e8c10732ba9dc9f8a97f9663a6f7bbc9c1e05641d88463bca",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_chase",
+      "text": "Chase requires maneuvering through arena cover to intercept the fast-moving ball",
+      "status": "counterexample",
+      "method": "static goal regression over rules"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 7 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "chain",
+          "text": "win unreachable in the rule graph"
+        },
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "counterexample",
+        "method": "static goal regression over rules",
+        "text": "no rule chain lets the player trigger the win",
+        "src": ""
+      },
+      {
+        "id": "T2:r_gate_open",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_gate_open"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 0,
+        "src": "ai",
+        "ms": 6,
+        "status": "counterexample",
+        "text": "r_gate_open fires exactly once",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "firings",
+          "text": "never fired when forced"
+        }
+      },
+      {
+        "id": "T2:r_gate_plate",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_gate_plate"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_gate_plate fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lose",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_lose: nothing in the world makes snitch_ball 'carried'",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_deck_e",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_deck_e"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_secret_deck_e fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_deck_e_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_deck_e_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_secret_deck_e_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_n",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_n"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_secret_flank_n fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_win: nothing in the world makes snitch_ball 'carried'",
+        "cx": null
+      }
+    ],
+    "par": null,
+    "ms": 131
+  }
+}

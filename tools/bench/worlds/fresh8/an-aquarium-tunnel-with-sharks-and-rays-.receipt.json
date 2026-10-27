@@ -1,0 +1,90 @@
+{
+  "prompt": "An aquarium tunnel with sharks and rays overhead",
+  "intent": {
+    "lang": "en",
+    "mode": "wander",
+    "genre": "simulation",
+    "setting": "An illuminated underwater aquarium tunnel; water is visible in a curving glass ceiling overhead with stylized sharks, manta rays and jellyfish drifting past.",
+    "role": "visitor",
+    "goal": "Stroll slowly through the tunnel, pausing at the wide observation bay and the tide-pool alcove on the right to watch the water show.",
+    "fail": "Falling into or touching the water in the glass ceiling",
+    "mood": "calm and wonder-filled",
+    "pack": "floor_plan",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Tunnel must include sharks and rays overhead",
+    "nouns": [
+      {
+        "noun": "aquarium tunnel",
+        "hyper": "underwater structure"
+      },
+      {
+        "noun": "sharks",
+        "hyper": "animals"
+      },
+      {
+        "noun": "rays",
+        "hyper": "animals"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.6,
+      "arousal": 0.15,
+      "tension": 0.1
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "83e3994a48ed9f058b0f68e77a59d9cd93977d27e606e88e474f4daa528b83e2",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_sharks",
+      "text": "Tunnel must include sharks and rays overhead",
+      "status": "not_checkable",
+      "method": "none"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 0 rules reference existing things",
+        "src": ""
+      },
+      {
+        "id": "T3:tour",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "tour"
+        },
+        "status": "counterexample",
+        "method": "physics, an AI visitor walks to and uses each",
+        "n": 6,
+        "k": 5,
+        "text": "walked to and inspected 5 of 6 things",
+        "cx": {
+          "where": null,
+          "have": 5,
+          "need": 6,
+          "unit": "things",
+          "text": "couldn't reach jelly_1"
+        },
+        "src": "",
+        "ms": 77
+      }
+    ],
+    "par": null,
+    "ms": 97
+  }
+}

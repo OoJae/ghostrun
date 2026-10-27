@@ -1,0 +1,240 @@
+{
+  "prompt": "A haunted hotel: find room 13 and get the key from the ghost",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "horror / puzzle",
+    "setting": "A decaying gothic hotel with dim hallways and eerie rooms",
+    "role": "Investigator",
+    "goal": "Find the entrance to room 13 and successfully retrieve the key from the resident ghost",
+    "fail": "Being chased to death or fleeing the hotel without the key",
+    "mood": "Ominous, mysterious, and atmospheric",
+    "pack": "floor_plan",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Player must navigate the hotel layout to find room 13 and interact with a ghost entity to retrieve the key",
+    "nouns": [
+      {
+        "noun": "hotel",
+        "hyper": "architectural_complex"
+      },
+      {
+        "noun": "room",
+        "hyper": "interior_space"
+      },
+      {
+        "noun": "key",
+        "hyper": "access_object"
+      },
+      {
+        "noun": "ghost",
+        "hyper": "entity"
+      },
+      {
+        "noun": "horror",
+        "hyper": "aesthetic"
+      }
+    ],
+    "moodVec": {
+      "valence": -0.6,
+      "arousal": 0.7,
+      "tension": 0.7
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "08ef27a79d633332c64301ae9b27e79a62e778777145974f3af4cc13a4596e56",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_ghost_key",
+      "text": "Player must navigate the hotel layout to find room 13 and interact with a ghost entity to retrieve the key",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners vs 1 bot"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 8 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (door13 becomes open: use door13)",
+        "src": ""
+      },
+      {
+        "id": "T2:r_lose_spike",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_spike"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_lose_spike fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_center",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_center"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_secret_center fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_ne",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_ne"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_secret_corner_ne fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_ne_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_ne_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_secret_corner_ne_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_nw",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_nw"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_secret_corner_nw fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_nw_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_nw_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_secret_corner_nw_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_se",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_se"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_secret_corner_se fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners vs 1 bot",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it vs 1 bot (AI par 8.2 s)",
+        "cx": null,
+        "src": "",
+        "ms": 174
+      }
+    ],
+    "par": {
+      "goldS": 8.2,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 204
+  }
+}
