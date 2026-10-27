@@ -21,7 +21,7 @@ const probe = (page: Page) => page.evaluate(() => ({ ...window.__GHOSTRUN__ }));
 
 test("CTF brief renders, walks and jumps on the WebGL2 path", async ({ page }) => {
   const errors = collectErrors(page);
-  await page.goto("/?gl=webgl2");
+  await page.goto("/?gl=webgl2&prewarm=0");
   await page.waitForFunction(() => window.__GHOSTRUN__?.ready === true, null, { timeout: 90_000 });
 
   const start = await probe(page);
@@ -70,7 +70,7 @@ test("CTF brief renders, walks and jumps on the WebGL2 path", async ({ page }) =
 // (the fallback if the physics wasm fails to load).
 for (const sim of ["rapier", "stub"] as const) test(`headline: the rooftop ledge needs a double jump (${sim} physics)`, async ({ page }) => {
   const errors = collectErrors(page);
-  await page.goto(`/?gl=webgl2&fx=0&dpr=0.5${sim === "stub" ? "&sim=stub" : ""}`); // low-res: keep software-GL frames short so key timing is tight
+  await page.goto(`/?gl=webgl2&fx=0&dpr=0.5&prewarm=0${sim === "stub" ? "&sim=stub" : ""}`); // low-res, no background prewarm: keep key timing tight
   await page.waitForFunction(() => window.__GHOSTRUN__?.ready === true, null, { timeout: 90_000 });
   const at = () => probe(page).then((p) => p.player!);
   const until = (fn: () => boolean, timeout = 15_000) => page.waitForFunction(fn, null, { polling: 16, timeout });
@@ -153,7 +153,7 @@ test.describe("phone controls", () => {
   test.use({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
   test("the touch stick walks and the Jump button jumps", async ({ page }) => {
     const errors = collectErrors(page);
-    await page.goto("/?gl=webgl2&fx=0&dpr=0.5&touch=1");
+    await page.goto("/?gl=webgl2&fx=0&dpr=0.5&touch=1&prewarm=0");
     await page.waitForFunction(() => window.__GHOSTRUN__?.ready === true, null, { timeout: 90_000 });
     await expect(page.getByTestId("touch")).toBeVisible();
     const p0 = (await probe(page)).player!;

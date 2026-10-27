@@ -164,6 +164,8 @@ export class Engine {
   async prewarm(bundles: WorldBundle[]): Promise<number> {
     const t0 = performance.now();
     for (const b of bundles) {
+      // one sample world per idle slot, so a player moving around never feels it
+      await new Promise<void>((resolve) => (typeof requestIdleCallback === "function" ? requestIdleCallback(() => resolve(), { timeout: 2000 }) : setTimeout(resolve, 50)));
       const view = buildWorldView(b, lookOf(b));
       const s = new Scene();
       s.fog = this.#scene.fog;
