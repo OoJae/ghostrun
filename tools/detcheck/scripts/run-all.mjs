@@ -14,7 +14,7 @@ const wasm = resolve(root, "dist/worker/rapier_wasm3d_bg.wasm");
 const results = [];
 
 // Node
-results.push(JSON.parse(execFileSync(process.execPath, [resolve(root, "dist/node/entry-node.js"), wasm, String(ticks)], { encoding: "utf8" })));
+results.push(JSON.parse(execFileSync(process.execPath, [resolve(root, "dist/node/entry-node.js"), resolve(root, "dist/worker"), String(ticks)], { encoding: "utf8" })));
 
 // workerd: the same runtime binary wrangler 4.152.0 deploys with, driven by a minimal capnp config.
 const workerdPort = 18787;
@@ -29,6 +29,8 @@ const det :Workerd.Worker = (
   modules = [
     (name = "entry-worker.js", esModule = embed "entry-worker.js"),
     (name = "rapier_wasm3d_bg.wasm", wasm = embed "rapier_wasm3d_bg.wasm"),
+    (name = "recast-navigation.wasm.wasm", wasm = embed "recast-navigation.wasm.wasm"),
+    (name = "emscripten-module.wasm", wasm = embed "emscripten-module.wasm"),
   ],
   compatibilityDate = "2026-10-19",
 );
@@ -77,10 +79,12 @@ const ref = results[0];
 let ok = true;
 for (const r of results) {
   const firstBad = r.checkpoints.findIndex((c, i) => c !== ref.checkpoints[i]);
-  const same = r.final === ref.final && firstBad === -1;
+  const navSame = r.navq.nav.hash === ref.navq.nav.hash && r.navq.nav.paths === ref.navq.nav.paths;
+  const qjsSame = r.navq.qjs.hash === ref.navq.qjs.hash;
+  const same = r.final === ref.final && firstBad === -1 && navSame && qjsSame;
   ok &&= same;
   console.log(
-    `${same ? "MATCH " : "DIFFER"}  ${r.final}  ${String(r.ms).padStart(6)} ms  ${r.runtime}` +
+    `${same ? "MATCH " : "DIFFER"}  phys ${r.final}  nav ${r.navq.nav.hash}/${r.navq.nav.paths} (${r.navq.nav.polys} polys, ${r.navq.nav.buildMs} ms)  qjs ${r.navq.qjs.hash} (int@${r.navq.qjs.interruptedAfter}, mem ${r.navq.qjs.memLimitHit ? "capped" : "UNCAPPED"})  ${String(r.ms).padStart(5)} ms  ${r.runtime}` +
       (same ? "" : `  (first divergent checkpoint: tick ${(firstBad + 1) * 100})`),
   );
 }

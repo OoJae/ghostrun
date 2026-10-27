@@ -27,6 +27,31 @@ Every checkpoint matched. Throughput for 241 bodies plus the controller is about
 **Notes and follow-ups.**
 - The engine imports `performance.now()`, apparently for internal timing counters only. Hashes stay identical on every runtime, so it does not affect results. `detcheck` keeps guarding this.
 - Workers can only instantiate pre-compiled wasm. The edge build imports the `.wasm` as a CompiledWasm module, and that is the same path production uses.
-- Still to come in S0: recast-navigation and QuickJS interrupts inside workerd; dependency scans for navcat, mathcat and Koota; the 6-fixture det-quick CI job.
+- **Done in S0b (same day):** the navmesh builder and the script sandbox, also loaded from pre-compiled wasm modules on all five runtimes. See below.
+- Still to come: dependency scans for Koota; the 6-fixture det-quick CI job.
+
+## S0b: navmesh + script sandbox on every runtime: **GO** (2026-10-27)
+
+**Fixture** (`src/fixture-navq.ts`):
+- **Navmesh:** a 60 × 60 m arena with walls, 40 random obstacles and a ramp to a raised platform. The navmesh is built with `@recast-navigation` 0.43.1 (cs 0.2, ch 0.2, agent radius 0.4 m), then 20 path queries run. Polygons and paths are hashed.
+- **Sandbox:** QuickJS (`quickjs-emscripten` 0.32.0, release-sync) runs three scripts:
+  - a bounded compute script;
+  - `while(true){}`, under an interrupt budget of 2,000 handler calls;
+  - an allocation bomb, under a 4 MB memory limit.
+
+| Runtime | Navmesh hash | Paths hash | Polys | Build | QuickJS hash | Loop stopped at |
+|---|---|---|---|---|---|---|
+| Node 26 | `c547419d` | `5373b878` | 716 | 30 ms | `d6a9e3f4` | 2,001 calls |
+| workerd | `c547419d` | `5373b878` | 716 | 37 ms | `d6a9e3f4` | 2,001 calls |
+| Chromium 156 | `c547419d` | `5373b878` | 716 | 29 ms | `d6a9e3f4` | 2,001 calls |
+| Firefox 157 | `c547419d` | `5373b878` | 716 | 41 ms | `d6a9e3f4` | 2,001 calls |
+| WebKit 27.2 | `c547419d` | `5373b878` | 716 | 34 ms | `d6a9e3f4` | 2,001 calls |
+
+The memory cap held everywhere.
+
+**Decisions.**
+- **Navigation:** use recast-navigation everywhere (builder and queries; DetourCrowd for groups once tested). It loads in workerd through Emscripten's `instantiateWasm` hook with the pre-compiled module, so **navcat and its trig patch are not needed**. Navcat stays the documented fallback.
+- **Script budget:** the QuickJS interrupt count is deterministic across engines, so an AI-written script's budget can be "N interrupt calls" rather than wall time. That keeps sandboxed behaviours replayable. The wall-clock watchdog is only a backstop.
+- **Licences to confirm:** Recast/Detour (Zlib) and the Emscripten runtime (NCSA) are permissive and attribution-only, but they are not on the MIT/Apache/BSD/ISC/CC0 list. They are awaiting the user's approval (`docs/strategy/OVERNIGHT.md`).
 
 Run it yourself: `pnpm --filter @ghostrun/detcheck quick` (2k ticks) or `full` (10k ticks).

@@ -10,7 +10,13 @@
   },
   "dependencies": {
     "@dimforge/rapier3d-deterministic": "catalog:",
-    "@ghostrun/detmath": "workspace:*"
+    "@ghostrun/detmath": "workspace:*",
+    "@jitl/quickjs-wasmfile-release-sync": "0.32.0",
+    "@recast-navigation/core": "0.43.1",
+    "@recast-navigation/generators": "0.43.1",
+    "@recast-navigation/wasm": "0.43.1",
+    "navcat": "catalog:",
+    "quickjs-emscripten-core": "0.32.0"
   },
   "devDependencies": {
     "@playwright/test": "catalog:",
