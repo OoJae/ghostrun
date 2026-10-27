@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { mergeFill } from "@ghostrun/ir";
-import { better, issuesOf, statusWord, type Chip, type Receipt } from "@ghostrun/proof";
-import { Engine, type LoadResult } from "./engine";
+import { better, issuesOf, statusWord, type Chip, type Receipt } from "@ghostrun/proof/light";
+// the engine stack (three, physics, navmesh, bots) is a second chunk, fetched as the shell paints
+import type { Engine, LoadResult } from "./engine";
 import { KeyHint } from "./hud/Corner";
 import { TouchControls } from "./hud/Touch";
 import { XRay } from "./hud/XRay";
@@ -15,8 +16,6 @@ import { Minds } from "./minds";
 import { propose, twistWorld } from "./director";
 import { BRIEF, buildWorld, ENGINE_HASH, FIXTURE_PROMPTS, FIXTURES, hashWorld, worldFromFill, type Intent, type World } from "./pipeline";
 import { probe } from "./probe";
-import { loadNav, loadRapier, WASM_URLS } from "./sim/boot";
-import { RapierSim } from "./sim/rapier";
 
 const HINT_MS = 6000;
 const FIXTURE = new URLSearchParams(window.location.search).get("fixture") ?? "ctf";
@@ -36,6 +35,7 @@ const SOURCE: Record<Mode, { label: string; title: string }> = {
 export function App() {
   const canvas = useRef<HTMLCanvasElement>(null);
   const engine = useRef<Engine | null>(null);
+  const wasmUrls = useRef<{ rapier: string; recast: string } | null>(null);
   const worker = useRef<Worker | null>(null);
   const runId = useRef(0);
   const [prompt, setPrompt] = useState(FIRST_PROMPT);
@@ -95,7 +95,7 @@ export function App() {
     const w = worker.current;
     return new Promise((resolve, reject) => {
       pending.current.set(id, { ...(onChip ? { onChip } : {}), resolve, reject });
-      w.postMessage({ id, bundle: world.bundle, engine: ENGINE_HASH, urls: WASM_URLS });
+      w.postMessage({ id, bundle: world.bundle, engine: ENGINE_HASH, urls: wasmUrls.current });
     });
   }, []);
 
@@ -230,12 +230,15 @@ export function App() {
     const dpr = num("dpr");
     const msaa = num("msaa");
     void liveAvailable().then((ok) => !disposed && setMode(ok && params.get("live") !== "0" ? "live" : "fixture"));
-    Engine.create(el, {
-      forceWebGL: params.get("gl") === "webgl2",
-      bloom: params.get("fx") !== "0",
-      ...(dpr !== undefined && { pixelRatio: Math.min(3, Math.max(0.5, dpr)) }),
-      ...(msaa !== undefined && { msaa: msaa > 0 ? 4 : 0 }),
-    })
+    import("./engine")
+      .then(({ Engine }) =>
+        Engine.create(el, {
+          forceWebGL: params.get("gl") === "webgl2",
+          bloom: params.get("fx") !== "0",
+          ...(dpr !== undefined && { pixelRatio: Math.min(3, Math.max(0.5, dpr)) }),
+          ...(msaa !== undefined && { msaa: msaa > 0 ? 4 : 0 }),
+        }),
+      )
       .then(async (e) => {
         if (disposed) {
           e.dispose();
@@ -247,6 +250,8 @@ export function App() {
         probe().sim = "stub";
         if (params.get("sim") !== "stub") {
           try {
+            const [{ loadRapier, loadNav, WASM_URLS }, { RapierSim }] = await Promise.all([import("./sim/boot"), import("./sim/rapier")]);
+            wasmUrls.current = WASM_URLS;
             const [R, bots] = await Promise.all([loadRapier(), loadNav()]);
             e.simFactory = (b) => new RapierSim(R, b, bots);
             probe().sim = "rapier";

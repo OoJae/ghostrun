@@ -1,6 +1,6 @@
-import type { Chip, Receipt } from "@ghostrun/proof";
+import type { Chip, Receipt } from "@ghostrun/proof/light";
 import { useState } from "react";
-import { chipLine, fraction, statusWord } from "@ghostrun/proof";
+import { chipLine, fraction, statusWord } from "@ghostrun/proof/light";
 
 export interface ProofState {
   status: "idle" | "proving" | "done" | "error";
