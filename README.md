@@ -20,7 +20,7 @@ Type any world, and GHOSTRUN turns it into a playable 3D level in the browser in
 6. **Repair loop.** If the receipt has counterexamples (a win that needs nothing, a rule that never fires, a false claim), the issues go back to the model with concrete hints, the patch is merged by id, re-proved on the device, and offered as "AI repaired it · re-proved · Apply" only if the new receipt is better.
 7. **Change it.** Type a change ("only one jump", "add three more coins", "make it night") and the same world comes back changed, in about a second, and re-proved with its numbers: "jump height 1.6 → 3.4 m · Headline: verified → counterexample · Rooftop lane needs double jump — reachable with 1 jump". Edits patch the world by stable ids and keep its geometry; they can never rewrite what the world promised, so a change that breaks a promise shows up instead of quietly erasing it. Undo is one click.
 8. **Why did I lose?** The result card tells the run's story from the simulation's causal log ("Rival 1 carried the glowing orb into the neon goal ring, 3 times"); every moment replays exactly. Ask the Host anything about the run: it answers from the run's facts only and cites them.
-9. **Share** a run: the link replays it bit-exactly on any device. **This is wrong** sends a note plus the run.
+9. **Share** a run: the link replays it bit-exactly on any device. **This is wrong** sends a note plus the run. **Try to fool it** plants a bug in a copy of the world (the goal 40 m up, the key gone, a condition nothing meets) and shows which check caught it.
 10. **Gallery** (press **G**): 47 worlds the live AI built from prompts during development, recorded unedited and re-proved on your device when opened: heists, sumo, bowling, a snowball fight, a lighthouse in a crosswind, a Czech ghost maze, a pirate ship, mini golf, places to explore.
 
 Phones get on-screen controls. Browsers with WebXR get **Enter VR** (first person; tested on an emulated Quest 3, not yet on a real headset).
@@ -35,11 +35,11 @@ Phones get on-screen controls. Browsers with WebXR get **Enter VR** (first perso
 | `packages/bots` | NPCs that play their typed menu options (attack, defend, intercept, follow, patrol) on navmesh paths |
 | `packages/packs/*` | Layout packs: city block, floor plan (with doorways), arena, maze, outdoor, obstacle course; each tested over 50 seeds |
 | `packages/layout` | The placer and its logged repairs (verbs implied by kinds, collections, door placement, footprints, win fallbacks…) |
-| `packages/proof` | The proof ladder T0–T3, the tour proof for places, issues for the repair loop |
+| `packages/proof` | The proof ladder T0–T3, the tour proof for places, issues for the repair loop, planted bugs for "Try to fool it" |
 | `packages/llm` | Prompts and a streaming client for the intent and fill models |
 | `apps/web` | three.js r186 (WebGPU with WebGL2 fallback) client: looks (neon, grove, gallery), HUD, receipt, X-ray, share, touch, VR |
 | `apps/edge-api` | Cloudflare Worker: governed `/v1/build`, `/v1/edit` and `/v1/repair` (spend caps per session, IP and pool; fails closed), Turnstile and judge-token gate, share store |
-| `apps/cli` | `ghostrun verify`, `build`, `bench`, `rebench [--repair]`, `edits` |
+| `apps/cli` | `ghostrun verify`, `build`, `bench`, `rebench [--repair]`, `edits`, `trust` (the eval table), `fool` (planted bugs), `diagnose` (one world taken apart), `gallery-add` |
 | `tools/detcheck` | Cross-runtime determinism check |
 
 ## Determinism
