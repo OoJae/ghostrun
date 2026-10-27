@@ -4,6 +4,7 @@
 import type { InputFrame } from "@ghostrun/sim";
 import { api } from "./api";
 import { ENGINE_HASH, hashWorld, worldFromFill, type World } from "./pipeline";
+import type { MindChoice } from "./sim/rapier";
 
 export interface ShareRecord {
   id: string;
@@ -12,17 +13,18 @@ export interface ShareRecord {
   seed: number;
   fill: string;
   inputs: InputFrame[];
+  minds: MindChoice[];
 }
 
 /** The last ten minutes of input at most, ticks strictly increasing (what the store accepts). */
 const clip = (inputs: readonly InputFrame[]) => inputs.slice(-36_000);
 
-export async function createShare(world: World, specHash: string, inputs: readonly InputFrame[]): Promise<string | null> {
+export async function createShare(world: World, specHash: string, inputs: readonly InputFrame[], minds: readonly MindChoice[] = []): Promise<string | null> {
   try {
     const r = await api("/v1/share", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ v: 1, engine: ENGINE_HASH, specHash, seed: world.seed, fill: world.fill, inputs: clip(inputs) }),
+      body: JSON.stringify({ v: 1, engine: ENGINE_HASH, specHash, seed: world.seed, fill: world.fill, inputs: clip(inputs), ...(minds.length ? { minds: minds.slice(-500) } : {}) }),
     });
     if (!r.ok) return null;
     const { id } = (await r.json()) as { id: string };

@@ -5,7 +5,7 @@
 // Every route but health sits behind the gate (gate.ts). A build reserves its worst-case cost with
 // the governor before any model call and commits the metered cost when it ends (governor.ts).
 import { DEFAULT_LAWS, gameplayLines } from "@ghostrun/ir";
-import { chatJson, fillMessages, IntentOut, intentJsonSchema, intentMessages, LlmError, repairMessages, streamChat } from "@ghostrun/llm";
+import { chatJson, fillMessages, IntentOut, intentJsonSchema, intentMessages, LlmError, mindJsonSchema, mindMessages, repairMessages, streamChat } from "@ghostrun/llm";
 import { ALL_SUBS, PACKS, packFor } from "@ghostrun/registry";
 import * as v from "valibot";
 // the vault heist teaches goal-dependent wins, doorway doors, keys and inspectable exhibits (an A/B
@@ -29,6 +29,8 @@ export interface Env extends GateEnv, GovernorEnv {
   RATE_PER_WINDOW?: string;
   /** Builds per judge token per isolate per 10 min while the governor is unreachable (default 10). */
   JUDGE_FALLBACK_PER_WINDOW?: string;
+  /** NPC mind calls per IP (or judge session) per isolate per 10 min (default 120). */
+  MINDS_PER_WINDOW?: string;
   /** How long a build waits for the governor's reservation answer (default 300 ms). */
   GOVERNOR_TIMEOUT_MS?: string;
   GOVERNOR?: DoNamespace;
@@ -43,6 +45,7 @@ export const PAUSE_FLAG = "builds:paused";
 const buildBuckets = new Buckets();
 const apiBuckets = new Buckets();
 const judgeBuckets = new Buckets();
+const mindBuckets = new Buckets();
 let devGovernor: Governor | undefined;
 let devBlobs: BlobStore | undefined;
 
@@ -75,6 +78,7 @@ export async function handle(req: Request, env: Env, ctx?: WaitUntil): Promise<R
   if (path === "/v1/session" && req.method === "POST") return session(req, env, url);
   if (path === "/v1/build" && req.method === "POST") return build(req, env, url, later);
   if (path === "/v1/repair" && req.method === "POST") return repair(req, env, url, later);
+  if (path === "/v1/mind" && req.method === "POST") return mind(req, env, url);
   const shareId = /^\/v1\/share\/([a-z2-7]{16})$/.exec(path)?.[1];
   const post = req.method === "POST";
   const route =
@@ -146,6 +150,51 @@ function sseStream() {
   };
   const response = new Response(readable, { headers: { "content-type": "text/event-stream", "cache-control": "no-store", "x-accel-buffering": "no" } });
   return { send, close: () => w.close().catch(() => undefined), signal: upstream.signal, response };
+}
+
+const OPTION = /^[\w.:-]{1,48}$/;
+const str = (x: unknown, max: number) => (typeof x === "string" ? x.slice(0, max) : "");
+
+/**
+ * POST /v1/mind: one NPC picks an option from its typed menu and says a line, in about a second
+ * (the intent model, strict schema, no reasoning). The answer is checked against the menu again
+ * here: a mind can never act off-menu, and the simulation plays the option deterministically.
+ */
+async function mind(req: Request, env: Env, url: URL): Promise<Response> {
+  if (!env.CEREBRAS_API_KEY) return json({ error: "llm not configured" }, 503);
+  const gate = await identify(req, url, env);
+  if (!gate.ok) return json(gate.body, gate.status);
+  const caller = gate.caller;
+  const ip = ipOf(req);
+  if (!mindBuckets.allow(caller.session ?? ip, intVar(env.MINDS_PER_WINDOW, 120))) return json({ error: "rate limited", retryMs: WINDOW_MS }, 429);
+  const body = await readJson(req, 8192);
+  if (!body.ok) return json({ error: body.error }, body.status);
+  const i = (body.value ?? {}) as Record<string, unknown>;
+  const menu = Array.isArray(i.menu) ? i.menu.filter((x): x is string => typeof x === "string" && OPTION.test(x)).slice(0, 8) : [];
+  const current = str(i.current, 48);
+  if (!menu.length || !str(i.npc, 32)) return json({ error: "bad mind request" }, 400);
+  if (await paused(env)) return json({ error: "builds paused", retryable: true }, 503);
+  const held = await reserveFor(env, url, caller, ip, costMicroUsd(INTENT_MODEL, 1500, 120));
+  if (held instanceof Response) return held;
+  let cost = costMicroUsd(INTENT_MODEL, 1500, 120);
+  try {
+    const r = await chatJson<{ option?: unknown; line?: unknown }>({
+      apiKey: env.CEREBRAS_API_KEY,
+      model: INTENT_MODEL,
+      reasoningEffort: "none",
+      maxTokens: 120,
+      jsonSchema: { name: "mind", schema: mindJsonSchema(menu) },
+      messages: mindMessages({ npc: str(i.npc, 32), role: str(i.role, 32), persona: str(i.persona, 400), menu, current, situation: str(i.situation, 600), event: str(i.event, 200), ...(typeof i.said === "string" ? { said: str(i.said, 200) } : {}) }),
+    });
+    if (r.inTok > 0) cost = costMicroUsd(INTENT_MODEL, r.inTok, r.outTok);
+    const option = typeof r.value.option === "string" && menu.includes(r.value.option) ? r.value.option : menu.includes(current) ? current : menu[0]!;
+    return json({ option, line: str(r.value.line, 120), ms: r.ms });
+  } catch (e) {
+    if (e instanceof LlmError && e.status !== 200) cost = 0;
+    return json({ error: e instanceof Error ? e.message.slice(0, 200) : "mind failed", retryable: true }, 502);
+  } finally {
+    await held(cost).catch(() => undefined);
+  }
 }
 
 /**

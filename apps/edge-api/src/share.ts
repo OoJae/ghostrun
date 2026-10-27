@@ -28,6 +28,12 @@ const Frames = v.pipe(
   v.check((fs) => fs.every((f, i) => i === 0 || f.tick > fs[i - 1]!.tick), "ticks must strictly increase"),
 );
 
+/** NPC mind choices, applied at their ticks (so a run with live minds still replays exactly). */
+const Minds = v.pipe(
+  v.array(v.strictObject({ tick: int(0, MAX_TICK), npc: v.pipe(v.string(), v.regex(/^[a-z][a-z0-9_]{0,31}$/)), option: v.pipe(v.string(), v.regex(/^[\w.:-]{1,48}$/)) })),
+  v.maxLength(500),
+);
+
 export const ShareIn = v.strictObject({
   v: v.literal(1),
   engine: Hex64,
@@ -35,6 +41,7 @@ export const ShareIn = v.strictObject({
   seed: int(-(2 ** 31), 2 ** 32 - 1),
   fill: v.pipe(v.string(), v.check((s) => enc.encode(s).length <= MAX_FILL_BYTES, "fill over 64 KB")),
   inputs: Frames,
+  minds: v.optional(Minds),
 });
 export type ShareIn = v.InferOutput<typeof ShareIn>;
 
@@ -115,7 +122,8 @@ export function unpackFrames(s: string): InputFrame[] {
 
 /** The stored (canonical) form of a share and its content address. */
 export async function shareRecord(s: ShareIn): Promise<{ id: string; text: string }> {
-  const text = jcs({ v: 1, engine: s.engine, specHash: s.specHash, seed: s.seed, fill: s.fill, enc: "rle1", inputs: packFrames(s.inputs) });
+  // minds only when present, so runs without them keep the ids they always had
+  const text = jcs({ v: 1, engine: s.engine, specHash: s.specHash, seed: s.seed, fill: s.fill, enc: "rle1", inputs: packFrames(s.inputs), ...(s.minds?.length ? { minds: s.minds } : {}) });
   const digest = new Uint8Array(await crypto.subtle.digest("SHA-256", enc.encode(text)));
   return { id: base32(digest.subarray(0, 10)), text };
 }
@@ -179,7 +187,7 @@ export async function getShare(id: string, c: ShareCtx): Promise<Response> {
   const text = await c.store.get(`shares/${id}.json`);
   if (text === null) return json({ error: "not found" }, 404);
   const s = JSON.parse(text) as Omit<ShareIn, "inputs"> & { inputs: string };
-  const record = { id, v: s.v, engine: s.engine, specHash: s.specHash, seed: s.seed, fill: s.fill, inputs: unpackFrames(s.inputs) };
+  const record = { id, v: s.v, engine: s.engine, specHash: s.specHash, seed: s.seed, fill: s.fill, inputs: unpackFrames(s.inputs), minds: s.minds ?? [] };
   return json(record, 200, { "cache-control": "private, max-age=31536000, immutable" });
 }
 

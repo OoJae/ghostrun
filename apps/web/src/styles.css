@@ -566,3 +566,9 @@ kbd {
 .intent .card10 { margin-bottom: 8px; }
 .intent .card10 dd { line-height: 1.35; }
 .intent dl.tech { opacity: 0.6; font-size: 11.5px; }
+
+.bark { position: absolute; left: 50%; top: 118px; transform: translateX(-50%); max-width: min(560px, calc(100vw - 32px)); padding: 8px 14px; font-size: 13.5px; pointer-events: none; animation: slide-in 300ms ease-out; }
+.bark b { color: #7ff0ff; font-weight: 600; }
+.talk { position: absolute; left: 50%; bottom: 28%; transform: translateX(-50%); width: min(460px, calc(100vw - 32px)); padding: 6px; }
+.talk input { width: 100%; font: inherit; font-size: 14px; padding: 8px 10px; background: rgba(0, 0, 0, 0.3); color: inherit; border: 1px solid rgba(25, 227, 255, 0.4); border-radius: 8px; outline: none; }
+.touch-mode .bark { top: 150px; }

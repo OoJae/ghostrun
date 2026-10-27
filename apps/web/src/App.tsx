@@ -10,6 +10,7 @@ import { PromptBar } from "./hud/PromptBar";
 import { ProofBadge, ReceiptPanel, RepairChip, type ProofState, type RepairState } from "./hud/Proof";
 import { liveAvailable, liveBuild, liveRepair, type LiveIntent } from "./live";
 import { createShare, loadShare, reportWrong } from "./share";
+import { Minds } from "./minds";
 import { BRIEF, buildWorld, ENGINE_HASH, FIXTURE_PROMPTS, FIXTURES, hashWorld, worldFromFill, type Intent, type World } from "./pipeline";
 import { probe } from "./probe";
 import { loadNav, loadRapier, WASM_URLS } from "./sim/boot";
@@ -66,6 +67,10 @@ export function App() {
   }, [touch]);
   const repaired = useRef<World | null>(null);
   const current = useRef<World | null>(null);
+  const minds = useRef<Minds | null>(null);
+  const [bark, setBark] = useState<{ name: string; line: string; at: number } | null>(null);
+  const [talking, setTalking] = useState<{ npc: string; name: string } | null>(null);
+  const [said, setSaid] = useState("");
   const [reported, setReported] = useState<string>();
   const pending = useRef(new Map<number, { onChip?: (c: Chip) => void; resolve: (r: Receipt) => void; reject: (e: Error) => void }>());
   const modeRef = useRef<Mode>("checking");
@@ -150,7 +155,10 @@ export function App() {
       setUseHint(null);
       setToast(null);
       if (sim) {
+        minds.current?.stop();
+        minds.current = modeRef.current === "live" ? new Minds(world, sim, (_npc, name, line) => setBark({ name, line, at: Date.now() })) : null;
         sim.onEvents = (evs) => {
+          minds.current?.observe(evs);
           for (const ev of evs) {
             if (ev.k === "score") setScore((s) => ({ ...s, [ev.a === "team:blue" ? "blue" : "red"]: Number(ev.v) }));
             if (ev.k === "win" || ev.k === "lose") setScore((s) => ({ ...s, result: ev.k }));
@@ -244,7 +252,7 @@ export function App() {
           await show(shared.world, ++runId.current, 0, [{ label: "gpu init", ms: e.initMs }]);
           const sim = e.rapierSim;
           if (sim) {
-            sim.replay(shared.record.inputs);
+            sim.replay(shared.record.inputs, shared.record.minds ?? []);
             sim.onReplayEnd = () => setNotice(undefined);
           }
           setNotice(shared.exact ? "Shared run: replaying exactly as played. Press any key to take over." : "Shared run from another version: the world rebuilt, but the replay may drift.");
@@ -269,6 +277,13 @@ export function App() {
       if (ev.target instanceof HTMLInputElement || ev.target instanceof HTMLTextAreaElement) return;
       if (ev.code === "KeyP") setReceiptOpen((o) => !o);
       if (ev.code === "KeyX") setXray((o) => !o);
+      if (ev.code === "KeyT") {
+        const npc = minds.current?.nearby();
+        if (npc) {
+          ev.preventDefault();
+          setTalking({ npc, name: minds.current!.name(npc) });
+        }
+      }
     };
     window.addEventListener("keydown", onKey);
     return () => {
@@ -279,6 +294,20 @@ export function App() {
       engine.current = null;
     };
   }, [run]);
+
+  // the first world appears before the live check answers: give it minds once the service is up
+  useEffect(() => {
+    if (mode !== "live" || minds.current) return;
+    const sim = engine.current?.rapierSim;
+    const w = current.current;
+    if (sim && w) minds.current = new Minds(w, sim, (_npc, name, line) => setBark({ name, line, at: Date.now() }));
+  }, [mode, status]);
+
+  useEffect(() => {
+    if (!bark) return;
+    const t = setTimeout(() => setBark(null), 5500);
+    return () => clearTimeout(t);
+  }, [bark]);
 
   useEffect(() => {
     if (!toast) return;
@@ -345,6 +374,24 @@ export function App() {
           </div>
         )}
         {toast && <div className="glass toast" role="status">{toast}</div>}
+        {bark && (
+          <div className="glass bark" data-testid="bark">
+            <b>{bark.name}:</b> {bark.line}
+          </div>
+        )}
+        {talking && (
+          <form
+            className="glass talk"
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (said.trim()) minds.current?.talk(talking.npc, said.trim());
+              setTalking(null);
+              setSaid("");
+            }}
+          >
+            <input autoFocus value={said} maxLength={200} placeholder={`Say something to the ${talking.name}…`} onChange={(e) => setSaid(e.target.value)} onKeyDown={(e) => e.key === "Escape" && setTalking(null)} />
+          </form>
+        )}
         <ProofBadge proof={proof} onOpen={() => setReceiptOpen((o) => !o)} />
         <RepairChip
           repair={repair}
@@ -403,7 +450,7 @@ export function App() {
               const w = current.current;
               const sim = engine.current?.rapierSim;
               if (!w || !sim || !specHash) return setToast("Nothing to share yet.");
-              const url = await createShare(w, specHash, sim.inputs);
+              const url = await createShare(w, specHash, sim.inputs, sim.minds);
               if (!url) return setToast("Sharing needs the live service, which isn't reachable.");
               await navigator.clipboard?.writeText(url).catch(() => undefined);
               setToast(`Link copied: ${url}`);

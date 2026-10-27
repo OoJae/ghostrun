@@ -43,6 +43,27 @@ const metered = costMicroUsd(INTENT_MODEL, 1000, 200) + costMicroUsd(FILL_MODEL,
 
 afterEach(() => vi.unstubAllGlobals());
 
+describe("POST /v1/mind", () => {
+  const call = async (env: Env, body: unknown) =>
+    handle(new Request("https://g.example/v1/mind", { method: "POST", headers: { "cf-connecting-ip": freshIp(), "x-judge-token": TOKEN }, body: JSON.stringify(body) }), env, waiter());
+  const ask = { npc: "rival_1", role: "rival", persona: "", menu: ["rival.attack", "rival.defend", "rival.intercept"], current: "rival.attack", situation: "red 1, blue 0", event: "red scored" };
+  it("returns the chosen menu option and a line, charged to the caller's pool", async () => {
+    const w = world({ up: { intent: { inTok: 900, outTok: 30, body: { option: "rival.defend", line: "Nobody scores twice on my watch." } } } });
+    const r = await call(w.env, ask);
+    expect(r.status).toBe(200);
+    expect(await r.json()).toMatchObject({ option: "rival.defend", line: "Nobody scores twice on my watch." });
+    expect(w.pool("judge").spent).toBe(costMicroUsd(INTENT_MODEL, 900, 30));
+    // the model sees the menu as a strict enum
+    expect(w.f.hits.find((h) => h.url.includes("cerebras"))!.body).toContain('"enum":["rival.attack","rival.defend","rival.intercept"]');
+  });
+  it("never acts off-menu: an unknown option falls back to the current one; a bad request costs nothing", async () => {
+    const w = world({ up: { intent: { inTok: 900, outTok: 30, body: { option: "rival.fly_away", line: "Bye!" } } } });
+    expect(await (await call(w.env, ask)).json()).toMatchObject({ option: "rival.attack" });
+    const bad = await call(w.env, { npc: "rival_1", menu: [] });
+    expect(bad.status).toBe(400);
+  });
+});
+
 describe("POST /v1/repair", () => {
   it("streams the model's patch lines, charges the caller's pool, and rejects bad requests before any model call", async () => {
     const w = world({ up: { fill: { inTok: 9000, outTok: 300, lines: ['{"op":"rule","id":"r_win","when":{"t":"enter","a":"gem","b":"exit"},"then":[{"e":"win","target":"player"}]}', '{"op":"del","id":"x_old"}'] } } });

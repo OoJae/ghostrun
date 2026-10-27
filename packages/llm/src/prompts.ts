@@ -164,3 +164,44 @@ export function repairMessages(prompt: string, intent: IntentOut, layout: PackLa
     },
   ];
 }
+
+/** What a mind sees: who it is, its typed menu, the situation in a few lines, and what just happened. */
+export interface MindInput {
+  npc: string;
+  role: string;
+  persona: string;
+  menu: string[];
+  current: string;
+  situation: string;
+  event: string;
+  said?: string;
+}
+
+/** Strict schema: the option must be one of the menu's own strings (typed menus, never free actions). */
+export function mindJsonSchema(menu: string[]): Record<string, unknown> {
+  return {
+    type: "object",
+    additionalProperties: false,
+    required: ["option", "line"],
+    properties: { option: { type: "string", enum: menu }, line: { type: "string", maxLength: 120 } },
+  };
+}
+
+/**
+ * An NPC's mind: picks one option from its typed menu and says one short line in character. The
+ * simulation then plays the option deterministically; the line is cosmetic.
+ */
+export function mindMessages(m: MindInput): Msg[] {
+  return [
+    {
+      role: "system",
+      content: [
+        `You are the mind of ${m.npc}, a ${m.role} in a small 3D game. ${m.persona}`.trim(),
+        "Choose exactly ONE option from your menu that fits the situation, and say one short line in character (at most 12 words, family-friendly, no names of real people or brands).",
+        "If the player speaks to you, answer them in that line, and follow a reasonable request when your menu allows it (a teammate told to follow, follows).",
+        `Menu: ${m.menu.join(", ")}. Current option: ${m.current}.`,
+      ].join("\n"),
+    },
+    { role: "user", content: `Situation: ${m.situation}\nWhat just happened: ${m.event}${m.said ? `\nThe player says to you: "${m.said}"` : ""}` },
+  ];
+}

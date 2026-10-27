@@ -9,6 +9,12 @@ import { BTN, SimWorld, type InputFrame as SimInput, type Rapier, type SimEvent 
 import { BTN_JUMP, BTN_USE, PLAYER_ID, TICK_HZ, type FrameSource, type InputFrame, type Pose, type SimFrame } from "./types";
 
 const DT = 1 / TICK_HZ;
+
+export interface MindChoice {
+  tick: number;
+  npc: string;
+  option: string;
+}
 const MAX_CATCHUP_TICKS = 15;
 
 const q8 = (x: number) => Math.max(-127, Math.min(127, Math.round(x * 127)));
@@ -26,6 +32,10 @@ export class RapierSim implements FrameSource {
   #subs = new Set<(evs: SimEvent[]) => void>();
   #replay: SimInput[] | null = null;
   #ri = 0;
+  /** Mind choices as the sim applied them, tick by tick: replays and share links feed them back. */
+  readonly minds: MindChoice[] = [];
+  #pendingMinds: { npc: string; option: string }[] = [];
+  #replayMinds: MindChoice[] = [];
   /** Fires when a replay ends or the player takes over. */
   onReplayEnd: (() => void) | undefined;
   #hint: string | null = null;
@@ -59,10 +69,30 @@ export class RapierSim implements FrameSource {
     this.#timer = setInterval(() => this.#pump(), 4);
   }
 
-  /** Play back a recorded run frame by frame (a share link); any input takes over. */
-  replay(frames: readonly SimInput[]) {
+  /** Play back a recorded run frame by frame (a share link), minds included; any input takes over. */
+  replay(frames: readonly SimInput[], minds: readonly MindChoice[] = []) {
     this.#replay = [...frames];
     this.#ri = 0;
+    this.#replayMinds = [...minds];
+  }
+
+  /** A mind picked a menu option: it takes effect on the next tick (and is logged with it). */
+  queueMind(npc: string, option: string) {
+    this.#pendingMinds.push({ npc, option });
+  }
+
+  /** The option an NPC is playing now. */
+  optionOf(npc: string): string {
+    return this.brain?.bots.find((b) => b.id === npc)?.option ?? "";
+  }
+
+  #applyMinds(tick: number) {
+    if (this.#replay) {
+      for (const m of this.#replayMinds) if (m.tick === tick) this.brain?.choose(m.npc, m.option);
+      return;
+    }
+    for (const m of this.#pendingMinds) if (this.brain?.choose(m.npc, m.option)) this.minds.push({ tick, npc: m.npc, option: m.option });
+    this.#pendingMinds = [];
   }
 
   get replaying(): boolean {
@@ -123,6 +153,7 @@ export class RapierSim implements FrameSource {
       } else {
         const frame = rec.tick === tick ? rec : { tick, wx: 0, wz: 0, btn: 0 };
         if (frame.wx || frame.wz) this.#facing = Math.atan2(-frame.wx, -frame.wz);
+        this.#applyMinds(tick);
         this.inputs.push(frame);
         const evs = this.sim.step(frame);
         if (evs.length) {
@@ -150,6 +181,7 @@ export class RapierSim implements FrameSource {
     if (i.btn & BTN_USE) btn |= BTN.USE;
     // a held jump must release for one tick before it counts again (fresh-press semantics)
     const frame: SimInput = { tick: this.sim.tick + 1, wx: q8(x), wz: q8(z), btn };
+    this.#applyMinds(frame.tick);
     this.inputs.push(frame);
     const evs = this.sim.step(frame);
     if (evs.length) {

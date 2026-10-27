@@ -422,9 +422,12 @@ function perform(r: Run, st: PlanStep): "ok" | "lost" | "stuck" {
   }
 }
 
-function witnessRun(R: Rapier, b: WorldBundle, nav: NavWorld, chain: WinChain, openers: ReadonlyMap<string, PlanStep[]>, seed: number, playerTeam: "red" | "blue"): RunResult {
-  // The cast plays too: runners must beat the same bots the judge will face.
-  const sim = new SimWorld(R, b, { playerTeam, brain: castBrain(nav, b) });
+function witnessRun(R: Rapier, b: WorldBundle, nav: NavWorld, chain: WinChain, openers: ReadonlyMap<string, PlanStep[]>, seed: number, playerTeam: "red" | "blue", schedule: readonly (readonly [string, string])[] = []): RunResult {
+  // The cast plays too: runners must beat the same bots the judge will face (and, for the
+  // envelope, the bots locked to whatever a schedule says their minds chose).
+  const brain = castBrain(nav, b);
+  for (const [npc, option] of schedule) brain.choose(npc, option);
+  const sim = new SimWorld(R, b, { playerTeam, brain });
   const rng = stream(seed, `t3:run`);
   // a world with a countdown gets its length plus a minute to play out (capped at ten minutes)
   const timer = Math.max(0, ...b.verbs.filter((v) => v.verb === "puzzle.timer").map((v) => Number(v.params.seconds) || 0));
@@ -507,6 +510,25 @@ export function t3(R: Rapier, b: WorldBundle, nav: NavWorld, chain: WinChain | n
       src: "",
       ms: Math.round((globalThis.performance?.now?.() ?? 0) - t0),
     });
+    // the envelope: minds may switch an NPC to any option on its typed menu at any time; lock the
+    // whole cast to each option index in turn and check runners still win
+    const minded = b.cast.filter((c) => c.menu.length > 1 && b.entities.some((e) => e.id === c.npc));
+    if (minded.length) {
+      const t1 = globalThis.performance?.now?.() ?? 0;
+      const width = Math.max(...minded.map((c) => c.menu.length));
+      const schedules = Array.from({ length: width }, (_, j) => minded.map((c) => [c.npc, c.menu[j] ?? c.dflt] as const));
+      const per = 3;
+      const outcomes = schedules.map((sch, j) => Array.from({ length: per }, (_, i) => witnessRun(R, b, nav, chain, openers, b.seed * 1000 + 500 + j * per + i, playerTeam, sch)).filter((x) => x.won).length);
+      const k = outcomes.reduce((a, x) => a + x, 0);
+      const worst = outcomes.indexOf(0);
+      chips.push({
+        id: "T3:envelope", tier: "T3", subject: { kind: "property", id: "win_reachable" }, status: worst < 0 ? "played" : "counterexample",
+        method: `physics, ${schedules.length} menu schedules × ${per} runners`, n: schedules.length * per, k,
+        text: worst < 0 ? `runners still win whatever the cast's minds choose (${schedules.length} schedules)` : "a choice the cast's minds can make stops every runner",
+        cx: worst < 0 ? null : { where: null, have: 0, need: 1, unit: "wins", text: `if ${schedules[worst]!.map(([n, o]) => `${n} plays ${o}`).join(", ")}, no runner wins` },
+        src: "", ms: Math.round((globalThis.performance?.now?.() ?? 0) - t1),
+      });
+    }
     // a win in under 3 s means the world asks nothing of the player: honest, but not a game
     if (par && par.goldS < TOO_EASY_S) {
       chips.push({

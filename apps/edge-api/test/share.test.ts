@@ -90,7 +90,13 @@ describe("share routes", () => {
     const got = await call("GET", `/v1/share/${id}`);
     expect(got.status).toBe(200);
     expect(got.headers.get("cache-control")).toContain("immutable");
-    expect(await got.json()).toEqual({ id, ...share() });
+    expect(await got.json()).toEqual({ id, ...share(), minds: [] });
+    // NPC mind choices ride along (and change the content address)
+    const minds = [{ tick: 120, npc: "rival_1", option: "rival.defend" }];
+    const withMinds = await call("POST", "/v1/share", { ...share(), minds });
+    const { id: id2 } = (await withMinds.json()) as { id: string };
+    expect(id2).not.toBe(id);
+    expect(((await (await call("GET", `/v1/share/${id2}`)).json()) as { minds: unknown }).minds).toEqual(minds);
     expect((await call("GET", "/v1/share/aaaaaaaaaaaaaaaa")).status).toBe(404);
     expect((await call("GET", "/v1/share/not-an-id")).status).toBe(404);
   });

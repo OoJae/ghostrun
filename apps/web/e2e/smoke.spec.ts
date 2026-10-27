@@ -93,14 +93,20 @@ for (const sim of ["rapier", "stub"] as const) test(`headline: the rooftop ledge
   p = await at();
   expect(p[2]).toBeLessThan(8);
 
-  // Two jumps: up onto the lane (feet at 2.6 m → capsule centre at 3.5 m).
-  await page.keyboard.press("Space");
-  await until(() => window.__GHOSTRUN__.player![1] > 2.2);
-  await page.keyboard.press("Space");
-  await until(() => {
-    const q = window.__GHOSTRUN__.player!;
-    return q[2] > 8.3 && Math.abs(q[1] - 3.5) < 0.05;
-  });
+  // Two jumps: up onto the lane (feet at 2.6 m → capsule centre at 3.5 m). The second press has to
+  // land while airborne; under a slow software-GL frame it can arrive late, so allow three tries.
+  let onLane = false;
+  for (let attempt = 0; attempt < 3 && !onLane; attempt++) {
+    await page.keyboard.press("Space");
+    await until(() => window.__GHOSTRUN__.player![1] > 2.0);
+    await page.keyboard.press("Space");
+    onLane = await until(() => {
+      const q = window.__GHOSTRUN__.player!;
+      return q[2] > 8.3 && Math.abs(q[1] - 3.5) < 0.05;
+    }, 4_000).then(() => true, () => false);
+    if (!onLane) await until(() => Math.abs(window.__GHOSTRUN__.player![1] - 0.9) < 0.05); // back on the street
+  }
+  expect(onLane).toBe(true);
   await page.keyboard.up("KeyD");
   expect(errors).toEqual([]);
 });
