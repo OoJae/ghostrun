@@ -158,7 +158,9 @@ export function t0(b: WorldBundle, playerTeam: "red" | "blue" = "red"): { chips:
       pre.push(...sub.steps);
       preWhy.push(`${id} ${want}`);
     }
-    const withPre = (x: { steps: PlanStep[]; explain: string } | null) => (x && pre.length ? { steps: [...pre, ...x.steps], explain: `${x.explain} [after ${preWhy.join(", ")}]` } : x);
+    // the same pickup twice in a row (a "holding it" condition, then the throw that needs it too) is one
+    const dedupe = (st: PlanStep[]) => st.filter((x, i) => !(x.do === "pickup" && i > 0 && st[i - 1]!.do === "pickup" && (st[i - 1] as { item: string }).item === x.item));
+    const withPre = (x: { steps: PlanStep[]; explain: string } | null) => (x && pre.length ? { steps: dedupe([...pre, ...x.steps]), explain: `${x.explain} [after ${preWhy.join(", ")}]` } : x);
     return withPre(satTrigger(r, w, depth, s2));
   };
   const satTrigger = (r: Rule, w: Rule["when"], depth: number, s2: Set<string>): { steps: PlanStep[]; explain: string } | null => {

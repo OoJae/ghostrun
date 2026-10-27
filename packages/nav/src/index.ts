@@ -54,12 +54,14 @@ export function buildNav(b: WorldBundle): NavWorld {
   const pos: number[] = [];
   const idx: number[] = [];
   for (const s of [...b.statics].sort((x, y) => (x.id < y.id ? -1 : 1))) pushBox(pos, idx, s.pos, s.size);
+  // somewhere you lose by walking into (out of bounds, a pit sensor) is avoided like a hazard
+  const losing = new Set(b.rules.filter((r) => r.when.t === "enter" && r.when.a === "player" && r.then.some((x) => x.e === "lose")).map((r) => r.when.b));
   for (const e of [...b.entities].sort((x, y) => (x.id < y.id ? -1 : 1))) {
     // NPCs move and doors open: both are obstacles for the KCC, never baked in
     if (e.kind !== "npc" && e.kind !== "door" && e.body === "fixed" && e.shape !== "none") pushBox(pos, idx, e.pos, e.size);
     // a standing hazard (lava, spikes) is no place to walk: AI paths go around it, as a player
     // would (moving hazards stay out: they're dodged in time, not in space)
-    else if (e.kind === "hazard" && (e.body === "sensor" || e.body === "fixed")) pushBox(pos, idx, [e.pos[0], e.pos[1] - e.size[1] / 2 + 1.5, e.pos[2]], [e.size[0], 3, e.size[2]]);
+    else if ((e.kind === "hazard" && (e.body === "sensor" || e.body === "fixed")) || losing.has(e.id)) pushBox(pos, idx, [e.pos[0], e.pos[1] - e.size[1] / 2 + 1.5, e.pos[2]], [e.size[0], 3, e.size[2]]);
   }
   const { success, navMesh } = generateSoloNavMesh(pos, idx, {
     cs: CS,

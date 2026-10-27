@@ -20,9 +20,9 @@
    "play": 13,
    "places": 1,
    "firstPass": 6,
-   "now": 10,
+   "now": 11,
    "playableP50Ms": 2849,
-   "controlsP50": 9
+   "controlsP50": 10
   },
   {
    "name": "fresh2",
@@ -31,7 +31,7 @@
    "play": 13,
    "places": 1,
    "firstPass": 7,
-   "now": 10,
+   "now": 11,
    "playableP50Ms": 3053,
    "controlsP50": 10
   },
@@ -64,7 +64,7 @@
    "play": 8,
    "places": 4,
    "firstPass": 6,
-   "now": 7,
+   "now": 8,
    "playableP50Ms": 3772,
    "controlsP50": 10
   }

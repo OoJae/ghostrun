@@ -198,7 +198,7 @@ export function placeWorld(input: WorldBundle, layout: PackLayout): PlaceResult 
     if (e.kind === "door" && /^doorway_[ew]$/.test(e.anchor) && e.size[0] > e.size[2]) e.size = [e.size[2], e.size[1], e.size[0]];
   }
   // wins first: a win rule the repairs add (reach the goal) gets the same trigger and verb repairs
-  notes.push(...repairSpawnRefs(b), ...repairAreas(b, bound), ...repairKits(b), ...repairWin(b), ...repairTriggers(b), ...repairVerbs(b), ...repairExpects(b));
+  notes.push(...repairSpawnRefs(b), ...repairAreas(b, bound), ...repairKits(b), ...repairConditions(b), ...repairWin(b), ...repairTriggers(b), ...repairVerbs(b), ...repairExpects(b));
   notes.push(...addRivals(b), ...repairDeliveries(b, layout, bound), ...addSecrets(b, layout, bound));
   return { bundle: b, notes };
 }
@@ -358,6 +358,49 @@ export function repairSpawnRefs(b: WorldBundle): string[] {
 }
 
 /**
+ * A condition on a state nothing in the world can give ("IF the gate is open" with no lock or rule
+ * to open it, "IF the departure timer is running" on a prop with no timer) can never hold. With an
+ * unused key in the world it means holding the key; a "running" condition with a countdown
+ * elsewhere is what the countdown already enforces, so it goes. Otherwise it stays (and the proof
+ * says the rule can't fire). Logged.
+ */
+export function repairConditions(b: WorldBundle): string[] {
+  const notes: string[] = [];
+  const canBe = (id: string, st: string): boolean => {
+    const e = b.entities.find((x) => x.id === id);
+    if (!e) return true; // not an entity (a zone, a team): not ours to judge
+    if (e.init === st) return true; // a state it merely lists isn't one anything gives it
+    for (const v of b.verbs) {
+      if (v.on !== id) continue;
+      const p = verb(v.verb);
+      if (p?.initial === st || p?.produces?.({ id: v.id, on: v.on, params: v.params, mem: {} }).some((x) => x.k === "state" && x.s === st)) return true;
+    }
+    return b.rules.some((r) => r.then.some((x) => (x.e === "set_state" && x.target === id && String(x.v) === st) || (x.e === "open" && x.target === id && st === "open") || (x.e === "close" && x.target === id && st === "closed")));
+  };
+  const used = new Set([...b.verbs.filter((v) => v.verb === "puzzle.lock").map((v) => String(v.params.key)), ...b.rules.flatMap((r) => [r.when.a, r.when.b, ...r.if.map((c) => c.l.split(".")[0]!)])]);
+  const carryable = new Set(b.verbs.filter((v) => v.verb.endsWith(".carry")).map((v) => v.on));
+  const key = b.entities.find((e) => carryable.has(e.id) && !used.has(e.id) && /key|klíč|clef|schlüssel|llave|card|ticket|pass/i.test(`${e.id} ${e.noun} ${e.hyper}`));
+  const countdown = b.verbs.some((v) => v.verb === "puzzle.timer");
+  const mine = b.entities.some((e) => e.kind === "spawn" && e.team === "red") || !b.entities.some((e) => e.kind === "spawn" && e.team === "blue") ? "red" : "blue";
+  for (const r of b.rules) {
+    r.if = r.if.flatMap((c) => {
+      const m = /^([a-z][a-z0-9_]*)\.state$/.exec(c.l);
+      if (!m || c.op !== "eq" || canBe(m[1]!, String(c.r))) return [c];
+      if (key && String(c.r) !== "running") {
+        notes.push(`rule ${r.id}: nothing can make ${m[1]} '${String(c.r)}'; with the ${key.noun || key.id} lying unused, it means holding it`);
+        return [{ ...c, l: `${key.id}.carrier.team`, r: mine }];
+      }
+      if (countdown && /running|active|ticking|on/.test(String(c.r))) {
+        notes.push(`rule ${r.id}: dropped '${m[1]} is ${String(c.r)}' (nothing gives it that state; the countdown already ends the game)`);
+        return [];
+      }
+      return [c];
+    });
+  }
+  return notes;
+}
+
+/**
  * "When you enter the vault", "when a rival leaves the ring": an enter/exit rule naming a ZONE gets
  * an invisible sensor covering that zone, and the rule is pointed at it (only entities can be
  * entered or left). Logged.
@@ -476,6 +519,14 @@ export function repairKits(b: WorldBundle): string[] {
     const noun = e.noun || e.id.replace(/_/g, " ");
     b.verbs.push(vb(uniqueId(b, `vb_${kit.split(".")[1]}_${e.id}`), kit, e.id, kit === "social.inspect" ? { text: noun.charAt(0).toUpperCase() + noun.slice(1) } : {}));
     notes.push(`${e.id}: added ${kit} (rule ${r.id} waits on a ${w.t} nothing could produce)`);
+  }
+  // 1e. a rival a rule waits to see knocked into or out of something can be shoved
+  for (const r of b.rules) {
+    if (r.when.t !== "enter" && r.when.t !== "exit") continue;
+    const e = b.entities.find((x) => x.id === r.when.a && x.kind === "npc");
+    if (!e || b.verbs.some((v) => v.on === e.id && v.verb === "combat_sport.shove")) continue;
+    b.verbs.push(vb(uniqueId(b, `vb_shove_${e.id}`), "combat_sport.shove", e.id));
+    notes.push(`${e.id}: added combat_sport.shove (rule ${r.id} waits for it to be knocked ${r.when.t === "exit" ? "out of" : "into"} ${r.when.b})`);
   }
   // 1d. one key for several locks: it opens them all (a lock using it up would leave the next
   // door locked forever)
@@ -659,10 +710,18 @@ export function repairVerbs(b: WorldBundle): string[] {
   // something a rule waits for you to walk into stays a sensor: a verb that needs it solid (a lock
   // on the goal itself) goes, or the repairs would flip it back and the win could never fire
   const entered = new Set(b.rules.filter((r) => r.when.t === "enter" || r.when.t === "exit").map((r) => r.when.b));
+  const mine = b.entities.some((e) => e.kind === "spawn" && e.team === "red") || !b.entities.some((e) => e.kind === "spawn" && e.team === "blue") ? "red" : "blue";
   b.verbs = b.verbs.filter((vb) => {
     const need = verb(vb.verb)?.body;
     if (!need || need === "sensor" || !entered.has(vb.on)) return true;
     notes.push(`${vb.on}: dropped ${vb.verb} (it needs a solid body, and ${vb.on} is a place you walk into)`);
+    // a lock's meaning carries over: "IF the gate is open" becomes "IF you hold its key"
+    if (vb.verb === "puzzle.lock") {
+      const key = String(vb.params.key ?? "");
+      for (const r of b.rules) {
+        r.if = r.if.flatMap((c) => (c.l === `${vb.on}.state` && c.op === "eq" && String(c.r) === "open" ? (key ? [{ ...c, l: `${key}.carrier.team`, r: mine }] : []) : [c]));
+      }
+    }
     return false;
   });
   for (const vb of b.verbs) {

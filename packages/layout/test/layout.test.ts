@@ -153,3 +153,20 @@ describe("small repairs found by the third unseen set", () => {
     expect(bundle.entities.find((e) => e.id === "tiny")!.size).toEqual([1.6, 1.2, 1.6]);
   });
 });
+
+describe("conditions nothing can satisfy", () => {
+  it("'IF the gate is open' with nothing to open it means holding the unused key; 'IF the timer is running' on a prop goes", () => {
+    const fill = parseFill(
+      ctf
+        .replace('{"op":"verb","id":"vb_jump"', '{"op":"ent","id":"brass_key","kind":"pickup","noun":"brass key","zone":"z_plaza","anchor":"wall_s"}\n{"op":"ent","id":"clock","kind":"prop","noun":"departure timer","zone":"z_plaza","anchor":"wall_e"}\n{"op":"verb","id":"vb_jump"')
+        .replace('{"op":"law"', '{"op":"verb","id":"vb_ck","verb":"physics_props.carry","on":"brass_key","params":{}}\n{"op":"verb","id":"vb_t","verb":"puzzle.timer","on":"player","params":{"seconds":60}}\n{"op":"law"')
+        .replace('{"op":"rule","id":"r_pickup"', '{"op":"rule","id":"r_gate","when":{"t":"enter","a":"player","b":"goal_red"},"if":[{"l":"goal_red.state","op":"eq","r":"open"},{"l":"clock.state","op":"eq","r":"running"}],"then":[{"e":"emit","target":"player","fx":"x"}]}\n{"op":"rule","id":"r_pickup"'),
+      { seed: 7 },
+    );
+    const layout = cityBlock.generate({ seed: 7, params: cityBlock.defaults, sub: fill.draft.pack.sub, laws: fill.draft.laws, harder: false });
+    const { bundle, notes } = placeWorld({ ...fill.draft, engine: "e".repeat(64) }, layout);
+    expect(bundle.rules.find((r) => r.id === "r_gate")!.if).toEqual([{ l: "brass_key.carrier.team", op: "eq", r: "red", forS: 0 }]);
+    expect(notes.some((n) => n.includes("with the brass key lying unused, it means holding it"))).toBe(true);
+    expect(notes.some((n) => n.includes("the countdown already ends the game"))).toBe(true);
+  });
+});
