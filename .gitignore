@@ -21,3 +21,6 @@ buildplan.md
 # tool residue
 .playwright-mcp/
 .DS_Store
+
+# agent worktrees (git worktree checkouts, never committed)
+.claude/worktrees/
