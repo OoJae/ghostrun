@@ -191,3 +191,31 @@ test("Logic X-ray: X shows every rule as WHEN/IF/THEN with its forced-state mark
   await expect(xray).toHaveCount(0);
   expect(errors).toEqual([]);
 });
+
+test("VR (emulated Quest 3): enter VR, the left stick walks, A jumps", async ({ page }) => {
+  const errors = collectErrors(page);
+  await page.goto("/?gl=webgl2&fx=0&dpr=0.5&prewarm=0&iwer=1");
+  await page.waitForFunction(() => window.__GHOSTRUN__?.ready === true, null, { timeout: 90_000 });
+  await page.getByTestId("enter-vr").click();
+  await page.waitForFunction(() => window.__GHOSTRUN__?.vr === true, null, { timeout: 20_000 });
+  const p0 = (await probe(page)).player!;
+  type Ctl = { updateAxes(id: string, x: number, y: number): void; updateButtonValue(id: string, v: number): void };
+  const ctl = (hand: "left" | "right", fn: (c: Ctl) => void) => page.evaluate(({ hand, src }) => {
+    const c = (window as unknown as { __IWER__: { controllers: Record<string, Ctl> } }).__IWER__.controllers[hand]!;
+    new Function("c", src)(c);
+  }, { hand, src: `(${fn.toString()})(c)` });
+  await ctl("left", (c) => c.updateAxes("thumbstick", 0, -1)); // push forward
+  await page.waitForFunction(([x0, z0]) => {
+    const p = window.__GHOSTRUN__.player!;
+    return Math.hypot(p[0] - x0!, p[2] - z0!) > 2;
+  }, [p0[0], p0[2]], { timeout: 10_000 });
+  await ctl("left", (c) => c.updateAxes("thumbstick", 0, 0));
+  const y0 = (await probe(page)).player![1];
+  await ctl("right", (c) => c.updateButtonValue("a-button", 1));
+  await page.waitForFunction((y) => (window.__GHOSTRUN__.player?.[1] ?? y) > y + 0.4, y0, { timeout: 5_000 });
+  await ctl("right", (c) => c.updateButtonValue("a-button", 0));
+  // Emulator artifact, not ours: three picks XR layers support when the renderer is built, before
+  // IWER's layers polyfill exists, so it falls back to XRWebGLLayer, whose emulated framebuffer is
+  // null (a real headset gives an opaque framebuffer object). Rendering is checked on a real Quest.
+  expect(errors.filter((e) => !e.includes("Invalid value used as weak map key"))).toEqual([]);
+});

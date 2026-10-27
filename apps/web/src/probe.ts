@@ -17,6 +17,8 @@ export interface GhostrunProbe {
   cast?: Record<string, [number, number]>;
   /** How long the background shader prewarm took. */
   prewarmMs?: number;
+  /** In an immersive VR session. */
+  vr?: boolean;
 }
 
 declare global {

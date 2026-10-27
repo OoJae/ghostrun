@@ -21,7 +21,7 @@ export default defineConfig({
   webServer: {
     // Production build served by `vite preview` (cwd is apps/web; no absolute paths, so the
     // space in the repo path never reaches a shell).
-    command: "pnpm run build && pnpm run preview",
+    command: "VITE_IWER=1 pnpm run build && pnpm run preview",
     url: `http://localhost:${PORT}`,
     // Never reuse: a stray preview server serves a stale bundle and the suite tests old code.
     reuseExistingServer: false,

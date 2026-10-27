@@ -3,7 +3,7 @@
 import { bloom } from "three/addons/tsl/display/BloomNode.js";
 import { pass } from "three/tsl";
 import {
-  ACESFilmicToneMapping, CylinderGeometry, Mesh, PerspectiveCamera, Quaternion, RenderPipeline, Scene, WebGPURenderer, type Fog,
+  ACESFilmicToneMapping, CylinderGeometry, Group, Mesh, PerspectiveCamera, Quaternion, RenderPipeline, Scene, Vector3, WebGPURenderer, type Fog,
 } from "three/webgpu";
 import { InputCollector } from "./input";
 import type { WorldBundle } from "@ghostrun/ir";
@@ -46,6 +46,12 @@ export class Engine {
   readonly #renderer: WebGPURenderer;
   readonly #scene = new Scene();
   readonly #camera = new PerspectiveCamera(60, 1, 0.1, 400);
+  /** VR: the camera rides this rig (at the player's feet); outside VR it stays at identity. */
+  readonly #rig = new Group();
+  #vr = false;
+  #vrYaw = 0;
+  #snapTurn = 0;
+  #snapArmed = true;
   readonly #pipeline: RenderPipeline | null;
   readonly #follow: FollowCamera;
   readonly #input = new InputCollector();
@@ -108,6 +114,8 @@ export class Engine {
     this.#env = env;
     s.add(this.#rain.object);
     s.add(this.#beacon);
+    this.#rig.add(this.#camera);
+    s.add(this.#rig);
 
     if (opts.bloom !== false) {
       const p = new RenderPipeline(renderer);
@@ -139,6 +147,80 @@ export class Engine {
     const renderer = new WebGPURenderer({ canvas, antialias: true, forceWebGL: opts.forceWebGL === true, powerPreference: "high-performance" });
     await renderer.init();
     return new Engine(canvas, renderer, opts, performance.now() - t0);
+  }
+
+  /** Can this browser open an immersive VR session? */
+  async vrSupported(): Promise<boolean> {
+    try {
+      return Boolean(await navigator.xr?.isSessionSupported("immersive-vr"));
+    } catch {
+      return false;
+    }
+  }
+
+  get presenting(): boolean {
+    return this.#vr;
+  }
+
+  /**
+   * Into VR, first person from the player's capsule. From the WebGPU backend the page reloads into
+   * WebGL2 first (the steadier XR path on today's headsets); a session still needs a user gesture.
+   */
+  async enterVR(): Promise<"started" | "reload" | "failed"> {
+    if (this.backend !== "webgl2") return "reload";
+    try {
+      const session = await navigator.xr!.requestSession("immersive-vr", { optionalFeatures: ["local-floor", "layers"] });
+      const xr = this.#renderer.xr;
+      xr.enabled = true;
+      xr.setReferenceSpaceType("local-floor");
+      await xr.setSession(session);
+      this.#vr = true;
+      probe().vr = true;
+      session.addEventListener("end", () => {
+        this.#vr = false;
+        probe().vr = false;
+        xr.enabled = false;
+        this.#rig.position.set(0, 0, 0);
+        this.#rig.rotation.set(0, 0, 0);
+        const player = this.#view?.actors.get(PLAYER_ID);
+        if (player) player.visible = true;
+        this.#input.setStick(0, 0);
+      });
+      return "started";
+    } catch (e) {
+      console.warn("VR session failed", e);
+      return "failed";
+    }
+  }
+
+  /** VR controls: left stick moves (relative to where you look), right stick snap-turns, A/X jump, triggers use. */
+  #vrInput() {
+    const session = this.#renderer.xr.getSession();
+    if (!session) return;
+    let sx = 0;
+    let sy = 0;
+    let jump = false;
+    let use = false;
+    for (const src of session.inputSources) {
+      const g = src.gamepad;
+      if (!g) continue;
+      const ax = g.axes[2] ?? 0;
+      const ay = g.axes[3] ?? 0;
+      if (src.handedness === "left") ((sx = Math.abs(ax) > 0.15 ? ax : 0), (sy = Math.abs(ay) > 0.15 ? -ay : 0));
+      if (src.handedness === "right") {
+        if (Math.abs(ax) > 0.7 && this.#snapArmed) ((this.#snapTurn -= Math.sign(ax) * (Math.PI / 6)), (this.#snapArmed = false));
+        if (Math.abs(ax) < 0.3) this.#snapArmed = true;
+      }
+      if (g.buttons[4]?.pressed) jump = true;
+      if (g.buttons[0]?.pressed) use = true;
+    }
+    this.#input.setStick(sx, sy);
+    this.#input.setButton(1, jump);
+    this.#input.setButton(2, use);
+    // the direction you look is "forward"
+    const dir = new Vector3();
+    this.#renderer.xr.getCamera().getWorldDirection(dir);
+    this.#vrYaw = Math.atan2(-dir.x, -dir.z);
   }
 
   /** Light up one thing (Logic X-ray hover); null puts the beam away. */
@@ -293,7 +375,7 @@ export class Engine {
   }
 
   #pushInput() {
-    this.#sim?.input(this.#input.sample((this.#curr?.tick ?? 0) + 1, this.#follow.yaw));
+    this.#sim?.input(this.#input.sample((this.#curr?.tick ?? 0) + 1, this.#vr ? this.#vrYaw : this.#follow.yaw));
   }
 
   #applyPoses(now: number) {
@@ -326,11 +408,18 @@ export class Engine {
     this.#lastT = now;
 
     const view = this.#view;
+    if (this.#vr) this.#vrInput();
     this.#pushInput();
     this.#applyPoses(now);
 
     const player = view?.actors.get(PLAYER_ID);
-    if (player) {
+    if (player && this.#vr) {
+      // first person: the rig stands on the player's feet; the headset adds the eye height
+      player.visible = false;
+      this.#rig.position.set(player.position.x, player.position.y - 0.9, player.position.z);
+      this.#rig.rotation.y = this.#snapTurn;
+      this.#rain.follow(player.position);
+    } else if (player) {
       this.#follow.update(dt, player.position);
       this.#rain.follow(this.#camera.position);
     }
@@ -339,7 +428,7 @@ export class Engine {
     this.#beacon.visible = Boolean(focused);
     if (focused) this.#beacon.position.set(focused.position.x, focused.position.y + 6, focused.position.z);
 
-    if (this.#pipeline) this.#pipeline.render();
+    if (this.#pipeline && !this.#vr) this.#pipeline.render();
     else this.#renderer.render(this.#scene, this.#camera);
 
     const pr = probe();

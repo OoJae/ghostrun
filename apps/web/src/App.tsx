@@ -18,7 +18,8 @@ import { RapierSim } from "./sim/rapier";
 const HINT_MS = 6000;
 const FIXTURE = new URLSearchParams(window.location.search).get("fixture") ?? "ctf";
 const FIRST_PROMPT = FIXTURE_PROMPTS[FIXTURE] ?? BRIEF;
-const TOUCH_PARAM = new URLSearchParams(window.location.search).get("touch");
+const params0 = new URLSearchParams(window.location.search);
+const TOUCH_PARAM = params0.get("touch");
 
 type Status = "booting" | "building" | "playing" | "error";
 type Mode = "checking" | "live" | "fixture";
@@ -47,6 +48,8 @@ export function App() {
   const [proof, setProof] = useState<ProofState>({ status: "idle", chips: [], receipt: null });
   const [receiptOpen, setReceiptOpen] = useState(false);
   const [xray, setXray] = useState(false);
+  const [vrOk, setVrOk] = useState(false);
+  const [inVr, setInVr] = useState(false);
   const [score, setScore] = useState<{ red: number; blue: number; result: string | null }>({ red: 0, blue: 0, result: null });
   const [teams, setTeams] = useState(true);
   const [useHint, setUseHint] = useState<string | null>(null);
@@ -221,6 +224,7 @@ export function App() {
         }
         engine.current = e;
         e.onInput = () => setCollapsed(true);
+        void e.vrSupported().then((ok) => !disposed && setVrOk(ok));
         probe().sim = "stub";
         if (params.get("sim") !== "stub") {
           try {
@@ -352,6 +356,33 @@ export function App() {
             void show(w, ++runId.current, performance.now(), []);
           }}
         />
+        {vrOk && status === "playing" && !inVr && (
+          <button
+            type="button"
+            className={`glass vrbtn${params0.get("vr") === "1" ? " ready" : ""}`}
+            data-testid="enter-vr"
+            onClick={async () => {
+              const e = engine.current;
+              if (!e) return;
+              const r = await e.enterVR();
+              if (r === "reload") {
+                const u = new URL(window.location.href);
+                u.searchParams.set("gl", "webgl2");
+                u.searchParams.set("vr", "1");
+                window.location.href = u.toString();
+              } else if (r === "started") {
+                setInVr(true);
+                const check = setInterval(() => {
+                  if (engine.current?.presenting) return;
+                  setInVr(false);
+                  clearInterval(check);
+                }, 500);
+              } else setToast("Couldn't start VR on this device.");
+            }}
+          >
+            {params0.get("vr") === "1" ? "Tap to enter VR" : "Enter VR"}
+          </button>
+        )}
         {xray && current.current && (
           <XRay
             bundle={current.current.bundle}
