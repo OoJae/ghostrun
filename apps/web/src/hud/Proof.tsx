@@ -87,6 +87,8 @@ export interface RepairState {
   /** Counterexamples left in the repaired world's receipt. */
   left?: number;
   headline?: string;
+  /** The repair round under way (working), or how many rounds the offer took. */
+  round?: number;
 }
 
 /** The repair loop's one line: working, or a re-proved better world to apply between runs. */
@@ -96,7 +98,7 @@ export function RepairChip({ repair, onApply }: { repair: RepairState; onApply: 
     return (
       <div className="glass repair working" data-testid="repair-chip">
         <span className="dot" aria-hidden="true" />
-        AI repairing {repair.issues} issue{repair.issues > 1 ? "s" : ""} the proof found…
+        AI repairing {repair.issues} issue{repair.issues > 1 ? "s" : ""} the proof found{repair.round && repair.round > 1 ? ` (round ${repair.round} of 3)` : ""}…
       </div>
     );
   }
@@ -104,7 +106,7 @@ export function RepairChip({ repair, onApply }: { repair: RepairState; onApply: 
     <button type="button" className="glass repair offer" data-testid="repair-chip" onClick={onApply} title="The repaired world was re-proved on this device and beats the original receipt">
       <span className="dot" aria-hidden="true" />
       {repair.left ? `AI improved it (${repair.left} issue${repair.left > 1 ? "s" : ""} left)` : "AI repaired it"}
-      {repair.headline ? `: ${repair.headline}` : ""} · re-proved · <strong>Apply</strong>
+      {repair.headline ? `: ${repair.headline}` : ""} · re-proved{repair.round && repair.round > 1 ? ` · ${repair.round} rounds` : ""} · <strong>Apply</strong>
     </button>
   );
 }

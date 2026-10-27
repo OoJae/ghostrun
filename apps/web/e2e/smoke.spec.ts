@@ -421,3 +421,28 @@ test("first ten seconds: try-one suggestions open a world in one click; a spoken
   await expect(page.getByRole("status").filter({ hasText: "speech service" })).toBeVisible();
   expect(errors).toEqual([]);
 });
+
+test("repair loop: a broken promise goes back to the model, the fix is re-proved and offered, Apply makes it green", async ({ page }) => {
+  const errors = collectErrors(page);
+  const sse = (line: string) => `event: op\ndata: ${JSON.stringify({ i: 0, line })}\n\nevent: done\ndata: {"lines":1}\n\n`;
+  const issues: string[][] = [];
+  await page.route("**/v1/health", (r) => r.fulfill({ json: { ok: true, packs: [], llm: true, gate: "dev", sitekey: null } }));
+  await page.route("**/v1/mind", (r) => r.fulfill({ status: 503, json: { error: "off in this test" } }));
+  await page.route("**/v1/edit", (r) => r.fulfill({ contentType: "text/event-stream", body: sse('{"op":"law","player":{"jumpsMax":2,"jumpH":3.4}}') }));
+  await page.route("**/v1/repair", (r) => {
+    issues.push((r.request().postDataJSON() as { issues: string[] }).issues);
+    return r.fulfill({ contentType: "text/event-stream", body: sse('{"op":"law","player":{"jumpsMax":2,"jumpH":1.6}}') });
+  });
+  await page.goto("/?gl=webgl2&fx=0&dpr=0.5&prewarm=0");
+  await page.waitForFunction(() => window.__GHOSTRUN__?.ready === true, null, { timeout: 90_000 });
+  await expect(page.getByTestId("proof-badge")).toContainText("Rooftop lane needs double jump: verified", { timeout: 60_000 });
+  await page.getByTestId("edit-box").getByRole("button", { name: "super high jumps" }).click();
+  await expect(page.getByTestId("proof-badge")).toContainText("counterexample", { timeout: 60_000 });
+  const chip = page.getByTestId("repair-chip");
+  await expect(chip).toContainText("AI repaired it", { timeout: 90_000 });
+  await expect(chip).toContainText("re-proved");
+  expect(issues[0]?.some((i) => i.includes("Rooftop lane needs double jump"))).toBe(true);
+  await chip.click();
+  await expect(page.getByTestId("proof-badge")).toContainText("Rooftop lane needs double jump: verified", { timeout: 60_000 });
+  expect(errors.filter((e) => !e.includes("503"))).toEqual([]);
+});

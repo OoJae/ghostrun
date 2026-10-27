@@ -129,31 +129,44 @@ export function App() {
 
   /**
    * Counterexample-guided repair for live worlds: the receipt's failures go to /v1/repair, the
-   * patch is merged, re-placed and re-proved here, and offered only if its receipt is better.
+   * patch is merged, re-placed and re-proved here, and offered only if its receipt is better
+   * (up to three rounds, each building on the last accepted one).
    */
   const maybeRepair = useCallback(async (world: World, receipt: Receipt, id: number) => {
-    const src = world.source;
-    if (!src || modeRef.current !== "live") return;
-    const issues = issuesOf(receipt, world.bundle);
-    if (!issues.length) return;
-    setRepair({ status: "working", issues: issues.length });
-    const patch = await liveRepair(src.prompt, src.intent as LiveIntent, src.fill, issues, src.seed);
-    if (id !== runId.current) return;
-    if (!patch) return setRepair({ status: "failed", issues: issues.length });
-    // after a person's edit the expectations are the world's promises: a fix may change the world, never the claim
-    const merged = mergeFill(src.fill, patch, { edit: Boolean(src.edits?.length) }).text;
-    const w2 = worldFromFill(merged, src.seed, world.intent.live, src.pack);
-    w2.source = { ...src, fill: merged };
-    try {
-      const r2 = await proveOnDevice(w2, -id);
+    if (!world.source || modeRef.current !== "live") return;
+    const first = issuesOf(receipt, world.bundle);
+    if (!first.length) return;
+    // up to three rounds: each accepted patch is the base for the next, while it keeps getting better
+    let base = world;
+    let best: { world: World; receipt: Receipt; round: number } | null = null;
+    for (let round = 1; round <= 3; round++) {
+      const src = base.source!;
+      const now = best?.receipt ?? receipt;
+      const issues = issuesOf(now, base.bundle);
+      if (!issues.length) break;
+      setRepair({ status: "working", issues: issues.length, round });
+      const patch = await liveRepair(src.prompt, src.intent as LiveIntent, src.fill, issues, src.seed);
       if (id !== runId.current) return;
-      if (!better(r2, receipt)) return setRepair({ status: "failed", issues: issues.length });
-      repaired.current = w2;
-      const left = r2.chips.filter((c) => c.status === "counterexample").length;
-      setRepair({ status: "offer", issues: issues.length, left, ...(r2.headline ? { headline: `${r2.headline.text} (${statusWord(r2.headline.status)})` } : {}) });
-    } catch {
-      setRepair({ status: "failed", issues: issues.length });
+      if (!patch) break;
+      // after a person's edit the expectations are the world's promises: a fix may change the world, never the claim
+      const merged = mergeFill(src.fill, patch, { edit: Boolean(src.edits?.length) }).text;
+      const w2 = worldFromFill(merged, src.seed, base.intent.live, src.pack);
+      w2.source = { ...src, fill: merged };
+      let r2: Receipt;
+      try {
+        r2 = await proveOnDevice(w2, -id * 10 - round);
+      } catch {
+        break;
+      }
+      if (id !== runId.current) return;
+      if (!better(r2, now)) break;
+      best = { world: w2, receipt: r2, round };
+      base = w2;
     }
+    if (!best) return setRepair({ status: "failed", issues: first.length });
+    repaired.current = best.world;
+    const left = best.receipt.chips.filter((c) => c.status === "counterexample").length;
+    setRepair({ status: "offer", issues: first.length, left, round: best.round, ...(best.receipt.headline ? { headline: `${best.receipt.headline.text} (${statusWord(best.receipt.headline.status)})` } : {}) });
   }, [proveOnDevice]);
 
   /** Prove the world on the device worker (until the edge proof service is deployed). */

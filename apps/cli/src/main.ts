@@ -207,13 +207,18 @@ async function main() {
       if (!args.includes("--repair")) for (const n of placed.notes.filter((x) => !x.startsWith("interior") && !x.startsWith("arena") && !x.startsWith("outdoor") && !x.startsWith("course"))) console.log(`    · ${n}`);
       if (args.includes("--repair") && existsSync(rp)) {
         const saved = JSON.parse(readFileSync(rp, "utf8")) as { prompt: string; intent: IntentOut };
-        const fix = await repairRound(R, saved.prompt, saved.intent, text, meta.seed ?? 7, fill.draft.pack.id, r, placed.bundle, placed.notes);
-        if (fix) {
-          console.log(`  ${fix.kept ? "REPAIRED" : "rejected"} in ${fix.ms} ms (${JSON.stringify(fix.stats)}) → ${row(fix.receipt, fix.bundle)}`);
+        // up to three rounds, as the app does: each accepted patch is the base for the next
+        let [curFill, curReceipt, curBundle, curNotes] = [text, r, placed.bundle, placed.notes];
+        for (let round = 1; round <= 3; round++) {
+          const fix = await repairRound(R, saved.prompt, saved.intent, curFill, meta.seed ?? 7, fill.draft.pack.id, curReceipt, curBundle, curNotes);
+          if (!fix) break;
+          console.log(`  round ${round}: ${fix.kept ? "REPAIRED" : "rejected"} in ${fix.ms} ms (${JSON.stringify(fix.stats)}) → ${row(fix.receipt, fix.bundle)}`);
           for (const i of fix.issues) console.log(`    ? ${i.slice(0, 160)}`);
+          await new Promise((res) => setTimeout(res, 2500));
+          if (!fix.kept) break;
           writeFileSync(join(dir, f.replace(".fill.jsonl", ".repaired.jsonl")), fix.fill);
+          [curFill, curReceipt, curBundle, curNotes] = [fix.fill, fix.receipt, fix.bundle, []];
         }
-        await new Promise((res) => setTimeout(res, 2500));
       }
     }
   } else if (cmd === "edits") {
