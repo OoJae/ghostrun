@@ -500,3 +500,19 @@ test("try to fool it: a bug planted in a copy of the world is caught, and the ne
   await expect(page.getByTestId("proof-badge")).toContainText("Rooftop lane needs double jump: verified");
   expect(errors).toEqual([]);
 });
+
+test("where the runners went: the receipt shows the AI runners' routes and what nobody went near", async ({ page }) => {
+  const errors = collectErrors(page);
+  await page.goto("/?gl=webgl2&fx=0&dpr=0.5&prewarm=0");
+  await page.waitForFunction(() => window.__GHOSTRUN__?.ready === true, null, { timeout: 90_000 });
+  await expect(page.getByTestId("proof-badge")).toContainText("Rooftop lane needs double jump: verified", { timeout: 60_000 });
+  await page.keyboard.press("KeyP");
+  const routes = page.getByTestId("routes");
+  await expect(routes).toContainText("12 AI runs");
+  await expect(routes).toContainText("Most time: near the");
+  await page.getByTestId("routes-toggle").click();
+  await expect(page.getByTestId("routes-toggle")).toHaveText("Hide the runners' routes");
+  await page.getByTestId("routes-toggle").click();
+  await expect(page.getByTestId("routes-toggle")).toHaveText("Where the runners went");
+  expect(errors).toEqual([]);
+});

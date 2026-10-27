@@ -26,6 +26,12 @@ export interface Chip {
   ms: number;
 }
 
+/** Where one AI runner went: its feet every 20 ticks, as x, y, z triples (0.1 m). */
+export interface Trail {
+  won: boolean;
+  xyz: number[];
+}
+
 export interface Receipt {
   v: 1;
   spec: string;
@@ -35,4 +41,6 @@ export interface Receipt {
   chips: Chip[];
   par: { goldS: number; runs: number; won: number } | null;
   ms: number;
+  /** The AI runners' routes (play analytics: where they went, what nobody went near). */
+  trails?: Trail[];
 }

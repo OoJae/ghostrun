@@ -3,7 +3,7 @@
 import { bloom } from "three/addons/tsl/display/BloomNode.js";
 import { pass } from "three/tsl";
 import {
-  ACESFilmicToneMapping, CylinderGeometry, Group, Mesh, PerspectiveCamera, Quaternion, RenderPipeline, Scene, Vector3, WebGPURenderer, type Fog,
+  ACESFilmicToneMapping, BufferGeometry, CylinderGeometry, DoubleSide, Float32BufferAttribute, Group, Mesh, MeshBasicMaterial, PerspectiveCamera, Quaternion, RenderPipeline, Scene, Vector3, WebGPURenderer, type Fog,
 } from "three/webgpu";
 import { InputCollector } from "./input";
 import type { WorldBundle } from "@ghostrun/ir";
@@ -223,6 +223,59 @@ export class Engine {
     this.#vrYaw = Math.atan2(-dir.x, -dir.z);
   }
 
+  #trails: Group | null = null;
+  #lookId = "";
+  #beforeOverview: { pitch: number; dist: number } | null = null;
+
+  /**
+   * Where the AI runners went, as ribbons just above the ground they walked on (winning runs cyan,
+   * the rest magenta), with the camera raised to look down over them. null puts them away.
+   */
+  showTrails(trails: readonly { won: boolean; xyz: readonly number[] }[] | null) {
+    if (this.#trails) {
+      this.#scene.remove(this.#trails);
+      this.#trails.traverse((o) => {
+        if (o instanceof Mesh) (o.geometry.dispose(), (o.material as MeshBasicMaterial).dispose());
+      });
+      this.#trails = null;
+    }
+    if (this.#beforeOverview && !trails?.length) {
+      this.#follow.pitch = this.#beforeOverview.pitch;
+      this.#follow.dist = this.#beforeOverview.dist;
+      this.#follow.setColliders(this.#view && this.#lookId !== "gallery" ? this.#view.colliders : []);
+      this.#beforeOverview = null;
+    }
+    if (!trails?.length) return;
+    const g = new Group();
+    g.name = "trails";
+    const W = 0.18; // half the ribbon's width (wide enough to read from the overview)
+    for (const t of trails) {
+      const p = t.xyz;
+      if (p.length < 6) continue;
+      const pos: number[] = [];
+      for (let i = 0; i + 5 < p.length; i += 3) {
+        const [ax, ay, az, bx, by, bz] = [p[i]!, p[i + 1]! + 0.06, p[i + 2]!, p[i + 3]!, p[i + 4]! + 0.06, p[i + 5]!];
+        const dx = bx - ax;
+        const dz = bz - az;
+        const len = Math.hypot(dx, dz);
+        if (len < 0.01 || len > 6) continue; // standing still, or a respawn's jump across the map
+        const [nx, nz] = [(-dz / len) * W, (dx / len) * W];
+        pos.push(ax + nx, ay, az + nz, ax - nx, ay, az - nz, bx + nx, by, bz + nz, ax - nx, ay, az - nz, bx - nx, by, bz - nz, bx + nx, by, bz + nz);
+      }
+      if (!pos.length) continue;
+      const geo = new BufferGeometry();
+      geo.setAttribute("position", new Float32BufferAttribute(pos, 3));
+      g.add(new Mesh(geo, new MeshBasicMaterial({ color: t.won ? 0x19e3ff : 0xff3d8b, transparent: true, opacity: t.won ? 0.55 : 0.4, depthWrite: false, side: DoubleSide })));
+    }
+    this.#scene.add(g);
+    this.#trails = g;
+    // look down over the routes (and back as you were when they go)
+    if (!this.#beforeOverview) this.#beforeOverview = { pitch: this.#follow.pitch, dist: this.#follow.dist };
+    this.#follow.pitch = 1.05;
+    this.#follow.dist = 30;
+    this.#follow.setColliders([]);
+  }
+
   /** Light up one thing (Logic X-ray hover); null puts the beam away. */
   highlight(id: string | null) {
     this.#focus = id;
@@ -283,9 +336,11 @@ export class Engine {
     this.#scene.environmentIntensity = look.env;
     if (this.#bloom) this.#bloom.strength.value = look.bloom;
     const view = buildWorldView(world.bundle, look);
+    this.showTrails(null); // another world's routes
     this.#scene.add(view.root);
     this.#view = view;
     // cutaway interiors: the camera looks down over the walls instead of bumping into them
+    this.#lookId = look.id;
     this.#follow.setColliders(look.id === "gallery" ? [] : view.colliders);
     const sim = this.simFactory ? this.simFactory(world.bundle) : new StubSim(world.bundle);
     this.rapierSim = this.simFactory ? (sim as RapierSim) : null;

@@ -207,3 +207,20 @@ describe("try to fool it", () => {
     expect(plants({ ...world, rules: [...world.rules, { ...world.rules.find((r) => r.then.some((e) => e.e === "win"))!, id: "r_win_2" }] }, 36.9)).toEqual([]); // two ways to win: nothing to plant
   }, 180_000);
 });
+
+describe("where the runners went", () => {
+  it("the receipt carries each runner's route; nothing the CTF asks for goes unvisited, and the time goes near the orb's path", async () => {
+    const { insights } = await import("../src");
+    const r = await prove(R, world, { engine: ENGINE, runs: 6 });
+    expect(r.trails).toHaveLength(6);
+    expect(r.trails!.every((t) => t.xyz.length % 3 === 0 && t.xyz.length > 30)).toBe(true);
+    const i = insights(world, r.trails!);
+    expect(i.samples).toBeGreaterThan(100);
+    expect(i.unused.map((u) => u.id)).not.toContain("orb");
+    expect(i.hot[0]!.share).toBeGreaterThan(0);
+    // a lamp in a corner nobody visits is a design note
+    const lamp = { ...world.entities.find((e) => e.kind === "prop")!, id: "far_lamp", noun: "far lamp", pos: [200, 0.5, 200] as [number, number, number], tags: [] };
+    const w2 = { ...world, entities: [...world.entities, lamp], verbs: [...world.verbs, { id: "vb_lamp", verb: "social.inspect", on: "far_lamp", params: { text: "A lamp" }, signature: false, src: "ai" as const, layer: "gameplay" as const }] };
+    expect(insights(w2, r.trails!).unused.map((u) => u.id)).toContain("far_lamp");
+  }, 180_000);
+});

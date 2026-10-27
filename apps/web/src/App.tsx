@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { mergeFill, pinLayout, splitObjects } from "@ghostrun/ir";
-import { better, issuesOf, statusWord, type Chip, type Receipt } from "@ghostrun/proof/light";
+import { better, insights, issuesOf, statusWord, type Chip, type Receipt } from "@ghostrun/proof/light";
 // the engine stack (three, physics, navmesh, bots) is a second chunk, fetched as the shell paints
 import type { Engine, LoadResult } from "./engine";
 import { KeyHint } from "./hud/Corner";
@@ -73,6 +73,7 @@ export function App() {
   const [hint, setHint] = useState(false);
   const [proof, setProof] = useState<ProofState>({ status: "idle", chips: [], receipt: null });
   const [fooled, setFooled] = useState<Fooled | null>(null);
+  const [routesOn, setRoutesOn] = useState(false);
   const [receiptOpen, setReceiptOpen] = useState(false);
   const [xray, setXray] = useState(false);
   const [vrOk, setVrOk] = useState(false);
@@ -182,6 +183,7 @@ export function App() {
     setProof({ status: "proving", chips: [], receipt: null });
     setRepair({ status: "idle", issues: 0 });
     setFooled(null);
+    setRoutesOn(false);
     proveOnDevice(world, id, (chip) => id === runId.current && setProof((p) => ({ ...p, chips: [...p.chips, chip] })))
       .then((receipt) => {
         if (id !== runId.current) return;
@@ -759,6 +761,13 @@ export function App() {
             onTrust={() => (setReceiptOpen(false), setTrusting(true))}
             onFool={proof.status === "done" && proof.receipt ? tryFool : undefined}
             fooled={fooled}
+            routes={proof.receipt?.trails && current.current ? insights(current.current.bundle, proof.receipt.trails) : null}
+            routesOn={routesOn}
+            onRoutes={() => {
+              const on = !routesOn;
+              setRoutesOn(on);
+              engine.current?.showTrails(on ? (proof.receipt?.trails ?? null) : null);
+            }}
             reported={reported}
             onShare={shareRun}
             onExport={async () => {

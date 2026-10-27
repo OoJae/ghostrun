@@ -1,4 +1,4 @@
-import type { Chip, Receipt } from "@ghostrun/proof/light";
+import type { Chip, Insights, Receipt } from "@ghostrun/proof/light";
 import { useState } from "react";
 import { chipLine, fraction, statusWord } from "@ghostrun/proof/light";
 
@@ -44,7 +44,25 @@ export interface Fooled {
   of?: number;
 }
 
-export function ReceiptPanel({ proof, onClose, onShare, onWrong, onExport, onTrust, onFool, fooled, reported }: { proof: ProofState; onClose: () => void; onShare?: () => void; onWrong?: (note: string) => void; onExport?: () => void; onTrust?: () => void; onFool?: (() => void) | undefined; fooled?: Fooled | null; reported?: string | undefined }) {
+/** Play analytics in a few words: where the AI runners spent their time, and what nobody went near. */
+function Routes({ routes, runs, on, onToggle }: { routes: Insights; runs: number; on: boolean; onToggle: () => void }) {
+  const pct = (x: number) => `${Math.round(x * 100)}%`;
+  const hot = routes.hot.filter((h) => h.share >= 0.03 && h.near);
+  return (
+    <div className="routes" data-testid="routes">
+      <button type="button" onClick={onToggle} data-testid="routes-toggle" aria-pressed={on}>
+        {on ? "Hide the runners' routes" : "Where the runners went"}
+      </button>
+      <span className="muted"> ({runs} AI runs, {routes.samples} positions)</span>
+      {hot.length > 0 && <p>Most time: {hot.map((h) => `near the ${h.near} (${pct(h.share)})`).join(", ")}.</p>}
+      <p className={routes.unused.length ? "warn" : ""}>
+        {routes.unused.length ? <>Nobody went near: {routes.unused.slice(0, 4).map((u) => `the ${u.noun}`).join(", ")}{routes.unused.length > 4 ? ` and ${routes.unused.length - 4} more` : ""}. A design note: give players a reason to go there, or take it out.</> : "Every runner's route passed everything there is to use."}
+      </p>
+    </div>
+  );
+}
+
+export function ReceiptPanel({ proof, onClose, onShare, onWrong, onExport, onTrust, onFool, fooled, reported, routes, routesOn, onRoutes }: { proof: ProofState; onClose: () => void; onShare?: () => void; onWrong?: (note: string) => void; onExport?: () => void; onTrust?: () => void; onFool?: (() => void) | undefined; fooled?: Fooled | null; reported?: string | undefined; routes?: Insights | null; routesOn?: boolean; onRoutes?: () => void }) {
   const r = proof.receipt;
   const [writing, setWriting] = useState(false);
   const [note, setNote] = useState("");
@@ -67,6 +85,7 @@ export function ReceiptPanel({ proof, onClose, onShare, onWrong, onExport, onTru
         ))}
       </ul>
       {r?.par && <p className="par">AI par {r.par.goldS} s · {r.par.won} of {r.par.runs} runners won</p>}
+      {routes && r?.trails && onRoutes && <Routes routes={routes} runs={r.trails.length} on={Boolean(routesOn)} onToggle={onRoutes} />}
       {fooled && (
         <p className={`fooled ${fooled.status === "done" ? (fooled.caught ? "caught" : "missed") : ""}`} data-testid="fooled">
           {fooled.status === "planting" && "Planting a bug in a copy of this world; AI runners are playing it…"}

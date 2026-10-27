@@ -64,6 +64,7 @@ export async function prove(R: Rapier, b: WorldBundle, opts: ProveOptions): Prom
       chips,
       par: s3.par,
       ms: Math.round((globalThis.performance?.now?.() ?? 0) - start),
+      ...(s3.trails.length ? { trails: s3.trails } : {}),
     };
   } finally {
     nav.destroy();

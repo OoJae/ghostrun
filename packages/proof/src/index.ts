@@ -4,6 +4,7 @@ export { apex, reachAt, t1 } from "./t1";
 export { t2 } from "./t2";
 export { t3, traceRunners } from "./t3";
 export { chipLine, fraction, statusWord } from "./labels";
-export type { Chip, ChipStatus, Counterexample, Receipt, Tier } from "./types";
+export type { Chip, ChipStatus, Counterexample, Receipt, Tier, Trail } from "./types";
+export { insights, type Insights } from "./insights";
 export { badness, better, issuesOf } from "./issues";
 export { caught, plants, provedWon, type Planted } from "./fool";
