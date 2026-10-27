@@ -322,13 +322,23 @@ function hop(sim: SimWorld, nav: NavWorld, b: WorldBundle, a: Surface, n: Surfac
   const portals = b.entities
     .filter((e) => b.verbs.some((v) => v.on === e.id && v.verb === "puzzle.portal"))
     .map((e): Surface => ({ id: e.id, zone: e.zone, top: e.pos[1] - e.size[1] / 2, min: [e.pos[0] - e.size[0] / 2, e.pos[2] - e.size[2] / 2], max: [e.pos[0] + e.size[0] / 2, e.pos[2] + e.size[2] / 2] }));
-  const pads = [...all.filter((x) => x.launch && x.id !== a.id && x.id !== n.id), ...portals];
-  const onPad = (x: number, z: number, top: number, m: number) => pads.find((d) => Math.abs(d.top - top) < 0.6 && x >= d.min[0] - m && x <= d.max[0] + m && z >= d.min[1] - m && z <= d.max[1] + m);
+  // and a hazard standing on the lane (a boulder, spikes) is no place to land or walk through
+  const losing = new Set(b.rules.filter((r) => (r.when.t === "enter" || r.when.t === "hit") && r.when.a === "player" && r.then.some((x) => x.e === "lose")).map((r) => r.when.b));
+  const standing = b.entities
+    .filter((e) => (e.body === "sensor" || e.body === "fixed") && (losing.has(e.id) || b.verbs.some((v) => v.on === e.id && v.verb === "motion_hazards.hazard")) && !b.verbs.some((v) => v.on === e.id && v.verb.endsWith(".oscillate")))
+    .map((e): Surface & { hurts?: boolean } => ({ id: e.id, zone: e.zone, top: e.pos[1] - e.size[1] / 2, min: [e.pos[0] - e.size[0] / 2, e.pos[2] - e.size[2] / 2], max: [e.pos[0] + e.size[0] / 2, e.pos[2] + e.size[2] / 2], hurts: true }));
+  const pads: (Surface & { hurts?: boolean })[] = [...all.filter((x) => x.launch && x.id !== a.id && x.id !== n.id), ...portals, ...standing];
+  // what kills gets more room than what only moves you (a landing can carry on half a metre)
+  const onPad = (x: number, z: number, top: number, m: number) => pads.find((d) => {
+    const g = m + (d.hurts ? 0.6 : 0);
+    return Math.abs(d.top - top) < 0.6 && x >= d.min[0] - g && x <= d.max[0] + g && z >= d.min[1] - g && z <= d.max[1] + g;
+  });
   // they fire on the runner's centre: a quarter metre clear is enough
   const clear = (x: number, z: number, top: number) => !onPad(x, z, top, 0.25);
-  const sideOf = (s: Surface, x: number, z: number, d: Surface): [number, number] | null => {
+  const sideOf = (s: Surface, x: number, z: number, d: Surface & { hurts?: boolean }): [number, number] | null => {
     // the nearest spot on s beside d (left, right, before or after it), 0.35 m in from s's edges
-    const opts: [number, number][] = [[d.min[0] - 0.6, z], [d.max[0] + 0.6, z], [x, d.min[1] - 0.6], [x, d.max[1] + 0.6]];
+    const o = d.hurts ? 1.0 : 0.6;
+    const opts: [number, number][] = [[d.min[0] - o, z], [d.max[0] + o, z], [x, d.min[1] - o], [x, d.max[1] + o]];
     const ok = opts
       .map(([u, v]) => [clampTo(u, s.min[0] + 0.35, s.max[0] - 0.35), clampTo(v, s.min[1] + 0.35, s.max[1] - 0.35)] as [number, number])
       .filter(([u, v]) => clear(u, v, s.top));
@@ -383,7 +393,8 @@ function hop(sim: SimWorld, nav: NavWorld, b: WorldBundle, a: Surface, n: Surfac
       const here = surfaceAt(all, [p[0], top + 0.1, p[2]]);
       const d = pads.find((q) => !legClear(p[0], p[2], x, z) && Math.abs(q.top - top) < 0.6);
       if (here && d) {
-        const corners = ([[d.min[0] - 0.45, d.min[1] - 0.45], [d.max[0] + 0.45, d.min[1] - 0.45], [d.max[0] + 0.45, d.max[1] + 0.45], [d.min[0] - 0.45, d.max[1] + 0.45]] as [number, number][])
+        const o = d.hurts ? 0.9 : 0.45;
+        const corners = ([[d.min[0] - o, d.min[1] - o], [d.max[0] + o, d.min[1] - o], [d.max[0] + o, d.max[1] + o], [d.min[0] - o, d.max[1] + o]] as [number, number][])
           .map(([u, v]) => [clampTo(u, here.min[0] + 0.3, here.max[0] - 0.3), clampTo(v, here.min[1] + 0.3, here.max[1] - 0.3)] as [number, number])
           .filter(([u, v]) => clear(u, v, top));
         const len = (pts: [number, number][]) => pts.reduce((acc, q, i) => { const r0 = i ? pts[i - 1]! : [p[0], p[2]]; return acc + Math.sqrt((q[0] - r0[0]!) * (q[0] - r0[0]!) + (q[1] - r0[1]!) * (q[1] - r0[1]!)); }, 0);
@@ -413,6 +424,7 @@ function hop(sim: SimWorld, nav: NavWorld, b: WorldBundle, a: Surface, n: Surfac
     return on();
   }
   if (gap(a, n) <= 0.01 && Math.abs(rise) < 0.41) {
+    walkTo(ax, az, 0.3); // round anything standing in the way first
     for (let t = 0; t < 900 && budget.ticks > 0 && !sim.result && !on(); t++) steer(ax, az, 120, 0);
     return on();
   }

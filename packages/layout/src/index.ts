@@ -469,6 +469,23 @@ export function repairConditions(b: WorldBundle): string[] {
   const countdown = b.verbs.some((v) => v.verb === "puzzle.timer");
   const mine = b.entities.some((e) => e.kind === "spawn" && e.team === "red") || !b.entities.some((e) => e.kind === "spawn" && e.team === "blue") ? "red" : "blue";
   const at = (id: string) => b.entities.find((x) => x.id === id);
+  // "IF player.carry_count is 4" with things to collect: how many you've collected, kept as your
+  // team's score (each one collected scores), unless the score already means something else
+  const collectible = b.verbs.filter((v) => v.verb === "puzzle.collect").map((v) => v.on);
+  const COUNT = /^(player|team:(?:red|blue))\.(carry_?count|carried|collected|collected_count|count|items|item_count|inventory|[a-z]+_count|num_[a-z_]+)$/;
+  const scoresElse = b.rules.some((r) => r.then.some((e) => e.e === "score" && e.target === `team:${mine}`) && !(r.when.t === "touch" && collectible.includes(r.when.b)));
+  for (const r of b.rules) {
+    for (const [i, c] of r.if.entries()) {
+      const n = typeof c.r === "number" ? c.r : Number(c.r);
+      if (!COUNT.test(c.l) || !Number.isFinite(n) || n < 1 || collectible.length < n || scoresElse || !["eq", "gte", "gt"].includes(c.op)) continue;
+      r.if[i] = { ...c, l: `team:${mine}.score`, op: "gte", r: c.op === "gt" ? n + 1 : n };
+      for (const id of collectible) {
+        if (b.rules.some((x) => x.when.t === "touch" && x.when.b === id && x.then.some((e) => e.e === "score"))) continue;
+        b.rules.push({ id: uniqueId(b, `r_collect_${id}`), src: "template", layer: "gameplay", when: { t: "touch", a: "player", b: id, s: "", n: 0, act: "" }, if: [], then: [fx("score", `team:${mine}`, 1)], once: true, cooldownS: 0, prio: 0 });
+      }
+      notes.push(`rule ${r.id}: '${c.l} ${c.op} ${String(c.r)}' counts what you collect: ${mine} scores for each of ${collectible.length} and needs ${c.op === "gt" ? n + 1 : n}`);
+    }
+  }
   for (const r of b.rules) {
     r.if = r.if.flatMap((c) => {
       // "<x>.carrier.id eq null": the sim's carrier is an id already, and nobody is ""
