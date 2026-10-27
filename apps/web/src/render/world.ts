@@ -39,6 +39,26 @@ const rnd = (i: number) => {
   return x - Math.floor(x);
 };
 
+/**
+ * Every world carries exactly POINT_LIGHTS point lights (spares at zero intensity, extras
+ * dropped). Lit shaders are compiled per light count, so a fixed count lets every world reuse the
+ * programs the first one (and the prewarm) compiled instead of stalling on a fresh compile.
+ */
+export const POINT_LIGHTS = 8;
+
+function fixLights(root: Group) {
+  const lights: PointLight[] = [];
+  root.traverse((o) => {
+    if ((o as PointLight).isPointLight) lights.push(o as PointLight);
+  });
+  for (const l of lights.slice(POINT_LIGHTS)) l.removeFromParent();
+  for (let i = lights.length; i < POINT_LIGHTS; i++) {
+    const spare = new PointLight("#000000", 0, 1, 2);
+    spare.position.set(0, -50, 0);
+    root.add(spare);
+  }
+}
+
 export function buildWorldView(bundle: WorldBundle, look: LookStyle): WorldView {
   const neonLook = look.id === "neon";
   const city = neonLook && bundle.pack.id === "city_block";
@@ -374,6 +394,7 @@ export function buildWorldView(bundle: WorldBundle, look: LookStyle): WorldView 
   actors.set(PLAYER_ID, player);
   const playerShadow = blob(player.position.x, 0, player.position.z);
 
+  fixLights(root);
   return {
     root,
     actors,

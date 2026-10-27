@@ -15,6 +15,8 @@ export interface GhostrunProbe {
   proof?: { headline: string; chips: number };
   /** NPC ground positions [x, z], refreshed twice a second. */
   cast?: Record<string, [number, number]>;
+  /** How long the background shader prewarm took. */
+  prewarmMs?: number;
 }
 
 declare global {

@@ -4,16 +4,16 @@
 // Keys never leave the server. The client parses ops into the IR, places, simulates and proves.
 // Every route but health sits behind the gate (gate.ts). A build reserves its worst-case cost with
 // the governor before any model call and commits the metered cost when it ends (governor.ts).
-import { DEFAULT_LAWS } from "@ghostrun/ir";
-import { chatJson, fillMessages, IntentOut, intentJsonSchema, intentMessages, LlmError, streamChat } from "@ghostrun/llm";
+import { DEFAULT_LAWS, gameplayLines } from "@ghostrun/ir";
+import { chatJson, fillMessages, IntentOut, intentJsonSchema, intentMessages, LlmError, repairMessages, streamChat } from "@ghostrun/llm";
 import { ALL_SUBS, PACKS, packFor } from "@ghostrun/registry";
 import * as v from "valibot";
 import EXAMPLE from "../../../packages/ir/fixtures/ctf-neon.jsonl?raw";
 import { Buckets, intVar, WINDOW_MS } from "./buckets";
 import type { DoNamespace, KvNamespace, R2Bucket, WaitUntil } from "./cf";
-import { buildEstimate, costMicroUsd, FILL_MAX_OUT, FILL_MODEL, INTENT_MAX_OUT, INTENT_MODEL } from "./cost";
+import { buildEstimate, costMicroUsd, FILL_MAX_OUT, FILL_MODEL, INTENT_MAX_OUT, INTENT_MODEL, REPAIR_MAX_IN, REPAIR_MAX_OUT } from "./cost";
 import { capsFromEnv, doCall, Governor, governorClient, localCall, MemoryLedger, type GovernorApi, type GovernorEnv } from "./governor";
-import { devOpen, gateMode, identify, ipKey, ipOf, mintSession, verifyTurnstile, type GateEnv } from "./gate";
+import { devOpen, gateMode, identify, ipKey, ipOf, mintSession, verifyTurnstile, type Caller, type GateEnv } from "./gate";
 import { json, ntfy, readJson } from "./http";
 import { getShare, memoryBlobs, postReport, postShare, postWrong, r2Blobs, type BlobStore, type ShareCtx } from "./share";
 
@@ -72,6 +72,7 @@ export async function handle(req: Request, env: Env, ctx?: WaitUntil): Promise<R
   if (path === "/v1/health") return json({ ok: true, packs: PACKS.map((p) => p.id), llm: Boolean(env.CEREBRAS_API_KEY), gate: gateMode(env, url), sitekey: env.TURNSTILE_SITEKEY ?? null });
   if (path === "/v1/session" && req.method === "POST") return session(req, env, url);
   if (path === "/v1/build" && req.method === "POST") return build(req, env, url, later);
+  if (path === "/v1/repair" && req.method === "POST") return repair(req, env, url, later);
   const shareId = /^\/v1\/share\/([a-z2-7]{16})$/.exec(path)?.[1];
   const post = req.method === "POST";
   const route =
@@ -109,6 +110,100 @@ async function session(req: Request, env: Env, url: URL): Promise<Response> {
   return json({ ok: true, expiresAt: s.exp * 1000 }, 200, { "set-cookie": s.cookie });
 }
 
+/**
+ * Reserve the worst case first. No answer in time: tokenless traffic fails closed; a judge token
+ * falls back to a per-isolate bucket and the spend is recorded after the fact. Returns how to
+ * settle the metered cost, or the refusal to send.
+ */
+async function reserveFor(env: Env, url: URL, caller: Caller, ip: string, estimateMicroUsd: number): Promise<((microUsd: number) => Promise<unknown>) | Response> {
+  const gov = governorFor(env, url);
+  const who = { pool: caller.pool, ...(caller.session ? { session: caller.session } : {}), ip: await ipKey(env, ip) };
+  const hold = gov ? await gov.reserve({ ...who, estimateMicroUsd }) : ({ ok: false, reason: "unavailable" } as const);
+  if (hold.ok) return (m) => gov!.commit(hold.id, m);
+  if (hold.reason !== "unavailable") return json({ error: "budget", reason: hold.reason, retryable: false }, 429);
+  if (caller.via !== "token") return json({ error: "governor unavailable", retryable: true }, 503);
+  if (!judgeBuckets.allow(caller.session ?? ip, intVar(env.JUDGE_FALLBACK_PER_WINDOW, 10))) return json({ error: "rate limited", retryMs: WINDOW_MS }, 429);
+  return (m) => gov?.record({ ...who, actualMicroUsd: m }) ?? Promise.resolve();
+}
+
+/** An SSE response whose writer stops paying for tokens once the client has gone. */
+function sseStream() {
+  const enc = new TextEncoder();
+  const { readable, writable } = new TransformStream<Uint8Array, Uint8Array>();
+  const w = writable.getWriter();
+  const upstream = new AbortController();
+  let gone = false;
+  const send = async (event: string, data: unknown) => {
+    if (gone) return;
+    try {
+      await w.write(enc.encode(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`));
+    } catch {
+      gone = true;
+      upstream.abort();
+    }
+  };
+  const response = new Response(readable, { headers: { "content-type": "text/event-stream", "cache-control": "no-store", "x-accel-buffering": "no" } });
+  return { send, close: () => w.close().catch(() => undefined), signal: upstream.signal, response };
+}
+
+/**
+ * POST /v1/repair: the proof's counterexamples for a world go back to the fill model, which
+ * answers with a patch (changed lines by id, new lines, deletions) streamed as op events. The
+ * client merges, re-places and re-proves, and offers the repaired world only if it is better.
+ */
+async function repair(req: Request, env: Env, url: URL, later: (p: Promise<unknown>) => void): Promise<Response> {
+  if (!env.CEREBRAS_API_KEY) return json({ error: "llm not configured" }, 503);
+  const gate = await identify(req, url, env);
+  if (!gate.ok) return json(gate.body, gate.status);
+  const caller = gate.caller;
+  const ip = ipOf(req);
+  if (caller.via !== "token" && !buildBuckets.allow(ip, intVar(env.BUILDS_PER_WINDOW, 30))) return json({ error: "rate limited", retryMs: WINDOW_MS }, 429);
+  const body = await readJson(req, 96 * 1024);
+  if (!body.ok) return json({ error: body.error }, body.status);
+  const input = (body.value ?? {}) as { prompt?: unknown; intent?: unknown; fill?: unknown; issues?: unknown; seed?: unknown };
+  const prompt = typeof input.prompt === "string" ? input.prompt.trim().slice(0, MAX_PROMPT) : "";
+  const fill = typeof input.fill === "string" && input.fill.length <= 64 * 1024 ? input.fill : "";
+  const issues = Array.isArray(input.issues) ? input.issues.filter((x): x is string => typeof x === "string").slice(0, 10).map((x) => x.slice(0, 600)) : [];
+  const intent = v.safeParse(IntentOut, input.intent);
+  if (!prompt || !fill || !issues.length || !intent.success || !Number.isInteger(input.seed)) return json({ error: "bad repair request" }, 400);
+  if (await paused(env)) return json({ error: "builds paused", retryable: true }, 503);
+  const held = await reserveFor(env, url, caller, ip, costMicroUsd(FILL_MODEL, REPAIR_MAX_IN, REPAIR_MAX_OUT));
+  if (held instanceof Response) return held;
+  const out = sseStream();
+  later(
+    (async () => {
+      const t0 = Date.now();
+      let cost = costMicroUsd(FILL_MODEL, REPAIR_MAX_IN, REPAIR_MAX_OUT);
+      try {
+        const pack = packFor(intent.output.pack);
+        const layout = pack.generate({ seed: input.seed as number, params: pack.defaults, sub: intent.output.sub, laws: DEFAULT_LAWS, harder: false });
+        let buf = "";
+        let i = 0;
+        for await (const ev of streamChat({ apiKey: env.CEREBRAS_API_KEY, model: FILL_MODEL, reasoningEffort: "low", maxTokens: REPAIR_MAX_OUT, messages: repairMessages(prompt, intent.output, layout, gameplayLines(fill), issues), signal: out.signal })) {
+          if (ev.type === "usage") cost = costMicroUsd(FILL_MODEL, ev.inTok, ev.outTok);
+          if (ev.type !== "text") continue;
+          buf += ev.delta;
+          let nl: number;
+          while ((nl = buf.indexOf("\n")) >= 0) {
+            const line = buf.slice(0, nl).trim();
+            buf = buf.slice(nl + 1);
+            if (line) await out.send("op", { i: i++, line });
+          }
+        }
+        if (buf.trim()) await out.send("op", { i: i++, line: buf.trim() });
+        await out.send("done", { totalMs: Date.now() - t0, lines: i });
+      } catch (e) {
+        if (e instanceof LlmError && e.status !== 200) cost = 0;
+        await out.send("error", { message: e instanceof Error ? e.message.slice(0, 200) : "repair failed", retryable: e instanceof LlmError ? e.retryable : true });
+      } finally {
+        await out.close();
+        await held(cost).catch(() => undefined);
+      }
+    })(),
+  );
+  return out.response;
+}
+
 async function build(req: Request, env: Env, url: URL, later: (p: Promise<unknown>) => void): Promise<Response> {
   if (!env.CEREBRAS_API_KEY) return json({ error: "llm not configured" }, 503);
   const gate = await identify(req, url, env);
@@ -126,19 +221,11 @@ async function build(req: Request, env: Env, url: URL, later: (p: Promise<unknow
   const seed = Number.isInteger(input.seed) ? (input.seed as number) : 1 + Math.floor(Date.now() % 100000);
   if (await paused(env)) return json({ error: "builds paused", retryable: true }, 503);
 
-  // Reserve the worst case first. No answer in time: tokenless traffic fails closed; a judge token
-  // falls back to a per-isolate bucket and the spend is recorded after the fact.
   const intentMsgs = intentMessages(prompt, PACKS);
   const est = buildEstimate(intentMsgs);
-  const gov = governorFor(env, url);
-  const who = { pool: caller.pool, ...(caller.session ? { session: caller.session } : {}), ip: await ipKey(env, ip) };
-  const hold = gov ? await gov.reserve({ ...who, estimateMicroUsd: est.intent + est.fill }) : ({ ok: false, reason: "unavailable" } as const);
-  let settle: (microUsd: number) => Promise<unknown>;
-  if (hold.ok) settle = (m) => gov!.commit(hold.id, m);
-  else if (hold.reason !== "unavailable") return json({ error: "budget", reason: hold.reason, retryable: false }, 429);
-  else if (caller.via !== "token") return json({ error: "governor unavailable", retryable: true }, 503);
-  else if (!judgeBuckets.allow(caller.session ?? ip, intVar(env.JUDGE_FALLBACK_PER_WINDOW, 10))) return json({ error: "rate limited", retryMs: WINDOW_MS }, 429);
-  else settle = (m) => gov?.record({ ...who, actualMicroUsd: m }) ?? Promise.resolve();
+  const held = await reserveFor(env, url, caller, ip, est.intent + est.fill);
+  if (held instanceof Response) return held;
+  const settle = held;
 
   const enc = new TextEncoder();
   const { readable, writable } = new TransformStream<Uint8Array, Uint8Array>();

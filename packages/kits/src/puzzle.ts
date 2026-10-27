@@ -73,7 +73,7 @@ export const lockVerb: VerbPlugin = {
 
 export const collectVerb: VerbPlugin = {
   id: "puzzle.collect",
-  line: "on a pickup (coin, gem, star): touching it collects it (touch event a=agent b=it); count with score rules",
+  line: "on a coin/gem/star that vanishes when touched (touch a=player b=it) to be counted; never on a carried item",
   on: ["pickup", "prop"],
   params: {},
   body: "sensor",

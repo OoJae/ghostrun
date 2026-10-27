@@ -163,3 +163,16 @@ function parseNeed(need: string[]): number | null {
   }
   return null;
 }
+
+/** Zones the player can reach from `from` with exactly k jumps (not with k − 1): repair hints. */
+export function zonesNeeding(b: WorldBundle, laws: Laws, from: string, k: number): string[] {
+  const ss = surfaces(b);
+  const at = b.entities.find((e) => e.id === from)?.pos;
+  const start = at ? surfaceUnder(ss, at) : undefined;
+  if (!start || k < 1) return [];
+  const withK = reachable(ss, start, { ...laws, jumpsMax: k }, k);
+  const fewer = reachable(ss, start, { ...laws, jumpsMax: k - 1 }, k - 1);
+  const zones = new Set<string>();
+  for (const s of ss) if (withK.has(s.id) && !fewer.has(s.id)) zones.add(s.zone);
+  return [...zones].sort();
+}

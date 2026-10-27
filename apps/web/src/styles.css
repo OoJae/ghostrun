@@ -489,3 +489,21 @@ kbd {
   font-variant-numeric: tabular-nums;
   opacity: 0.85;
 }
+
+.repair {
+  position: absolute;
+  left: 20px;
+  bottom: 62px;
+  padding: 7px 12px;
+  font-size: 12.5px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: min(520px, calc(100vw - 40px));
+}
+.repair .dot { width: 8px; height: 8px; border-radius: 50%; background: #ffb02e; }
+.repair.working .dot { animation: pulse 1s ease-in-out infinite alternate; }
+.repair.offer { cursor: pointer; border: 1px solid rgba(61, 255, 168, 0.4); }
+.repair.offer .dot { background: #3dffa8; }
+.repair.offer strong { color: #3dffa8; }
+@keyframes pulse { from { opacity: 0.35; } to { opacity: 1; } }

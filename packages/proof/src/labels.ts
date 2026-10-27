@@ -13,3 +13,8 @@ export function chipLine(c: Chip): string {
   const cx = c.cx ? ` — ${c.cx.text}` : "";
   return `${mark} [${c.tier}] ${c.text}${count}${cx}  (${c.method}${c.src === "ai" ? ", AI-written rule" : c.src === "template" ? ", template rule" : ""})`;
 }
+
+/** The word for a status, exactly as the receipt means it (a played claim is not "verified"). */
+export function statusWord(s: Chip["status"]): string {
+  return { verified: "verified", played: "played", modelled: "modelled", not_checkable: "not checkable yet", counterexample: "counterexample" }[s];
+}

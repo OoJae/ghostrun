@@ -93,3 +93,34 @@ export async function liveBuild(prompt: string, onIntent?: (i: LiveIntent, ms: n
   if (intent && fill) return { kind: "world", fill, seed, intent, intentMs, gameplayMs: Math.round(performance.now() - t0), lines };
   return { kind: "unavailable", reason: "stream ended before the gameplay layer" };
 }
+
+/** POST /v1/repair: the proof's issues for a live world → the model's patch lines (JSONL). */
+export async function liveRepair(prompt: string, intent: LiveIntent, fill: string, issues: string[], seed: number): Promise<string | null> {
+  let res: Response;
+  try {
+    res = await fetch("/v1/repair", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ prompt, intent, fill, issues, seed }) });
+  } catch {
+    return null;
+  }
+  if (!res.ok || !res.body) return null;
+  const reader = res.body.getReader();
+  const dec = new TextDecoder();
+  let buf = "";
+  let patch = "";
+  for (;;) {
+    const { value, done } = await reader.read();
+    if (done) break;
+    buf += dec.decode(value, { stream: true });
+    let sep: number;
+    while ((sep = buf.indexOf("\n\n")) >= 0) {
+      const block = buf.slice(0, sep);
+      buf = buf.slice(sep + 2);
+      const event = /^event: (.+)$/m.exec(block)?.[1];
+      const data = /^data: (.+)$/m.exec(block)?.[1];
+      if (!event || !data) continue;
+      if (event === "error") return null;
+      if (event === "op") patch += `${String((JSON.parse(data) as { line: unknown }).line)}\n`;
+    }
+  }
+  return patch || null;
+}

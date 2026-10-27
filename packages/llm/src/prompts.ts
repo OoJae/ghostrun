@@ -89,15 +89,14 @@ export const SUPPORTED = {
   conditions: "if: [{\"l\":\"orb.carrier.team\",\"op\":\"eq\",\"r\":\"red\"}] — paths: <id>.team, <id>.state, <id>.carrier.team, team:red.score",
 };
 
-export function fillMessages(prompt: string, intent: IntentOut, layout: PackLayout, example: string, seed: number): { role: "system" | "user"; content: string }[] {
+type Msg = { role: "system" | "user"; content: string };
+
+/** The world language: shared by the fill and the repair calls so both speak exactly the same IR. */
+function worldRules(layout: PackLayout): string[] {
   const slots = layout.zones
     .map((z) => `- slot "${z.slot}" (${z.tag})${Object.keys(z.anchors).length ? `: anchors ${Object.keys(z.anchors).join(", ")}` : ": no anchors (omit anchor to scatter)"}`)
     .join("\n");
   return [
-    {
-      role: "system",
-      content: [
-        "You compile a game description into GHOSTRUN world ops. Output ONLY JSON Lines: one JSON object per line, no prose, no code fences.",
         "Order is fixed: meta, zone+, spawn+, goal*, ent*, verb*, law?, state*, rule*, npc*, expect+, {\"op\":\"end\",\"layer\":\"gameplay\"}, dress*, poster{0,2}, {\"op\":\"end\",\"layer\":\"cosmetic\"}.",
         "ids: lower_snake_case, ≤32 chars, unique across the whole world. Every line ≤ 1 KB.",
         `Pack "${layout.packId}" slots (zones must use these slot names; entities name an anchor of their zone):`,
@@ -119,6 +118,16 @@ export function fillMessages(prompt: string, intent: IntentOut, layout: PackLayo
         "Expect lines name things by id: a = where the player starts (the spawn id), b = the ZONE id (or goal entity id) the property is about. Example: {\"op\":\"expect\",\"id\":\"x_roof\",\"prop\":\"requires\",\"a\":\"sp_red\",\"b\":\"z_roof\",\"need\":[\"jumps>=2\"],\"headline\":true,\"text\":\"Rooftop lane needs double jump\"}. Never use a verb id or 'player' in a or b.",
         "Budgets: ≤8 zones, ≤40 entities, ≤32 verbs, ≤20 rules, ≤4 minded npcs + 8 plain, ≤6 expects.",
         "NPC line: {\"op\":\"npc\",\"id\":\"guard_1\",\"role\":\"guard|merchant|guide|rival|teammate|creature|citizen\",\"zone\":\"...\",\"anchor\":\"...\",\"team\":\"\",\"menu\":[\"guard.patrol\"],\"dflt\":\"guard.patrol\"}.",
+  ];
+}
+
+export function fillMessages(prompt: string, intent: IntentOut, layout: PackLayout, example: string, seed: number): Msg[] {
+  return [
+    {
+      role: "system",
+      content: [
+        "You compile a game description into GHOSTRUN world ops. Output ONLY JSON Lines: one JSON object per line, no prose, no code fences.",
+        ...worldRules(layout),
         "Example for a different prompt (copy the style, not the content):",
         example.trim(),
       ].join("\n"),
@@ -126,6 +135,31 @@ export function fillMessages(prompt: string, intent: IntentOut, layout: PackLayo
     {
       role: "user",
       content: `Prompt: ${prompt}\nIntent: ${JSON.stringify(intent)}\nUse seed ${seed}, pack "${layout.packId}", sub ${JSON.stringify(intent.sub)}. Headline expect text: "${intent.headline}".`,
+    },
+  ];
+}
+
+/**
+ * Counterexample-guided repair: the proof's concrete failures go back to the model, which answers
+ * with a patch (changed lines by id, new lines, deletions). The caller merges, re-places and
+ * re-proves, and keeps the repair only if the receipt got better.
+ */
+export function repairMessages(prompt: string, intent: IntentOut, layout: PackLayout, fill: string, issues: string[]): Msg[] {
+  return [
+    {
+      role: "system",
+      content: [
+        "You repair a GHOSTRUN world that failed its proof. Output ONLY JSON Lines, no prose, no code fences:",
+        "- a changed line keeps its id and replaces the old one entirely (repeat every field you keep);",
+        "- a new line uses a new id; {\"op\":\"del\",\"id\":\"...\"} removes a line;",
+        "- never repeat unchanged lines; never output meta or end lines.",
+        "Fix every issue with the smallest change that keeps the prompt's intent.",
+        ...worldRules(layout),
+      ].join("\n"),
+    },
+    {
+      role: "user",
+      content: `Prompt: ${prompt}\nIntent: ${JSON.stringify(intent)}\nCurrent world (gameplay lines):\n${fill.trim()}\nProof failures to fix:\n${issues.map((x) => `- ${x}`).join("\n")}`,
     },
   ];
 }

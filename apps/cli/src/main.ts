@@ -3,11 +3,11 @@
 // comparisons).
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
-import { FillParser, parseFill, type WorldBundle } from "@ghostrun/ir";
+import { FillParser, mergeFill, parseFill, type WorldBundle } from "@ghostrun/ir";
 import { placeWorld } from "@ghostrun/layout";
-import { chatJson, fillMessages, IntentOut, intentJsonSchema, intentMessages, streamChat } from "@ghostrun/llm";
+import { chatJson, fillMessages, IntentOut, intentJsonSchema, intentMessages, repairMessages, streamChat } from "@ghostrun/llm";
 import { loadNavNode } from "@ghostrun/nav/node";
-import { chipLine, prove, type Receipt } from "@ghostrun/proof";
+import { better, chipLine, issuesOf, prove, type Receipt } from "@ghostrun/proof";
 import { ALL_SUBS, PACKS, packFor } from "@ghostrun/registry";
 import { loadRapierNode } from "@ghostrun/sim/node";
 import * as v from "valibot";
@@ -57,6 +57,35 @@ interface BuildTimings {
   outTok: number;
   invalid: number;
   lines: number;
+}
+
+/** The gameplay lines of a fill (the repair call never needs the cosmetic tail). */
+const gameplayOf = (fill: string) => {
+  const lines = fill.split("\n");
+  const end = lines.findIndex((l) => l.includes('"op":"end"') && l.includes('"gameplay"'));
+  return (end >= 0 ? lines.slice(0, end + 1) : lines).join("\n");
+};
+
+/**
+ * One counterexample-guided repair round: the receipt's failures go back to gpt-oss-120b as a
+ * patch request; the patched fill is re-placed and re-proved, and kept only if it is better.
+ */
+async function repairRound(R: Awaited<ReturnType<typeof loadRapierNode>>, prompt: string, intent: IntentOut, fill: string, seed: number, packId: string, receipt: Receipt, bundle: WorldBundle, notes: string[]) {
+  const key = process.env.CEREBRAS_API_KEY;
+  const issues = issuesOf(receipt, bundle);
+  if (!key || !issues.length) return null;
+  const t0 = performance.now();
+  const pack = packFor(packId);
+  const layout = pack.generate({ seed, params: pack.defaults, sub: intent.sub, laws: bundle.laws, harder: false });
+  const context = notes.filter((n) => !/^(interior|arena|outdoor|course|maze|rooftop|fall floor|lookout)/.test(n)).slice(0, 6);
+  let patch = "";
+  for await (const ev of streamChat({ apiKey: key, model: "gpt-oss-120b", reasoningEffort: "low", maxTokens: 4000, messages: repairMessages(prompt, intent, layout, gameplayOf(fill), [...issues, ...(context.length ? [`(already repaired by the placer: ${context.join("; ")})`] : [])]) })) {
+    if (ev.type === "text") patch += ev.delta;
+  }
+  const merged = mergeFill(fill, patch);
+  const placed = placeFromFill(merged.text, seed, packId);
+  const r2 = await prove(R, placed.bundle, { engine: ENGINE, runs: 12 });
+  return { fill: merged.text, receipt: r2, bundle: placed.bundle, kept: better(r2, receipt), issues, stats: merged.stats, ms: Math.round(performance.now() - t0) };
 }
 
 /** Things a player can interact with: kit verbs, carryables, moving platforms and minded NPCs. */
@@ -164,10 +193,23 @@ async function main() {
       const layout = pack.generate({ seed: meta.seed ?? 7, params: pack.defaults, sub: fill.draft.pack.sub, laws: fill.draft.laws, harder: false });
       const placed = placeWorld({ ...fill.draft, engine: ENGINE }, layout);
       const r = await prove(R, placed.bundle, { engine: ENGINE, runs: 12 });
-      const win = r.chips.find((c) => c.id === "T3:win");
-      const bad = r.chips.filter((c) => c.status === "counterexample").map((c) => c.id);
-      console.log(`${f.slice(0, 40).padEnd(40)} ${placed.bundle.mode.padEnd(6)} ctrl ${String(controlsOf(placed.bundle)).padStart(2)}  headline ${(r.headline?.status ?? "none").padEnd(14)} T3 ${win ? `${win.k}/${win.n}` : "-"}  par ${r.par?.goldS ?? "-"}  ${bad.length ? "✗ " + bad.join(" ") : ""}`);
-      for (const n of placed.notes.filter((x) => !x.startsWith("interior") && !x.startsWith("arena") && !x.startsWith("outdoor") && !x.startsWith("course"))) console.log(`    · ${n}`);
+      const row = (rc: Receipt, bd: WorldBundle) => {
+        const win = rc.chips.find((c) => c.id === "T3:win");
+        const bad = rc.chips.filter((c) => c.status === "counterexample").map((c) => c.id);
+        return `${bd.mode.padEnd(6)} ctrl ${String(controlsOf(bd)).padStart(2)}  headline ${(rc.headline?.status ?? "none").padEnd(14)} T3 ${win ? `${win.k}/${win.n}` : "-"}  par ${rc.par?.goldS ?? "-"}  ${bad.length ? "✗ " + bad.join(" ") : ""}`;
+      };
+      console.log(`${f.slice(0, 40).padEnd(40)} ${row(r, placed.bundle)}`);
+      if (!args.includes("--repair")) for (const n of placed.notes.filter((x) => !x.startsWith("interior") && !x.startsWith("arena") && !x.startsWith("outdoor") && !x.startsWith("course"))) console.log(`    · ${n}`);
+      if (args.includes("--repair") && existsSync(rp)) {
+        const saved = JSON.parse(readFileSync(rp, "utf8")) as { prompt: string; intent: IntentOut };
+        const fix = await repairRound(R, saved.prompt, saved.intent, text, meta.seed ?? 7, fill.draft.pack.id, r, placed.bundle, placed.notes);
+        if (fix) {
+          console.log(`  ${fix.kept ? "REPAIRED" : "rejected"} in ${fix.ms} ms (${JSON.stringify(fix.stats)}) → ${row(fix.receipt, fix.bundle)}`);
+          for (const i of fix.issues) console.log(`    ? ${i.slice(0, 160)}`);
+          writeFileSync(join(dir, f.replace(".fill.jsonl", ".repaired.jsonl")), fix.fill);
+        }
+        await new Promise((res) => setTimeout(res, 2500));
+      }
     }
   } else if (cmd === "bench") {
     const prompts = readFileSync(args[0]!, "utf8").split("\n").map((l) => l.trim()).filter((l) => l && !l.startsWith("#"));

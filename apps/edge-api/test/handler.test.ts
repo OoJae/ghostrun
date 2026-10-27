@@ -6,7 +6,7 @@ import type { DoNamespace } from "../src/cf";
 import { costMicroUsd, FILL_MODEL, INTENT_MODEL } from "../src/cost";
 import { capsFromEnv, Governor, localCall, MemoryLedger, type Caps } from "../src/governor";
 import { handle, PAUSE_FLAG, type Env } from "../src/handler";
-import { fakeFetch, governorNs, readSse, silentNs, TURNSTILE, waiter, type Upstream } from "./fakes";
+import { fakeFetch, governorNs, INTENT, readSse, silentNs, TURNSTILE, waiter, type Upstream } from "./fakes";
 
 // Only read the gitignored keys file when the live test is explicitly requested.
 function key(): string | undefined {
@@ -42,6 +42,31 @@ const judge = { "x-judge-token": TOKEN };
 const metered = costMicroUsd(INTENT_MODEL, 1000, 200) + costMicroUsd(FILL_MODEL, 3000, 1500);
 
 afterEach(() => vi.unstubAllGlobals());
+
+describe("POST /v1/repair", () => {
+  it("streams the model's patch lines, charges the caller's pool, and rejects bad requests before any model call", async () => {
+    const w = world({ up: { fill: { inTok: 9000, outTok: 300, lines: ['{"op":"rule","id":"r_win","when":{"t":"enter","a":"gem","b":"exit"},"then":[{"e":"win","target":"player"}]}', '{"op":"del","id":"x_old"}'] } } });
+    const call = async (body: unknown) => {
+      const ctx = waiter();
+      const res = await handle(new Request("https://g.example/v1/repair", { method: "POST", headers: { "cf-connecting-ip": freshIp(), "x-judge-token": TOKEN }, body: JSON.stringify(body) }), w.env, ctx);
+      return { res, ctx };
+    };
+    const bad = await call({ prompt: "x", fill: "", issues: [], seed: 1 });
+    expect(bad.res.status).toBe(400);
+    expect(w.f.hits.filter((h) => h.url.includes("cerebras"))).toHaveLength(0);
+    const fill = '{"op":"meta","mode":"play","pack":"arena","seed":3}\n{"op":"end","layer":"gameplay"}\n{"op":"dress","id":"d1","noun":"crate","zone":"z","anchor":""}';
+    const { res, ctx } = await call({ prompt: "steal the gem", intent: { ...INTENT, pack: "arena" }, fill, issues: ["won in 1.2 s: the win needs nothing"], seed: 3 });
+    const events = await readSse(res);
+    await ctx.settled();
+    expect(events.filter((e) => e.event === "op").map((e) => (e.data as { line: string }).line)).toHaveLength(2);
+    expect(events.at(-1)!.event).toBe("done");
+    // the model saw the issues and only the gameplay lines (the cosmetic tail is never sent)
+    const sent = w.f.hits.find((h) => h.url.includes("cerebras"))!.body;
+    expect(sent).toContain("won in 1.2 s");
+    expect(sent).not.toContain("crate");
+    expect(w.pool("judge").spent).toBe(costMicroUsd(FILL_MODEL, 9000, 300));
+  });
+});
 
 describe("edge API", () => {
   it("health and input validation", async () => {

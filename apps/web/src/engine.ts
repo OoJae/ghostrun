@@ -6,6 +6,7 @@ import {
   ACESFilmicToneMapping, PerspectiveCamera, Quaternion, RenderPipeline, Scene, WebGPURenderer, type Fog,
 } from "three/webgpu";
 import { InputCollector } from "./input";
+import type { WorldBundle } from "@ghostrun/ir";
 import type { World } from "./pipeline";
 import { probe } from "./probe";
 import { FollowCamera } from "./render/camera";
@@ -72,6 +73,9 @@ export class Engine {
 
   onInput: (() => void) | undefined;
   #bloom: ReturnType<typeof bloom> | null = null;
+  /** Prewarmed sample worlds: never rendered, kept so their compiled programs stay cached. */
+  readonly #warm: WorldView[] = [];
+  #compiling = false;
 
   private constructor(canvas: HTMLCanvasElement, renderer: WebGPURenderer, opts: EngineOptions, initMs: number) {
     this.#canvas = canvas;
@@ -127,6 +131,29 @@ export class Engine {
     return new Engine(canvas, renderer, opts, performance.now() - t0);
   }
 
+  /**
+   * Compile every look's and kit's shaders in the background (each sample world in its own scene,
+   * so its light setup matches a real world's) and keep them alive, so a new world's first frame
+   * reuses compiled programs instead of stalling on a cold compile.
+   */
+  async prewarm(bundles: WorldBundle[]): Promise<number> {
+    const t0 = performance.now();
+    for (const b of bundles) {
+      const view = buildWorldView(b, lookOf(b));
+      const s = new Scene();
+      s.fog = this.#scene.fog;
+      s.environment = this.#scene.environment;
+      s.add(view.root);
+      try {
+        await this.#renderer.compileAsync(s, this.#camera);
+      } catch (e) {
+        console.warn("prewarm skipped a world", e);
+      }
+      this.#warm.push(view);
+    }
+    return performance.now() - t0;
+  }
+
   /** Swap in a new world. Resolves after its first frame has been rendered. */
   async load(world: World, startedAt: number): Promise<LoadResult> {
     const splits: LoadResult["splits"] = [
@@ -165,7 +192,12 @@ export class Engine {
     splits.push({ label: "build", ms: performance.now() - t });
 
     t = performance.now();
-    await this.#renderer.compileAsync(this.#scene, this.#camera);
+    this.#compiling = true;
+    try {
+      await this.#renderer.compileAsync(this.#scene, this.#camera);
+    } finally {
+      this.#compiling = false;
+    }
     splits.push({ label: "compile", ms: performance.now() - t });
 
     this.#sim = sim;
@@ -259,6 +291,9 @@ export class Engine {
   }
 
   #frame() {
+    // While a new world compiles, render nothing: drawing it now would force every new shader to
+    // compile synchronously on the main thread instead of in parallel (5 s instead of 0.2 s).
+    if (this.#compiling) return;
     const now = performance.now();
     const dt = Math.min(0.1, (now - this.#lastT) / 1000);
     this.#lastT = now;

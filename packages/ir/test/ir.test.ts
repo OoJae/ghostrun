@@ -185,3 +185,28 @@ describe("fill repairs from the S2 bench", () => {
     expect(p.draft.expects[0]!.prop).toBe("reachable");
   });
 });
+
+describe("mergeFill (repair patches)", () => {
+  const base = [
+    '{"op":"meta","mode":"play","pack":"arena","seed":3}',
+    '{"op":"zone","id":"z_a","slot":"midfield","tag":"center"}',
+    '{"op":"ent","id":"gem","kind":"pickup","zone":"z_a","anchor":"center"}',
+    '{"op":"rule","id":"r_win","when":{"t":"enter","a":"player","b":"goal"},"then":[{"e":"win","target":"player"}]}',
+    '{"op":"expect","id":"x_win","prop":"win_reachable","a":"sp","b":"z_a","headline":true}',
+    '{"op":"end","layer":"gameplay"}',
+  ].join("\n");
+  it("replaces by id in place, deletes, and inserts new lines with their op group", async () => {
+    const { mergeFill } = await import("../src");
+    const patch = [
+      '{"op":"rule","id":"r_win","when":{"t":"enter","a":"gem","b":"goal"},"then":[{"e":"win","target":"player"}]}',
+      '{"op":"verb","id":"vb_carry","verb":"physics_props.carry","on":"gem","params":{}}',
+      '{"op":"del","id":"x_win"}',
+      '{"op":"meta","mode":"wander"}',
+    ].join("\n");
+    const { text, stats } = mergeFill(base, patch);
+    expect(stats).toEqual({ replaced: 1, added: 1, deleted: 1, ignored: 1 });
+    const ops = text.trim().split("\n").map((l) => JSON.parse(l) as { op: string; id?: string });
+    expect(ops.map((o) => o.id ?? o.op)).toEqual(["meta", "z_a", "gem", "vb_carry", "r_win", "end"]);
+    expect(text).toContain('"a":"gem"');
+  });
+});

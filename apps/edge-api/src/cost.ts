@@ -35,3 +35,7 @@ export function buildEstimate(intentMessages: { content: string }[]): { intent: 
     fill: costMicroUsd(FILL_MODEL, FILL_MAX_IN, FILL_MAX_OUT),
   };
 }
+
+/** A repair call reads the fill plus the world rules and writes a patch. */
+export const REPAIR_MAX_IN = 20_000;
+export const REPAIR_MAX_OUT = 4_000;

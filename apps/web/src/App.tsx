@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { Chip, Receipt } from "@ghostrun/proof";
+import { mergeFill } from "@ghostrun/ir";
+import { better, issuesOf, statusWord, type Chip, type Receipt } from "@ghostrun/proof";
 import { Engine, type LoadResult } from "./engine";
 import { KeyHint } from "./hud/Corner";
 import { IntentCard } from "./hud/IntentCard";
 import { PromptBar } from "./hud/PromptBar";
-import { ProofBadge, ReceiptPanel, type ProofState } from "./hud/Proof";
-import { liveAvailable, liveBuild } from "./live";
-import { BRIEF, buildWorld, ENGINE_HASH, FIXTURE_PROMPTS, hashWorld, worldFromFill, type Intent, type World } from "./pipeline";
+import { ProofBadge, ReceiptPanel, RepairChip, type ProofState, type RepairState } from "./hud/Proof";
+import { liveAvailable, liveBuild, liveRepair, type LiveIntent } from "./live";
+import { BRIEF, buildWorld, ENGINE_HASH, FIXTURE_PROMPTS, FIXTURES, hashWorld, worldFromFill, type Intent, type World } from "./pipeline";
 import { probe } from "./probe";
 import { loadNav, loadRapier, WASM_URLS } from "./sim/boot";
 import { RapierSim } from "./sim/rapier";
@@ -46,23 +47,72 @@ export function App() {
   const [useHint, setUseHint] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
   const [clock, setClock] = useState<number | null>(null);
+  const [repair, setRepair] = useState<RepairState>({ status: "idle", issues: 0 });
+  const repaired = useRef<World | null>(null);
+  const pending = useRef(new Map<number, { onChip?: (c: Chip) => void; resolve: (r: Receipt) => void; reject: (e: Error) => void }>());
+  const modeRef = useRef<Mode>("checking");
+  modeRef.current = mode;
+
+  /** One proof on the device worker; several can be in flight (the world, and a repair of it). */
+  const proveOnDevice = useCallback((world: World, id: number, onChip?: (c: Chip) => void): Promise<Receipt> => {
+    if (!worker.current) {
+      worker.current = new Worker(new URL("./proof.worker.ts", import.meta.url), { type: "module" });
+      worker.current.onmessage = (e: MessageEvent<{ id: number; chip?: Chip; receipt?: Receipt; error?: string }>) => {
+        const p = pending.current.get(e.data.id);
+        if (!p) return;
+        if (e.data.chip) p.onChip?.(e.data.chip);
+        if (e.data.receipt) (pending.current.delete(e.data.id), p.resolve(e.data.receipt));
+        if (e.data.error) (pending.current.delete(e.data.id), p.reject(new Error(e.data.error)));
+      };
+    }
+    const w = worker.current;
+    return new Promise((resolve, reject) => {
+      pending.current.set(id, { ...(onChip ? { onChip } : {}), resolve, reject });
+      w.postMessage({ id, bundle: world.bundle, engine: ENGINE_HASH, urls: WASM_URLS });
+    });
+  }, []);
+
+  /**
+   * Counterexample-guided repair for live worlds: the receipt's failures go to /v1/repair, the
+   * patch is merged, re-placed and re-proved here, and offered only if its receipt is better.
+   */
+  const maybeRepair = useCallback(async (world: World, receipt: Receipt, id: number) => {
+    const src = world.source;
+    if (!src || modeRef.current !== "live") return;
+    const issues = issuesOf(receipt, world.bundle);
+    if (!issues.length) return;
+    setRepair({ status: "working", issues: issues.length });
+    const patch = await liveRepair(src.prompt, src.intent as LiveIntent, src.fill, issues, src.seed);
+    if (id !== runId.current) return;
+    if (!patch) return setRepair({ status: "failed", issues: issues.length });
+    const merged = mergeFill(src.fill, patch).text;
+    const w2 = worldFromFill(merged, src.seed, world.intent.live, src.pack);
+    w2.source = { ...src, fill: merged };
+    try {
+      const r2 = await proveOnDevice(w2, -id);
+      if (id !== runId.current) return;
+      if (!better(r2, receipt)) return setRepair({ status: "failed", issues: issues.length });
+      repaired.current = w2;
+      const left = r2.chips.filter((c) => c.status === "counterexample").length;
+      setRepair({ status: "offer", issues: issues.length, left, ...(r2.headline ? { headline: `${r2.headline.text} (${statusWord(r2.headline.status)})` } : {}) });
+    } catch {
+      setRepair({ status: "failed", issues: issues.length });
+    }
+  }, [proveOnDevice]);
 
   /** Prove the world on the device worker (until the edge proof service is deployed). */
   const startProof = useCallback((world: World, id: number) => {
-    worker.current ??= new Worker(new URL("./proof.worker.ts", import.meta.url), { type: "module" });
-    const w = worker.current;
     setProof({ status: "proving", chips: [], receipt: null });
-    w.onmessage = (e: MessageEvent<{ id: number; chip?: Chip; receipt?: Receipt; error?: string }>) => {
-      if (e.data.id !== id) return;
-      if (e.data.chip) setProof((p) => ({ ...p, chips: [...p.chips, e.data.chip!] }));
-      if (e.data.receipt) {
-        setProof((p) => ({ ...p, status: "done", receipt: e.data.receipt! }));
-        probe().proof = { headline: e.data.receipt.headline?.status ?? "none", chips: e.data.receipt.chips.length };
-      }
-      if (e.data.error) setProof((p) => ({ ...p, status: "error", error: e.data.error! }));
-    };
-    w.postMessage({ id, bundle: world.bundle, engine: ENGINE_HASH, urls: WASM_URLS });
-  }, []);
+    setRepair({ status: "idle", issues: 0 });
+    proveOnDevice(world, id, (chip) => id === runId.current && setProof((p) => ({ ...p, chips: [...p.chips, chip] })))
+      .then((receipt) => {
+        if (id !== runId.current) return;
+        setProof((p) => ({ ...p, status: "done", receipt }));
+        probe().proof = { headline: receipt.headline?.status ?? "none", chips: receipt.chips.length };
+        void maybeRepair(world, receipt, id);
+      })
+      .catch((err: Error) => id === runId.current && setProof((p) => ({ ...p, status: "error", error: err.message })));
+  }, [proveOnDevice, maybeRepair]);
 
   const show = useCallback(
     async (world: World, id: number, startedAt: number, extra: LoadResult["splits"]) => {
@@ -114,6 +164,7 @@ export function App() {
         if (id !== runId.current) return;
         if (r.kind === "world") {
           const world = worldFromFill(r.fill, r.seed, { genre: r.intent.genre, setting: r.intent.setting, goal: r.intent.goal, fail: r.intent.fail, role: r.intent.role }, r.intent.pack);
+          world.source = { prompt: text, intent: r.intent, fill: r.fill, seed: r.seed, pack: r.intent.pack };
           setNotice(undefined);
           await show(world, id, startedAt, [...extraSplits, { label: "intent", ms: r.intentMs }, { label: "fill", ms: r.gameplayMs - r.intentMs }]);
           return;
@@ -165,7 +216,14 @@ export function App() {
           }
         }
         // First load: the recorded world appears instantly; Enter builds live.
-        return run(FIRST_PROMPT, 0, [{ label: "gpu init", ms: e.initMs }]);
+        await run(FIRST_PROMPT, 0, [{ label: "gpu init", ms: e.initMs }]);
+        // While the player reads and types: compile every look's and kit's shaders in the background.
+        if (!disposed && params.get("prewarm") !== "0") {
+          const samples = Object.keys(FIXTURES).map((k) => buildWorld("", k).bundle);
+          const day = structuredClone(samples.find((b) => b.pack.id === "outdoor"));
+          if (day) samples.push({ ...day, cosmetic: { ...day.cosmetic, look: "forest", timeOfDay: 12 } });
+          setTimeout(() => void e.prewarm(samples).then((ms) => (probe().prewarmMs = Math.round(ms))), 1500);
+        }
       })
       .catch((err: unknown) => {
         console.error(err);
@@ -251,6 +309,16 @@ export function App() {
         )}
         {toast && <div className="glass toast" role="status">{toast}</div>}
         <ProofBadge proof={proof} onOpen={() => setReceiptOpen((o) => !o)} />
+        <RepairChip
+          repair={repair}
+          onApply={() => {
+            const w = repaired.current;
+            if (!w) return;
+            repaired.current = null;
+            setRepair({ status: "idle", issues: 0 });
+            void show(w, ++runId.current, performance.now(), []);
+          }}
+        />
         {receiptOpen && <ReceiptPanel proof={proof} onClose={() => setReceiptOpen(false)} />}
         <KeyHint visible={hint && status === "playing"} />
         {status === "booting" && <div className="boot">building world…</div>}

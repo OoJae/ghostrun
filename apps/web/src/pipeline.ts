@@ -5,6 +5,7 @@ import coinRushFill from "../../../packages/ir/fixtures/coin-rush.jsonl?raw";
 import forestFill from "../../../packages/packs/outdoor/test/fixtures/glow-forest.jsonl?raw";
 import parkourFill from "../../../packages/packs/course/test/fixtures/parkour-time-trial.jsonl?raw";
 import heistFill from "../../../packages/ir/fixtures/heist-live-1.jsonl?raw";
+import vaultFill from "../../../packages/ir/fixtures/vault-heist.jsonl?raw";
 import { parseFill, specHash, type FillNote, type FillStats, type WorldBundle } from "@ghostrun/ir";
 import { placeWorld } from "@ghostrun/layout";
 import { packFor, PACKS } from "@ghostrun/registry";
@@ -37,6 +38,8 @@ export interface Intent {
 
 export interface World {
   bundle: WorldBundle;
+  /** For live worlds: what the repair loop needs to ask for a patch. */
+  source?: { prompt: string; intent: unknown; fill: string; seed: number; pack: string };
   intent: Intent;
   notes: string[];
   fillNotes: FillNote[];
@@ -66,11 +69,12 @@ export function buildWorld(_prompt: string, fixture = "ctf"): World {
 }
 
 /** Recorded fills: the organizer's CTF brief, and a kit-verb world (?fixture=coin-rush). */
-export const FIXTURES: Record<string, string> = { ctf: fixtureFill, "coin-rush": coinRushFill, forest: forestFill, parkour: parkourFill, heist: heistFill };
+export const FIXTURES: Record<string, string> = { ctf: fixtureFill, "coin-rush": coinRushFill, forest: forestFill, parkour: parkourFill, heist: heistFill, vault: vaultFill };
 export const FIXTURE_PROMPTS: Record<string, string> = {
   ctf: BRIEF,
   "coin-rush": "Collect five gold coins in a neon arena before the clock runs out. Mind the lava.",
   forest: "A bioluminescent forest at night: climb to the owl lookout before the fog rolls in.",
+  vault: "A museum at night: find the brass key, open the vault, steal the star sapphire and get to the van before the alarm.",
   heist: "A museum heist: grab the key, unlock the vault, steal the gem and escape before the alarm timer runs out.",
   parkour: "A parkour time trial: double jump the opening wall, then race the gaps and beams to the finish.",
 };
