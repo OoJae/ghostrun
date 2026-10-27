@@ -1,0 +1,33 @@
+{"op":"meta","mode":"play","lang":"en","pack":"outdoor","sub":[],"seed":13,"look":"moonlit forest","mood":[0.1,0.8,0.9],"timeOfDay":20,"weather":"clear"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Forest Edge"}
+{"op":"zone","id":"z_clearing","slot":"clearing","tag":"hub","name":"Moonlit Clearing"}
+{"op":"zone","id":"z_west_base","slot":"clearing_w","tag":"base","name":"Western Ridge"}
+{"op":"zone","id":"z_east_base","slot":"clearing_e","tag":"base","name":"Eastern Ridge"}
+{"op":"zone","id":"z_lookout","slot":"lookout","tag":"high_ground","name":"Tree Lookout"}
+{"op":"spawn","id":"sp_guardian","zone":"z_entrance","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"sunrise_timer","zone":"z_clearing","anchor":"center","noun":"sunrise","hyper":"event","team":"red"}
+{"op":"ent","id":"crystal_pedestal","kind":"goal","noun":"ancient crystal","hyper":"artifact","zone":"z_clearing","anchor":"center","body":"sensor","shape":"box","size":[0.5,0.5,0.5]}
+{"op":"ent","id":"shield","kind":"pickup","noun":"glowing shield","hyper":"shield","zone":"z_west_base","anchor":"flank_n","body":"dynamic","shape":"box","size":[0.4,0.4,0.2]}
+{"op":"ent","id":"jump_pad","kind":"plate","noun":"spring pad","hyper":"jump_pad","zone":"z_east_base","anchor":"flank_s","body":"sensor","shape":"box","size":[0.6,0.2,0.6]}
+{"op":"ent","id":"trap_plate","kind":"plate","noun":"spike plate","hyper":"spike","zone":"z_clearing","anchor":"center_n","body":"sensor","shape":"box","size":[0.5,0.1,0.5]}
+{"op":"ent","id":"goblin_spawn_w","kind":"npc","noun":"goblin patrol","hyper":"creatures","zone":"z_west_base","anchor":"spawn_pad","team":"blue","body":"kinematic","shape":"capsule"}
+{"op":"ent","id":"goblin_spawn_e","kind":"npc","noun":"goblin patrol","hyper":"creatures","zone":"z_east_base","anchor":"spawn_pad","team":"blue","body":"kinematic","shape":"capsule"}
+{"op":"ent","id":"watch_tower","kind":"prop","noun":"watch tower","hyper":"tower","zone":"z_lookout","anchor":"top","body":"fixed","shape":"box","size":[1,3,1]}
+{"op":"verb","id":"vb_carry_shield","verb":"physics_props.carry","on":"shield","params":{}}
+{"op":"verb","id":"vb_jump_pad","verb":"locomotion.jump_pad","on":"jump_pad","params":{"height":5}}
+{"op":"verb","id":"vb_trap_plate","verb":"puzzle.plate","on":"trap_plate","params":{"latch":false}}
+{"op":"verb","id":"vb_inspect_tower","verb":"social.inspect","on":"watch_tower","params":{"text":"An old watch tower overlooking the clearing, offering a view of approaching goblin waves."}}
+{"op":"verb","id":"vb_goblin_patrol_w","verb":"puzzle.switch","on":"goblin_spawn_w","params":{"once":false}}
+{"op":"verb","id":"vb_goblin_patrol_e","verb":"puzzle.switch","on":"goblin_spawn_e","params":{"once":false}}
+{"op":"rule","id":"r_win_sunrise","when":{"t":"timer_end","a":"sunrise_timer"},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose_crystal","when":{"t":"enter","a":"goblin_spawn_w","b":"crystal_pedestal"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose_crystal_e","when":{"t":"enter","a":"goblin_spawn_e","b":"crystal_pedestal"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_trap_activate","when":{"t":"state_is","a":"trap_plate","s":"down"},"then":[{"e":"destroy","target":"goblin_spawn_w"},{"e":"destroy","target":"goblin_spawn_e"}]}
+{"op":"expect","id":"x_holdout","prop":"win_reachable","a":"sp_guardian","b":"sunrise_timer","headline":true,"text":"Crystal survival holdout against goblin waves until a sunrise win-state triggers"}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":5}}
+{"op":"end","layer":"gameplay"}
+{"op":"dress","id":"d_guardian","entity":"sp_guardian","skin":"armor","color":"steel"}
+{"op":"dress","id":"d_shield","entity":"shield","skin":"glow","color":"blue"}
+{"op":"poster","id":"p_lookout","zone":"z_lookout","anchor":"top","text":"Dawn will break soon..."}
+{"op":"poster","id":"p_clearing","zone":"z_clearing","anchor":"center_s","text":"Hold the crystal!"}
+{"op":"end","layer":"cosmetic"}

@@ -1,0 +1,254 @@
+{
+  "prompt": "Paintball in a warehouse: tag the blue team four times",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "team combat",
+    "setting": "Warehouse interior with crates and cover",
+    "role": "Player on a team",
+    "goal": "Tag four members of the blue team",
+    "fail": "Getting tagged or failing to reach the tag count",
+    "mood": "Exciting and competitive",
+    "pack": "arena",
+    "sub": [],
+    "safety": "arcade",
+    "headline": "Warehouse cover enables tag-based team combat",
+    "nouns": [
+      {
+        "noun": "warehouse",
+        "hyper": "indoor environment"
+      },
+      {
+        "noun": "paintball",
+        "hyper": "team combat mechanic"
+      },
+      {
+        "noun": "blue team",
+        "hyper": "opposing team"
+      },
+      {
+        "noun": "tag",
+        "hyper": "combat mechanic"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.6,
+      "arousal": 0.8,
+      "tension": 0.5
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "cf6a369428430979a7a57cfc96a02b82e9a7822ab1f4e280edfb7ed122b8d677",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_tag",
+      "text": "Warehouse cover enables tag-based team combat",
+      "status": "counterexample",
+      "method": "static goal regression over rules"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 10 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "chain",
+          "text": "win unreachable in the rule graph"
+        },
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "counterexample",
+        "method": "static goal regression over rules",
+        "text": "no rule chain lets the player trigger the win",
+        "src": ""
+      },
+      {
+        "id": "T2:r_lose",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_lose: nothing produces hit on player",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lose2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_lose2: nothing produces hit on player",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lose3",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose3"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_lose3: nothing produces hit on player",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lose4",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose4"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_lose4: nothing produces hit on player",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_s",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_s"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_secret_flank_s fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_tag_1",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_tag_1"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_tag_1: nothing produces hit on blue_1",
+        "cx": null
+      },
+      {
+        "id": "T2:r_tag_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_tag_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_tag_2: nothing produces hit on blue_2",
+        "cx": null
+      },
+      {
+        "id": "T2:r_tag_3",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_tag_3"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_tag_3: nothing produces hit on blue_3",
+        "cx": null
+      },
+      {
+        "id": "T2:r_tag_4",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_tag_4"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_tag_4: nothing produces hit on blue_4",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      }
+    ],
+    "par": null,
+    "ms": 116
+  }
+}

@@ -1,0 +1,26 @@
+{"op":"meta","mode":"play","lang":"en","pack":"outdoor","sub":[],"seed":11,"look":"snowy mountain","mood":[0.7,0.8,0.6],"timeOfDay":10,"weather":"snow"}
+{"op":"zone","id":"z_top","slot":"entrance","tag":"entrance","name":"Mountain summit"}
+{"op":"zone","id":"z_mid","slot":"clearing","tag":"clearing","name":"Mid-slope clearing"}
+{"op":"zone","id":"z_lodge","slot":"camp","tag":"camp","name":"Lodge base camp"}
+{"op":"spawn","id":"sp_red","zone":"z_top","anchor":"spawn_pad","team":"red"}
+{"op":"spawn","id":"sp_rival","zone":"z_top","anchor":"gate","team":"blue"}
+{"op":"goal","id":"goal_lodge","zone":"z_lodge","anchor":"tent","noun":"lodge","hyper":"finish point","team":"red"}
+{"op":"ent","id":"boost_1","kind":"pickup","noun":"speed boost","hyper":"boost","zone":"z_mid","anchor":"center","body":"dynamic","shape":"box","size":[0.5,0.5,0.5]}
+{"op":"ent","id":"boost_2","kind":"pickup","noun":"speed boost","hyper":"boost","zone":"z_mid","anchor":"center_e","body":"dynamic","shape":"box","size":[0.5,0.5,0.5]}
+{"op":"ent","id":"ice_plate","kind":"plate","noun":"ice plate","hyper":"plate","zone":"z_mid","anchor":"center_w","body":"sensor","shape":"box","size":[2,0.2,2]}
+{"op":"ent","id":"jump_pad","kind":"plate","noun":"jump pad","hyper":"jump_pad","zone":"z_mid","anchor":"center_n","body":"sensor","shape":"box","size":[1,0.2,1]}
+{"op":"ent","id":"gate_lodge","kind":"door","noun":"lodge gate","hyper":"gate","zone":"z_lodge","anchor":"fire","body":"fixed","shape":"box"}
+{"op":"verb","id":"vb_carry_boost1","verb":"physics_props.carry","on":"boost_1","params":{}}
+{"op":"verb","id":"vb_carry_boost2","verb":"physics_props.carry","on":"boost_2","params":{}}
+{"op":"verb","id":"vb_inspect_plate","verb":"social.inspect","on":"ice_plate","params":{"text":"Slippery ice, watch your speed."}}
+{"op":"verb","id":"vb_jump","verb":"locomotion.jump","on":"player","params":{"jumpsMax":2}}
+{"op":"verb","id":"vb_jump_pad","verb":"locomotion.jump_pad","on":"jump_pad","params":{"height":5}}
+{"op":"verb","id":"vb_gate_open","verb":"puzzle.lock","on":"gate_lodge","params":{"key":"boost_1","keep":false}}
+{"op":"rule","id":"r_win","when":{"t":"enter","a":"sp_red","b":"goal_lodge"},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose","when":{"t":"enter","a":"sp_rival","b":"goal_lodge"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_ice_slow","when":{"t":"state_is","a":"ice_plate","s":"down"},"then":[{"e":"set_state","target":"sp_red","v":"slow"}]}
+{"op":"expect","id":"x_race","prop":"win_reachable","a":"sp_red","b":"goal_lodge","headline":true,"text":"Racing rivals down the mountain to the lodge"}
+{"op":"end","layer":"gameplay"}
+{"op":"dress","id":"d_snow","kind":"prop","noun":"snow cover","hyper":"prop","zone":"z_mid","anchor":"center_s","body":"fixed","shape":"hull"}
+{"op":"poster","id":"p_lodge","zone":"z_lodge","anchor":"tent","text":"Welcome to the Lodge!"}
+{"op":"end","layer":"cosmetic"}

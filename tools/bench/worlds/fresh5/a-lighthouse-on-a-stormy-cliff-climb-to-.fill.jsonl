@@ -1,0 +1,30 @@
+{"op":"meta","mode":"play","lang":"en","pack":"course","sub":[],"seed":7,"look":"stormy lighthouse","mood":[0.9,0.6,0.2],"timeOfDay":22,"weather":"storm"}
+{"op":"zone","id":"z_start","slot":"start","tag":"outside","name":"Cliff base"}
+{"op":"zone","id":"z_seg_1","slot":"seg_1","tag":"ledge","name":"Lower ledge"}
+{"op":"zone","id":"z_seg_2","slot":"seg_2","tag":"beam","name":"Spiral beam"}
+{"op":"zone","id":"z_seg_3","slot":"seg_3","tag":"steps","name":"Mid stairs"}
+{"op":"zone","id":"z_seg_4","slot":"seg_4","tag":"gaps","name":"Upper gaps"}
+{"op":"zone","id":"z_seg_5","slot":"seg_5","tag":"pit","name":"Lamp shaft"}
+{"op":"zone","id":"z_seg_6","slot":"seg_6","tag":"steps","name":"Top stairs"}
+{"op":"zone","id":"z_finish","slot":"finish","tag":"outside","name":"Lamp room"}
+{"op":"spawn","id":"sp_red","zone":"z_start","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"beacon","zone":"z_finish","anchor":"goal","noun":"lighthouse beacon","hyper":"lamp","team":"red"}
+{"op":"ent","id":"fuel_can","kind":"pickup","noun":"fuel canister","hyper":"fuel","zone":"z_seg_2","anchor":"pickup_1","body":"dynamic","shape":"box","size":[0.3,0.3,0.5]}
+{"op":"ent","id":"flare_kit","kind":"pickup","noun":"flare kit","hyper":"flare","zone":"z_seg_4","anchor":"pickup_4","body":"dynamic","shape":"box","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"lever","kind":"switch","noun":"ignition lever","hyper":"lever","zone":"z_seg_5","anchor":"cp_5","body":"fixed","shape":"box"}
+{"op":"ent","id":"wind_gust","kind":"hazard","noun":"storm wind","hyper":"wind","zone":"z_seg_3","anchor":"cp_3","body":"sensor","shape":"box","size":[5,2,5]}
+{"op":"ent","id":"crumble_step","kind":"platform","noun":"crumbling step","hyper":"step","zone":"z_seg_3","anchor":"cp_3","body":"dynamic","shape":"box","size":[1,0.2,1]}
+{"op":"ent","id":"timer_ship","kind":"goal","noun":"ship crash timer","hyper":"timer","zone":"z_finish","anchor":"goal","body":"sensor","shape":"box"}
+{"op":"verb","id":"vb_carry_fuel","verb":"physics_props.carry","on":"fuel_can","params":{}}
+{"op":"verb","id":"vb_carry_flare","verb":"physics_props.carry","on":"flare_kit","params":{}}
+{"op":"verb","id":"vb_ignite","verb":"puzzle.switch","on":"lever","params":{"once":false}}
+{"op":"verb","id":"vb_wind","verb":"motion_hazards.wind","on":"wind_gust","params":{"x":8,"z":0}}
+{"op":"verb","id":"vb_crumble","verb":"motion_hazards.crumble","on":"crumble_step","params":{"delay":0.5,"back":5}}
+{"op":"verb","id":"vb_ship_timer","verb":"puzzle.timer","on":"timer_ship","params":{"seconds":90}}
+{"op":"rule","id":"r_ignite","when":{"t":"state_is","a":"lever","s":"on"},"then":[{"e":"set_state","target":"beacon","v":"on"}],"once":true}
+{"op":"rule","id":"r_win","when":{"t":"enter","a":"beacon","b":"beacon"},"if":[{"l":"beacon.state","op":"eq","r":"on"}],"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose","when":{"t":"timer_end","a":"timer_ship"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"expect","id":"x_lighthouse","prop":"requires","a":"sp_red","b":"z_seg_5","need":["jumps>=2"],"headline":true,"text":"Spiral stair ascent must be climbed in time to light the beacon before the ship timer hits zero."}
+{"op":"end","layer":"gameplay"}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.8,"speed":5}}
+{"op":"end","layer":"cosmetic"}

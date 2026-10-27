@@ -1,0 +1,264 @@
+{
+  "prompt": "A lighthouse on a stormy cliff: climb to the lamp and light it before the ship crashes",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "narrative-puzzle / rescue platformer",
+    "setting": "A weathered stone lighthouse perched on a storm-torn cliff, the tower interior lit only by lanterns, the lamp room at the top, a ship battering against the rocks far below with crashing fog and waves.",
+    "role": "You are the lighthouse keeper scrambled to wake as the light has gone out.",
+    "goal": "Climb the spiral stair inside the lighthouse tower, collect or craft the necessary fuel/flare parts, reach the lamp room, and ignite the beacon before the timer runs out and the ship hits the rocks.",
+    "fail": "The lamp is still dark when the ship is seen smashing against the cliffs, ending the story.",
+    "mood": "Tense, urgent, atmospheric with moments of relief on seeing the beam light up",
+    "pack": "course",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Spiral stair ascent must be climbed in time to light the beacon before the ship timer hits zero.",
+    "nouns": [
+      {
+        "noun": "lighthouse",
+        "hyper": "tower"
+      },
+      {
+        "noun": "cliff",
+        "hyper": "terrain"
+      },
+      {
+        "noun": "ship",
+        "hyper": "vessel"
+      },
+      {
+        "noun": "lamp",
+        "hyper": "mechanism"
+      },
+      {
+        "noun": "stair",
+        "hyper": "path"
+      },
+      {
+        "noun": "storm",
+        "hyper": "weather"
+      }
+    ],
+    "moodVec": {
+      "valence": -0.45,
+      "arousal": 0.85,
+      "tension": 0.9
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "7bf2358cbc5eae1046cb779f59a360a98da5f356efa2726e484db30ab613cf0d",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_lighthouse",
+      "text": "Spiral stair ascent must be climbed in time to light the beacon before the ship timer hits zero.",
+      "status": "counterexample",
+      "method": "kinematic reachability (jump apex model) + physics jump witness, 4 attempts per jump count"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 1,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 7 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "chain",
+          "text": "win unreachable in the rule graph"
+        },
+        "ms": 1,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "counterexample",
+        "method": "static goal regression over rules",
+        "text": "no rule chain lets the player trigger the win",
+        "src": ""
+      },
+      {
+        "id": "T1:x_lighthouse",
+        "tier": "T1",
+        "subject": {
+          "kind": "property",
+          "id": "x_lighthouse"
+        },
+        "method": "kinematic reachability (jump apex model)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 1,
+        "status": "counterexample",
+        "text": "Spiral stair ascent must be climbed in time to light the beacon before the ship timer hits zero.",
+        "cx": {
+          "where": null,
+          "have": 1.5,
+          "need": 4.38,
+          "unit": "m",
+          "text": "reachable with 1 jump: step 4.38 m ≤ apex 1.5 m"
+        }
+      },
+      {
+        "id": "T2:r_ignite",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_ignite"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 52,
+        "status": "verified",
+        "text": "r_ignite fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lose",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_lose fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_cp_4",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_cp_4"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_secret_cp_4 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_pickup_5",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_pickup_5"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 7,
+        "status": "verified",
+        "text": "r_secret_pickup_5 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_pickup_6",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_pickup_6"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_secret_pickup_6 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_trophy",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_trophy"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_secret_trophy fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 0,
+        "src": "ai",
+        "ms": 5,
+        "status": "counterexample",
+        "text": "r_win fires exactly once",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "firings",
+          "text": "never fired when forced"
+        }
+      },
+      {
+        "id": "T3:x_lighthouse",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "x_lighthouse"
+        },
+        "status": "counterexample",
+        "method": "physics jump witness, 4 attempts per jump count",
+        "n": 4,
+        "k": 0,
+        "text": "Spiral stair ascent must be climbed in time to light the beacon before the ship timer hits zero.: reached with 2 jumps 0 of 4, with 1 0 of 4",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 0,
+          "unit": "attempts",
+          "text": "never reached with 2 jumps"
+        },
+        "src": "ai",
+        "ms": 24
+      }
+    ],
+    "par": null,
+    "ms": 502
+  }
+}

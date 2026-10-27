@@ -1,0 +1,288 @@
+{
+  "prompt": "A cooking show kitchen: deliver three dishes to the judges' table before time runs out",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "cooking",
+    "setting": "a high-heat professional cooking show kitchen with prep stations, an oven bank, a pass and a judges’ table",
+    "role": "contest chef",
+    "goal": "Prepare and deliver three finished dishes to the judges’ table before the timer hits zero",
+    "fail": "Running out of time and presenting fewer than three plated dishes",
+    "mood": "High-pressure, focused, time-constrained with a competitive edge",
+    "pack": "floor_plan",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Must plate three distinct dishes and pass them through to the judges’ table inside the countdown",
+    "nouns": [
+      {
+        "noun": "cooking show kitchen",
+        "hyper": "kitchen"
+      },
+      {
+        "noun": "dishes",
+        "hyper": "food items"
+      },
+      {
+        "noun": "judges' table",
+        "hyper": "table"
+      },
+      {
+        "noun": "time",
+        "hyper": "game timer"
+      },
+      {
+        "noun": "prep stations",
+        "hyper": "workstations"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.2,
+      "arousal": 0.85,
+      "tension": 0.9
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "ccdb24c4546d7c3087d1fe0286674ff2f63914a4a5e6927de34826cffc4d791a",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_win",
+      "text": "Must plate three distinct dishes and pass them through to the judges’ table inside the countdown",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 11 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (dish1 becomes delivered) ← r_deliver1 (dish1 into judge_goal) ← pick up dish1 [after dish2 delivered, dish3 delivered]",
+        "src": ""
+      },
+      {
+        "id": "T2:r_deliver1",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_deliver1"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_deliver1 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_deliver2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_deliver2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_deliver2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_deliver3",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_deliver3"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_deliver3 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_ne",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_ne"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_corner_ne fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_nw",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_nw"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_corner_nw fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_nw_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_nw_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_corner_nw_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_nw_3",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_nw_3"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_corner_nw_3 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_se",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_se"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_corner_se fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_sw",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_sw"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_corner_sw fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_timer_end",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_timer_end"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_timer_end fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_win: nothing in the world makes dish1 'delivered'",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it (AI par 12.9 s)",
+        "cx": null,
+        "src": "",
+        "ms": 246
+      }
+    ],
+    "par": {
+      "goldS": 12.9,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 292
+  }
+}

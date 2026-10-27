@@ -1,0 +1,31 @@
+{"op":"meta","mode":"play","lang":"en","pack":"arena","sub":[],"seed":17,"look":"soccer stadium","mood":[0.3,0.8,0.7],"timeOfDay":14,"weather":"clear"}
+{"op":"zone","id":"z_midfield","slot":"midfield","tag":"center","name":"Center field"}
+{"op":"zone","id":"z_west","slot":"west_half","tag":"base","name":"West penalty spot"}
+{"op":"zone","id":"z_east","slot":"east_half","tag":"base","name":"East goal area"}
+{"op":"zone","id":"z_north","slot":"north_deck","tag":"platform","name":"North stand"}
+{"op":"zone","id":"z_south","slot":"south_deck","tag":"platform","name":"South stand"}
+{"op":"spawn","id":"sp_red","zone":"z_west","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"goal_target","zone":"z_east","anchor":"goal_ring","noun":"goal","hyper":"goal","team":"","body":"sensor","shape":"box","size":[2,1,0.5]}
+{"op":"ent","id":"ball_1","kind":"pickup","noun":"soccer ball","hyper":"ball","zone":"z_west","anchor":"spawn_pad","body":"dynamic","shape":"sphere","size":[0.22,0.22,0.22]}
+{"op":"ent","id":"ball_2","kind":"pickup","noun":"soccer ball","hyper":"ball","zone":"z_west","anchor":"spawn_pad","body":"dynamic","shape":"sphere","size":[0.22,0.22,0.22]}
+{"op":"ent","id":"ball_3","kind":"pickup","noun":"soccer ball","hyper":"ball","zone":"z_west","anchor":"spawn_pad","body":"dynamic","shape":"sphere","size":[0.22,0.22,0.22]}
+{"op":"ent","id":"keeper","kind":"npc","noun":"goalkeeper","hyper":"character","zone":"z_east","anchor":"goal_ring","body":"fixed","shape":"box","size":[0.6,1.8,0.5],"team":""}
+{"op":"ent","id":"miss_hazard","kind":"hazard","noun":"out of bounds","hyper":"hazard","zone":"z_west","anchor":"flank_s","body":"sensor","shape":"box","size":[4,0.1,4]}
+{"op":"verb","id":"vb_carry_ball1","verb":"physics_props.carry","on":"ball_1","params":{}}
+{"op":"verb","id":"vb_carry_ball2","verb":"physics_props.carry","on":"ball_2","params":{}}
+{"op":"verb","id":"vb_carry_ball3","verb":"physics_props.carry","on":"ball_3","params":{}}
+{"op":"verb","id":"vb_throw_ball1","verb":"combat_sport.throw","on":"ball_1","params":{"range":20}}
+{"op":"verb","id":"vb_throw_ball2","verb":"combat_sport.throw","on":"ball_2","params":{"range":20}}
+{"op":"verb","id":"vb_throw_ball3","verb":"combat_sport.throw","on":"ball_3","params":{"range":20}}
+{"op":"verb","id":"vb_inspect_keeper","verb":"social.inspect","on":"keeper","params":{"text":"A stationary goalkeeper ready to block shots."}}
+{"op":"verb","id":"vb_hazard","verb":"motion_hazards.hazard","on":"miss_hazard","params":{"respawn":true}}
+{"op":"rule","id":"r_score_ball1","when":{"t":"enter","a":"ball_1","b":"goal_target"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_score_ball2","when":{"t":"enter","a":"ball_2","b":"goal_target"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_score_ball3","when":{"t":"enter","a":"ball_3","b":"goal_target"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_win","when":{"t":"score_gte","a":"team:red","n":3},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_miss","when":{"t":"enter","a":"ball_1","b":"miss_hazard"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_miss2","when":{"t":"enter","a":"ball_2","b":"miss_hazard"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_miss3","when":{"t":"enter","a":"ball_3","b":"miss_hazard"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"expect","id":"x_shootout","prop":"win_reachable","a":"sp_red","b":"goal_target","headline":true,"text":"Three unassisted goal attempts past a stationary keeper"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

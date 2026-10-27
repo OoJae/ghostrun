@@ -1,0 +1,45 @@
+  · fill line 29: late — gameplay op 'law' after the gameplay layer closed
+[1/14] {"prompt":"A lighthouse on a stormy cliff: climb to the lamp and light it before the ship crashes","pack":"course","intentMs":1839,"fillFirstTokenMs":2485,"firstEntityMs":2578,"gameplayEndMs":2857,"fillDoneMs":3145,"playableMs":3153,"proofMs":502,"outTok":1175,"invalid":0,"lines":30,"controls":10,"headline":"counterexample","t3win":"-","par":null,"tooEasy":false,"chips":11}
+[2/14] {"prompt":"Capture all four flags in a medieval castle courtyard","pack":"arena","intentMs":699,"fillFirstTokenMs":3339,"firstEntityMs":3436,"gameplayEndMs":3912,"fillDoneMs":3913,"playableMs":3915,"proofMs":505,"outTok":1685,"invalid":0,"lines":28,"controls":10,"headline":"counterexample","t3win":"0/12","par":null,"tooEasy":false,"chips":14}
+[3/14] {"prompt":"A cooking show kitchen: deliver three dishes to the judges' table before time runs out","pack":"floor_plan","intentMs":1305,"fillFirstTokenMs":3630,"firstEntityMs":3721,"gameplayEndMs":3893,"fillDoneMs":4094,"playableMs":4095,"proofMs":292,"outTok":1930,"invalid":0,"lines":27,"controls":9,"headline":"verified","t3win":"12/12","par":12.9,"tooEasy":false,"chips":14}
+[4/14] {"prompt":"Escape the flooding submarine through the three hatches","pack":"floor_plan","intentMs":1144,"fillFirstTokenMs":3212,"firstEntityMs":3285,"gameplayEndMs":4024,"fillDoneMs":4025,"playableMs":4027,"proofMs":238,"outTok":1959,"invalid":0,"lines":32,"controls":10,"headline":"verified","t3win":"9/12","par":8.2,"tooEasy":false,"chips":9}
+  · fill line 25: invalid — prompt: Invalid key: Expected "prompt" but received undefined
+[5/14] {"prompt":"Race the rival snowboarders down the mountain to the lodge","pack":"outdoor","intentMs":910,"fillFirstTokenMs":2716,"firstEntityMs":2748,"gameplayEndMs":3008,"fillDoneMs":3016,"playableMs":3018,"proofMs":415,"outTok":1223,"invalid":1,"lines":26,"controls":10,"headline":"verified","t3win":"12/12","par":7.2,"tooEasy":false,"chips":11}
+[6/14] {"prompt":"A garden of hide and seek: find the five hidden gnomes","pack":"outdoor","intentMs":1290,"fillFirstTokenMs":2019,"firstEntityMs":2179,"gameplayEndMs":2978,"fillDoneMs":2979,"playableMs":2986,"proofMs":1167,"outTok":2234,"invalid":0,"lines":49,"controls":10,"headline":"verified","t3win":"12/12","par":42.3,"tooEasy":false,"chips":11}
+  · fill line 29: invalid — noun: Invalid key: Expected "noun" but received undefined
+  · fill line 30: invalid — noun: Invalid key: Expected "noun" but received undefined
+  · fill line 31: invalid — prompt: Invalid key: Expected "prompt" but received undefined
+  · fill line 32: invalid — prompt: Invalid key: Expected "prompt" but received undefined
+[7/14] {"prompt":"Defend the crystal from the goblins until sunrise","pack":"outdoor","intentMs":811,"fillFirstTokenMs":2956,"firstEntityMs":3031,"gameplayEndMs":3429,"fillDoneMs":3575,"playableMs":3578,"proofMs":310,"outTok":1548,"invalid":4,"lines":33,"controls":10,"headline":"counterexample","t3win":"-","par":null,"tooEasy":false,"chips":10}
+  · fill line 2: invalid — not JSON
+  · fill line 4: invalid — not JSON
+  · fill line 6: invalid — not JSON
+  · fill line 8: invalid — not JSON
+  · fill line 10: invalid — not JSON
+  · fill line 12: invalid — not JSON
+  · fill line 14: invalid — not JSON
+  · fill line 16: invalid — not JSON
+  · fill line 18: invalid — not JSON
+  · fill line 20: invalid — not JSON
+  · fill line 22: invalid — not JSON
+  · fill line 24: invalid — not JSON
+  · fill line 26: invalid — not JSON
+  · fill line 28: invalid — not JSON
+  · fill line 30: invalid — not JSON
+  · fill line 32: invalid — not JSON
+  · fill line 34: invalid — not JSON
+  · fill line 36: invalid — not JSON
+  · fill line 38: invalid — not JSON
+  · fill line 40: invalid — not JSON
+  · fill line 42: invalid — not JSON
+  · fill line 44: invalid — not JSON
+[8/14] {"prompt":"A space station: flip the three breakers to restore power, then reach the escape pod","pack":"floor_plan","intentMs":590,"fillFirstTokenMs":1354,"firstEntityMs":1511,"gameplayEndMs":1605,"fillDoneMs":1605,"playableMs":1606,"proofMs":239,"outTok":1139,"invalid":22,"lines":45,"controls":10,"headline":"verified","t3win":"12/12","par":17.1,"tooEasy":false,"chips":12}
+[9/14] {"prompt":"A circus big top: bounce on the trampolines to grab the balloons","pack":"course","intentMs":864,"fillFirstTokenMs":1821,"firstEntityMs":1927,"gameplayEndMs":2408,"fillDoneMs":2408,"playableMs":2410,"proofMs":870,"outTok":2411,"invalid":0,"lines":45,"controls":10,"headline":"verified","t3win":"12/12","par":18.9,"tooEasy":false,"chips":13}
+[10/14] {"prompt":"Library heist: steal the ancient book without the librarian seeing you","pack":"floor_plan","intentMs":1214,"fillFirstTokenMs":2436,"firstEntityMs":2437,"gameplayEndMs":2567,"fillDoneMs":2568,"playableMs":2570,"proofMs":88,"outTok":1273,"invalid":0,"lines":23,"controls":9,"headline":"verified","t3win":"12/12","par":3.1,"tooEasy":false,"chips":11}
+[11/14] {"prompt":"Penalty shootout: score three goals past the keeper","pack":"arena","intentMs":930,"fillFirstTokenMs":2427,"firstEntityMs":2428,"gameplayEndMs":2467,"fillDoneMs":2467,"playableMs":2469,"proofMs":179,"outTok":1623,"invalid":0,"lines":31,"controls":10,"headline":"counterexample","t3win":"0/12","par":null,"tooEasy":false,"chips":15}
+  · fill line 1: invalid — weather: Invalid type: Expected ("clear" | "rain" | "snow" | "fog" | "storm") but received "smog"
+  · fill line 36: invalid — noun: Invalid key: Expected "noun" but received undefined
+  · fill line 37: invalid — prompt: Invalid key: Expected "prompt" but received undefined
+[12/14] {"prompt":"A volcano island: carry the sacred stone up to the summit shrine","pack":"outdoor","intentMs":1075,"fillFirstTokenMs":1791,"firstEntityMs":1937,"gameplayEndMs":2274,"fillDoneMs":2374,"playableMs":2380,"proofMs":493,"outTok":1707,"invalid":3,"lines":38,"controls":10,"headline":"verified","t3win":"12/12","par":15.4,"tooEasy":false,"chips":9}
+[13/14] {"prompt":"Paintball in a warehouse: tag the blue team four times","pack":"arena","intentMs":715,"fillFirstTokenMs":1540,"firstEntityMs":1590,"gameplayEndMs":2029,"fillDoneMs":2029,"playableMs":2029,"proofMs":116,"outTok":1824,"invalid":0,"lines":36,"controls":5,"headline":"counterexample","t3win":"-","par":null,"tooEasy":false,"chips":12}
+[14/14] {"prompt":"A farmer's market: deliver a basket of apples to each of the three stalls","pack":"outdoor","intentMs":765,"fillFirstTokenMs":2064,"firstEntityMs":2071,"gameplayEndMs":2221,"fillDoneMs":2586,"playableMs":2591,"proofMs":393,"outTok":1294,"invalid":0,"lines":21,"controls":7,"headline":"verified","t3win":"12/12","par":6.1,"tooEasy":false,"chips":13}

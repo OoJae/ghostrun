@@ -1,0 +1,36 @@
+{"op":"meta","mode":"play","lang":"en","pack":"arena","sub":[],"seed":19,"look":"warehouse interior","mood":[0.6,0.8,0.5],"timeOfDay":12,"weather":"clear"}
+{"op":"zone","id":"z_mid","slot":"midfield","tag":"arena","name":"Central warehouse floor"}
+{"op":"zone","id":"z_west","slot":"west_half","tag":"base","name":"West side cover"}
+{"op":"zone","id":"z_east","slot":"east_half","tag":"base","name":"East side cover"}
+{"op":"spawn","id":"sp_red","zone":"z_west","anchor":"spawn_pad","team":"red"}
+{"op":"spawn","id":"sp_blue_1","zone":"z_east","anchor":"spawn_pad","team":"blue"}
+{"op":"spawn","id":"sp_blue_2","zone":"z_east","anchor":"spawn_pad","team":"blue"}
+{"op":"spawn","id":"sp_blue_3","zone":"z_east","anchor":"spawn_pad","team":"blue"}
+{"op":"spawn","id":"sp_blue_4","zone":"z_east","anchor":"spawn_pad","team":"blue"}
+{"op":"goal","id":"tag_goal","zone":"z_mid","anchor":"center","noun":"tag count","hyper":"goal","team":"red"}
+{"op":"ent","id":"crate_a","kind":"prop","noun":"crate","hyper":"crate","zone":"z_mid","anchor":"center_n","body":"fixed","shape":"box","size":[1,1,1]}
+{"op":"ent","id":"crate_b","kind":"prop","noun":"crate","hyper":"crate","zone":"z_mid","anchor":"center_s","body":"fixed","shape":"box","size":[1,1,1]}
+{"op":"ent","id":"crate_c","kind":"prop","noun":"crate","hyper":"crate","zone":"z_west","anchor":"flank_n","body":"fixed","shape":"box","size":[1,1,1]}
+{"op":"ent","id":"crate_d","kind":"prop","noun":"crate","hyper":"crate","zone":"z_east","anchor":"flank_s","body":"fixed","shape":"box","size":[1,1,1]}
+{"op":"ent","id":"blue_1","kind":"npc","noun":"blue player","hyper":"npc","zone":"z_east","anchor":"flank_n","body":"dynamic","shape":"capsule","team":"blue"}
+{"op":"ent","id":"blue_2","kind":"npc","noun":"blue player","hyper":"npc","zone":"z_east","anchor":"flank_s","body":"dynamic","shape":"capsule","team":"blue"}
+{"op":"ent","id":"blue_3","kind":"npc","noun":"blue player","hyper":"npc","zone":"z_east","anchor":"goal_ring","body":"dynamic","shape":"capsule","team":"blue"}
+{"op":"ent","id":"blue_4","kind":"npc","noun":"blue player","hyper":"npc","zone":"z_east","anchor":"hoop","body":"dynamic","shape":"capsule","team":"blue"}
+{"op":"verb","id":"vb_tag_drop","verb":"combat_sport.tag_drop","on":"player","params":{"radius":2}}
+{"op":"verb","id":"vb_shove_1","verb":"combat_sport.shove","on":"blue_1","params":{"force":6}}
+{"op":"verb","id":"vb_shove_2","verb":"combat_sport.shove","on":"blue_2","params":{"force":6}}
+{"op":"verb","id":"vb_shove_3","verb":"combat_sport.shove","on":"blue_3","params":{"force":6}}
+{"op":"verb","id":"vb_shove_4","verb":"combat_sport.shove","on":"blue_4","params":{"force":6}}
+{"op":"rule","id":"r_tag_1","when":{"t":"hit","a":"player","b":"blue_1"},"then":[{"e":"score","target":"team:red","n":1}],"once":false}
+{"op":"rule","id":"r_tag_2","when":{"t":"hit","a":"player","b":"blue_2"},"then":[{"e":"score","target":"team:red","n":1}],"once":false}
+{"op":"rule","id":"r_tag_3","when":{"t":"hit","a":"player","b":"blue_3"},"then":[{"e":"score","target":"team:red","n":1}],"once":false}
+{"op":"rule","id":"r_tag_4","when":{"t":"hit","a":"player","b":"blue_4"},"then":[{"e":"score","target":"team:red","n":1}],"once":false}
+{"op":"rule","id":"r_win","when":{"t":"score_gte","a":"team:red","n":4},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose","when":{"t":"hit","a":"blue_1","b":"player"},"then":[{"e":"lose","target":"player"}],"once":false}
+{"op":"rule","id":"r_lose2","when":{"t":"hit","a":"blue_2","b":"player"},"then":[{"e":"lose","target":"player"}],"once":false}
+{"op":"rule","id":"r_lose3","when":{"t":"hit","a":"blue_3","b":"player"},"then":[{"e":"lose","target":"player"}],"once":false}
+{"op":"rule","id":"r_lose4","when":{"t":"hit","a":"blue_4","b":"player"},"then":[{"e":"lose","target":"player"}],"once":false}
+{"op":"expect","id":"x_tag","prop":"win_reachable","a":"sp_red","b":"tag_goal","headline":true,"text":"Warehouse cover enables tag-based team combat"}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":6}}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

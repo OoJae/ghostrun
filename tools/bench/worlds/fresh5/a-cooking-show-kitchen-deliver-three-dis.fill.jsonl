@@ -1,0 +1,27 @@
+{"op":"meta","mode":"play","lang":"en","pack":"floor_plan","sub":[],"seed":9,"look":"cooking show kitchen","mood":[0.2,0.85,0.9],"timeOfDay":12,"weather":"clear"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Kitchen entrance"}
+{"op":"zone","id":"z_prep","slot":"room_sw","tag":"room","name":"Prep stations"}
+{"op":"zone","id":"z_oven","slot":"room_se","tag":"room","name":"Oven bank"}
+{"op":"zone","id":"z_pass","slot":"main_room","tag":"hall","name":"Pass"}
+{"op":"zone","id":"z_judge","slot":"room_nw","tag":"room","name":"Judges' table"}
+{"op":"spawn","id":"sp_red","zone":"z_entrance","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"judge_goal","zone":"z_judge","anchor":"center","noun":"judges' table","hyper":"table","team":"red"}
+{"op":"ent","id":"dish1","kind":"pickup","noun":"dish 1","hyper":"food","zone":"z_prep","anchor":"corner_sw","body":"dynamic","shape":"box","size":[0.3,0.2,0.2]}
+{"op":"ent","id":"dish2","kind":"pickup","noun":"dish 2","hyper":"food","zone":"z_oven","anchor":"corner_sw","body":"dynamic","shape":"box","size":[0.3,0.2,0.2]}
+{"op":"ent","id":"dish3","kind":"pickup","noun":"dish 3","hyper":"food","zone":"z_pass","anchor":"corner_sw","body":"dynamic","shape":"box","size":[0.3,0.2,0.2]}
+{"op":"ent","id":"prep_counter","kind":"prop","noun":"prep counter","hyper":"workstation","zone":"z_prep","anchor":"center","body":"fixed","shape":"box","size":[2,1,0.5]}
+{"op":"ent","id":"oven_bank","kind":"prop","noun":"oven bank","hyper":"oven","zone":"z_oven","anchor":"center","body":"fixed","shape":"box","size":[3,2,1]}
+{"op":"ent","id":"pass_area","kind":"prop","noun":"pass area","hyper":"pass","zone":"z_pass","anchor":"center","body":"fixed","shape":"box","size":[2,2,0.5]}
+{"op":"verb","id":"vb_carry_dish1","verb":"physics_props.carry","on":"dish1","params":{}}
+{"op":"verb","id":"vb_carry_dish2","verb":"physics_props.carry","on":"dish2","params":{}}
+{"op":"verb","id":"vb_carry_dish3","verb":"physics_props.carry","on":"dish3","params":{}}
+{"op":"verb","id":"vb_timer","verb":"puzzle.timer","on":"player","params":{"seconds":180}}
+{"op":"rule","id":"r_deliver1","when":{"t":"enter","a":"dish1","b":"judge_goal"},"then":[{"e":"set_state","target":"dish1","v":"delivered"}],"once":true}
+{"op":"rule","id":"r_deliver2","when":{"t":"enter","a":"dish2","b":"judge_goal"},"then":[{"e":"set_state","target":"dish2","v":"delivered"}],"once":true}
+{"op":"rule","id":"r_deliver3","when":{"t":"enter","a":"dish3","b":"judge_goal"},"then":[{"e":"set_state","target":"dish3","v":"delivered"}],"once":true}
+{"op":"rule","id":"r_win","when":{"t":"state_is","a":"dish1","s":"delivered"},"if":[{"l":"dish2.state","op":"eq","r":"delivered"},{"l":"dish3.state","op":"eq","r":"delivered"}],"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_timer_end","when":{"t":"timer_end","a":"player"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"expect","id":"x_win","prop":"win_reachable","a":"sp_red","b":"judge_goal","headline":true,"text":"Must plate three distinct dishes and pass them through to the judges’ table inside the countdown"}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":6}}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

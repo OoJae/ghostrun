@@ -42,6 +42,12 @@ describe("recorded unseen worlds", () => {
     ["judges", "a-temple-run", "boulders on the lane are landed clear of and walked round; 'carry_count is 4' counts the idols collected"],
     ["fresh3", "a-night-at-the-observatory", "a runner arriving mid-hop lands before it reaches for the telescope"],
     ["fresh3", "herd-the-escaped-chickens", "'reach the coop holding all three chickens' means bringing each one in"],
+    ["fresh5", "a-lighthouse", "a crosswind faster than you walk is eased, runners lean into it, and climb back up from the fall floor"],
+    ["fresh5", "escape-the-flooding", "a corner beside deadly water is turned on the spot, not cut"],
+    ["fresh5", "capture-all-four-flags", "a score zone hanging half in the wall moves off it"],
+    ["fresh5", "penalty-shootout", "a miss box with no ring is not a ring game"],
+    ["fresh5", "defend-the-crystal", "a sunrise nobody started becomes a countdown"],
+    ["fresh5", "paintball", "'the player hits blue_1' means tagging them"],
   ])("%s %s: %s", async (set, prefix) => {
     const w = recorded(set, prefix);
     const r = await prove(R, w.bundle, { engine: ENGINE_HASH, runs: 12 });

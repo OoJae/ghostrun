@@ -1,0 +1,28 @@
+{"op":"meta","mode":"play","lang":"en","pack":"arena","sub":[],"seed":8,"look":"medieval courtyard","mood":[0.45,0.6,0.3],"timeOfDay":14,"weather":"clear"}
+{"op":"zone","id":"z_courtyard","slot":"midfield","tag":"courtyard","name":"Castle Courtyard"}
+{"op":"zone","id":"z_west_base","slot":"west_half","tag":"base","name":"West Tower Base"}
+{"op":"zone","id":"z_east_base","slot":"east_half","tag":"base","name":"East Tower Base"}
+{"op":"zone","id":"z_north_deck","slot":"north_deck","tag":"deck","name":"North Wall Deck"}
+{"op":"zone","id":"z_south_deck","slot":"south_deck","tag":"deck","name":"South Wall Deck"}
+{"op":"spawn","id":"sp_red","zone":"z_courtyard","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"score_zone","zone":"z_courtyard","anchor":"scoreboard","noun":"flag rally point","hyper":"zone","team":"red"}
+{"op":"ent","id":"flag_west","kind":"pickup","noun":"red flag","hyper":"flag","zone":"z_west_base","anchor":"goal_ring","body":"dynamic","shape":"box","size":[0.3,0.6,0.1]}
+{"op":"ent","id":"flag_east","kind":"pickup","noun":"blue flag","hyper":"flag","zone":"z_east_base","anchor":"goal_ring","body":"dynamic","shape":"box","size":[0.3,0.6,0.1]}
+{"op":"ent","id":"flag_north","kind":"pickup","noun":"green flag","hyper":"flag","zone":"z_north_deck","anchor":"deck_center","body":"dynamic","shape":"box","size":[0.3,0.6,0.1]}
+{"op":"ent","id":"flag_south","kind":"pickup","noun":"yellow flag","hyper":"flag","zone":"z_south_deck","anchor":"deck_center","body":"dynamic","shape":"box","size":[0.3,0.6,0.1]}
+{"op":"ent","id":"opponent_rival","kind":"npc","noun":"rival runner","hyper":"rival","zone":"z_courtyard","anchor":"center_n","body":"kinematic","shape":"capsule"}
+{"op":"verb","id":"vb_carry_west","verb":"physics_props.carry","on":"flag_west","params":{}}
+{"op":"verb","id":"vb_carry_east","verb":"physics_props.carry","on":"flag_east","params":{}}
+{"op":"verb","id":"vb_carry_north","verb":"physics_props.carry","on":"flag_north","params":{}}
+{"op":"verb","id":"vb_carry_south","verb":"physics_props.carry","on":"flag_south","params":{}}
+{"op":"verb","id":"vb_tag_rival","verb":"combat_sport.tag_drop","on":"opponent_rival","params":{"radius":2}}
+{"op":"rule","id":"r_score_west","when":{"t":"enter","a":"flag_west","b":"score_zone"},"if":[{"l":"flag_west.carrier.team","op":"eq","r":"red"}],"then":[{"e":"score","target":"team:red","n":1}],"once":false}
+{"op":"rule","id":"r_score_east","when":{"t":"enter","a":"flag_east","b":"score_zone"},"if":[{"l":"flag_east.carrier.team","op":"eq","r":"red"}],"then":[{"e":"score","target":"team:red","n":1}],"once":false}
+{"op":"rule","id":"r_score_north","when":{"t":"enter","a":"flag_north","b":"score_zone"},"if":[{"l":"flag_north.carrier.team","op":"eq","r":"red"}],"then":[{"e":"score","target":"team:red","n":1}],"once":false}
+{"op":"rule","id":"r_score_south","when":{"t":"enter","a":"flag_south","b":"score_zone"},"if":[{"l":"flag_south.carrier.team","op":"eq","r":"red"}],"then":[{"e":"score","target":"team:red","n":1}],"once":false}
+{"op":"rule","id":"r_win","when":{"t":"score_gte","a":"team:red","n":4},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose_tag","when":{"t":"hit","a":"player","b":"opponent_rival"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"expect","id":"x_flags","prop":"win_reachable","a":"sp_red","b":"score_zone","headline":true,"text":"Four flags must be located in the courtyard"}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":6}}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

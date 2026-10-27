@@ -1,0 +1,23 @@
+{"op":"meta","mode":"play","lang":"en","pack":"floor_plan","sub":[],"seed":16,"look":"quiet old brick library","mood":[-0.3,0.6,0.8],"timeOfDay":14,"weather":"clear"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Library entrance"}
+{"op":"zone","id":"z_main","slot":"main_room","tag":"hall","name":"Central reading hall"}
+{"op":"zone","id":"z_west","slot":"room_sw","tag":"room","name":"West aisle"}
+{"op":"zone","id":"z_east","slot":"room_se","tag":"room","name":"East aisle"}
+{"op":"zone","id":"z_north","slot":"room_nw","tag":"room","name":"North aisle"}
+{"op":"spawn","id":"sp_red","zone":"z_entrance","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"exit","zone":"z_entrance","anchor":"corner_w","noun":"library exit","hyper":"door","team":"red"}
+{"op":"ent","id":"book","kind":"pickup","noun":"ancient golden book","hyper":"artifact","zone":"z_main","anchor":"center","body":"dynamic","shape":"box","size":[0.3,0.2,0.05]}
+{"op":"ent","id":"case","kind":"prop","noun":"velvet display case","hyper":"container","zone":"z_main","anchor":"center","body":"fixed","shape":"box","size":[0.6,0.4,0.4]}
+{"op":"ent","id":"shelf_w","kind":"prop","noun":"bookshelf","hyper":"furniture","zone":"z_west","anchor":"center","body":"fixed","shape":"box","size":[2,0.3,3]}
+{"op":"ent","id":"shelf_e","kind":"prop","noun":"bookshelf","hyper":"furniture","zone":"z_east","anchor":"center","body":"fixed","shape":"box","size":[2,0.3,3]}
+{"op":"ent","id":"shelf_n","kind":"prop","noun":"bookshelf","hyper":"furniture","zone":"z_north","anchor":"center","body":"fixed","shape":"box","size":[2,0.3,3]}
+{"op":"ent","id":"librarian","kind":"npc","noun":"librarian","hyper":"character","zone":"z_main","anchor":"doorway_n","body":"kinematic","shape":"capsule","team":""}
+{"op":"verb","id":"vb_carry_book","verb":"physics_props.carry","on":"book","params":{}}
+{"op":"verb","id":"vb_inspect_shelf_w","verb":"social.inspect","on":"shelf_w","params":{"text":"A row of dusty tomes, hardly watched."}}
+{"op":"verb","id":"vb_inspect_shelf_e","verb":"social.inspect","on":"shelf_e","params":{"text":"Quiet aisles, the librarian checks them regularly."}}
+{"op":"verb","id":"vb_patrol","verb":"puzzle.lock","on":"librarian","params":{"key":"none","keep":true}}
+{"op":"rule","id":"r_spot","when":{"t":"enter","a":"sp_red","b":"librarian"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_escape","when":{"t":"enter","a":"book","b":"exit"},"if":[{"l":"book.carrier.team","op":"eq","r":"red"}],"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"expect","id":"x_heist","prop":"win_reachable","a":"sp_red","b":"exit","headline":true,"text":"The librarian has a fixed patrol pattern to exploit"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

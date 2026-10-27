@@ -1,0 +1,38 @@
+{"op":"meta","mode":"play","lang":"en","pack":"outdoor","sub":[],"seed":18,"look":"volcano island","mood":[0.1,0.45,0.55],"timeOfDay":14,"weather":"smog"}
+{"op":"zone","id":"z_beach","slot":"entrance","tag":"entrance","name":"Volcano island beach"}
+{"op":"zone","id":"z_mid","slot":"clearing","tag":"hub","name":"Mid‑slope clearing"}
+{"op":"zone","id":"z_west","slot":"clearing_w","tag":"base","name":"Western basalt base"}
+{"op":"zone","id":"z_east","slot":"clearing_e","tag":"base","name":"Eastern basalt base"}
+{"op":"zone","id":"z_lava","slot":"pond","tag":"lava","name":"Molten lake"}
+{"op":"zone","id":"z_forest","slot":"grove","tag":"forest","name":"Ash‑strewn grove"}
+{"op":"zone","id":"z_camp","slot":"camp","tag":"camp","name":"Rope camp"}
+{"op":"zone","id":"z_summit","slot":"lookout","tag":"summit","name":"Summit shrine"}
+{"op":"spawn","id":"sp_red","zone":"z_beach","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"shrine","zone":"z_summit","anchor":"ledge","noun":"summit shrine","hyper":"location","body":"sensor","shape":"box","size":[2,2,0.5]}
+{"op":"ent","id":"stone","kind":"pickup","noun":"sacred stone","hyper":"carryable","zone":"z_forest","anchor":"heart","body":"dynamic","shape":"sphere","size":[0.5,0.5,0.5]}
+{"op":"ent","id":"lava_hazard","kind":"hazard","noun":"molten lava","hyper":"lava","zone":"z_lava","anchor":"water","body":"sensor","shape":"box","size":[8,0.2,8]}
+{"op":"ent","id":"rock_plate","kind":"plate","noun":"rock pressure plate","hyper":"plate","zone":"z_mid","anchor":"center","body":"sensor","shape":"box","size":[1,0.2,1]}
+{"op":"ent","id":"gate_door","kind":"door","noun":"basalt gate","hyper":"door","zone":"z_west","anchor":"goal","body":"fixed","shape":"box","size":[2,3,0.5]}
+{"op":"ent","id":"jump_pad","kind":"plate","noun":"eruption jump pad","hyper":"plate","zone":"z_east","anchor":"flank_n","body":"sensor","shape":"box","size":[1,0.2,1]}
+{"op":"ent","id":"coin_1","kind":"pickup","noun":"golden coin","hyper":"coin","zone":"z_mid","anchor":"center_n","body":"dynamic","shape":"box","size":[0.2,0.2,0.02]}
+{"op":"ent","id":"coin_2","kind":"pickup","noun":"golden coin","hyper":"coin","zone":"z_mid","anchor":"center_s","body":"dynamic","shape":"box","size":[0.2,0.2,0.02]}
+{"op":"ent","id":"insight_rock","kind":"prop","noun":"ancient basalt","hyper":"rock","zone":"z_forest","anchor":"stump","body":"fixed","shape":"box","size":[2,1,2]}
+{"op":"verb","id":"vb_carry_stone","verb":"physics_props.carry","on":"stone","params":{}}
+{"op":"verb","id":"vb_jump","verb":"locomotion.jump","on":"player","params":{"jumpsMax":2}}
+{"op":"verb","id":"vb_jump_pad","verb":"locomotion.jump_pad","on":"jump_pad","params":{"height":6}}
+{"op":"verb","id":"vb_plate","verb":"puzzle.plate","on":"rock_plate","params":{"latch":false}}
+{"op":"verb","id":"vb_gate_lock","verb":"puzzle.lock","on":"gate_door","params":{"key":"stone","keep":false}}
+{"op":"verb","id":"vb_lava_hazard","verb":"motion_hazards.hazard","on":"lava_hazard","params":{"respawn":true}}
+{"op":"verb","id":"vb_inspect_rock","verb":"social.inspect","on":"insight_rock","params":{"text":"The basalt bears ancient runes warning of a heavy burden."}}
+{"op":"verb","id":"vb_collect_coin1","verb":"puzzle.collect","on":"coin_1","params":{}}
+{"op":"verb","id":"vb_collect_coin2","verb":"puzzle.collect","on":"coin_2","params":{}}
+{"op":"rule","id":"r_win","when":{"t":"enter","a":"stone","b":"shrine"},"if":[{"l":"stone.carrier.team","op":"eq","r":"red"}],"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose_lava","when":{"t":"touch","a":"stone","b":"lava_hazard"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_gate_open","when":{"t":"state_is","a":"gate_door","s":"open"},"then":[{"e":"emit","target":"gate_door","fx":"dust"}]}
+{"op":"rule","id":"r_plate_activate","when":{"t":"state_is","a":"rock_plate","s":"down"},"then":[{"e":"set_state","target":"gate_door","v":"open"}]}
+{"op":"expect","id":"x_climb","prop":"win_reachable","a":"sp_red","b":"shrine","headline":true,"text":"The sacred stone adds a visible carrying weight and drop penalty on the climb"}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":5}}
+{"op":"end","layer":"gameplay"}
+{"op":"dress","id":"d_sky","type":"sky","params":{"color":"orange"}}
+{"op":"poster","id":"p_volcano","anchor":"z_beach","text":"Volcano Island"}
+{"op":"end","layer":"cosmetic"}

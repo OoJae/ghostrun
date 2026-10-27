@@ -1,0 +1,32 @@
+{"op":"meta","mode":"play","lang":"en","pack":"floor_plan","sub":[],"seed":10,"look":"sunken submarine","mood":[-0.7,0.8,0.9],"timeOfDay":0,"weather":"storm"}
+{"op":"zone","id":"z_comp1","slot":"room_sw","tag":"compartment","name":"Forward Compartment"}
+{"op":"zone","id":"z_comp2","slot":"room_se","tag":"compartment","name":"Mid Compartment"}
+{"op":"zone","id":"z_comp3","slot":"room_nw","tag":"compartment","name":"Aft Compartment"}
+{"op":"zone","id":"z_exit","slot":"yard","tag":"outside","name":"Submarine Escape Deck"}
+{"op":"spawn","id":"sp_red","zone":"z_comp1","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"goal_exit","zone":"z_exit","anchor":"corner_w","noun":"escape pod","hyper":"vehicle","team":"red","body":"sensor","shape":"none"}
+{"op":"ent","id":"hatch1","kind":"door","noun":"forward hatch","hyper":"door","zone":"z_comp1","anchor":"doorway_e","body":"fixed","shape":"box"}
+{"op":"ent","id":"hatch2","kind":"door","noun":"mid hatch","hyper":"door","zone":"z_comp2","anchor":"doorway_w","body":"fixed","shape":"box"}
+{"op":"ent","id":"hatch3","kind":"door","noun":"aft hatch","hyper":"door","zone":"z_comp3","anchor":"doorway_s","body":"fixed","shape":"box"}
+{"op":"ent","id":"key1","kind":"pickup","noun":"metal key","hyper":"key","zone":"z_comp1","anchor":"corner_sw","body":"dynamic","shape":"box","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"key2","kind":"pickup","noun":"metal key","hyper":"key","zone":"z_comp2","anchor":"corner_sw","body":"dynamic","shape":"box","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"key3","kind":"pickup","noun":"metal key","hyper":"key","zone":"z_comp3","anchor":"corner_sw","body":"dynamic","shape":"box","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"water1","kind":"hazard","noun":"rising water","hyper":"liquid","zone":"z_comp1","anchor":"center","body":"sensor","shape":"box","size":[5,0.5,5]}
+{"op":"ent","id":"water2","kind":"hazard","noun":"rising water","hyper":"liquid","zone":"z_comp2","anchor":"center","body":"sensor","shape":"box","size":[5,0.5,5]}
+{"op":"ent","id":"water3","kind":"hazard","noun":"rising water","hyper":"liquid","zone":"z_comp3","anchor":"center","body":"sensor","shape":"box","size":[5,0.5,5]}
+{"op":"verb","id":"vb_carry_key1","verb":"physics_props.carry","on":"key1","params":{}}
+{"op":"verb","id":"vb_carry_key2","verb":"physics_props.carry","on":"key2","params":{}}
+{"op":"verb","id":"vb_carry_key3","verb":"physics_props.carry","on":"key3","params":{}}
+{"op":"verb","id":"vb_lock_hatch1","verb":"puzzle.lock","on":"hatch1","params":{"key":"key1","keep":false}}
+{"op":"verb","id":"vb_lock_hatch2","verb":"puzzle.lock","on":"hatch2","params":{"key":"key2","keep":false}}
+{"op":"verb","id":"vb_lock_hatch3","verb":"puzzle.lock","on":"hatch3","params":{"key":"key3","keep":false}}
+{"op":"verb","id":"vb_timer_oxygen","verb":"puzzle.timer","on":"player","params":{"seconds":120}}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":5}}
+{"op":"rule","id":"r_win_escape","when":{"t":"enter","a":"player","b":"goal_exit"},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose_timer","when":{"t":"timer_end","a":"player"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose_water1","when":{"t":"hit","a":"player","b":"water1"},"then":[{"e":"lose","target":"player"}]}
+{"op":"rule","id":"r_lose_water2","when":{"t":"hit","a":"player","b":"water2"},"then":[{"e":"lose","target":"player"}]}
+{"op":"rule","id":"r_lose_water3","when":{"t":"hit","a":"player","b":"water3"},"then":[{"e":"lose","target":"player"}]}
+{"op":"expect","id":"x_escape","prop":"win_reachable","a":"sp_red","b":"goal_exit","headline":true,"text":"Must manually open three distinct hatch doors in order to escape"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

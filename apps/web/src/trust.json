@@ -58,6 +58,17 @@
    "controlsP50": 10
   },
   {
+   "name": "fresh5",
+   "note": "Fifth unseen set (27 Oct, after triage of all four sets and combat): today's code on prompts nobody has looked at",
+   "prompts": 14,
+   "play": 14,
+   "places": 0,
+   "firstPass": 8,
+   "now": 14,
+   "playableP50Ms": 2986,
+   "controlsP50": 10
+  },
+  {
    "name": "judges",
    "note": "Judge-style prompts (internal; written by us, never part of the external eval set)",
    "prompts": 12,

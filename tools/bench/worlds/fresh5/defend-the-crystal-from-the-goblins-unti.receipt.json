@@ -1,0 +1,230 @@
+{
+  "prompt": "Defend the crystal from the goblins until sunrise",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "fantasy defense",
+    "setting": "A clearing in a moonlit forest where an ancient crystal stands on a pedestal, surrounded by trees and stone cover; goblins emerge from the woods and wave toward a distant break of dawn.",
+    "role": "Guardian",
+    "goal": "Survive the night: stand off waves of goblins attacking the crystal until a sunrise timer or event triggers victory.",
+    "fail": "The crystal is destroyed or the guardian falls during a goblin assault before sunrise.",
+    "mood": "Tense, suspenseful, defiant",
+    "pack": "outdoor",
+    "sub": [],
+    "safety": "arcade",
+    "headline": "Crystal survival holdout against goblin waves until a sunrise win-state triggers",
+    "nouns": [
+      {
+        "noun": "crystal",
+        "hyper": "artifact"
+      },
+      {
+        "noun": "goblin",
+        "hyper": "creatures"
+      },
+      {
+        "noun": "forest clearing",
+        "hyper": "terrain"
+      }
+    ],
+    "moodVec": {
+      "valence": -0.2,
+      "arousal": 0.8,
+      "tension": 0.9
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "f408d9bb74cb80ee83551047004093d9edd62d09a972fdda9ed55e2f852e0af9",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_holdout",
+      "text": "Crystal survival holdout against goblin waves until a sunrise win-state triggers",
+      "status": "counterexample",
+      "method": "static goal regression over rules"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 8 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "chain",
+          "text": "win unreachable in the rule graph"
+        },
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "counterexample",
+        "method": "static goal regression over rules",
+        "text": "no rule chain lets the player trigger the win",
+        "src": ""
+      },
+      {
+        "id": "T2:r_lose_crystal",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_crystal"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 0,
+        "src": "ai",
+        "ms": 8,
+        "status": "counterexample",
+        "text": "r_lose_crystal fires exactly once",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "firings",
+          "text": "never fired when forced"
+        }
+      },
+      {
+        "id": "T2:r_lose_crystal_e",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_crystal_e"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 0,
+        "src": "ai",
+        "ms": 7,
+        "status": "counterexample",
+        "text": "r_lose_crystal_e fires exactly once",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "firings",
+          "text": "never fired when forced"
+        }
+      },
+      {
+        "id": "T2:r_secret_center_e",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_center_e"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_secret_center_e fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_center_w",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_center_w"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_secret_center_w fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_n",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_n"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_secret_flank_n fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_s",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_s"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_secret_flank_s fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_trap_activate",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_trap_activate"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_trap_activate fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win_sunrise",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win_sunrise"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_win_sunrise: no timer on sunrise_timer",
+        "cx": null
+      }
+    ],
+    "par": null,
+    "ms": 310
+  }
+}

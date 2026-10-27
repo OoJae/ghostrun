@@ -210,6 +210,26 @@ export function placeWorld(input: WorldBundle, layout: PackLayout): PlaceResult 
     e.pos = alongZ ? [base[0], base[1] + lift, base[2] + offset] : [base[0] + offset, base[1] + lift, base[2]];
     // a door in an east/west wall's doorway turns to fill the gap across z
     if (e.kind === "door" && /^doorway_[ew]$/.test(e.anchor) && e.size[0] > e.size[2]) e.size = [e.size[2], e.size[1], e.size[0]];
+    // a place you walk (or carry things) into stands clear of walls and ledges: a goal anchored
+    // to a scoreboard hangs half in the wall beside a deck, and the only ground "in" it is the deck
+    // top, too high to carry a flag in. It moves toward the zone's middle until nothing solid
+    // overlaps it
+    if ((e.kind === "goal" || e.kind === "checkpoint" || e.kind === "plate") && e.body === "sensor" && !e.anchor.startsWith("gap")) {
+      const floor = e.pos[1] - e.size[1] / 2;
+      const blocks = (x: number, z: number) =>
+        layout.statics.some((st) => st.pos[1] + st.size[1] / 2 > floor + 0.5 && st.pos[1] - st.size[1] / 2 < floor + 2 && Math.abs(x - st.pos[0]) < (st.size[0] + e.size[0]) / 2 + 0.1 && Math.abs(z - st.pos[2]) < (st.size[2] + e.size[2]) / 2 + 0.1);
+      if (blocks(e.pos[0], e.pos[2])) {
+        const { min, max } = spec.bounds;
+        const [cx, cz] = [(min[0] + max[0]) / 2, (min[2] + max[2]) / 2];
+        const len = Math.sqrt((cx - e.pos[0]) * (cx - e.pos[0]) + (cz - e.pos[2]) * (cz - e.pos[2])) || 1;
+        let k = 1;
+        for (; k <= 40 && blocks(e.pos[0] + ((cx - e.pos[0]) / len) * k * 0.5, e.pos[2] + ((cz - e.pos[2]) / len) * k * 0.5); k++);
+        if (k <= 40) {
+          e.pos = [e.pos[0] + ((cx - e.pos[0]) / len) * k * 0.5, e.pos[1], e.pos[2] + ((cz - e.pos[2]) / len) * k * 0.5];
+          notes.push(`${e.id}: moved ${k * 0.5} m off the wall (a wall or ledge stood in it)`);
+        }
+      }
+    }
   }
   // wins first: a win rule the repairs add (reach the goal) gets the same trigger and verb repairs
   notes.push(...repairSpawnRefs(b), ...repairGroups(b), ...repairRingOut(b, bound), ...repairAreas(b, bound), ...repairKits(b), ...repairConditions(b), ...repairWin(b), ...repairTriggers(b), ...repairVerbs(b), ...repairExpects(b));
@@ -396,7 +416,8 @@ export function repairRingOut(b: WorldBundle, bound: Map<string, ZoneSpec>): str
       const top = mat.pos[1] + mat.size[1] / 2;
       [pos, size, zone] = [[mat.pos[0], top + 1.5, mat.pos[2]], [mat.size[0], 3, mat.size[2]], mat.zone];
     } else {
-      const z = b.zones.find((x) => RING.test(said(x))) ?? b.zones.find((x) => x.id === s.zone);
+      // a zone named as the ring; with no ring at all it isn't a ring game (a "miss" box beside a goal)
+      const z = b.zones.find((x) => RING.test(said(x)));
       const spec = z && bound.get(z.id);
       if (!z || !spec) continue;
       const { min, max } = spec.bounds;
@@ -631,6 +652,38 @@ export function repairKits(b: WorldBundle): string[] {
       added++;
     }
     if (added) notes.push(`${added} named thing(s) made inspectable (a place to explore)`);
+  }
+  // 1a'. a wind (current, conveyor) stronger than you can walk against is a wall, not a challenge
+  const speed = b.laws.speed;
+  for (const v of b.verbs) {
+    if (v.verb !== "motion_hazards.wind") continue;
+    const [x, z] = [Number(v.params.x ?? 4), Number(v.params.z ?? 0)];
+    const m = Math.sqrt(x * x + z * z);
+    const cap = Math.round(speed * 0.6 * 10) / 10;
+    if (m <= cap) continue;
+    v.params = { ...v.params, x: Math.round((x / m) * cap * 10) / 10, z: Math.round((z / m) * cap * 10) / 10 };
+    notes.push(`${v.on}: wind eased from ${Math.round(m * 10) / 10} to ${cap} m/s (you walk at ${speed} m/s; any stronger and nobody gets across)`);
+  }
+  // 1b'. triggers that can't mean what they say:
+  for (const r of b.rules) {
+    const w = r.when;
+    // "the beacon enters the beacon": reaching it
+    if (w.t === "enter" && w.a && w.a === w.b) {
+      w.a = "player";
+      notes.push(`rule ${r.id}: '${w.b} enters ${w.b}' means the player reaching it`);
+    }
+    // "the player hits blue_1" (not a hazard, not a thrown ball): tagging them, USE next to them
+    const npc = w.t === "hit" && w.a === "player" ? b.entities.find((e) => e.id === w.b && e.kind === "npc") : undefined;
+    if (npc && !b.verbs.some((v) => v.on === npc.id && v.verb === "motion_hazards.hazard")) {
+      w.t = "touch";
+      notes.push(`rule ${r.id}: the player hitting ${npc.id} means tagging them (USE next to them)`);
+    }
+    // a countdown nobody started: "until sunrise" with no timer on sunrise_timer
+    const clock = w.t === "timer_end" ? b.entities.find((e) => e.id === w.a) : undefined;
+    if (clock && !b.verbs.some((v) => v.on === clock.id && v.verb === "puzzle.timer")) {
+      b.verbs.push(vb(uniqueId(b, `vb_timer_${clock.id}`), "puzzle.timer", clock.id, { seconds: 60 }));
+      notes.push(`${clock.id}: rule ${r.id} waits for it to run out, so it is a 60 s countdown`);
+    }
   }
   // 1c. a rule waiting on an event nothing could produce: what it touches is collected (or, if
   // not a pickup, inspected); what it picks up is carried

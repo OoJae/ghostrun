@@ -1,0 +1,298 @@
+{
+  "prompt": "Penalty shootout: score three goals past the keeper",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "sports",
+    "setting": "A soccer penalty shootout in a stadium",
+    "role": "a soccer player",
+    "goal": "score three goals past the goalkeeper",
+    "fail": "miss the target or allow the keeper to save the ball",
+    "mood": "high-stakes, focused, competitive",
+    "pack": "arena",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Three unassisted goal attempts past a stationary keeper",
+    "nouns": [
+      {
+        "noun": "penalty shootout",
+        "hyper": "game"
+      },
+      {
+        "noun": "goal",
+        "hyper": "objective"
+      },
+      {
+        "noun": "keeper",
+        "hyper": "character"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.3,
+      "arousal": 0.8,
+      "tension": 0.7
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "cef345deffe31eaed11720a8d759d0fd3611cfb24f8d8f6d8ef2284f9a3ccaa1",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_shootout",
+      "text": "Three unassisted goal attempts past a stationary keeper",
+      "status": "counterexample",
+      "method": "static goal regression over rules + physics, 12 AI runners vs 1 bot"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 12 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (team:red reaches 3) ← r_score_ball1 (ball_1 into goal_target) ← pick up ball_1 + r_score_ball2 (ball_2 into goal_target) ← pick up ball_2 + r_score_ball3 (ball_3 into goal_target) ← pick up ball_3",
+        "src": ""
+      },
+      {
+        "id": "T2:r_miss",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_miss"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_miss: nothing knocks ball_1 out of area_ring",
+        "cx": null
+      },
+      {
+        "id": "T2:r_miss2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_miss2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_miss2: nothing knocks ball_2 out of area_ring",
+        "cx": null
+      },
+      {
+        "id": "T2:r_miss3",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_miss3"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_miss3: nothing knocks ball_3 out of area_ring",
+        "cx": null
+      },
+      {
+        "id": "T2:r_score_ball1",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score_ball1"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 6,
+        "status": "verified",
+        "text": "r_score_ball1 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_score_ball2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score_ball2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_score_ball2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_score_ball3",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score_ball3"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_score_ball3 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_deck_center",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_deck_center"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_deck_center fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_deck_e",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_deck_e"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_deck_e fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_deck_e_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_deck_e_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_deck_e_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_n",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_n"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_flank_n fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_s",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_s"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_flank_s fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "counterexample",
+        "method": "physics, 12 AI runners vs 1 bot",
+        "n": 12,
+        "k": 0,
+        "text": "no AI runner could win vs 1 bot",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "wins",
+          "text": "12 lost (r_miss ×12)"
+        },
+        "src": "",
+        "ms": 37
+      }
+    ],
+    "par": null,
+    "ms": 179
+  }
+}

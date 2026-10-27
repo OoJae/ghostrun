@@ -1,0 +1,264 @@
+{
+  "prompt": "A circus big top: bounce on the trampolines to grab the balloons",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "platformer/festive",
+    "setting": "interior of a grand circus big top, central ring, tiered trampolines and a wall of colorful balloons",
+    "role": "circus performer",
+    "goal": "use the trampolines to bounce high enough and grab all the balloons",
+    "fail": "stop bouncing and fall to the ring before collecting the balloons",
+    "mood": "playful, lively, celebratory",
+    "pack": "course",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Trampoline bounces are tall enough to reach the balloon wall",
+    "nouns": [
+      {
+        "noun": "big top",
+        "hyper": "tent"
+      },
+      {
+        "noun": "trampoline",
+        "hyper": "springy platform"
+      },
+      {
+        "noun": "balloon",
+        "hyper": "inflated sphere"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.9,
+      "arousal": 0.6,
+      "tension": 0.1
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "c15824588b597db4dd6e0a4ce79cfda52fec081cb35179440c5a6fcf8a2428e4",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_trampoline",
+      "text": "Trampoline bounces are tall enough to reach the balloon wall",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 10 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (team:red reaches 5) ← collect 5 of 5",
+        "src": ""
+      },
+      {
+        "id": "T2:r_collect",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_collect"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 7,
+        "status": "verified",
+        "text": "r_collect fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_collect2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_collect2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_collect2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_collect3",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_collect3"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_collect3 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_collect4",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_collect4"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_collect4 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_collect5",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_collect5"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_collect5 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lose_spike",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_spike"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_lose_spike fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_cp_5",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_cp_5"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_cp_5 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_host",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_host"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_secret_host fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_trophy",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_trophy"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_secret_trophy fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it (AI par 18.9 s)",
+        "cx": null,
+        "src": "",
+        "ms": 498
+      }
+    ],
+    "par": {
+      "goldS": 18.9,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 870
+  }
+}

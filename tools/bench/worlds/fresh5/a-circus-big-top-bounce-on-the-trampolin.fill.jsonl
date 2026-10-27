@@ -1,0 +1,45 @@
+{"op":"meta","mode":"play","lang":"en","pack":"course","sub":[],"seed":15,"look":"circus big top","mood":[0.9,0.6,0.1],"timeOfDay":14,"weather":"clear"}
+{"op":"zone","id":"z_start","slot":"start","tag":"outside","name":"Big top entrance"}
+{"op":"zone","id":"z_seg_1","slot":"seg_1","tag":"ledge","name":"Trampoline tier 1"}
+{"op":"zone","id":"z_seg_2","slot":"seg_2","tag":"beam","name":"Trampoline tier 2"}
+{"op":"zone","id":"z_seg_3","slot":"seg_3","tag":"gaps","name":"Trampoline tier 3"}
+{"op":"zone","id":"z_seg_4","slot":"seg_4","tag":"beam","name":"Trampoline tier 4"}
+{"op":"zone","id":"z_seg_5","slot":"seg_5","tag":"steps","name":"Balloon wall"}
+{"op":"zone","id":"z_seg_6","slot":"seg_6","tag":"pit","name":"Danger pit"}
+{"op":"zone","id":"z_finish","slot":"finish","tag":"finish","name":"Exit ring"}
+{"op":"spawn","id":"sp_red","zone":"z_start","anchor":"spawn_pad","team":"red"}
+{"op":"ent","id":"trampoline_1","kind":"platform","noun":"trampoline","hyper":"springy platform","zone":"z_seg_1","anchor":"cp_1","body":"kinematic","shape":"box","size":[3,0.2,3]}
+{"op":"ent","id":"trampoline_2","kind":"platform","noun":"trampoline","hyper":"springy platform","zone":"z_seg_2","anchor":"cp_2","body":"kinematic","shape":"box","size":[3,0.2,3]}
+{"op":"ent","id":"trampoline_3","kind":"platform","noun":"trampoline","hyper":"springy platform","zone":"z_seg_3","anchor":"cp_3","body":"kinematic","shape":"box","size":[3,0.2,3]}
+{"op":"ent","id":"trampoline_4","kind":"platform","noun":"trampoline","hyper":"springy platform","zone":"z_seg_4","anchor":"cp_4","body":"kinematic","shape":"box","size":[3,0.2,3]}
+{"op":"ent","id":"balloon_1","kind":"pickup","noun":"red balloon","hyper":"inflated sphere","zone":"z_seg_5","anchor":"pickup_1","body":"dynamic","shape":"sphere","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"balloon_2","kind":"pickup","noun":"blue balloon","hyper":"inflated sphere","zone":"z_seg_5","anchor":"pickup_2","body":"dynamic","shape":"sphere","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"balloon_3","kind":"pickup","noun":"green balloon","hyper":"inflated sphere","zone":"z_seg_5","anchor":"pickup_3","body":"dynamic","shape":"sphere","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"balloon_4","kind":"pickup","noun":"yellow balloon","hyper":"inflated sphere","zone":"z_seg_5","anchor":"pickup_4","body":"dynamic","shape":"sphere","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"balloon_5","kind":"pickup","noun":"purple balloon","hyper":"inflated sphere","zone":"z_seg_5","anchor":"pickup_5","body":"dynamic","shape":"sphere","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"spike_trap","kind":"hazard","noun":"spike trap","hyper":"spikes","zone":"z_seg_6","anchor":"pit_6","body":"sensor","shape":"box","size":[2,0.2,2]}
+{"op":"ent","id":"exit_gate","kind":"door","noun":"exit gate","hyper":"gate","zone":"z_finish","anchor":"goal","body":"fixed","shape":"box"}
+{"op":"verb","id":"vb_jump","verb":"locomotion.jump","on":"player","params":{"jumpsMax":2}}
+{"op":"verb","id":"vb_carry_b1","verb":"physics_props.carry","on":"balloon_1","params":{}}
+{"op":"verb","id":"vb_carry_b2","verb":"physics_props.carry","on":"balloon_2","params":{}}
+{"op":"verb","id":"vb_carry_b3","verb":"physics_props.carry","on":"balloon_3","params":{}}
+{"op":"verb","id":"vb_carry_b4","verb":"physics_props.carry","on":"balloon_4","params":{}}
+{"op":"verb","id":"vb_carry_b5","verb":"physics_props.carry","on":"balloon_5","params":{}}
+{"op":"verb","id":"vb_collect_b1","verb":"puzzle.collect","on":"balloon_1","params":{}}
+{"op":"verb","id":"vb_collect_b2","verb":"puzzle.collect","on":"balloon_2","params":{}}
+{"op":"verb","id":"vb_collect_b3","verb":"puzzle.collect","on":"balloon_3","params":{}}
+{"op":"verb","id":"vb_collect_b4","verb":"puzzle.collect","on":"balloon_4","params":{}}
+{"op":"verb","id":"vb_collect_b5","verb":"puzzle.collect","on":"balloon_5","params":{}}
+{"op":"verb","id":"vb_spike_hazard","verb":"motion_hazards.hazard","on":"spike_trap","params":{"respawn":false}}
+{"op":"verb","id":"vb_exit_win","verb":"puzzle.checkpoint","on":"exit_gate","params":{}}
+{"op":"rule","id":"r_collect","when":{"t":"touch","a":"player","b":"balloon_1"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_collect2","when":{"t":"touch","a":"player","b":"balloon_2"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_collect3","when":{"t":"touch","a":"player","b":"balloon_3"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_collect4","when":{"t":"touch","a":"player","b":"balloon_4"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_collect5","when":{"t":"touch","a":"player","b":"balloon_5"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_win","when":{"t":"score_gte","a":"team:red","n":5},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose_spike","when":{"t":"hit","a":"player","b":"spike_trap"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"expect","id":"x_trampoline","prop":"win_reachable","a":"sp_red","b":"z_seg_5","headline":true,"text":"Trampoline bounces are tall enough to reach the balloon wall"}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":6}}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

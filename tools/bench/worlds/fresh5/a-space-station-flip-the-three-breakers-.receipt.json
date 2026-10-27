@@ -1,0 +1,248 @@
+{
+  "prompt": "A space station: flip the three breakers to restore power, then reach the escape pod",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "indoor puzzle escape",
+    "setting": "a derelict, dark space station interior",
+    "role": "crew member",
+    "goal": "flip the three breakers to restore power, then reach the escape pod",
+    "fail": "running out of time or power before all three breakers are flipped",
+    "mood": "tense, urgent survival",
+    "pack": "floor_plan",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Must flip all three breakers before reaching the escape pod",
+    "nouns": [
+      {
+        "noun": "space station",
+        "hyper": "interior space"
+      },
+      {
+        "noun": "breaker",
+        "hyper": "control switch"
+      },
+      {
+        "noun": "escape pod",
+        "hyper": "exit vehicle"
+      }
+    ],
+    "moodVec": {
+      "valence": -0.3,
+      "arousal": 0.7,
+      "tension": 0.6
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "e7a9f25c15942c78ba8c087831e51fa8bb1a4f76f235abcf3ff0afd234273a7d",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_power",
+      "text": "Must flip all three breakers before reaching the escape pod",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 9 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_escape (player enters escape_pod) [after escape_pod open]",
+        "src": ""
+      },
+      {
+        "id": "T2:r_all_on",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_all_on"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_all_on fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_escape",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_escape"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_escape fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_e",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_e"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_corner_e fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_ne",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_ne"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_secret_corner_ne fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_nw",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_nw"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_corner_nw fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_nw_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_nw_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_corner_nw_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_nw_3",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_nw_3"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_secret_corner_nw_3 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_se",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_se"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_secret_corner_se fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_timeout",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_timeout"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_timeout fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it (AI par 17.1 s)",
+        "cx": null,
+        "src": "",
+        "ms": 204
+      }
+    ],
+    "par": {
+      "goldS": 17.1,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 239
+  }
+}

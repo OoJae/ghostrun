@@ -90,6 +90,42 @@ function leapify(path: Vec3[]): { pts: Vec3[]; jumps: Set<number> } {
 }
 const inBox = (x: number, z: number, h: { pos: Vec3; size: Vec3 }, grow: number) => Math.abs(x - h.pos[0]) <= h.size[0] / 2 + grow && Math.abs(z - h.pos[2]) <= h.size[2] / 2 + grow;
 
+/** Boxes that end the run (or send you back) on contact: standing hazards and lose-on-entry sensors. */
+const deadlyCache = new WeakMap<WorldBundle, { pos: Vec3; size: Vec3 }[]>();
+function deadly(b: WorldBundle): { pos: Vec3; size: Vec3 }[] {
+  let out = deadlyCache.get(b);
+  if (!out) {
+    const losing = new Set(b.rules.filter((r) => (r.when.t === "enter" || r.when.t === "hit") && r.when.a === "player" && r.then.some((x) => x.e === "lose")).map((r) => r.when.b));
+    out = b.entities
+      .filter((e) => (e.body === "sensor" || e.body === "fixed") && (losing.has(e.id) || b.verbs.some((v) => v.on === e.id && v.verb === "motion_hazards.hazard")))
+      .map((e) => ({ pos: e.pos, size: e.size }));
+    deadlyCache.set(b, out);
+  }
+  return out;
+}
+
+/** The wind (current, conveyor) pushing whoever stands at p, m/s: what a runner leans into. */
+function windAt(b: WorldBundle, p: Vec3): [number, number] {
+  let x = 0;
+  let z = 0;
+  for (const v of b.verbs) {
+    if (v.verb !== "motion_hazards.wind") continue;
+    const e = b.entities.find((q) => q.id === v.on);
+    if (!e || Math.abs(p[0] - e.pos[0]) > e.size[0] / 2 || Math.abs(p[2] - e.pos[2]) > e.size[2] / 2 || Math.abs(p[1] - e.pos[1]) > e.size[1] / 2 + 0.9) continue;
+    x += Number(v.params.x ?? 4);
+    z += Number(v.params.z ?? 0);
+  }
+  return [x, z];
+}
+
+/** Input that walks at `want` (−127…127 each way) with the wind at p cancelled, clamped. */
+function lean(b: WorldBundle, speed: number, p: Vec3, wx: number, wz: number): [number, number] {
+  const [x, z] = windAt(b, p);
+  if (!x && !z) return [wx, wz];
+  const k = 127 / Math.max(0.1, speed);
+  return [Math.max(-127, Math.min(127, Math.round(wx - x * k))), Math.max(-127, Math.min(127, Math.round(wz - z * k)))];
+}
+
 /** Opt-in trace of the runners' moves (diagnosis only: it never changes what they do). */
 let trace: ((line: string) => void) | null = null;
 export function traceRunners(fn: ((line: string) => void) | null) {
@@ -161,7 +197,10 @@ function walkTo(sim: SimWorld, nav: NavWorld, goal: Target, rng: () => number, s
       replanAt = sim.tick + 20;
     }
     const p = sim.pos("player");
-    while (i < pts.length && d2h(p, pts[i]!) < (jumps.has(i) ? 0.12 * 0.12 : 0.45 * 0.45)) {
+    // a corner beside something deadly is turned on the spot, not cut (cutting it is half a metre in)
+    const route = pts;
+    const turn = (k: number) => (jumps.has(k) ? 0.12 : b && deadly(b).some((h) => inBox(route[k]![0], route[k]![2], h, 1.0)) ? 0.15 : 0.45);
+    while (i < pts.length && d2h(p, pts[i]!) < turn(i) * turn(i)) {
       if (jumps.has(i)) leapNow = true; // on the run-up spot: jump, straight for the landing point
       i++;
       best = Infinity;
@@ -193,6 +232,7 @@ function walkTo(sim: SimWorld, nav: NavWorld, goal: Target, rng: () => number, s
       btn = BTN.JUMP;
       leapNow = false;
     }
+    if (b) [wx, wz] = lean(b, sim.laws.speed, p, wx, wz);
     sim.step({ tick: sim.tick + 1, wx, wz, btn });
     budget.ticks--;
   }
@@ -240,7 +280,7 @@ function climbOnto(sim: SimWorld, nav: NavWorld, b: WorldBundle, target: Vec3, r
   const d2 = (a: Vec3) => (a[0] - p[0]) * (a[0] - p[0]) + (a[2] - p[2]) * (a[2] - p[2]);
   faces.sort((u, v) => d2(u.at) - d2(v.at));
   for (const f of faces) {
-    if (!nav.path([p[0], 0, p[2]], f.at)) continue;
+    if (!nav.path([p[0], feet, p[2]], f.at)) continue; // from where the feet are (a fall floor is 3 m down)
     if (!walkTo(sim, nav, f.at, rng, 1, budget, () => false)) continue;
     // as many jumps as the ledge needs, no more: extra air jumps only fly over it (and take longer)
     const rise = top - (sim.pos("player")[1] - 0.9);
@@ -370,7 +410,8 @@ function hop(sim: SimWorld, nav: NavWorld, b: WorldBundle, a: Surface, n: Surfac
     const ux = x - p[0];
     const uz = z - p[2];
     const s = Math.min(127, (Math.sqrt(ux * ux + uz * uz) * k) || 0) / (Math.sqrt(ux * ux + uz * uz) || 1);
-    sim.step({ tick: sim.tick + 1, wx: Math.round(ux * s), wz: Math.round(uz * s), btn });
+    const [wx, wz] = lean(b, laws.speed, p, Math.round(ux * s), Math.round(uz * s));
+    sim.step({ tick: sim.tick + 1, wx, wz, btn });
     budget.ticks--;
   };
   const walkStraight = (x: number, z: number, tol: number) => {
@@ -811,6 +852,7 @@ function witnessRun(R: Rapier, b: WorldBundle, nav: NavWorld, chain: WinChain, o
   }
   // how a lost run ended: the rule that fired the loss
   const lostBy = sim.result === "lose" ? (sim.log.findLast((e) => e.k === "lose")?.rule ?? "") : null;
+  trace?.(`end ${sim.result ?? "none"}${lostBy ? ` (${lostBy})` : ""} at ${v1(sim.pos("player"))} t=${sim.tick}`);
   const out = { won: sim.result === "win", ticks: sim.tick, stuck, lostBy, stuckAt: sim.result ? null : stuckAt };
   sim.free();
   return out;

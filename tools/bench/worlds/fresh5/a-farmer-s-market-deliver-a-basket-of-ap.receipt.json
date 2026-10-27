@@ -1,0 +1,268 @@
+{
+  "prompt": "A farmer's market: deliver a basket of apples to each of the three stalls",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "Delivery quest",
+    "setting": "A bustling open-air farmer's market with three distinct stalls under an awning, set in a rustic cobblestone square surrounded by trees and wooden crates.",
+    "role": "Market runner",
+    "goal": "Pick up a basket of apples and deliver it to each of the three stalls to fill customer orders.",
+    "fail": "Dropping the apples or failing to reach a stall before the market closes.",
+    "mood": "Busy, cheerful, and task-focused",
+    "pack": "outdoor",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Three distinct stalls must be visited in sequence to complete the delivery",
+    "nouns": [
+      {
+        "noun": "farmer's market",
+        "hyper": "marketplace"
+      },
+      {
+        "noun": "basket",
+        "hyper": "container"
+      },
+      {
+        "noun": "apples",
+        "hyper": "produce"
+      },
+      {
+        "noun": "stalls",
+        "hyper": "booths"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.6,
+      "arousal": 0.5,
+      "tension": 0.2
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "06906988d6efbbf1a43714162ce6cf0f4065f37d896dd332569b732b0ee42a6e",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_delivery",
+      "text": "Three distinct stalls must be visited in sequence to complete the delivery",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 10 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (goal3 becomes delivered) ← r_deliver3 (basket into goal3, carried by red) ← pick up basket",
+        "src": ""
+      },
+      {
+        "id": "T2:r_deliver1",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_deliver1"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 6,
+        "status": "verified",
+        "text": "r_deliver1 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_deliver2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_deliver2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_deliver2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_deliver3",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_deliver3"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_deliver3 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_fire",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_fire"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_fire fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_n",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_n"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_flank_n fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_stall_1",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_stall_1"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_stall_1 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_stall_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_stall_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_stall_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_stall_3",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_stall_3"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_stall_3 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_tent",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_tent"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_tent fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_win: nothing in the world makes goal3 'delivered'",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it (AI par 6.1 s)",
+        "cx": null,
+        "src": "",
+        "ms": 87
+      }
+    ],
+    "par": {
+      "goldS": 6.1,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 393
+  }
+}

@@ -1,0 +1,228 @@
+{
+  "prompt": "A garden of hide and seek: find the five hidden gnomes",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "adventure",
+    "setting": "A lush garden hide-and-seek arena",
+    "role": "Seeker",
+    "goal": "Find five hidden garden gnomes",
+    "fail": "Miss a gnome or run out of time",
+    "mood": "playful curiosity",
+    "pack": "outdoor",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Exactly five gnomes are hidden in the garden",
+    "nouns": [
+      {
+        "noun": "garden",
+        "hyper": "outdoor area"
+      },
+      {
+        "noun": "gnome",
+        "hyper": "statue"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.6,
+      "arousal": 0.4,
+      "tension": 0.2
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "fe7470ab24c85e6567c7a70ef13992a21437118dd52c99e1e84b31b8447c2895",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "exp_gnomes",
+      "text": "Exactly five gnomes are hidden in the garden",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 8 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (team:red reaches 5) ← collect 5 of 5",
+        "src": ""
+      },
+      {
+        "id": "T2:r_collect_1",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_collect_1"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 7,
+        "status": "verified",
+        "text": "r_collect_1 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_collect_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_collect_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_collect_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_collect_3",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_collect_3"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_collect_3 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_collect_4",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_collect_4"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_collect_4 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_collect_5",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_collect_5"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_collect_5 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_gate_open",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_gate_open"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_gate_open fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lose",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_lose fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it (AI par 42.3 s)",
+        "cx": null,
+        "src": "",
+        "ms": 873
+      }
+    ],
+    "par": {
+      "goldS": 42.3,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 1167
+  }
+}

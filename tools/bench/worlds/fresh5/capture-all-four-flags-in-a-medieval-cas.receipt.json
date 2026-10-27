@@ -1,0 +1,282 @@
+{
+  "prompt": "Capture all four flags in a medieval castle courtyard",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "tag",
+    "setting": "A cobblestone courtyard enclosed by towering stone walls and arched gateways",
+    "role": "a flag runner",
+    "goal": "Collect all four scattered team flags before your opponents do",
+    "fail": "Being tagged by an opponent or failing to retrieve a flag",
+    "mood": "competitive",
+    "pack": "arena",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Four flags must be located in the courtyard",
+    "nouns": [
+      {
+        "noun": "flag",
+        "hyper": "object"
+      },
+      {
+        "noun": "courtyard",
+        "hyper": "environment"
+      },
+      {
+        "noun": "castle",
+        "hyper": "structure"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.45,
+      "arousal": 0.6,
+      "tension": 0.3
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "970d9159d07e63429dc63783673c4a4fc4445af653f5bfc330f63384f01da492",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_flags",
+      "text": "Four flags must be located in the courtyard",
+      "status": "counterexample",
+      "method": "static goal regression over rules + physics, 12 AI runners vs 1 bot"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 1,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 11 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 1,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (team:red reaches 4) ← r_score_east (flag_east into score_zone, carried by red) ← pick up flag_east + r_score_north (flag_north into score_zone, carried by red) ← pick up flag_north + r_score_south (flag_south into score_zone, carried by red) ← pick up flag_south + r_score_west (flag_west into score_zone, carried by red) ← pick up flag_west",
+        "src": ""
+      },
+      {
+        "id": "T2:r_lose_tag",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_tag"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_lose_tag: nothing produces hit on opponent_rival",
+        "cx": null
+      },
+      {
+        "id": "T2:r_score_east",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score_east"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 10,
+        "status": "verified",
+        "text": "r_score_east fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_score_north",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score_north"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 6,
+        "status": "verified",
+        "text": "r_score_north fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_score_south",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score_south"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_score_south fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_score_west",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score_west"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_score_west fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_deck_w",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_deck_w"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_deck_w fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_n",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_n"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_flank_n fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_n_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_n_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_flank_n_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_s",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_s"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_flank_s fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_s_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_s_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_flank_s_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "counterexample",
+        "method": "physics, 12 AI runners vs 1 bot",
+        "n": 12,
+        "k": 0,
+        "text": "no AI runner could win vs 1 bot",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "wins",
+          "text": "12 got stuck (in the North Wall Deck ×12)"
+        },
+        "src": "",
+        "ms": 327
+      }
+    ],
+    "par": null,
+    "ms": 505
+  }
+}
