@@ -481,3 +481,21 @@ test("why trust this: the receipt opens the method, the eval table (one row per 
   await expect(trust).toHaveCount(0);
   expect(errors).toEqual([]);
 });
+
+test("try to fool it: a bug planted in a copy of the world is caught, and the next one too", async ({ page }) => {
+  const errors = collectErrors(page);
+  await page.goto("/?gl=webgl2&fx=0&dpr=0.5&prewarm=0");
+  await page.waitForFunction(() => window.__GHOSTRUN__?.ready === true, null, { timeout: 90_000 });
+  await expect(page.getByTestId("proof-badge")).toContainText("Rooftop lane needs double jump: verified", { timeout: 60_000 });
+  await page.keyboard.press("KeyP");
+  await page.getByTestId("fool").click();
+  const fooled = page.getByTestId("fooled");
+  await expect(fooled).toContainText("Planted (1 of 2)", { timeout: 90_000 });
+  await expect(fooled).toContainText("Caught:");
+  await page.getByTestId("fool").click();
+  await expect(fooled).toContainText("Planted (2 of 2)", { timeout: 90_000 });
+  await expect(fooled).toContainText("Caught:");
+  // the world itself is untouched: its own receipt still says verified
+  await expect(page.getByTestId("proof-badge")).toContainText("Rooftop lane needs double jump: verified");
+  expect(errors).toEqual([]);
+});

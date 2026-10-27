@@ -12,7 +12,7 @@ import { PromptBar } from "./hud/PromptBar";
 import { EditBox, type EditState } from "./hud/Edit";
 import { Gallery, GALLERY, type GalleryEntry } from "./hud/Gallery";
 import { TrustPanel } from "./hud/Trust";
-import { ProofBadge, ReceiptPanel, RepairChip, type ProofState, type RepairState } from "./hud/Proof";
+import { ProofBadge, ReceiptPanel, RepairChip, type Fooled, type ProofState, type RepairState } from "./hud/Proof";
 import { liveAvailable, liveBuild, liveEdit, liveRepair, type LiveIntent } from "./live";
 import { ANGLES, changeSummary, editedPrompt, HARDER, intentFor, newFailures, pickHarder, receiptDelta, suggestionsFor } from "./edits";
 import { createShare, loadShare, reportWrong } from "./share";
@@ -72,6 +72,7 @@ export function App() {
   const [trusting, setTrusting] = useState(false);
   const [hint, setHint] = useState(false);
   const [proof, setProof] = useState<ProofState>({ status: "idle", chips: [], receipt: null });
+  const [fooled, setFooled] = useState<Fooled | null>(null);
   const [receiptOpen, setReceiptOpen] = useState(false);
   const [xray, setXray] = useState(false);
   const [vrOk, setVrOk] = useState(false);
@@ -180,6 +181,7 @@ export function App() {
   const startProof = useCallback((world: World, id: number) => {
     setProof({ status: "proving", chips: [], receipt: null });
     setRepair({ status: "idle", issues: 0 });
+    setFooled(null);
     proveOnDevice(world, id, (chip) => id === runId.current && setProof((p) => ({ ...p, chips: [...p.chips, chip] })))
       .then((receipt) => {
         if (id !== runId.current) return;
@@ -469,6 +471,27 @@ export function App() {
     await show(w2, id, t0, [{ label: "edit", ms: performance.now() - t0 }]);
   };
 
+  /** "Try to fool it": the next plantable bug, proved in a copy of the world by its own worker. */
+  const foolK = useRef(0);
+  const tryFool = () => {
+    const w = current.current;
+    if (!w || !proof.receipt) return;
+    const k = foolK.current++;
+    const base = runId.current;
+    setFooled({ status: "planting", k });
+    const wk = new Worker(new URL("./proof.worker.ts", import.meta.url), { type: "module" });
+    wk.onmessage = (e: MessageEvent<{ fooled?: { text: string; at: string | null; of: number; caught: boolean; by: string | null } | null; error?: string }>) => {
+      if (!("fooled" in e.data) && !e.data.error) return;
+      wk.terminate();
+      if (runId.current !== base) return;
+      const f = e.data.fooled;
+      if (!f) return setFooled({ status: "none" });
+      setFooled({ status: "done", text: f.text, caught: f.caught, by: f.by, k, of: f.of });
+      if (f.at) engine.current?.highlight(f.at);
+    };
+    wk.postMessage({ id: 1, bundle: w.bundle, engine: ENGINE_HASH, urls: wasmUrls.current, fool: { k, parS: proof.receipt.par?.goldS ?? null } });
+  };
+
   /** A one-off proof in its own worker (candidate races run several at once, then free them). */
   const proveOnce = (world: World, runs: number) =>
     new Promise<Receipt>((resolve, reject) => {
@@ -729,8 +752,13 @@ export function App() {
         {receiptOpen && (
           <ReceiptPanel
             proof={proof}
-            onClose={() => setReceiptOpen(false)}
+            onClose={() => {
+              setReceiptOpen(false);
+              if (fooled) engine.current?.highlight(null);
+            }}
             onTrust={() => (setReceiptOpen(false), setTrusting(true))}
+            onFool={proof.status === "done" && proof.receipt ? tryFool : undefined}
+            fooled={fooled}
             reported={reported}
             onShare={shareRun}
             onExport={async () => {

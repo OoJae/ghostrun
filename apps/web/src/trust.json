@@ -90,5 +90,37 @@
    "playableP50Ms": 3772,
    "controlsP50": 10
   }
- ]
+ ],
+ "fool": {
+  "worlds": 83,
+  "planted": 213,
+  "caught": 213,
+  "byTier": {
+   "T0": 100,
+   "T3": 101,
+   "T1": 12
+  },
+  "byKind": {
+   "impossible_condition": {
+    "planted": 83,
+    "caught": 83
+   },
+   "five_second_timer": {
+    "planted": 53,
+    "caught": 53
+   },
+   "goal_in_the_sky": {
+    "planted": 46,
+    "caught": 46
+   },
+   "item_gone": {
+    "planted": 20,
+    "caught": 20
+   },
+   "no_jump": {
+    "planted": 11,
+    "caught": 11
+   }
+  }
+ }
 }

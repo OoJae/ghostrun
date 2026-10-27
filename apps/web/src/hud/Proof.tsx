@@ -33,7 +33,18 @@ export function ProofBadge({ proof, onOpen }: { proof: ProofState; onOpen: () =>
   );
 }
 
-export function ReceiptPanel({ proof, onClose, onShare, onWrong, onExport, onTrust, reported }: { proof: ProofState; onClose: () => void; onShare?: () => void; onWrong?: (note: string) => void; onExport?: () => void; onTrust?: () => void; reported?: string | undefined }) {
+/** "Try to fool it": a bug planted in a copy of this world, and whether the proof caught it. */
+export interface Fooled {
+  status: "planting" | "done" | "none";
+  text?: string;
+  caught?: boolean;
+  by?: string | null;
+  /** Which of how many plantable bugs this was. */
+  k?: number;
+  of?: number;
+}
+
+export function ReceiptPanel({ proof, onClose, onShare, onWrong, onExport, onTrust, onFool, fooled, reported }: { proof: ProofState; onClose: () => void; onShare?: () => void; onWrong?: (note: string) => void; onExport?: () => void; onTrust?: () => void; onFool?: (() => void) | undefined; fooled?: Fooled | null; reported?: string | undefined }) {
   const r = proof.receipt;
   const [writing, setWriting] = useState(false);
   const [note, setNote] = useState("");
@@ -56,12 +67,29 @@ export function ReceiptPanel({ proof, onClose, onShare, onWrong, onExport, onTru
         ))}
       </ul>
       {r?.par && <p className="par">AI par {r.par.goldS} s · {r.par.won} of {r.par.runs} runners won</p>}
+      {fooled && (
+        <p className={`fooled ${fooled.status === "done" ? (fooled.caught ? "caught" : "missed") : ""}`} data-testid="fooled">
+          {fooled.status === "planting" && "Planting a bug in a copy of this world; AI runners are playing it…"}
+          {fooled.status === "none" && "Nothing to plant: this world has more than one way to win (breaking one route isn't a bug)."}
+          {fooled.status === "done" && (
+            <>
+              Planted{fooled.of && fooled.of > 1 ? ` (${(fooled.k ?? 0) % fooled.of + 1} of ${fooled.of})` : ""}: <b>{fooled.text}</b>.{" "}
+              {fooled.caught ? <>Caught: {fooled.by ?? "it no longer proves won"}.</> : <>Not caught: the proof still says it's won. That's a hole in the proof; please press "This is wrong".</>}
+            </>
+          )}
+        </p>
+      )}
       {reported && <p className="reported">⚑ Judge-reported: {reported}</p>}
       {proof.error && <p className="warn">{proof.error}</p>}
       <div className="receipt-actions">
         {onShare && <button type="button" onClick={onShare} data-testid="share">Share this run</button>}
         {onExport && <button type="button" onClick={onExport} data-testid="export" title="glTF scene + logic.json (triggers, states, rules) + playtest report">Export</button>}
         {onTrust && <button type="button" onClick={onTrust} data-testid="why-trust">Why trust this?</button>}
+        {onFool && (
+          <button type="button" onClick={onFool} disabled={fooled?.status === "planting"} data-testid="fool" title="Plant a bug that breaks this world in a copy of it, and see whether the proof notices">
+            {fooled?.status === "done" ? "Plant another bug" : "Try to fool it"}
+          </button>
+        )}
         {onWrong && !writing && <button type="button" onClick={() => setWriting(true)} data-testid="wrong">This is wrong</button>}
       </div>
       {writing && onWrong && (

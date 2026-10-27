@@ -196,3 +196,14 @@ describe("names the world doesn't have never crash the proof", () => {
     expect(receipt.chips.find((c) => c.id.includes("r_group"))?.status).not.toBe("verified");
   }, 120_000);
 });
+
+describe("try to fool it", () => {
+  it("every bug planted in the CTF brief breaks it, and the proof says so", async () => {
+    const { plants, caught } = await import("../src");
+    expect((await prove(R, world, { engine: ENGINE, runs: 6 })).chips.find((c) => c.id === "T3:win")?.k).toBe(6);
+    const ps = plants(world, 36.9);
+    expect(ps.map((p) => p.id)).toEqual(["impossible_condition", "five_second_timer"]);
+    for (const p of ps) expect(caught(await prove(R, p.bundle, { engine: ENGINE, runs: 6 })).caught).toBe(true);
+    expect(plants({ ...world, rules: [...world.rules, { ...world.rules.find((r) => r.then.some((e) => e.e === "win"))!, id: "r_win_2" }] }, 36.9)).toEqual([]); // two ways to win: nothing to plant
+  }, 180_000);
+});

@@ -6,3 +6,4 @@ export { t3, traceRunners } from "./t3";
 export { chipLine, fraction, statusWord } from "./labels";
 export type { Chip, ChipStatus, Counterexample, Receipt, Tier } from "./types";
 export { badness, better, issuesOf } from "./issues";
+export { caught, plants, provedWon, type Planted } from "./fool";

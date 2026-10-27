@@ -17,7 +17,14 @@ interface TrustSet {
   controlsP50: number | null;
 }
 
-const DATA = trust as { generated: string; won: string; sets: TrustSet[] };
+interface Fool {
+  worlds: number;
+  planted: number;
+  caught: number;
+  byTier: Record<string, number>;
+}
+
+const DATA = trust as { generated: string; won: string; sets: TrustSet[]; fool?: Fool };
 
 const LIMITS = [
   "Drivable vehicles, herding animals and aiming throws by hand aren't mechanics yet; worlds that need them say so in their receipt.",
@@ -79,6 +86,15 @@ export function TrustPanel({ onClose }: { onClose: () => void }) {
       <p className="muted">
         "Won" means {DATA.won}. First pass is the world exactly as the live lane built it; "today's code" re-proves the same recorded world after fixes. Medians. Generated {DATA.generated}; reproduce with <code>ghostrun trust tools/bench/worlds</code>.
       </p>
+      {DATA.fool && (
+        <>
+          <h3>Try to fool it</h3>
+          <p>
+            We planted {DATA.fool.planted} bugs that break the game (the goal 40 m up, the thing the win needs gone, a condition nothing can meet, a 5-second countdown, no jumping on a course) in the {DATA.fool.worlds} committed worlds the proof says are won. It caught <b>{DATA.fool.caught} of {DATA.fool.planted}</b>
+            {Object.keys(DATA.fool.byTier).length ? ` (${Object.entries(DATA.fool.byTier).map(([t, n]) => `${n} by ${t}`).join(", ")})` : ""}. Plant one yourself from any receipt. Reproduce with <code>ghostrun fool tools/bench/worlds</code>.
+          </p>
+        </>
+      )}
       <h3>What it doesn't do yet</h3>
       <ul>
         {LIMITS.map((l) => (

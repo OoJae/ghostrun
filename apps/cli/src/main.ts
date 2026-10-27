@@ -7,7 +7,7 @@ import { FillParser, layoutLaws, mergeFill, parseFill, pinLayout, splitObjects, 
 import { placeWorld } from "@ghostrun/layout";
 import { chatJson, editMessages, fillMessages, IntentOut, intentJsonSchema, intentMessages, repairMessages, streamChat } from "@ghostrun/llm";
 import { loadNavNode } from "@ghostrun/nav/node";
-import { better, chipLine, issuesOf, prove, traceRunners, type Receipt } from "@ghostrun/proof";
+import { better, caught, chipLine, issuesOf, plants, prove, provedWon, traceRunners, type Receipt } from "@ghostrun/proof";
 import { ALL_SUBS, PACKS, packFor } from "@ghostrun/registry";
 import { loadRapierNode } from "@ghostrun/sim/node";
 import * as v from "valibot";
@@ -341,7 +341,58 @@ async function main() {
       sets.push({ name, note: header, prompts: bench.length, play, places, firstPass, now, playableP50Ms: mid(ms), controlsP50: mid([...controls].sort((x, y) => x - y)) });
       console.log(`${name}: ${play} play worlds, first pass ${firstPass}, now ${now}; ${places} places`);
     }
-    writeFileSync(out, `${JSON.stringify({ generated: new Date().toISOString().slice(0, 10), won: "at least 10 of 12 AI runners win in physics", sets }, null, 1)}\n`);
+    // the planted-bug results (ghostrun fool) are kept until that is run again
+    const fool = existsSync(out) ? (JSON.parse(readFileSync(out, "utf8")) as { fool?: unknown }).fool : undefined;
+    writeFileSync(out, `${JSON.stringify({ generated: new Date().toISOString().slice(0, 10), won: "at least 10 of 12 AI runners win in physics", sets, ...(fool ? { fool } : {}) }, null, 1)}\n`);
+  } else if (cmd === "fool") {
+    // "Try to fool it", at scale: plant every bug that applies (the goal 40 m up, the key gone, a
+    // condition nothing meets, a 5 s countdown, no jumping on a course) in every committed world the
+    // proof says is won, and count how many the proof catches, and by which check
+    const root = args[0]!;
+    const R = await loadRapierNode();
+    await loadNavNode();
+    let worlds = 0;
+    let planted = 0;
+    let got = 0;
+    const byTier = new Map<string, number>();
+    const byKind = new Map<string, [number, number]>();
+    const missed: string[] = [];
+    for (const name of readdirSync(root).filter((d) => existsSync(join(root, d, "bench.json"))).sort()) {
+      const dir = join(root, name);
+      for (const f of readdirSync(dir).filter((x) => x.endsWith(".fill.jsonl")).sort()) {
+        const text = readFileSync(join(dir, f), "utf8");
+        const saved = JSON.parse(readFileSync(join(dir, f.replace(".fill.jsonl", ".receipt.json")), "utf8")) as { intent: IntentOut };
+        const seed = (JSON.parse(splitObjects(text.split("\n", 1)[0] ?? "{}")[0] ?? "{}") as { seed?: number }).seed ?? 7;
+        const { bundle } = placeFromFill(text, seed, saved.intent.pack, saved.intent.mode);
+        if (bundle.mode !== "play") continue;
+        const before = await prove(R, bundle, { engine: ENGINE, runs: 12 });
+        if (!provedWon(before)) continue;
+        const ps = plants(bundle, before.par?.goldS ?? null);
+        if (!ps.length) continue;
+        worlds++;
+        for (const p of ps) {
+          const after = await prove(R, p.bundle, { engine: ENGINE, runs: 12 }).catch(() => null);
+          const c = after ? caught(after) : { caught: false, by: null };
+          planted++;
+          const k = byKind.get(p.id) ?? [0, 0];
+          byKind.set(p.id, [k[0] + 1, k[1] + (c.caught ? 1 : 0)]);
+          if (c.caught) {
+            got++;
+            const t = c.by?.tier ?? "?";
+            byTier.set(t, (byTier.get(t) ?? 0) + 1);
+          } else missed.push(`${name}/${f.replace(".fill.jsonl", "")}: ${p.text}`);
+        }
+      }
+    }
+    console.log(`planted ${planted} bugs in ${worlds} worlds the proof says are won: caught ${got} (${[...byTier].map(([t, n]) => `${t} ${n}`).join(", ")})`);
+    for (const [k, [n, c]] of byKind) console.log(`  ${k}: ${c} of ${n}`);
+    for (const m of missed) console.log(`  missed: ${m}`);
+    if (args.includes("--out")) {
+      const out = args[args.indexOf("--out") + 1]!;
+      const t = JSON.parse(readFileSync(out, "utf8")) as Record<string, unknown>;
+      t.fool = { worlds, planted, caught: got, byTier: Object.fromEntries(byTier), byKind: Object.fromEntries([...byKind].map(([k, [n, c]]) => [k, { planted: n, caught: c }])) };
+      writeFileSync(out, `${JSON.stringify(t, null, 1)}\n`);
+    }
   } else if (cmd === "bench") {
     const prompts = readFileSync(args[0]!, "utf8").split("\n").map((l) => l.trim()).filter((l) => l && !l.startsWith("#"));
     const outDir = args.includes("--out") ? args[args.indexOf("--out") + 1]! : "bench-out";
