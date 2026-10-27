@@ -282,5 +282,96 @@
   "prompt": "A Japanese tea house in the rain",
   "pack": "floor_plan",
   "mode": "wander"
+ },
+ {
+  "slug": "musical-chairs-be-on-a-chair-when-the-mu",
+  "prompt": "Musical chairs: be on a chair when the music stops",
+  "pack": "arena",
+  "mode": "play"
+ },
+ {
+  "slug": "a-tennis-court-hit-the-ball-past-the-riv",
+  "prompt": "A tennis court: hit the ball past the rival three times",
+  "pack": "arena",
+  "mode": "play"
+ },
+ {
+  "slug": "feed-the-penguins-bring-a-fish-to-each-o",
+  "prompt": "Feed the penguins: bring a fish to each of the four penguins",
+  "pack": "outdoor",
+  "mode": "play"
+ },
+ {
+  "slug": "domino-run-push-the-first-domino-and-wat",
+  "prompt": "Domino run: push the first domino and watch them all fall into the bucket",
+  "pack": "course",
+  "mode": "play"
+ },
+ {
+  "slug": "low-gravity-moon-base-bounce-between-the",
+  "prompt": "Low gravity moon base: bounce between the craters to reach the radio tower",
+  "pack": "course",
+  "mode": "play"
+ },
+ {
+  "slug": "archery-range-hit-all-five-targets",
+  "prompt": "Archery range: hit all five targets",
+  "pack": "arena",
+  "mode": "play"
+ },
+ {
+  "slug": "a-robot-factory-assemble-the-robot-by-br",
+  "prompt": "A robot factory: assemble the robot by bringing its head, body and legs to the workbench",
+  "pack": "floor_plan",
+  "mode": "play"
+ },
+ {
+  "slug": "defuse-the-bomb-find-the-three-wires-and",
+  "prompt": "Defuse the bomb: find the three wires and cut them before the timer ends",
+  "pack": "floor_plan",
+  "mode": "play"
+ },
+ {
+  "slug": "king-of-the-hill-hold-the-capture-zone-f",
+  "prompt": "King of the hill: hold the capture zone for 20 seconds while rivals try to push you off",
+  "pack": "arena",
+  "mode": "play"
+ },
+ {
+  "slug": "a-relay-race-carry-the-baton-to-each-of-",
+  "prompt": "A relay race: carry the baton to each of the three checkpoints",
+  "pack": "outdoor",
+  "mode": "play"
+ },
+ {
+  "slug": "escape-room-find-the-code-open-the-safe-",
+  "prompt": "Escape room: find the code, open the safe, take the key, unlock the door",
+  "pack": "floor_plan",
+  "mode": "play"
+ },
+ {
+  "slug": "ute-z-hradu-d-v-ne-t-chyt-str-e",
+  "prompt": "Uteč z hradu dřív, než tě chytí stráže",
+  "pack": "floor_plan",
+  "mode": "play",
+  "honest": true
+ },
+ {
+  "slug": "sammle-alle-kristalle-in-der-eish-hle-un",
+  "prompt": "Sammle alle Kristalle in der Eishöhle und finde den Ausgang",
+  "pack": "maze",
+  "mode": "play"
+ },
+ {
+  "slug": "a-cyberpunk-market-with-neon-stalls-and-",
+  "prompt": "A cyberpunk market with neon stalls and a robot vendor",
+  "pack": "outdoor",
+  "mode": "wander"
+ },
+ {
+  "slug": "an-aquarium-tunnel-with-sharks-and-rays-",
+  "prompt": "An aquarium tunnel with sharks and rays overhead",
+  "pack": "floor_plan",
+  "mode": "wander"
  }
 ]
