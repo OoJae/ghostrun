@@ -38,6 +38,12 @@
     },
     {
       "path": "../../packages/packs/floor-plan"
+    },
+    {
+      "path": "../../packages/packs/arena"
+    },
+    {
+      "path": "../../packages/packs/maze"
     }
   ]
 }

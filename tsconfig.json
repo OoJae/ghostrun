@@ -20,6 +20,12 @@
       "path": "packages/packs/floor-plan"
     },
     {
+      "path": "packages/packs/maze"
+    },
+    {
+      "path": "packages/packs/arena"
+    },
+    {
       "path": "packages/sim"
     },
     {

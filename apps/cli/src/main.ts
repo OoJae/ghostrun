@@ -8,7 +8,9 @@ import { placeWorld } from "@ghostrun/layout";
 import { chatJson, fillMessages, IntentOut, intentJsonSchema, intentMessages, streamChat } from "@ghostrun/llm";
 import { loadNavNode } from "@ghostrun/nav/node";
 import { cityBlock } from "@ghostrun/pack-city-block";
+import { arena } from "@ghostrun/pack-arena";
 import { floorPlan } from "@ghostrun/pack-floor-plan";
+import { maze } from "@ghostrun/pack-maze";
 import type { LayoutPack } from "@ghostrun/plugin-api";
 import { chipLine, prove, type Receipt } from "@ghostrun/proof";
 import { loadRapierNode } from "@ghostrun/sim/node";
@@ -18,8 +20,15 @@ const ENGINE = "dev-engine";
 const PACKS = [
   { id: "city_block", blurb: "streets between two team bases with an optional rooftop lane: team games, races, chases, city scenes" },
   { id: "floor_plan", blurb: "single-storey interior at real scale (yard, entrance, main room, 4 side rooms): tours, shops, galleries, museums, heists, homes" },
+  { id: "arena", blurb: "walled symmetric field with cover, two team bases, hoops and raised side decks: duels, sports, team battles, ball games" },
+  { id: "maze", blurb: "seeded maze with a start pad, an exit and dead ends: mazes, labyrinths, escape and chase games" },
 ];
-const PACK_IMPL: Record<string, LayoutPack> = { city_block: cityBlock as unknown as LayoutPack, floor_plan: floorPlan as unknown as LayoutPack };
+const PACK_IMPL: Record<string, LayoutPack> = {
+  city_block: cityBlock as unknown as LayoutPack,
+  floor_plan: floorPlan as unknown as LayoutPack,
+  arena: arena as unknown as LayoutPack,
+  maze: maze as unknown as LayoutPack,
+};
 const packFor = (id: string) => PACK_IMPL[id] ?? (cityBlock as unknown as LayoutPack);
 
 function loadDevVars() {

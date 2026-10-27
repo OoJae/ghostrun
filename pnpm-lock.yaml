@@ -62,12 +62,18 @@ importers:
       '@ghostrun/nav':
         specifier: workspace:*
         version: link:../../packages/nav
+      '@ghostrun/pack-arena':
+        specifier: workspace:*
+        version: link:../../packages/packs/arena
       '@ghostrun/pack-city-block':
         specifier: workspace:*
         version: link:../../packages/packs/city-block
       '@ghostrun/pack-floor-plan':
         specifier: workspace:*
         version: link:../../packages/packs/floor-plan
+      '@ghostrun/pack-maze':
+        specifier: workspace:*
+        version: link:../../packages/packs/maze
       '@ghostrun/plugin-api':
         specifier: workspace:*
         version: link:../../packages/plugin-api
@@ -149,6 +155,25 @@ importers:
         specifier: workspace:*
         version: link:../packs/city-block
 
+  packages/packs/arena:
+    dependencies:
+      '@ghostrun/detmath':
+        specifier: workspace:*
+        version: link:../../detmath
+      '@ghostrun/ir':
+        specifier: workspace:*
+        version: link:../../ir
+      '@ghostrun/plugin-api':
+        specifier: workspace:*
+        version: link:../../plugin-api
+    devDependencies:
+      '@ghostrun/layout':
+        specifier: workspace:*
+        version: link:../../layout
+      '@ghostrun/nav':
+        specifier: workspace:*
+        version: link:../../nav
+
   packages/packs/city-block:
     dependencies:
       '@ghostrun/detmath':
@@ -162,6 +187,25 @@ importers:
         version: link:../../plugin-api
 
   packages/packs/floor-plan:
+    dependencies:
+      '@ghostrun/detmath':
+        specifier: workspace:*
+        version: link:../../detmath
+      '@ghostrun/ir':
+        specifier: workspace:*
+        version: link:../../ir
+      '@ghostrun/plugin-api':
+        specifier: workspace:*
+        version: link:../../plugin-api
+    devDependencies:
+      '@ghostrun/layout':
+        specifier: workspace:*
+        version: link:../../layout
+      '@ghostrun/nav':
+        specifier: workspace:*
+        version: link:../../nav
+
+  packages/packs/maze:
     dependencies:
       '@ghostrun/detmath':
         specifier: workspace:*
