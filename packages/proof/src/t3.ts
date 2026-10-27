@@ -412,11 +412,12 @@ function perform(r: Run, st: PlanStep): "ok" | "lost" | "stuck" {
     }
     case "wait": {
       const fired = counter(sim, st.rule);
-      while (live(r) && fired() === 0) {
+      const done = () => (st.want ? met(st.want) : fired() > 0);
+      while (live(r) && !done()) {
         sim.step({ tick: sim.tick + 1, wx: 0, wz: 0, btn: 0 });
         budget.ticks--;
       }
-      return fired() > 0 ? "ok" : "stuck";
+      return done() ? "ok" : "stuck";
     }
   }
 }
@@ -425,7 +426,10 @@ function witnessRun(R: Rapier, b: WorldBundle, nav: NavWorld, chain: WinChain, o
   // The cast plays too: runners must beat the same bots the judge will face.
   const sim = new SimWorld(R, b, { playerTeam, brain: castBrain(nav, b) });
   const rng = stream(seed, `t3:run`);
-  const r: Run = { sim, nav, b, rng, speed: 0.85 + rng() * 0.15, budget: { ticks: RUN_TICKS }, openers, opened: new Set() };
+  // a world with a countdown gets its length plus a minute to play out (capped at ten minutes)
+  const timer = Math.max(0, ...b.verbs.filter((v) => v.verb === "puzzle.timer").map((v) => Number(v.params.seconds) || 0));
+  const ticks = Math.min(600 * 60, Math.max(RUN_TICKS, Math.round((timer + 60) * 60)));
+  const r: Run = { sim, nav, b, rng, speed: 0.85 + rng() * 0.15, budget: { ticks }, openers, opened: new Set() };
   let stuck = 0;
   let lastTop = -1;
   outer: while (live(r)) {

@@ -114,7 +114,7 @@ function worldRules(layout: PackLayout): string[] {
         `Rule effects: ${SUPPORTED.effects.join("; ")}.`,
         `Conditions: ${SUPPORTED.conditions}.`,
         "Laws line for movement: {\"op\":\"law\",\"player\":{\"jumpsMax\":2,\"jumpH\":1.6,\"speed\":6}}.",
-        "Play worlds MUST have: a red spawn for the player, a way to win and a way to lose, and an expect line with \"headline\":true stating the prompt-specific property (props: requires (need [\"jumps>=2\"]), win_reachable, reachable, unreachable, fair_teams).",
+        "Play worlds MUST have: a red spawn for the player, a way to win and a way to lose, and an expect line with \"headline\":true stating the prompt-specific property. Usually that is win_reachable with text naming the goal (\"The idol can be grabbed and carried out\"). Use requires with need [\"jumps>=2\"] ONLY when the prompt is about jumping or climbing, and point b at the raised zone that truly needs it.",
         "Expect lines name things by id: a = where the player starts (the spawn id), b = the ZONE id (or goal entity id) the property is about. Example: {\"op\":\"expect\",\"id\":\"x_roof\",\"prop\":\"requires\",\"a\":\"sp_red\",\"b\":\"z_roof\",\"need\":[\"jumps>=2\"],\"headline\":true,\"text\":\"Rooftop lane needs double jump\"}. Never use a verb id or 'player' in a or b.",
         "Budgets: ≤8 zones, ≤40 entities, ≤32 verbs, ≤20 rules, ≤4 minded npcs + 8 plain, ≤6 expects.",
         "NPC line: {\"op\":\"npc\",\"id\":\"guard_1\",\"role\":\"guard|merchant|guide|rival|teammate|creature|citizen\",\"zone\":\"...\",\"anchor\":\"...\",\"team\":\"\",\"menu\":[\"guard.patrol\"],\"dflt\":\"guard.patrol\"}.",

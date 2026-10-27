@@ -131,16 +131,22 @@ export const portalVerb: VerbPlugin = {
 
 export const timerVerb: VerbPlugin = {
   id: "puzzle.timer",
-  line: 'countdown: fires timer_end (a=bound id) after N seconds; bind on "player"; params {"seconds":5-600}',
+  line: 'countdown: timer_end (a=bound id) after N s; its entity state goes "running"→"done"; params {"seconds":5-600}',
   on: ["player", "prop", "sign"],
   params: { seconds: { def: 60, min: 5, max: 600 } },
   init(_c, b) {
     b.mem.end = Math.round(Number(b.params.seconds) * 60); // in memory, so T2 can fast-forward it
   },
+  initial: "running",
   tick(c, b) {
-    if (c.tick === b.mem.end) c.emit("timer_end", b.on, b.id);
+    if (c.tick !== b.mem.end) return;
+    c.emit("timer_end", b.on, b.id);
+    if (b.on !== "player") c.setState(b.on, "done"); // rules may also test "<timer>.state eq done"
   },
-  produces: (b) => [{ k: "timer_end", a: b.on, cause: null }],
+  produces: (b) => [
+    { k: "timer_end", a: b.on, cause: null },
+    { k: "state", a: b.on, s: "done", cause: null },
+  ],
 };
 
 export const PUZZLE: VerbPlugin[] = [switchVerb, plateVerb, lockVerb, collectVerb, checkpointVerb, portalVerb, timerVerb];

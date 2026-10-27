@@ -13,7 +13,7 @@ export type PlanStep =
   | { do: "use"; at: string; rule: string; want?: Want } // stand by `at` and press USE
   | { do: "touch"; at: string; rule: string; want?: Want } // touch `at`
   | { do: "collect"; items: string[]; rule: string; times: number; rules?: string[] } // touch `items` until the rule(s) fired `times` in all
-  | { do: "wait"; rule: string }; // let time run (a timer)
+  | { do: "wait"; rule: string; want?: Want }; // let time run (a timer)
 
 /** A precondition step is done when `id` is in state `s` (it has no rule of its own to watch). */
 export interface Want {
@@ -106,9 +106,9 @@ export function t0(b: WorldBundle, playerTeam: "red" | "blue" = "red"): { chips:
       if (!m || c.op !== "eq") continue;
       const [id, want] = [m[1]!, String(c.r)];
       if ((ents.get(id)?.states.length ? ents.get(id)!.init : "") === want) continue;
-      const p = made.find((x) => x.k === "state" && x.a === id && x.s === want && x.cause);
+      const p = made.find((x) => x.k === "state" && x.a === id && x.s === want);
       if (p) {
-        pre.push(...causeSteps(p.cause!, "", { id, s: want }));
+        pre.push(...(p.cause ? causeSteps(p.cause, "", { id, s: want }) : [{ do: "wait" as const, rule: "", want: { id, s: want } }]));
         preWhy.push(`${id} ${want}`);
         continue;
       }

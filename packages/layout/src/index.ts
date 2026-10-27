@@ -210,6 +210,13 @@ export function repairKits(b: WorldBundle): string[] {
     for (const c of r.if) if (c.l.includes(".carrier")) delivered.add(c.l.split(".")[0]!);
   }
   for (const v of b.verbs) if (v.verb === "puzzle.lock" && v.params.key) delivered.add(String(v.params.key));
+  // carry and collect on one thing: delivered somewhere → carried; otherwise → collected
+  for (const id of new Set(b.verbs.filter((v) => v.verb === "puzzle.collect").map((v) => v.on))) {
+    if (!b.verbs.some((v) => v.on === id && v.verb.endsWith(".carry"))) continue;
+    const keep = delivered.has(id) ? ".carry" : "puzzle.collect";
+    b.verbs = b.verbs.filter((v) => v.on !== id || !(v.verb.endsWith(".carry") || v.verb === "puzzle.collect") || v.verb.endsWith(keep));
+    notes.push(`${id}: both carried and collected → ${keep === ".carry" ? "carried (it is delivered somewhere)" : "collected (nothing delivers it)"}`);
+  }
   const groups = new Map<string, string[]>();
   for (const v of b.verbs) {
     if (!v.verb.endsWith(".carry") || delivered.has(v.on)) continue;
@@ -218,8 +225,13 @@ export function repairKits(b: WorldBundle): string[] {
     const key = e.noun || e.hyper || "item";
     groups.set(key, [...(groups.get(key) ?? []), e.id]);
   }
+  // …and any of them whose pickup scores points is counted, not carried (one hand can't hold four clues)
+  const scoring = new Set(b.rules.filter((r) => (r.when.t === "pickup" || r.when.t === "touch") && r.then.some((e) => e.e === "score")).map((r) => (r.when.t === "pickup" ? r.when.a : r.when.b)));
+  const scored = [...groups.values()].flat().filter((id) => scoring.has(id));
+  if (scored.length) groups.set("scoring pickup", [...new Set([...(groups.get("scoring pickup") ?? []), ...scored])]);
   for (const [noun, ids] of groups) {
-    if (ids.length < 3) continue;
+    if (ids.length < 3 && noun !== "scoring pickup") continue;
+    if (noun !== "scoring pickup") for (const [k, v] of groups) if (k !== noun) groups.set(k, v.filter((x) => !ids.includes(x)));
     b.verbs = b.verbs.filter((v) => !(v.verb.endsWith(".carry") && ids.includes(v.on)));
     for (const id of ids) if (!bound(id, "puzzle.collect")) b.verbs.push(vb(uniqueId(b, `vb_collect_${id}`), "puzzle.collect", id));
     notes.push(`${ids.length} × ${noun}: carried but never delivered → collected (touch to collect)`);
@@ -270,6 +282,17 @@ export function repairKits(b: WorldBundle): string[] {
     for (const r of scorers.filter((x) => x.once)) {
       r.once = false;
       notes.push(`rule ${r.id}: no longer once-only (${g.id} needs ${g.when.a} to reach ${g.when.n})`);
+    }
+  }
+  // 4d. a timer's finished state is "done", whatever word the rules used for it
+  const timers = new Set(b.verbs.filter((v) => v.verb === "puzzle.timer").map((v) => v.on));
+  for (const r of b.rules) {
+    for (const c of r.if) {
+      const id = c.l.endsWith(".state") ? c.l.slice(0, -6) : "";
+      if (timers.has(id) && c.op === "eq" && /^(finished|ended|expired|over|complete|completed|timeout|timed_out|stopped|zero)$/.test(String(c.r))) {
+        notes.push(`rule ${r.id}: ${id}.state '${String(c.r)}' → 'done' (the timer's finished state)`);
+        c.r = "done";
+      }
     }
   }
   // 5. plates that must be down together latch, or a solo player could never hold them all
