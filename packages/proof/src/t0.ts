@@ -12,7 +12,7 @@ export type PlanStep =
   | { do: "deliver"; item: string; sensor: string; rule: string; times: number; want?: Want } // bring `item` (or the player) into `sensor`
   | { do: "use"; at: string; rule: string; want?: Want } // stand by `at` and press USE
   | { do: "touch"; at: string; rule: string; want?: Want } // touch `at`
-  | { do: "collect"; items: string[]; rule: string; times: number } // touch `times` of `items`
+  | { do: "collect"; items: string[]; rule: string; times: number; rules?: string[] } // touch `items` until the rule(s) fired `times` in all
   | { do: "wait"; rule: string }; // let time run (a timer)
 
 /** A precondition step is done when `id` is in state `s` (it has no rule of its own to watch). */
@@ -76,6 +76,7 @@ export function t0(b: WorldBundle, playerTeam: "red" | "blue" = "red"): { chips:
   const ok = (ref: string) => ref === "" || (SPECIAL_REFS as readonly string[]).includes(ref) || ref.startsWith("tag:") || ids.has(ref.split(".")[0]!);
   const carryable = carryables(b);
   const made = producers(b);
+  const collectedSet = new Set(b.verbs.filter((v) => v.verb === "puzzle.collect").map((v) => v.on));
 
   // 1. references
   let bad = 0;
@@ -123,6 +124,15 @@ export function t0(b: WorldBundle, playerTeam: "red" | "blue" = "red"): { chips:
   const satTrigger = (r: Rule, w: Rule["when"], depth: number, s2: Set<string>): { steps: PlanStep[]; explain: string } | null => {
     switch (w.t) {
       case "score_gte": {
+        // several rules each scoring one collectible (crystal_1 … crystal_10): one collect step over all
+        const scorers = rules.filter((r2) => r2.id !== r.id && r2.then.some((e) => e.e === "score" && e.target === w.a));
+        const items = scorers.map((r2) => (r2.when.t === "touch" && collectedSet.has(r2.when.b) ? r2.when.b : "")).filter(Boolean);
+        if (scorers.length > 1 && items.length === scorers.length) {
+          const per = scorers[0]!.then.find((e) => e.e === "score")!.n || 1;
+          const times = Math.max(1, Math.ceil(w.n / per));
+          if (times > items.length) return null; // not enough to collect: the goal can't be met
+          return { steps: [{ do: "collect", items, rule: scorers[0]!.id, rules: scorers.map((x) => x.id), times }], explain: `${r.id} (${w.a} reaches ${w.n}) ← collect ${times} of ${items.length}` };
+        }
         for (const r2 of rules) {
           if (r2.id === r.id) continue;
           const fx = r2.then.find((e) => e.e === "score" && e.target === w.a);

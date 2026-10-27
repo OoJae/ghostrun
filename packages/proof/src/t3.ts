@@ -305,7 +305,7 @@ function clearDoors(r: Run, target: Vec3) {
       const e = r.sim.entity(d.id);
       if (!e || e.destroyed || e.state === "open" || !crosses(path[i - 1]!, path[i]!, d.pos, d.size)) continue;
       r.opened.add(d.id);
-      for (const st of r.openers.get(d.id) ?? []) if (perform(r, st, "") !== "ok") return;
+      for (const st of r.openers.get(d.id) ?? []) if (perform(r, st) !== "ok") return;
     }
   }
 }
@@ -317,7 +317,7 @@ const spotBy = (r: Run, id: string): Vec3 => {
 };
 
 /** Execute one plan step in physics; "lost" means a carried item was taken (start over). */
-function perform(r: Run, st: PlanStep, carried: string): "ok" | "lost" | "stuck" {
+function perform(r: Run, st: PlanStep): "ok" | "lost" | "stuck" {
   const { sim, nav, b, rng, speed, budget } = r;
   const go = (t: Vec3 | (() => Vec3), stop: () => boolean) => {
     if (typeof t !== "function") clearDoors(r, t);
@@ -339,7 +339,8 @@ function perform(r: Run, st: PlanStep, carried: string): "ok" | "lost" | "stuck"
     case "deliver": {
       const fired = counter(sim, st.rule);
       const done = () => (st.want ? met(st.want) : fired() > 0);
-      const lost = () => carried !== "" && sim.entity(carried)?.carrier !== "player";
+      // only the thing being delivered can be lost (a key the lock used up is not)
+      const lost = () => st.item !== "player" && sim.entity(st.item)?.carrier !== "player";
       const sensor = b.entities.find((e) => e.id === st.sensor)!;
       go(sensor.pos, () => done() || lost());
       // already inside from a previous delivery: step out and come back in (a fresh enter)
@@ -371,15 +372,28 @@ function perform(r: Run, st: PlanStep, carried: string): "ok" | "lost" | "stuck"
       return done() ? "ok" : "stuck";
     }
     case "collect": {
-      const fired = counter(sim, st.rule);
+      const counts = (st.rules ?? [st.rule]).map((id) => counter(sim, id));
+      const fired = () => counts.reduce((n, f) => n + f(), 0);
+      // nearest first; an item it can't reach this time (a missed jump) waits for a later pass
+      const skipped = new Set<string>();
       while (live(r) && fired() < st.times) {
         const p = sim.pos("player");
-        const left = st.items.filter((id) => !gone(id)).sort((x, y) => d2h(sim.pos(x), p) - d2h(sim.pos(y), p) || (x < y ? -1 : 1));
-        if (!left.length) break;
+        let left = st.items.filter((id) => !gone(id) && !skipped.has(id));
+        if (!left.length) {
+          if (!skipped.size) break;
+          skipped.clear();
+          left = st.items.filter((id) => !gone(id));
+          if (!left.length) break;
+        }
+        left.sort((x, y) => d2h(sim.pos(x), p) - d2h(sim.pos(y), p) || (x < y ? -1 : 1));
         const it = left[0]!;
         const t0 = sim.tick;
+        const before = fired();
         const ok = go(spotBy(r, it), () => gone(it));
-        if (!gone(it) && (!ok || sim.tick === t0)) return "stuck"; // never spin in place
+        if (!gone(it) && (!ok || sim.tick === t0)) {
+          if (skipped.has(it) || (sim.tick === t0 && fired() === before && skipped.size >= left.length - 1)) return "stuck"; // a pass with no progress: never spin in place
+          skipped.add(it);
+        }
       }
       return fired() >= st.times ? "ok" : "stuck";
     }
@@ -404,10 +418,8 @@ function witnessRun(R: Rapier, b: WorldBundle, nav: NavWorld, chain: WinChain, o
   outer: while (live(r)) {
     if (sim.tick === lastTop) break; // a whole pass without a tick: never spin
     lastTop = sim.tick;
-    let carried = "";
     for (const st of chain.steps) {
-      const res = perform(r, st, carried);
-      if (st.do === "pickup" && res === "ok") carried = st.item;
+      const res = perform(r, st);
       if (res === "lost") continue outer; // tagged on the way: go and win it back
       if (res === "stuck") {
         if (live(r)) stuck++;

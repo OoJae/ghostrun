@@ -138,6 +138,7 @@ export const floorPlan: LayoutPack<FloorPlanParams> = {
       version: this.version,
       zones,
       statics,
+      maxProp: 2.4,
       cameraBounds: { min: [x0 - 4, -1, zFront - YARD], max: [x3 + 4, 12, zBack] },
       notes: [`interior ${W}×${D} m, ${WALL_H} m walls, ${DOOR_W}×${DOOR_H} m doorways, cutaway (no ceilings)`],
     };

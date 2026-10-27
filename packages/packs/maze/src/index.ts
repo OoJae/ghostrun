@@ -107,6 +107,7 @@ export const maze: LayoutPack<MazeParams> = {
       version: this.version,
       zones,
       statics,
+      maxProp: 1.0,
       cameraBounds: { min: [ox - 2, -1, oz - 8], max: [ox + W + 2, 24, oz + D + 2] },
       notes: [`maze ${C}×${R} cells of ${CELL} m, exit ${dist[far[0]]![far[1]]} cells from the entrance`],
     };

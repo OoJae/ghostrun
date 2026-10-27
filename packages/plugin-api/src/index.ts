@@ -27,6 +27,8 @@ export interface PackLayout {
   zones: ZoneSpec[];
   statics: PackStatic[];
   cameraBounds: Aabb;
+  /** Largest footprint (m) a solid prop may have here, so a placed prop never seals a corridor. */
+  maxProp?: number;
   notes: string[]; // e.g. "orrery: distances scaled"
 }
 

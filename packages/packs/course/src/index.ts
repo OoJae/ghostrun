@@ -289,6 +289,7 @@ export const course: LayoutPack<CourseParams> = {
       version: this.version,
       zones,
       statics,
+      maxProp: 1.2,
       cameraBounds: { min: [-HALF, fallY, zBack], max: [HALF, maxTop + 6, zEnd + 3] },
       notes: [
         `course: ${kinds.join(" → ")}, ${Math.round(zEnd)} m to the finish; opening wall ${gateRise} m (${jumping ? `needs ${k} jump${k === 1 ? "" : "s"}` : "a step: these laws barely jump"})`,

@@ -84,10 +84,30 @@ export function placeWorld(input: WorldBundle, layout: PackLayout): PlaceResult 
     const spec = bound.get(e.zone);
     if (!spec) continue;
     let base = spec.anchors[e.anchor];
+    // a door is meant to guard a way through: "the gate in the east wall" stands in that doorway
+    if (e.kind === "door" && !e.anchor.startsWith("doorway_")) {
+      const doors = Object.keys(spec.anchors).filter((k) => k.startsWith("doorway_")).sort();
+      const side = /^wall_([nsew])$/.exec(e.anchor)?.[1];
+      const pick = (side && spec.anchors[`doorway_${side}`] ? `doorway_${side}` : undefined) ?? doors[0];
+      if (pick) {
+        notes.push(`${e.id}: door moved from '${e.anchor || "zone"}' to '${pick}' (doors stand in doorways)`);
+        e.anchor = pick;
+        base = spec.anchors[pick];
+      }
+    }
     if (!base) {
+      // no such anchor: a seeded spot in the zone on open floor (never inside a wall or a pillar)
       const r = stream(b.seed, `place:${e.id}`);
       const { min, max } = spec.bounds;
-      base = [min[0] + 1 + r() * (max[0] - min[0] - 2), spec.floorY, min[2] + 1 + r() * (max[2] - min[2] - 2)];
+      const solid = layout.statics.filter((st) => st.pos[1] + st.size[1] / 2 > spec.floorY + 0.3);
+      const open = (x: number, z: number) => !solid.some((st) => Math.abs(x - st.pos[0]) < st.size[0] / 2 + 0.6 && Math.abs(z - st.pos[2]) < st.size[2] / 2 + 0.6);
+      let pick: Vec3 | undefined;
+      for (let k = 0; k < 40 && !pick; k++) {
+        const x = min[0] + 1 + r() * (max[0] - min[0] - 2);
+        const z = min[2] + 1 + r() * (max[2] - min[2] - 2);
+        if (open(x, z)) pick = [x, spec.floorY, z];
+      }
+      base = pick ?? [(min[0] + max[0]) / 2, spec.floorY, (min[2] + max[2]) / 2];
       if (e.anchor) notes.push(`${e.id}: anchor '${e.anchor}' not in slot '${spec.slot}', placed in zone`);
     }
     const key = `${spec.slot}/${e.anchor}`;
@@ -97,6 +117,23 @@ export function placeWorld(input: WorldBundle, layout: PackLayout): PlaceResult 
     const alongZ = Math.abs(base[0]) >= Math.abs(base[2]);
     // doors stand on the zone's floor even when the fill names a wall-height anchor
     if (e.kind === "door") base = [base[0], spec.floorY, base[2]];
+    const solid = e.body === "fixed" || e.body === "kinematic" || e.body === "dynamic";
+    // signs are decor unless a rule needs to touch them; inspecting works by proximity
+    if (e.kind === "sign" && solid && !b.rules.some((r) => r.when.b === e.id || r.when.a === e.id)) {
+      e.body = "none";
+      notes.push(`${e.id}: sign has no collider (decor)`);
+    }
+    // a solid prop never seals a corridor: clamp its footprint to what the pack allows
+    if (layout.maxProp && e.kind !== "door" && e.kind !== "npc" && e.body !== "none" && e.body !== "sensor" && Math.max(e.size[0], e.size[2]) > layout.maxProp) {
+      const k = layout.maxProp / Math.max(e.size[0], e.size[2]);
+      e.size = [e.size[0] * k, e.size[1], e.size[2] * k];
+      notes.push(`${e.id}: footprint shrunk to ${layout.maxProp} m (it would block a corridor)`);
+    }
+    // a slab lying on the floor stays low enough to step onto
+    if ((e.kind === "platform" || e.kind === "plate") && e.body !== "kinematic" && !e.anchor.startsWith("gap") && base[1] <= spec.floorY + 0.01 && e.size[1] > 0.3) {
+      e.size = [e.size[0], 0.3, e.size[2]];
+      notes.push(`${e.id}: floor slab lowered to 0.3 m (walkable)`);
+    }
     // Sensors and spawns sit on the floor; bodies rest with their centre half their height up.
     const lift = e.kind === "spawn" ? 0 : e.size[1] / 2;
     e.pos = alongZ ? [base[0], base[1] + lift, base[2] + offset] : [base[0] + offset, base[1] + lift, base[2]];
