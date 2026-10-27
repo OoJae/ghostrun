@@ -190,11 +190,12 @@ async function main() {
     const R = await loadRapierNode();
     await loadNavNode();
     printReceipt(await prove(R, placed.bundle, { engine: ENGINE, runs: 12 }));
+    const runs = Number(args[args.indexOf("--runs") + 1]) || 1; // trace this many runners
     const log: string[] = [];
-    traceRunners((m) => void (log.length < 200 && log.push(m)));
-    await prove(R, placed.bundle, { engine: ENGINE, runs: 1 });
+    traceRunners((m) => void (log.length < 200 * runs && log.push(m)));
+    await prove(R, placed.bundle, { engine: ENGINE, runs });
     traceRunners(null);
-    console.log(["RUNNER 1:", ...log.map((l) => `  ${l}`)].join("\n"));
+    console.log(["RUNNERS:", ...log.map((l) => `  ${l}`)].join("\n"));
   } else if (cmd === "build") {
     const prompt = args[0]!;
     console.log(`PROMPT: ${prompt}`);

@@ -667,6 +667,8 @@ function perform(r: Run, st: PlanStep): "ok" | "lost" | "stuck" {
         // someone to catch moves: chase them where they are, not to where they started
         const spot = someone ? () => sim.pos(st.at) : spotBy(r, st.at);
         go(spot, () => sim.usable()?.on === st.at || done());
+        // arrived mid-hop (an unsticking jump): come down first, it's out of reach from the air
+        for (let k = 0; k < 60 && !sim.player.grounded && sim.usable()?.on !== st.at && live(r); k++, budget.ticks--) sim.step(null);
         trace?.(`  use ${st.at} ${attempt}: spot ${v1(typeof spot === "function" ? spot() : spot)}, at ${v1(sim.pos("player"))}, usable ${sim.usable()?.on ?? "-"}`);
         if (sim.usable()?.on !== st.at || !live(r)) continue;
         sim.step({ tick: sim.tick + 1, wx: 0, wz: 0, btn: BTN.USE });
@@ -779,6 +781,7 @@ function perform(r: Run, st: PlanStep): "ok" | "lost" | "stuck" {
 function witnessRun(R: Rapier, b: WorldBundle, nav: NavWorld, chain: WinChain, openers: ReadonlyMap<string, PlanStep[]>, seed: number, playerTeam: "red" | "blue", schedule: readonly (readonly [string, string])[] = []): RunResult {
   // The cast plays too: runners must beat the same bots the judge will face (and, for the
   // envelope, the bots locked to whatever a schedule says their minds chose).
+  trace?.(`run ${seed}${schedule.length ? ` (${schedule.map(([n, o]) => `${n}: ${o}`).join(", ")})` : ""}`);
   const brain = castBrain(nav, b);
   for (const [npc, option] of schedule) brain.choose(npc, option);
   const sim = new SimWorld(R, b, { playerTeam, brain });

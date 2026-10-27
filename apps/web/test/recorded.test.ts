@@ -40,6 +40,7 @@ describe("recorded unseen worlds", () => {
     ["fresh3", "a-jungle-temple", "a jump pad a fill put on the lane is landed beside, not on"],
     ["fresh3", "build-up-speed", "a portal on the lane is walked around; putting the key down frees the hands for the trophy at once"],
     ["judges", "a-temple-run", "boulders on the lane are landed clear of and walked round; 'carry_count is 4' counts the idols collected"],
+    ["fresh3", "a-night-at-the-observatory", "a runner arriving mid-hop lands before it reaches for the telescope"],
   ])("%s %s: %s", async (set, prefix) => {
     const w = recorded(set, prefix);
     const r = await prove(R, w.bundle, { engine: ENGINE_HASH, runs: 12 });
