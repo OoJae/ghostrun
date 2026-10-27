@@ -98,7 +98,10 @@ export class PlayerController {
     this.kcc.computeColliderMovement(this.collider, want, undefined, undefined, (c) => !exclude(c));
     const mv = this.kcc.computedMovement();
     const wasGrounded = this.grounded;
-    this.grounded = this.kcc.computedGrounded();
+    // Only count as grounded when not moving up: the KCC reports ground while a rising capsule
+    // slides over a ledge edge, which would otherwise reset the jump counter mid-air (a free
+    // extra jump that breaks every "requires N jumps" claim).
+    this.grounded = this.kcc.computedGrounded() && this.vy <= 0;
     if (this.grounded && this.vy < 0) this.vy = 0;
     // Bumped a ceiling? Ask the world with an upward ray from the head (sliding up a wall also
     // shortens mv.y, so mv alone can't tell the difference).

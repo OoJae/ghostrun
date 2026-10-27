@@ -1,0 +1,19 @@
+{
+  "name": "@ghostrun/nav",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./node": "./src/node.ts"
+  },
+  "dependencies": {
+    "@ghostrun/ir": "workspace:*",
+    "@recast-navigation/core": "0.43.1",
+    "@recast-navigation/generators": "0.43.1",
+    "@recast-navigation/wasm": "0.43.1"
+  },
+  "devDependencies": {
+    "@ghostrun/layout": "workspace:*",
+    "@ghostrun/pack-city-block": "workspace:*"
+  }
+}

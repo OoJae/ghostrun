@@ -72,6 +72,28 @@ importers:
         specifier: workspace:*
         version: link:../packs/city-block
 
+  packages/nav:
+    dependencies:
+      '@ghostrun/ir':
+        specifier: workspace:*
+        version: link:../ir
+      '@recast-navigation/core':
+        specifier: 0.43.1
+        version: 0.43.1
+      '@recast-navigation/generators':
+        specifier: 0.43.1
+        version: 0.43.1
+      '@recast-navigation/wasm':
+        specifier: 0.43.1
+        version: 0.43.1
+    devDependencies:
+      '@ghostrun/layout':
+        specifier: workspace:*
+        version: link:../layout
+      '@ghostrun/pack-city-block':
+        specifier: workspace:*
+        version: link:../packs/city-block
+
   packages/packs/city-block:
     dependencies:
       '@ghostrun/detmath':
@@ -89,6 +111,28 @@ importers:
       '@ghostrun/ir':
         specifier: workspace:*
         version: link:../ir
+
+  packages/proof:
+    dependencies:
+      '@ghostrun/detmath':
+        specifier: workspace:*
+        version: link:../detmath
+      '@ghostrun/ir':
+        specifier: workspace:*
+        version: link:../ir
+      '@ghostrun/nav':
+        specifier: workspace:*
+        version: link:../nav
+      '@ghostrun/sim':
+        specifier: workspace:*
+        version: link:../sim
+    devDependencies:
+      '@ghostrun/layout':
+        specifier: workspace:*
+        version: link:../layout
+      '@ghostrun/pack-city-block':
+        specifier: workspace:*
+        version: link:../packs/city-block
 
   packages/sim:
     dependencies:

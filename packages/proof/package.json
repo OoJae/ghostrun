@@ -1,0 +1,16 @@
+{
+  "name": "@ghostrun/proof",
+  "private": true,
+  "type": "module",
+  "exports": { ".": "./src/index.ts" },
+  "dependencies": {
+    "@ghostrun/detmath": "workspace:*",
+    "@ghostrun/ir": "workspace:*",
+    "@ghostrun/nav": "workspace:*",
+    "@ghostrun/sim": "workspace:*"
+  },
+  "devDependencies": {
+    "@ghostrun/layout": "workspace:*",
+    "@ghostrun/pack-city-block": "workspace:*"
+  }
+}

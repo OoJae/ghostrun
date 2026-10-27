@@ -20,6 +20,12 @@
       "path": "packages/sim"
     },
     {
+      "path": "packages/nav"
+    },
+    {
+      "path": "packages/proof"
+    },
+    {
       "path": "tools/detcheck"
     }
   ]

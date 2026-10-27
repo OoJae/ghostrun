@@ -70,8 +70,10 @@ describe("SimWorld on the CTF brief", () => {
       for (let t = 0; t < 120; t++) {
         const vy = sim.player.vy;
         const btn = t === 0 || (t > 5 && vy <= 0.5 && sim.player.jumpsUsed === 1) ? BTN.JUMP : 0;
-        sim.step({ tick: sim.tick + 1, wx: 0, wz: 127, btn });
-        if (t > 2 && btn) sim.step({ tick: sim.tick + 1, wx: 0, wz: 127, btn: 0 }); // release so the next press is fresh
+        const q = sim.pos("player");
+        const wz = q[1] - 0.9 > ledgeTop + 0.05 ? Math.round(Math.max(-127, Math.min(127, (lane.pos[2] - q[2]) * 60))) : 127;
+        sim.step({ tick: sim.tick + 1, wx: 0, wz, btn });
+        if (t > 2 && btn) sim.step({ tick: sim.tick + 1, wx: 0, wz, btn: 0 }); // release so the next press is fresh
         best = Math.max(best, sim.pos("player")[1]);
       }
       const p = sim.pos("player");

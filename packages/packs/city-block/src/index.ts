@@ -76,13 +76,16 @@ export const cityBlock: LayoutPack<CityBlockParams> = {
       // A raised lane in front of the north row, from the red side street to the blue side street.
       // Its front face is a ledge of roofLedgeHeight(): one jump can't reach it, two can.
       const top = roofLedgeHeight(laws.jumpH);
-      const z0 = D - rowDepth - 2.5; // lane centre line
+      // 4 m deep and flush against the north row, so a player who overshoots a double jump
+      // bumps the wall and lands on the lane instead of dropping into a gap behind it.
+      const depth = 4;
+      const z0 = D - rowDepth - depth / 2; // lane centre line
       const segments: [number, number][] = [[-22, -9], [-6.5, 6.5], [9, 22]]; // gaps of 2.5 m (single-jump reach ≈ 6.8 m)
       for (const [a, b] of segments) {
-        statics.push(box("roof_lane_a", [(a + b) / 2, top / 2, z0], [b - a, top, 3], "ledge"));
+        statics.push(box("roof_lane_a", [(a + b) / 2, top / 2, z0], [b - a, top, depth], "ledge"));
       }
       zones.push({
-        slot: "roof_lane_a", tag: "rooftop", bounds: { min: [-22, top, z0 - 1.5], max: [22, top + 4, z0 + 1.5] }, floorY: top,
+        slot: "roof_lane_a", tag: "rooftop", bounds: { min: [-22, top, z0 - depth / 2], max: [22, top + 4, z0 + depth / 2] }, floorY: top,
         anchors: { lane_start: [-20, top, z0], gap_mid: [-7.75, top, z0], lane_end: [20, top, z0], edge: [-12, top, z0 + 1] },
       });
       notes.push(`rooftop lane: ${top} m ledge (one jump reaches ${laws.jumpH} m, two reach ${2 * laws.jumpH} m)`);

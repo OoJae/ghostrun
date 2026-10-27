@@ -1,0 +1,170 @@
+// T3, physics witnesses: AI runners execute the win chain in the real deterministic simulation,
+// following navmesh paths with seeded variation, and a jump witness checks each "requires".
+import { stream } from "@ghostrun/detmath";
+import type { Expect, Vec3, WorldBundle } from "@ghostrun/ir";
+import type { NavWorld } from "@ghostrun/nav";
+import { BTN, SimWorld, steerTo, type Rapier } from "@ghostrun/sim";
+import type { WinChain } from "./t0";
+import type { Chip } from "./types";
+
+const RUN_TICKS = 60 * 60; // one minute of play per run
+
+interface RunResult {
+  won: boolean;
+  ticks: number;
+  stuck: number;
+}
+
+/** Walk the player to `goal` along the navmesh; returns false if it can't get there in time. */
+function walkTo(sim: SimWorld, nav: NavWorld, goal: Vec3, rng: () => number, speed: number, budget: { ticks: number }, stop: () => boolean): boolean {
+  const from = sim.pos("player");
+  const path = nav.path([from[0], 0, from[2]], [goal[0], 0, goal[2]]);
+  if (!path) return false;
+  const pts = path.map((p, i) => (i === path.length - 1 ? p : ([p[0] + (rng() - 0.5) * 0.3, p[1], p[2] + (rng() - 0.5) * 0.3] as Vec3)));
+  let i = 0;
+  let lastProgressTick = sim.tick;
+  let best = Infinity;
+  while (budget.ticks > 0 && !sim.result) {
+    if (stop()) return true;
+    const p = sim.pos("player");
+    const wp = pts[i]!;
+    const d2 = (p[0] - wp[0]) ** 2 + (p[2] - wp[2]) ** 2;
+    if (d2 < 0.45 * 0.45) {
+      if (++i >= pts.length) return true;
+      best = Infinity;
+      continue;
+    }
+    if (d2 < best - 0.01) {
+      best = d2;
+      lastProgressTick = sim.tick;
+    }
+    const f = steerTo(sim.tick + 1, { x: p[0], z: p[2] }, { x: wp[0], z: wp[2] });
+    let wx = Math.round(f.wx * speed);
+    let wz = Math.round(f.wz * speed);
+    let btn = 0;
+    if (sim.tick - lastProgressTick > 45) {
+      // stuck against something: sidestep and hop, deterministically
+      wx = Math.round((rng() - 0.5) * 254);
+      wz = Math.round((rng() - 0.5) * 254);
+      btn = BTN.JUMP;
+      lastProgressTick = sim.tick;
+    }
+    sim.step({ tick: sim.tick + 1, wx, wz, btn });
+    budget.ticks--;
+  }
+  return stop();
+}
+
+function witnessRun(R: Rapier, b: WorldBundle, nav: NavWorld, chain: WinChain, seed: number, playerTeam: "red" | "blue"): RunResult {
+  const sim = new SimWorld(R, b, { playerTeam });
+  const rng = stream(seed, `t3:run`);
+  const speed = 0.85 + rng() * 0.15;
+  const budget = { ticks: RUN_TICKS };
+  let stuck = 0;
+  const pos = (id: string) => sim.pos(id);
+  outer: while (budget.ticks > 0 && !sim.result) {
+    for (const st of chain.steps) {
+      if (st.do === "pickup") {
+        const ok = walkTo(sim, nav, pos(st.item), rng, speed, budget, () => sim.entity(st.item)?.carrier === "player");
+        if (!ok) {
+          stuck++;
+          break outer;
+        }
+      } else {
+        const scoredBefore = sim.log.filter((e) => e.rule === st.rule).length;
+        const sensor = b.entities.find((e) => e.id === st.sensor)!;
+        const ok = walkTo(sim, nav, sensor.pos, rng, speed, budget, () => sim.log.filter((e) => e.rule === st.rule).length > scoredBefore);
+        if (!ok) {
+          stuck++;
+          break outer;
+        }
+      }
+      if (sim.result) break outer;
+    }
+    if (chain.steps.length === 0) break;
+  }
+  const out = { won: sim.result === "win", ticks: sim.tick, stuck };
+  sim.free();
+  return out;
+}
+
+/** Physics check of a "requires jumps>=k" expectation: approach the target's ledge and jump. */
+function jumpWitness(R: Rapier, b: WorldBundle, nav: NavWorld, x: Expect, jumps: number, attempt: number, playerTeam: "red" | "blue"): boolean {
+  const targets = b.statics.filter((s) => s.zone === x.b);
+  if (!targets.length) return false;
+  const seg = targets[attempt % targets.length]!;
+  const top = seg.pos[1] + seg.size[1] / 2;
+  const faceZ = seg.pos[2] - seg.size[2] / 2;
+  const xs = seg.pos[0] + ((attempt % 3) - 1) * seg.size[0] * 0.25;
+  const sim = new SimWorld(R, b, { playerTeam, laws: { jumpsMax: jumps } });
+  const budget = { ticks: RUN_TICKS };
+  walkTo(sim, nav, [xs, 0, faceZ - 0.7], stream(attempt, "t3:jump"), 1, budget, () => false);
+  // One attempt: jump, air-jump at each apex, keep pushing toward the face; stop on landing.
+  let onTop = false;
+  for (let t = 0; t < 150 && !onTop; t++) {
+    const first = t === 0;
+    const again = t > 6 && sim.player.vy <= 0.5 && sim.player.jumpsUsed < jumps && sim.player.jumpsUsed > 0;
+    // push toward the face until the feet clear the ledge, then steer to the middle of the top
+    const q = sim.pos("player");
+    const above = q[1] - 0.9 > top + 0.05;
+    const mid = faceZ + seg.size[2] / 2;
+    const wz = above ? Math.max(-127, Math.min(127, Math.round((mid - q[2]) * 60))) : 127;
+    sim.step({ tick: sim.tick + 1, wx: 0, wz, btn: first || again ? BTN.JUMP : 0 });
+    if (again) sim.step({ tick: sim.tick + 1, wx: 0, wz, btn: 0 });
+    const p = sim.pos("player");
+    const inside = p[0] >= seg.pos[0] - seg.size[0] / 2 && p[0] <= seg.pos[0] + seg.size[0] / 2 && p[2] > faceZ && p[2] <= faceZ + seg.size[2];
+    onTop = t > 0 && sim.player.grounded && inside && p[1] - 0.9 > top - 0.05;
+    if (t > 0 && sim.player.grounded && !inside && p[1] < 1.5) break; // landed back on the street
+  }
+  sim.free();
+  return onTop;
+}
+
+export function t3(R: Rapier, b: WorldBundle, nav: NavWorld, chain: WinChain | null, runs: number, playerTeam: "red" | "blue" = "red"): { chips: Chip[]; par: { goldS: number; runs: number; won: number } | null } {
+  const chips: Chip[] = [];
+  let par: { goldS: number; runs: number; won: number } | null = null;
+  if (chain && b.mode === "play") {
+    const t0 = globalThis.performance?.now?.() ?? 0;
+    const results = Array.from({ length: runs }, (_, i) => witnessRun(R, b, nav, chain, b.seed * 1000 + i, playerTeam));
+    const won = results.filter((r) => r.won);
+    const gold = won.length ? Math.min(...won.map((r) => r.ticks)) / 60 : 0;
+    par = won.length ? { goldS: Math.round(gold * 10) / 10, runs, won: won.length } : null;
+    chips.push({
+      id: "T3:win",
+      tier: "T3",
+      subject: { kind: "property", id: "win_reachable" },
+      status: won.length ? "played" : "counterexample",
+      method: `physics, ${runs} AI runners`,
+      n: runs,
+      k: won.length,
+      text: won.length ? `AI runners won by playing it (AI par ${par!.goldS} s)` : "no AI runner could win",
+      cx: won.length ? null : { where: null, have: 0, need: 1, unit: "wins", text: `${results.reduce((a, r) => a + r.stuck, 0)} runs got stuck` },
+      src: "",
+      ms: Math.round((globalThis.performance?.now?.() ?? 0) - t0),
+    });
+  }
+  for (const x of b.expects.filter((e) => e.prop === "requires")) {
+    const m = x.need.map((n) => /^jumps>=(\d+)$/.exec(n.replace(/\s/g, ""))).find(Boolean);
+    if (!m) continue;
+    const k = Number(m[1]);
+    const t0 = globalThis.performance?.now?.() ?? 0;
+    const n = 4;
+    const withK = Array.from({ length: n }, (_, i) => jumpWitness(R, b, nav, x, k, i, playerTeam)).filter(Boolean).length;
+    const withFewer = Array.from({ length: n }, (_, i) => jumpWitness(R, b, nav, x, k - 1, i, playerTeam)).filter(Boolean).length;
+    const good = withK > 0 && withFewer === 0;
+    chips.push({
+      id: `T3:${x.id}`,
+      tier: "T3",
+      subject: { kind: "property", id: x.id },
+      status: good ? "played" : "counterexample",
+      method: `physics jump witness, ${n} attempts per jump count`,
+      n,
+      k: withK,
+      text: `${x.text || x.id}: reached with ${k} jumps ${withK} of ${n}, with ${k - 1} ${withFewer} of ${n}`,
+      cx: good ? null : { where: null, have: withFewer, need: 0, unit: "attempts", text: withK === 0 ? `never reached with ${k} jumps` : `reached with only ${k - 1} jump(s)` },
+      src: x.src === "user" ? "user" : x.src,
+      ms: Math.round((globalThis.performance?.now?.() ?? 0) - t0),
+    });
+  }
+  return { chips, par };
+}

@@ -5,6 +5,6 @@ export default defineConfig({
   plugins: [rapierWasmShim()],
   test: {
     include: ["packages/**/test/**/*.test.ts"],
-    server: { deps: { inline: [/rapier3d-deterministic/] } },
+    server: { deps: { inline: [/rapier3d-deterministic/, /@recast-navigation/] } },
   },
 });
