@@ -12,6 +12,7 @@ import { ProofBadge, ReceiptPanel, RepairChip, type ProofState, type RepairState
 import { liveAvailable, liveBuild, liveRepair, type LiveIntent } from "./live";
 import { createShare, loadShare, reportWrong } from "./share";
 import { Minds } from "./minds";
+import { propose, twistWorld } from "./director";
 import { BRIEF, buildWorld, ENGINE_HASH, FIXTURE_PROMPTS, FIXTURES, hashWorld, worldFromFill, type Intent, type World } from "./pipeline";
 import { probe } from "./probe";
 import { loadNav, loadRapier, WASM_URLS } from "./sim/boot";
@@ -72,6 +73,7 @@ export function App() {
   const [bark, setBark] = useState<{ name: string; line: string; at: number } | null>(null);
   const [talking, setTalking] = useState<{ npc: string; name: string } | null>(null);
   const [result, setResult] = useState<RunResult | null>(null);
+  const [director, setDirector] = useState<{ line: string; label: string; status: "proving" | "ready"; world?: World } | null>(null);
   const [said, setSaid] = useState("");
   const [reported, setReported] = useState<string>();
   const pending = useRef(new Map<number, { onChip?: (c: Chip) => void; resolve: (r: Receipt) => void; reject: (e: Error) => void }>());
@@ -148,6 +150,7 @@ export function App() {
       current.current = world;
       setReported(undefined);
       setResult(null);
+      setDirector(null);
       const result = await e.load(world, startedAt);
       if (id !== runId.current) return;
       setTiming({ ttffMs: result.ttffMs, splits: [...extra, ...result.splits] });
@@ -166,7 +169,9 @@ export function App() {
             if (ev.k === "score") setScore((s) => ({ ...s, [ev.a === "team:blue" ? "blue" : "red"]: Number(ev.v) }));
             if (ev.k === "win" || ev.k === "lose") {
               setScore((s) => ({ ...s, result: ev.k }));
-              setResult({ k: ev.k, tick: ev.tick, rule: ev.rule });
+              const res: RunResult = { k: ev.k, tick: ev.tick, rule: ev.rule };
+              setResult(res);
+              void directorFor(world, sim.trail, res, id);
             }
             if (ev.k === "touch" && ev.a === "player" && ev.v) setToast(String(ev.v)); // an inspected exhibit's text
           }
@@ -344,6 +349,22 @@ export function App() {
     setToast(`Link copied: ${url}`);
   };
 
+  /** Between attempts: one observation, one twist, re-proved on the device before it is offered. */
+  const directorFor = async (world: World, trail: readonly [number, number, number][], res: RunResult, id: number) => {
+    const p = propose(world, trail, res);
+    if (!p) return;
+    setDirector({ line: p.line, label: p.label, status: "proving" });
+    const w2 = twistWorld(world, p.fill);
+    try {
+      const r2 = await proveOnDevice(w2, -1_000_000 - id);
+      const win = r2.chips.find((c) => c.id === "T3:win");
+      if (id !== runId.current || !win || win.k === 0 || r2.chips.some((c) => c.status === "counterexample" && c.id !== "T3:too_easy")) return setDirector(null);
+      setDirector({ line: p.line, label: p.label, status: "ready", world: w2 });
+    } catch {
+      setDirector(null);
+    }
+  };
+
   /** The same world from the top: a fresh run (and a fresh proof of the same spec). */
   const again = () => {
     const w = current.current;
@@ -402,7 +423,20 @@ export function App() {
         )}
         {toast && <div className="glass toast" role="status">{toast}</div>}
         {result && current.current && (
-          <ResultCard result={result} bundle={current.current.bundle} par={proof.receipt?.par?.goldS ?? null} onAgain={again} onShare={() => void shareRun()} />
+          <ResultCard
+            result={result}
+            bundle={current.current.bundle}
+            par={proof.receipt?.par?.goldS ?? null}
+            onAgain={again}
+            onShare={() => void shareRun()}
+            director={director}
+            onTwist={() => {
+              const w = director?.world;
+              if (!w) return;
+              setResult(null);
+              void show(w, ++runId.current, performance.now(), []);
+            }}
+          />
         )}
         {bark && (
           <div className="glass bark" data-testid="bark">

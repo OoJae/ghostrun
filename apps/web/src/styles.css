@@ -584,3 +584,6 @@ kbd {
 .result-actions { display: flex; gap: 8px; justify-content: center; margin-top: 14px; }
 .result-actions button { font: inherit; font-size: 13px; padding: 7px 12px; border-radius: 8px; cursor: pointer; background: rgba(255, 255, 255, 0.08); color: inherit; border: 1px solid rgba(255, 255, 255, 0.2); }
 .result-actions kbd { font-size: 10px; opacity: 0.7; margin-left: 4px; }
+
+.result-director { margin: 10px 0 0; font-size: 12.5px; max-width: 420px; line-height: 1.4; }
+.result-director b { color: #ffcf7a; }

@@ -34,6 +34,8 @@ export class RapierSim implements FrameSource {
   #ri = 0;
   /** Mind choices as the sim applied them, tick by tick: replays and share links feed them back. */
   readonly minds: MindChoice[] = [];
+  /** Where the player went, every half second (the Director reads it between runs). */
+  readonly trail: [number, number, number][] = [];
   #pendingMinds: { npc: string; option: string }[] = [];
   #replayMinds: MindChoice[] = [];
   /** Fires when a replay ends or the player takes over. */
@@ -181,6 +183,7 @@ export class RapierSim implements FrameSource {
     if (i.btn & BTN_USE) btn |= BTN.USE;
     // a held jump must release for one tick before it counts again (fresh-press semantics)
     const frame: SimInput = { tick: this.sim.tick + 1, wx: q8(x), wz: q8(z), btn };
+    if (frame.tick % 30 === 0) this.trail.push(this.sim.pos(PLAYER_ID));
     this.#applyMinds(frame.tick);
     this.inputs.push(frame);
     const evs = this.sim.step(frame);

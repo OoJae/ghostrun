@@ -31,7 +31,7 @@ function why(b: WorldBundle, ruleId: string): string {
   }
 }
 
-export function ResultCard({ result, bundle, par, onAgain, onShare }: { result: RunResult; bundle: WorldBundle; par: number | null; onAgain: () => void; onShare: () => void }) {
+export function ResultCard({ result, bundle, par, onAgain, onShare, director, onTwist }: { result: RunResult; bundle: WorldBundle; par: number | null; onAgain: () => void; onShare: () => void; director?: { line: string; label: string; status: "proving" | "ready" } | null; onTwist?: () => void }) {
   const t = Math.round((result.tick / 60) * 10) / 10;
   const reason = why(bundle, result.rule);
   const vsPar = par === null ? null : result.k === "win" ? (t <= par ? `You beat the AI par of ${par} s by ${Math.round((par - t) * 10) / 10} s.` : `AI runners do it in ${par} s: there's a faster route.`) : null;
@@ -42,10 +42,20 @@ export function ResultCard({ result, bundle, par, onAgain, onShare }: { result: 
         {t} s{reason && <span className="muted"> · {reason}</span>}
       </div>
       {vsPar && <p className="result-note">{vsPar}</p>}
+      {director && (
+        <p className="result-director" data-testid="director">
+          <b>Director:</b> {director.line} <span className="muted">({director.label}; {director.status === "ready" ? "re-proved ✓" : "re-proving…"})</span>
+        </p>
+      )}
       <div className="result-actions">
         <button type="button" onClick={onAgain} data-testid="again">
           Play again <kbd>R</kbd>
         </button>
+        {director?.status === "ready" && onTwist && (
+          <button type="button" onClick={onTwist} data-testid="twist">
+            Play with the twist
+          </button>
+        )}
         <button type="button" onClick={onShare}>Share this run</button>
       </div>
     </div>
