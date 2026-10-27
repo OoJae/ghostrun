@@ -1,0 +1,6 @@
+{
+  "extends": "../../../tsconfig.base.json",
+  "compilerOptions": { "outDir": "dist/types", "rootDir": ".", "types": ["node"] },
+  "include": ["src", "test"],
+  "references": [{ "path": "../../detmath" }, { "path": "../../ir" }, { "path": "../../plugin-api" }]
+}

@@ -1,0 +1,100 @@
+// The placer: binds the fill's zones to a pack's slots and turns anchors into positions.
+// The LLM chooses relations (zone + anchor), never coordinates (Holodeck/LayoutVLM lesson).
+import { stream } from "@ghostrun/detmath";
+import type { Entity, Static, Vec3, WorldBundle, Zone } from "@ghostrun/ir";
+import type { PackLayout, ZoneSpec } from "@ghostrun/plugin-api";
+
+/** Default physical sizes per entity kind, used when the fill gives none (all metres). */
+export const KIND_SIZE: Partial<Record<Entity["kind"], Vec3>> = {
+  spawn: [1.2, 0.1, 1.2],
+  goal: [3, 3, 3],
+  checkpoint: [3, 3, 3],
+  plate: [1.5, 0.2, 1.5],
+  pickup: [0.5, 0.5, 0.5],
+  npc: [0.7, 1.8, 0.7],
+  door: [1, 2.1, 0.2],
+  switch: [0.4, 0.4, 0.2],
+  platform: [2.4, 0.3, 2.4],
+  sign: [3, 1.5, 0.2],
+  vehicle: [2, 1.2, 4],
+};
+
+const isDefaultSize = (s: Vec3) => s[0] === 1 && s[1] === 1 && s[2] === 1;
+
+function bindZones(zones: Zone[], layout: PackLayout): Map<string, ZoneSpec> {
+  const bound = new Map<string, ZoneSpec>();
+  const used = new Set<string>();
+  // exact slot match first, then tag match, then any unused spec
+  for (const z of zones) {
+    const spec = layout.zones.find((s) => s.slot === z.slot && !used.has(s.slot));
+    if (spec) {
+      bound.set(z.id, spec);
+      used.add(spec.slot);
+    }
+  }
+  for (const z of zones) {
+    if (bound.has(z.id)) continue;
+    const spec = layout.zones.find((s) => s.tag === z.tag && !used.has(s.slot)) ?? layout.zones.find((s) => !used.has(s.slot)) ?? layout.zones[0]!;
+    bound.set(z.id, spec);
+    used.add(spec.slot);
+  }
+  return bound;
+}
+
+export interface PlaceResult {
+  bundle: WorldBundle;
+  notes: string[];
+}
+
+/** Pure and deterministic: positions depend only on the bundle, the layout and the world seed. */
+export function placeWorld(input: WorldBundle, layout: PackLayout): PlaceResult {
+  const b = structuredClone(input);
+  const notes = [...layout.notes];
+  const bound = bindZones(b.zones, layout);
+
+  for (const z of b.zones) {
+    const spec = bound.get(z.id)!;
+    if (spec.slot !== z.slot) notes.push(`zone ${z.id}: slot '${z.slot}' not in ${layout.packId}, using '${spec.slot}'`);
+    z.pack = layout.packId;
+    z.slot = spec.slot;
+  }
+  b.pack = { ...b.pack, id: layout.packId, version: layout.version };
+
+  // Statics: every pack static belongs to the fill zone bound to its slot, else the first zone.
+  const zoneBySlot = new Map([...bound].map(([id, s]) => [s.slot, id]));
+  const fallbackZone = b.zones[0]?.id ?? "z_root";
+  b.statics = layout.statics.map((s, i): Static => ({
+    id: `st_${String(i).padStart(3, "0")}`,
+    src: "template",
+    layer: "gameplay",
+    zone: zoneBySlot.get(s.zoneSlot) ?? fallbackZone,
+    shape: s.shape,
+    pos: s.pos,
+    rotY: s.rotY,
+    size: s.size,
+    surf: s.surf,
+  }));
+
+  // Entities: anchor → position; several entities on one anchor fan out along x.
+  const taken = new Map<string, number>();
+  for (const e of b.entities) {
+    if (isDefaultSize(e.size)) e.size = KIND_SIZE[e.kind] ?? e.size;
+    const spec = bound.get(e.zone);
+    if (!spec) continue;
+    let base = spec.anchors[e.anchor];
+    if (!base) {
+      const r = stream(b.seed, `place:${e.id}`);
+      const { min, max } = spec.bounds;
+      base = [min[0] + 1 + r() * (max[0] - min[0] - 2), spec.floorY, min[2] + 1 + r() * (max[2] - min[2] - 2)];
+      if (e.anchor) notes.push(`${e.id}: anchor '${e.anchor}' not in slot '${spec.slot}', placed in zone`);
+    }
+    const key = `${spec.slot}/${e.anchor}`;
+    const k = taken.get(key) ?? 0;
+    taken.set(key, k + 1);
+    const offset = k === 0 ? 0 : (k % 2 ? 1 : -1) * Math.ceil(k / 2) * 1.6;
+    // Sensors and spawns sit on the floor; bodies rest with their centre half their height up.
+    const lift = e.kind === "spawn" ? 0 : e.size[1] / 2;
+    e.pos = [base[0] + offset, base[1] + lift, base[2]];
+  }
+  return { bundle: b, notes };
+}

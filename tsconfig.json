@@ -8,6 +8,15 @@
       "path": "packages/ir"
     },
     {
+      "path": "packages/plugin-api"
+    },
+    {
+      "path": "packages/packs/city-block"
+    },
+    {
+      "path": "packages/layout"
+    },
+    {
       "path": "tools/detcheck"
     }
   ]

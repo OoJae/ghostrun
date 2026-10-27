@@ -1,0 +1,9 @@
+{
+  "name": "@ghostrun/plugin-api",
+  "private": true,
+  "type": "module",
+  "exports": { ".": "./src/index.ts" },
+  "dependencies": {
+    "@ghostrun/ir": "workspace:*"
+  }
+}

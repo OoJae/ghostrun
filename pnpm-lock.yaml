@@ -56,6 +56,40 @@ importers:
         specifier: 'catalog:'
         version: 1.5.0(typescript@6.0.3)
 
+  packages/layout:
+    dependencies:
+      '@ghostrun/detmath':
+        specifier: workspace:*
+        version: link:../detmath
+      '@ghostrun/ir':
+        specifier: workspace:*
+        version: link:../ir
+      '@ghostrun/plugin-api':
+        specifier: workspace:*
+        version: link:../plugin-api
+    devDependencies:
+      '@ghostrun/pack-city-block':
+        specifier: workspace:*
+        version: link:../packs/city-block
+
+  packages/packs/city-block:
+    dependencies:
+      '@ghostrun/detmath':
+        specifier: workspace:*
+        version: link:../../detmath
+      '@ghostrun/ir':
+        specifier: workspace:*
+        version: link:../../ir
+      '@ghostrun/plugin-api':
+        specifier: workspace:*
+        version: link:../../plugin-api
+
+  packages/plugin-api:
+    dependencies:
+      '@ghostrun/ir':
+        specifier: workspace:*
+        version: link:../ir
+
   tools/detcheck:
     dependencies:
       '@dimforge/rapier3d-deterministic':
