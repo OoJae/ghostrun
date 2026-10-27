@@ -137,3 +137,21 @@ describe("score comparisons (a timed match: win if red is ahead when the clock r
     expect(t2(R, b).find((c) => c.id === "T2:r_win")).toMatchObject({ status: "verified" });
   }, 60_000);
 });
+
+describe("holding something as a condition (reach the platform IF the ticket is carried by red)", () => {
+  it("T0 plans the pickup first, and T2 hands the item over before forcing the rule", async () => {
+    const { t0 } = await import("../src/t0");
+    const { t2 } = await import("../src/t2");
+    const held = ctf.replace(
+      '{"op":"rule","id":"r_win","when":{"t":"score_gte","a":"team:red","n":3},"then":[{"e":"win","target":"player"}],"once":true}',
+      '{"op":"rule","id":"r_win","when":{"t":"enter","a":"player","b":"goal_blue"},"if":[{"l":"orb.carrier.team","op":"eq","r":"red"}],"then":[{"e":"win","target":"player"}],"once":true}',
+    );
+    const fill = parseFill(held, { seed: 7 });
+    const layout = cityBlock.generate({ seed: 7, params: cityBlock.defaults, sub: fill.draft.pack.sub, laws: fill.draft.laws, harder: false });
+    const b = placeWorld({ ...fill.draft, engine: ENGINE }, layout).bundle;
+    const chain = t0(b).chain!;
+    expect(chain.explain).toContain("[after holding orb]");
+    expect(chain.steps.map((s) => s.do)).toEqual(["pickup", "deliver"]);
+    expect(t2(R, b).find((c) => c.id === "T2:r_win")).toMatchObject({ status: "verified" });
+  }, 60_000);
+});

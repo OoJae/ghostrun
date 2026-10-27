@@ -75,19 +75,23 @@ export function reachAt(laws: Laws, jumps: number, rise: number): number {
 }
 
 /** Can a runner get from s onto t with up to `jumps` jumps (walking when they touch at step height)? */
-/** From a pad: anything within its launch height, and as far as the fall from it drifts. */
-function launchReach(s: Surface, t: Surface, laws: Laws): boolean {
+/**
+ * From a pad: anything within its launch height, and as far as you can drift while you fall. A
+ * pad throws you straight up, so the drift is steered in the air (air control), not carried over
+ * from a run-up like a jump's.
+ */
+function launchReach(s: Surface, t: Surface, laws: Laws, margin = 0): boolean {
   const g = 9.81 * Math.max(0.05, laws.gravityScale);
   const H = s.launch! * (1 - EULER_LOSS);
   const rise = t.top - s.top;
-  if (rise > H + 1e-9) return false;
+  if (rise > H - margin + 1e-9) return false;
   const v = Math.sqrt(2 * g * H);
   const time = (v + Math.sqrt(v * v - 2 * g * rise)) / g;
-  return gap(s, t) <= laws.speed * time * 0.85;
+  return gap(s, t) <= laws.speed * Math.max(0.2, laws.airControl) * time * 0.85;
 }
 
 export function hopOk(s: Surface, t: Surface, laws: Laws, jumps: number, margin = 0): boolean {
-  if (s.launch) return launchReach(s, t, laws);
+  if (s.launch) return launchReach(s, t, laws, margin);
   const rise = t.top - s.top;
   if (rise > apex(laws, jumps) - margin + 1e-9) return false;
   const limit = Math.abs(rise) < 0.41 ? 0.01 : reachAt(laws, jumps, rise);

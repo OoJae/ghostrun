@@ -103,18 +103,24 @@ export function t0(b: WorldBundle, playerTeam: "red" | "blue" = "red"): { chips:
     const preWhy: string[] = [];
     for (const c of r.if) {
       if (c.l.endsWith(".carrier.team") && c.op === "eq" && c.r !== playerTeam) return null;
+      // "<item>.carrier.team is red" on a rule about something else: the player must hold <item>
+      // first ("reach the platform IF the ticket is carried by red")
+      const held = /^([a-z][a-z0-9_]*)\.carrier\.team$/.exec(c.l)?.[1];
+      if (held && c.op === "eq" && held !== w.a && carryable.has(held) && !pre.some((x) => x.do === "pickup" && x.item === held)) {
+        pre.push({ do: "pickup", item: held, rule: "" });
+        preWhy.push(`holding ${held}`);
+        continue;
+      }
       // "red ahead of blue" or "red has more than N" on the player's team: score that much first
       const team = /^team:(red|blue)(?:\.score)?$/.exec(c.l)?.[1];
       if (team && (c.op === "gt" || c.op === "gte")) {
         if (team !== playerTeam) return null; // it needs the rivals to score: nothing the player can plan
         const need = typeof c.r === "number" ? (c.op === "gt" ? c.r + 1 : c.r) : 2; // a lead over another score: two to be safe
         if (need <= 0) continue;
-        const scorer = rules.find((r2) => r2.id !== r.id && r2.then.some((e) => e.e === "score" && e.target === `team:${team}`));
-        const sub = scorer && sat(scorer, depth + 1, s2);
+        // the same planning as "team reaches N" (several once-only scorers become one collect step)
+        const sub = satTrigger(r, { ...w, t: "score_gte", a: `team:${team}`, n: need }, depth + 1, s2);
         if (!sub) return null;
-        const per = scorer!.then.find((e) => e.e === "score")!.n || 1;
-        const times = Math.max(1, Math.ceil(need / per));
-        pre.push(...sub.steps.map((st) => (st.do === "deliver" || st.do === "collect" ? { ...st, times } : st)));
+        pre.push(...sub.steps);
         preWhy.push(`${team} scores ${need}`);
         continue;
       }

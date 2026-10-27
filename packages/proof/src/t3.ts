@@ -437,7 +437,9 @@ function perform(r: Run, st: PlanStep): "ok" | "lost" | "stuck" {
       // only the thing being delivered can be lost (a key the lock used up is not)
       const lost = () => st.item !== "player" && sim.entity(st.item)?.carrier !== "player";
       const sensor = b.entities.find((e) => e.id === st.sensor)!;
-      go(sensor.pos, () => done() || lost());
+      // into someone (catch the thief): chase them where they are now
+      const into = sensor.kind === "npc" ? () => sim.pos(sensor.id) : sensor.pos;
+      go(into, () => done() || lost());
       // already inside from a previous delivery: step out and come back in (a fresh enter)
       for (let k = 0; k < 2 && !done() && !lost() && live(r); k++) {
         const p = sim.pos("player");

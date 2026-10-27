@@ -105,8 +105,34 @@ export function placeWorld(input: WorldBundle, layout: PackLayout): PlaceResult 
         .filter((st) => (st.surf === "floor" || st.surf === "hazard") && top(st) < spec.floorY - 0.5 && Math.abs(cx - st.pos[0]) <= st.size[0] / 2 && Math.abs(cz - st.pos[2]) <= st.size[2] / 2)
         .sort((p, q) => top(p) - top(q) || p.pos[0] - q.pos[0] || p.pos[2] - q.pos[2])[0];
       if (below) {
-        base = [cx, top(below), cz];
-        notes.push(`${e.id}: anchor '${e.anchor || "zone"}' not in slot '${spec.slot}', laid on the floor below the walkway`);
+        // on that floor, the nearest spot no pillar stands on (a course's platforms rise from it)
+        const y = top(below);
+        // too big to fit beside the pillars: it shrinks (2 m, then 1 m) rather than landing on the way
+        let spot: [number, number] | null = null;
+        for (const w of [Math.max(e.size[0], e.size[2]), 2, 1]) {
+          const [sx, sz] = [Math.min(e.size[0], w), Math.min(e.size[2], w)];
+          const [hx, hz] = [sx / 2 + 0.3, sz / 2 + 0.3];
+          const clear = (x: number, z: number) =>
+            Math.abs(x - below.pos[0]) <= below.size[0] / 2 - hx && Math.abs(z - below.pos[2]) <= below.size[2] / 2 - hz &&
+            !layout.statics.some((st) => st !== below && st.pos[1] - st.size[1] / 2 < y + 0.5 && Math.abs(x - st.pos[0]) < st.size[0] / 2 + hx && Math.abs(z - st.pos[2]) < st.size[2] / 2 + hz);
+          spot = clear(cx, cz) ? [cx, cz] : null;
+          for (let ring = 1; ring <= 24 && !spot; ring++) {
+            for (const [dx, dz] of [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [-1, 1], [1, -1], [-1, -1]] as const) {
+              if (clear(cx + dx * ring * 0.5, cz + dz * ring * 0.5)) {
+                spot = [cx + dx * ring * 0.5, cz + dz * ring * 0.5];
+                break;
+              }
+            }
+          }
+          if (spot) {
+            if (sx < e.size[0] || sz < e.size[2]) e.size = [sx, e.size[1], sz];
+            break;
+          }
+        }
+        if (spot) {
+          base = [spot[0], y, spot[1]];
+          notes.push(`${e.id}: anchor '${e.anchor || "zone"}' not in slot '${spec.slot}', laid on the floor below the walkway`);
+        }
       }
     }
     if (!base) {
@@ -363,6 +389,19 @@ export function repairKits(b: WorldBundle): string[] {
   const before = b.verbs.length;
   b.verbs = b.verbs.filter((v) => !(v.verb === "puzzle.collect" && carried.has(v.on)));
   if (b.verbs.length < before) notes.push(`dropped puzzle.collect on ${before - b.verbs.length} carried item(s) (collecting destroys them)`);
+  // 3b. "<x>.carrier.team" where nothing can carry x (an NPC, a fixed prop) can never hold: the
+  // condition goes (a "catch the thief" rule keeps its trigger), logged
+  const canCarry = new Set([...b.verbs.filter((v) => v.verb.endsWith(".carry")).map((v) => v.on), ...b.verbs.filter((v) => v.verb === "puzzle.lock" && v.params.key).map((v) => String(v.params.key))]);
+  for (const r of b.rules) {
+    const kept = r.if.filter((c) => {
+      const x = /^([a-z][a-z0-9_]*)\.carrier\.team$/.exec(c.l)?.[1];
+      return !x || canCarry.has(x) || !b.entities.some((e) => e.id === x);
+    });
+    if (kept.length < r.if.length) {
+      notes.push(`rule ${r.id}: dropped a 'carried by' condition on something nothing can carry`);
+      r.if = kept;
+    }
+  }
   // 4. triggers that match the verb
   const collected = new Set(b.verbs.filter((v) => v.verb === "puzzle.collect").map((v) => v.on));
   for (const r of b.rules) {

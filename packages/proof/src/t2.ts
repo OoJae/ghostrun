@@ -111,6 +111,11 @@ export function t2(R: Rapier, b: WorldBundle, playerTeam: "red" | "blue" = "red"
         }
       }
     }
+    // "<item>.carrier.team is <the player's team>" on a rule about something else: hand it over
+    for (const c of r.if) {
+      const held = /^([a-z][a-z0-9_]*)\.carrier\.team$/.exec(c.l)?.[1];
+      if (held && c.op === "eq" && c.r === playerTeam && held !== r.when.a && b.entities.some((e) => e.id === held && e.kind !== "npc")) sim.attach(held, "player");
+    }
     const how = plan(sim, b, r, playerTeam);
     const why = typeof how === "string" ? how : null;
     if (why) {
