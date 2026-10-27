@@ -1,0 +1,23 @@
+# deps / build
+node_modules/
+dist/
+.vite/
+.wrangler/
+coverage/
+playwright-report/
+test-results/
+*.tsbuildinfo
+
+# secrets — never commit (see docs/RUNBOOK.md)
+.dev.vars
+.dev.vars.*
+.env
+.env.*
+
+# private strategy material (competitor analysis, judge-prompt strategy, raw agent output) — not for the public repo
+docs/strategy/
+buildplan.md
+
+# tool residue
+.playwright-mcp/
+.DS_Store

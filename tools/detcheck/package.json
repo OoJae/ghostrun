@@ -1,0 +1,19 @@
+{
+  "name": "@ghostrun/detcheck",
+  "private": true,
+  "type": "module",
+  "description": "S0 spike: proves @dimforge/rapier3d-deterministic produces bit-identical tick hashes on Node, workerd, Chromium, Firefox and WebKit.",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "quick": "node scripts/build.mjs && node scripts/run-all.mjs --ticks 2000",
+    "full": "node scripts/build.mjs && node scripts/run-all.mjs --ticks 10000"
+  },
+  "dependencies": {
+    "@dimforge/rapier3d-deterministic": "catalog:"
+  },
+  "devDependencies": {
+    "@playwright/test": "catalog:",
+    "vite": "catalog:",
+    "workerd": "1.20261019.1"
+  }
+}

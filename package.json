@@ -1,0 +1,22 @@
+{
+  "name": "ghostrun",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "packageManager": "pnpm@11.1.2",
+  "engines": {
+    "node": ">=26 <27"
+  },
+  "scripts": {
+    "typecheck": "tsc -b",
+    "test": "vitest run",
+    "det:quick": "pnpm --filter @ghostrun/detcheck run quick",
+    "gate": "pnpm typecheck && pnpm test && pnpm det:quick"
+  },
+  "devDependencies": {
+    "@dimforge/rapier3d-deterministic": "catalog:",
+    "@types/node": "26.6.5",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}
