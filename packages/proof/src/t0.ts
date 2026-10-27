@@ -73,7 +73,8 @@ export function t0(b: WorldBundle, playerTeam: "red" | "blue" = "red"): { chips:
   const chips: Chip[] = [];
   const ents = new Map(b.entities.map((e) => [e.id, e]));
   const ids = new Set([...b.entities.map((e) => e.id), ...b.zones.map((z) => z.id), ...b.states.map((s) => s.id), ...b.rules.map((r) => r.id)]);
-  const ok = (ref: string) => ref === "" || (SPECIAL_REFS as readonly string[]).includes(ref) || ref.startsWith("tag:") || ids.has(ref.split(".")[0]!);
+  // a path ("player.team", "team:red.score") names its head
+  const ok = (ref: string) => ref === "" || (SPECIAL_REFS as readonly string[]).includes(ref.split(".")[0]!) || ref.startsWith("tag:") || ids.has(ref.split(".")[0]!);
   const carryable = carryables(b);
   const made = producers(b);
   const collectedSet = new Set(b.verbs.filter((v) => v.verb === "puzzle.collect").map((v) => v.on));

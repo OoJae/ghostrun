@@ -17,6 +17,8 @@ interface RunResult {
   won: boolean;
   ticks: number;
   stuck: number;
+  /** The rule that fired the loss, when the run was lost (null: it won, or ran out of steps). */
+  lostBy: string | null;
 }
 
 type Target = Vec3 | (() => Vec3);
@@ -27,12 +29,19 @@ const d2h = (a: Vec3, b: Vec3) => (a[0] - b[0]) * (a[0] - b[0]) + (a[2] - b[2]) 
  * Walk the player to `goal` along the navmesh; a function goal is a moving target (an item in
  * someone's hands) and is re-planned as it moves. Returns false if it can't get there in time.
  */
-function walkTo(sim: SimWorld, nav: NavWorld, goal: Target, rng: () => number, speed: number, budget: { ticks: number }, stop: () => boolean): boolean {
+function walkTo(sim: SimWorld, nav: NavWorld, goal: Target, rng: () => number, speed: number, budget: { ticks: number }, stop: () => boolean, b?: WorldBundle): boolean {
   const moving = typeof goal === "function";
   const plan = (aim: Vec3): Vec3[] | null => {
     const from = sim.pos("player");
     const feet: Vec3 = [from[0], from[1] - 0.9, from[2]];
     let path = nav.path(feet, aim);
+    if (!path && !moving && b) {
+      // ground too narrow for the navmesh (a 0.7 m beam erodes away): on the same surface, go straight
+      const ss = surfaces(b);
+      const here = surfaceAt(ss, [from[0], from[1] - 0.8, from[2]]);
+      const there = surfaceAt(ss, [aim[0], aim[1] + 0.1, aim[2]]);
+      if (here && there && here.id === there.id) path = [feet, aim];
+    }
     if (!path && moving) {
       const near = nav.nearest(aim);
       path = (near && nav.path(feet, near)) || [aim];
@@ -253,17 +262,25 @@ function hopTo(sim: SimWorld, nav: NavWorld, b: WorldBundle, target: Vec3, budge
   return true;
 }
 
-/** Walk there, climbing onto a raised surface first if the navmesh can't reach it on foot. */
+/**
+ * Walk there; when the navmesh can't, get onto the target's surface first: drop down when it is
+ * below, otherwise hop across or climb (walking off a platform toward a target on another one
+ * only lands on the floor below, which on a course is where the lava is).
+ */
 function goTo(sim: SimWorld, nav: NavWorld, b: WorldBundle, target: Target, rng: () => number, speed: number, budget: { ticks: number }, stop: () => boolean): boolean {
   const p = sim.pos("player");
   const t = at(target);
-  if (typeof target !== "function" && !nav.path([p[0], p[1] - 0.9, p[2]], t) && !stop()) {
+  const walkable = () => {
     const q = sim.pos("player");
-    if (dropDown(sim, b, t, budget) && nav.path([q[0], q[1] - 0.9, q[2]], t)) {
-      // down, and the target is walkable from here
-    } else if (!nav.path([sim.pos("player")[0], sim.pos("player")[1] - 0.9, sim.pos("player")[2]], t) && !climbOnto(sim, nav, b, t, rng, budget) && !hopTo(sim, nav, b, t, budget)) return stop();
+    return Boolean(nav.path([q[0], q[1] - 0.9, q[2]], t));
+  };
+  if (typeof target !== "function" && !nav.path([p[0], p[1] - 0.9, p[2]], t) && !stop()) {
+    const below = t[1] < p[1] - 0.9 - 1;
+    const down = () => dropDown(sim, b, t, budget) && walkable();
+    const across = () => climbOnto(sim, nav, b, t, rng, budget) || hopTo(sim, nav, b, t, budget);
+    if (!(below ? down() || across() : across() || down()) && !walkable()) return stop();
   }
-  return walkTo(sim, nav, target, rng, speed, budget, stop);
+  return walkTo(sim, nav, target, rng, speed, budget, stop, b);
 }
 
 interface Run {
@@ -332,7 +349,11 @@ const spotBy = (r: Run, id: string): Vec3 => {
   const e = r.b.entities.find((x) => x.id === id)!;
   const solid = e.body === "fixed" || e.body === "kinematic" || e.body === "dynamic";
   const floor = e.pos[1] - e.size[1] / 2;
-  if (!solid) return r.nav.nearest([e.pos[0], floor, e.pos[2]]) ?? e.pos;
+  if (!solid) {
+    const near = r.nav.nearest([e.pos[0], floor, e.pos[2]]);
+    // ground too narrow for the navmesh (a beam): stand on the thing's own spot and get there by hops
+    return near && d2h(near, e.pos) <= 1 ? near : [e.pos[0], floor, e.pos[2]];
+  }
   const p = r.sim.pos("player");
   const feet: Vec3 = [p[0], p[1] - 0.9, p[2]];
   const [hx, hz] = [e.size[0] / 2 + 0.6, e.size[2] / 2 + 0.6];
@@ -462,9 +483,29 @@ function witnessRun(R: Rapier, b: WorldBundle, nav: NavWorld, chain: WinChain, o
     }
     if (chain.steps.length === 0) break;
   }
-  const out = { won: sim.result === "win", ticks: sim.tick, stuck };
+  // how a lost run ended: the rule that fired the loss
+  const lostBy = sim.result === "lose" ? (sim.log.findLast((e) => e.k === "lose")?.rule ?? "") : null;
+  const out = { won: sim.result === "win", ticks: sim.tick, stuck, lostBy };
   sim.free();
   return out;
+}
+
+/** Why runs didn't win, counted: "8 lost (hit the lava ×6, the timer ran out ×2), 4 got stuck". */
+function endings(b: WorldBundle, results: readonly { won: boolean; stuck: number; lostBy: string | null }[]): string {
+  const lost = new Map<string, number>();
+  for (const r of results) if (r.lostBy !== null) lost.set(r.lostBy, (lost.get(r.lostBy) ?? 0) + 1);
+  const words = (id: string) => {
+    const w = b.rules.find((x) => x.id === id)?.when;
+    const name = (x: string) => b.entities.find((e) => e.id === x)?.noun || x.replace(/_/g, " ");
+    if (!w) return id || "a loss rule";
+    return w.t === "hit" ? `hit the ${name(w.b)}` : w.t === "timer_end" ? "the timer ran out" : w.t === "score_gte" ? `${w.a.replace("team:", "")} reached ${w.n}` : w.t === "enter" ? `${name(w.a)} reached the ${name(w.b)}` : `${id}`;
+  };
+  const nLost = [...lost.values()].reduce((a, x) => a + x, 0);
+  const stuck = results.filter((r) => !r.won && r.lostBy === null).length;
+  const parts = [];
+  if (nLost) parts.push(`${nLost} lost (${[...lost].sort((p, q) => q[1] - p[1]).map(([id, n]) => `${words(id)} ×${n}`).join(", ")})`);
+  if (stuck) parts.push(`${stuck} got stuck`);
+  return parts.join(", ") || "no run finished";
 }
 
 /** Physics check of a "requires jumps>=k" expectation: approach the target's ledge and jump. */
@@ -554,7 +595,7 @@ export function t3(R: Rapier, b: WorldBundle, nav: NavWorld, chain: WinChain | n
       n: runs,
       k: won.length,
       text: won.length ? `AI runners won by playing it${vs} (AI par ${par!.goldS} s)` : `no AI runner could win${vs}`,
-      cx: won.length ? null : { where: null, have: 0, need: 1, unit: "wins", text: [`${results.reduce((a, r) => a + r.stuck, 0)} runs got stuck`, outOfReach(b, chain, playerTeam, nav)].filter(Boolean).join(": ") },
+      cx: won.length ? null : { where: null, have: 0, need: 1, unit: "wins", text: [endings(b, results), outOfReach(b, chain, playerTeam, nav)].filter(Boolean).join(": ") },
       src: "",
       ms: Math.round((globalThis.performance?.now?.() ?? 0) - t0),
     });

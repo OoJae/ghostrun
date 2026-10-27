@@ -1,0 +1,61 @@
+{"op":"meta","mode":"play","lang":"en","pack":"course","sub":[],"seed":9,"look":"bioluminescent","mood":[0.4,0.7,0.8],"timeOfDay":12,"weather":"clear"}
+{"op":"zone","id":"z_start","slot":"start","tag":"cave_entrance","name":"Cave Entrance"}
+{"op":"zone","id":"z_seg_1","slot":"seg_1","tag":"ledge","name":"Glowing Ledge"}
+{"op":"zone","id":"z_seg_2","slot":"seg_2","tag":"gaps","name":"Lava Gaps"}
+{"op":"zone","id":"z_seg_3","slot":"seg_3","tag":"beam","name":"Crystal Beam"}
+{"op":"zone","id":"z_seg_4","slot":"seg_4","tag":"pit","name":"Deep Pit"}
+{"op":"zone","id":"z_seg_5","slot":"seg_5","tag":"beam","name":"Upper Beam"}
+{"op":"zone","id":"z_seg_6","slot":"seg_6","tag":"steps","name":"Rising Steps"}
+{"op":"zone","id":"z_finish","slot":"finish","tag":"cave_exit","name":"Cave Exit"}
+{"op":"spawn","id":"sp_red","zone":"z_start","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"goal_exit","zone":"z_finish","anchor":"goal","noun":"glowing exit","hyper":"gate","team":"red"}
+{"op":"ent","id":"crystal_1","kind":"pickup","noun":"crystal","hyper":"collectible","zone":"z_seg_1","anchor":"pickup_1","body":"dynamic","shape":"sphere","states":["home","carried"],"init":"home","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"crystal_2","kind":"pickup","noun":"crystal","hyper":"collectible","zone":"z_seg_1","anchor":"cp_1","body":"dynamic","shape":"sphere","states":["home","carried"],"init":"home","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"crystal_3","kind":"pickup","noun":"crystal","hyper":"collectible","zone":"z_seg_2","anchor":"pickup_2","body":"dynamic","shape":"sphere","states":["home","carried"],"init":"home","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"crystal_4","kind":"pickup","noun":"crystal","hyper":"collectible","zone":"z_seg_2","anchor":"cp_2","body":"dynamic","shape":"sphere","states":["home","carried"],"init":"home","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"crystal_5","kind":"pickup","noun":"crystal","hyper":"collectible","zone":"z_seg_3","anchor":"pickup_3","body":"dynamic","shape":"sphere","states":["home","carried"],"init":"home","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"crystal_6","kind":"pickup","noun":"crystal","hyper":"collectible","zone":"z_seg_3","anchor":"cp_3","body":"dynamic","shape":"sphere","states":["home","carried"],"init":"home","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"crystal_7","kind":"pickup","noun":"crystal","hyper":"collectible","zone":"z_seg_4","anchor":"pickup_4","body":"dynamic","shape":"sphere","states":["home","carried"],"init":"home","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"crystal_8","kind":"pickup","noun":"crystal","hyper":"collectible","zone":"z_seg_4","anchor":"cp_4","body":"dynamic","shape":"sphere","states":["home","carried"],"init":"home","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"crystal_9","kind":"pickup","noun":"crystal","hyper":"collectible","zone":"z_seg_5","anchor":"pickup_5","body":"dynamic","shape":"sphere","states":["home","carried"],"init":"home","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"crystal_10","kind":"pickup","noun":"crystal","hyper":"collectible","zone":"z_seg_5","anchor":"cp_5","body":"dynamic","shape":"sphere","states":["home","carried"],"init":"home","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"lava_1","kind":"hazard","noun":"lava pool","hyper":"lava","zone":"z_seg_2","anchor":"pit_2","body":"fixed","shape":"box","size":[4,0.5,4]}
+{"op":"ent","id":"lava_2","kind":"hazard","noun":"lava flow","hyper":"lava","zone":"z_seg_4","anchor":"pit_4","body":"fixed","shape":"box","size":[6,0.5,6]}
+{"op":"ent","id":"plate_jump","kind":"plate","noun":"jump pad","hyper":"plate","zone":"z_seg_6","anchor":"pickup_6","body":"fixed","shape":"box","size":[1,0.2,1]}
+{"op":"verb","id":"vb_jump","verb":"locomotion.jump","on":"player","params":{"jumpsMax":2}}
+{"op":"verb","id":"vb_carry","verb":"physics_props.carry","on":"crystal_1","params":{}}
+{"op":"verb","id":"vb_carry_2","verb":"physics_props.carry","on":"crystal_2","params":{}}
+{"op":"verb","id":"vb_carry_3","verb":"physics_props.carry","on":"crystal_3","params":{}}
+{"op":"verb","id":"vb_carry_4","verb":"physics_props.carry","on":"crystal_4","params":{}}
+{"op":"verb","id":"vb_carry_5","verb":"physics_props.carry","on":"crystal_5","params":{}}
+{"op":"verb","id":"vb_carry_6","verb":"physics_props.carry","on":"crystal_6","params":{}}
+{"op":"verb","id":"vb_carry_7","verb":"physics_props.carry","on":"crystal_7","params":{}}
+{"op":"verb","id":"vb_carry_8","verb":"physics_props.carry","on":"crystal_8","params":{}}
+{"op":"verb","id":"vb_carry_9","verb":"physics_props.carry","on":"crystal_9","params":{}}
+{"op":"verb","id":"vb_carry_10","verb":"physics_props.carry","on":"crystal_10","params":{}}
+{"op":"verb","id":"vb_timer","verb":"puzzle.timer","on":"player","params":{"seconds":120}}
+{"op":"verb","id":"vb_jump_pad","verb":"locomotion.jump_pad","on":"plate_jump","params":{"height":5}}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":6}}
+{"op":"rule","id":"r_collect_1","when":{"t":"pickup","a":"crystal_1","b":"player"},"then":[{"e":"set_state","target":"crystal_1","v":"carried"}]}
+{"op":"rule","id":"r_collect_2","when":{"t":"pickup","a":"crystal_2","b":"player"},"then":[{"e":"set_state","target":"crystal_2","v":"carried"}]}
+{"op":"rule","id":"r_collect_3","when":{"t":"pickup","a":"crystal_3","b":"player"},"then":[{"e":"set_state","target":"crystal_3","v":"carried"}]}
+{"op":"rule","id":"r_collect_4","when":{"t":"pickup","a":"crystal_4","b":"player"},"then":[{"e":"set_state","target":"crystal_4","v":"carried"}]}
+{"op":"rule","id":"r_collect_5","when":{"t":"pickup","a":"crystal_5","b":"player"},"then":[{"e":"set_state","target":"crystal_5","v":"carried"}]}
+{"op":"rule","id":"r_collect_6","when":{"t":"pickup","a":"crystal_6","b":"player"},"then":[{"e":"set_state","target":"crystal_6","v":"carried"}]}
+{"op":"rule","id":"r_collect_7","when":{"t":"pickup","a":"crystal_7","b":"player"},"then":[{"e":"set_state","target":"crystal_7","v":"carried"}]}
+{"op":"rule","id":"r_collect_8","when":{"t":"pickup","a":"crystal_8","b":"player"},"then":[{"e":"set_state","target":"crystal_8","v":"carried"}]}
+{"op":"rule","id":"r_collect_9","when":{"t":"pickup","a":"crystal_9","b":"player"},"then":[{"e":"set_state","target":"crystal_9","v":"carried"}]}
+{"op":"rule","id":"r_collect_10","when":{"t":"pickup","a":"crystal_10","b":"player"},"then":[{"e":"set_state","target":"crystal_10","v":"carried"}]}
+{"op":"rule","id":"r_score","when":{"t":"score_gte","a":"team:red","n":10},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_timer_end","when":{"t":"timer_end","a":"player"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_lava_hit","when":{"t":"hit","a":"player","b":"lava_1"},"then":[{"e":"lose","target":"player"}]}
+{"op":"rule","id":"r_lava2_hit","when":{"t":"hit","a":"player","b":"lava_2"},"then":[{"e":"lose","target":"player"}]}
+{"op":"npc","id":"creature_1","role":"creature","zone":"z_seg_3","anchor":"cp_3","team":"","menu":["creature.wander"],"dflt":"creature.wander"}
+{"op":"expect","id":"x_headline","prop":"requires","a":"sp_red","b":"z_finish","need":["jumps>=2"],"headline":true,"text":"Crunched timer forces tight lava pathing while collecting crystals"}
+{"op":"expect","id":"x_win","prop":"win_reachable","a":"player","b":"goal_exit","text":"Player can collect 10 crystals and reach exit to win"}
+{"op":"expect","id":"x_lose","prop":"unreachable","a":"player","b":"goal_exit","text":"If timer ends or lava touched, win is unreachable"}
+{"op":"end","layer":"gameplay"}
+{"op":"dress","id":"d_glow_1","noun":"bioluminescent moss","zone":"z_seg_1","anchor":"cp_1"}
+{"op":"dress","id":"d_glow_2","noun":"glowing fungi","zone":"z_seg_3","anchor":"cp_3"}
+{"op":"poster","id":"p_cave","prompt":"glowing cave interior, bioluminescent crystals and lava rivers, mysterious atmosphere","zone":"z_start"}
+{"op":"end","layer":"cosmetic"}

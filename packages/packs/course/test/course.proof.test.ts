@@ -74,3 +74,20 @@ describe("course pack, end to end through the proof ladder", () => {
     expect(one.chips.find((c) => c.id === "T3:win")!.cx!.text).toMatch(/no route reaches the finish arch: a 2\.3 m step on the way, and 1 jump reaches 1\.5 m$/);
   }, 120_000);
 });
+
+// A live fill (gpt-oss-120b, "collect 10 crystals in a glowing cave before the timer runs out,
+// avoid the lava"): the world the runners used to lose every time.
+describe("a live crystal cave on the course pack", () => {
+  it("lava with no pit of its own lies below the walkway, and runners collect all ten crystals, beams included", async () => {
+    const text = readFileSync(new URL("./fixtures/crystal-cave-live.jsonl", import.meta.url), "utf8");
+    const seed = (JSON.parse(text.split("\n", 1)[0]!) as { seed: number }).seed;
+    const fill = parseFill(text, { seed });
+    const lay = course.generate({ seed, params: course.defaults, sub: fill.draft.pack.sub, laws: fill.draft.laws, harder: false });
+    const placed = placeWorld({ ...fill.draft, engine: ENGINE }, lay);
+    expect(placed.notes).toContain("lava_1: anchor 'pit_2' not in slot 'seg_2', laid on the floor below the walkway");
+    const r = await prove(R, placed.bundle, { engine: ENGINE, runs: 4 });
+    const win = r.chips.find((c) => c.id === "T3:win")!;
+    expect(win.status).toBe("played");
+    expect(win.k).toBeGreaterThanOrEqual(3);
+  }, 120_000);
+});

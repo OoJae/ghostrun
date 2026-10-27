@@ -57,6 +57,9 @@ export function buildNav(b: WorldBundle): NavWorld {
   for (const e of [...b.entities].sort((x, y) => (x.id < y.id ? -1 : 1))) {
     // NPCs move and doors open: both are obstacles for the KCC, never baked in
     if (e.kind !== "npc" && e.kind !== "door" && e.body === "fixed" && e.shape !== "none") pushBox(pos, idx, e.pos, e.size);
+    // a standing hazard (lava, spikes) is no place to walk: AI paths go around it, as a player
+    // would (moving hazards stay out: they're dodged in time, not in space)
+    else if (e.kind === "hazard" && (e.body === "sensor" || e.body === "fixed")) pushBox(pos, idx, [e.pos[0], e.pos[1] - e.size[1] / 2 + 1.5, e.pos[2]], [e.size[0], 3, e.size[2]]);
   }
   const { success, navMesh } = generateSoloNavMesh(pos, idx, {
     cs: CS,

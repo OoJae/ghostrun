@@ -109,3 +109,14 @@ describe("doors on the win path (vault heist: key → locked door → gem → ex
     expect(receipt.headline?.status).toBe("verified");
   }, 120_000);
 });
+
+describe("T0 references", () => {
+  it("conditions on special refs with a path (player.team, team:red.score) are not unknown references", async () => {
+    const { t0 } = await import("../src/t0");
+    const fill = parseFill(ctf.replace('"if":[{"l":"orb.carrier.team","op":"eq","r":"red"}]', '"if":[{"l":"orb.carrier.team","op":"eq","r":"red"},{"l":"player.team","op":"eq","r":"red"},{"l":"team:red.score","op":"lt","r":3}]'), { seed: 7 });
+    expect(fill.draft.rules.find((r) => r.id === "r_score_red")!.if).toHaveLength(3);
+    const layout = cityBlock.generate({ seed: 7, params: cityBlock.defaults, sub: fill.draft.pack.sub, laws: fill.draft.laws, harder: false });
+    const { bundle } = placeWorld({ ...fill.draft, engine: "e".repeat(64) }, layout);
+    expect(t0(bundle).chips.filter((c) => c.id.startsWith("T0:refs") && c.status === "counterexample")).toEqual([]);
+  });
+});

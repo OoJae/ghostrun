@@ -95,6 +95,20 @@ export function placeWorld(input: WorldBundle, layout: PackLayout): PlaceResult 
         base = spec.anchors[pick];
       }
     }
+    if (!base && e.kind === "hazard") {
+      // a hazard with no such anchor lies low: on a floor below this zone's walkway (a course's lava
+      // under its platforms), never dropped across the way the route must go
+      const { min, max } = spec.bounds;
+      const [cx, cz] = [(min[0] + max[0]) / 2, (min[2] + max[2]) / 2];
+      const top = (st: (typeof layout.statics)[number]) => st.pos[1] + st.size[1] / 2;
+      const below = layout.statics
+        .filter((st) => (st.surf === "floor" || st.surf === "hazard") && top(st) < spec.floorY - 0.5 && Math.abs(cx - st.pos[0]) <= st.size[0] / 2 && Math.abs(cz - st.pos[2]) <= st.size[2] / 2)
+        .sort((p, q) => top(p) - top(q) || p.pos[0] - q.pos[0] || p.pos[2] - q.pos[2])[0];
+      if (below) {
+        base = [cx, top(below), cz];
+        notes.push(`${e.id}: anchor '${e.anchor || "zone"}' not in slot '${spec.slot}', laid on the floor below the walkway`);
+      }
+    }
     if (!base) {
       // no such anchor: a seeded spot in the zone on open floor (never inside a wall or a pillar)
       const r = stream(b.seed, `place:${e.id}`);
