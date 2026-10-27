@@ -17,6 +17,12 @@
   ],
   "references": [
     {
+      "path": "../../packages/bots"
+    },
+    {
+      "path": "../../packages/nav"
+    },
+    {
       "path": "../../packages/detmath"
     },
     {

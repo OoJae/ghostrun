@@ -1,9 +1,11 @@
 // T3, physics witnesses: AI runners execute the win chain in the real deterministic simulation,
-// following navmesh paths with seeded variation, and a jump witness checks each "requires".
+// following navmesh paths with seeded variation against the world's own bots, and a jump witness
+// checks each "requires" (alone: geometry, not tactics).
 import { stream } from "@ghostrun/detmath";
 import type { Expect, Vec3, WorldBundle } from "@ghostrun/ir";
 import type { NavWorld } from "@ghostrun/nav";
-import { BTN, SimWorld, steerTo, type Rapier } from "@ghostrun/sim";
+import { castBrain } from "@ghostrun/bots";
+import { BTN, SimWorld, type Rapier } from "@ghostrun/sim";
 import type { WinChain } from "./t0";
 import type { Chip } from "./types";
 
@@ -15,34 +17,63 @@ interface RunResult {
   stuck: number;
 }
 
-/** Walk the player to `goal` along the navmesh; returns false if it can't get there in time. */
-function walkTo(sim: SimWorld, nav: NavWorld, goal: Vec3, rng: () => number, speed: number, budget: { ticks: number }, stop: () => boolean): boolean {
-  const from = sim.pos("player");
-  const path = nav.path([from[0], from[1] - 0.9, from[2]], goal);
-  if (!path) return false;
-  const pts = path.map((p, i) => (i === path.length - 1 ? p : ([p[0] + (rng() - 0.5) * 0.3, p[1], p[2] + (rng() - 0.5) * 0.3] as Vec3)));
+type Target = Vec3 | (() => Vec3);
+const at = (t: Target) => (typeof t === "function" ? t() : t);
+const d2h = (a: Vec3, b: Vec3) => (a[0] - b[0]) * (a[0] - b[0]) + (a[2] - b[2]) * (a[2] - b[2]); // never **: not bit-identical across engines
+
+/**
+ * Walk the player to `goal` along the navmesh; a function goal is a moving target (an item in
+ * someone's hands) and is re-planned as it moves. Returns false if it can't get there in time.
+ */
+function walkTo(sim: SimWorld, nav: NavWorld, goal: Target, rng: () => number, speed: number, budget: { ticks: number }, stop: () => boolean): boolean {
+  const moving = typeof goal === "function";
+  const plan = (aim: Vec3): Vec3[] | null => {
+    const from = sim.pos("player");
+    const feet: Vec3 = [from[0], from[1] - 0.9, from[2]];
+    let path = nav.path(feet, aim);
+    if (!path && moving) {
+      const near = nav.nearest(aim);
+      path = (near && nav.path(feet, near)) || [aim];
+    }
+    return path && path.map((p, i) => (i === path.length - 1 ? p : ([p[0] + (rng() - 0.5) * 0.3, p[1], p[2] + (rng() - 0.5) * 0.3] as Vec3)));
+  };
+  let aim = at(goal);
+  let pts = plan(aim);
+  if (!pts) return false;
   let i = 0;
+  let replanAt = sim.tick + 20;
   let lastProgressTick = sim.tick;
   let best = Infinity;
   while (budget.ticks > 0 && !sim.result) {
     if (stop()) return true;
-    const p = sim.pos("player");
-    const wp = pts[i]!;
-    const dx = p[0] - wp[0];
-    const dz = p[2] - wp[2];
-    const d2 = dx * dx + dz * dz; // never **: exponentiation isn't guaranteed bit-identical across engines
-    if (d2 < 0.45 * 0.45) {
-      if (++i >= pts.length) return true;
-      best = Infinity;
-      continue;
+    if (moving && sim.tick >= replanAt) {
+      const now = at(goal);
+      if (d2h(now, aim) > 2.25 || i >= pts.length) {
+        aim = now;
+        pts = plan(aim)!;
+        i = 0;
+        best = Infinity;
+      }
+      replanAt = sim.tick + 20;
     }
+    const p = sim.pos("player");
+    while (i < pts.length && d2h(p, pts[i]!) < 0.45 * 0.45) {
+      i++;
+      best = Infinity;
+    }
+    if (i >= pts.length && !moving) return true;
+    // past the last waypoint of a moving target: head straight for it until the next re-plan
+    const wp = i < pts.length ? pts[i]! : at(goal);
+    const d2 = d2h(p, wp);
     if (d2 < best - 0.01) {
       best = d2;
       lastProgressTick = sim.tick;
     }
-    const f = steerTo(sim.tick + 1, { x: p[0], z: p[2] }, { x: wp[0], z: wp[2] });
-    let wx = Math.round(f.wx * speed);
-    let wz = Math.round(f.wz * speed);
+    const ux = wp[0] - p[0];
+    const uz = wp[2] - p[2];
+    const k = (127 * speed) / (Math.sqrt(ux * ux + uz * uz) || 1);
+    let wx = Math.round(ux * k);
+    let wz = Math.round(uz * k);
     let btn = 0;
     if (sim.tick - lastProgressTick > 45) {
       // stuck against something: sidestep and hop, deterministically
@@ -110,37 +141,55 @@ function climbOnto(sim: SimWorld, nav: NavWorld, b: WorldBundle, target: Vec3, r
 }
 
 /** Walk there, climbing onto a raised surface first if the navmesh can't reach it on foot. */
-function goTo(sim: SimWorld, nav: NavWorld, b: WorldBundle, target: Vec3, rng: () => number, speed: number, budget: { ticks: number }, stop: () => boolean): boolean {
+function goTo(sim: SimWorld, nav: NavWorld, b: WorldBundle, target: Target, rng: () => number, speed: number, budget: { ticks: number }, stop: () => boolean): boolean {
   const p = sim.pos("player");
-  if (!nav.path([p[0], p[1] - 0.9, p[2]], target) && !stop()) {
-    if (!climbOnto(sim, nav, b, target, rng, budget)) return stop();
+  const t = at(target);
+  if (typeof target !== "function" && !nav.path([p[0], p[1] - 0.9, p[2]], t) && !stop()) {
+    if (!climbOnto(sim, nav, b, t, rng, budget)) return stop();
   }
   return walkTo(sim, nav, target, rng, speed, budget, stop);
 }
 
 function witnessRun(R: Rapier, b: WorldBundle, nav: NavWorld, chain: WinChain, seed: number, playerTeam: "red" | "blue"): RunResult {
-  const sim = new SimWorld(R, b, { playerTeam });
+  // The cast plays too: runners must beat the same bots the judge will face.
+  const sim = new SimWorld(R, b, { playerTeam, brain: castBrain(nav, b) });
   const rng = stream(seed, `t3:run`);
   const speed = 0.85 + rng() * 0.15;
   const budget = { ticks: RUN_TICKS };
   let stuck = 0;
-  const pos = (id: string) => sim.pos(id);
-  outer: while (budget.ticks > 0 && !sim.result) {
+  const live = () => budget.ticks > 0 && !sim.result;
+  let lastTop = -1;
+  outer: while (live()) {
+    if (sim.tick === lastTop) break; // a whole pass without a tick: never spin
+    lastTop = sim.tick;
+    let carried = "";
     for (const st of chain.steps) {
       if (st.do === "pickup") {
-        const ok = goTo(sim, nav, b, pos(st.item), rng, speed, budget, () => sim.entity(st.item)?.carrier === "player");
-        if (!ok) {
-          stuck++;
+        carried = st.item;
+        const has = () => sim.entity(st.item)?.carrier === "player";
+        // it may be in someone else's hands: chase the carrier (a tag knocks it loose)
+        const where = () => {
+          const c = sim.entity(st.item)!.carrier;
+          return c ? sim.pos(c) : sim.pos(st.item);
+        };
+        if (!goTo(sim, nav, b, where, rng, speed, budget, has)) {
+          if (live()) stuck++;
           break outer;
         }
       } else {
-        const scoredBefore = sim.log.filter((e) => e.rule === st.rule).length;
+        let seen = sim.log.length;
+        let scored = false;
+        const fired = () => {
+          for (; seen < sim.log.length; seen++) if (sim.log[seen]!.rule === st.rule) scored = true;
+          return scored;
+        };
+        const lost = () => carried !== "" && sim.entity(carried)?.carrier !== "player";
         const sensor = b.entities.find((e) => e.id === st.sensor)!;
-        const ok = goTo(sim, nav, b, sensor.pos, rng, speed, budget, () => sim.log.filter((e) => e.rule === st.rule).length > scoredBefore);
-        if (!ok) {
-          stuck++;
-          break outer;
-        }
+        goTo(sim, nav, b, sensor.pos, rng, speed, budget, () => fired() || lost());
+        if (fired()) continue;
+        if (lost() && live()) continue outer; // tagged on the way: go and win it back
+        if (live()) stuck++;
+        break outer;
       }
       if (sim.result) break outer;
     }
@@ -189,6 +238,8 @@ export function t3(R: Rapier, b: WorldBundle, nav: NavWorld, chain: WinChain | n
   if (chain && b.mode === "play") {
     const t0 = globalThis.performance?.now?.() ?? 0;
     const results = Array.from({ length: runs }, (_, i) => witnessRun(R, b, nav, chain, b.seed * 1000 + i, playerTeam));
+    const bots = b.entities.filter((e) => e.kind === "npc" && e.body !== "none" && e.body !== "sensor").length;
+    const vs = bots ? ` vs ${bots} bot${bots > 1 ? "s" : ""}` : "";
     const won = results.filter((r) => r.won);
     const gold = won.length ? Math.min(...won.map((r) => r.ticks)) / 60 : 0;
     par = won.length ? { goldS: Math.round(gold * 10) / 10, runs, won: won.length } : null;
@@ -197,10 +248,10 @@ export function t3(R: Rapier, b: WorldBundle, nav: NavWorld, chain: WinChain | n
       tier: "T3",
       subject: { kind: "property", id: "win_reachable" },
       status: won.length ? "played" : "counterexample",
-      method: `physics, ${runs} AI runners`,
+      method: `physics, ${runs} AI runners${vs}`,
       n: runs,
       k: won.length,
-      text: won.length ? `AI runners won by playing it (AI par ${par!.goldS} s)` : "no AI runner could win",
+      text: won.length ? `AI runners won by playing it${vs} (AI par ${par!.goldS} s)` : `no AI runner could win${vs}`,
       cx: won.length ? null : { where: null, have: 0, need: 1, unit: "wins", text: `${results.reduce((a, r) => a + r.stuck, 0)} runs got stuck` },
       src: "",
       ms: Math.round((globalThis.performance?.now?.() ?? 0) - t0),

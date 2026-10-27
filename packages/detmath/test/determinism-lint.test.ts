@@ -7,7 +7,7 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 
 const ROOT = fileURLToPath(new URL("../../../", import.meta.url));
-const DIRS = ["packages/detmath/src", "packages/ir/src", "packages/sim/src", "packages/nav/src", "packages/proof/src", "packages/layout/src", "packages/packs"];
+const DIRS = ["packages/detmath/src", "packages/ir/src", "packages/sim/src", "packages/nav/src", "packages/proof/src", "packages/layout/src", "packages/packs", "packages/bots/src"];
 const BANNED: [RegExp, string][] = [
   [/Math\.(sin|cos|tan|asin|acos|atan2?|sinh|cosh|tanh|exp|expm1|log|log1p|log2|log10|pow|cbrt|hypot)\b/, "transcendental Math (use detmath)"],
   [/Math\.random\b/, "unseeded randomness (use detmath stream())"],

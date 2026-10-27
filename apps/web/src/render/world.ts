@@ -193,6 +193,7 @@ export function buildWorldView(bundle: WorldBundle): WorldView {
   visorGeo.rotateZ(Math.PI / 2);
   const footRingGeo = keep(new RingGeometry(0.42, 0.5, 40));
   const npcBody = keep(bodyMaterial("#1b1d2b", 0.4, 0.45));
+  const npcShadows: [Object3D, Mesh][] = [];
 
   const character = (e: Pick<Entity, "pos" | "team">, body: Material, visorHex: string, visorScale: number) => {
     const g = new Group();
@@ -303,7 +304,7 @@ export function buildWorldView(bundle: WorldBundle): WorldView {
       }
       case "npc": {
         const g = character(e, npcBody, TEAM_HEX[e.team] ?? PALETTE.cyan, 4);
-        blob(e.pos[0], e.pos[1] - e.size[1] / 2, e.pos[2]);
+        npcShadows.push([g, blob(e.pos[0], e.pos[1] - e.size[1] / 2, e.pos[2])]);
         obj = g;
         break;
       }
@@ -348,6 +349,11 @@ export function buildWorldView(bundle: WorldBundle): WorldView {
       playerShadow.position.set(p.x, top + 0.008, p.z);
       const s = Math.max(0.35, 1 - (p.y - 0.9 - top) * 0.18);
       playerShadow.scale.setScalar(s);
+      for (const [g, sh] of npcShadows) {
+        const q = g.position;
+        const y = groundBelow(colliders, q.x, q.y - 0.9, q.z);
+        sh.position.set(q.x, (Number.isFinite(y) ? y : gy) + 0.006, q.z);
+      }
     },
     dispose() {
       for (const g of geos) g.dispose();

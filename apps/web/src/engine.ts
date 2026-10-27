@@ -159,6 +159,14 @@ export class Engine {
       this.#currAt = performance.now();
       const pp = f.poses.get(PLAYER_ID);
       if (pp) pr.player = [round2(pp.p[0]), round2(pp.p[1]), round2(pp.p[2])];
+      if (f.tick % 30 === 0 && this.rapierSim) {
+        const cast: Record<string, [number, number]> = {};
+        for (const id of this.rapierSim.sim.npcs.keys()) {
+          const q = f.poses.get(id);
+          if (q) cast[id] = [round2(q.p[0]), round2(q.p[2])];
+        }
+        pr.cast = cast;
+      }
       pr.tick = f.tick;
     });
 

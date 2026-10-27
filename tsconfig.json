@@ -32,6 +32,9 @@
       "path": "packages/nav"
     },
     {
+      "path": "packages/bots"
+    },
+    {
       "path": "packages/proof"
     },
     {

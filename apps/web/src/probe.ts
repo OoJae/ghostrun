@@ -13,6 +13,8 @@ export interface GhostrunProbe {
   splits?: Record<string, number>;
   sim?: "rapier" | "stub";
   proof?: { headline: string; chips: number };
+  /** NPC ground positions [x, z], refreshed twice a second. */
+  cast?: Record<string, [number, number]>;
 }
 
 declare global {

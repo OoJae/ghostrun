@@ -1,0 +1,6 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": { "outDir": "dist/types", "rootDir": ".", "types": ["node"], "lib": ["ES2023", "DOM"] },
+  "include": ["src", "test"],
+  "references": [{ "path": "../detmath" }, { "path": "../ir" }, { "path": "../nav" }, { "path": "../sim" }, { "path": "../layout" }, { "path": "../packs/city-block" }]
+}

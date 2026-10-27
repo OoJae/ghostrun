@@ -2,8 +2,11 @@
   "name": "@ghostrun/proof",
   "private": true,
   "type": "module",
-  "exports": { ".": "./src/index.ts" },
+  "exports": {
+    ".": "./src/index.ts"
+  },
   "dependencies": {
+    "@ghostrun/bots": "workspace:*",
     "@ghostrun/detmath": "workspace:*",
     "@ghostrun/ir": "workspace:*",
     "@ghostrun/nav": "workspace:*",

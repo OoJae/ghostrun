@@ -2,7 +2,9 @@
 // Camera-relative input (mx, my, yaw) becomes a quantised int8 world-space move vector here on the
 // main thread, so the trigonometry never enters the simulation: only the int8 frames are logged
 // and replayed, and they replay bit-exactly on every runtime (docs/gates.md, S0c).
+import { castBrain, type CastBrain } from "@ghostrun/bots";
 import type { WorldBundle } from "@ghostrun/ir";
+import { buildNav, type NavWorld } from "@ghostrun/nav";
 import { BTN, SimWorld, type InputFrame as SimInput, type Rapier, type SimEvent } from "@ghostrun/sim";
 import { BTN_JUMP, BTN_USE, PLAYER_ID, TICK_HZ, type FrameSource, type InputFrame, type Pose, type SimFrame } from "./types";
 
@@ -13,6 +15,8 @@ const q8 = (x: number) => Math.max(-127, Math.min(127, Math.round(x * 127)));
 
 export class RapierSim implements FrameSource {
   readonly sim: SimWorld;
+  /** The cast's brain (null if the navmesh couldn't load): minds switch NPC options through it. */
+  readonly brain: CastBrain | null;
   readonly spawnYaw: number;
   /** Every tick's input as the simulation saw it (for replays and share links). */
   readonly inputs: SimInput[] = [];
@@ -22,13 +26,17 @@ export class RapierSim implements FrameSource {
   #lastBtn = 0;
   #pressQueued = false;
   #facing = 0;
+  readonly #npcFacing = new Map<string, number>();
+  readonly #nav: NavWorld | null;
   #acc = 0;
   #last = 0;
   #timer: ReturnType<typeof setInterval> | undefined;
   #onFrame: ((f: SimFrame) => void) | undefined;
 
-  constructor(R: Rapier, bundle: WorldBundle) {
-    this.sim = new SimWorld(R, bundle);
+  constructor(R: Rapier, bundle: WorldBundle, bots = true) {
+    this.#nav = bots ? buildNav(bundle) : null;
+    this.brain = this.#nav ? castBrain(this.#nav, bundle) : null;
+    this.sim = new SimWorld(R, bundle, this.brain ? { brain: this.brain } : {});
     // face the first goal or pickup from the spawn
     const p = this.sim.pos(PLAYER_ID);
     const target = bundle.entities.find((e) => e.kind === "pickup") ?? bundle.entities.find((e) => e.kind === "goal");
@@ -54,6 +62,7 @@ export class RapierSim implements FrameSource {
     this.#timer = undefined;
     this.#onFrame = undefined;
     this.sim.free();
+    this.#nav?.destroy();
   }
 
   #pump() {
@@ -93,10 +102,13 @@ export class RapierSim implements FrameSource {
 
   #emit() {
     if (!this.#onFrame) return;
+    // NPCs face where they walk (cosmetic: main thread only, never fed back into the sim)
+    for (const [id, c] of this.sim.npcs) if (c.vx * c.vx + c.vz * c.vz > 0.04) this.#npcFacing.set(id, Math.atan2(-c.vx, -c.vz));
     const poses = new Map<string, Pose>();
     for (const id of this.sim.order) {
       const pose = this.sim.pose(id);
-      poses.set(id, id === PLAYER_ID ? { p: pose.p, q: [0, Math.sin(this.#facing / 2), 0, Math.cos(this.#facing / 2)] } : pose);
+      const yaw = id === PLAYER_ID ? this.#facing : this.#npcFacing.get(id);
+      poses.set(id, yaw === undefined ? pose : { p: pose.p, q: [0, Math.sin(yaw / 2), 0, Math.cos(yaw / 2)] });
     }
     this.#onFrame({ tick: this.sim.tick, poses });
   }

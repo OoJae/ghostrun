@@ -8,7 +8,7 @@ import { ProofBadge, ReceiptPanel, type ProofState } from "./hud/Proof";
 import { liveAvailable, liveBuild } from "./live";
 import { BRIEF, buildWorld, ENGINE_HASH, hashWorld, worldFromFill, type Intent, type World } from "./pipeline";
 import { probe } from "./probe";
-import { loadRapier, WASM_URLS } from "./sim/boot";
+import { loadNav, loadRapier, WASM_URLS } from "./sim/boot";
 import { RapierSim } from "./sim/rapier";
 
 const HINT_MS = 6000;
@@ -145,8 +145,8 @@ export function App() {
         probe().sim = "stub";
         if (params.get("sim") !== "stub") {
           try {
-            const R = await loadRapier();
-            e.simFactory = (b) => new RapierSim(R, b);
+            const [R, bots] = await Promise.all([loadRapier(), loadNav()]);
+            e.simFactory = (b) => new RapierSim(R, b, bots);
             probe().sim = "rapier";
           } catch (err) {
             console.warn("Rapier unavailable, using the stub simulation", err);

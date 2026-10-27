@@ -10,9 +10,11 @@
   },
   "dependencies": {
     "@dimforge/rapier3d-deterministic": "catalog:",
+    "@ghostrun/bots": "workspace:*",
     "@ghostrun/detmath": "workspace:*",
     "@ghostrun/ir": "workspace:*",
     "@ghostrun/layout": "workspace:*",
+    "@ghostrun/nav": "workspace:*",
     "@ghostrun/pack-city-block": "workspace:*",
     "@ghostrun/sim": "workspace:*",
     "@jitl/quickjs-wasmfile-release-sync": "0.32.0",

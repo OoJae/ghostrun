@@ -1,5 +1,6 @@
-// Navmesh for runners and NPCs: recast-navigation built from the world's statics (and, for now,
-// stationary NPC capsules). Loads from a pre-compiled wasm module on every runtime (S0b).
+// Navmesh for runners and NPCs: recast-navigation built from the world's statics and fixed props.
+// NPCs move, so they are dynamic obstacles for the KCC, never baked in. Loads from a pre-compiled
+// wasm module on every runtime (S0b).
 import { getNavMeshPositionsAndIndices, init as initRecast, NavMesh, NavMeshQuery } from "@recast-navigation/core";
 import { generateSoloNavMesh } from "@recast-navigation/generators";
 import RecastFactory from "@recast-navigation/wasm/wasm";
@@ -43,16 +44,18 @@ export interface NavWorld {
   polys: number;
   /** Ground path between two points, or null if unreachable by walking. */
   path(from: Vec3, to: Vec3): Vec3[] | null;
+  /** Closest walkable point within a few metres (e.g. under a player standing on a roof), or null. */
+  nearest(p: Vec3): Vec3 | null;
   destroy(): void;
 }
 
-/** Build the walking navmesh: statics plus solid entities (NPCs, props) as obstacles. */
+/** Build the walking navmesh: statics plus fixed solid entities (props) as obstacles. */
 export function buildNav(b: WorldBundle): NavWorld {
   const pos: number[] = [];
   const idx: number[] = [];
   for (const s of [...b.statics].sort((x, y) => (x.id < y.id ? -1 : 1))) pushBox(pos, idx, s.pos, s.size);
   for (const e of [...b.entities].sort((x, y) => (x.id < y.id ? -1 : 1))) {
-    if (e.kind === "npc" || (e.body === "fixed" && e.shape !== "none")) pushBox(pos, idx, e.pos, e.size);
+    if (e.kind !== "npc" && e.body === "fixed" && e.shape !== "none") pushBox(pos, idx, e.pos, e.size);
   }
   const { success, navMesh } = generateSoloNavMesh(pos, idx, {
     cs: CS,
@@ -78,6 +81,10 @@ export function buildNav(b: WorldBundle): NavWorld {
       const ez = last.z - to[2];
       if (ex * ex + ez * ez > 1.0) return null;
       return r.path.map((p) => [p.x, p.y, p.z] as Vec3);
+    },
+    nearest(p) {
+      const r = query.findClosestPoint({ x: p[0], y: p[1], z: p[2] }, { halfExtents: { x: 4, y: 6, z: 4 } });
+      return r.success && r.polyRef ? [r.point.x, r.point.y, r.point.z] : null;
     },
     destroy() {
       query.destroy();

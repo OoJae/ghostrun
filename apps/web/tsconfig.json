@@ -23,6 +23,9 @@
   ],
   "references": [
     {
+      "path": "../../packages/bots"
+    },
+    {
       "path": "../../packages/ir"
     },
     {

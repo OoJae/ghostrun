@@ -129,6 +129,9 @@ importers:
       '@dimforge/rapier3d-deterministic':
         specifier: 'catalog:'
         version: 0.21.0
+      '@ghostrun/bots':
+        specifier: workspace:*
+        version: link:../../packages/bots
       '@ghostrun/ir':
         specifier: workspace:*
         version: link:../../packages/ir
@@ -184,6 +187,28 @@ importers:
       vite:
         specifier: 'catalog:'
         version: 8.3.5(@types/node@26.6.5)
+
+  packages/bots:
+    dependencies:
+      '@ghostrun/detmath':
+        specifier: workspace:*
+        version: link:../detmath
+      '@ghostrun/ir':
+        specifier: workspace:*
+        version: link:../ir
+      '@ghostrun/nav':
+        specifier: workspace:*
+        version: link:../nav
+      '@ghostrun/sim':
+        specifier: workspace:*
+        version: link:../sim
+    devDependencies:
+      '@ghostrun/layout':
+        specifier: workspace:*
+        version: link:../layout
+      '@ghostrun/pack-city-block':
+        specifier: workspace:*
+        version: link:../packs/city-block
 
   packages/detmath: {}
 
@@ -323,6 +348,9 @@ importers:
 
   packages/proof:
     dependencies:
+      '@ghostrun/bots':
+        specifier: workspace:*
+        version: link:../bots
       '@ghostrun/detmath':
         specifier: workspace:*
         version: link:../detmath
@@ -385,6 +413,9 @@ importers:
       '@dimforge/rapier3d-deterministic':
         specifier: 'catalog:'
         version: 0.21.0
+      '@ghostrun/bots':
+        specifier: workspace:*
+        version: link:../../packages/bots
       '@ghostrun/detmath':
         specifier: workspace:*
         version: link:../../packages/detmath
@@ -394,6 +425,9 @@ importers:
       '@ghostrun/layout':
         specifier: workspace:*
         version: link:../../packages/layout
+      '@ghostrun/nav':
+        specifier: workspace:*
+        version: link:../../packages/nav
       '@ghostrun/pack-city-block':
         specifier: workspace:*
         version: link:../../packages/packs/city-block

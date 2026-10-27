@@ -16,7 +16,16 @@ export interface SimOptions {
   playerTeam?: "red" | "blue";
   /** Override laws (T1/T3 use this to test "would it still work with one jump?"). */
   laws?: Partial<Laws>;
+  /** Drives the NPC characters; without one they stand still (T2 forced-state tests). */
+  brain?: Brain;
 }
+
+/** Called once at the start of every tick, before anything moves; returns each NPC's input. */
+export interface Brain {
+  think(w: SimWorld): ReadonlyMap<string, InputFrame>;
+}
+
+type Kcc = ReturnType<InstanceType<Rapier["World"]>["createCharacterController"]>;
 
 interface RtEnt {
   id: string;
@@ -46,6 +55,8 @@ export class SimWorld {
   readonly world: InstanceType<Rapier["World"]>;
   readonly laws: Laws;
   readonly player: PlayerController;
+  /** NPC characters: same capsule and controller as the player, driven by the brain. */
+  readonly npcs = new Map<string, PlayerController>();
   readonly ents = new Map<string, RtEnt>();
   readonly order: string[] = []; // deterministic iteration order (sorted ids, player included)
   readonly scores: Record<string, number> = { "team:red": 0, "team:blue": 0 };
@@ -58,6 +69,9 @@ export class SimWorld {
   #lastFire = new Map<string, number>();
   #inside = new Map<string, Set<string>>(); // sensor id → movers inside
   #bundle: WorldBundle;
+  #brain: Brain | undefined;
+  #tagRadius = 0; // > 0 when the world has a tag_drop verb: any agent tags an enemy carrier
+  #noPickup = new Map<string, number>(); // agent → first tick it may pick up again (after a tag)
 
   constructor(R: Rapier, bundle: WorldBundle, opts: SimOptions = {}) {
     this.R = R;
@@ -65,6 +79,8 @@ export class SimWorld {
     this.laws = clampLaws({ ...bundle.laws, ...opts.laws });
     this.world = new R.World({ x: 0, y: -9.81 * this.laws.gravityScale, z: 0 });
     this.world.timestep = DT;
+    this.#brain = opts.brain;
+    for (const v of bundle.verbs) if (v.verb.endsWith(".tag_drop")) this.#tagRadius = Math.max(this.#tagRadius, Number(v.params.radius ?? 1.2) || 1.2);
 
     const fixed = this.world.createRigidBody(R.RigidBodyDesc.fixed());
     for (const s of byId(bundle.statics)) {
@@ -89,12 +105,7 @@ export class SimWorld {
     const start: Vec3 = [sp[0], sp[1] + PLAYER_HALF_HEIGHT + PLAYER_RADIUS + 0.05, sp[2]];
     const pBody = this.world.createRigidBody(R.RigidBodyDesc.kinematicPositionBased().setTranslation(start[0], start[1], start[2]));
     const pCol = this.world.createCollider(R.ColliderDesc.capsule(PLAYER_HALF_HEIGHT, PLAYER_RADIUS), pBody);
-    const kcc = this.world.createCharacterController(0.01);
-    kcc.enableAutostep(0.4, 0.2, true);
-    kcc.enableSnapToGround(0.3);
-    kcc.setMaxSlopeClimbAngle(0.7853981633974483); // 45°
-    kcc.setApplyImpulsesToDynamicBodies(true);
-    this.player = new PlayerController(pBody, pCol, kcc, this.laws);
+    this.player = new PlayerController(pBody, pCol, this.#kcc(), this.laws);
     this.ents.set("player", {
       id: "player", kind: "player", team, body: pBody, col: pCol, size: [PLAYER_RADIUS * 2, 1.8, PLAYER_RADIUS * 2], home: start,
       state: "", init: "", carrier: "", carrying: "", sensor: false, mover: true, agent: true, carryable: false, destroyed: false, props: {}, osc: null,
@@ -105,13 +116,29 @@ export class SimWorld {
     this.#rules = [...bundle.rules].sort((a, b) => b.prio - a.prio || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
   }
 
+  #kcc(): Kcc {
+    const kcc = this.world.createCharacterController(0.01);
+    kcc.enableAutostep(0.4, 0.2, true);
+    kcc.enableSnapToGround(0.3);
+    kcc.setMaxSlopeClimbAngle(0.7853981633974483); // 45°
+    kcc.setApplyImpulsesToDynamicBodies(true);
+    return kcc;
+  }
+
   #spawnEntity(e: Entity, carryable: boolean): RtEnt {
     const R = this.R;
     const [sx, sy, sz] = e.size;
     let body: RigidBody | null = null;
     let col: Collider | null = null;
+    let home: Vec3 = e.pos;
     const physical = e.body === "fixed" || e.body === "dynamic" || e.body === "kinematic";
-    if (physical) {
+    if (e.kind === "npc" && physical) {
+      // feet on the floor the placer put it on, centre where the player's would be
+      home = [e.pos[0], e.pos[1] - sy / 2 + PLAYER_HALF_HEIGHT + PLAYER_RADIUS + 0.05, e.pos[2]];
+      body = this.world.createRigidBody(R.RigidBodyDesc.kinematicPositionBased().setTranslation(home[0], home[1], home[2]));
+      col = this.world.createCollider(R.ColliderDesc.capsule(PLAYER_HALF_HEIGHT, PLAYER_RADIUS), body);
+      this.npcs.set(e.id, new PlayerController(body, col, this.#kcc(), this.laws));
+    } else if (physical) {
       const desc =
         e.body === "dynamic" ? R.RigidBodyDesc.dynamic() : e.body === "kinematic" ? R.RigidBodyDesc.kinematicPositionBased() : R.RigidBodyDesc.fixed();
       body = this.world.createRigidBody(desc.setTranslation(e.pos[0], e.pos[1], e.pos[2]));
@@ -124,7 +151,7 @@ export class SimWorld {
       col = this.world.createCollider(shape, body);
     }
     return {
-      id: e.id, kind: e.kind, team: e.team, body, col, size: e.size, home: e.pos, state: e.init, init: e.init,
+      id: e.id, kind: e.kind, team: e.team, body, col, size: e.size, home, state: e.init, init: e.init,
       carrier: "", carrying: "", sensor: e.body === "sensor", mover: e.body === "dynamic" || e.kind === "npc" || e.kind === "vehicle",
       agent: e.kind === "npc", carryable, destroyed: false, props: e.props, osc: null,
     };
@@ -161,6 +188,8 @@ export class SimWorld {
     e.body.setTranslation({ x: p[0], y: p[1], z: p[2] }, true);
     if (e.body.isKinematic()) e.body.setNextKinematicTranslation({ x: p[0], y: p[1], z: p[2] });
     e.body.setLinvel({ x: 0, y: 0, z: 0 }, true);
+    const c = id === "player" ? this.player : this.npcs.get(id);
+    if (c) c.vx = c.vy = c.vz = 0;
   }
 
   attach(itemId: string, carrierId: string) {
@@ -186,24 +215,15 @@ export class SimWorld {
       evs.push({ tick: t, k, a, b, v, rule, cause });
     };
 
-    // 1. player movement (ignores the item it carries)
-    const playerCarry = this.ents.get("player")!.carrying;
-    const carriedHandle = playerCarry ? this.ents.get(playerCarry)!.col?.handle : undefined;
-    // Compare handles only: calling collider methods here would re-borrow Rapier's collider set
-    // while the KCC holds it. Sensors have no physics colliders in this world.
-    const pc = this.ents.get("player")!.col!;
-    const c = this.player.step(
-      input,
-      (col) => col.handle === carriedHandle,
-      (headY, up) => {
-        const p = this.player.body.translation();
-        const ray = new this.R.Ray({ x: p.x, y: headY + 0.001, z: p.z }, { x: 0, y: 1, z: 0 });
-        return this.world.castRay(ray, up, true, undefined, undefined, pc, undefined, (col) => col.handle !== carriedHandle) !== null;
-      },
-    );
+    // 0. the cast decides from where everything stood at the end of the last tick
+    const npcIn = this.#brain?.think(this);
+
+    // 1. characters move, the player first, then NPCs in id order
+    const c = this.#move("player", this.player, input);
     if (c.jumped) push("jump", "player");
     if (c.airJumped) push("air_jump", "player", "", this.player.jumpsUsed);
     if (c.landed) push("land", "player");
+    for (const [id, ctrl] of this.npcs) if (!this.ents.get(id)!.destroyed) this.#move(id, ctrl, npcIn?.get(id) ?? null);
 
     // 2. kinematic motion: carried items follow carriers; oscillating platforms
     for (const id of this.order) {
@@ -224,14 +244,31 @@ export class SimWorld {
     // 3. physics
     this.world.step();
 
-    // 4. triggers, in id order
+    // 4. triggers, in id order. Tags first: an agent within reach of an enemy carrier knocks the
+    // item loose on the floor between them, so the tagger can take it this tick.
+    if (this.#tagRadius > 0) {
+      for (const cid of this.order) {
+        const cr = this.ents.get(cid)!;
+        if (!cr.carrying || cr.destroyed || !cr.team) continue;
+        for (const tid of this.order) {
+          const tg = this.ents.get(tid)!;
+          if ((!tg.agent && tid !== "player") || tg.destroyed || !tg.team || tg.team === cr.team) continue;
+          if (!this.#near(tid, cid, this.#tagRadius)) continue;
+          const item = cr.carrying;
+          this.#drop(item, cid, tid);
+          push("tag", tid, cid);
+          push("drop", item, cid);
+          break;
+        }
+      }
+    }
     for (const itemId of this.order) {
       const item = this.ents.get(itemId)!;
       if (!item.carryable || item.carrier || item.destroyed) continue;
       for (const agentId of this.order) {
         const ag = this.ents.get(agentId)!;
         if (!ag.agent && agentId !== "player") continue;
-        if (ag.carrying || ag.destroyed) continue;
+        if (ag.carrying || ag.destroyed || (this.#noPickup.get(agentId) ?? 0) > t) continue;
         if (this.#touching(agentId, itemId)) {
           this.attach(itemId, agentId);
           push("pickup", itemId, agentId);
@@ -291,6 +328,43 @@ export class SimWorld {
 
     this.log.push(...evs);
     return evs;
+  }
+
+  /** One character tick; the KCC ignores the item this character carries. */
+  #move(id: string, ctrl: PlayerController, input: InputFrame | null) {
+    const carry = this.ents.get(id)!.carrying;
+    const carriedHandle = carry ? this.ents.get(carry)!.col?.handle : undefined;
+    // Compare handles only: calling collider methods here would re-borrow Rapier's collider set
+    // while the KCC holds it. Sensors have no physics colliders in this world.
+    return ctrl.step(
+      input,
+      (col) => col.handle === carriedHandle,
+      (headY, up) => {
+        const p = ctrl.body.translation();
+        const ray = new this.R.Ray({ x: p.x, y: headY + 0.001, z: p.z }, { x: 0, y: 1, z: 0 });
+        return this.world.castRay(ray, up, true, undefined, undefined, ctrl.collider, undefined, (col) => col.handle !== carriedHandle) !== null;
+      },
+    );
+  }
+
+  #near(a: string, b: string, r: number): boolean {
+    const p = this.pos(a);
+    const q = this.pos(b);
+    const dx = p[0] - q[0];
+    const dz = p[2] - q[2];
+    return dx * dx + dz * dz <= r * r && Math.abs(p[1] - q[1]) <= 1.4;
+  }
+
+  #drop(itemId: string, carrierId: string, towardId: string) {
+    const item = this.ents.get(itemId)!;
+    item.carrier = "";
+    this.ents.get(carrierId)!.carrying = "";
+    item.body?.setBodyType(this.R.RigidBodyType.Dynamic, true);
+    const a = this.pos(carrierId);
+    const b = this.pos(towardId);
+    const floor = a[1] - PLAYER_HALF_HEIGHT - PLAYER_RADIUS;
+    this.teleport(itemId, [(a[0] + b[0]) / 2, floor + Math.max(...item.size) / 2 + 0.02, (a[2] + b[2]) / 2]);
+    this.#noPickup.set(carrierId, this.tick + 60); // the one who lost it can't grab it straight back
   }
 
   #touching(agentId: string, itemId: string): boolean {
@@ -446,6 +520,7 @@ export class SimWorld {
   free() {
     // The character controller borrows the collider set; release it before the world.
     this.world.removeCharacterController(this.player.kcc);
+    for (const c of this.npcs.values()) this.world.removeCharacterController(c.kcc);
     this.world.free();
   }
 }

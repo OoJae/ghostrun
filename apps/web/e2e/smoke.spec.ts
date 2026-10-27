@@ -41,6 +41,12 @@ test("CTF brief renders, walks and jumps on the WebGL2 path", async ({ page }) =
   await page.keyboard.up("KeyW");
   await page.waitForFunction((x0) => (window.__GHOSTRUN__.player?.[0] ?? x0) > x0 + 2, start.player![0], { timeout: 5_000 });
 
+  // The cast plays too: the rivals leave their spawn pad for the orb.
+  await page.waitForFunction(() => {
+    const r = window.__GHOSTRUN__.cast?.rival_1;
+    return r !== undefined && r[0] < 30;
+  }, null, { timeout: 10_000 });
+
   // Jump: the capsule leaves the ground.
   const y0 = (await probe(page)).player![1];
   await page.keyboard.press("Space");
