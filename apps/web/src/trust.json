@@ -173,34 +173,34 @@
   }
  ],
  "fool": {
-  "worlds": 144,
-  "planted": 367,
-  "caught": 367,
+  "worlds": 164,
+  "planted": 417,
+  "caught": 417,
   "byTier": {
-   "T0": 175,
-   "T3": 180,
+   "T0": 198,
+   "T3": 207,
    "T1": 12
   },
   "byKind": {
    "impossible_condition": {
-    "planted": 144,
-    "caught": 144
+    "planted": 164,
+    "caught": 164
    },
    "five_second_timer": {
-    "planted": 92,
-    "caught": 92
+    "planted": 103,
+    "caught": 103
    },
    "goal_in_the_sky": {
-    "planted": 80,
-    "caught": 80
+    "planted": 95,
+    "caught": 95
    },
    "item_gone": {
-    "planted": 34,
-    "caught": 34
+    "planted": 37,
+    "caught": 37
    },
    "no_jump": {
-    "planted": 17,
-    "caught": 17
+    "planted": 18,
+    "caught": 18
    }
   }
  }
