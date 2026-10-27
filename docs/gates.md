@@ -102,7 +102,7 @@ All five are identical. **A proof computed at the edge is valid in the judge's b
 
 | Ticks | State hash | Event-log hash | Events | Scores | Runtimes |
 |---|---|---|---|---|---|
-| 2,000 | `7356059b` | `d9881845` | 88 | red 1, blue 2 | all 5 identical |
-| 10,000 | `6c485f57` | `88ef8300` | 134 | red 1, blue 3 (blue wins) | all 5 identical |
+| 2,000 | `59f5b58f` | `d9881845` | 88 | red 1, blue 2 | all 5 identical |
+| 10,000 | `f9f49770` | `88ef8300` | 134 | red 1, blue 3 (blue wins) | all 5 identical |
 
-Recast path queries inside the tick are bit-exact on every runtime too, so **a proof the edge ran against the bots holds for the bots in the judge's browser.** The T3 receipt on the CTF brief: 12 of 12 AI runners won against 3 bots, AI par 36.9 s (26.2 s against static NPCs).
+State hashes re-baselined later the same night when signs became decor (no collider); the event logs are unchanged. Recast path queries inside the tick are bit-exact on every runtime too, so **a proof the edge ran against the bots holds for the bots in the judge's browser.** The T3 receipt on the CTF brief: 12 of 12 AI runners won against 3 bots, AI par 36.9 s (26.2 s against static NPCs).
