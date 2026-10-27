@@ -1,0 +1,84 @@
+// GHOSTRUN edge: one Worker on one origin. Static assets (the web app build) are served for every
+// path except /v1/*, which runs the Worker (this API). The spend governor is a SQLite-backed
+// Durable Object (one instance, "global"). The top level is for `wrangler dev` only: always deploy
+// with an explicit env (`wrangler deploy --env staging|production`), run from apps/edge-api.
+//
+// The Worker is pre-bundled by Vite (scripts/build.mjs, run by `build.command`) and uploaded as-is,
+// so the deployed file is built exactly like the one `pnpm --filter @ghostrun/edge-api test:workerd` runs.
+//
+// Secrets: never in this file. Set per env: `wrangler secret put <NAME> --env <env>`.
+//   CEREBRAS_API_KEY    Cerebras inference key; never leaves the server.
+//   TURNSTILE_SECRET    Turnstile widget secret key. Its presence closes the gate: /v1/build, /v1/share,
+//                       /v1/report and /v1/wrong then need the session cookie or a judge token.
+//   SESSION_SECRET      ≥32 random bytes. Signs the 30-minute session cookie; keys the IP hashes.
+//   JUDGE_TOKEN_KEY     ≥32 random bytes. HMAC key for judge tokens (`pnpm --filter @ghostrun/edge-api judge-token`).
+//   JUDGE_TOKEN_HASHES  Comma list of `[judge:|dev:|canary:]hex(HMAC-SHA256(JUDGE_TOKEN_KEY, token))`.
+//   NTFY_URL            Optional ntfy topic URL (the topic name is the secret): pool alerts at 50%/80%, abuse reports.
+// Local dev only (in .dev.vars, never on a deployed env): DEV_OPEN=1 opens the gate for localhost when
+// TURNSTILE_SECRET is unset. It is ignored for any other hostname.
+//
+// Vars (all optional; code defaults shown): CAP_SESSION_JUDGE_USD 0.60, CAP_SESSION_PUBLIC_USD 0.15,
+// CAP_IP_DAY_USD 0.30 (public pool), CAP_POOL_{JUDGE,PUBLIC,DEV,CANARY}_USD 40/25/5/2 (lifetime),
+// BUILDS_PER_WINDOW 30 (tokenless), RATE_PER_WINDOW 60, JUDGE_FALLBACK_PER_WINDOW 10 (per isolate per 10 min),
+// GOVERNOR_TIMEOUT_MS 300, TURNSTILE_SITEKEY (echoed by /v1/health), TURNSTILE_HOSTNAMES (comma list).
+// Kill switch: any value at key "builds:paused" in FLAGS pauses new builds within ~60 s, no deploy.
+{
+  "name": "ghostrun-edge",
+  "main": "dist/worker/index.js",
+  "no_bundle": true,
+  "build": { "command": "node scripts/build.mjs", "watch_dir": "src" },
+  "compatibility_date": "2026-10-19",
+  "observability": { "enabled": true },
+  "assets": {
+    "directory": "../web/dist/app",
+    "run_worker_first": ["/v1/*"],
+    "not_found_handling": "single-page-application"
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["GovernorDO"] }],
+
+  "durable_objects": { "bindings": [{ "name": "GOVERNOR", "class_name": "GovernorDO" }] },
+  "kv_namespaces": [{ "binding": "FLAGS", "id": "TODO(owner)" }],
+  "r2_buckets": [{ "binding": "SHARES", "bucket_name": "ghostrun-shares-dev" }],
+  "vars": { "TURNSTILE_SITEKEY": "1x00000000000000000000AA" },
+
+  "env": {
+    "staging": {
+      "name": "ghostrun-edge-staging",
+      "durable_objects": { "bindings": [{ "name": "GOVERNOR", "class_name": "GovernorDO" }] },
+      // TODO(owner): `wrangler kv namespace create FLAGS --env staging`, paste the id.
+      "kv_namespaces": [{ "binding": "FLAGS", "id": "TODO(owner)" }],
+      // TODO(owner): `wrangler r2 bucket create ghostrun-shares-staging`.
+      "r2_buckets": [{ "binding": "SHARES", "bucket_name": "ghostrun-shares-staging" }],
+      "vars": {
+        // TODO(owner): the staging widget's sitekey (or Cloudflare's always-pass test pair for a smoke test).
+        "TURNSTILE_SITEKEY": "TODO(owner)",
+        "CAP_POOL_JUDGE_USD": "2",
+        "CAP_POOL_PUBLIC_USD": "1",
+        "CAP_POOL_DEV_USD": "1",
+        "CAP_POOL_CANARY_USD": "1"
+      }
+    },
+    "production": {
+      "name": "ghostrun-edge-production",
+      // TODO(owner): attach the public hostname, e.g. "routes": [{ "pattern": "<host>", "custom_domain": true }].
+      "durable_objects": { "bindings": [{ "name": "GOVERNOR", "class_name": "GovernorDO" }] },
+      // TODO(owner): `wrangler kv namespace create FLAGS --env production`, paste the id.
+      "kv_namespaces": [{ "binding": "FLAGS", "id": "TODO(owner)" }],
+      // TODO(owner): `wrangler r2 bucket create ghostrun-shares`.
+      "r2_buckets": [{ "binding": "SHARES", "bucket_name": "ghostrun-shares" }],
+      "vars": {
+        // TODO(owner): the production widget's sitekey and the hostname(s) it is served on.
+        "TURNSTILE_SITEKEY": "TODO(owner)",
+        "TURNSTILE_HOSTNAMES": "TODO(owner)",
+        // Budget: $72 of pool caps under the $100 total, the rest is headroom.
+        "CAP_SESSION_JUDGE_USD": "0.60",
+        "CAP_SESSION_PUBLIC_USD": "0.15",
+        "CAP_IP_DAY_USD": "0.30",
+        "CAP_POOL_JUDGE_USD": "40",
+        "CAP_POOL_PUBLIC_USD": "25",
+        "CAP_POOL_DEV_USD": "5",
+        "CAP_POOL_CANARY_USD": "2"
+      }
+    }
+  }
+}
