@@ -225,3 +225,21 @@ test("VR (emulated Quest 3): enter VR, the left stick walks, A jumps", async ({ 
   // null (a real headset gives an opaque framebuffer object). Rendering is checked on a real Quest.
   expect(errors.filter((e) => !e.includes("Invalid value used as weak map key"))).toEqual([]);
 });
+
+test("result card: a win shows the time against the AI par, and R plays again", async ({ page }) => {
+  const errors = collectErrors(page);
+  await page.goto("/?gl=webgl2&fx=0&dpr=0.5&prewarm=0&fixture=heist"); // a recorded world whose win is near the spawn
+  await page.waitForFunction(() => window.__GHOSTRUN__?.ready === true, null, { timeout: 90_000 });
+  const keys = ["KeyW", "KeyD", "KeyS", "KeyA"];
+  for (let i = 0; i < 20 && !(await page.getByTestId("result").count()); i++) {
+    await page.keyboard.down(keys[i % 4]!);
+    await page.waitForTimeout(900);
+    await page.keyboard.up(keys[i % 4]!);
+  }
+  await expect(page.getByTestId("result")).toContainText("You win");
+  await expect(page.getByTestId("result")).toContainText("AI runners");
+  await page.keyboard.press("KeyR");
+  await expect(page.getByTestId("result")).toHaveCount(0);
+  await page.waitForFunction(() => (window.__GHOSTRUN__.tick ?? 999) < 300, null, { timeout: 10_000 });
+  expect(errors).toEqual([]);
+});

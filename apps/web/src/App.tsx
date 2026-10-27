@@ -5,6 +5,7 @@ import { Engine, type LoadResult } from "./engine";
 import { KeyHint } from "./hud/Corner";
 import { TouchControls } from "./hud/Touch";
 import { XRay } from "./hud/XRay";
+import { ResultCard, type RunResult } from "./hud/Result";
 import { IntentCard } from "./hud/IntentCard";
 import { PromptBar } from "./hud/PromptBar";
 import { ProofBadge, ReceiptPanel, RepairChip, type ProofState, type RepairState } from "./hud/Proof";
@@ -70,6 +71,7 @@ export function App() {
   const minds = useRef<Minds | null>(null);
   const [bark, setBark] = useState<{ name: string; line: string; at: number } | null>(null);
   const [talking, setTalking] = useState<{ npc: string; name: string } | null>(null);
+  const [result, setResult] = useState<RunResult | null>(null);
   const [said, setSaid] = useState("");
   const [reported, setReported] = useState<string>();
   const pending = useRef(new Map<number, { onChip?: (c: Chip) => void; resolve: (r: Receipt) => void; reject: (e: Error) => void }>());
@@ -145,6 +147,7 @@ export function App() {
       setScore({ red: 0, blue: 0, result: null });
       current.current = world;
       setReported(undefined);
+      setResult(null);
       const result = await e.load(world, startedAt);
       if (id !== runId.current) return;
       setTiming({ ttffMs: result.ttffMs, splits: [...extra, ...result.splits] });
@@ -161,7 +164,10 @@ export function App() {
           minds.current?.observe(evs);
           for (const ev of evs) {
             if (ev.k === "score") setScore((s) => ({ ...s, [ev.a === "team:blue" ? "blue" : "red"]: Number(ev.v) }));
-            if (ev.k === "win" || ev.k === "lose") setScore((s) => ({ ...s, result: ev.k }));
+            if (ev.k === "win" || ev.k === "lose") {
+              setScore((s) => ({ ...s, result: ev.k }));
+              setResult({ k: ev.k, tick: ev.tick, rule: ev.rule });
+            }
             if (ev.k === "touch" && ev.a === "player" && ev.v) setToast(String(ev.v)); // an inspected exhibit's text
           }
         };
@@ -277,6 +283,7 @@ export function App() {
       if (ev.target instanceof HTMLInputElement || ev.target instanceof HTMLTextAreaElement) return;
       if (ev.code === "KeyP") setReceiptOpen((o) => !o);
       if (ev.code === "KeyX") setXray((o) => !o);
+      if (ev.code === "KeyR") againRef.current();
       if (ev.code === "KeyT") {
         const npc = minds.current?.nearby();
         if (npc) {
@@ -327,6 +334,26 @@ export function App() {
     return () => clearTimeout(t);
   }, [hint, timing]);
 
+  const shareRun = async () => {
+    const w = current.current;
+    const sim = engine.current?.rapierSim;
+    if (!w || !sim || !specHash) return setToast("Nothing to share yet.");
+    const url = await createShare(w, specHash, sim.inputs, sim.minds);
+    if (!url) return setToast("Sharing needs the live service, which isn't reachable.");
+    await navigator.clipboard?.writeText(url).catch(() => undefined);
+    setToast(`Link copied: ${url}`);
+  };
+
+  /** The same world from the top: a fresh run (and a fresh proof of the same spec). */
+  const again = () => {
+    const w = current.current;
+    if (!w) return;
+    setResult(null);
+    void show(w, ++runId.current, performance.now(), []);
+  };
+  const againRef = useRef(again);
+  againRef.current = again;
+
   const submit = (text: string) => {
     setCollapsed(false);
     run(text, performance.now(), [], mode === "live").catch((err: unknown) => {
@@ -374,6 +401,9 @@ export function App() {
           </div>
         )}
         {toast && <div className="glass toast" role="status">{toast}</div>}
+        {result && current.current && (
+          <ResultCard result={result} bundle={current.current.bundle} par={proof.receipt?.par?.goldS ?? null} onAgain={again} onShare={() => void shareRun()} />
+        )}
         {bark && (
           <div className="glass bark" data-testid="bark">
             <b>{bark.name}:</b> {bark.line}
@@ -446,15 +476,7 @@ export function App() {
             proof={proof}
             onClose={() => setReceiptOpen(false)}
             reported={reported}
-            onShare={async () => {
-              const w = current.current;
-              const sim = engine.current?.rapierSim;
-              if (!w || !sim || !specHash) return setToast("Nothing to share yet.");
-              const url = await createShare(w, specHash, sim.inputs, sim.minds);
-              if (!url) return setToast("Sharing needs the live service, which isn't reachable.");
-              await navigator.clipboard?.writeText(url).catch(() => undefined);
-              setToast(`Link copied: ${url}`);
-            }}
+            onShare={shareRun}
             onWrong={async (note) => {
               const sim = engine.current?.rapierSim;
               if (!specHash) return;
