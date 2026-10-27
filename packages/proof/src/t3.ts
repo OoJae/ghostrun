@@ -171,7 +171,14 @@ function walkTo(sim: SimWorld, nav: NavWorld, goal: Target, rng: () => number, s
       path = (near && nav.path(feet, near)) || [aim];
     }
     if (!path) return null;
-    const jittered = path.map((p, i) => (i === path.length - 1 ? p : ([p[0] + (rng() - 0.5) * 0.3, p[1], p[2] + (rng() - 0.5) * 0.3] as Vec3)));
+    // seeded variety in the line each runner takes, but never beside a wall: a 0.9 m doorway leaves
+    // a 0.7 m runner 0.1 m a side, and a waypoint nudged 0.15 m walks it into the jamb
+    const nearWall = (q: Vec3) => Boolean(b?.statics.some((st) => st.surf === "wall" && Math.abs(q[0] - st.pos[0]) < st.size[0] / 2 + 0.8 && Math.abs(q[2] - st.pos[2]) < st.size[2] / 2 + 0.8 && q[1] < st.pos[1] + st.size[1] / 2));
+    const jittered = path.map((p, i) => {
+      const dx = (rng() - 0.5) * 0.3;
+      const dz = (rng() - 0.5) * 0.3;
+      return i === path.length - 1 || nearWall(p) ? p : ([p[0] + dx, p[1], p[2] + dz] as Vec3);
+    });
     const l = leapify(jittered);
     jumps = l.jumps;
     return l.pts;
@@ -185,6 +192,7 @@ function walkTo(sim: SimWorld, nav: NavWorld, goal: Target, rng: () => number, s
   let lastProgressTick = sim.tick;
   let best = Infinity;
   let leapNow = false;
+  let hopAt = 0;
   while (budget.ticks > 0 && !sim.result) {
     if (stop()) return true;
     if (moving && sim.tick >= replanAt) {
@@ -232,6 +240,20 @@ function walkTo(sim: SimWorld, nav: NavWorld, goal: Target, rng: () => number, s
       trace?.(`  jumping a low hazard at ${v1(p)}`);
       btn = BTN.JUMP;
       leapNow = false;
+    }
+    // a closed door or gate well under jump height just ahead (a waist-high vault door): hop it,
+    // as anyone would
+    if (b && !btn && sim.player.grounded && sim.tick >= hopAt) {
+      const len = Math.sqrt(ux * ux + uz * uz) || 1;
+      const ahead: Vec3 = [p[0] + (ux / len) * 1.6, p[1], p[2] + (uz / len) * 1.6];
+      const top = apex(sim.laws, sim.laws.jumpsMax) - 0.4;
+      // (never from on top of it: a hop from there lands back on it)
+      const low = b.entities.find((d) => d.kind === "door" && d.size[1] <= top && sim.entity(d.id)?.col?.isEnabled() && Math.abs(d.pos[1] - d.size[1] / 2 - (p[1] - 0.9)) < 0.5 && !inBox(p[0], p[2], d, 0.45) && crosses(p, ahead, d.pos, d.size));
+      if (low) {
+        trace?.(`  hopping ${low.id} (${low.size[1]} m) at ${v1(p)}`);
+        btn = BTN.JUMP;
+        hopAt = sim.tick + 40;
+      }
     }
     if (b) [wx, wz] = lean(b, sim.laws.speed, p, wx, wz);
     sim.step({ tick: sim.tick + 1, wx, wz, btn });
@@ -595,7 +617,11 @@ function clearDoors(r: Run, target: Vec3) {
       if (!e || e.destroyed || passable || !crosses(path[i - 1]!, path[i]!, d.pos, d.size)) continue;
       r.opened.add(d.id);
       trace?.(`door ${d.id} blocks the way: opening it`);
-      for (const st of r.openers.get(d.id) ?? []) if (perform(r, st) !== "ok") return;
+      for (const st of r.openers.get(d.id) ?? []) {
+        const res = perform(r, st);
+        trace?.(`  opener ${st.do} ${"item" in st ? st.item : "at" in st ? st.at : "sensor" in st ? st.sensor : ""} → ${res} at ${v1(r.sim.pos("player"))}${"want" in st && st.want ? ` (${st.want.id} ${r.sim.entity(st.want.id)?.state})` : ""}`);
+        if (res !== "ok") return;
+      }
     }
   }
 }
@@ -627,6 +653,24 @@ const spotBy = (r: Run, id: string): Vec3 => {
   spots.sort((u, v) => d2h(u, p) - d2h(v, p));
   return spots.find((q) => r.nav.path(feet, q)) ?? spots[0] ?? r.nav.nearest([e.pos[0], floor, e.pos[2]]) ?? e.pos;
 };
+
+/**
+ * Two things in reach and USE takes the nearer: a sculpture with its guide beside it. Step toward
+ * the one wanted until it is the one USE would pick (or it's right there).
+ */
+function closeIn(r: Run, id: string): boolean {
+  const { sim } = r;
+  for (let k = 0; k < 45 && r.budget.ticks > 0 && !sim.result; k++, r.budget.ticks--) {
+    if (sim.usable()?.on === id) return true;
+    const p = sim.pos("player");
+    const q = sim.pos(id);
+    const dx = q[0] - p[0];
+    const dz = q[2] - p[2];
+    const d = Math.sqrt(dx * dx + dz * dz) || 1;
+    sim.step({ tick: sim.tick + 1, wx: Math.round((dx / d) * 60), wz: Math.round((dz / d) * 60), btn: 0 });
+  }
+  return sim.usable()?.on === id;
+}
 
 /** Execute one plan step in physics; "lost" means a carried item was taken (start over). */
 function perform(r: Run, st: PlanStep): "ok" | "lost" | "stuck" {
@@ -729,6 +773,7 @@ function perform(r: Run, st: PlanStep): "ok" | "lost" | "stuck" {
         go(spot, () => sim.usable()?.on === st.at || done());
         // arrived mid-hop (an unsticking jump): come down first, it's out of reach from the air
         for (let k = 0; k < 60 && !sim.player.grounded && sim.usable()?.on !== st.at && live(r); k++, budget.ticks--) sim.step(null);
+        if (sim.usable() && sim.usable()?.on !== st.at && !done()) closeIn(r, st.at);
         trace?.(`  use ${st.at} ${attempt}: spot ${v1(typeof spot === "function" ? spot() : spot)}, at ${v1(sim.pos("player"))}, usable ${sim.usable()?.on ?? "-"}`);
         if (sim.usable()?.on !== st.at || !live(r)) continue;
         sim.step({ tick: sim.tick + 1, wx: 0, wz: 0, btn: BTN.USE });
@@ -1091,39 +1136,48 @@ function t3Runs(R: Rapier, b: WorldBundle, nav: NavWorld, chain: WinChain | null
  * inspected, nearest first, and uses it. Played, k of n reached; anything it can't reach is the
  * counterexample (a sealed room, an exhibit inside a wall).
  */
-export function tour(R: Rapier, b: WorldBundle, nav: NavWorld): Chip | null {
+export function tour(R: Rapier, b: WorldBundle, nav: NavWorld, openers: ReadonlyMap<string, PlanStep[]> = new Map()): Chip | null {
   leap = leapFor(b);
   try {
-    return tourRun(R, b, nav);
+    return tourRun(R, b, nav, openers);
   } finally {
     leap?.free();
     leap = null;
   }
 }
 
-function tourRun(R: Rapier, b: WorldBundle, nav: NavWorld): Chip | null {
+function tourRun(R: Rapier, b: WorldBundle, nav: NavWorld, openers: ReadonlyMap<string, PlanStep[]>): Chip | null {
   // what a visitor can always use: exhibits and switches (a lock needs its key, so it isn't a sight)
   const sights = [...new Set(b.verbs.filter((v) => (v.verb === "social.inspect" || v.verb === "puzzle.switch") && b.entities.some((e) => e.id === v.on)).map((v) => v.on))].sort();
   if (!sights.length) return null;
   const t0 = globalThis.performance?.now?.() ?? 0;
   const sim = new SimWorld(R, b, { brain: castBrain(nav, b) });
-  const r: Run = { sim, nav, b, rng: stream(b.seed, "t3:tour"), speed: 0.9, budget: { ticks: RUN_TICKS * 2 }, openers: new Map(), opened: new Set() };
+  // a visitor opens the doors on the way, as runners do
+  const r: Run = { sim, nav, b, rng: stream(b.seed, "t3:tour"), speed: 0.9, budget: { ticks: RUN_TICKS * 2 }, openers, opened: new Set() };
   const seen = new Set<string>();
   const used = () => {
     for (const e of sim.log) if (e.k === "touch" && e.a === "player") seen.add(e.b);
   };
-  const left = new Set(sights);
-  while (left.size && live(r)) {
-    const p = sim.pos("player");
-    const next = [...left].sort((x, y) => d2h(sim.pos(x), p) - d2h(sim.pos(y), p) || (x < y ? -1 : 1))[0]!;
-    left.delete(next);
-    dropDown(sim, b, sim.pos(next), r.budget); // perched on something: come down first
-    goTo(sim, nav, b, spotBy(r, next), r.rng, r.speed, r.budget, () => sim.usable()?.on === next);
-    if (sim.usable()?.on === next) {
-      sim.step({ tick: sim.tick + 1, wx: 0, wz: 0, btn: BTN.USE });
-      sim.step({ tick: sim.tick + 1, wx: 0, wz: 0, btn: 0 });
+  // nearest first; a second pass for anything missed (a door opened on the way, a better angle)
+  for (let pass = 0; pass < 2; pass++) {
+    const left = new Set(sights.filter((x) => !seen.has(x)));
+    while (left.size && live(r)) {
+      const p = sim.pos("player");
+      const next = [...left].sort((x, y) => d2h(sim.pos(x), p) - d2h(sim.pos(y), p) || (x < y ? -1 : 1))[0]!;
+      left.delete(next);
+      if (seen.has(next)) continue;
+      dropDown(sim, b, sim.pos(next), r.budget); // perched on something: come down first
+      const spot = spotBy(r, next);
+      clearDoors(r, spot);
+      goTo(sim, nav, b, spot, r.rng, r.speed, r.budget, () => sim.usable()?.on === next);
+      if (sim.usable()?.on !== next) closeIn(r, next);
+      trace?.(`tour ${next}: at ${v1(sim.pos("player"))}, usable ${sim.usable()?.on ?? "-"}`);
+      if (sim.usable()?.on === next) {
+        sim.step({ tick: sim.tick + 1, wx: 0, wz: 0, btn: BTN.USE });
+        sim.step({ tick: sim.tick + 1, wx: 0, wz: 0, btn: 0 });
+      }
+      used();
     }
-    used();
   }
   sim.free();
   const k = sights.filter((s) => seen.has(s)).length;

@@ -307,7 +307,7 @@ async function main() {
       const dir = join(root, name);
       const bench = JSON.parse(readFileSync(join(dir, "bench.json"), "utf8")) as { prompt: string; t3win?: string; playableMs?: number; controls?: number }[];
       const header = existsSync(join(root, "..", `prompts-${name}.txt`)) ? (readFileSync(join(root, "..", `prompts-${name}.txt`), "utf8").split("\n").find((l) => l.startsWith("#")) ?? "").replace(/^#\s*/, "") : "";
-      let play = 0, places = 0, firstPass = 0, now = 0;
+      let play = 0, places = 0, toured = 0, firstPass = 0, now = 0;
       const controls: number[] = [];
       for (const f of readdirSync(dir).filter((x) => x.endsWith(".fill.jsonl")).sort()) {
         const text = readFileSync(join(dir, f), "utf8");
@@ -315,7 +315,12 @@ async function main() {
         const seed = (JSON.parse(splitObjects(text.split("\n", 1)[0] ?? "{}")[0] ?? "{}") as { seed?: number }).seed ?? 7;
         const placed = placeFromFill(text, seed, saved.intent.pack, saved.intent.mode);
         if (saved.intent.mode === "wander") {
+          // a place is proved by its tour: an AI visitor walks to and uses everything in it
           places++;
+          const r = await prove(R, placed.bundle, { engine: ENGINE, runs: 12 }).catch(() => null);
+          const tour = r?.chips.find((c) => c.id === "T3:tour");
+          if (!tour || tour.status === "played") toured++;
+          else console.log(`  not toured: ${name}/${f.replace(".fill.jsonl", "")} · ${tour.k} of ${tour.n} (${tour.cx?.text ?? ""})`);
           continue;
         }
         play++;
@@ -338,8 +343,8 @@ async function main() {
       }
       const ms = bench.map((x) => x.playableMs).filter((x): x is number => typeof x === "number").sort((x, y) => x - y);
       const mid = (xs: number[]) => (xs.length ? xs[Math.floor(xs.length / 2)]! : null);
-      sets.push({ name, note: header, prompts: bench.length, play, places, firstPass, now, playableP50Ms: mid(ms), controlsP50: mid([...controls].sort((x, y) => x - y)) });
-      console.log(`${name}: ${play} play worlds, first pass ${firstPass}, now ${now}; ${places} places`);
+      sets.push({ name, note: header, prompts: bench.length, play, places, toured, firstPass, now, playableP50Ms: mid(ms), controlsP50: mid([...controls].sort((x, y) => x - y)) });
+      console.log(`${name}: ${play} play worlds, first pass ${firstPass}, now ${now}; ${places} places, ${toured} fully toured`);
     }
     // the planted-bug results (ghostrun fool) are kept until that is run again
     const fool = existsSync(out) ? (JSON.parse(readFileSync(out, "utf8")) as { fool?: unknown }).fool : undefined;

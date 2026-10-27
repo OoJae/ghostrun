@@ -37,7 +37,7 @@ export async function prove(R: Rapier, b: WorldBundle, opts: ProveOptions): Prom
     const s3 = t3(R, b, nav, s0.chain, opts.runs ?? 12, team, s0.openers);
     emit(s3.chips);
     if (b.mode === "wander") {
-      const t = tour(R, b, nav);
+      const t = tour(R, b, nav, s0.openers);
       if (t) emit([t]);
     }
     const headlineExpect = b.expects.find((x) => x.headline);

@@ -664,8 +664,11 @@ export function repairKits(b: WorldBundle): string[] {
       b.verbs.push(vb(uniqueId(b, `vb_${e.id}`), kit, e.id, kit === "motion_hazards.hazard" ? { respawn: true } : {}));
       notes.push(`${e.id}: added ${kit} (a ${e.kind} with no verb)`);
     }
-    // a door nothing opens (no lock, no rule) would be a wall across the way: it opens with USE
-    if (e.kind === "door" && !bound(e.id) && !b.rules.some((r) => r.then.some((x) => (x.e === "open" || (x.e === "set_state" && String(x.v) === "open")) && x.target === e.id))) {
+    // a door nothing opens (no lock, no rule; at most a line to inspect) would be a wall across the
+    // way: it opens with USE (the inspect line goes: USE can only do one thing)
+    const opens = (v: VerbBinding) => v.on === e.id && v.verb !== "social.inspect";
+    if (e.kind === "door" && !b.verbs.some(opens) && !b.rules.some((r) => r.then.some((x) => (x.e === "open" || (x.e === "set_state" && String(x.v) === "open")) && x.target === e.id))) {
+      b.verbs = b.verbs.filter((v) => v.on !== e.id);
       b.verbs.push(vb(uniqueId(b, `vb_${e.id}`), "puzzle.lock", e.id, { key: "" }));
       notes.push(`${e.id}: a door nothing opens; it opens with USE`);
     }
@@ -694,6 +697,15 @@ export function repairKits(b: WorldBundle): string[] {
     if (m <= cap) continue;
     v.params = { ...v.params, x: Math.round((x / m) * cap * 10) / 10, z: Math.round((z / m) * cap * 10) / 10 };
     notes.push(`${v.on}: wind eased from ${Math.round(m * 10) / 10} to ${cap} m/s (you walk at ${speed} m/s; any stronger and nobody gets across)`);
+  }
+  // 1a''. a pressure plate is something to stand on: one under 1.2 m across is pressed only by
+  // luck (it counts the moment your centre is over it)
+  for (const v of b.verbs) {
+    if (v.verb !== "puzzle.plate") continue;
+    const e = b.entities.find((x) => x.id === v.on);
+    if (!e || (e.size[0] >= 1.2 && e.size[2] >= 1.2)) continue;
+    e.size = [Math.max(1.2, e.size[0]), e.size[1], Math.max(1.2, e.size[2])];
+    notes.push(`${e.id}: plate grown to ${e.size[0]} × ${e.size[2]} m (something to stand on)`);
   }
   // 1b'. triggers that can't mean what they say:
   for (const r of b.rules) {

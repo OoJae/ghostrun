@@ -11,6 +11,8 @@ interface TrustSet {
   prompts: number;
   play: number;
   places: number;
+  /** Places where the AI visitor reached and used everything. */
+  toured?: number;
   firstPass: number;
   now: number;
   playableP50Ms: number | null;
@@ -72,7 +74,7 @@ export function TrustPanel({ onClose }: { onClose: () => void }) {
             <tr key={s.name} title={s.note}>
               <td>
                 {s.name}
-                {s.places ? <span className="muted"> (+{s.places} places)</span> : null}
+                {s.places ? <span className="muted" title="places to explore: how many an AI visitor fully toured (walked to and used everything)"> (+{s.places} places{s.toured !== undefined ? `, ${s.toured} fully toured` : ""})</span> : null}
               </td>
               <td>{s.play}</td>
               <td>{s.firstPass} of {s.play}</td>
