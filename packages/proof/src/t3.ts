@@ -6,7 +6,7 @@ import { clampLaws, type Expect, type Laws, type Vec3, type WorldBundle } from "
 import { buildNav, lowHazards, type NavWorld } from "@ghostrun/nav";
 import { castBrain } from "@ghostrun/bots";
 import { BTN, SimWorld, type Rapier } from "@ghostrun/sim";
-import type { PlanStep, Want, WinChain } from "./t0";
+import { carryables, type PlanStep, type Want, type WinChain } from "./t0";
 import { apex, gap, hopOk, hopRoute, reachAt, surfaceUnder as surfaceAt, surfaces, type Surface } from "./t1";
 import type { Chip } from "./types";
 
@@ -314,8 +314,47 @@ function hop(sim: SimWorld, nav: NavWorld, b: WorldBundle, a: Surface, n: Surfac
   const ncz = (n.min[1] + n.max[1]) / 2;
   const tx = clampTo(clampTo(ncx, a.min[0], a.max[0]), a.min[0] + 0.3, a.max[0] - 0.3);
   const tz = clampTo(clampTo(ncz, a.min[1], a.max[1]), a.min[1] + 0.3, a.max[1] - 0.3);
-  const ax = clampTo(clampTo(tx, n.min[0], n.max[0]), n.min[0] + Math.min(1.2, (n.max[0] - n.min[0]) / 2), n.max[0] - Math.min(1.2, (n.max[0] - n.min[0]) / 2));
-  const az = clampTo(clampTo(tz, n.min[1], n.max[1]), n.min[1] + Math.min(1.2, (n.max[1] - n.min[1]) / 2), n.max[1] - Math.min(1.2, (n.max[1] - n.min[1]) / 2));
+  let ax = clampTo(clampTo(tx, n.min[0], n.max[0]), n.min[0] + Math.min(1.2, (n.max[0] - n.min[0]) / 2), n.max[0] - Math.min(1.2, (n.max[0] - n.min[0]) / 2));
+  let az = clampTo(clampTo(tz, n.min[1], n.max[1]), n.min[1] + Math.min(1.2, (n.max[1] - n.min[1]) / 2), n.max[1] - Math.min(1.2, (n.max[1] - n.min[1]) / 2));
+  // a jump pad that isn't this hop's (one a fill put on the lane) throws you off the route, and a
+  // portal sends you back: land beside them, and walk around them where the ground is wide enough
+  const all = surfaces(b);
+  const portals = b.entities
+    .filter((e) => b.verbs.some((v) => v.on === e.id && v.verb === "puzzle.portal"))
+    .map((e): Surface => ({ id: e.id, zone: e.zone, top: e.pos[1] - e.size[1] / 2, min: [e.pos[0] - e.size[0] / 2, e.pos[2] - e.size[2] / 2], max: [e.pos[0] + e.size[0] / 2, e.pos[2] + e.size[2] / 2] }));
+  const pads = [...all.filter((x) => x.launch && x.id !== a.id && x.id !== n.id), ...portals];
+  const onPad = (x: number, z: number, top: number, m: number) => pads.find((d) => Math.abs(d.top - top) < 0.6 && x >= d.min[0] - m && x <= d.max[0] + m && z >= d.min[1] - m && z <= d.max[1] + m);
+  // they fire on the runner's centre: a quarter metre clear is enough
+  const clear = (x: number, z: number, top: number) => !onPad(x, z, top, 0.25);
+  const sideOf = (s: Surface, x: number, z: number, d: Surface): [number, number] | null => {
+    // the nearest spot on s beside d (left, right, before or after it), 0.35 m in from s's edges
+    const opts: [number, number][] = [[d.min[0] - 0.6, z], [d.max[0] + 0.6, z], [x, d.min[1] - 0.6], [x, d.max[1] + 0.6]];
+    const ok = opts
+      .map(([u, v]) => [clampTo(u, s.min[0] + 0.35, s.max[0] - 0.35), clampTo(v, s.min[1] + 0.35, s.max[1] - 0.35)] as [number, number])
+      .filter(([u, v]) => clear(u, v, s.top));
+    const dd = (q: [number, number]) => (q[0] - x) * (q[0] - x) + (q[1] - z) * (q[1] - z);
+    ok.sort((p, q) => dd(p) - dd(q));
+    return ok[0] ?? null;
+  };
+  const landPad = onPad(ax, az, n.top, 0.35);
+  if (landPad) [ax, az] = sideOf(n, ax, az, landPad) ?? [ax, az];
+  // nor on a loose thing lying there (landing at speed knocks a trophy off the deck): 1.2 m clear
+  const carry = carryables(b);
+  for (const e of b.entities) {
+    if (!carry.has(e.id) || e.body !== "dynamic" || sim.entity(e.id)?.carrier || sim.entity(e.id)?.destroyed) continue;
+    const q = sim.pos(e.id);
+    if (q[0] < n.min[0] || q[0] > n.max[0] || q[2] < n.min[1] || q[2] > n.max[1] || Math.abs(q[1] - n.top) > 1) continue;
+    const dx = ax - q[0];
+    const dz = az - q[2];
+    const d = Math.sqrt(dx * dx + dz * dz);
+    if (d >= 1.2) continue;
+    // back along the way we come in, staying on n
+    const ux = tx - q[0];
+    const uz = tz - q[2];
+    const ul = Math.sqrt(ux * ux + uz * uz) || 1;
+    ax = clampTo(q[0] + (ux / ul) * 1.2, n.min[0] + 0.3, n.max[0] - 0.3);
+    az = clampTo(q[2] + (uz / ul) * 1.2, n.min[1] + 0.3, n.max[1] - 0.3);
+  }
   const steer = (x: number, z: number, k: number, btn: number) => {
     const p = sim.pos("player");
     const ux = x - p[0];
@@ -324,13 +363,43 @@ function hop(sim: SimWorld, nav: NavWorld, b: WorldBundle, a: Surface, n: Surfac
     sim.step({ tick: sim.tick + 1, wx: Math.round(ux * s), wz: Math.round(uz * s), btn });
     budget.ticks--;
   };
-  const walkTo = (x: number, z: number, tol: number) => {
+  const walkStraight = (x: number, z: number, tol: number) => {
     for (let t = 0; t < 900 && budget.ticks > 0 && !sim.result; t++) {
       const p = sim.pos("player");
       if ((p[0] - x) * (p[0] - x) + (p[2] - z) * (p[2] - z) < tol * tol) return true;
       steer(x, z, 120, 0);
     }
     return false;
+  };
+  const walkTo = (x: number, z: number, tol: number) => {
+    // a pad on the way across this surface: round it by its corners (one or two), on the surface
+    const p = sim.pos("player");
+    const top = p[1] - 0.9;
+    const legClear = (u0: number, v0: number, u1: number, v1: number) => {
+      for (let k = 0; k <= 12; k++) if (onPad(u0 + ((u1 - u0) * k) / 12, v0 + ((v1 - v0) * k) / 12, top, 0.2)) return false;
+      return true;
+    };
+    if (!legClear(p[0], p[2], x, z)) {
+      const here = surfaceAt(all, [p[0], top + 0.1, p[2]]);
+      const d = pads.find((q) => !legClear(p[0], p[2], x, z) && Math.abs(q.top - top) < 0.6);
+      if (here && d) {
+        const corners = ([[d.min[0] - 0.45, d.min[1] - 0.45], [d.max[0] + 0.45, d.min[1] - 0.45], [d.max[0] + 0.45, d.max[1] + 0.45], [d.min[0] - 0.45, d.max[1] + 0.45]] as [number, number][])
+          .map(([u, v]) => [clampTo(u, here.min[0] + 0.3, here.max[0] - 0.3), clampTo(v, here.min[1] + 0.3, here.max[1] - 0.3)] as [number, number])
+          .filter(([u, v]) => clear(u, v, top));
+        const len = (pts: [number, number][]) => pts.reduce((acc, q, i) => { const r0 = i ? pts[i - 1]! : [p[0], p[2]]; return acc + Math.sqrt((q[0] - r0[0]!) * (q[0] - r0[0]!) + (q[1] - r0[1]!) * (q[1] - r0[1]!)); }, 0);
+        let best: [number, number][] | null = null;
+        for (const c of corners) {
+          const via: [number, number][] = [c, [x, z]];
+          if (legClear(p[0], p[2], c[0], c[1]) && legClear(c[0], c[1], x, z) && (!best || len(via) < len(best))) best = via;
+          for (const c2 of corners) {
+            const via2: [number, number][] = [c, c2, [x, z]];
+            if (c2 !== c && legClear(p[0], p[2], c[0], c[1]) && legClear(c[0], c[1], c2[0], c2[1]) && legClear(c2[0], c2[1], x, z) && (!best || len(via2) < len(best))) best = via2;
+          }
+        }
+        for (const q of best?.slice(0, -1) ?? []) walkStraight(q[0], q[1], 0.3);
+      }
+    }
+    return walkStraight(x, z, tol);
   };
   if (a.launch) {
     // on the pad: let it throw you up (step onto its middle if it hasn't yet), then drift to the aim
@@ -521,7 +590,20 @@ function perform(r: Run, st: PlanStep): "ok" | "lost" | "stuck" {
       };
       const near = () => d2h(sim.pos("player"), where()) < 2.25;
       const putDown = () => {
-        for (let k = 0; k < 30 && sim.usable() && live(r); k++, budget.ticks--) sim.step({ tick: sim.tick + 1, wx: 0, wz: 127, btn: 0 });
+        // something usable in reach would take the USE: step away from it, slowly, never off the edge
+        const ss = surfaces(b);
+        for (let k = 0; k < 30 && live(r); k++, budget.ticks--) {
+          const u = sim.usable();
+          if (!u) break;
+          const p = sim.pos("player");
+          const q = sim.pos(u.on);
+          const len = Math.sqrt((p[0] - q[0]) * (p[0] - q[0]) + (p[2] - q[2]) * (p[2] - q[2])) || 1;
+          const [dx, dz] = [(p[0] - q[0]) / len, (p[2] - q[2]) / len];
+          const under = surfaceAt(ss, [p[0], p[1] - 0.8, p[2]]);
+          const ahead = surfaceAt(ss, [p[0] + dx * 0.6, p[1] - 0.8, p[2] + dz * 0.6]);
+          if (under && (!ahead || ahead.top < under.top - 0.3)) break; // the edge
+          sim.step({ tick: sim.tick + 1, wx: Math.round(dx * 64), wz: Math.round(dz * 64), btn: 0 });
+        }
         sim.step({ tick: sim.tick + 1, wx: 0, wz: 0, btn: BTN.USE });
         sim.step({ tick: sim.tick + 1, wx: 0, wz: 0, btn: 0 });
         budget.ticks -= 2;
