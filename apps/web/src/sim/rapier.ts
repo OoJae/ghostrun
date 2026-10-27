@@ -24,6 +24,10 @@ export class RapierSim implements FrameSource {
   /** The nearest thing the player could USE changed ("flip switch"), or null. */
   onHint: ((label: string | null) => void) | undefined;
   #subs = new Set<(evs: SimEvent[]) => void>();
+  #replay: SimInput[] | null = null;
+  #ri = 0;
+  /** Fires when a replay ends or the player takes over. */
+  onReplayEnd: (() => void) | undefined;
   #hint: string | null = null;
 
   #in: InputFrame = { tick: 0, mx: 0, my: 0, yaw: 0, btn: 0 };
@@ -55,7 +59,23 @@ export class RapierSim implements FrameSource {
     this.#timer = setInterval(() => this.#pump(), 4);
   }
 
+  /** Play back a recorded run frame by frame (a share link); any input takes over. */
+  replay(frames: readonly SimInput[]) {
+    this.#replay = [...frames];
+    this.#ri = 0;
+  }
+
+  get replaying(): boolean {
+    return this.#replay !== null;
+  }
+
+  #endReplay() {
+    this.#replay = null;
+    this.onReplayEnd?.();
+  }
+
   input(f: InputFrame): void {
+    if (this.#replay && (f.mx !== 0 || f.my !== 0 || f.btn !== 0)) this.#endReplay();
     if (f.btn & BTN_JUMP && !(this.#lastBtn & BTN_JUMP)) this.#pressQueued = true;
     this.#lastBtn = f.btn;
     this.#in = f;
@@ -93,6 +113,25 @@ export class RapierSim implements FrameSource {
   }
 
   #step() {
+    if (this.#replay) {
+      // the recorded frames are exactly what the sim saw, so feeding them back is bit-exact
+      const tick = this.sim.tick + 1;
+      while (this.#ri < this.#replay.length && this.#replay[this.#ri]!.tick < tick) this.#ri++;
+      const rec = this.#replay[this.#ri];
+      if (!rec) {
+        this.#endReplay();
+      } else {
+        const frame = rec.tick === tick ? rec : { tick, wx: 0, wz: 0, btn: 0 };
+        if (frame.wx || frame.wz) this.#facing = Math.atan2(-frame.wx, -frame.wz);
+        this.inputs.push(frame);
+        const evs = this.sim.step(frame);
+        if (evs.length) {
+          this.onEvents?.(evs);
+          for (const f of this.#subs) f(evs);
+        }
+        return;
+      }
+    }
     const i = this.#in;
     // three.js camera yaw 0 looks down −z: forward = (−sin, −cos), right = (cos, −sin)
     const s = Math.sin(i.yaw);

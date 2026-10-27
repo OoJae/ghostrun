@@ -507,3 +507,13 @@ kbd {
 .repair.offer .dot { background: #3dffa8; }
 .repair.offer strong { color: #3dffa8; }
 @keyframes pulse { from { opacity: 0.35; } to { opacity: 1; } }
+
+.receipt-actions { display: flex; gap: 8px; margin-top: 10px; }
+.receipt-actions button, .wrong-form button {
+  font: inherit; font-size: 12px; padding: 5px 10px; border-radius: 6px; cursor: pointer;
+  background: rgba(255, 255, 255, 0.08); color: inherit; border: 1px solid rgba(255, 255, 255, 0.18);
+}
+.wrong-form { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
+.wrong-form textarea { font: inherit; font-size: 12px; min-height: 56px; resize: vertical; background: rgba(0, 0, 0, 0.25); color: inherit; border: 1px solid rgba(255, 255, 255, 0.18); border-radius: 6px; padding: 6px; }
+.receipt .reported { color: #ffb02e; margin: 8px 0 0; }
+.turnstile-host { position: fixed; right: 16px; bottom: 16px; z-index: 50; }

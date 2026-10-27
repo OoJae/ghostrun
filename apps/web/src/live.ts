@@ -2,6 +2,7 @@
 // SSE event. We parse lines as they land and hand over as soon as the gameplay layer is complete
 // (the cosmetic tail never blocks play).
 import { FillParser } from "@ghostrun/ir";
+import { api } from "./api";
 
 export interface LiveIntent {
   lang: string;
@@ -37,7 +38,7 @@ export async function liveBuild(prompt: string, onIntent?: (i: LiveIntent, ms: n
   const ctl = new AbortController();
   let res: Response;
   try {
-    res = await fetch("/v1/build", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ prompt }), signal: ctl.signal });
+    res = await api("/v1/build", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ prompt }), signal: ctl.signal });
   } catch (e) {
     return { kind: "unavailable", reason: String(e) };
   }
@@ -98,7 +99,7 @@ export async function liveBuild(prompt: string, onIntent?: (i: LiveIntent, ms: n
 export async function liveRepair(prompt: string, intent: LiveIntent, fill: string, issues: string[], seed: number): Promise<string | null> {
   let res: Response;
   try {
-    res = await fetch("/v1/repair", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ prompt, intent, fill, issues, seed }) });
+    res = await api("/v1/repair", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ prompt, intent, fill, issues, seed }) });
   } catch {
     return null;
   }

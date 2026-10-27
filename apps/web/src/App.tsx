@@ -7,6 +7,7 @@ import { IntentCard } from "./hud/IntentCard";
 import { PromptBar } from "./hud/PromptBar";
 import { ProofBadge, ReceiptPanel, RepairChip, type ProofState, type RepairState } from "./hud/Proof";
 import { liveAvailable, liveBuild, liveRepair, type LiveIntent } from "./live";
+import { createShare, loadShare, reportWrong } from "./share";
 import { BRIEF, buildWorld, ENGINE_HASH, FIXTURE_PROMPTS, FIXTURES, hashWorld, worldFromFill, type Intent, type World } from "./pipeline";
 import { probe } from "./probe";
 import { loadNav, loadRapier, WASM_URLS } from "./sim/boot";
@@ -49,6 +50,8 @@ export function App() {
   const [clock, setClock] = useState<number | null>(null);
   const [repair, setRepair] = useState<RepairState>({ status: "idle", issues: 0 });
   const repaired = useRef<World | null>(null);
+  const current = useRef<World | null>(null);
+  const [reported, setReported] = useState<string>();
   const pending = useRef(new Map<number, { onChip?: (c: Chip) => void; resolve: (r: Receipt) => void; reject: (e: Error) => void }>());
   const modeRef = useRef<Mode>("checking");
   modeRef.current = mode;
@@ -120,6 +123,8 @@ export function App() {
       if (!e) return;
       setIntent(world.intent);
       setScore({ red: 0, blue: 0, result: null });
+      current.current = world;
+      setReported(undefined);
       const result = await e.load(world, startedAt);
       if (id !== runId.current) return;
       setTiming({ ttffMs: result.ttffMs, splits: [...extra, ...result.splits] });
@@ -215,8 +220,22 @@ export function App() {
             probe().sim = "stub";
           }
         }
-        // First load: the recorded world appears instantly; Enter builds live.
-        await run(FIRST_PROMPT, 0, [{ label: "gpu init", ms: e.initMs }]);
+        // A share link opens that run (rebuilt from its fill, replayed frame for frame); otherwise
+        // the recorded world appears instantly and Enter builds live.
+        const shared = params.get("s") ? await loadShare(params.get("s")!) : null;
+        if (shared && !disposed) {
+          setPrompt("Shared run");
+          await show(shared.world, ++runId.current, 0, [{ label: "gpu init", ms: e.initMs }]);
+          const sim = e.rapierSim;
+          if (sim) {
+            sim.replay(shared.record.inputs);
+            sim.onReplayEnd = () => setNotice(undefined);
+          }
+          setNotice(shared.exact ? "Shared run: replaying exactly as played. Press any key to take over." : "Shared run from another version: the world rebuilt, but the replay may drift.");
+        } else {
+          if (params.get("s")) setNotice("That share link wasn't found.");
+          await run(FIRST_PROMPT, 0, [{ label: "gpu init", ms: e.initMs }]);
+        }
         // While the player reads and types: compile every look's and kit's shaders in the background.
         if (!disposed && params.get("prewarm") !== "0") {
           const samples = Object.keys(FIXTURES).map((k) => buildWorld("", k).bundle);
@@ -319,7 +338,29 @@ export function App() {
             void show(w, ++runId.current, performance.now(), []);
           }}
         />
-        {receiptOpen && <ReceiptPanel proof={proof} onClose={() => setReceiptOpen(false)} />}
+        {receiptOpen && (
+          <ReceiptPanel
+            proof={proof}
+            onClose={() => setReceiptOpen(false)}
+            reported={reported}
+            onShare={async () => {
+              const w = current.current;
+              const sim = engine.current?.rapierSim;
+              if (!w || !sim || !specHash) return setToast("Nothing to share yet.");
+              const url = await createShare(w, specHash, sim.inputs);
+              if (!url) return setToast("Sharing needs the live service, which isn't reachable.");
+              await navigator.clipboard?.writeText(url).catch(() => undefined);
+              setToast(`Link copied: ${url}`);
+            }}
+            onWrong={async (note) => {
+              const sim = engine.current?.rapierSim;
+              if (!specHash) return;
+              const ok = await reportWrong(specHash, note, undefined, sim?.inputs ?? []);
+              setReported(note);
+              setToast(ok ? "Thanks: reported with your run attached." : "Couldn't send the report (the live service isn't reachable).");
+            }}
+          />
+        )}
         <KeyHint visible={hint && status === "playing"} />
         {status === "booting" && <div className="boot">building world…</div>}
         {status === "building" && <div className="boot">building world…</div>}

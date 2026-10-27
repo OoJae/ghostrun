@@ -38,6 +38,9 @@ export interface Intent {
 
 export interface World {
   bundle: WorldBundle;
+  /** The fill it was built from (meta pack = the pack actually used) and its seed: a share link. */
+  fill: string;
+  seed: number;
   /** For live worlds: what the repair loop needs to ask for a patch. */
   source?: { prompt: string; intent: unknown; fill: string; seed: number; pack: string };
   intent: Intent;
@@ -111,8 +114,18 @@ export function worldFromFill(fillText: string, seed: number, live?: Intent["liv
     ...(live ? { live } : {}),
   };
 
+  // the stored fill names the pack actually used, so the same fill always rebuilds the same world
+  const lines = fillText.split("\n");
+  try {
+    const meta = JSON.parse(lines[0] ?? "") as { op?: string; pack?: string };
+    if (meta.op === "meta" && meta.pack !== pack.id) lines[0] = JSON.stringify({ ...meta, pack: pack.id });
+  } catch {
+    // no meta line: the parser already defaulted it
+  }
   return {
     bundle,
+    fill: lines.join("\n"),
+    seed,
     intent,
     notes,
     fillNotes: fill.notes,
