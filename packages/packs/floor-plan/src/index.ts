@@ -66,28 +66,45 @@ export const floorPlan: LayoutPack<FloorPlanParams> = {
     };
 
     const statics: PackStatic[] = [];
+    // every doorway cut, so rooms can offer door anchors in the gap (a door entity there guards it)
+    const doorways: { axis: "x" | "z"; fixed: number; at: number }[] = [];
+    const w = (slot: string, axis: "x" | "z", fixed: number, a: number, b: number, door: number | null) => {
+      wall(statics, slot, axis, fixed, a, b, door);
+      if (door !== null) doorways.push({ axis, fixed, at: door });
+    };
     statics.push(box("yard", [0, -0.1, zFront - YARD / 2], [W + 8, 0.2, YARD], "floor"));
     statics.push(box("main_room", [0, -0.1, 0], [W, 0.2, D], "floor"));
 
     // exterior walls; the front door opens from the yard into the entrance
-    wall(statics, "entrance", "x", zFront, x0, x3, doorAt(x1, x2));
-    wall(statics, "main_room", "x", zBack, x0, x3, null);
-    wall(statics, "room_sw", "z", x0, zFront, zBack, null);
-    wall(statics, "room_se", "z", x3, zFront, zBack, null);
+    w("entrance", "x", zFront, x0, x3, doorAt(x1, x2));
+    w("main_room", "x", zBack, x0, x3, null);
+    w("room_sw", "z", x0, zFront, zBack, null);
+    w("room_se", "z", x3, zFront, zBack, null);
     // yard boundary (so nobody walks off the world)
     statics.push(box("yard", [x0 - 4 - T / 2, 1, zFront - YARD / 2], [T, 2, YARD], "wall"));
     statics.push(box("yard", [x3 + 4 + T / 2, 1, zFront - YARD / 2], [T, 2, YARD], "wall"));
     statics.push(box("yard", [0, 1, zFront - YARD - T / 2], [W + 8, 2, T], "wall"));
 
     // interior: front row | back row split by the row wall; columns split by two column walls
-    wall(statics, "room_sw", "x", zMid, x0, x1, doorAt(x0, x1)); // room_sw ↔ room_nw
-    wall(statics, "entrance", "x", zMid, x1, x2, doorAt(x1, x2)); // entrance ↔ main_room
-    wall(statics, "room_se", "x", zMid, x2, x3, null); // room_se reaches the back via the entrance
-    wall(statics, "entrance", "z", x1, zFront, zMid, doorAt(zFront, zMid)); // room_sw ↔ entrance
-    wall(statics, "entrance", "z", x2, zFront, zMid, doorAt(zFront, zMid)); // entrance ↔ room_se
-    wall(statics, "main_room", "z", x1, zMid, zBack, doorAt(zMid, zBack)); // room_nw ↔ main_room
-    wall(statics, "main_room", "z", x2, zMid, zBack, doorAt(zMid, zBack)); // main_room ↔ room_ne
+    w("room_sw", "x", zMid, x0, x1, doorAt(x0, x1)); // room_sw ↔ room_nw
+    w("entrance", "x", zMid, x1, x2, doorAt(x1, x2)); // entrance ↔ main_room
+    w("room_se", "x", zMid, x2, x3, null); // room_se reaches the back via the entrance
+    w("entrance", "z", x1, zFront, zMid, doorAt(zFront, zMid)); // room_sw ↔ entrance
+    w("entrance", "z", x2, zFront, zMid, doorAt(zFront, zMid)); // entrance ↔ room_se
+    w("main_room", "z", x1, zMid, zBack, doorAt(zMid, zBack)); // room_nw ↔ main_room
+    w("main_room", "z", x2, zMid, zBack, doorAt(zMid, zBack)); // main_room ↔ room_ne
 
+    const near = (p: number, q: number) => Math.abs(p - q) < 0.01;
+    const doorAnchors = (ax: number, bx: number, az: number, bz: number): Record<string, Vec3> => {
+      const out: Record<string, Vec3> = {};
+      for (const d of doorways) {
+        const along = d.axis === "x" ? d.at >= ax && d.at <= bx : d.at >= az && d.at <= bz;
+        if (!along) continue;
+        const side = d.axis === "x" ? (near(d.fixed, bz) ? "n" : near(d.fixed, az) ? "s" : "") : near(d.fixed, bx) ? "e" : near(d.fixed, ax) ? "w" : "";
+        if (side && !out[`doorway_${side}`]) out[`doorway_${side}`] = d.axis === "x" ? [d.at, 0, d.fixed] : [d.fixed, 0, d.at];
+      }
+      return out;
+    };
     const room = (slot: string, tag: string, ax: number, bx: number, az: number, bz: number): ZoneSpec => {
       const cx = (ax + bx) / 2;
       const cz = (az + bz) / 2;
@@ -101,6 +118,7 @@ export const floorPlan: LayoutPack<FloorPlanParams> = {
           corner_ne: [bx - m, 0, bz - m], corner_nw: [ax + m, 0, bz - m], corner_se: [bx - m, 0, az + m], corner_sw: [ax + m, 0, az + m],
           wall_n: [cx, 1.4, bz - T / 2 - 0.12], wall_s: [cx, 1.4, az + T / 2 + 0.12],
           wall_e: [bx - T / 2 - 0.12, 1.4, cz], wall_w: [ax + T / 2 + 0.12, 1.4, cz],
+          ...doorAnchors(ax, bx, az, bz),
         },
       };
     };

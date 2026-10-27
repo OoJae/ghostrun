@@ -90,3 +90,22 @@ describe("a recorded live fill (museum heist, gpt-oss-120b)", () => {
     expect(receipt.chips.find((c) => c.id === "T1:x_timer")?.status).toBe("not_checkable");
   }, 120_000);
 });
+
+describe("doors on the win path (vault heist: key → locked door → gem → exit)", () => {
+  it("runners find the blocking door, fetch the key, unlock it and escape with the gem", async () => {
+    const { floorPlan } = await import("@ghostrun/pack-floor-plan");
+    const text = readFileSync(new URL("../../ir/fixtures/vault-heist.jsonl", import.meta.url), "utf8");
+    const fill = parseFill(text, { seed: 5 });
+    expect(fill.notes.filter((n) => n.kind === "invalid" || n.kind === "unresolved")).toEqual([]);
+    const layout = floorPlan.generate({ seed: 5, params: floorPlan.defaults, sub: [], laws: fill.draft.laws, harder: false });
+    const placed = placeWorld({ ...fill.draft, engine: ENGINE }, layout);
+    expect(placed.notes.filter((n) => n.includes("not in slot"))).toEqual([]);
+    const receipt = await prove(R, placed.bundle, { engine: ENGINE, runs: 6 });
+    console.log(["", `vault heist · ${receipt.ms} ms`, ...receipt.chips.map(chipLine), `par: ${JSON.stringify(receipt.par)}`].join("\n"));
+    expect(receipt.chips.find((c) => c.id === "T0:win_chain")?.status).toBe("verified");
+    const win = receipt.chips.find((c) => c.id === "T3:win")!;
+    expect(win.k).toBeGreaterThanOrEqual(5);
+    expect(receipt.par!.goldS).toBeGreaterThan(8); // the detour for the key is real
+    expect(receipt.headline?.status).toBe("verified");
+  }, 120_000);
+});

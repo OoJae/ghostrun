@@ -1,0 +1,27 @@
+{"op":"meta","mode":"play","lang":"en","pack":"floor_plan","sub":[],"seed":5,"look":"museum night","mood":[0.2,0.6,0.8],"timeOfDay":23,"weather":"clear"}
+{"op":"zone","id":"z_yard","slot":"yard","tag":"outside","name":"Museum steps"}
+{"op":"zone","id":"z_lobby","slot":"entrance","tag":"entrance","name":"Lobby"}
+{"op":"zone","id":"z_west","slot":"room_sw","tag":"room","name":"West gallery"}
+{"op":"zone","id":"z_hall","slot":"main_room","tag":"hall","name":"Great hall"}
+{"op":"zone","id":"z_vault","slot":"room_ne","tag":"room","name":"Vault"}
+{"op":"spawn","id":"sp_red","zone":"z_yard","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"exit","zone":"z_yard","anchor":"corner_w","noun":"getaway van","hyper":"vehicle","team":"red"}
+{"op":"ent","id":"key","kind":"pickup","noun":"brass key","hyper":"key","zone":"z_west","anchor":"corner_sw","body":"dynamic","shape":"box","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"gem","kind":"pickup","noun":"star sapphire","hyper":"gem","zone":"z_vault","anchor":"center","body":"dynamic","shape":"sphere","size":[0.4,0.4,0.4]}
+{"op":"ent","id":"vault_door","kind":"door","noun":"vault door","hyper":"door","zone":"z_vault","anchor":"doorway_w","body":"fixed","shape":"box"}
+{"op":"ent","id":"painting_1","kind":"prop","noun":"portrait","hyper":"painting","zone":"z_west","anchor":"center","body":"fixed","shape":"box","size":[1.2,1.6,0.3]}
+{"op":"ent","id":"painting_2","kind":"prop","noun":"landscape","hyper":"painting","zone":"z_hall","anchor":"center","body":"fixed","shape":"box","size":[1.2,1.6,0.3]}
+{"op":"ent","id":"laser","kind":"hazard","noun":"laser grid","hyper":"laser","zone":"z_hall","anchor":"corner_ne","body":"sensor","shape":"box","size":[2,0.2,2]}
+{"op":"verb","id":"vb_carry_key","verb":"physics_props.carry","on":"key","params":{}}
+{"op":"verb","id":"vb_carry_gem","verb":"physics_props.carry","on":"gem","params":{}}
+{"op":"verb","id":"vb_lock","verb":"puzzle.lock","on":"vault_door","params":{"key":"key"}}
+{"op":"verb","id":"vb_look_1","verb":"social.inspect","on":"painting_1","params":{"text":"Portrait of the museum's founder, 1891."}}
+{"op":"verb","id":"vb_look_2","verb":"social.inspect","on":"painting_2","params":{"text":"Storm over the harbour. Probably a fake."}}
+{"op":"verb","id":"vb_laser","verb":"motion_hazards.hazard","on":"laser","params":{"respawn":true}}
+{"op":"verb","id":"vb_alarm","verb":"puzzle.timer","on":"player","params":{"seconds":150}}
+{"op":"rule","id":"r_escape","when":{"t":"enter","a":"gem","b":"exit"},"if":[{"l":"gem.carrier.team","op":"eq","r":"red"}],"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_alarm","when":{"t":"timer_end","a":"player"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_vault","when":{"t":"state_is","a":"vault_door","s":"open"},"then":[{"e":"emit","target":"vault_door","fx":"alarm_light"}]}
+{"op":"expect","id":"x_heist","prop":"win_reachable","a":"sp_red","b":"exit","headline":true,"text":"The gem can be stolen before the alarm"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

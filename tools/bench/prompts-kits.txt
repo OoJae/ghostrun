@@ -1,0 +1,13 @@
+# Kit bench prompts (internal; written by us, never part of the external eval set)
+Create a capture-the-flag game in a neon city. Add double jump. Score when the orb reaches the goal.
+a museum heist at night: grab the key, unlock the vault, steal the gem and escape before the alarm
+collect 10 crystals in a glowing cave before the timer runs out, avoid the lava
+a dungeon with levers that open gates and a dragon guarding the treasure
+a bioluminescent forest where you climb to an owl's lookout
+a minimalist museum where you can inspect each painting
+a car showroom where a guide shows you three cars
+parkour time trial across rooftops with checkpoints
+a pressure-plate puzzle temple with crumbling floors
+zero-g basketball on a space station
+a real-estate tour of a modern villa where a guide books a viewing
+udělej mi bludiště s duchy a klíčem od východu

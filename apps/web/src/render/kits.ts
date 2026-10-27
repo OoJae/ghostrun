@@ -150,13 +150,17 @@ export function kitActor(e: Entity, verbs: readonly string[], isKey: boolean, c:
       };
     }
     case "door": {
+      // build along x; a door in an east/west wall turns a quarter
+      const across = sz > sx;
+      const [dx, dz] = across ? [sz, sx] : [sx, sz];
+      if (across) inner.rotation.y = Math.PI / 2;
       const locked = has("puzzle.lock");
       const hex = locked ? PALETTE.red : PALETTE.cyan;
-      const panel = new Mesh(keep(new BoxGeometry(sx, sy, sz)), keep(bodyMaterial("#101119", 0.35, 0.6)));
+      const panel = new Mesh(keep(new BoxGeometry(dx, sy, dz)), keep(bodyMaterial("#101119", 0.35, 0.6)));
       const frame = keep(glowMaterial(hex, 3));
       const t = 0.06;
-      for (const [x, y, w, h] of [[-sx / 2, 0, t, sy], [sx / 2, 0, t, sy], [0, sy / 2, sx, t], [0, 0, sx * 0.6, t]] as const) {
-        const bar = new Mesh(keep(new BoxGeometry(w, h, sz + 0.02)), frame);
+      for (const [x, y, w, h] of [[-dx / 2, 0, t, sy], [dx / 2, 0, t, sy], [0, sy / 2, dx, t], [0, 0, dx * 0.6, t]] as const) {
+        const bar = new Mesh(keep(new BoxGeometry(w, h, dz + 0.02)), frame);
         bar.position.set(x, y, 0);
         inner.add(bar);
       }

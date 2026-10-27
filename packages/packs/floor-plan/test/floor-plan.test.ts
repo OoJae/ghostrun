@@ -47,3 +47,24 @@ describe("floor_plan pack", () => {
     }
   });
 });
+
+describe("floor_plan doorway anchors", () => {
+  it("every doorway anchor stands in a real gap of a wall line (20 seeds)", () => {
+    for (let seed = 1; seed <= 20; seed++) {
+      const layout = floorPlan.generate({ seed, params: floorPlan.defaults, sub: [], laws: DEFAULT_LAWS, harder: false });
+      const walls = layout.statics.filter((s) => s.surf === "wall");
+      let n = 0;
+      for (const z of layout.zones) {
+        for (const [name, p] of Object.entries(z.anchors)) {
+          if (!name.startsWith("doorway_")) continue;
+          n++;
+          const inside = (s: (typeof walls)[number], y: number) =>
+            Math.abs(p[0] - s.pos[0]) < s.size[0] / 2 - 0.01 && Math.abs(p[2] - s.pos[2]) < s.size[2] / 2 - 0.01 && Math.abs(y - s.pos[1]) < s.size[1] / 2;
+          expect(walls.some((s) => inside(s, 1.0)), `${z.slot}.${name} seed ${seed} is blocked`).toBe(false);
+          expect(walls.some((s) => inside(s, 2.6)), `${z.slot}.${name} seed ${seed} has no lintel`).toBe(true);
+        }
+      }
+      expect(n).toBeGreaterThanOrEqual(8); // each interior doorway is offered from both rooms
+    }
+  });
+});

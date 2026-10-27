@@ -58,7 +58,14 @@ interface BuildTimings {
   lines: number;
 }
 
-async function build(prompt: string, seed: number, outDir: string | null): Promise<{ timings: BuildTimings; receipt: Receipt; intent: IntentOut; fill: string }> {
+/** Things a player can interact with: kit verbs, carryables, moving platforms and minded NPCs. */
+function controlsOf(b: WorldBundle): number {
+  const on = new Set(b.verbs.filter((v) => v.on !== "player").map((v) => v.on));
+  for (const c of b.cast) on.add(c.npc);
+  return on.size;
+}
+
+async function build(prompt: string, seed: number, outDir: string | null): Promise<{ timings: BuildTimings; receipt: Receipt; intent: IntentOut; fill: string; controls: number }> {
   const key = process.env.CEREBRAS_API_KEY;
   if (!key) throw new Error("CEREBRAS_API_KEY missing (put it in .dev.vars)");
   const now = () => performance.now();
@@ -120,6 +127,7 @@ async function build(prompt: string, seed: number, outDir: string | null): Promi
     receipt,
     intent,
     fill: fillText,
+    controls: controlsOf(bundle),
   };
 }
 
@@ -148,7 +156,8 @@ async function main() {
         const r = await build(p, seed + i, outDir);
         const headline = r.receipt.headline?.status ?? "none";
         const win = r.receipt.chips.find((c) => c.id === "T3:win");
-        rows.push({ prompt: p, ...r.timings, headline, t3win: win ? `${win.k}/${win.n}` : "-", chips: r.receipt.chips.length });
+        const tooEasy = r.receipt.chips.some((c) => c.id === "T3:too_easy");
+        rows.push({ prompt: p, pack: r.intent.pack, ...r.timings, controls: r.controls, headline, t3win: win ? `${win.k}/${win.n}` : "-", par: r.receipt.par?.goldS ?? null, tooEasy, chips: r.receipt.chips.length });
         console.log(`[${i + 1}/${prompts.length}] ${JSON.stringify(rows.at(-1))}`);
       } catch (e) {
         rows.push({ prompt: p, error: String(e) });

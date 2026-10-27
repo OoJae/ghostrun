@@ -98,6 +98,8 @@ export function placeWorld(input: WorldBundle, layout: PackLayout): PlaceResult 
     // Sensors and spawns sit on the floor; bodies rest with their centre half their height up.
     const lift = e.kind === "spawn" ? 0 : e.size[1] / 2;
     e.pos = alongZ ? [base[0], base[1] + lift, base[2] + offset] : [base[0] + offset, base[1] + lift, base[2]];
+    // a door in an east/west wall's doorway turns to fill the gap across z
+    if (e.kind === "door" && /^doorway_[ew]$/.test(e.anchor) && e.size[0] > e.size[2]) e.size = [e.size[2], e.size[1], e.size[0]];
   }
   notes.push(...repairTriggers(b), ...repairVerbs(b), ...repairExpects(b));
   return { bundle: b, notes };
