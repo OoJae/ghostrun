@@ -613,7 +613,8 @@ export class SimWorld {
     for (const r of only ? [only] : this.#rules) {
       const w = r.when;
       if (w.t === "state_is" ? ev.k !== "state" || String(ev.v) !== w.s : w.t !== ev.k) continue;
-      if (w.t !== "every" && w.a && w.a !== ev.a) continue;
+      // "team:blue is hit": anyone on that team (a score_gte event names the team itself)
+      if (w.t !== "every" && w.a && w.a !== ev.a && !(w.a.startsWith("team:") && this.ents.get(ev.a)?.team === w.a.slice(5))) continue;
       if (w.t === "every" && ev.a !== r.id) continue;
       if (w.b && w.b !== ev.b) continue;
       if (r.once && this.#fired.has(r.id)) continue;

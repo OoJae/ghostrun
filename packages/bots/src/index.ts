@@ -67,7 +67,10 @@ export class CastBrain implements Brain {
 
   constructor(nav: NavWorld, b: WorldBundle) {
     this.#nav = nav;
-    const carry = new Set(b.verbs.filter((v) => v.verb.endsWith(".carry")).map((v) => v.on));
+    // the thing to fight over; never a ball that gets thrown (bots don't throw, and crowding one
+    // they can't pick up only kicks it into a corner): in a throwing game they go for the player
+    const thrown = new Set(b.verbs.filter((v) => v.verb === "combat_sport.throw").map((v) => v.on));
+    const carry = new Set(b.verbs.filter((v) => v.verb.endsWith(".carry") && !thrown.has(v.on)).map((v) => v.on));
     const item = sortById(b.entities).find((e) => carry.has(e.id));
     this.#item = item?.id ?? "";
     for (const g of sortById(b.entities)) {

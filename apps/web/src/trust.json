@@ -9,7 +9,7 @@
    "play": 4,
    "places": 0,
    "firstPass": 0,
-   "now": 0,
+   "now": 4,
    "playableP50Ms": 3237,
    "controlsP50": 10
   },
@@ -20,7 +20,7 @@
    "play": 13,
    "places": 1,
    "firstPass": 6,
-   "now": 11,
+   "now": 12,
    "playableP50Ms": 2849,
    "controlsP50": 10
   },
@@ -31,7 +31,7 @@
    "play": 13,
    "places": 1,
    "firstPass": 7,
-   "now": 11,
+   "now": 13,
    "playableP50Ms": 3053,
    "controlsP50": 10
   },

@@ -203,6 +203,8 @@ describe("fill repairs from the fourth unseen set", () => {
     expect(p.draft.cosmetic.weather).toBe("fog");
     expect(p.draft.rules.find((r) => r.id === "r_ne")!.if.map((c) => c.op)).toEqual(["ne", "gte"]);
     expect(p.draft.rules.map((r) => r.id)).toEqual(["r_ne", "r_pups"]); // "ghosts" names nothing placed
+    const teams = parseFill(['{"op":"meta","mode":"play","pack":"arena","seed":3}', '{"op":"zone","id":"z_a"}', '{"op":"ent","id":"ball","kind":"pickup","zone":"z_a"}', '{"op":"rule","id":"r_hit","when":{"t":"hit","a":"blue","b":"ball"},"then":[{"e":"score","target":"team:red","n":1}]}'].join("\n"), { seed: 3 });
+    expect(teams.draft.rules.map((r) => r.when.a)).toEqual(["team:blue"]);
   });
 });
 

@@ -12,7 +12,7 @@ export function groupMembers(name: string, entities: readonly { id: string; kind
   const base = (id: string) => one(id.replace(/_?\d+$/, ""));
   const last = (noun: string) => one(noun.toLowerCase().split(/\s+/).at(-1) ?? "");
   const hit = entities.filter((e) => {
-    if (e.kind === "spawn" || e.kind === "decor") return false;
+    if (e.kind === "spawn") return false;
     const s = base(e.id);
     return s === n || last(e.noun) === n || (/\d$/.test(e.id) && s.length >= 3 && n.startsWith(s));
   });

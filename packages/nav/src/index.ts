@@ -44,8 +44,8 @@ export interface NavWorld {
   polys: number;
   /** Ground path between two points, or null if unreachable by walking. */
   path(from: Vec3, to: Vec3): Vec3[] | null;
-  /** Closest walkable point within a few metres (e.g. under a player standing on a roof), or null. */
-  nearest(p: Vec3): Vec3 | null;
+  /** Closest walkable point within a few metres (e.g. under a player standing on a roof), or null; `up` limits how far above or below. */
+  nearest(p: Vec3, up?: number): Vec3 | null;
   destroy(): void;
 }
 
@@ -114,8 +114,8 @@ export function buildNav(b: WorldBundle, opts: { leap?: boolean } = {}): NavWorl
       if (ex * ex + ez * ez > 1.0) return null;
       return r.path.map((p) => [p.x, p.y, p.z] as Vec3);
     },
-    nearest(p) {
-      const r = query.findClosestPoint({ x: p[0], y: p[1], z: p[2] }, { halfExtents: { x: 4, y: 6, z: 4 } });
+    nearest(p, up = 6) {
+      const r = query.findClosestPoint({ x: p[0], y: p[1], z: p[2] }, { halfExtents: { x: 4, y: up, z: 4 } });
       return r.success && r.polyRef ? [r.point.x, r.point.y, r.point.z] : null;
     },
     destroy() {

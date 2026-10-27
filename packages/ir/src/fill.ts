@@ -365,6 +365,20 @@ export class FillParser {
     );
   }
 
+  /** "when blue is hit": a bare team name where an id goes means anyone on that team (team:blue). */
+  #teamRefs(line: number, op: Extract<FillOp, { op: "rule" }>) {
+    const team = (ref: string) => {
+      const m = /^(?:team[_ ]?)?(red|blue)(?:[_ ]?team)?$/.exec(ref.trim().toLowerCase());
+      return m && !this.draft.entities.some((e) => e.id === ref) ? `team:${m[1]}` : null;
+    };
+    for (const side of ["a", "b"] as const) {
+      const t = team(op.when[side]);
+      if (!t) continue;
+      this.#note(line, "repaired", `'${op.when[side]}' in a trigger → '${t}' (anyone on that team)`);
+      op.when[side] = t;
+    }
+  }
+
   #refsOk(op: FillOp): boolean {
     switch (op.op) {
       case "verb":
@@ -420,6 +434,7 @@ export class FillParser {
       this.#note(line, "late", "op after the cosmetic layer closed");
       return [];
     }
+    if (op.op === "rule") this.#teamRefs(line, op);
     if (!cosmeticOp && op.op !== "meta" && !this.#refsOk(op)) {
       this.#held.push({ line, op });
       return [];

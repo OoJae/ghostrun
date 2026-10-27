@@ -186,6 +186,7 @@ async function main() {
     const placed = placeFromFill(text, s0, saved.intent?.pack, saved.intent?.mode);
     console.log(`PROMPT: ${saved.prompt ?? "?"}`);
     for (const n of placed.notes) console.log(`  · ${n}`);
+    if (args.includes("--ents")) for (const e of placed.bundle.entities) console.log(`  ${e.id} ${e.kind}/${e.body} at ${e.pos.map((x) => x.toFixed(1)).join(",")} size ${e.size.join("×")}${e.team ? ` team ${e.team}` : ""}`);
     const R = await loadRapierNode();
     await loadNavNode();
     printReceipt(await prove(R, placed.bundle, { engine: ENGINE, runs: 12 }));

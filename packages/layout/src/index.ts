@@ -212,7 +212,7 @@ export function placeWorld(input: WorldBundle, layout: PackLayout): PlaceResult 
     if (e.kind === "door" && /^doorway_[ew]$/.test(e.anchor) && e.size[0] > e.size[2]) e.size = [e.size[2], e.size[1], e.size[0]];
   }
   // wins first: a win rule the repairs add (reach the goal) gets the same trigger and verb repairs
-  notes.push(...repairSpawnRefs(b), ...repairGroups(b), ...repairAreas(b, bound), ...repairKits(b), ...repairConditions(b), ...repairWin(b), ...repairTriggers(b), ...repairVerbs(b), ...repairExpects(b));
+  notes.push(...repairSpawnRefs(b), ...repairGroups(b), ...repairRingOut(b, bound), ...repairAreas(b, bound), ...repairKits(b), ...repairConditions(b), ...repairWin(b), ...repairTriggers(b), ...repairVerbs(b), ...repairExpects(b));
   notes.push(...addRivals(b), ...repairDeliveries(b, layout, bound), ...addSecrets(b, layout, bound));
   return { bundle: b, notes };
 }
@@ -367,6 +367,47 @@ export function repairSpawnRefs(b: WorldBundle): string[] {
       const to = who.get(head);
       if (to) c.l = [to, ...c.l.split(".").slice(1)].join(".");
     }
+  }
+  return notes;
+}
+
+/**
+ * "Push them out of bounds" in a ring game: a sensor standing for everywhere off the ring (an
+ * out_of_bounds box at the arena's edge, 20 m from anyone) means leaving the ring. Rules that move
+ * something into it fire on leaving an invisible sensor over the ring instead (the mat or platform
+ * named like one, else the ring's zone), and the marker goes unless something else needs it. Logged.
+ */
+export function repairRingOut(b: WorldBundle, bound: Map<string, ZoneSpec>): string[] {
+  const notes: string[] = [];
+  const said = (x: { id: string; noun?: string; hyper?: string; name?: string }) => `${x.id} ${x.noun ?? ""} ${x.hyper ?? ""} ${x.name ?? ""}`.toLowerCase().replace(/_/g, " ");
+  const OUT = /\bout ?of ?(the )?(bounds|ring|arena)\b|\boob\b|\boff ?(the )?(ring|mat|edge|platform)\b|\bring ?out\b/;
+  const RING = /\b(ring|dohyo|mat|arena|platform|circle|stage|island)\b/;
+  for (const s of [...b.entities]) {
+    if (s.body !== "sensor" || !OUT.test(said(s))) continue;
+    const into = b.rules.filter((r) => r.when.t === "enter" && r.when.b === s.id && r.when.a);
+    if (!into.length) continue;
+    const mat = b.entities
+      .filter((e) => e !== s && e.kind !== "npc" && e.kind !== "spawn" && RING.test(said(e)) && !OUT.test(said(e)) && e.size[0] >= 2 && e.size[2] >= 2)
+      .sort((x, y) => y.size[0] * y.size[2] - x.size[0] * x.size[2] || (x.id < y.id ? -1 : 1))[0];
+    let pos: Vec3;
+    let size: Vec3;
+    let zone: string;
+    if (mat) {
+      const top = mat.pos[1] + mat.size[1] / 2;
+      [pos, size, zone] = [[mat.pos[0], top + 1.5, mat.pos[2]], [mat.size[0], 3, mat.size[2]], mat.zone];
+    } else {
+      const z = b.zones.find((x) => RING.test(said(x))) ?? b.zones.find((x) => x.id === s.zone);
+      const spec = z && bound.get(z.id);
+      if (!z || !spec) continue;
+      const { min, max } = spec.bounds;
+      [pos, size, zone] = [[(min[0] + max[0]) / 2, spec.floorY + 1.5, (min[2] + max[2]) / 2], [max[0] - min[0], 3, max[2] - min[2]], z.id];
+    }
+    const id = uniqueId(b, "area_ring");
+    b.entities.push({ id, src: "template", layer: "gameplay", kind: "goal", zone, anchor: "", pos, rotY: 0, size, noun: mat?.noun || "ring", hyper: "area", asset: "", body: "sensor", shape: "box", team: "", tags: ["area"], states: [], init: "", props: {} });
+    for (const r of into) r.when = { ...r.when, t: "exit", b: id };
+    const needed = b.rules.some((r) => r.when.a === s.id || r.when.b === s.id || r.if.some((c) => c.l.startsWith(`${s.id}.`))) || b.verbs.some((v) => v.on === s.id) || b.expects.some((x) => x.a === s.id || x.b === s.id);
+    if (!needed) b.entities.splice(b.entities.indexOf(s), 1);
+    notes.push(`${s.id}: pushed into '${s.noun || s.id}' means out of the ring, so ${into.map((r) => r.id).join(", ")} fire on leaving ${id} over ${mat?.id ?? zone}${needed ? "" : ` (the marker goes)`}`);
   }
   return notes;
 }

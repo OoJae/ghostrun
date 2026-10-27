@@ -129,7 +129,8 @@ function walkTo(sim: SimWorld, nav: NavWorld, goal: Target, rng: () => number, s
       if (here && there && here.id === there.id) path = [feet, aim];
     }
     if (!path && moving) {
-      const near = nav.nearest(aim);
+      // the walkable ground beside it, at its own level (not the deck above a ball that rolled under it)
+      const near = nav.nearest(aim, 1) ?? nav.nearest(aim);
       path = (near && nav.path(feet, near)) || [aim];
     }
     if (!path) return null;
@@ -624,8 +625,10 @@ function perform(r: Run, st: PlanStep): "ok" | "lost" | "stuck" {
         const k = ring ? -1.1 : 1.1;
         return [t[0] + (dx / len) * k, t[1], t[2] + (dz / len) * k];
       };
+      // only from that spot: a shove from wherever reach begins pushes them any which way
+      const placed = () => (ring || pit ? d2h(sim.pos("player"), inner()) < 0.6 * 0.6 : true) && sim.usable()?.on === st.at;
       for (let attempt = 0; attempt < 10 * (st.times ?? 1) && live(r) && !done(); attempt++) {
-        go(inner, () => sim.usable()?.on === st.at || done());
+        go(inner, () => placed() || done());
         trace?.(`shove ${attempt}: at ${v1(sim.pos("player"))}, ${st.at} at ${v1(sim.pos(st.at))}, usable ${sim.usable()?.on ?? "-"}, fired ${fired()}`);
         if (sim.usable()?.on !== st.at || done()) continue;
         sim.step({ tick: sim.tick + 1, wx: 0, wz: 0, btn: BTN.USE });
