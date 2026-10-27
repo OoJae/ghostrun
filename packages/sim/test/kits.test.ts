@@ -195,3 +195,18 @@ describe("kit verbs in the deterministic sim", () => {
     sim.free();
   });
 });
+
+describe("putting things down", () => {
+  it("USE with nothing to use in reach drops what you carry, and you can't grab it straight back", () => {
+    const sim = new SimWorld(R, template);
+    const orb = sim.pos("orb");
+    sim.teleport("player", [orb[0] - 0.4, orb[1] + 0.5, orb[2]]);
+    for (let t = 0; t < 20 && sim.entity("orb")?.carrier !== "player"; t++) sim.step(null);
+    expect(sim.entity("orb")?.carrier).toBe("player");
+    const evs = [...sim.step({ tick: sim.tick + 1, wx: 0, wz: 0, btn: BTN.USE }), ...sim.step(null)];
+    expect(evs.some((e) => e.k === "drop" && e.a === "orb" && e.b === "player")).toBe(true);
+    expect(sim.entity("orb")?.carrier).toBe("");
+    for (let t = 0; t < 30; t++) sim.step(null);
+    expect(sim.entity("orb")?.carrier).toBe(""); // a second before it can be picked up again
+  });
+});

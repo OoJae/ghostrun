@@ -393,6 +393,12 @@ export class SimWorld {
           const acted = v.plugin.use!.run(this.#ctx, v.bound, id) !== false;
           // "the player used X" is a touch, unless the verb already logged one (inspect, with its text)
           if (acted && !evs.slice(before).some((e) => e.k === "touch" && e.b === v.bound.on)) push("touch", id, v.bound.on);
+        } else if (this.ents.get(id)!.carrying) {
+          // nothing to use in reach: put down what you carry (or a wrong pickup would be yours for good)
+          const item = this.ents.get(id)!.carrying;
+          const p = this.pos(id);
+          this.#ctx.release(item, [p[0], p[1] - PLAYER_HALF_HEIGHT - PLAYER_RADIUS + Math.max(...this.ents.get(item)!.size) / 2 + 0.02, p[2]]);
+          push("drop", item, id);
         }
       }
       if (down) this.#useHeld.add(id);

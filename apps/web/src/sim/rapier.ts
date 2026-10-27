@@ -196,7 +196,7 @@ export class RapierSim implements FrameSource {
       this.onEvents?.(evs);
       for (const f of this.#subs) f(evs);
     }
-    const label = this.sim.usable()?.label ?? null;
+    const label = this.sim.usable()?.label ?? (this.sim.entity(PLAYER_ID)?.carrying ? "drop" : null);
     if (label !== this.#hint) {
       this.#hint = label;
       this.onHint?.(label);

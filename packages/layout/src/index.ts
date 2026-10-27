@@ -198,7 +198,7 @@ export function placeWorld(input: WorldBundle, layout: PackLayout): PlaceResult 
     if (e.kind === "door" && /^doorway_[ew]$/.test(e.anchor) && e.size[0] > e.size[2]) e.size = [e.size[2], e.size[1], e.size[0]];
   }
   // wins first: a win rule the repairs add (reach the goal) gets the same trigger and verb repairs
-  notes.push(...repairAreas(b, bound), ...repairKits(b), ...repairWin(b), ...repairTriggers(b), ...repairVerbs(b), ...repairExpects(b));
+  notes.push(...repairSpawnRefs(b), ...repairAreas(b, bound), ...repairKits(b), ...repairWin(b), ...repairTriggers(b), ...repairVerbs(b), ...repairExpects(b));
   notes.push(...repairDeliveries(b, layout, bound), ...addSecrets(b, layout, bound));
   return { bundle: b, notes };
 }
@@ -293,6 +293,48 @@ export function addSecrets(b: WorldBundle, layout: PackLayout, bound: Map<string
 }
 
 /**
+ * Rules that name a spawn point as the one moving ("sp_red enters the gate", "sp_rival1 leaves
+ * the ring") mean whoever starts there: the player's spawn is the player, another spawn the NPC
+ * named after it (sp_rival1 → rival1 / rival_1) or the one standing on it. Logged.
+ */
+export function repairSpawnRefs(b: WorldBundle): string[] {
+  const notes: string[] = [];
+  const spawns = b.entities.filter((e) => e.kind === "spawn");
+  if (!spawns.length) return notes;
+  const spawnOf = (t: string) => spawns.some((e) => e.team === t);
+  const mine = !spawnOf("red") && spawnOf("blue") ? "blue" : "red";
+  const playerSpawn = spawns.find((e) => e.team === mine) ?? spawns[0]!;
+  const npcs = b.entities.filter((e) => e.kind === "npc");
+  const who = new Map<string, string>();
+  for (const sp of spawns) {
+    if (sp.id === playerSpawn.id) {
+      who.set(sp.id, "player");
+      continue;
+    }
+    const stem = sp.id.replace(/^(sp|spawn)_?/, "").replace(/_?(sp|spawn)$/, "");
+    const flat = (s: string) => s.replace(/_/g, "");
+    const named = npcs.find((n) => flat(n.id) === flat(stem)) ?? npcs.find((n) => stem && flat(n.id).includes(flat(stem)));
+    const standing = npcs.find((n) => n.zone === sp.zone && n.anchor === sp.anchor);
+    const id = named?.id ?? standing?.id;
+    if (id) who.set(sp.id, id);
+  }
+  for (const r of b.rules) {
+    // only the one moving: a spawn as the destination ("carry the chest back to sp_red") is a place
+    const to = who.get(r.when.a);
+    if (to) {
+      notes.push(`rule ${r.id}: '${r.when.a}' is a spawn point; it means ${to === "player" ? "the player" : to}`);
+      r.when.a = to;
+    }
+    for (const c of r.if) {
+      const head = c.l.split(".")[0]!;
+      const to = who.get(head);
+      if (to) c.l = [to, ...c.l.split(".").slice(1)].join(".");
+    }
+  }
+  return notes;
+}
+
+/**
  * "When you enter the vault", "when a rival leaves the ring": an enter/exit rule naming a ZONE gets
  * an invisible sensor covering that zone, and the rule is pointed at it (only entities can be
  * entered or left). Logged.
@@ -339,6 +381,20 @@ export function repairTriggers(b: WorldBundle): string[] {
     if (e.kind !== "npc" && (e.size[0] < 1.6 || e.size[2] < 1.6)) {
       e.size = [Math.max(1.6, e.size[0]), Math.max(1.2, e.size[1]), Math.max(1.6, e.size[2])];
       notes.push(`${e.id}: grown to ${e.size[0]} × ${e.size[2]} m (too small to walk into)`);
+    }
+    // something carried in rides above the carrier's head: the place is tall enough to take it in
+    const carriedIn = b.rules.some((r) => (r.when.t === "enter" || r.when.t === "exit") && r.when.b === e.id && r.when.a !== "player" && b.entities.find((x) => x.id === r.when.a)?.kind !== "npc");
+    // (a spawn point stays where the player starts: its box grows both ways from the floor instead)
+    if (e.kind !== "npc" && carriedIn && (e.kind === "spawn" ? e.size[1] / 2 : e.size[1]) < 2.6) {
+      if (e.kind === "spawn") e.size = [e.size[0], 5.2, e.size[2]];
+      else {
+        const floor = e.pos[1] - e.size[1] / 2;
+        e.size = [e.size[0], 2.6, e.size[2]];
+        e.pos = [e.pos[0], floor + 1.3, e.pos[2]];
+      }
+      notes.push(`${e.id}: made 2.6 m tall (things are carried into it overhead)`);
+    } else if (e.kind === "spawn" && e.size[1] < 2.4) {
+      e.size = [e.size[0], 2.4, e.size[2]];
     }
   }
   return notes;
@@ -391,8 +447,9 @@ export function repairKits(b: WorldBundle): string[] {
     const w = r.when;
     const id = w.t === "touch" ? w.b : w.t === "pickup" ? w.a : "";
     const e = id ? b.entities.find((x) => x.id === id) : undefined;
-    if (!e || bound(e.id) || e.kind === "npc") continue;
-    const kit = w.t === "pickup" ? "physics_props.carry" : e.kind === "pickup" ? "puzzle.collect" : "social.inspect";
+    if (!e || bound(e.id) || (e.kind === "npc" && w.t !== "touch")) continue;
+    // touching an npc means catching them (USE next to them); a pickup is collected; the rest inspected
+    const kit = w.t === "pickup" ? "physics_props.carry" : e.kind === "npc" ? "combat_sport.catch" : e.kind === "pickup" ? "puzzle.collect" : "social.inspect";
     const noun = e.noun || e.id.replace(/_/g, " ");
     b.verbs.push(vb(uniqueId(b, `vb_${kit.split(".")[1]}_${e.id}`), kit, e.id, kit === "social.inspect" ? { text: noun.charAt(0).toUpperCase() + noun.slice(1) } : {}));
     notes.push(`${e.id}: added ${kit} (rule ${r.id} waits on a ${w.t} nothing could produce)`);
@@ -402,9 +459,11 @@ export function repairKits(b: WorldBundle): string[] {
   const byKey = new Map<string, VerbBinding[]>();
   for (const v of b.verbs) if (v.verb === "puzzle.lock" && v.params.key) byKey.set(String(v.params.key), [...(byKey.get(String(v.params.key)) ?? []), v]);
   for (const [key, locks] of byKey) {
-    if (locks.length < 2 || locks.every((v) => v.params.keep === true)) continue;
+    // still needed after the door: delivered somewhere, or something a rule wants you holding
+    const later = b.rules.some((r) => r.when.a === key || r.if.some((c) => c.l.startsWith(`${key}.`)));
+    if ((locks.length < 2 && !later) || locks.every((v) => v.params.keep === true)) continue;
     for (const v of locks) v.params = { ...v.params, keep: true };
-    notes.push(`${key}: opens ${locks.length} locks, so it is kept, not used up`);
+    notes.push(locks.length > 1 ? `${key}: opens ${locks.length} locks, so it is kept, not used up` : `${key}: opens a lock but is needed afterwards, so it is kept, not used up`);
   }
   // 2. collections: ≥3 same-noun carried pickups that are never delivered anywhere
   const delivered = new Set<string>();
@@ -413,6 +472,15 @@ export function repairKits(b: WorldBundle): string[] {
     for (const c of r.if) if (c.l.includes(".carrier")) delivered.add(c.l.split(".")[0]!);
   }
   for (const v of b.verbs) if (v.verb === "puzzle.lock" && v.params.key) delivered.add(String(v.params.key));
+  // "player hits the snowball IF it's carried by red": a hit by a thrown ball means anyone it hits
+  // (the player is never hit by their own throw)
+  const throwable = new Set(b.verbs.filter((v) => v.verb === "combat_sport.throw").map((v) => v.on));
+  for (const r of b.rules) {
+    if (r.when.t === "hit" && r.when.a === "player" && throwable.has(r.when.b)) {
+      r.when.a = "";
+      notes.push(`rule ${r.id}: a hit by the thrown ${r.when.b} means anyone it hits`);
+    }
+  }
   // a thrown ball is carried, never collected (collecting it would destroy it)
   for (const id of new Set(b.verbs.filter((v) => v.verb === "combat_sport.throw").map((v) => v.on))) {
     const n = b.verbs.length;

@@ -15,7 +15,7 @@ export type PlanStep =
   | { do: "collect"; items: string[]; rule: string; times: number; rules?: string[] } // touch `items` until the rule(s) fired `times` in all
   | { do: "wait"; rule: string; want?: Want } // let time run (a timer)
   | { do: "throw"; item: string; rule: string; times?: number; want?: Want } // carrying `item`, get a rival in range and press USE
-  | { do: "shove"; at: string; from: string; rule: string; times?: number; want?: Want }; // knock `at` (out of `from`, a sensor)
+  | { do: "shove"; at: string; from: string; into?: string; rule: string; times?: number; want?: Want }; // knock `at` (out of `from`, or into `into`)
 
 /** A precondition step is done when `id` is in state `s` (it has no rule of its own to watch). */
 export interface Want {
@@ -100,6 +100,13 @@ export function t0(b: WorldBundle, playerTeam: "red" | "blue" = "red"): { chips:
   }
   if (!bad) chips.push(chip({ id: "T0:refs", subject: { kind: "world", id: "refs" }, status: "verified", method: "static def-use", text: `all ${b.rules.length} rules reference existing things`, src: "" }));
 
+  const startState = (id: string): string => {
+    const e = ents.get(id);
+    if (e?.init) return e.init;
+    for (const v of b.verbs) if (v.on === id && verb(v.verb)?.initial) return verb(v.verb)!.initial!;
+    return "";
+  };
+
   // 2. win reachability by goal regression
   const rules = [...b.rules].sort((x, y) => (x.id < y.id ? -1 : 1));
   const sat = (r: Rule, depth: number, seen: Set<string>): { steps: PlanStep[]; explain: string } | null => {
@@ -138,7 +145,7 @@ export function t0(b: WorldBundle, playerTeam: "red" | "blue" = "red"): { chips:
       const m = /^([a-z][a-z0-9_]*)\.state$/.exec(c.l);
       if (!m || c.op !== "eq") continue;
       const [id, want] = [m[1]!, String(c.r)];
-      if ((ents.get(id)?.states.length ? ents.get(id)!.init : "") === want) continue;
+      if (startState(id) === want) continue;
       const p = made.find((x) => x.k === "state" && x.a === id && x.s === want);
       if (p) {
         pre.push(...(p.cause ? causeSteps(p.cause, "", { id, s: want }) : [{ do: "wait" as const, rule: "", want: { id, s: want } }]));
@@ -194,6 +201,8 @@ export function t0(b: WorldBundle, playerTeam: "red" | "blue" = "red"): { chips:
         const sensor = ents.get(w.b);
         if (!sensor || sensor.body !== "sensor") return null;
         if (w.a === "player") return { steps: [{ do: "deliver", item: "player", sensor: w.b, rule: r.id, times: 1 }], explain: `${r.id} (player enters ${w.b})` };
+        // a rival pushed into it (knock the cars into the pit)
+        if (made.some((x) => x.k === "exit" && x.a === w.a && x.cause?.do === "shove")) return { steps: [{ do: "shove", at: w.a, from: "", into: w.b, rule: r.id }], explain: `${r.id} (${w.a} knocked into ${w.b})` };
         if (!carryable.has(w.a)) return null;
         return {
           steps: [{ do: "pickup", item: w.a, rule: "" }, { do: "deliver", item: w.a, sensor: w.b, rule: r.id, times: 1 }],
@@ -206,7 +215,11 @@ export function t0(b: WorldBundle, playerTeam: "red" | "blue" = "red"): { chips:
         return { steps: [], explain: `${r.id} (every ${w.n} s)` };
       case "state_is": {
         const p = made.find((x) => x.k === "state" && x.a === w.a && x.s === w.s && x.cause);
-        return p ? { steps: causeSteps(p.cause!, r.id), explain: `${r.id} (${w.a} becomes ${w.s}: ${said(p.cause!)})` } : null;
+        if (p) return { steps: causeSteps(p.cause!, r.id), explain: `${r.id} (${w.a} becomes ${w.s}: ${said(p.cause!)})` };
+        // set by another rule ("three clues found → the door opens"): whatever fires that rule
+        const setter = rules.find((r2) => r2.id !== r.id && r2.then.some((e) => (e.e === "set_state" && e.target === w.a && String(e.v) === w.s) || (e.e === "open" && e.target === w.a && w.s === "open") || (e.e === "close" && e.target === w.a && w.s === "closed")));
+        const sub = setter && sat(setter, depth + 1, s2);
+        return sub ? { steps: sub.steps, explain: `${r.id} (${w.a} becomes ${w.s}) ← ${sub.explain}` } : null;
       }
       case "exit": {
         // someone knocked out of a ring (a shove)

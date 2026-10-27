@@ -20,7 +20,7 @@
    "play": 13,
    "places": 1,
    "firstPass": 6,
-   "now": 7,
+   "now": 9,
    "playableP50Ms": 2849,
    "controlsP50": 9
   },
@@ -31,7 +31,7 @@
    "play": 13,
    "places": 1,
    "firstPass": 7,
-   "now": 8,
+   "now": 10,
    "playableP50Ms": 3053,
    "controlsP50": 10
   },
@@ -53,7 +53,7 @@
    "play": 7,
    "places": 5,
    "firstPass": 4,
-   "now": 4,
+   "now": 6,
    "playableP50Ms": 2722,
    "controlsP50": 8
   },
@@ -64,7 +64,7 @@
    "play": 8,
    "places": 4,
    "firstPass": 6,
-   "now": 6,
+   "now": 7,
    "playableP50Ms": 3772,
    "controlsP50": 10
   }

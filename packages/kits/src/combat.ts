@@ -76,4 +76,19 @@ export const shoveVerb: VerbPlugin = {
   produces: (b) => [{ k: "exit", a: b.on, b: "", cause: { do: "shove", at: b.on } }],
 };
 
-export const COMBAT: VerbPlugin[] = [throwVerb, shoveVerb];
+export const catchVerb: VerbPlugin = {
+  id: "combat_sport.catch",
+  line: "on someone to catch (a thief, a pickpocket, an npc): USE next to them catches them (touch a=player b=them)",
+  on: ["npc"],
+  params: {},
+  use: {
+    radius: 1.6,
+    label: "catch",
+    run(_c, b, actor) {
+      return actor !== b.on; // the sim logs touch a=actor b=them
+    },
+  },
+  produces: (b) => [{ k: "touch", a: "player", b: b.on, cause: { do: "use", at: b.on } }],
+};
+
+export const COMBAT: VerbPlugin[] = [throwVerb, shoveVerb, catchVerb];

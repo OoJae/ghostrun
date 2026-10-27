@@ -420,6 +420,13 @@ function perform(r: Run, st: PlanStep): "ok" | "lost" | "stuck" {
         const c = sim.entity(st.item)!.carrier;
         return c ? sim.pos(c) : sim.pos(st.item);
       };
+      // holding something else (picked up on the way): put it down first
+      const holding = sim.entity("player")?.carrying;
+      if (holding && holding !== st.item && !sim.usable()) {
+        sim.step({ tick: sim.tick + 1, wx: 0, wz: 0, btn: BTN.USE });
+        sim.step({ tick: sim.tick + 1, wx: 0, wz: 0, btn: 0 });
+        budget.ticks -= 2;
+      }
       if (!sim.entity(st.item)!.carrier) {
         clearDoors(r, sim.pos(st.item));
         // lying somewhere the navmesh can't reach (on a platform): climb or hop to it first, unless
@@ -455,10 +462,12 @@ function perform(r: Run, st: PlanStep): "ok" | "lost" | "stuck" {
     case "use": {
       const fired = counter(sim, st.rule);
       const done = () => (st.want ? met(st.want) : st.rule ? fired() > 0 : sim.entity(st.at)?.state === "open");
-      for (let attempt = 0; attempt < 3 && live(r) && !done(); attempt++) {
-        const spot = spotBy(r, st.at);
+      const someone = b.entities.find((e) => e.id === st.at)?.kind === "npc";
+      for (let attempt = 0; attempt < (someone ? 8 : 3) && live(r) && !done(); attempt++) {
+        // someone to catch moves: chase them where they are, not to where they started
+        const spot = someone ? () => sim.pos(st.at) : spotBy(r, st.at);
         go(spot, () => sim.usable()?.on === st.at || done());
-        trace?.(`  use ${st.at} ${attempt}: spot ${v1(spot)}, at ${v1(sim.pos("player"))}, usable ${sim.usable()?.on ?? "-"}`);
+        trace?.(`  use ${st.at} ${attempt}: spot ${v1(typeof spot === "function" ? spot() : spot)}, at ${v1(sim.pos("player"))}, usable ${sim.usable()?.on ?? "-"}`);
         if (sim.usable()?.on !== st.at || !live(r)) continue;
         sim.step({ tick: sim.tick + 1, wx: 0, wz: 0, btn: BTN.USE });
         sim.step({ tick: sim.tick + 1, wx: 0, wz: 0, btn: 0 });
@@ -499,12 +508,16 @@ function perform(r: Run, st: PlanStep): "ok" | "lost" | "stuck" {
       const fired = counter(sim, st.rule);
       const done = () => (st.want ? met(st.want) : fired() >= (st.times ?? 1));
       const ring = st.from ? b.entities.find((e) => e.id === st.from) : undefined;
+      const pit = st.into ? b.entities.find((e) => e.id === st.into) : undefined;
       const inner = (): Vec3 => {
         const t = sim.pos(st.at);
-        if (!ring) return t;
-        const [dx, dz] = [t[0] - ring.pos[0], t[2] - ring.pos[2]];
+        // out of a ring: stand between it and the ring's middle; into a pit: on its far side
+        const c = ring ?? pit;
+        if (!c) return t;
+        const [dx, dz] = [t[0] - c.pos[0], t[2] - c.pos[2]];
         const len = Math.sqrt(dx * dx + dz * dz) || 1;
-        return [t[0] - (dx / len) * 1.1, t[1], t[2] - (dz / len) * 1.1];
+        const k = ring ? -1.1 : 1.1;
+        return [t[0] + (dx / len) * k, t[1], t[2] + (dz / len) * k];
       };
       for (let attempt = 0; attempt < 10 * (st.times ?? 1) && live(r) && !done(); attempt++) {
         go(inner, () => sim.usable()?.on === st.at || done());

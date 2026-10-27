@@ -51,6 +51,14 @@ function plan(sim: SimWorld, b: WorldBundle, r: Rule, playerTeam: string): strin
         sim.teleport("player", [centre[0], centre[1] + 0.2, centre[2]]);
         return null;
       }
+      // a rival knocked into it: the rival just outside, the player beyond them, shove
+      if (producers(b).some((x) => x.k === "exit" && x.a === w.a && x.cause?.do === "shove")) {
+        const y = sensor.pos[1] - sensor.size[1] / 2 + 0.95;
+        const edge = sensor.size[0] / 2 + 0.9;
+        sim.teleport(w.a, [centre[0] + edge, y, centre[2]]);
+        sim.teleport("player", [centre[0] + edge + 1.2, y, centre[2]]);
+        return true;
+      }
       // carried item: pick a carrier from the required team (the player first, then an NPC)
       const carrier = team === undefined || team === playerTeam ? "player" : b.entities.find((e) => e.kind === "npc" && e.team === team)?.id;
       if (!carrier) return `no agent on team ${String(team)} to carry ${w.a}`;
