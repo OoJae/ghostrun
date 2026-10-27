@@ -9,7 +9,8 @@
     "full": "node scripts/build.mjs && node scripts/run-all.mjs --ticks 10000"
   },
   "dependencies": {
-    "@dimforge/rapier3d-deterministic": "catalog:"
+    "@dimforge/rapier3d-deterministic": "catalog:",
+    "@ghostrun/detmath": "workspace:*"
   },
   "devDependencies": {
     "@playwright/test": "catalog:",

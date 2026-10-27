@@ -1,0 +1,33 @@
+{"op":"meta","mode":"play","lang":"en","pack":"city_block","sub":["rooftop"],"seed":7,"look":"neon","mood":[0.3,0.7,0.5],"timeOfDay":22,"weather":"rain"}
+{"op":"zone","id":"z_plaza","slot":"center","tag":"plaza","name":"Neon plaza"}
+{"op":"zone","id":"z_red_base","slot":"west_block","tag":"base","name":"Red base"}
+{"op":"zone","id":"z_blue_base","slot":"east_block","tag":"base","name":"Blue base"}
+{"op":"zone","id":"z_roof","slot":"roof_lane_a","tag":"rooftop","name":"Rooftop lane","parent":"z_plaza"}
+{"op":"spawn","id":"sp_red","zone":"z_red_base","anchor":"spawn_pad","team":"red"}
+{"op":"spawn","id":"sp_blue","zone":"z_blue_base","anchor":"spawn_pad","team":"blue"}
+{"op":"goal","id":"goal_red","zone":"z_red_base","anchor":"goal_ring","noun":"neon goal ring","hyper":"ring","team":"red"}
+{"op":"goal","id":"goal_blue","zone":"z_blue_base","anchor":"goal_ring","noun":"neon goal ring","hyper":"ring","team":"blue"}
+{"op":"ent","id":"orb","kind":"pickup","noun":"glowing orb","hyper":"ball","zone":"z_plaza","anchor":"plinth","body":"dynamic","shape":"sphere","states":["home","carried","dropped"],"init":"home","size":[0.5,0.5,0.5]}
+{"op":"ent","id":"pad_mid","kind":"platform","noun":"hover platform","hyper":"platform","zone":"z_roof","anchor":"gap_mid","body":"kinematic","props":{"travel":4,"period":3}}
+{"op":"ent","id":"sign_hot","kind":"sign","noun":"neon billboard","hyper":"sign","zone":"z_plaza","anchor":"wall_n","body":"fixed"}
+{"op":"verb","id":"vb_jump","verb":"locomotion.jump","on":"player","params":{"jumpsMax":2}}
+{"op":"verb","id":"vb_carry","verb":"physics_props.carry","on":"orb","params":{"speedMul":0.85}}
+{"op":"verb","id":"vb_tag","verb":"combat_sport.tag_drop","on":"player","params":{"radius":1.2}}
+{"op":"verb","id":"vb_platform","verb":"motion_hazards.oscillate","on":"pad_mid","params":{"axis":"x","travel":4,"period":3}}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6}}
+{"op":"rule","id":"r_pickup","when":{"t":"pickup","a":"orb","b":"player"},"then":[{"e":"set_state","target":"orb","v":"carried"},{"e":"emit","target":"orb","fx":"sparkle"}]}
+{"op":"rule","id":"r_score_red","when":{"t":"enter","a":"orb","b":"goal_red"},"if":[{"l":"orb.carrier.team","op":"eq","r":"red"}],"then":[{"e":"score","target":"team:red","n":1},{"e":"reset","target":"orb"}]}
+{"op":"rule","id":"r_score_blue","when":{"t":"enter","a":"orb","b":"goal_blue"},"if":[{"l":"orb.carrier.team","op":"eq","r":"blue"}],"then":[{"e":"score","target":"team:blue","n":1},{"e":"reset","target":"orb"}]}
+{"op":"rule","id":"r_win","when":{"t":"score_gte","a":"team:red","n":3},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose","when":{"t":"score_gte","a":"team:blue","n":3},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"npc","id":"mate_1","role":"teammate","zone":"z_red_base","anchor":"spawn_pad","team":"red","menu":["teammate.defend","teammate.attack","teammate.follow"],"dflt":"teammate.defend"}
+{"op":"npc","id":"rival_1","role":"rival","zone":"z_blue_base","anchor":"spawn_pad","team":"blue","menu":["rival.attack","rival.defend","rival.intercept"],"dflt":"rival.attack"}
+{"op":"npc","id":"rival_2","role":"rival","zone":"z_blue_base","anchor":"spawn_pad","team":"blue","menu":["rival.attack","rival.defend","rival.intercept"],"dflt":"rival.defend"}
+{"op":"expect","id":"x_roof","prop":"requires","a":"sp_red","b":"z_roof","need":["jumps>=2"],"headline":true,"text":"Rooftop lane needs double jump"}
+{"op":"expect","id":"x_win","prop":"win_reachable","a":"player","b":"goal_red","text":"Red can score and win"}
+{"op":"expect","id":"x_fair","prop":"fair_teams","a":"team:red","b":"team:blue","lo":0.45,"hi":0.55,"text":"Red vs blue is fair"}
+{"op":"end","layer":"gameplay"}
+{"op":"dress","id":"d_vent_1","noun":"steaming vent","zone":"z_plaza","anchor":"floor_ne"}
+{"op":"dress","id":"d_cables","noun":"hanging cables","zone":"z_roof","anchor":"edge"}
+{"op":"poster","id":"p_noodle","prompt":"retro neon noodle bar advert, magenta and cyan","zone":"z_plaza"}
+{"op":"end","layer":"cosmetic"}

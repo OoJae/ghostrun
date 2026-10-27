@@ -1,5 +1,5 @@
 import type { Rapier } from "./load";
-import { hex32, xxh32 } from "./xxh32";
+import { hex32, xxh32 } from "@ghostrun/detmath";
 
 // sfc32: integer-only PRNG, identical on every engine. Setup must not use Math.sin/cos/random.
 function sfc32(a: number, b: number, c: number, d: number) {

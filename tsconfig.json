@@ -1,4 +1,14 @@
 {
   "files": [],
-  "references": [{ "path": "tools/detcheck" }]
+  "references": [
+    {
+      "path": "packages/detmath"
+    },
+    {
+      "path": "packages/ir"
+    },
+    {
+      "path": "tools/detcheck"
+    }
+  ]
 }
