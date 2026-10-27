@@ -1,0 +1,7 @@
+# A/B prompts for the fill example (internal)
+a haunted lighthouse where you light three lamps before dawn
+a desert oasis market with a thief to catch
+an ice palace with slippery floors and a crown to steal
+a botanical greenhouse tour with rare plants to inspect
+a ninja dojo training course with moving targets
+a pirate cove where you dig up treasure and escape the tide

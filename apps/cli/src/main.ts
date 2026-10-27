@@ -118,7 +118,8 @@ async function build(prompt: string, seed: number, outDir: string | null): Promi
   // 2. fill (gpt-oss-120b, streamed JSONL, low reasoning), parsed line by line as it arrives
   const chosen = packFor(intent.pack);
   const layout = chosen.generate({ seed, params: chosen.defaults, sub: intent.sub, laws: { gravityScale: 1, jumpH: 1.6, speed: 6, jumpsMax: 1, airControl: 0.6, coyoteMs: 120, bufferMs: 100, thrust: 0 }, harder: false });
-  const example = readFileSync(resolve(import.meta.dirname, "../../../packages/ir/fixtures/ctf-neon.jsonl"), "utf8");
+  const exampleFile = process.env.GR_EXAMPLE === "vault" ? "vault-heist.jsonl" : "ctf-neon.jsonl"; // A/B the fill example
+  const example = readFileSync(resolve(import.meta.dirname, `../../../packages/ir/fixtures/${exampleFile}`), "utf8");
   const parser = new FillParser({ seed, pack: layout.packId });
   let fillText = "";
   let fillFirstTokenMs = -1;
