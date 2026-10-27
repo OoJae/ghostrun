@@ -89,6 +89,30 @@ describe("POST /v1/repair", () => {
   });
 });
 
+describe("POST /v1/edit", () => {
+  it("streams the patch for the person's change, charged like a repair; anonymous callers are gated", async () => {
+    const w = world({ up: { fill: { inTok: 8000, outTok: 120, lines: ['{"op":"law","player":{"jumpsMax":1}}'] } } });
+    const call = async (headers: Record<string, string>, body: unknown) => {
+      const ctx = waiter();
+      const res = await handle(new Request("https://g.example/v1/edit", { method: "POST", headers: { "cf-connecting-ip": freshIp(), ...headers }, body: JSON.stringify(body) }), w.env, ctx);
+      return { res, ctx };
+    };
+    const fill = '{"op":"meta","mode":"play","pack":"arena","seed":3}\n{"op":"end","layer":"gameplay"}';
+    const req = { prompt: "steal the gem", change: "only one jump", intent: { ...INTENT, pack: "arena" }, fill, seed: 3 };
+    expect((await call({}, req)).res.status).toBe(401);
+    expect((await call(judge, { ...req, change: " " })).res.status).toBe(400);
+    expect(w.f.hits.filter((h) => h.url.includes("cerebras"))).toHaveLength(0);
+    const { res, ctx } = await call(judge, req);
+    const events = await readSse(res);
+    await ctx.settled();
+    expect(events.filter((e) => e.event === "op").map((e) => (e.data as { line: string }).line)).toEqual(['{"op":"law","player":{"jumpsMax":1}}']);
+    const sent = w.f.hits.find((h) => h.url.includes("cerebras"))!.body;
+    expect(sent).toContain("The change to make: only one jump");
+    expect(sent).toContain("never try to make a check pass");
+    expect(w.pool("judge").spent).toBe(costMicroUsd(FILL_MODEL, 8000, 120));
+  });
+});
+
 describe("edge API", () => {
   it("health and input validation", async () => {
     const dev: Env = { CEREBRAS_API_KEY: "k", DEV_OPEN: "1" };

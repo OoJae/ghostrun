@@ -59,3 +59,40 @@ describe("city_block + placer", () => {
     expect(a).not.toBe(c);
   });
 });
+
+describe("kit repairs", () => {
+  it("a rule waiting on a touch or pickup nothing could produce gets the verb that produces it", () => {
+    const extra = [
+      '{"op":"ent","id":"coin_9","kind":"pickup","noun":"golden coin","zone":"z_plaza","anchor":"wall_s"}',
+      '{"op":"ent","id":"statue_1","kind":"prop","noun":"bronze statue","zone":"z_plaza","anchor":"wall_e"}',
+      '{"op":"ent","id":"key_1","kind":"pickup","noun":"brass key","zone":"z_plaza","anchor":"wall_w"}',
+      '{"op":"rule","id":"r_coin","when":{"t":"touch","a":"player","b":"coin_9"},"then":[{"e":"score","target":"team:red","n":1}]}',
+      '{"op":"rule","id":"r_statue","when":{"t":"touch","a":"player","b":"statue_1"},"then":[{"e":"emit","target":"statue_1","fx":"glow"}]}',
+      '{"op":"rule","id":"r_key","when":{"t":"pickup","a":"key_1","b":"player"},"then":[{"e":"emit","target":"key_1","fx":"sparkle"}]}',
+    ];
+    const lines = ctf.split("\n");
+    const at = lines.findIndex((l) => l.includes('"op":"verb"'));
+    lines.splice(at, 0, ...extra.slice(0, 3));
+    const rAt = lines.findIndex((l) => l.includes('"op":"npc"'));
+    lines.splice(rAt, 0, ...extra.slice(3));
+    const fill = parseFill(lines.join("\n"), { seed: 7 });
+    const layout = cityBlock.generate({ seed: 7, params: cityBlock.defaults, sub: fill.draft.pack.sub, laws: fill.draft.laws, harder: false });
+    const { bundle, notes } = placeWorld({ ...fill.draft, engine: "e".repeat(64) }, layout);
+    const on = (id: string) => bundle.verbs.filter((v) => v.on === id).map((v) => v.verb);
+    expect(on("coin_9")).toEqual(["puzzle.collect"]);
+    expect(on("statue_1")).toEqual(["social.inspect"]);
+    expect(on("key_1")).toEqual(["physics_props.carry"]);
+    expect(notes).toContain("coin_9: added puzzle.collect (rule r_coin waits on a touch nothing could produce)");
+  });
+});
+
+describe("win repairs", () => {
+  it("the rival team reaching its score makes you lose, even when the fill says win", () => {
+    const fill = parseFill(ctf.replace('"then":[{"e":"lose","target":"player"}]', '"then":[{"e":"win","target":"player"}]'), { seed: 7 });
+    const layout = cityBlock.generate({ seed: 7, params: cityBlock.defaults, sub: fill.draft.pack.sub, laws: fill.draft.laws, harder: false });
+    const { bundle, notes } = placeWorld({ ...fill.draft, engine: "e".repeat(64) }, layout);
+    expect(bundle.rules.find((r) => r.id === "r_lose")!.then.map((e) => e.e)).toEqual(["lose"]);
+    expect(bundle.rules.find((r) => r.id === "r_win")!.then.map((e) => e.e)).toEqual(["win"]);
+    expect(notes).toContain("rule r_lose: blue reaching 3 made you win → you lose (you play red)");
+  });
+});

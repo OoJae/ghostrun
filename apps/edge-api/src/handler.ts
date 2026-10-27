@@ -5,7 +5,7 @@
 // Every route but health sits behind the gate (gate.ts). A build reserves its worst-case cost with
 // the governor before any model call and commits the metered cost when it ends (governor.ts).
 import { DEFAULT_LAWS, gameplayLines } from "@ghostrun/ir";
-import { chatJson, fillMessages, IntentOut, intentJsonSchema, intentMessages, LlmError, mindJsonSchema, mindMessages, repairMessages, streamChat } from "@ghostrun/llm";
+import { chatJson, editMessages, fillMessages, IntentOut, intentJsonSchema, intentMessages, LlmError, mindJsonSchema, mindMessages, repairMessages, streamChat } from "@ghostrun/llm";
 import { ALL_SUBS, PACKS, packFor } from "@ghostrun/registry";
 import * as v from "valibot";
 // the vault heist teaches goal-dependent wins, doorway doors, keys and inspectable exhibits (an A/B
@@ -77,7 +77,8 @@ export async function handle(req: Request, env: Env, ctx?: WaitUntil): Promise<R
   if (path === "/v1/health") return json({ ok: true, packs: PACKS.map((p) => p.id), llm: Boolean(env.CEREBRAS_API_KEY), gate: gateMode(env, url), sitekey: env.TURNSTILE_SITEKEY ?? null });
   if (path === "/v1/session" && req.method === "POST") return session(req, env, url);
   if (path === "/v1/build" && req.method === "POST") return build(req, env, url, later);
-  if (path === "/v1/repair" && req.method === "POST") return repair(req, env, url, later);
+  if (path === "/v1/repair" && req.method === "POST") return patch("repair", req, env, url, later);
+  if (path === "/v1/edit" && req.method === "POST") return patch("edit", req, env, url, later);
   if (path === "/v1/mind" && req.method === "POST") return mind(req, env, url);
   const shareId = /^\/v1\/share\/([a-z2-7]{16})$/.exec(path)?.[1];
   const post = req.method === "POST";
@@ -198,11 +199,12 @@ async function mind(req: Request, env: Env, url: URL): Promise<Response> {
 }
 
 /**
- * POST /v1/repair: the proof's counterexamples for a world go back to the fill model, which
- * answers with a patch (changed lines by id, new lines, deletions) streamed as op events. The
- * client merges, re-places and re-proves, and offers the repaired world only if it is better.
+ * POST /v1/repair and /v1/edit: the fill model answers with a patch (changed lines by id, new
+ * lines, deletions) streamed as op events. A repair is asked to fix the proof's counterexamples;
+ * an edit makes the person's own change. Either way the client merges, re-places and re-proves:
+ * a repair is offered only if the receipt got better, an edit comes back with its new numbers.
  */
-async function repair(req: Request, env: Env, url: URL, later: (p: Promise<unknown>) => void): Promise<Response> {
+async function patch(kind: "repair" | "edit", req: Request, env: Env, url: URL, later: (p: Promise<unknown>) => void): Promise<Response> {
   if (!env.CEREBRAS_API_KEY) return json({ error: "llm not configured" }, 503);
   const gate = await identify(req, url, env);
   if (!gate.ok) return json(gate.body, gate.status);
@@ -211,12 +213,13 @@ async function repair(req: Request, env: Env, url: URL, later: (p: Promise<unkno
   if (caller.via !== "token" && !buildBuckets.allow(ip, intVar(env.BUILDS_PER_WINDOW, 30))) return json({ error: "rate limited", retryMs: WINDOW_MS }, 429);
   const body = await readJson(req, 96 * 1024);
   if (!body.ok) return json({ error: body.error }, body.status);
-  const input = (body.value ?? {}) as { prompt?: unknown; intent?: unknown; fill?: unknown; issues?: unknown; seed?: unknown };
-  const prompt = typeof input.prompt === "string" ? input.prompt.trim().slice(0, MAX_PROMPT) : "";
+  const input = (body.value ?? {}) as { prompt?: unknown; change?: unknown; intent?: unknown; fill?: unknown; issues?: unknown; seed?: unknown };
+  const prompt = typeof input.prompt === "string" ? input.prompt.trim().slice(0, MAX_PROMPT * 2) : "";
   const fill = typeof input.fill === "string" && input.fill.length <= 64 * 1024 ? input.fill : "";
   const issues = Array.isArray(input.issues) ? input.issues.filter((x): x is string => typeof x === "string").slice(0, 10).map((x) => x.slice(0, 600)) : [];
+  const change = typeof input.change === "string" ? input.change.trim().slice(0, MAX_PROMPT) : "";
   const intent = v.safeParse(IntentOut, input.intent);
-  if (!prompt || !fill || !issues.length || !intent.success || !Number.isInteger(input.seed)) return json({ error: "bad repair request" }, 400);
+  if (!prompt || !fill || !intent.success || !Number.isInteger(input.seed) || (kind === "repair" ? !issues.length : !change)) return json({ error: `bad ${kind} request` }, 400);
   if (await paused(env)) return json({ error: "builds paused", retryable: true }, 503);
   const held = await reserveFor(env, url, caller, ip, costMicroUsd(FILL_MODEL, REPAIR_MAX_IN, REPAIR_MAX_OUT));
   if (held instanceof Response) return held;
@@ -228,9 +231,11 @@ async function repair(req: Request, env: Env, url: URL, later: (p: Promise<unkno
       try {
         const pack = packFor(intent.output.pack);
         const layout = pack.generate({ seed: input.seed as number, params: pack.defaults, sub: intent.output.sub, laws: DEFAULT_LAWS, harder: false });
+        const lines = gameplayLines(fill);
+        const messages = kind === "repair" ? repairMessages(prompt, intent.output, layout, lines, issues) : editMessages(prompt, change, intent.output, layout, lines);
         let buf = "";
         let i = 0;
-        for await (const ev of streamChat({ apiKey: env.CEREBRAS_API_KEY, model: FILL_MODEL, reasoningEffort: "low", maxTokens: REPAIR_MAX_OUT, messages: repairMessages(prompt, intent.output, layout, gameplayLines(fill), issues), signal: out.signal })) {
+        for await (const ev of streamChat({ apiKey: env.CEREBRAS_API_KEY, model: FILL_MODEL, reasoningEffort: "low", maxTokens: REPAIR_MAX_OUT, messages, signal: out.signal })) {
           if (ev.type === "usage") cost = costMicroUsd(FILL_MODEL, ev.inTok, ev.outTok);
           if (ev.type !== "text") continue;
           buf += ev.delta;
@@ -245,7 +250,7 @@ async function repair(req: Request, env: Env, url: URL, later: (p: Promise<unkno
         await out.send("done", { totalMs: Date.now() - t0, lines: i });
       } catch (e) {
         if (e instanceof LlmError && e.status !== 200) cost = 0;
-        await out.send("error", { message: e instanceof Error ? e.message.slice(0, 200) : "repair failed", retryable: e instanceof LlmError ? e.retryable : true });
+        await out.send("error", { message: e instanceof Error ? e.message.slice(0, 200) : `${kind} failed`, retryable: e instanceof LlmError ? e.retryable : true });
       } finally {
         await out.close();
         await held(cost).catch(() => undefined);

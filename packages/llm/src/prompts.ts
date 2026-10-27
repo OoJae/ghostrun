@@ -165,6 +165,35 @@ export function repairMessages(prompt: string, intent: IntentOut, layout: PackLa
   ];
 }
 
+/**
+ * The person's own change to a world ("only one jump", "add three more coins", "make it night"):
+ * a patch in the repair format. Expectations are off limits (the merge locks them too), so the
+ * proof keeps checking what the world promised and a change that breaks a promise shows up.
+ */
+export function editMessages(prompt: string, change: string, intent: IntentOut, layout: PackLayout, fill: string): Msg[] {
+  return [
+    {
+      role: "system",
+      content: [
+        "You change a GHOSTRUN world the way the person asks. Output ONLY JSON Lines, no prose, no code fences:",
+        "- a changed line keeps its id and replaces the old one entirely (repeat every field you keep);",
+        "- a new thing gets a new id; {\"op\":\"del\",\"id\":\"...\"} removes a line;",
+        "- never repeat unchanged lines; never output end, expect, dress or poster lines.",
+        "Do exactly what the change asks and keep everything else. New things must work: bind their verbs and wire their rules.",
+        "Movement (jumps, jump height, speed, gravity) is the law line: {\"op\":\"law\",\"player\":{\"jumpsMax\":1,\"jumpH\":1.6,\"speed\":6,\"gravityScale\":1}}.",
+        "Looks are one meta line with only the fields that change: {\"op\":\"meta\",\"look\":\"neon city\",\"timeOfDay\":22,\"weather\":\"rain\"}. timeOfDay is 0-24; weather is clear|rain|snow|fog|storm.",
+        "The world's expectations stay as they are: the proof re-checks them after your change, so never try to make a check pass by editing it.",
+        "If the change asks for something the world language can't express, make the closest change it can.",
+        ...worldRules(layout),
+      ].join("\n"),
+    },
+    {
+      role: "user",
+      content: `Original prompt: ${prompt}\nIntent: ${JSON.stringify(intent)}\nCurrent world (gameplay lines):\n${fill.trim()}\nThe change to make: ${change}`,
+    },
+  ];
+}
+
 /** What a mind sees: who it is, its typed menu, the situation in a few lines, and what just happened. */
 export interface MindInput {
   npc: string;

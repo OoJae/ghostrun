@@ -1,0 +1,6 @@
+# Generic changes a judge might type into "Change it" (applied to every saved world)
+only one jump
+super high jumps
+add three more coins to collect for points
+make it night with rain
+make it harder but fair

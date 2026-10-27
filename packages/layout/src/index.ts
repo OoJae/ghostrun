@@ -203,6 +203,18 @@ export function repairKits(b: WorldBundle): string[] {
     }
     if (added) notes.push(`${added} named thing(s) made inspectable (a place to explore)`);
   }
+  // 1c. a rule waiting on an event nothing could produce: what it touches is collected (or, if
+  // not a pickup, inspected); what it picks up is carried
+  for (const r of b.rules) {
+    const w = r.when;
+    const id = w.t === "touch" ? w.b : w.t === "pickup" ? w.a : "";
+    const e = id ? b.entities.find((x) => x.id === id) : undefined;
+    if (!e || bound(e.id) || e.kind === "npc") continue;
+    const kit = w.t === "pickup" ? "physics_props.carry" : e.kind === "pickup" ? "puzzle.collect" : "social.inspect";
+    const noun = e.noun || e.id.replace(/_/g, " ");
+    b.verbs.push(vb(uniqueId(b, `vb_${kit.split(".")[1]}_${e.id}`), kit, e.id, kit === "social.inspect" ? { text: noun.charAt(0).toUpperCase() + noun.slice(1) } : {}));
+    notes.push(`${e.id}: added ${kit} (rule ${r.id} waits on a ${w.t} nothing could produce)`);
+  }
   // 2. collections: ≥3 same-noun carried pickups that are never delivered anywhere
   const delivered = new Set<string>();
   for (const r of b.rules) {
@@ -309,13 +321,30 @@ export function repairKits(b: WorldBundle): string[] {
   return notes;
 }
 
-/** A play world with no way to win gets the obvious one: reach the goal. Logged. */
+/**
+ * Wins that can't be right, repaired and logged: the rival team reaching its score is the
+ * player's loss (fills sometimes write "win" for both teams); a play world with no way to win at
+ * all gets the obvious one, reaching the goal.
+ */
 export function repairWin(b: WorldBundle): string[] {
-  if (b.mode !== "play" || b.rules.some((r) => r.then.some((e) => e.e === "win"))) return [];
+  if (b.mode !== "play") return [];
+  const notes: string[] = [];
+  // the rivals reaching their score is the player's loss, never their win (the player plays red)
+  const spawnOf = (t: string) => b.entities.some((e) => e.kind === "spawn" && e.team === t);
+  const mine = !spawnOf("red") && spawnOf("blue") ? "blue" : "red";
+  for (const r of b.rules) {
+    const w = r.when;
+    if (w.t !== "score_gte" || !w.a.startsWith("team:") || w.a === `team:${mine}`) continue;
+    const win = r.then.find((e) => e.e === "win" && (e.target === "player" || !e.target));
+    if (!win || r.then.some((e) => e.e === "lose")) continue;
+    win.e = "lose";
+    notes.push(`rule ${r.id}: ${w.a.slice(5)} reaching ${w.n} made you win → you lose (you play ${mine})`);
+  }
+  if (b.rules.some((r) => r.then.some((e) => e.e === "win"))) return notes;
   const goal = b.entities.find((e) => e.kind === "goal" && (e.team === "red" || !e.team));
-  if (!goal) return [];
+  if (!goal) return notes;
   b.rules.push({ id: uniqueId(b, "r_win_goal"), src: "template", layer: "gameplay", when: { t: "enter", a: "player", b: goal.id, s: "", n: 0, act: "" }, if: [], then: [fx("win", "player")], once: true, cooldownS: 0, prio: 0 });
-  return [`added r_win_goal: no rule wins, so reaching ${goal.id} does`];
+  return [...notes, `added r_win_goal: no rule wins, so reaching ${goal.id} does`];
 }
 
 /** A verb that needs a particular body (a plate or a coin must be a sensor) gets it. Logged. */

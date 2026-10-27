@@ -587,3 +587,36 @@ kbd {
 
 .result-director { margin: 10px 0 0; font-size: 12.5px; max-width: 420px; line-height: 1.4; }
 .result-director b { color: #ffcf7a; }
+
+/* ---- change it (edits) ------------------------------------------------------------------------ */
+.editbox { position: absolute; top: 82px; left: 20px; width: 300px; padding: 12px 14px; animation: slide-in 420ms cubic-bezier(0.2, 0.8, 0.2, 1); }
+.editbox form { display: flex; flex-direction: column; gap: 6px; }
+.editbox input {
+  height: 34px; padding: 0 10px; border-radius: 8px; font: inherit; color: inherit;
+  background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.12); outline: none;
+}
+.editbox input:focus { border-color: rgba(25, 227, 255, 0.45); background: rgba(255, 255, 255, 0.08); }
+.editbox input:disabled { opacity: 0.55; }
+.edit-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.edit-chips button, .edit-undo {
+  font: inherit; font-size: 12px; padding: 4px 9px; border-radius: 999px; cursor: pointer; color: inherit;
+  background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.16);
+}
+.edit-chips button:hover, .edit-undo:hover { border-color: rgba(25, 227, 255, 0.5); }
+.edit-result { margin-top: 8px; }
+.edit-result p { margin: 4px 0; }
+.edit-change { color: var(--ink-dim); font-style: italic; overflow-wrap: anywhere; }
+.edit-summary { font-weight: 600; }
+.editbox.editing .edit-result .muted, .editbox.proving .edit-result .muted:last-child { animation: pulse 1s ease-in-out infinite alternate; }
+.edit-delta { list-style: none; margin: 6px 0 0; padding: 0; display: grid; gap: 3px; }
+.edit-delta li::before { content: "•"; margin-right: 6px; color: var(--ink-faint); }
+.edit-delta li.worse b { color: #ff8095; }
+.edit-delta li.better b { color: #3dffa8; }
+.edit-undo { margin-top: 8px; }
+@media (max-width: 720px) {
+  .editbox { top: 72px; left: 12px; right: 12px; width: auto; }
+}
+.editbox .warn { color: #ffb02e; }
+.edit-failures { list-style: none; margin: 6px 0 0; padding: 6px 8px; border-radius: 8px; background: rgba(255, 59, 92, 0.1); border: 1px solid rgba(255, 59, 92, 0.25); display: grid; gap: 3px; font-size: 12px; color: #ffb3c0; }
+.edit-race { list-style: none; margin: 6px 0 0; padding: 0; display: grid; gap: 2px; font-size: 11.5px; color: var(--ink-dim); }
+.edit-race li.kept { color: #3dffa8; }

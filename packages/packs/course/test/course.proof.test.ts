@@ -3,7 +3,7 @@
 // pack and run through the whole proof ladder.
 import { readFileSync } from "node:fs";
 import { beforeAll, describe, expect, it } from "vitest";
-import { parseFill, type WorldBundle } from "@ghostrun/ir";
+import { parseFill, type Laws, type WorldBundle } from "@ghostrun/ir";
 import { placeWorld } from "@ghostrun/layout";
 import { loadNavNode } from "@ghostrun/nav/node";
 import type { PackLayout } from "@ghostrun/plugin-api";
@@ -19,6 +19,7 @@ let R: Rapier;
 let layout: PackLayout;
 let world: WorldBundle;
 let receipt: Receipt;
+let draft: ReturnType<typeof parseFill>["draft"];
 
 beforeAll(async () => {
   R = await loadRapierNode();
@@ -28,6 +29,7 @@ beforeAll(async () => {
   layout = course.generate({ seed: 7, params: course.defaults, sub: fill.draft.pack.sub, laws: fill.draft.laws, harder: false });
   // the fixture names its zones after this seed's plan; keep it honest if the plan ever changes
   expect(layout.zones.map((z) => z.tag)).toEqual(["start", "ledge", "beam", "steps", "gaps", "pit", "steps", "finish"]);
+  draft = fill.draft;
   const placed = placeWorld({ ...fill.draft, engine: ENGINE }, layout);
   expect(placed.notes.filter((n) => n.includes("not in"))).toEqual([]);
   world = placed.bundle;
@@ -57,14 +59,18 @@ describe("course pack, end to end through the proof ladder", () => {
     expect(out.ticks / 60).toBeLessThan(60);
   });
 
-  // BLOCKED on packages/proof (lead-owned): T3's runners follow navmesh paths and add at most one
-  // jump per plan step (climbOnto the target's surface from flat ground), so no course with gaps
-  // can be won by them; the receipt says "no AI runner could win · 0 of 12". The runner above
-  // shows the world is winnable; T3 needs hop-by-hop jump links over the T1 surface graph.
-  // `it.fails` flips red the day T3 learns to jump gaps, as a reminder to make it a plain `it`.
   it("AI runners win by playing it in physics (T3 hop routes)", () => {
     const win = receipt.chips.find((c) => c.id === "T3:win")!;
     expect(win.status).toBe("played");
     expect(win.k).toBeGreaterThanOrEqual(10);
   });
+
+  // an edit changes the laws in the same geometry (the layout stays fitted to the original laws)
+  it("edited laws: runners still climb with 4 m jumps; with one jump the counterexample names the step", async () => {
+    const relaw = (laws: Partial<Laws>) => placeWorld({ ...draft, laws: { ...draft.laws, ...laws }, engine: ENGINE }, layout).bundle;
+    const high = await prove(R, relaw({ jumpH: 4 }), { engine: ENGINE, runs: 4 });
+    expect(high.chips.find((c) => c.id === "T3:win")!.k).toBeGreaterThan(0);
+    const one = await prove(R, relaw({ jumpsMax: 1 }), { engine: ENGINE, runs: 2 });
+    expect(one.chips.find((c) => c.id === "T3:win")!.cx!.text).toMatch(/no route reaches the finish arch: a 2\.3 m step on the way, and 1 jump reaches 1\.5 m$/);
+  }, 120_000);
 });

@@ -11,12 +11,14 @@ interface Job {
   bundle: WorldBundle;
   engine: string;
   urls: { rapier: string; recast: string };
+  /** AI runners for T3 (a candidate race proves with fewer; the world itself gets the default). */
+  runs?: number;
 }
 
 let ready: Promise<Rapier> | undefined;
 
 self.onmessage = async (e: MessageEvent<Job>) => {
-  const { id, bundle, engine, urls } = e.data;
+  const { id, bundle, engine, urls, runs } = e.data;
   try {
     ready ??= (async () => {
       const [rm, nm] = await Promise.all([WebAssembly.compileStreaming(fetch(urls.rapier)), WebAssembly.compileStreaming(fetch(urls.recast))]);
@@ -24,7 +26,7 @@ self.onmessage = async (e: MessageEvent<Job>) => {
       return initRapier(rm);
     })();
     const R = await ready;
-    const receipt = await prove(R, bundle, { engine, host: "device", onChip: (chip) => self.postMessage({ id, chip }) });
+    const receipt = await prove(R, bundle, { engine, host: "device", ...(runs ? { runs } : {}), onChip: (chip) => self.postMessage({ id, chip }) });
     self.postMessage({ id, receipt });
   } catch (err) {
     self.postMessage({ id, error: err instanceof Error ? err.message : String(err) });

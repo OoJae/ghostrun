@@ -2,12 +2,12 @@
 // following navmesh paths with seeded variation against the world's own bots, and a jump witness
 // checks each "requires" (alone: geometry, not tactics).
 import { stream } from "@ghostrun/detmath";
-import type { Expect, Vec3, WorldBundle } from "@ghostrun/ir";
+import { clampLaws, type Expect, type Laws, type Vec3, type WorldBundle } from "@ghostrun/ir";
 import type { NavWorld } from "@ghostrun/nav";
 import { castBrain } from "@ghostrun/bots";
 import { BTN, SimWorld, type Rapier } from "@ghostrun/sim";
 import type { PlanStep, Want, WinChain } from "./t0";
-import { apex, gap, hopRoute, reachAt, surfaceUnder as surfaceAt, surfaces, type Surface } from "./t1";
+import { apex, gap, hopOk, hopRoute, reachAt, surfaceUnder as surfaceAt, surfaces, type Surface } from "./t1";
 import type { Chip } from "./types";
 
 const RUN_TICKS = 120 * 60; // two minutes of play per run (a world's own timer still ends it sooner)
@@ -102,6 +102,15 @@ function surfaceUnder(b: WorldBundle, p: Vec3) {
 }
 
 /**
+ * Ticks a jump sequence stays airborne before landing `rise` metres up, from the T1 model's own
+ * time of flight, plus slack: high jumps (a 4 m jump flies for almost 2 s) must not time out mid-air.
+ */
+function airTicks(laws: Laws, jumps: number, rise: number): number {
+  const r = reachAt(laws, jumps, rise);
+  return Math.max(150, Math.ceil((r > 0 ? r / (laws.speed * 0.85) : 2.5) * 60) + 45);
+}
+
+/**
  * Jump link: when the target is on a raised surface the navmesh can't reach on foot, walk to the
  * closest face of that surface, jump (and air-jump at the apex), then land on top.
  */
@@ -123,15 +132,19 @@ function climbOnto(sim: SimWorld, nav: NavWorld, b: WorldBundle, target: Vec3, r
   for (const f of faces) {
     if (!nav.path([p[0], 0, p[2]], f.at)) continue;
     if (!walkTo(sim, nav, f.at, rng, 1, budget, () => false)) continue;
+    // as many jumps as the ledge needs, no more: extra air jumps only fly over it (and take longer)
+    const rise = top - (sim.pos("player")[1] - 0.9);
+    let need = 1;
+    while (need < sim.laws.jumpsMax && apex(sim.laws, need) < rise + 0.05) need++;
     let on = false;
-    for (let t = 0; t < 150 && budget.ticks > 0 && !on; t++) {
+    for (let t = 0, end = airTicks(sim.laws, need, rise); t < end && budget.ticks > 0 && !on; t++) {
       const q = sim.pos("player");
       const above = q[1] - 0.9 > top + 0.05;
       const inX = f.dir[0] === 0 ? 0 : Math.max(-127, Math.min(127, Math.round((clampX - q[0]) * 60)));
       const inZ = f.dir[1] === 0 ? 0 : Math.max(-127, Math.min(127, Math.round((clampZ - q[2]) * 60)));
       const wx = above ? inX : f.dir[0] * 127;
       const wz = above ? inZ : f.dir[1] * 127;
-      const again = t > 6 && sim.player.vy <= 0.5 && sim.player.jumpsUsed > 0 && sim.player.jumpsUsed < sim.laws.jumpsMax;
+      const again = t > 6 && sim.player.vy <= 0.5 && sim.player.jumpsUsed > 0 && sim.player.jumpsUsed < need;
       sim.step({ tick: sim.tick + 1, wx, wz, btn: t === 0 || again ? BTN.JUMP : 0 });
       if (again) sim.step({ tick: sim.tick + 1, wx, wz, btn: 0 });
       budget.ticks -= again ? 2 : 1;
@@ -467,7 +480,7 @@ function jumpWitness(R: Rapier, b: WorldBundle, nav: NavWorld, x: Expect, jumps:
   walkTo(sim, nav, [xs, 0, faceZ - 0.7], stream(attempt, "t3:jump"), 1, budget, () => false);
   // One attempt: jump, air-jump at each apex, keep pushing toward the face; stop on landing.
   let onTop = false;
-  for (let t = 0; t < 150 && !onTop; t++) {
+  for (let t = 0, end = airTicks(sim.laws, jumps, top); t < end && !onTop; t++) {
     const first = t === 0;
     const again = t > 6 && sim.player.vy <= 0.5 && sim.player.jumpsUsed < jumps && sim.player.jumpsUsed > 0;
     // push toward the face until the feet clear the ledge, then steer to the middle of the top
@@ -484,6 +497,41 @@ function jumpWitness(R: Rapier, b: WorldBundle, nav: NavWorld, x: Expect, jumps:
   }
   sim.free();
   return onTop;
+}
+
+/**
+ * Why nobody won, when the jump model can say it for certain: from the spawn, the surfaces the
+ * world's jumps can hop between never include the one something the win needs stands on (and
+ * nothing could lift the player instead: no jump pad or portal, no navmesh path such as a ramp).
+ * The reason names the lowest step up out of reach. Null when the model can't explain it.
+ */
+function outOfReach(b: WorldBundle, chain: WinChain, playerTeam: "red" | "blue", navw?: NavWorld): string | null {
+  if (b.verbs.some((v) => /jump_pad|portal/.test(v.verb))) return null;
+  const laws = clampLaws(b.laws);
+  const ss = surfaces(b).filter((x) => !b.statics.some((st) => st.id === x.id && st.surf === "wall"));
+  const spawn = b.entities.find((e) => e.kind === "spawn" && e.team === playerTeam) ?? b.entities.find((e) => e.kind === "spawn");
+  const from = spawn && surfaceAt(ss, [spawn.pos[0], spawn.pos[1] + 0.2, spawn.pos[2]]);
+  if (!from) return null;
+  const reached = new Set([from.id]);
+  for (const queue = [from]; queue.length; ) {
+    const s0 = queue.shift()!;
+    for (const n of ss) if (!reached.has(n.id) && hopOk(s0, n, laws, laws.jumpsMax)) (reached.add(n.id), queue.push(n));
+  }
+  const mid = (x: Surface): Vec3 => [(x.min[0] + x.max[0]) / 2, x.top, (x.min[1] + x.max[1]) / 2];
+  const ids = chain.steps.flatMap((st) => (st.do === "pickup" ? [st.item] : st.do === "deliver" ? [st.sensor] : st.do === "use" || st.do === "touch" ? [st.at] : st.do === "collect" ? st.items : []));
+  for (const id of ids) {
+    const e = b.entities.find((x) => x.id === id);
+    const t = e && surfaceAt(ss, [e.pos[0], e.pos[1] + 0.1, e.pos[2]]);
+    if (!e || !t || reached.has(t.id) || navw?.path(mid(from), mid(t))) continue;
+    // the lowest step up from anywhere reachable onto a neighbouring surface that isn't
+    let step = Infinity;
+    for (const a of ss) if (reached.has(a.id)) for (const n of ss) if (!reached.has(n.id) && n.top > a.top && gap(a, n) < 1) step = Math.min(step, n.top - a.top);
+    const jumps = `${laws.jumpsMax} jump${laws.jumpsMax === 1 ? "" : "s"}`;
+    const name = `the ${e.noun || e.id.replace(/_/g, " ")}`;
+    const r1 = (x: number) => Math.round(x * 10) / 10;
+    return Number.isFinite(step) ? `no route reaches ${name}: a ${r1(step)} m step on the way, and ${jumps} reach${laws.jumpsMax === 1 ? "es" : ""} ${r1(apex(laws, laws.jumpsMax))} m` : `no route with ${jumps} reaches ${name} (jump model)`;
+  }
+  return null;
 }
 
 export function t3(R: Rapier, b: WorldBundle, nav: NavWorld, chain: WinChain | null, runs: number, playerTeam: "red" | "blue" = "red", openers: ReadonlyMap<string, PlanStep[]> = new Map()): { chips: Chip[]; par: { goldS: number; runs: number; won: number } | null } {
@@ -506,7 +554,7 @@ export function t3(R: Rapier, b: WorldBundle, nav: NavWorld, chain: WinChain | n
       n: runs,
       k: won.length,
       text: won.length ? `AI runners won by playing it${vs} (AI par ${par!.goldS} s)` : `no AI runner could win${vs}`,
-      cx: won.length ? null : { where: null, have: 0, need: 1, unit: "wins", text: `${results.reduce((a, r) => a + r.stuck, 0)} runs got stuck` },
+      cx: won.length ? null : { where: null, have: 0, need: 1, unit: "wins", text: [`${results.reduce((a, r) => a + r.stuck, 0)} runs got stuck`, outOfReach(b, chain, playerTeam, nav)].filter(Boolean).join(": ") },
       src: "",
       ms: Math.round((globalThis.performance?.now?.() ?? 0) - t0),
     });

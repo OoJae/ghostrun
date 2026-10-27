@@ -6,7 +6,7 @@ import forestFill from "../../../packages/packs/outdoor/test/fixtures/glow-fores
 import parkourFill from "../../../packages/packs/course/test/fixtures/parkour-time-trial.jsonl?raw";
 import heistFill from "../../../packages/ir/fixtures/heist-live-1.jsonl?raw";
 import vaultFill from "../../../packages/ir/fixtures/vault-heist.jsonl?raw";
-import { parseFill, specHash, type FillNote, type FillStats, type WorldBundle } from "@ghostrun/ir";
+import { layoutLaws, parseFill, specHash, type FillNote, type FillStats, type WorldBundle } from "@ghostrun/ir";
 import { placeWorld } from "@ghostrun/layout";
 import { packFor, PACKS } from "@ghostrun/registry";
 
@@ -41,8 +41,8 @@ export interface World {
   /** The fill it was built from (meta pack = the pack actually used) and its seed: a share link. */
   fill: string;
   seed: number;
-  /** For live worlds: what the repair loop needs to ask for a patch. */
-  source?: { prompt: string; intent: unknown; fill: string; seed: number; pack: string };
+  /** For live (and edited) worlds: what the repair loop needs to ask for a patch. */
+  source?: { prompt: string; intent: unknown; fill: string; seed: number; pack: string; base?: string; edits?: string[] };
   intent: Intent;
   notes: string[];
   fillNotes: FillNote[];
@@ -94,7 +94,7 @@ export function worldFromFill(fillText: string, seed: number, live?: Intent["liv
   if (mode) draft.mode = mode; // the intent decides play vs wander (fills tend to say "play")
   const known = PACKS.some((p) => p.id === draft.pack.id);
   const pack = packFor(draft.pack.id);
-  const layout = pack.generate({ seed, params: pack.defaults, sub: draft.pack.sub, laws: draft.laws, harder: false });
+  const layout = pack.generate({ seed, params: pack.defaults, sub: draft.pack.sub, laws: layoutLaws(fillText, draft.laws), harder: false });
   const { bundle, notes } = placeWorld({ ...draft, engine: ENGINE_HASH }, layout);
   const t2 = performance.now();
   if (!known) notes.unshift(`pack '${draft.pack.id}' not available, using '${pack.id}'`);

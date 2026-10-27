@@ -1,6 +1,9 @@
 // Merging a repair patch into a fill, line by line: a patch line with an id replaces the base line
 // with that id (in place), {"op":"del","id"} removes it, and a new id is inserted with its op's
 // group so the fill keeps its canonical order. Meta and end lines always come from the base.
+// An edit (the person's own change) may also restyle the world through a meta line's cosmetic
+// fields, but never touches its expectations: the proof keeps checking what the world promised,
+// so a change that breaks a promise shows up as a counterexample instead of quietly rewriting it.
 
 const ORDER = ["meta", "zone", "spawn", "goal", "ent", "verb", "law", "state", "rule", "npc", "expect", "end"] as const;
 
@@ -30,12 +33,41 @@ export interface MergeStats {
   added: number;
   deleted: number;
   ignored: number;
+  /** Expectation lines an edit tried to change (always kept as they were). */
+  locked: number;
 }
 
-export function mergeFill(base: string, patch: string): { text: string; stats: MergeStats } {
+/** Meta fields an edit may change: how the world looks, never what it is (pack, mode, seed). */
+const COSMETIC_META = ["look", "mood", "timeOfDay", "weather"] as const;
+/** Lines an edit never writes: the promises, and the cosmetic tail (live fills stop before it). */
+const EDIT_LOCKED = new Set(["expect", "sig", "dress", "poster"]);
+
+function restyle(lines: Line[], patch: Line, stats: MergeStats) {
+  const at = lines.findIndex((l) => l.op === "meta");
+  if (at < 0) return void stats.ignored++;
+  const base = JSON.parse(lines[at]!.raw) as Record<string, unknown>;
+  const p = JSON.parse(patch.raw) as Record<string, unknown>;
+  const next = { ...base };
+  for (const k of COSMETIC_META) if (k in p) next[k] = p[k];
+  const raw = JSON.stringify(next);
+  if (raw === lines[at]!.raw) return void stats.ignored++;
+  lines[at] = { ...lines[at]!, raw };
+  stats.replaced++;
+}
+
+export function mergeFill(base: string, patch: string, opts: { edit?: boolean } = {}): { text: string; stats: MergeStats } {
   const lines = parse(base);
-  const stats: MergeStats = { replaced: 0, added: 0, deleted: 0, ignored: 0 };
+  const stats: MergeStats = { replaced: 0, added: 0, deleted: 0, ignored: 0, locked: 0 };
   for (const p of parse(patch)) {
+    if (opts.edit && p.op === "meta") {
+      restyle(lines, p, stats);
+      continue;
+    }
+    if (opts.edit && (EDIT_LOCKED.has(p.op) || (p.op === "del" && lines.some((l) => l.id === p.id && EDIT_LOCKED.has(l.op))))) {
+      if (p.op === "expect" || p.op === "del") stats.locked++;
+      else stats.ignored++;
+      continue;
+    }
     if (!p.op || p.op === "meta" || p.op === "end") {
       stats.ignored++;
       continue;

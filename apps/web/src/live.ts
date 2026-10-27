@@ -95,11 +95,11 @@ export async function liveBuild(prompt: string, onIntent?: (i: LiveIntent, ms: n
   return { kind: "unavailable", reason: "stream ended before the gameplay layer" };
 }
 
-/** POST /v1/repair: the proof's issues for a live world → the model's patch lines (JSONL). */
-export async function liveRepair(prompt: string, intent: LiveIntent, fill: string, issues: string[], seed: number): Promise<string | null> {
+/** A patch route (/v1/repair, /v1/edit) → the model's patch lines (JSONL), or null. */
+async function livePatch(path: string, body: unknown): Promise<string | null> {
   let res: Response;
   try {
-    res = await api("/v1/repair", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ prompt, intent, fill, issues, seed }) });
+    res = await api(path, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
   } catch {
     return null;
   }
@@ -125,3 +125,9 @@ export async function liveRepair(prompt: string, intent: LiveIntent, fill: strin
   }
   return patch || null;
 }
+
+/** POST /v1/repair: the proof's issues for a live world → the model's patch lines (JSONL). */
+export const liveRepair = (prompt: string, intent: LiveIntent, fill: string, issues: string[], seed: number) => livePatch("/v1/repair", { prompt, intent, fill, issues, seed });
+
+/** POST /v1/edit: the person's change to the world → the model's patch lines (JSONL). */
+export const liveEdit = (prompt: string, change: string, intent: LiveIntent, fill: string, seed: number) => livePatch("/v1/edit", { prompt, change, intent, fill, seed });

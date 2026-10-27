@@ -108,6 +108,8 @@ for (const sim of ["rapier", "stub"] as const) test(`headline: the rooftop ledge
   }
   expect(onLane).toBe(true);
   await page.keyboard.up("KeyD");
+  // the device proof runs whichever simulation plays on the main thread
+  await expect(page.getByTestId("proof-badge")).toContainText("Rooftop lane needs double jump: verified", { timeout: 60_000 });
   expect(errors).toEqual([]);
 });
 
@@ -266,4 +268,73 @@ test("export: the scene as glTF, the logic as logic.json, and the playtest repor
   expect(logic.rules.every((r) => r.text.startsWith("WHEN ") && r.proof === "verified")).toBe(true);
   expect(Object.entries(files).find(([n]) => n.endsWith(".report.html"))![1].toString("utf8")).toContain("Rooftop lane needs double jump");
   expect(errors).toEqual([]);
+});
+
+test("edit: 'super high jumps' comes back re-proved, the headline turns into a counterexample, and Undo restores it", async ({ page }) => {
+  const errors = collectErrors(page);
+  // the live lane, stubbed: health says the AI is up; the edit answers with a law patch
+  const sse = (lines: string[]) => lines.map((line, i) => `event: op\ndata: ${JSON.stringify({ i, line })}\n\n`).join("") + `event: done\ndata: {"lines":${lines.length}}\n\n`;
+  let asked: { change?: string; fill?: string; intent?: { pack?: string } } = {};
+  await page.route("**/v1/health", (r) => r.fulfill({ json: { ok: true, packs: [], llm: true, gate: "dev", sitekey: null } }));
+  await page.route("**/v1/mind", (r) => r.fulfill({ status: 503, json: { error: "off in this test" } }));
+  await page.route("**/v1/repair", (r) => r.fulfill({ contentType: "text/event-stream", body: 'event: error\ndata: {"message":"off in this test"}\n\n' }));
+  await page.route("**/v1/edit", (r) => {
+    asked = r.request().postDataJSON() as typeof asked;
+    return r.fulfill({ contentType: "text/event-stream", body: sse(['{"op":"law","player":{"jumpsMax":2,"jumpH":3.4}}', '{"op":"del","id":"x_roof"}']) });
+  });
+  await page.goto("/?gl=webgl2&fx=0&dpr=0.5&prewarm=0");
+  await page.waitForFunction(() => window.__GHOSTRUN__?.ready === true, null, { timeout: 90_000 });
+  await expect(page.getByTestId("prompt-bar")).toContainText("live AI");
+  await expect(page.getByTestId("proof-badge")).toContainText("Rooftop lane needs double jump: verified", { timeout: 60_000 });
+  const spec0 = (await probe(page)).specHash;
+
+  await page.getByTestId("edit-box").getByRole("button", { name: "super high jumps" }).click();
+  await expect(page.getByTestId("edit-result")).toContainText("jump height 1.6 → 3.4 m");
+  await expect(page.getByTestId("edit-result")).toContainText("promises were kept");
+  await expect(page.getByTestId("edit-delta")).toContainText("Headline: verified → counterexample", { timeout: 60_000 });
+  await expect(page.getByTestId("proof-badge")).toContainText("counterexample");
+  // and why: the proof's own reason, at the rooftop
+  await expect(page.getByTestId("edit-result")).toContainText(/Rooftop lane needs double jump — reachable with 1 jump: step [\d.]+ m ≤ apex [\d.]+ m/);
+  expect(asked.change).toBe("super high jumps");
+  expect(asked.intent?.pack).toBe("city_block");
+  expect(asked.fill).toContain('"fit":{"jumpH":1.6,"jumpsMax":2');
+  expect((await probe(page)).specHash).not.toBe(spec0);
+
+  await page.getByTestId("edit-undo").click();
+  await expect(page.getByTestId("proof-badge")).toContainText("Rooftop lane needs double jump: verified", { timeout: 60_000 });
+  await expect.poll(async () => (await probe(page)).specHash).toBe(spec0);
+  expect(errors.filter((e) => !e.includes("503"))).toEqual([]);
+});
+
+test("harder but fair: three candidates race, the hardest fair one is kept, each verdict with its numbers", async ({ page }) => {
+  const errors = collectErrors(page);
+  const sse = (line: string) => `event: op\ndata: ${JSON.stringify({ i: 0, line })}\n\nevent: done\ndata: {"lines":1}\n\n`;
+  const asked: string[] = [];
+  await page.route("**/v1/health", (r) => r.fulfill({ json: { ok: true, packs: [], llm: true, gate: "dev", sitekey: null } }));
+  await page.route("**/v1/mind", (r) => r.fulfill({ status: 503, json: { error: "off in this test" } }));
+  await page.route("**/v1/repair", (r) => r.fulfill({ contentType: "text/event-stream", body: 'event: error\ndata: {"message":"off in this test"}\n\n' }));
+  await page.route("**/v1/edit", (r) => {
+    const change = (r.request().postDataJSON() as { change: string }).change;
+    asked.push(change);
+    // one candidate per angle: one breaks the rooftop promise, one is slower (harder, fair), one changes nothing that matters
+    const line = change.includes("obstacles") ? '{"op":"law","player":{"jumpsMax":2,"jumpH":3.4}}' : change.includes("pressure") ? '{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":4.5}}' : '{"op":"verb","id":"vb_carry","verb":"physics_props.carry","on":"orb","params":{"speedMul":0.6}}';
+    return r.fulfill({ contentType: "text/event-stream", body: sse(line) });
+  });
+  await page.goto("/?gl=webgl2&fx=0&dpr=0.5&prewarm=0");
+  await page.waitForFunction(() => window.__GHOSTRUN__?.ready === true, null, { timeout: 90_000 });
+  await expect(page.getByTestId("proof-badge")).toContainText("Rooftop lane needs double jump: verified", { timeout: 60_000 });
+  await page.getByTestId("edit-input").fill("make it harder but fair");
+  await page.getByTestId("edit-input").press("Enter");
+  await expect(page.getByTestId("edit-result")).toContainText("racing 3 harder versions", { timeout: 20_000 });
+  const race = page.getByTestId("edit-race");
+  await expect(race).toContainText("A: too hard or broken", { timeout: 120_000 });
+  await expect(race).toContainText("headline counterexample");
+  await expect(race).toContainText("B: harder and fair");
+  await expect(race).toContainText("C: not harder");
+  expect(asked).toHaveLength(3);
+  await expect(page.getByTestId("edit-result")).toContainText("speed 6 → 4.5 m/s");
+  // the kept world's numbers come from its own full proof
+  await expect(page.getByTestId("edit-delta")).toContainText(/AI par: [\d.]+ s → [\d.]+ s/, { timeout: 90_000 });
+  await expect(page.getByTestId("proof-badge")).toContainText("Rooftop lane needs double jump: verified");
+  expect(errors.filter((e) => !e.includes("503"))).toEqual([]);
 });

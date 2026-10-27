@@ -3,9 +3,9 @@
 // comparisons).
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
-import { FillParser, mergeFill, parseFill, type WorldBundle } from "@ghostrun/ir";
+import { FillParser, layoutLaws, mergeFill, parseFill, pinLayout, type WorldBundle } from "@ghostrun/ir";
 import { placeWorld } from "@ghostrun/layout";
-import { chatJson, fillMessages, IntentOut, intentJsonSchema, intentMessages, repairMessages, streamChat } from "@ghostrun/llm";
+import { chatJson, editMessages, fillMessages, IntentOut, intentJsonSchema, intentMessages, repairMessages, streamChat } from "@ghostrun/llm";
 import { loadNavNode } from "@ghostrun/nav/node";
 import { better, chipLine, issuesOf, prove, type Receipt } from "@ghostrun/proof";
 import { ALL_SUBS, PACKS, packFor } from "@ghostrun/registry";
@@ -34,7 +34,7 @@ function placeFromFill(text: string, seed: number, packId?: string, mode?: World
   if (packId) fill.draft.pack = { ...fill.draft.pack, id: packId };
   if (mode) fill.draft.mode = mode;
   const pack = packFor(fill.draft.pack.id);
-  const layout = pack.generate({ seed, params: pack.defaults, sub: fill.draft.pack.sub, laws: fill.draft.laws, harder: false });
+  const layout = pack.generate({ seed, params: pack.defaults, sub: fill.draft.pack.sub, laws: layoutLaws(text, fill.draft.laws), harder: false });
   const placed = placeWorld({ ...fill.draft, engine: ENGINE }, layout);
   for (const n of fill.notes) console.log(`  · fill line ${n.line}: ${n.kind} — ${n.text}`);
   return { bundle: placed.bundle, invalid: fill.stats.invalid, lines: fill.stats.lines, notes: placed.notes };
@@ -216,6 +216,57 @@ async function main() {
         await new Promise((res) => setTimeout(res, 2500));
       }
     }
+  } else if (cmd === "edits") {
+    // live edits on saved live worlds, re-proved offline: does each change land, and what does it do to the receipt?
+    const dir = args[0]!;
+    const changes = readFileSync(args[1]!, "utf8").split("\n").map((l) => l.trim()).filter((l) => l && !l.startsWith("#"));
+    const limit = Number(args[args.indexOf("--worlds") + 1]) || 6;
+    const key = process.env.CEREBRAS_API_KEY;
+    if (!key) throw new Error("CEREBRAS_API_KEY missing (.dev.vars)");
+    const R = await loadRapierNode();
+    await loadNavNode();
+    const row = (rc: Receipt, bd: WorldBundle) => {
+      const win = rc.chips.find((c) => c.id === "T3:win");
+      const bad = rc.chips.filter((c) => c.status === "counterexample").map((c) => c.id);
+      return `ctrl ${String(controlsOf(bd)).padStart(2)} headline ${(rc.headline?.status ?? "none").padEnd(14)} T3 ${win ? `${win.k}/${win.n}` : "-"} par ${rc.par?.goldS ?? "-"}${bad.length ? `  ✗ ${bad.join(" ")}` : ""}`;
+    };
+    const rows: unknown[] = [];
+    for (const f of readdirSync(dir).filter((x) => x.endsWith(".fill.jsonl")).sort().slice(0, limit)) {
+      const rp = join(dir, f.replace(".fill.jsonl", ".receipt.json"));
+      if (!existsSync(rp)) continue;
+      const saved = JSON.parse(readFileSync(rp, "utf8")) as { prompt: string; intent: IntentOut };
+      const text0 = pinLayout(readFileSync(join(dir, f), "utf8"));
+      const s0 = (JSON.parse(text0.split("\n", 1)[0] ?? "{}") as { seed?: number }).seed ?? 7;
+      const base = placeFromFill(text0, s0, saved.intent.pack, saved.intent.mode);
+      const r0 = await prove(R, base.bundle, { engine: ENGINE, runs: 12 });
+      console.log(`\n${saved.prompt.slice(0, 90)}\n  before                     ${row(r0, base.bundle)}`);
+      const pack = packFor(saved.intent.pack);
+      const layout = pack.generate({ seed: s0, params: pack.defaults, sub: saved.intent.sub, laws: base.bundle.laws, harder: false });
+      for (const change of changes) {
+        let patch = "";
+        let ms = 0;
+        for (let attempt = 0; ; attempt++) {
+          const t0 = performance.now();
+          try {
+            patch = "";
+            for await (const ev of streamChat({ apiKey: key, model: "gpt-oss-120b", reasoningEffort: "low", maxTokens: 4000, messages: editMessages(saved.prompt, change, saved.intent, layout, gameplayOf(text0)) })) if (ev.type === "text") patch += ev.delta;
+            ms = Math.round(performance.now() - t0);
+            break;
+          } catch (e) {
+            if (attempt >= 3 || !(e instanceof Error && /429/.test(e.message))) throw e;
+            await new Promise((res) => setTimeout(res, 20_000)); // free tier: back off on the per-minute limit
+          }
+        }
+        const merged = mergeFill(text0, patch, { edit: true });
+        const placed = placeFromFill(merged.text, s0, saved.intent.pack, saved.intent.mode);
+        const r1 = await prove(R, placed.bundle, { engine: ENGINE, runs: 12 });
+        const same = merged.text.trim() === text0.trim();
+        console.log(`  ${change.slice(0, 26).padEnd(26)} ${row(r1, placed.bundle)}   [${ms} ms, ${same ? "NO CHANGE" : JSON.stringify(merged.stats)}]`);
+        rows.push({ prompt: saved.prompt, change, ms, patch, changed: !same, stats: merged.stats, before: { headline: r0.headline?.status ?? null, par: r0.par?.goldS ?? null, controls: controlsOf(base.bundle) }, after: { headline: r1.headline?.status ?? null, par: r1.par?.goldS ?? null, controls: controlsOf(placed.bundle), won: r1.chips.find((c) => c.id === "T3:win")?.k ?? 0, cx: r1.chips.filter((c) => c.status === "counterexample").map((c) => c.id) } });
+        await new Promise((res) => setTimeout(res, 6000));
+      }
+    }
+    if (args.includes("--out")) writeFileSync(args[args.indexOf("--out") + 1]!, JSON.stringify(rows, null, 2));
   } else if (cmd === "bench") {
     const prompts = readFileSync(args[0]!, "utf8").split("\n").map((l) => l.trim()).filter((l) => l && !l.startsWith("#"));
     const outDir = args.includes("--out") ? args[args.indexOf("--out") + 1]! : "bench-out";

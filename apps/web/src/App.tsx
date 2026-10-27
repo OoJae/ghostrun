@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { mergeFill } from "@ghostrun/ir";
+import { mergeFill, pinLayout } from "@ghostrun/ir";
 import { better, issuesOf, statusWord, type Chip, type Receipt } from "@ghostrun/proof/light";
 // the engine stack (three, physics, navmesh, bots) is a second chunk, fetched as the shell paints
 import type { Engine, LoadResult } from "./engine";
@@ -9,8 +9,10 @@ import { XRay } from "./hud/XRay";
 import { ResultCard, type RunResult } from "./hud/Result";
 import { IntentCard } from "./hud/IntentCard";
 import { PromptBar } from "./hud/PromptBar";
+import { EditBox, type EditState } from "./hud/Edit";
 import { ProofBadge, ReceiptPanel, RepairChip, type ProofState, type RepairState } from "./hud/Proof";
-import { liveAvailable, liveBuild, liveRepair, type LiveIntent } from "./live";
+import { liveAvailable, liveBuild, liveEdit, liveRepair, type LiveIntent } from "./live";
+import { ANGLES, changeSummary, editedPrompt, HARDER, intentFor, newFailures, pickHarder, receiptDelta, suggestionsFor } from "./edits";
 import { createShare, loadShare, reportWrong } from "./share";
 import { Minds } from "./minds";
 import { propose, twistWorld } from "./director";
@@ -59,6 +61,16 @@ export function App() {
   const [toast, setToast] = useState<string | null>(null);
   const [clock, setClock] = useState<number | null>(null);
   const [repair, setRepair] = useState<RepairState>({ status: "idle", issues: 0 });
+  const [edit, setEdit] = useState<EditState>({ status: "idle" });
+  /** Worlds before each edit, for Undo; cleared by a new prompt. */
+  const history = useRef<World[]>([]);
+  const builtPrompt = useRef(FIRST_PROMPT);
+  /** Runs waiting on their receipt (an edit's before/after numbers). */
+  const afterProof = useRef(new Map<number, (r: Receipt) => void>());
+  const receiptRef = useRef<Receipt | null>(null);
+  receiptRef.current = proof.receipt;
+  const collapsedRef = useRef(false);
+  collapsedRef.current = collapsed;
   // phones and tablets (or ?touch=1): on-screen stick and buttons; a first touch also turns them on
   const [touch, setTouch] = useState(() => TOUCH_PARAM === "1" || (TOUCH_PARAM !== "0" && window.matchMedia?.("(pointer: coarse)").matches));
   useEffect(() => {
@@ -112,7 +124,8 @@ export function App() {
     const patch = await liveRepair(src.prompt, src.intent as LiveIntent, src.fill, issues, src.seed);
     if (id !== runId.current) return;
     if (!patch) return setRepair({ status: "failed", issues: issues.length });
-    const merged = mergeFill(src.fill, patch).text;
+    // after a person's edit the expectations are the world's promises: a fix may change the world, never the claim
+    const merged = mergeFill(src.fill, patch, { edit: Boolean(src.edits?.length) }).text;
     const w2 = worldFromFill(merged, src.seed, world.intent.live, src.pack);
     w2.source = { ...src, fill: merged };
     try {
@@ -136,6 +149,8 @@ export function App() {
         if (id !== runId.current) return;
         setProof((p) => ({ ...p, status: "done", receipt }));
         probe().proof = { headline: receipt.headline?.status ?? "none", chips: receipt.chips.length };
+        afterProof.current.get(id)?.(receipt);
+        afterProof.current.delete(id);
         void maybeRepair(world, receipt, id);
       })
       .catch((err: Error) => id === runId.current && setProof((p) => ({ ...p, status: "error", error: err.message })));
@@ -192,6 +207,9 @@ export function App() {
       const id = ++runId.current;
       setStatus("building");
       setNotice(undefined);
+      history.current = [];
+      setEdit({ status: "idle" });
+      builtPrompt.current = text;
       setSpecHash(undefined);
       setProof({ status: "idle", chips: [], receipt: null });
       delete probe().specHash;
@@ -248,10 +266,12 @@ export function App() {
         e.onInput = () => setCollapsed(true);
         void e.vrSupported().then((ok) => !disposed && setVrOk(ok));
         probe().sim = "stub";
+        // the proof worker needs the wasm URLs whichever simulation plays here (boot is tiny)
+        const boot = await import("./sim/boot");
+        wasmUrls.current = boot.WASM_URLS;
         if (params.get("sim") !== "stub") {
           try {
-            const [{ loadRapier, loadNav, WASM_URLS }, { RapierSim }] = await Promise.all([import("./sim/boot"), import("./sim/rapier")]);
-            wasmUrls.current = WASM_URLS;
+            const [{ loadRapier, loadNav }, { RapierSim }] = [boot, await import("./sim/rapier")];
             const [R, bots] = await Promise.all([loadRapier(), loadNav()]);
             e.simFactory = (b) => new RapierSim(R, b, bots);
             probe().sim = "rapier";
@@ -370,6 +390,107 @@ export function App() {
     }
   };
 
+  /**
+   * The person's own change: the model patches the world by stable ids, the world swaps in place
+   * (same seed, same geometry: see pinLayout) and is re-proved, and the edit comes back with how
+   * the receipt moved. A change that breaks a promise shows up as a counterexample, and the repair
+   * loop then offers a fix like for any other live world.
+   */
+  const editWorld = async (change: string) => {
+    const w = current.current;
+    if (!w || modeRef.current !== "live") return;
+    if (HARDER.test(change) && w.bundle.mode === "play" && receiptRef.current) return raceHarder(w, change, receiptRef.current);
+    const base = runId.current;
+    const before = receiptRef.current;
+    const t0 = performance.now();
+    setEdit({ status: "editing", change });
+    const original = w.source?.base ?? w.source?.prompt ?? builtPrompt.current;
+    const edits = [...(w.source?.edits ?? []), change];
+    const fill0 = pinLayout(w.fill);
+    const patch = await liveEdit(editedPrompt(original, edits.slice(0, -1)), change, intentFor(w, original), fill0, w.seed);
+    if (runId.current !== base) return;
+    if (!patch) return setEdit({ status: "failed", change, message: "The live AI couldn't make that change just now. Try again, or say it differently." });
+    const { text, stats } = mergeFill(fill0, patch, { edit: true });
+    const w2 = worldFromFill(text, w.seed, w.intent.live, w.bundle.pack.id, w.bundle.mode);
+    const summary = changeSummary(w.bundle, w2.bundle);
+    if (!summary.length && text.trim() === fill0.trim()) return setEdit({ status: "failed", change, message: stats.locked ? "That would only change what the world promises, and the proof keeps those fixed." : "Nothing in the world changed. Try saying it differently." });
+    w2.source = { prompt: editedPrompt(original, edits), intent: intentFor(w, original), fill: w2.fill, seed: w.seed, pack: w2.bundle.pack.id, base: original, edits };
+    history.current.push(w);
+    const shown = summary.length ? summary : [`${stats.replaced + stats.added + stats.deleted} lines changed`];
+    setEdit({ status: "proving", change, summary: shown, locked: stats.locked });
+    const id = ++runId.current;
+    afterProof.current.set(id, (after) => {
+      const delta = before ? receiptDelta(before, after) : null;
+      setEdit({ status: "done", change, summary: shown, locked: stats.locked, delta, failures: before ? newFailures(before, after) : [] });
+      if (collapsedRef.current && delta?.length) setToast(`Edit re-proved: ${delta.slice(0, 2).map((d) => `${d.label} ${d.from} → ${d.to}`).join(" · ")}`);
+    });
+    await show(w2, id, t0, [{ label: "edit", ms: performance.now() - t0 }]);
+  };
+
+  /** A one-off proof in its own worker (candidate races run several at once, then free them). */
+  const proveOnce = (world: World, runs: number) =>
+    new Promise<Receipt>((resolve, reject) => {
+      const wk = new Worker(new URL("./proof.worker.ts", import.meta.url), { type: "module" });
+      const done = (f: () => void) => (wk.terminate(), f());
+      wk.onmessage = (e: MessageEvent<{ receipt?: Receipt; error?: string }>) => {
+        if (e.data.receipt) done(() => resolve(e.data.receipt!));
+        if (e.data.error) done(() => reject(new Error(e.data.error)));
+      };
+      wk.onerror = (e) => done(() => reject(new Error(e.message)));
+      wk.postMessage({ id: 1, bundle: world.bundle, engine: ENGINE_HASH, urls: wasmUrls.current, runs });
+    });
+
+  /**
+   * "Make it harder but fair": one candidate per angle (obstacles, pressure, a longer route), each
+   * proved by AI runners in parallel; the hardest candidate that is still fair is kept, and every
+   * candidate's verdict is shown with its numbers. None fair: the world stays as it was.
+   */
+  const raceHarder = async (w: World, change: string, before: Receipt) => {
+    const base = runId.current;
+    const t0 = performance.now();
+    setEdit({ status: "racing", change, total: ANGLES.length, proved: 0 });
+    const original = w.source?.base ?? w.source?.prompt ?? builtPrompt.current;
+    const edits = [...(w.source?.edits ?? []), change];
+    const fill0 = pinLayout(w.fill);
+    const intent = intentFor(w, original);
+    const prompt = editedPrompt(original, edits.slice(0, -1));
+    const patches = await Promise.all(ANGLES.map((a) => liveEdit(prompt, `${change}: ${a}`, intent, fill0, w.seed)));
+    if (runId.current !== base) return;
+    const worlds = patches.map((p) => (p ? worldFromFill(mergeFill(fill0, p, { edit: true }).text, w.seed, w.intent.live, w.bundle.pack.id, w.bundle.mode) : null));
+    if (!worlds.some(Boolean)) return setEdit({ status: "failed", change, message: "The live AI couldn't write the harder versions just now. Try again in a moment." });
+    let proved = 0;
+    const lanes = Math.max(1, Math.min(worlds.length, (navigator.hardwareConcurrency || 4) - 2));
+    const receipts: (Receipt | null)[] = worlds.map(() => null);
+    const queue = worlds.map((c, i) => [c, i] as const).filter(([c]) => c);
+    await Promise.all(
+      Array.from({ length: lanes }, async () => {
+        for (let job = queue.shift(); job; job = queue.shift()) {
+          receipts[job[1]] = await proveOnce(job[0]!, 6).catch(() => null);
+          if (runId.current === base) setEdit({ status: "racing", change, total: ANGLES.length, proved: ++proved });
+        }
+      }),
+    );
+    if (runId.current !== base) return;
+    const { best, verdicts } = pickHarder(before, receipts);
+    if (best === null) return setEdit({ status: "failed", change, message: "None of the harder versions stayed fair, so the world is unchanged.", race: verdicts });
+    const w2 = worlds[best]!;
+    w2.source = { prompt: editedPrompt(original, edits), intent, fill: w2.fill, seed: w.seed, pack: w2.bundle.pack.id, base: original, edits };
+    history.current.push(w);
+    // the race proved with 6 runners each; the kept world's numbers come from its full proof
+    const summary = changeSummary(w.bundle, w2.bundle);
+    const id = ++runId.current;
+    setEdit({ status: "proving", change, summary, locked: 0, race: verdicts });
+    afterProof.current.set(id, (full) => setEdit({ status: "done", change, summary, locked: 0, delta: receiptDelta(before, full), failures: newFailures(before, full), race: verdicts }));
+    await show(w2, id, t0, [{ label: "race", ms: performance.now() - t0 }]);
+  };
+
+  const undo = () => {
+    const prev = history.current.pop();
+    if (!prev) return;
+    setEdit({ status: "idle" });
+    void show(prev, ++runId.current, performance.now(), []);
+  };
+
   /** The same world from the top: a fresh run (and a fresh proof of the same spec). */
   const again = () => {
     const w = current.current;
@@ -408,6 +529,9 @@ export function App() {
         </div>
         {notice && <div className="glass notice" role="status">{notice}</div>}
         {!collapsed && intent && <IntentCard intent={intent} specHash={specHash} />}
+        {current.current && status !== "booting" && (!collapsed || edit.status === "editing" || edit.status === "racing" || edit.status === "proving") && (
+          <EditBox state={edit} enabled={mode === "live"} suggestions={suggestionsFor(current.current.bundle)} canUndo={history.current.length > 0} onEdit={(c) => void editWorld(c)} onUndo={undo} />
+        )}
         {(score.red > 0 || score.blue > 0 || score.result || clock !== null) && (
           <div className={`glass scoreline ${score.result ?? ""}`} data-testid="score">
             {teams ? (

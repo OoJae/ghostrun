@@ -18,7 +18,8 @@ Type any world, and GHOSTRUN turns it into a playable 3D level in the browser in
 4. **The receipt** (press **P**) leads with the prompt-specific claim, for example "Rooftop lane needs double jump: verified · 12 of 12 AI runners won", and labels every number with its method. Fewer than 30 trials print as "k of n", never a percentage.
 5. **Logic X-ray** (press **X**): every rule as a WHEN / IF / THEN sentence with its forced-state mark; hover a tile and that thing lights up in the scene.
 6. **Repair loop.** If the receipt has counterexamples (a win that needs nothing, a rule that never fires, a false claim), the issues go back to the model with concrete hints, the patch is merged by id, re-proved on the device, and offered as "AI repaired it · re-proved · Apply" only if the new receipt is better.
-7. **Share** a run: the link replays it bit-exactly on any device. **This is wrong** sends a note plus the run.
+7. **Change it.** Type a change ("only one jump", "add three more coins", "make it night") and the same world comes back changed, in about a second, and re-proved with its numbers: "jump height 1.6 → 3.4 m · Headline: verified → counterexample · Rooftop lane needs double jump — reachable with 1 jump". Edits patch the world by stable ids and keep its geometry; they can never rewrite what the world promised, so a change that breaks a promise shows up instead of quietly erasing it. Undo is one click.
+8. **Share** a run: the link replays it bit-exactly on any device. **This is wrong** sends a note plus the run.
 
 Phones get on-screen controls. Browsers with WebXR get **Enter VR** (first person; tested on an emulated Quest 3, not yet on a real headset).
 
@@ -35,8 +36,8 @@ Phones get on-screen controls. Browsers with WebXR get **Enter VR** (first perso
 | `packages/proof` | The proof ladder T0–T3, the tour proof for places, issues for the repair loop |
 | `packages/llm` | Prompts and a streaming client for the intent and fill models |
 | `apps/web` | three.js r186 (WebGPU with WebGL2 fallback) client: looks (neon, grove, gallery), HUD, receipt, X-ray, share, touch, VR |
-| `apps/edge-api` | Cloudflare Worker: governed `/v1/build` and `/v1/repair` (spend caps per session, IP and pool; fails closed), Turnstile and judge-token gate, share store |
-| `apps/cli` | `ghostrun verify`, `build`, `bench`, `rebench [--repair]` |
+| `apps/edge-api` | Cloudflare Worker: governed `/v1/build`, `/v1/edit` and `/v1/repair` (spend caps per session, IP and pool; fails closed), Turnstile and judge-token gate, share store |
+| `apps/cli` | `ghostrun verify`, `build`, `bench`, `rebench [--repair]`, `edits` |
 | `tools/detcheck` | Cross-runtime determinism check |
 
 ## Determinism

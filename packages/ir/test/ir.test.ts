@@ -204,9 +204,25 @@ describe("mergeFill (repair patches)", () => {
       '{"op":"meta","mode":"wander"}',
     ].join("\n");
     const { text, stats } = mergeFill(base, patch);
-    expect(stats).toEqual({ replaced: 1, added: 1, deleted: 1, ignored: 1 });
+    expect(stats).toEqual({ replaced: 1, added: 1, deleted: 1, ignored: 1, locked: 0 });
     const ops = text.trim().split("\n").map((l) => JSON.parse(l) as { op: string; id?: string });
     expect(ops.map((o) => o.id ?? o.op)).toEqual(["meta", "z_a", "gem", "vb_carry", "r_win", "end"]);
     expect(text).toContain('"a":"gem"');
+  });
+  it("edits restyle through meta but never change the world's promises", async () => {
+    const { mergeFill } = await import("../src");
+    const patch = [
+      '{"op":"meta","mode":"wander","pack":"maze","seed":9,"timeOfDay":22,"weather":"rain"}',
+      '{"op":"law","player":{"jumpsMax":1}}',
+      '{"op":"expect","id":"x_win","prop":"unreachable","a":"sp","b":"z_a"}',
+      '{"op":"del","id":"x_win"}',
+      '{"op":"dress","id":"d_1","noun":"lamp","zone":"z_a"}',
+    ].join("\n");
+    const { text, stats } = mergeFill(base, patch, { edit: true });
+    expect(stats).toEqual({ replaced: 1, added: 1, deleted: 0, ignored: 1, locked: 2 });
+    const ops = text.trim().split("\n").map((l) => JSON.parse(l) as Record<string, unknown>);
+    expect(ops[0]).toEqual({ op: "meta", mode: "play", pack: "arena", seed: 3, timeOfDay: 22, weather: "rain" });
+    expect(ops.map((o) => o.id ?? o.op)).toEqual(["meta", "z_a", "gem", "law", "r_win", "x_win", "end"]);
+    expect(text).toContain('"prop":"win_reachable"');
   });
 });
