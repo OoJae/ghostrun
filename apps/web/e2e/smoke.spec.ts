@@ -148,3 +148,30 @@ for (const [fx, look] of [["forest", "grove"], ["heist", "gallery"]] as const) {
     expect(errors).toEqual([]);
   });
 }
+
+test.describe("phone controls", () => {
+  test.use({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
+  test("the touch stick walks and the Jump button jumps", async ({ page }) => {
+    const errors = collectErrors(page);
+    await page.goto("/?gl=webgl2&fx=0&dpr=0.5&touch=1");
+    await page.waitForFunction(() => window.__GHOSTRUN__?.ready === true, null, { timeout: 90_000 });
+    await expect(page.getByTestId("touch")).toBeVisible();
+    const p0 = (await probe(page)).player!;
+    const zone = page.locator(".stick-zone");
+    const touch = { pointerType: "touch", pointerId: 7, isPrimary: true, bubbles: true };
+    await zone.dispatchEvent("pointerdown", { ...touch, clientX: 100, clientY: 640 });
+    await zone.dispatchEvent("pointermove", { ...touch, clientX: 100, clientY: 570 }); // push forward
+    await page.waitForFunction((x0) => (window.__GHOSTRUN__.player?.[0] ?? x0) > x0 + 2, p0[0], { timeout: 10_000 });
+    await zone.dispatchEvent("pointerup", { ...touch, clientX: 100, clientY: 570 });
+    const y0 = (await probe(page)).player![1];
+    const jump = page.locator(".tbtn.jump");
+    await jump.dispatchEvent("pointerdown", { ...touch, pointerId: 8 });
+    await page.waitForFunction((y) => (window.__GHOSTRUN__.player?.[1] ?? y) > y + 0.4, y0, { timeout: 5_000 });
+    await jump.dispatchEvent("pointerup", { ...touch, pointerId: 8 });
+    await zone.dispatchEvent("pointerdown", { ...touch, pointerId: 9, clientX: 110, clientY: 650 });
+    await zone.dispatchEvent("pointermove", { ...touch, pointerId: 9, clientX: 135, clientY: 615 });
+    await page.screenshot({ path: resolve(here, "__screenshots__/phone.png") });
+    await zone.dispatchEvent("pointerup", { ...touch, pointerId: 9, clientX: 135, clientY: 615 });
+    expect(errors).toEqual([]);
+  });
+});

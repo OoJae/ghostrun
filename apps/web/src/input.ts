@@ -8,6 +8,9 @@ const GAME_KEYS = new Set(["KeyW", "KeyA", "KeyS", "KeyD", "Space", "KeyF", "Key
 export class InputCollector {
   readonly #down = new Set<string>();
   #latched = 0;
+  /** Touch: the virtual stick (−1…1, forward +) and held virtual buttons. */
+  #stick = { x: 0, y: 0 };
+  #held = 0;
   /** Fires on every gameplay input (keys or camera orbit); the HUD collapses on it. */
   onInput: (() => void) | undefined;
   /** Fires when the held-key set changes, so the sim can get input between render frames. */
@@ -21,9 +24,9 @@ export class InputCollector {
 
   sample(tick: number, yaw: number): InputFrame {
     const d = this.#down;
-    const mx = (d.has("KeyD") ? 1 : 0) - (d.has("KeyA") ? 1 : 0);
-    const my = (d.has("KeyW") ? 1 : 0) - (d.has("KeyS") ? 1 : 0);
-    let btn = this.#latched;
+    const mx = Math.max(-1, Math.min(1, (d.has("KeyD") ? 1 : 0) - (d.has("KeyA") ? 1 : 0) + this.#stick.x));
+    const my = Math.max(-1, Math.min(1, (d.has("KeyW") ? 1 : 0) - (d.has("KeyS") ? 1 : 0) + this.#stick.y));
+    let btn = this.#latched | this.#held;
     if (d.has("Space")) btn |= BTN_JUMP;
     if (d.has("KeyF")) btn |= BTN_USE;
     this.#latched = 0;
@@ -32,6 +35,23 @@ export class InputCollector {
 
   markInput() {
     this.onInput?.();
+  }
+
+  /** Touch stick: x right, y forward, each −1…1. */
+  setStick(x: number, y: number) {
+    this.#stick = { x, y };
+    if (x || y) this.markInput();
+    this.onChange?.();
+  }
+
+  /** Touch button down/up; a press is latched so a quick tap between frames still counts. */
+  setButton(bit: number, down: boolean) {
+    if (down) {
+      this.#held |= bit;
+      this.#latched |= bit;
+      this.markInput();
+    } else this.#held &= ~bit;
+    this.onChange?.();
   }
 
   dispose() {

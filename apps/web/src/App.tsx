@@ -3,6 +3,7 @@ import { mergeFill } from "@ghostrun/ir";
 import { better, issuesOf, statusWord, type Chip, type Receipt } from "@ghostrun/proof";
 import { Engine, type LoadResult } from "./engine";
 import { KeyHint } from "./hud/Corner";
+import { TouchControls } from "./hud/Touch";
 import { IntentCard } from "./hud/IntentCard";
 import { PromptBar } from "./hud/PromptBar";
 import { ProofBadge, ReceiptPanel, RepairChip, type ProofState, type RepairState } from "./hud/Proof";
@@ -16,6 +17,7 @@ import { RapierSim } from "./sim/rapier";
 const HINT_MS = 6000;
 const FIXTURE = new URLSearchParams(window.location.search).get("fixture") ?? "ctf";
 const FIRST_PROMPT = FIXTURE_PROMPTS[FIXTURE] ?? BRIEF;
+const TOUCH_PARAM = new URLSearchParams(window.location.search).get("touch");
 
 type Status = "booting" | "building" | "playing" | "error";
 type Mode = "checking" | "live" | "fixture";
@@ -49,6 +51,14 @@ export function App() {
   const [toast, setToast] = useState<string | null>(null);
   const [clock, setClock] = useState<number | null>(null);
   const [repair, setRepair] = useState<RepairState>({ status: "idle", issues: 0 });
+  // phones and tablets (or ?touch=1): on-screen stick and buttons; a first touch also turns them on
+  const [touch, setTouch] = useState(() => TOUCH_PARAM === "1" || (TOUCH_PARAM !== "0" && window.matchMedia?.("(pointer: coarse)").matches));
+  useEffect(() => {
+    if (touch || TOUCH_PARAM === "0") return;
+    const on = (e: PointerEvent) => e.pointerType === "touch" && setTouch(true);
+    window.addEventListener("pointerdown", on);
+    return () => window.removeEventListener("pointerdown", on);
+  }, [touch]);
   const repaired = useRef<World | null>(null);
   const current = useRef<World | null>(null);
   const [reported, setReported] = useState<string>();
@@ -292,7 +302,7 @@ export function App() {
   return (
     <>
       <canvas ref={canvas} className="stage" data-testid="stage" />
-      <div className="hud">
+      <div className={`hud${touch ? " touch-mode" : ""}`}>
         <div className="top">
           <PromptBar
             prompt={prompt}
@@ -321,7 +331,7 @@ export function App() {
             {score.result && <strong>{score.result === "win" ? " · You win!" : " · You lose"}</strong>}
           </div>
         )}
-        {useHint && status === "playing" && (
+        {useHint && status === "playing" && !touch && (
           <div className="glass usehint" data-testid="use-hint">
             <kbd>F</kbd> {useHint}
           </div>
@@ -361,7 +371,14 @@ export function App() {
             }}
           />
         )}
-        <KeyHint visible={hint && status === "playing"} />
+        {!touch && <KeyHint visible={hint && status === "playing"} />}
+        {touch && status === "playing" && (
+          <TouchControls
+            onStick={(x, y) => engine.current?.touchStick(x, y)}
+            onButton={(bit, down) => engine.current?.touchButton(bit, down)}
+            useLabel={useHint}
+          />
+        )}
         {status === "booting" && <div className="boot">building world…</div>}
         {status === "building" && <div className="boot">building world…</div>}
         {status === "error" && (

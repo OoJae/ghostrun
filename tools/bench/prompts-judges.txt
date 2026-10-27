@@ -1,0 +1,13 @@
+# Judge-style prompts (internal; written by us, never part of the external eval set)
+a cyberpunk night market with food stalls, drones and a pickpocket you have to catch
+an arena with three capture zones and a 90 second timer, red vs blue
+a Feng Shui handbag gallery where each bag sits in its proper place
+a car showroom with a supercar on a turntable and a salesperson
+a real-estate tour of a beachfront villa; the agent books a viewing at the end
+a temple run: dodge rolling boulders and grab the idol
+a minimalist white museum with five sculptures and an audio guide
+a space station where the gravity is low and you fix three broken panels
+a snowy mountain race with checkpoints and a finish flag
+a library maze where you find the secret book that opens a hidden door
+a zombie survival yard: survive two minutes and reach the helicopter
+a kids' playground with slides, swings and a treasure hunt

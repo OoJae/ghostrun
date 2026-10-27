@@ -131,6 +131,15 @@ export class Engine {
     return new Engine(canvas, renderer, opts, performance.now() - t0);
   }
 
+  /** Touch controls feed the same input collector as the keyboard. */
+  touchStick(x: number, y: number) {
+    this.#input.setStick(x, y);
+  }
+
+  touchButton(bit: number, down: boolean) {
+    this.#input.setButton(bit, down);
+  }
+
   /**
    * Compile every look's and kit's shaders in the background (each sample world in its own scene,
    * so its light setup matches a real world's) and keep them alive, so a new world's first frame

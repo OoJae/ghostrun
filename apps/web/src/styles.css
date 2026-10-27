@@ -517,3 +517,19 @@ kbd {
 .wrong-form textarea { font: inherit; font-size: 12px; min-height: 56px; resize: vertical; background: rgba(0, 0, 0, 0.25); color: inherit; border: 1px solid rgba(255, 255, 255, 0.18); border-radius: 6px; padding: 6px; }
 .receipt .reported { color: #ffb02e; margin: 8px 0 0; }
 .turnstile-host { position: fixed; right: 16px; bottom: 16px; z-index: 50; }
+
+/* ---- phone controls ---- */
+.touch { position: absolute; inset: 0; pointer-events: none; }
+.stick-zone { position: absolute; left: 0; bottom: 0; width: 45%; height: 62%; pointer-events: auto; touch-action: none; }
+.stick { position: fixed; border-radius: 50%; background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.25); }
+.stick .knob { position: absolute; left: 50%; top: 50%; width: 48px; height: 48px; margin: -24px 0 0 -24px; border-radius: 50%; background: rgba(25, 227, 255, 0.55); box-shadow: 0 0 18px rgba(25, 227, 255, 0.6); }
+.tbtn { position: absolute; pointer-events: auto; touch-action: none; border-radius: 50%; border: 1px solid rgba(255, 255, 255, 0.3); background: rgba(10, 10, 20, 0.45); color: #fff; font: 600 13px/1 system-ui, sans-serif; backdrop-filter: blur(6px); }
+.tbtn.jump { right: 24px; bottom: 40px; width: 84px; height: 84px; }
+.tbtn.use { right: 120px; bottom: 28px; width: 64px; height: 64px; font-size: 11px; padding: 4px; opacity: 0.55; }
+.tbtn.use.ready { opacity: 1; border-color: rgba(61, 255, 168, 0.7); }
+.tbtn:active { background: rgba(25, 227, 255, 0.35); }
+/* on phones the thumbs own the bottom of the screen: status moves under the prompt pill */
+.touch-mode .proof { top: 64px; bottom: auto; left: 12px; right: auto; max-width: calc(100vw - 24px); }
+.touch-mode .repair { top: 104px; bottom: auto; left: 12px; }
+.touch-mode .scoreline { top: 64px; left: auto; right: 12px; transform: none; }
+.touch-mode .toast { bottom: auto; top: 150px; }
