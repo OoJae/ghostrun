@@ -75,7 +75,8 @@ export function placeWorld(input: WorldBundle, layout: PackLayout): PlaceResult 
     surf: s.surf,
   }));
 
-  // Entities: anchor → position; several entities on one anchor fan out along x.
+  // Entities: anchor → position; several entities on one anchor fan out across the line from the
+  // anchor to the world centre (a teammate on the spawn pad must not stand in the player's way).
   const taken = new Map<string, number>();
   for (const e of b.entities) {
     if (isDefaultSize(e.size)) e.size = KIND_SIZE[e.kind] ?? e.size;
@@ -92,9 +93,10 @@ export function placeWorld(input: WorldBundle, layout: PackLayout): PlaceResult 
     const k = taken.get(key) ?? 0;
     taken.set(key, k + 1);
     const offset = k === 0 ? 0 : (k % 2 ? 1 : -1) * Math.ceil(k / 2) * 1.6;
+    const alongZ = Math.abs(base[0]) >= Math.abs(base[2]);
     // Sensors and spawns sit on the floor; bodies rest with their centre half their height up.
     const lift = e.kind === "spawn" ? 0 : e.size[1] / 2;
-    e.pos = [base[0] + offset, base[1] + lift, base[2]];
+    e.pos = alongZ ? [base[0], base[1] + lift, base[2] + offset] : [base[0] + offset, base[1] + lift, base[2]];
   }
   notes.push(...repairTriggers(b), ...repairExpects(b));
   return { bundle: b, notes };

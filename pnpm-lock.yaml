@@ -126,18 +126,33 @@ importers:
 
   apps/web:
     dependencies:
+      '@dimforge/rapier3d-deterministic':
+        specifier: 'catalog:'
+        version: 0.21.0
       '@ghostrun/ir':
         specifier: workspace:*
         version: link:../../packages/ir
       '@ghostrun/layout':
         specifier: workspace:*
         version: link:../../packages/layout
-      '@ghostrun/pack-city-block':
+      '@ghostrun/nav':
         specifier: workspace:*
-        version: link:../../packages/packs/city-block
+        version: link:../../packages/nav
       '@ghostrun/plugin-api':
         specifier: workspace:*
         version: link:../../packages/plugin-api
+      '@ghostrun/proof':
+        specifier: workspace:*
+        version: link:../../packages/proof
+      '@ghostrun/registry':
+        specifier: workspace:*
+        version: link:../../packages/registry
+      '@ghostrun/sim':
+        specifier: workspace:*
+        version: link:../../packages/sim
+      '@recast-navigation/wasm':
+        specifier: 0.43.1
+        version: 0.43.1
       react:
         specifier: 'catalog:'
         version: 19.3.1

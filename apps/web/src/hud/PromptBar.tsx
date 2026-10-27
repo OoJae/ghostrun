@@ -10,6 +10,8 @@ interface Props {
   onCollapse(): void;
   timing: LoadResult | null;
   busy: boolean;
+  /** Where the world came from: the live LLM lane or the recorded fixture. */
+  source: { label: string; title: string };
 }
 
 function Stopwatch({ timing, busy }: { timing: LoadResult | null; busy: boolean }) {
@@ -33,7 +35,7 @@ function Stopwatch({ timing, busy }: { timing: LoadResult | null; busy: boolean 
   );
 }
 
-export function PromptBar({ prompt, onPrompt, onSubmit, collapsed, onExpand, onCollapse, timing, busy }: Props) {
+export function PromptBar({ prompt, onPrompt, onSubmit, collapsed, onExpand, onCollapse, timing, busy, source }: Props) {
   const input = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -72,8 +74,8 @@ export function PromptBar({ prompt, onPrompt, onSubmit, collapsed, onExpand, onC
         aria-label="Describe a world"
         placeholder="Describe a world…"
       />
-      <span className="chip" title="The fill is replayed from the recorded CTF fixture; the live LLM lane plugs in here.">
-        fixture LLM
+      <span className="chip" title={source.title}>
+        {source.label}
       </span>
       <Stopwatch timing={timing} busy={busy} />
     </form>

@@ -2,7 +2,7 @@
   "name": "@ghostrun/web",
   "private": true,
   "type": "module",
-  "description": "GHOSTRUN web client: prompt → fill → layout → playable WebGPU/WebGL2 world.",
+  "description": "GHOSTRUN web client: prompt \u2192 fill \u2192 layout \u2192 playable WebGPU/WebGL2 world.",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -10,10 +10,15 @@
     "e2e": "playwright test"
   },
   "dependencies": {
+    "@dimforge/rapier3d-deterministic": "catalog:",
     "@ghostrun/ir": "workspace:*",
     "@ghostrun/layout": "workspace:*",
-    "@ghostrun/pack-city-block": "workspace:*",
+    "@ghostrun/nav": "workspace:*",
     "@ghostrun/plugin-api": "workspace:*",
+    "@ghostrun/proof": "workspace:*",
+    "@ghostrun/registry": "workspace:*",
+    "@ghostrun/sim": "workspace:*",
+    "@recast-navigation/wasm": "0.43.1",
     "react": "catalog:",
     "react-dom": "catalog:",
     "three": "catalog:"

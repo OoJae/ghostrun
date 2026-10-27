@@ -37,6 +37,11 @@ export function IntentCard({ intent, specHash }: { intent: Intent; specHash: str
           {intent.look} <span className="dim">· {intent.weather}</span>
         </dd>
       </dl>
+      {intent.live && (
+        <p className="dim live-intent">
+          {intent.live.role} · goal: {intent.live.goal}
+        </p>
+      )}
       {intent.headline && (
         <div className="headline">
           <span className="eyebrow">Headline expectation</span>

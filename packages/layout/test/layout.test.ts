@@ -25,6 +25,22 @@ describe("city_block + placer", () => {
     expect(bundle.zones.every((z) => z.pack === "city_block")).toBe(true);
   });
 
+  it("keeps the first steps from every spawn toward the centre free of bodies", () => {
+    const { bundle } = ctfWorld();
+    for (const sp of bundle.entities.filter((e) => e.kind === "spawn")) {
+      const len = Math.hypot(sp.pos[0], sp.pos[2]);
+      const [dx, dz] = [-sp.pos[0] / len, -sp.pos[2] / len];
+      for (const e of bundle.entities) {
+        if (e === sp || e.body === "sensor" || e.body === "none") continue;
+        const rx = e.pos[0] - sp.pos[0];
+        const rz = e.pos[2] - sp.pos[2];
+        const ahead = rx * dx + rz * dz;
+        const side = Math.abs(rx * dz - rz * dx);
+        if (ahead > 0 && ahead < 4) expect(side, `${e.id} blocks ${sp.id}`).toBeGreaterThan(0.35 + e.size[0] / 2);
+      }
+    }
+  });
+
   it("puts the rooftop lane on a ledge one jump can't reach and two can", () => {
     const { bundle } = ctfWorld();
     const ledge = roofLedgeHeight(bundle.laws.jumpH);

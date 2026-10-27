@@ -26,12 +26,16 @@ test("CTF brief renders, walks and jumps on the WebGL2 path", async ({ page }) =
 
   const start = await probe(page);
   expect(start.backend).toBe("webgl2");
+  expect(start.sim).toBe("rapier");
   expect(start.player).toBeDefined();
   await expect(page.getByTestId("intent-card")).toContainText("Rooftop lane needs double jump");
-  await expect(page.getByTestId("proof-badge")).toHaveText("proof: pending");
-  await expect(page.getByTestId("prompt-bar")).toContainText("fixture LLM");
+  await expect(page.getByTestId("prompt-bar")).toContainText("fixture");
+  // The device proof worker plays the world while the judge does; the badge turns green only on evidence.
+  await expect(page.getByTestId("proof-badge")).toContainText("Rooftop lane needs double jump: verified", { timeout: 60_000 });
+  await expect(page.getByTestId("proof-badge")).toContainText("12 of 12 AI runners won");
+  expect((await probe(page)).proof?.headline).toBe("verified");
 
-  // Walk forward (the spawn faces the plaza, +x) for one second.
+  // Walk forward (the spawn faces the orb on the plaza, +x) for one second.
   await page.keyboard.down("KeyW");
   await page.waitForTimeout(1000);
   await page.keyboard.up("KeyW");
@@ -56,9 +60,11 @@ test("CTF brief renders, walks and jumps on the WebGL2 path", async ({ page }) =
   expect(errors).toEqual([]);
 });
 
-test("headline: the rooftop ledge needs a double jump (stub physics)", async ({ page }) => {
+// The same human-controls choreography on both simulations: Rapier (the product) and the stub
+// (the fallback if the physics wasm fails to load).
+for (const sim of ["rapier", "stub"] as const) test(`headline: the rooftop ledge needs a double jump (${sim} physics)`, async ({ page }) => {
   const errors = collectErrors(page);
-  await page.goto("/?gl=webgl2&fx=0&dpr=0.5"); // low-res: keep software-GL frames short so key timing is tight
+  await page.goto(`/?gl=webgl2&fx=0&dpr=0.5${sim === "stub" ? "&sim=stub" : ""}`); // low-res: keep software-GL frames short so key timing is tight
   await page.waitForFunction(() => window.__GHOSTRUN__?.ready === true, null, { timeout: 90_000 });
   const at = () => probe(page).then((p) => p.player!);
   const until = (fn: () => boolean, timeout = 15_000) => page.waitForFunction(fn, null, { polling: 16, timeout });

@@ -95,3 +95,5 @@ Run it yourself: `pnpm --filter @ghostrun/detcheck quick` (2k ticks) or `full` (
 | Node 26 · workerd · Chromium 156 · Firefox 157 · WebKit 27.2 | `74928a5b` | `ae80c6d3` | 79 | red 2, blue 0 |
 
 All five are identical. **A proof computed at the edge is valid in the judge's browser**, and share-link replays are bit-exact.
+
+**Re-baselined 2026-10-27:** the web e2e caught the teammate `mate_1` standing 1.6 m in front of the red spawn, in the line to the orb. Real physics stopped a human pressing W after 0.9 m, while the AI runners pathed around it. The placer now fans out bodies that share an anchor *across* the line from the anchor to the world centre. New hashes `dbb6200f` / `79fd7f6f`, still 79 events and red 2 / blue 0, still identical on all five runtimes. A layout regression test keeps the first 4 m from every spawn clear.

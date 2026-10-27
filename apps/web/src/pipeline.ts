@@ -3,8 +3,7 @@
 import fixtureFill from "../../../packages/ir/fixtures/ctf-neon.jsonl?raw";
 import { parseFill, specHash, type FillNote, type FillStats, type WorldBundle } from "@ghostrun/ir";
 import { placeWorld } from "@ghostrun/layout";
-import { cityBlock } from "@ghostrun/pack-city-block";
-import type { LayoutPack } from "@ghostrun/plugin-api";
+import { packFor, PACKS } from "@ghostrun/registry";
 
 /** The organizer's brief the fixture answers. */
 export const BRIEF = "Create a capture-the-flag game in a neon city. Add double jump. Score when the orb reaches the goal.";
@@ -15,7 +14,6 @@ export const BRIEF = "Create a capture-the-flag game in a neon city. Add double 
  */
 export const ENGINE_HASH = "4e9890fd2df60072f9db06a33e4030221249c1b3687b722b2388c21f09e97551";
 
-const PACKS: Record<string, LayoutPack> = { [cityBlock.id]: cityBlock as unknown as LayoutPack };
 
 export interface Intent {
   mode: WorldBundle["mode"];
@@ -29,6 +27,8 @@ export interface Intent {
   headline: string;
   look: string;
   weather: string;
+  /** From the live intent call (absent for the fixture). */
+  live?: { genre: string; setting: string; goal: string; fail: string; role: string };
 }
 
 export interface World {
@@ -57,17 +57,22 @@ function fillSeed(text: string): number {
  * the CTF fill; the live fill lane replaces `fixtureFill` with the streamed text.
  */
 export function buildWorld(_prompt: string): World {
+  return worldFromFill(fixtureFill, fillSeed(fixtureFill));
+}
+
+/** Fill text (fixture or a live stream) → placed world, choosing the pack from the registry. */
+export function worldFromFill(fillText: string, seed: number, live?: Intent["live"]): World {
   const t0 = performance.now();
-  const seed = fillSeed(fixtureFill);
-  const fill = parseFill(fixtureFill, { seed });
+  const fill = parseFill(fillText, { seed });
   const t1 = performance.now();
 
   const draft = fill.draft;
-  const pack = PACKS[draft.pack.id] ?? (cityBlock as unknown as LayoutPack);
+  const known = PACKS.some((p) => p.id === draft.pack.id);
+  const pack = packFor(draft.pack.id);
   const layout = pack.generate({ seed, params: pack.defaults, sub: draft.pack.sub, laws: draft.laws, harder: false });
   const { bundle, notes } = placeWorld({ ...draft, engine: ENGINE_HASH }, layout);
   const t2 = performance.now();
-  if (!PACKS[draft.pack.id]) notes.unshift(`pack '${draft.pack.id}' not available, using '${pack.id}'`);
+  if (!known) notes.unshift(`pack '${draft.pack.id}' not available, using '${pack.id}'`);
 
   const headline = bundle.expects.find((x) => x.headline) ?? bundle.expects[0];
   const intent: Intent = {
@@ -82,6 +87,7 @@ export function buildWorld(_prompt: string): World {
     headline: headline?.text ?? "",
     look: bundle.cosmetic.look,
     weather: bundle.cosmetic.weather,
+    ...(live ? { live } : {}),
   };
 
   return {

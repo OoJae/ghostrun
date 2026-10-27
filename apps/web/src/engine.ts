@@ -13,7 +13,10 @@ import { makeRain } from "./render/rain";
 import { makeFog, neonEnvironment, skyNode } from "./render/sky";
 import { buildWorldView, type WorldView } from "./render/world";
 import { StubSim } from "./sim/stub";
+import type { RapierSim } from "./sim/rapier";
 import { PLAYER_ID, TICK_HZ, type FrameSource, type SimFrame } from "./sim/types";
+
+export type SimFactory = (bundle: World["bundle"]) => RapierSim;
 
 export interface EngineOptions {
   forceWebGL?: boolean;
@@ -49,6 +52,10 @@ export class Engine {
 
   #view: WorldView | null = null;
   #sim: FrameSource | null = null;
+  /** Set once Rapier has loaded; until then (or if it fails) the stub keeps the world walkable. */
+  simFactory: SimFactory | null = null;
+  /** The live deterministic sim of the current world, when the factory is set. */
+  rapierSim: RapierSim | null = null;
   #prev: SimFrame | null = null;
   #curr: SimFrame | null = null;
   #currAt = 0;
@@ -134,7 +141,8 @@ export class Engine {
     this.#scene.add(view.root);
     this.#view = view;
     this.#follow.setColliders(view.colliders);
-    const sim = new StubSim(world.bundle);
+    const sim = this.simFactory ? this.simFactory(world.bundle) : new StubSim(world.bundle);
+    this.rapierSim = this.simFactory ? (sim as RapierSim) : null;
     this.#follow.reset(sim.spawnYaw);
     const player = view.actors.get(PLAYER_ID);
     if (player) this.#follow.update(0, player.position);

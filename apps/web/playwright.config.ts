@@ -23,7 +23,8 @@ export default defineConfig({
     // space in the repo path never reaches a shell).
     command: "pnpm run build && pnpm run preview",
     url: `http://localhost:${PORT}`,
-    reuseExistingServer: !process.env.CI,
+    // Never reuse: a stray preview server serves a stale bundle and the suite tests old code.
+    reuseExistingServer: false,
     timeout: 180_000,
     stdout: "ignore",
     stderr: "pipe",

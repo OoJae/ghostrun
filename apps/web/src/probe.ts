@@ -11,6 +11,8 @@ export interface GhostrunProbe {
   drawCalls?: number;
   pixelRatio?: number;
   splits?: Record<string, number>;
+  sim?: "rapier" | "stub";
+  proof?: { headline: string; chips: number };
 }
 
 declare global {
