@@ -1,0 +1,298 @@
+{
+  "prompt": "Rescue the princess from the tower guarded by knights",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "fantasy action",
+    "setting": "a medieval fortress courtyard and top-heavy tower at dusk",
+    "role": "hero / rescue party",
+    "goal": "Reach the princess at the top of the tower and escort her to safety",
+    "fail": "Captured or slain by the guard knights before rescuing the princess",
+    "mood": "dramatic, heroic tension with a fairy-tale vibe",
+    "pack": "outdoor",
+    "sub": [
+      "rooftop"
+    ],
+    "safety": "arcade",
+    "headline": "Tower climb must bypass or defeat the guard knights to reach the princess",
+    "nouns": [
+      {
+        "noun": "princess",
+        "hyper": "character"
+      },
+      {
+        "noun": "tower",
+        "hyper": "building"
+      },
+      {
+        "noun": "knights",
+        "hyper": "enemy unit"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.2,
+      "arousal": 0.6,
+      "tension": 0.7
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "177ce1bbe8e2ebec5de8f3caa7dd480d729c0860399a782bbc4ebdda369aa8d6",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_rescue",
+      "text": "Tower climb must bypass or defeat the guard knights to reach the princess",
+      "status": "verified",
+      "method": "kinematic reachability (jump apex model) + physics jump witness, 4 attempts per jump count"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 10 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (princess into exit_gate, carried by red) ← pick up princess",
+        "src": ""
+      },
+      {
+        "id": "T1:x_rescue",
+        "tier": "T1",
+        "subject": {
+          "kind": "property",
+          "id": "x_rescue"
+        },
+        "method": "kinematic reachability (jump apex model)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "Tower climb must bypass or defeat the guard knights to reach the princess",
+        "cx": null
+      },
+      {
+        "id": "T2:r_knight_base_hit",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_knight_base_hit"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_knight_base_hit: nothing produces hit on knight_base",
+        "cx": null
+      },
+      {
+        "id": "T2:r_knight_top_hit",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_knight_top_hit"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_knight_top_hit: nothing produces hit on knight_top",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lever",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lever"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 10,
+        "status": "verified",
+        "text": "r_lever fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_center",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_center"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 6,
+        "status": "verified",
+        "text": "r_secret_center fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_center_w",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_center_w"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 6,
+        "status": "verified",
+        "text": "r_secret_center_w fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_s",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_s"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_secret_flank_s fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_mid",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_mid"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_secret_mid fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_sign",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_sign"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_sign fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_unlock",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_unlock"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_unlock fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners vs 2 bots",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it vs 2 bots (AI par 5.5 s)",
+        "cx": null,
+        "src": "",
+        "ms": 115
+      },
+      {
+        "id": "T3:x_rescue",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "x_rescue"
+        },
+        "status": "played",
+        "method": "physics jump witness, 4 attempts per jump count",
+        "n": 4,
+        "k": 3,
+        "text": "Tower climb must bypass or defeat the guard knights to reach the princess: reached with 2 jumps 3 of 4, with 1 0 of 4",
+        "cx": null,
+        "src": "ai",
+        "ms": 61
+      }
+    ],
+    "par": {
+      "goldS": 5.5,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 484
+  }
+}

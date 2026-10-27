@@ -1,0 +1,27 @@
+{"op":"meta","mode":"play","lang":"en","pack":"floor_plan","sub":[],"seed":140,"look":"wizard school","mood":[0.8,0.4,0.2],"timeOfDay":12,"weather":"clear"}
+{"op":"zone","id":"z_yard","slot":"yard","tag":"outside","name":"School Courtyard"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Grand Entrance Hall"}
+{"op":"zone","id":"z_library","slot":"room_sw","tag":"room","name":"Ancient Library"}
+{"op":"zone","id":"z_lab","slot":"main_room","tag":"hall","name":"Alchemy Laboratory"}
+{"op":"zone","id":"z_storage","slot":"room_se","tag":"room","name":"Ingredient Storage"}
+{"op":"spawn","id":"sp_red","zone":"z_yard","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"cauldron","zone":"z_lab","anchor":"center","noun":"cauldron","hyper":"container","team":"","kind":"goal","body":"sensor","shape":"box","size":[1,1,1]}
+{"op":"ent","id":"ing_elf_root","kind":"pickup","noun":"elf root","hyper":"ingredient","zone":"z_storage","anchor":"corner_ne","body":"dynamic","shape":"sphere","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"ing_dragon_scale","kind":"pickup","noun":"dragon scale","hyper":"ingredient","zone":"z_storage","anchor":"corner_sw","body":"dynamic","shape":"box","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"ing_moon_leaf","kind":"pickup","noun":"moon leaf","hyper":"ingredient","zone":"z_storage","anchor":"corner_se","body":"dynamic","shape":"capsule","size":[0.2,0.6,0.2]}
+{"op":"ent","id":"shelf_elf","kind":"prop","noun":"shelf of elf roots","hyper":"shelf","zone":"z_library","anchor":"wall_n","body":"fixed","shape":"box","size":[2,0.5,0.5]}
+{"op":"ent","id":"shelf_dragon","kind":"prop","noun":"shelf of dragon scales","hyper":"shelf","zone":"z_library","anchor":"wall_s","body":"fixed","shape":"box","size":[2,0.5,0.5]}
+{"op":"ent","id":"shelf_moon","kind":"prop","noun":"shelf of moon leaves","hyper":"shelf","zone":"z_library","anchor":"wall_e","body":"fixed","shape":"box","size":[2,0.5,0.5]}
+{"op":"verb","id":"vb_carry_elf","verb":"physics_props.carry","on":"ing_elf_root","params":{}}
+{"op":"verb","id":"vb_carry_dragon","verb":"physics_props.carry","on":"ing_dragon_scale","params":{}}
+{"op":"verb","id":"vb_carry_moon","verb":"physics_props.carry","on":"ing_moon_leaf","params":{}}
+{"op":"verb","id":"vb_inspect_shelf_elf","verb":"social.inspect","on":"shelf_elf","params":{"text":"Glowing roots used for vitality potions."}}
+{"op":"verb","id":"vb_inspect_shelf_dragon","verb":"social.inspect","on":"shelf_dragon","params":{"text":"Sharp scales that store fire essence."}}
+{"op":"verb","id":"vb_inspect_shelf_moon","verb":"social.inspect","on":"shelf_moon","params":{"text":"Silver leaves that capture moonlight."}}
+{"op":"rule","id":"r_win","when":{"t":"enter","a":"ing_elf_root","b":"cauldron"},"if":[{"l":"ing_dragon_scale.carrier.id","op":"eq","r":"null"},{"l":"ing_moon_leaf.carrier.id","op":"eq","r":"null"}],"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_win2","when":{"t":"enter","a":"ing_dragon_scale","b":"cauldron"},"if":[{"l":"ing_elf_root.carrier.id","op":"eq","r":"null"},{"l":"ing_moon_leaf.carrier.id","op":"eq","r":"null"}],"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_win3","when":{"t":"enter","a":"ing_moon_leaf","b":"cauldron"},"if":[{"l":"ing_elf_root.carrier.id","op":"eq","r":"null"},{"l":"ing_dragon_scale.carrier.id","op":"eq","r":"null"}],"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_fail","when":{"t":"enter","a":"ing_elf_root","b":"cauldron"},"if":[{"l":"ing_dragon_scale.carrier.id","op":"neq","r":"null"},{"l":"ing_moon_leaf.carrier.id","op":"neq","r":"null"}],"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"expect","id":"x_brew","prop":"win_reachable","a":"sp_red","b":"cauldron","headline":true,"text":"Cauldron brewing triggers win only on exact 3-ingredient match"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

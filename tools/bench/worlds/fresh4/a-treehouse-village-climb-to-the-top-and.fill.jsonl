@@ -1,0 +1,28 @@
+{"op":"meta","mode":"play","lang":"en","pack":"course","sub":[],"seed":143,"look":"treehouse village","mood":[0.6,0.5,0.3],"timeOfDay":9,"weather":"clear"}
+{"op":"zone","id":"z_start","slot":"start","tag":"ground","name":"Base of the tallest tree"}
+{"op":"zone","id":"z_seg_1","slot":"seg_1","tag":"ledge","name":"First wooden platform"}
+{"op":"zone","id":"z_seg_2","slot":"seg_2","tag":"steps","name":"Spiral ladder segment"}
+{"op":"zone","id":"z_seg_3","slot":"seg_3","tag":"pit","name":"Rope bridge over a gap"}
+{"op":"zone","id":"z_seg_4","slot":"seg_4","tag":"beam","name":"Balcony beam"}
+{"op":"zone","id":"z_seg_5","slot":"seg_5","tag":"gaps","name":"Higher platform with small gaps"}
+{"op":"zone","id":"z_seg_6","slot":"seg_6","tag":"pit","name":"Narrow ledge over a drop"}
+{"op":"zone","id":"z_finish","slot":"finish","tag":"top","name":"Treehouse summit"}
+{"op":"spawn","id":"sp_red","zone":"z_start","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"bell_goal","zone":"z_finish","anchor":"goal","noun":"morning bell","hyper":"bell","team":"","body":"sensor","shape":"box","size":[0.5,0.5,0.5]}
+{"op":"ent","id":"platform_1","kind":"platform","noun":"wooden platform","hyper":"platform","zone":"z_seg_1","anchor":"cp_1","body":"fixed","shape":"box","size":[3,0.5,3]}
+{"op":"ent","id":"ladder_1","kind":"prop","noun":"spiral ladder","hyper":"ladder","zone":"z_seg_2","anchor":"cp_2","body":"fixed","shape":"capsule","size":[0.3,2,0.3]}
+{"op":"ent","id":"bridge_1","kind":"platform","noun":"rope bridge","hyper":"rope_bridge","zone":"z_seg_3","anchor":"pit_3","body":"fixed","shape":"box","size":[5,0.3,2]}
+{"op":"ent","id":"beam_1","kind":"prop","noun":"balcony beam","hyper":"beam","zone":"z_seg_4","anchor":"cp_4","body":"fixed","shape":"box","size":[4,0.3,0.5]}
+{"op":"ent","id":"platform_2","kind":"platform","noun":"higher platform","hyper":"platform","zone":"z_seg_5","anchor":"cp_5","body":"fixed","shape":"box","size":[2.5,0.5,2.5]}
+{"op":"ent","id":"ledge_1","kind":"platform","noun":"narrow ledge","hyper":"ledge","zone":"z_seg_6","anchor":"pit_6","body":"fixed","shape":"box","size":[3,0.5,1.5]}
+{"op":"ent","id":"fall_hazard","kind":"hazard","noun":"deep fall","hyper":"hazard","zone":"z_seg_3","anchor":"pit_3","body":"sensor","shape":"box","size":[5,0.2,2]}
+{"op":"ent","id":"checkpoint_1","kind":"checkpoint","noun":"checkpoint","hyper":"checkpoint","zone":"z_seg_2","anchor":"cp_2","body":"sensor","shape":"box","size":[0.5,0.5,0.5]}
+{"op":"verb","id":"vb_jump","verb":"locomotion.jump","on":"player","params":{"jumpsMax":2}}
+{"op":"verb","id":"vb_fall","verb":"motion_hazards.hazard","on":"fall_hazard","params":{"respawn":true}}
+{"op":"verb","id":"vb_checkpoint","verb":"puzzle.checkpoint","on":"checkpoint_1","params":{}}
+{"op":"rule","id":"r_fall","when":{"t":"enter","a":"player","b":"fall_hazard"},"then":[{"e":"lose","target":"player"}]}
+{"op":"rule","id":"r_win","when":{"t":"enter","a":"player","b":"bell_goal"},"if":[{"l":"player.zone","op":"eq","r":"z_finish"}],"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_checkpoint","when":{"t":"enter","a":"player","b":"checkpoint_1"},"then":[{"e":"set_state","target":"checkpoint_1","v":"reached"}]}
+{"op":"expect","id":"x_treetop","prop":"win_reachable","a":"sp_red","b":"bell_goal","headline":true,"text":"Treetop platforms and ladders must lead to a bell at the top"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

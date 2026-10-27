@@ -1,0 +1,240 @@
+{
+  "prompt": "A wizard school: brew the potion from three ingredients in the cauldron",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "Magic Crafting / Puzzle",
+    "setting": "A grand library and laboratory inside an ancient wizarding school",
+    "role": "Junior Wizard Student",
+    "goal": "Collect three specific ingredients from shelves and drop them into the cauldron to brew a working potion.",
+    "fail": "The liquid turns red and bursts into smoke, restarting the quest.",
+    "mood": "Whimsical and educational",
+    "pack": "floor_plan",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Cauldron brewing triggers win only on exact 3-ingredient match",
+    "nouns": [
+      {
+        "noun": "wizard school",
+        "hyper": "interior"
+      },
+      {
+        "noun": "potion",
+        "hyper": "liquid"
+      },
+      {
+        "noun": "ingredients",
+        "hyper": "objects"
+      },
+      {
+        "noun": "cauldron",
+        "hyper": "container"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.8,
+      "arousal": 0.4,
+      "tension": 0.2
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "99a178ddedf422bdf977a87fbf6122b6b962171e494b14c10c8440c5fbd532bf",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_brew",
+      "text": "Cauldron brewing triggers win only on exact 3-ingredient match",
+      "status": "counterexample",
+      "method": "static goal regression over rules + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 7 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (ing_elf_root into cauldron, carried by red) ← pick up ing_elf_root",
+        "src": ""
+      },
+      {
+        "id": "T2:r_secret_corner_e",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_e"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 16,
+        "status": "verified",
+        "text": "r_secret_corner_e fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_ne",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_ne"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_corner_ne fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_nw",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_nw"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_corner_nw fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_nw_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_nw_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_corner_nw_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 0,
+        "src": "ai",
+        "ms": 3,
+        "status": "counterexample",
+        "text": "r_win fires exactly once",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "firings",
+          "text": "never fired when forced"
+        }
+      },
+      {
+        "id": "T2:r_win2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 0,
+        "src": "ai",
+        "ms": 2,
+        "status": "counterexample",
+        "text": "r_win2 fires exactly once",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "firings",
+          "text": "never fired when forced"
+        }
+      },
+      {
+        "id": "T2:r_win3",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win3"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 0,
+        "src": "ai",
+        "ms": 2,
+        "status": "counterexample",
+        "text": "r_win3 fires exactly once",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "firings",
+          "text": "never fired when forced"
+        }
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "counterexample",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 0,
+        "text": "no AI runner could win",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "wins",
+          "text": "12 got stuck (in the Alchemy Laboratory ×12)"
+        },
+        "src": "",
+        "ms": 109
+      }
+    ],
+    "par": null,
+    "ms": 159
+  }
+}

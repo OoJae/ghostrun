@@ -1,0 +1,33 @@
+{"op":"meta","mode":"play","lang":"en","pack":"city_block","sub":["rooftop"],"seed":138,"look":"futuristic high-rise neon night","mood":[-0.2,0.95,0.8],"timeOfDay":22,"weather":"clear"}
+{"op":"zone","id":"z_center","slot":"center","tag":"rooftop","name":"Central Plaza"}
+{"op":"zone","id":"z_west","slot":"west_block","tag":"base","name":"West Rooftop Base"}
+{"op":"zone","id":"z_east","slot":"east_block","tag":"base","name":"East Rooftop Base"}
+{"op":"zone","id":"z_street_w","slot":"street_w","tag":"street","name":"West Skyline Street"}
+{"op":"zone","id":"z_street_e","slot":"street_e","tag":"street","name":"East Skyline Street"}
+{"op":"zone","id":"z_roof_lane","slot":"roof_lane_a","tag":"rooftop","name":"Rooftop Antenna Lane"}
+{"op":"spawn","id":"sp_red","zone":"z_west","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"antenna_goal","zone":"z_roof_lane","anchor":"lane_end","noun":"antenna","hyper":"structure","team":"red"}
+{"op":"ent","id":"jump_pad_w","kind":"platform","noun":"jump pad","hyper":"jump_pad","zone":"z_west","anchor":"spawn_pad","body":"kinematic","shape":"box","size":[1,0.5,1]}
+{"op":"ent","id":"plate_activate","kind":"plate","noun":"pressure plate","hyper":"plate","zone":"z_center","anchor":"floor_ne","body":"sensor","shape":"box","size":[0.5,0.2,0.5]}
+{"op":"ent","id":"door_gate","kind":"door","noun":"gate door","hyper":"door","zone":"z_center","anchor":"wall_n","body":"fixed","shape":"box","size":[2,3,0.3]}
+{"op":"ent","id":"drone_patrol_1","kind":"npc","noun":"patrol drone","hyper":"drone","zone":"z_roof_lane","anchor":"lane_start","body":"dynamic","shape":"capsule"}
+{"op":"ent","id":"drone_patrol_2","kind":"npc","noun":"patrol drone","hyper":"drone","zone":"z_roof_lane","anchor":"gap_mid","body":"dynamic","shape":"capsule"}
+{"op":"ent","id":"coin_1","kind":"pickup","noun":"circuit coin","hyper":"coin","zone":"z_center","anchor":"floor_sw","body":"dynamic","shape":"sphere","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"hazard_spikes","kind":"hazard","noun":"spike line","hyper":"spikes","zone":"z_street_w","anchor":"lane_start","body":"sensor","shape":"box","size":[5,0.2,0.2]}
+{"op":"verb","id":"vb_jump","verb":"locomotion.jump","on":"player","params":{"jumpsMax":2}}
+{"op":"verb","id":"vb_jump_pad","verb":"locomotion.jump_pad","on":"jump_pad_w","params":{"height":5}}
+{"op":"verb","id":"vb_plate","verb":"puzzle.plate","on":"plate_activate","params":{"latch":false}}
+{"op":"verb","id":"vb_lock_gate","verb":"puzzle.lock","on":"door_gate","params":{"key":"coin_1","keep":false}}
+{"op":"verb","id":"vb_collect_coin","verb":"puzzle.collect","on":"coin_1","params":{}}
+{"op":"verb","id":"vb_spike_hazard","verb":"motion_hazards.hazard","on":"hazard_spikes","params":{"respawn":true}}
+{"op":"rule","id":"r_win","when":{"t":"enter","a":"player","b":"antenna_goal"},"if":[],"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose_drone","when":{"t":"hit","a":"player","b":"drone_patrol_1"},"if":[],"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose_drone2","when":{"t":"hit","a":"player","b":"drone_patrol_2"},"if":[],"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_gate_open","when":{"t":"state_is","a":"door_gate","s":"open"},"if":[],"then":[{"e":"set_state","target":"door_gate","v":"open"}]}
+{"op":"rule","id":"r_plate_opens","when":{"t":"state_is","a":"plate_activate","s":"down"},"if":[],"then":[{"e":"set_state","target":"door_gate","v":"open"}]}
+{"op":"expect","id":"exp_roof","prop":"win_reachable","a":"sp_red","b":"antenna_goal","headline":true,"text":"Rooftop route to the antenna is guarded by patrols"}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":6}}
+{"op":"end","layer":"gameplay"}
+{"op":"npc","id":"drone_patrol_1","role":"rival","zone":"z_roof_lane","anchor":"lane_start","team":"","menu":["drone.patrol"],"dflt":"drone.patrol"}
+{"op":"npc","id":"drone_patrol_2","role":"rival","zone":"z_roof_lane","anchor":"gap_mid","team":"","menu":["drone.patrol"],"dflt":"drone.patrol"}
+{"op":"end","layer":"cosmetic"}

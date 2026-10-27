@@ -2,6 +2,7 @@
 // and nothing logs an error. The WebGL2 fallback is forced (?gl=webgl2) because that is the path
 // headless Chromium and Safari-class devices take; a second test boots the automatic choice.
 import { expect, test, type Page } from "@playwright/test";
+import { readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -472,8 +473,9 @@ test("why trust this: the receipt opens the method, the eval table (one row per 
   const trust = page.getByTestId("trust");
   await expect(trust).toContainText("How a receipt is made");
   await expect(trust).toContainText("Node, Cloudflare workerd, Chromium, Firefox and WebKit");
-  await expect(trust.locator("tbody tr")).toHaveCount(6);
-  await expect(trust).toContainText("fresh3");
+  const sets = (JSON.parse(readFileSync(resolve(here, "../src/trust.json"), "utf8")) as { sets: { name: string }[] }).sets;
+  await expect(trust.locator("tbody tr")).toHaveCount(sets.length);
+  await expect(trust).toContainText(sets.at(-1)!.name);
   await expect(trust).toContainText("What it doesn't do yet");
   await page.keyboard.press("Escape");
   await expect(trust).toHaveCount(0);

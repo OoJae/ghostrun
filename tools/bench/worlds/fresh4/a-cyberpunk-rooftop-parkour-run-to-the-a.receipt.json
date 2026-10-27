@@ -1,0 +1,222 @@
+{
+  "prompt": "A cyberpunk rooftop parkour run to the antenna, with drones patrolling",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "Parkour / Sci-Fi",
+    "setting": "Futuristic high-rise city at night with neon lights and patrolling surveillance drones",
+    "role": "Cyber-runner",
+    "goal": "Navigate the rooftops via parkour to reach the central antenna",
+    "fail": "Tackled by patrol drones or falling off the ledges",
+    "mood": "Tense, electric, and high-speed",
+    "pack": "city_block",
+    "sub": [
+      "rooftop"
+    ],
+    "safety": "arcade",
+    "headline": "Rooftop route to the antenna is guarded by patrols",
+    "nouns": [
+      {
+        "noun": "antenna",
+        "hyper": "structure"
+      },
+      {
+        "noun": "drones",
+        "hyper": "vehicles"
+      },
+      {
+        "noun": "rooftop",
+        "hyper": "surface"
+      },
+      {
+        "noun": "run",
+        "hyper": "event"
+      }
+    ],
+    "moodVec": {
+      "valence": -0.2,
+      "arousal": 0.95,
+      "tension": 0.8
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "6ed9c515ebf493988725587da2207d0cdd1c1db870f5ee44bec2f99311fc10ae",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "exp_roof",
+      "text": "Rooftop route to the antenna is guarded by patrols",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners vs 2 bots"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 7 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (player enters antenna_goal)",
+        "src": ""
+      },
+      {
+        "id": "T2:r_gate_open",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_gate_open"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_gate_open: no room to stand next to door_gate",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lose_drone",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_drone"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_lose_drone: nothing produces hit on drone_patrol_1",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lose_drone2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_drone2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_lose_drone2: nothing produces hit on drone_patrol_2",
+        "cx": null
+      },
+      {
+        "id": "T2:r_plate_opens",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_plate_opens"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 8,
+        "status": "verified",
+        "text": "r_plate_opens fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_edge",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_edge"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_edge fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_plinth",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_plinth"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_plinth fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners vs 2 bots",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it vs 2 bots (AI par 10.1 s)",
+        "cx": null,
+        "src": "",
+        "ms": 247
+      }
+    ],
+    "par": {
+      "goldS": 10.1,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 374
+  }
+}

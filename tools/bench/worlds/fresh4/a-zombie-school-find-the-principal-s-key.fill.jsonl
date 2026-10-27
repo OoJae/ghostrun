@@ -1,0 +1,29 @@
+{"op":"meta","mode":"play","lang":"en","pack":"floor_plan","sub":[],"seed":132,"look":"abandoned high school","mood":[-0.5,0.65,0.8],"timeOfDay":22,"weather":"clear"}
+{"op":"zone","id":"z_yard","slot":"yard","tag":"outside","name":"School grounds"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Main entrance"}
+{"op":"zone","id":"z_hall_sw","slot":"room_sw","tag":"corridor","name":"West hallway"}
+{"op":"zone","id":"z_hall_se","slot":"room_se","slot":"room_se","tag":"corridor","name":"East hallway"}
+{"op":"zone","id":"z_class_nw","slot":"room_nw","tag":"room","name":"Classroom NW"}
+{"op":"zone","id":"z_gym","slot":"main_room","tag":"gym","name":"Gymnasium"}
+{"op":"zone","id":"z_office","slot":"room_ne","tag":"office","name":"Principal's office"}
+{"op":"spawn","id":"sp_red","zone":"z_entrance","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"gym_exit","zone":"z_gym","anchor":"doorway_s","noun":"gym doors","hyper":"room_exit","team":"red"}
+{"op":"ent","id":"key_item","kind":"pickup","noun":"principal's key","hyper":"key_item","zone":"z_office","anchor":"corner_sw","body":"dynamic","shape":"box","size":[0.2,0.2,0.05]}
+{"op":"ent","id":"hall_door_se","kind":"door","noun":"East hallway door","hyper":"door","zone":"z_hall_se","anchor":"doorway_w","body":"fixed","shape":"box"}
+{"op":"ent","id":"gym_door_w","kind":"door","noun":"Gym west door","hyper":"door","zone":"z_gym","anchor":"doorway_w","body":"fixed","shape":"box"}
+{"op":"ent","id":"zombie_hall_sw","kind":"npc","noun":"shambling zombie","hyper":"enemy","zone":"z_hall_sw","anchor":"center","body":"kinematic","shape":"capsule","team":"","menu":["zombie.wander"],"dflt":"zombie.wander"}
+{"op":"ent","id":"zombie_gym","kind":"npc","noun":"groaning zombie","hyper":"enemy","zone":"z_gym","anchor":"center","body":"kinematic","shape":"capsule","team":"","menu":["zombie.wander"],"dflt":"zombie.wander"}
+{"op":"ent","id":"hazard_spikes","kind":"hazard","noun":"spike trap","hyper":"hazard","zone":"z_hall_sw","anchor":"corner_ne","body":"sensor","shape":"box","size":[1,0.2,1]}
+{"op":"verb","id":"vb_carry_key","verb":"physics_props.carry","on":"key_item","params":{}}
+{"op":"verb","id":"vb_lock_gym","verb":"puzzle.lock","on":"gym_door_w","params":{"key":"key_item","keep":false}}
+{"op":"verb","id":"vb_zombie_hall_sw","verb":"motion_hazards.hazard","on":"zombie_hall_sw","params":{"respawn":true}}
+{"op":"verb","id":"vb_zombie_gym","verb":"motion_hazards.hazard","on":"zombie_gym","params":{"respawn":true}}
+{"op":"verb","id":"vb_spike_hazard","verb":"motion_hazards.hazard","on":"hazard_spikes","params":{"respawn":true}}
+{"op":"rule","id":"r_escape","when":{"t":"enter","a":"player","b":"gym_exit"},"if":[{"l":"gym_exit.state","op":"eq","r":"open"}],"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_zombie_touch","when":{"t":"hit","a":"player","b":"zombie_hall_sw"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_zombie_gym_touch","when":{"t":"hit","a":"player","b":"zombie_gym"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_spike_touch","when":{"t":"hit","a":"player","b":"hazard_spikes"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"expect","id":"x_key","prop":"win_reachable","a":"sp_red","b":"gym_exit","headline":true,"text":"Principal's key must be found to unlock the gym exit doors"}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.2,"speed":4}}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

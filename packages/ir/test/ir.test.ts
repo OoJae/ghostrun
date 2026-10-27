@@ -186,6 +186,26 @@ describe("fill repairs from the S2 bench", () => {
   });
 });
 
+describe("fill repairs from the fourth unseen set", () => {
+  it("operators and weather in the spellings models use; a rule about a plural of placed things is kept", () => {
+    const lines = [
+      '{"op":"meta","mode":"play","pack":"arena","seed":3,"weather":"foggy"}',
+      '{"op":"zone","id":"z_a","slot":"midfield","tag":"center"}',
+      '{"op":"spawn","id":"sp","zone":"z_a","team":"red"}',
+      '{"op":"goal","id":"home","zone":"z_a"}',
+      '{"op":"ent","id":"pup_1","kind":"pickup","noun":"puppy","zone":"z_a"}',
+      '{"op":"ent","id":"pup_2","kind":"pickup","noun":"puppy","zone":"z_a"}',
+      '{"op":"rule","id":"r_ne","when":{"t":"enter","a":"player","b":"home"},"if":[{"l":"pup_1.carrier","op":"neq","r":""},{"l":"team:red.score","op":">=","r":1}],"then":[{"e":"win","target":"player"}]}',
+      '{"op":"rule","id":"r_pups","when":{"t":"enter","a":"puppies","b":"home"},"then":[{"e":"score","target":"team:red","n":1}]}',
+      '{"op":"rule","id":"r_ghost","when":{"t":"enter","a":"ghosts","b":"home"},"then":[{"e":"lose","target":"player"}]}',
+    ].join("\n");
+    const p = parseFill(lines, { seed: 3 });
+    expect(p.draft.cosmetic.weather).toBe("fog");
+    expect(p.draft.rules.find((r) => r.id === "r_ne")!.if.map((c) => c.op)).toEqual(["ne", "gte"]);
+    expect(p.draft.rules.map((r) => r.id)).toEqual(["r_ne", "r_pups"]); // "ghosts" names nothing placed
+  });
+});
+
 describe("glued objects", () => {
   it("a whole world on one line (no newlines) parses like one object per line; strings with braces stay whole", async () => {
     const { parseFill, splitObjects } = await import("../src");

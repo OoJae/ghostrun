@@ -1,0 +1,23 @@
+{"op":"meta","mode":"play","lang":"en","pack":"outdoor","sub":[],"seed":141,"look":"glacier cavern","mood":[0.2,0.45,0.5],"timeOfDay":12,"weather":"clear"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Cave entrance"}
+{"op":"zone","id":"z_hub","slot":"clearing","tag":"hub","name":"Glacial chamber"}
+{"op":"zone","id":"z_crevasse","slot":"clearing_w","tag":"danger","name":"Crevasse drop"}
+{"op":"spawn","id":"sp_red","zone":"z_entrance","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"crystal_heart","zone":"z_hub","anchor":"center","noun":"crystal heart","hyper":"artifact","team":"","body":"sensor","shape":"none"}
+{"op":"ent","id":"frozen_floor","kind":"hazard","noun":"frozen floor","hyper":"terrain","zone":"z_hub","anchor":"center","body":"sensor","shape":"box","size":[8,0.1,8]}
+{"op":"ent","id":"wind_push","kind":"hazard","noun":"glacial wind","hyper":"wind","zone":"z_hub","anchor":"center","body":"sensor","shape":"box","size":[8,0.2,8]}
+{"op":"ent","id":"spike_row","kind":"hazard","noun":"sharp spikes","hyper":"spikes","zone":"z_hub","anchor":"center_n","body":"sensor","shape":"box","size":[4,0.2,1]}
+{"op":"ent","id":"stalactite_1","kind":"hazard","noun":"glowing stalactite","hyper":"stalactite","zone":"z_hub","anchor":"center_e","body":"sensor","shape":"box","size":[0.5,2,0.5]}
+{"op":"ent","id":"crevasse_hole","kind":"hazard","noun":"crevasse","hyper":"crevasse","zone":"z_crevasse","anchor":"goal","body":"sensor","shape":"box","size":[2,0.5,2]}
+{"op":"verb","id":"vb_wind","verb":"motion_hazards.wind","on":"wind_push","params":{"x":8,"z":0}}
+{"op":"verb","id":"vb_spike_hazard","verb":"motion_hazards.hazard","on":"spike_row","params":{"respawn":true}}
+{"op":"verb","id":"vb_stalactite_hazard","verb":"motion_hazards.hazard","on":"stalactite_1","params":{"respawn":true}}
+{"op":"verb","id":"vb_crevasse_hazard","verb":"motion_hazards.hazard","on":"crevasse_hole","params":{"respawn":true}}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":6}}
+{"op":"rule","id":"r_win","when":{"t":"enter","a":"player","b":"crystal_heart"},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose_spike","when":{"t":"hit","a":"player","b":"spike_row"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose_stalactite","when":{"t":"hit","a":"player","b":"stalactite_1"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose_crevasse","when":{"t":"hit","a":"player","b":"crevasse_hole"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"expect","id":"x_slide","prop":"win_reachable","a":"sp_red","b":"crystal_heart","headline":true,"text":"Glacier cavern needs frictionless sliding"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

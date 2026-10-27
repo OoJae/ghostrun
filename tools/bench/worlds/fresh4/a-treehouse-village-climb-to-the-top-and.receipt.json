@@ -1,0 +1,264 @@
+{
+  "prompt": "A treehouse village: climb to the top and ring the bell",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "climbing adventure",
+    "setting": "A sunlit forest of massive, ancient trees whose canopies are linked by rope bridges, wooden platforms and spiral ladders, forming a treetop village.",
+    "role": "You are a young explorer in the treehouse village.",
+    "goal": "Climb the tall trees and traverse the links between platforms to reach the topmost platform and ring the morning bell.",
+    "fail": "You fall off the platforms or bridges back to the start of the climb.",
+    "mood": "playful, adventurous, uplifting",
+    "pack": "course",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Treetop platforms and ladders must lead to a bell at the top",
+    "nouns": [
+      {
+        "noun": "treehouse",
+        "hyper": "structure"
+      },
+      {
+        "noun": "village",
+        "hyper": "settlement"
+      },
+      {
+        "noun": "bell",
+        "hyper": "object"
+      },
+      {
+        "noun": "ladder",
+        "hyper": "object"
+      },
+      {
+        "noun": "rope bridge",
+        "hyper": "structure"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.6,
+      "arousal": 0.5,
+      "tension": 0.3
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "b1f3132bb9de97217eaac20322900f7d4508dc3c0b9710f504d294ce8dd4d6b8",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_treetop",
+      "text": "Treetop platforms and ladders must lead to a bell at the top",
+      "status": "counterexample",
+      "method": "static goal regression over rules + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 9 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (player enters bell_goal)",
+        "src": ""
+      },
+      {
+        "id": "T2:r_checkpoint",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_checkpoint"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 9,
+        "status": "verified",
+        "text": "r_checkpoint fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_fall",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_fall"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_fall fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_cp_3",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_cp_3"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_secret_cp_3 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_host",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_host"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_host fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_pickup_4",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_pickup_4"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_pickup_4 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_pickup_5",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_pickup_5"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_pickup_5 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_pickup_6",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_pickup_6"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_pickup_6 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_trophy",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_trophy"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_trophy fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 0,
+        "src": "ai",
+        "ms": 3,
+        "status": "counterexample",
+        "text": "r_win fires exactly once",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "firings",
+          "text": "never fired when forced"
+        }
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "counterexample",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 0,
+        "text": "no AI runner could win",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "wins",
+          "text": "12 got stuck (in the Treehouse summit ×12)"
+        },
+        "src": "",
+        "ms": 181
+      }
+    ],
+    "par": null,
+    "ms": 551
+  }
+}

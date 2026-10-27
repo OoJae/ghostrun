@@ -22,7 +22,7 @@ const DATA = trust as { generated: string; won: string; sets: TrustSet[] };
 const LIMITS = [
   "Drivable vehicles, herding animals and aiming throws by hand aren't mechanics yet; worlds that need them say so in their receipt.",
   "VR is tested on an emulated Quest 3, not yet on a headset.",
-  "Prompt sets are written by us. The unseen set was written after the fixes and never tuned on; the others were.",
+  "Prompt sets are written by us. Each set's first pass was measured before anyone looked at its failures; we have fixed failures from every set since, so \"today's code\" is measured on prompts we tuned on.",
   "A world whose model-written rules contradict themselves fails its proof and goes to the repair loop; that isn't always enough.",
 ];
 

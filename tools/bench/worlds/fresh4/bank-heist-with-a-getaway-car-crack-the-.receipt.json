@@ -1,0 +1,272 @@
+{
+  "prompt": "Bank heist with a getaway car: crack the vault and reach the car before the police arrive",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "heist",
+    "setting": "A realistic single-storey bank interior featuring a lobby and a reinforced vault door, with a parking lot outside.",
+    "role": "a thief",
+    "goal": "Use tools to crack the vault lock, retrieve the loot, and navigate the floor plan to exit through the yard and find the getaway car before the time limit ends.",
+    "fail": "Being detected by security or failing to reach the waiting vehicle before the sirens arrive.",
+    "mood": "clutchy",
+    "pack": "floor_plan",
+    "sub": [],
+    "safety": "arcade",
+    "headline": "Must crack the vault lock and exit to the car within the timer",
+    "nouns": [
+      {
+        "noun": "bank",
+        "hyper": "commercial building"
+      },
+      {
+        "noun": "vault",
+        "hyper": "secure storage"
+      },
+      {
+        "noun": "lock",
+        "hyper": "fastener"
+      },
+      {
+        "noun": "getaway car",
+        "hyper": "vehicle"
+      },
+      {
+        "noun": "sirens",
+        "hyper": "auditory signal"
+      }
+    ],
+    "moodVec": {
+      "valence": -0.3,
+      "arousal": 0.8,
+      "tension": 0.9
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "be61840986a1412499c6c3df28acc6ecfc9f332b6ff2aeb3ca50c0fdb69b58d2",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_heist",
+      "text": "Must crack the vault lock and exit to the car within the timer",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 10 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_escape (loot_cash into car_exit, carried by red) ← pick up loot_cash",
+        "src": ""
+      },
+      {
+        "id": "T2:r_alarm_fail",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_alarm_fail"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_alarm_fail fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_cam_detect",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_cam_detect"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_cam_detect fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_escape",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_escape"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_escape fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_center",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_center"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 8,
+        "status": "verified",
+        "text": "r_secret_center fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_ne",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_ne"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 6,
+        "status": "verified",
+        "text": "r_secret_corner_ne fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_ne_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_ne_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_secret_corner_ne_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_nw",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_nw"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_corner_nw fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_nw_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_nw_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_corner_nw_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_nw_3",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_nw_3"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_corner_nw_3 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_vault_open",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_vault_open"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_vault_open fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it (AI par 13.8 s)",
+        "cx": null,
+        "src": "",
+        "ms": 180
+      }
+    ],
+    "par": {
+      "goldS": 13.8,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 234
+  }
+}

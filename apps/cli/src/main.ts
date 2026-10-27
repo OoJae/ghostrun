@@ -7,7 +7,7 @@ import { FillParser, layoutLaws, mergeFill, parseFill, pinLayout, splitObjects, 
 import { placeWorld } from "@ghostrun/layout";
 import { chatJson, editMessages, fillMessages, IntentOut, intentJsonSchema, intentMessages, repairMessages, streamChat } from "@ghostrun/llm";
 import { loadNavNode } from "@ghostrun/nav/node";
-import { better, chipLine, issuesOf, prove, type Receipt } from "@ghostrun/proof";
+import { better, chipLine, issuesOf, prove, traceRunners, type Receipt } from "@ghostrun/proof";
 import { ALL_SUBS, PACKS, packFor } from "@ghostrun/registry";
 import { loadRapierNode } from "@ghostrun/sim/node";
 import * as v from "valibot";
@@ -145,17 +145,18 @@ async function build(prompt: string, seed: number, outDir: string | null): Promi
   // 3. place + prove
   const { bundle, invalid, lines } = placeFromFill(fillText, seed, layout.packId, intent.mode);
   const playableMs = Math.round(now() - t0); // gameplay layer final + placed
+  const slug = prompt.toLowerCase().replace(/[^a-z0-9]+/g, "-").slice(0, 40);
+  if (outDir) {
+    // recorded before the proof runs, so a world that crashes it is kept to reproduce
+    mkdirSync(outDir, { recursive: true });
+    writeFileSync(join(outDir, `${slug}.fill.jsonl`), fillText);
+    writeFileSync(join(outDir, `${slug}.receipt.json`), JSON.stringify({ prompt, intent, receipt: null }, null, 2));
+  }
   const R = await loadRapierNode();
   await loadNavNode();
   const receipt = await prove(R, bundle, { engine: ENGINE, runs: 12 });
   const proofMs = receipt.ms;
-
-  if (outDir) {
-    mkdirSync(outDir, { recursive: true });
-    const slug = prompt.toLowerCase().replace(/[^a-z0-9]+/g, "-").slice(0, 40);
-    writeFileSync(join(outDir, `${slug}.fill.jsonl`), fillText);
-    writeFileSync(join(outDir, `${slug}.receipt.json`), JSON.stringify({ prompt, intent, receipt }, null, 2));
-  }
+  if (outDir) writeFileSync(join(outDir, `${slug}.receipt.json`), JSON.stringify({ prompt, intent, receipt }, null, 2));
   return {
     timings: { intentMs, fillFirstTokenMs, firstEntityMs, gameplayEndMs, fillDoneMs, playableMs, proofMs, outTok, invalid, lines },
     receipt,
@@ -174,6 +175,25 @@ async function main() {
     await loadNavNode();
     const { bundle } = placeFromFill(readFileSync(args[0]!, "utf8"), seed);
     printReceipt(await prove(R, bundle, { engine: ENGINE }));
+  } else if (cmd === "diagnose") {
+    // one recorded world, taken apart: what the placer repaired, the receipt, and what one AI
+    // runner did step by step (where it got stuck, and on what)
+    const f = args[0]!;
+    const text = readFileSync(f, "utf8");
+    const rp = f.replace(".fill.jsonl", ".receipt.json");
+    const saved = existsSync(rp) ? (JSON.parse(readFileSync(rp, "utf8")) as { prompt?: string; intent?: IntentOut }) : {};
+    const s0 = (JSON.parse(splitObjects(text.split("\n", 1)[0] ?? "{}")[0] ?? "{}") as { seed?: number }).seed ?? seed;
+    const placed = placeFromFill(text, s0, saved.intent?.pack, saved.intent?.mode);
+    console.log(`PROMPT: ${saved.prompt ?? "?"}`);
+    for (const n of placed.notes) console.log(`  · ${n}`);
+    const R = await loadRapierNode();
+    await loadNavNode();
+    printReceipt(await prove(R, placed.bundle, { engine: ENGINE, runs: 12 }));
+    const log: string[] = [];
+    traceRunners((m) => void (log.length < 200 && log.push(m)));
+    await prove(R, placed.bundle, { engine: ENGINE, runs: 1 });
+    traceRunners(null);
+    console.log(["RUNNER 1:", ...log.map((l) => `  ${l}`)].join("\n"));
   } else if (cmd === "build") {
     const prompt = args[0]!;
     console.log(`PROMPT: ${prompt}`);
@@ -298,9 +318,19 @@ async function main() {
         }
         play++;
         controls.push(controlsOf(placed.bundle));
-        const r = await prove(R, placed.bundle, { engine: ENGINE, runs: 12 });
-        if ((r.chips.find((c) => c.id === "T3:win")?.k ?? 0) >= 10) now++;
+        const r = await prove(R, placed.bundle, { engine: ENGINE, runs: 12 }).catch((e: unknown) => {
+          console.log(`  ${f}: the proof crashed (${String(e).slice(0, 120)})`);
+          return null;
+        });
+        if ((r?.chips.find((c) => c.id === "T3:win")?.k ?? 0) >= 10) now++;
         if (/^(1[0-2])\/12$/.test(bench.find((x) => x.prompt === saved.prompt)?.t3win ?? "")) firstPass++;
+      }
+      // a prompt the live lane crashed on left no world to re-prove: it counts as lost in both columns
+      const recorded = new Set(readdirSync(dir).filter((x) => x.endsWith(".receipt.json")).map((x) => (JSON.parse(readFileSync(join(dir, x), "utf8")) as { prompt: string }).prompt));
+      for (const row of bench as { prompt: string; error?: string }[]) {
+        if (!row.error || recorded.has(row.prompt)) continue;
+        play++;
+        console.log(`  crashed on the live lane, counted as lost: ${row.prompt}`);
       }
       const ms = bench.map((x) => x.playableMs).filter((x): x is number => typeof x === "number").sort((x, y) => x - y);
       const mid = (xs: number[]) => (xs.length ? xs[Math.floor(xs.length / 2)]! : null);

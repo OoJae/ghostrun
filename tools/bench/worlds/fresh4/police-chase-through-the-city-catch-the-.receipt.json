@@ -1,0 +1,230 @@
+{
+  "prompt": "Police chase through the city: catch the robber before he reaches the harbour",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "action",
+    "setting": "A city street network between a police HQ and a central harbour, featuring narrow lanes and a raised rooftop route that shortcuts to the waterfront.",
+    "role": "Police officer",
+    "goal": "Chase and capture the robber by reaching the harbour zone before he escapes.",
+    "fail": "The robber is not caught or tagged before reaching the harbour exit.",
+    "mood": "Tense urban pursuit",
+    "pack": "city_block",
+    "sub": [
+      "rooftop"
+    ],
+    "safety": "arcade",
+    "headline": "Harbour capture is faster via the rooftop lane than street paths",
+    "nouns": [
+      {
+        "noun": "police officer",
+        "hyper": "role"
+      },
+      {
+        "noun": "robber",
+        "hyper": "character"
+      },
+      {
+        "noun": "city",
+        "hyper": "location"
+      },
+      {
+        "noun": "harbour",
+        "hyper": "location"
+      },
+      {
+        "noun": "chase",
+        "hyper": "event"
+      },
+      {
+        "noun": "capture",
+        "hyper": "action"
+      },
+      {
+        "noun": "rooftop lane",
+        "hyper": "structure"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.15,
+      "arousal": 0.8,
+      "tension": 0.8
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "f94becb13ae5f226db933235b00b0b4c9038ed5a589591719d787f8e66226b2e",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_capture",
+      "text": "Harbour capture is faster via the rooftop lane than street paths",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners vs 2 bots"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 6 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_capture (touch robber_npc)",
+        "src": ""
+      },
+      {
+        "id": "T2:r_capture",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_capture"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_capture fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lose",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 0,
+        "src": "ai",
+        "ms": 1,
+        "status": "counterexample",
+        "text": "r_lose fires exactly once",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "firings",
+          "text": "never fired when forced"
+        }
+      },
+      {
+        "id": "T2:r_open_door",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_open_door"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 9,
+        "status": "verified",
+        "text": "r_open_door fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_floor_ne",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_floor_ne"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 6,
+        "status": "verified",
+        "text": "r_secret_floor_ne fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_floor_sw",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_floor_sw"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 0,
+        "src": "template",
+        "ms": 9,
+        "status": "counterexample",
+        "text": "r_secret_floor_sw fires exactly once",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "firings",
+          "text": "never fired when forced"
+        }
+      },
+      {
+        "id": "T2:r_secret_plinth",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_plinth"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_plinth fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners vs 2 bots",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it vs 2 bots (AI par 13 s)",
+        "cx": null,
+        "src": "",
+        "ms": 233
+      }
+    ],
+    "par": {
+      "goldS": 13,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 350
+  }
+}

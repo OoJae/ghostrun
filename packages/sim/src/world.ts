@@ -76,6 +76,7 @@ export class SimWorld {
   #brain: Brain | undefined;
   #tagRadius = 0; // > 0 when the world has a tag_drop verb: any agent tags an enemy carrier
   #noPickup = new Map<string, number>(); // agent → first tick it may pick up again (after a tag)
+  #putDown = new Map<string, string>(); // item → the agent who put it down by hand (not theirs again until they step away)
   /** Kit verbs bound in this world, in binding-id order. */
   readonly verbs: { plugin: VerbPlugin; bound: Bound }[] = [];
   #ctx!: VerbCtx;
@@ -321,8 +322,9 @@ export class SimWorld {
   }
 
   attach(itemId: string, carrierId: string) {
-    const item = this.ents.get(itemId)!;
-    const carrier = this.ents.get(carrierId)!;
+    const item = this.ents.get(itemId);
+    const carrier = this.ents.get(carrierId);
+    if (!item || !carrier) return; // a name the world doesn't have: nothing to hand over
     if (item.carrier) this.ents.get(item.carrier)!.carrying = "";
     item.carrier = carrierId;
     carrier.carrying = itemId;
@@ -401,6 +403,7 @@ export class SimWorld {
           const item = this.ents.get(id)!.carrying;
           const p = this.pos(id);
           this.#ctx.release(item, [p[0], p[1] - PLAYER_HALF_HEIGHT - PLAYER_RADIUS + Math.max(...this.ents.get(item)!.size) / 2 + 0.02, p[2]]);
+          this.#putDown.set(item, id);
           push("drop", item, id);
         }
       }
@@ -434,7 +437,12 @@ export class SimWorld {
         if (!ag.agent && agentId !== "player") continue;
         if (agentId !== "player" && this.#thrown.has(itemId)) continue; // bots don't throw: they'd only hoard the ball
         if (ag.carrying || ag.destroyed || (this.#noPickup.get(agentId) ?? 0) > t) continue;
-        if (this.#touching(agentId, itemId)) {
+        const touching = this.#touching(agentId, itemId);
+        if (this.#putDown.get(itemId) === agentId) {
+          if (touching) continue; // put down to free the hands: it stays down while they stand on it
+          this.#putDown.delete(itemId);
+        }
+        if (touching) {
           this.attach(itemId, agentId);
           push("pickup", itemId, agentId);
           break;

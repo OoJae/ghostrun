@@ -1,0 +1,31 @@
+{"op":"meta","mode":"play","lang":"en","pack":"city_block","sub":["rooftop"],"seed":142,"look":"city chase","mood":[0.15,0.8,0.8],"timeOfDay":14,"weather":"cloudy"}
+{"op":"zone","id":"z_center","slot":"center","tag":"plaza","name":"City Plaza"}
+{"op":"zone","id":"z_west","slot":"west_block","tag":"base","name":"Police HQ"}
+{"op":"zone","id":"z_east","slot":"east_block","tag":"base","name":"Harbour District"}
+{"op":"zone","id":"z_street_w","slot":"street_w","tag":"street","name":"West Street"}
+{"op":"zone","id":"z_street_e","slot":"street_e","tag":"street","name":"East Street"}
+{"op":"zone","id":"z_roof","slot":"roof_lane_a","tag":"rooftop","name":"Rooftop Shortcut"}
+{"op":"spawn","id":"sp_police","zone":"z_west","anchor":"spawn_pad","team":"red"}
+{"op":"spawn","id":"sp_robber","zone":"z_east","anchor":"spawn_pad","team":"blue"}
+{"op":"goal","id":"harbour_exit","zone":"z_roof","anchor":"lane_end","noun":"harbour exit","hyper":"exit","team":"blue"}
+{"op":"ent","id":"door_west","kind":"door","noun":"steel door","hyper":"door","zone":"z_west","anchor":"goal_ring","body":"fixed","shape":"box"}
+{"op":"ent","id":"switch_west","kind":"switch","noun":"security switch","hyper":"switch","zone":"z_west","anchor":"spawn_pad","body":"fixed","shape":"box"}
+{"op":"ent","id":"plate_jump","kind":"plate","noun":"jump pad","hyper":"jump_pad","zone":"z_street_w","anchor":"spawn_pad","body":"fixed","shape":"box"}
+{"op":"ent","id":"hazard_spikes","kind":"hazard","noun":"spike trap","hyper":"spikes","zone":"z_street_e","anchor":"spawn_pad","body":"sensor","shape":"box","size":[2,0.2,2]}
+{"op":"ent","id":"key_card","kind":"pickup","noun":"key card","hyper":"key","zone":"z_center","anchor":"plinth","body":"dynamic","shape":"box","size":[0.2,0.2,0.05]}
+{"op":"ent","id":"crate","kind":"prop","noun":"crate","hyper":"crate","zone":"z_center","anchor":"floor_ne","body":"dynamic","shape":"box","size":[1,1,1]}
+{"op":"ent","id":"robber_npc","kind":"npc","noun":"robber","hyper":"character","zone":"z_east","anchor":"spawn_pad","body":"dynamic","shape":"capsule"}
+{"op":"verb","id":"vb_jump","verb":"locomotion.jump","on":"player","params":{"jumpsMax":2}}
+{"op":"verb","id":"vb_carry_key","verb":"physics_props.carry","on":"key_card","params":{}}
+{"op":"verb","id":"vb_lock_door","verb":"puzzle.lock","on":"door_west","params":{"key":"key_card","keep":false}}
+{"op":"verb","id":"vb_use_switch","verb":"puzzle.switch","on":"switch_west","params":{"once":true}}
+{"op":"verb","id":"vb_jump_pad","verb":"locomotion.jump_pad","on":"plate_jump","params":{"height":5}}
+{"op":"verb","id":"vb_spike_hazard","verb":"motion_hazards.hazard","on":"hazard_spikes","params":{"respawn":true}}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":6}}
+{"op":"rule","id":"r_capture","when":{"t":"touch","a":"player","b":"robber_npc"},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose","when":{"t":"enter","a":"robber_npc","b":"harbour_exit"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_open_door","when":{"t":"state_is","a":"switch_west","s":"on"},"then":[{"e":"open","target":"door_west"}]}
+{"op":"npc","id":"citizen_1","role":"citizen","zone":"z_center","anchor":"floor_sw","team":"","menu":["citizen.talk"],"dflt":"citizen.talk"}
+{"op":"expect","id":"x_capture","prop":"win_reachable","a":"sp_police","b":"harbour_exit","headline":true,"text":"Harbour capture is faster via the rooftop lane than street paths"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

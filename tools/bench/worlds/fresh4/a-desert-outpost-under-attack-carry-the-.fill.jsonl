@@ -1,0 +1,23 @@
+{"op":"meta","mode":"play","lang":"en","pack":"outdoor","sub":[],"seed":136,"look":"desert outpost","mood":[-0.3,0.8,0.9],"timeOfDay":14,"weather":"clear"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Outpost entrance"}
+{"op":"zone","id":"z_clearing","slot":"clearing","tag":"hub","name":"Central courtyard"}
+{"op":"zone","id":"z_bunker","slot":"clearing_w","tag":"bunker","name":"Fortified bunker"}
+{"op":"spawn","id":"sp_red","zone":"z_entrance","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"bunker_goal","zone":"z_bunker","anchor":"goal","noun":"bunker entrance","hyper":"bunker","team":"red","body":"sensor","shape":"box","size":[2,3,2]}
+{"op":"ent","id":"crate_a","kind":"pickup","noun":"supply crate","hyper":"crate","zone":"z_clearing","anchor":"center","body":"dynamic","shape":"box","size":[1,1,1]}
+{"op":"ent","id":"crate_b","kind":"pickup","noun":"supply crate","hyper":"crate","zone":"z_clearing","anchor":"center_n","body":"dynamic","shape":"box","size":[1,1,1]}
+{"op":"ent","id":"crate_c","kind":"pickup","noun":"supply crate","hyper":"crate","zone":"z_clearing","anchor":"center_e","body":"dynamic","shape":"box","size":[1,1,1]}
+{"op":"verb","id":"vb_carry_a","verb":"physics_props.carry","on":"crate_a","params":{}}
+{"op":"verb","id":"vb_carry_b","verb":"physics_props.carry","on":"crate_b","params":{}}
+{"op":"verb","id":"vb_carry_c","verb":"physics_props.carry","on":"crate_c","params":{}}
+{"op":"verb","id":"vb_timer","verb":"puzzle.timer","on":"player","params":{"seconds":120}}
+{"op":"verb","id":"vb_jump","verb":"locomotion.jump","on":"player","params":{"jumpsMax":2}}
+{"op":"rule","id":"r_score_a","when":{"t":"enter","a":"crate_a","b":"bunker_goal"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_score_b","when":{"t":"enter","a":"crate_b","b":"bunker_goal"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_score_c","when":{"t":"enter","a":"crate_c","b":"bunker_goal"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_win","when":{"t":"score_gte","a":"team:red","n":3},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose_timer","when":{"t":"timer_end","a":"player"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"expect","id":"x_sandstorm","prop":"win_reachable","a":"sp_red","b":"bunker_goal","headline":true,"text":"Sandstorm timer forces player to grab supplies before the wall of dust closes the path to the bunker"}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":6}}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

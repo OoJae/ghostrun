@@ -46,6 +46,7 @@ function plan(sim: SimWorld, b: WorldBundle, r: Rule, playerTeam: string): strin
     case "enter": {
       const sensor = b.entities.find((e) => e.id === w.b);
       if (!sensor) return "sensor not found";
+      if (w.a && w.a !== "player" && !sim.entity(w.a)) return `${w.a} isn't in the world`;
       const centre: Vec3 = [sensor.pos[0], sensor.pos[1], sensor.pos[2]];
       if (w.a === "player") {
         sim.teleport("player", [centre[0], centre[1] + 0.2, centre[2]]);

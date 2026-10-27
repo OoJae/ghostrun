@@ -1,0 +1,22 @@
+{"op":"meta","mode":"play","lang":"en","pack":"floor_plan","sub":[],"seed":135,"look":"ghost ship","mood":[0.4,0.2,0.7],"timeOfDay":22,"weather":"fog"}
+{"op":"zone","id":"z_deck","slot":"yard","tag":"outside","name":"Ghost ship deck"}
+{"op":"zone","id":"z_cabin_sw","slot":"room_sw","tag":"room","name":"South‑west cabin"}
+{"op":"zone","id":"z_cabin_se","slot":"room_se","tag":"room","name":"South‑east cabin"}
+{"op":"zone","id":"z_cabin_nw","slot":"room_nw","tag":"room","name":"North‑west cabin"}
+{"op":"zone","id":"z_main_hall","slot":"main_room","tag":"hall","name":"Main hold"}
+{"op":"spawn","id":"sp_red","zone":"z_deck","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"wind","zone":"z_deck","anchor":"corner_w","noun":"summoned wind","hyper":"wind","team":"","body":"sensor","shape":"box"}
+{"op":"ent","id":"lantern_sw","kind":"switch","noun":"south‑west lantern","hyper":"lantern","zone":"z_cabin_sw","anchor":"corner_sw","body":"sensor","shape":"box"}
+{"op":"ent","id":"lantern_se","kind":"switch","noun":"south‑east lantern","hyper":"lantern","zone":"z_cabin_se","anchor":"corner_se","body":"sensor","shape":"box"}
+{"op":"ent","id":"lantern_nw","kind":"switch","noun":"north‑west lantern","hyper":"lantern","zone":"z_cabin_nw","anchor":"corner_nw","body":"sensor","shape":"box"}
+{"op":"ent","id":"fog_hazard","kind":"hazard","noun":"crashing fog","hyper":"fog","zone":"z_deck","anchor":"center","body":"sensor","shape":"box"}
+{"op":"verb","id":"vb_switch_sw","verb":"puzzle.switch","on":"lantern_sw","params":{"once":false}}
+{"op":"verb","id":"vb_switch_se","verb":"puzzle.switch","on":"lantern_se","params":{"once":false}}
+{"op":"verb","id":"vb_switch_nw","verb":"puzzle.switch","on":"lantern_nw","params":{"once":false}}
+{"op":"verb","id":"vb_fog","verb":"motion_hazards.hazard","on":"fog_hazard","params":{"respawn":true}}
+{"op":"rule","id":"r_win","when":{"t":"state_is","a":"lantern_nw","s":"on"},"if":[{"l":"lantern_sw.state","op":"eq","r":"on"},{"l":"lantern_se.state","op":"eq","r":"on"}],"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_fog_lose","when":{"t":"enter","a":"player","b":"fog_hazard"},"then":[{"e":"lose","target":"player"}],"once":false}
+{"op":"expect","id":"exp_win","prop":"win_reachable","a":"sp_red","b":"wind","headline":true,"text":"Three deck lanterns act as switch gates to win"}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":5}}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

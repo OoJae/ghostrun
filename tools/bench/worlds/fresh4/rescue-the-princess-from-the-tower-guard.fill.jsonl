@@ -1,0 +1,31 @@
+{"op":"meta","mode":"play","lang":"en","pack":"outdoor","sub":["rooftop"],"seed":137,"look":"medieval fortress at dusk","mood":[0.2,0.6,0.7],"timeOfDay":19,"weather":"clear"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Fortress gate"}
+{"op":"zone","id":"z_courtyard","slot":"clearing","tag":"courtyard","name":"Courtyard"}
+{"op":"zone","id":"z_tower_base","slot":"clearing_w","tag":"tower_base","name":"Tower base"}
+{"op":"zone","id":"z_tower_top","slot":"lookout","tag":"tower_top","name":"Tower summit"}
+{"op":"spawn","id":"sp_red","zone":"z_entrance","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"exit_gate","zone":"z_entrance","anchor":"gate","noun":"safety gate","hyper":"gate","team":"red"}
+{"op":"ent","id":"princess","kind":"pickup","noun":"princess","hyper":"character","zone":"z_tower_top","anchor":"ledge","body":"dynamic","shape":"box","size":[0.4,0.8,0.2]}
+{"op":"ent","id":"tower_key","kind":"pickup","noun":"iron key","hyper":"key","zone":"z_courtyard","anchor":"center_n","body":"dynamic","shape":"box","size":[0.2,0.2,0.1]}
+{"op":"ent","id":"tower_door","kind":"door","noun":"tower door","hyper":"door","zone":"z_tower_base","anchor":"spawn_pad","body":"fixed","shape":"box"}
+{"op":"ent","id":"lever_gate","kind":"prop","noun":"lever","hyper":"lever","zone":"z_courtyard","anchor":"center_s","body":"fixed","shape":"box","size":[0.3,0.5,0.1]}
+{"op":"ent","id":"jump_pad","kind":"plate","noun":"jump pad","hyper":"jump_pad","zone":"z_courtyard","anchor":"center_e","body":"sensor","shape":"box","size":[1,0.2,1]}
+{"op":"ent","id":"knight_base","kind":"npc","noun":"guard knight","hyper":"enemy unit","zone":"z_tower_base","anchor":"flank_n","body":"kinematic","shape":"capsule"}
+{"op":"ent","id":"knight_top","kind":"npc","noun":"guard knight","hyper":"enemy unit","zone":"z_tower_top","anchor":"top","body":"kinematic","shape":"capsule"}
+{"op":"verb","id":"vb_carry_princess","verb":"physics_props.carry","on":"princess","params":{}}
+{"op":"verb","id":"vb_carry_key","verb":"physics_props.carry","on":"tower_key","params":{}}
+{"op":"verb","id":"vb_unlock_door","verb":"puzzle.lock","on":"tower_door","params":{"key":"tower_key","keep":false}}
+{"op":"verb","id":"vb_pull_lever","verb":"puzzle.switch","on":"lever_gate","params":{"once":false}}
+{"op":"verb","id":"vb_jump","verb":"locomotion.jump","on":"player","params":{"jumpsMax":2}}
+{"op":"verb","id":"vb_jump_pad","verb":"locomotion.jump_pad","on":"jump_pad","params":{"height":4}}
+{"op":"rule","id":"r_unlock","when":{"t":"state_is","a":"tower_door","s":"open"},"then":[{"e":"emit","target":"tower_door","fx":"door_open"}],"once":true}
+{"op":"rule","id":"r_lever","when":{"t":"state_is","a":"lever_gate","s":"on"},"then":[{"e":"set_state","target":"tower_door","v":"open"}],"once":true}
+{"op":"rule","id":"r_knight_base_hit","when":{"t":"hit","a":"player","b":"knight_base"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_knight_top_hit","when":{"t":"hit","a":"player","b":"knight_top"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_win","when":{"t":"enter","a":"princess","b":"exit_gate"},"if":[{"l":"princess.carrier.team","op":"eq","r":"red"}],"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"expect","id":"x_rescue","prop":"requires","a":"sp_red","b":"z_tower_top","need":["jumps>=2"],"headline":true,"text":"Tower climb must bypass or defeat the guard knights to reach the princess"}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":6}}
+{"op":"end","layer":"gameplay"}
+{"op":"dress","id":"d_princess","zone":"z_tower_top","anchor":"ledge","noun":"princess","hyper":"character"}
+{"op":"poster","id":"p_lever","zone":"z_courtyard","anchor":"center_s","text":"Pull lever to open tower door"}
+{"op":"end","layer":"cosmetic"}

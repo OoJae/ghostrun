@@ -1,0 +1,290 @@
+{
+  "prompt": "A desert outpost under attack: carry the supplies to the bunker before the sandstorm",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "action-adventure",
+    "setting": "A remote desert outpost with scattered ruins and a fortified bunker on the outskirts.",
+    "role": "A lone supply runner",
+    "goal": "Transport all supply crates from the central outpost to the bunker before the approaching sandstorm reaches the area.",
+    "fail": "The sandstorm arrives before all supplies reach the bunker, or a supply crate is dropped and left behind.",
+    "mood": "Urgent, tense survival against the elements.",
+    "pack": "outdoor",
+    "sub": [],
+    "safety": "arcade",
+    "headline": "Sandstorm timer forces player to grab supplies before the wall of dust closes the path to the bunker",
+    "nouns": [
+      {
+        "noun": "desert outpost",
+        "hyper": "location"
+      },
+      {
+        "noun": "supplies",
+        "hyper": "object"
+      },
+      {
+        "noun": "bunker",
+        "hyper": "location"
+      },
+      {
+        "noun": "sandstorm",
+        "hyper": "natural event"
+      },
+      {
+        "noun": "supply crates",
+        "hyper": "object"
+      }
+    ],
+    "moodVec": {
+      "valence": -0.3,
+      "arousal": 0.8,
+      "tension": 0.9
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "e508edaf36b157fd53dfaec757014c27d69e0341279069e841899e3ff79cd5b1",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_sandstorm",
+      "text": "Sandstorm timer forces player to grab supplies before the wall of dust closes the path to the bunker",
+      "status": "counterexample",
+      "method": "static goal regression over rules + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 11 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (team:red reaches 3) ← r_score_a (crate_a into bunker_goal) ← pick up crate_a + r_score_b (crate_b into bunker_goal) ← pick up crate_b + r_score_c (crate_c into bunker_goal) ← pick up crate_c",
+        "src": ""
+      },
+      {
+        "id": "T2:r_lose_timer",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_timer"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_lose_timer fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_score_a",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score_a"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 8,
+        "status": "verified",
+        "text": "r_score_a fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_score_b",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score_b"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 6,
+        "status": "verified",
+        "text": "r_score_b fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_score_c",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score_c"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_score_c fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_center_s",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_center_s"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_center_s fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_center_w",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_center_w"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_center_w fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_n",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_n"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_flank_n fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_s",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_s"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_flank_s fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_gate",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_gate"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_gate fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_sign",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_sign"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_sign fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "counterexample",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 0,
+        "text": "no AI runner could win",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "wins",
+          "text": "12 lost (the timer ran out ×12)"
+        },
+        "src": "",
+        "ms": 2381
+      }
+    ],
+    "par": null,
+    "ms": 2689
+  }
+}

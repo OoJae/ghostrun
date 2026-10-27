@@ -1,0 +1,242 @@
+{
+  "prompt": "A zombie school: find the principal's key and escape through the gym",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "horror escape",
+    "setting": "an abandoned high school at night with flickering lights and locked corridors",
+    "role": "a trapped student",
+    "goal": "stealthily locate the principal's key and unlock the exit, escaping through the gym floor doors",
+    "fail": "touching a zombie in the hallway or the gym is game over",
+    "mood": "creeping dread with a dash of heisty tension",
+    "pack": "floor_plan",
+    "sub": [],
+    "safety": "arcade",
+    "headline": "Principal's key must be found to unlock the gym exit doors",
+    "nouns": [
+      {
+        "noun": "principal's key",
+        "hyper": "key_item"
+      },
+      {
+        "noun": "gym",
+        "hyper": "room_exit"
+      },
+      {
+        "noun": "zombie",
+        "hyper": "enemy"
+      },
+      {
+        "noun": "hallway",
+        "hyper": "corridor"
+      },
+      {
+        "noun": "high school",
+        "hyper": "building"
+      }
+    ],
+    "moodVec": {
+      "valence": -0.5,
+      "arousal": 0.65,
+      "tension": 0.8
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "af339f4b7773eb2967311e712b9ee50e7e428d634caef9fb661a995f162e4eac",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_key",
+      "text": "Principal's key must be found to unlock the gym exit doors",
+      "status": "counterexample",
+      "method": "static goal regression over rules"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 1,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 9 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "chain",
+          "text": "win unreachable in the rule graph"
+        },
+        "ms": 1,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "counterexample",
+        "method": "static goal regression over rules",
+        "text": "no rule chain lets the player trigger the win",
+        "src": ""
+      },
+      {
+        "id": "T2:r_escape",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_escape"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_escape fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_e",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_e"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 9,
+        "status": "verified",
+        "text": "r_secret_corner_e fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_ne",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_ne"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 7,
+        "status": "verified",
+        "text": "r_secret_corner_ne fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_nw",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_nw"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_secret_corner_nw fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_se",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_se"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_secret_corner_se fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_w",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_w"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_corner_w fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_spike_touch",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_spike_touch"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_spike_touch fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_zombie_gym_touch",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_zombie_gym_touch"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_zombie_gym_touch fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_zombie_touch",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_zombie_touch"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_zombie_touch fires exactly once",
+        "cx": null
+      }
+    ],
+    "par": null,
+    "ms": 49
+  }
+}

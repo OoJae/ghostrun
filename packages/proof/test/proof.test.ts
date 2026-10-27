@@ -184,3 +184,15 @@ describe("throwing and shoving (dodgeball, a sumo ring)", () => {
     expect(r.chips.find((c) => c.id === "T3:win")!.k).toBeGreaterThanOrEqual(3);
   }, 120_000);
 });
+
+describe("names the world doesn't have never crash the proof", () => {
+  it("a rule about a group name and a lock's unplaced key come back as findings, not a crash", async () => {
+    const w = structuredClone(world);
+    const goal = w.entities.find((e) => e.kind === "goal")!.id;
+    w.rules.push({ id: "r_group", src: "ai", layer: "gameplay", when: { t: "enter", a: "puppies", b: goal, s: "", n: 0, act: "" }, if: [], then: [{ e: "score", target: "team:red", v: "", n: 1, fx: "" }], once: false, cooldownS: 0, prio: 0 });
+    const door = w.entities.find((e) => e.kind === "door");
+    if (door) w.verbs.push({ id: "vb_ghost_lock", verb: "puzzle.lock", on: door.id, params: { key: "ghost_key" }, signature: false, src: "ai", layer: "gameplay" });
+    const receipt = await prove(R, w, { engine: ENGINE, runs: 2 });
+    expect(receipt.chips.find((c) => c.id.includes("r_group"))?.status).not.toBe("verified");
+  }, 120_000);
+});

@@ -49,19 +49,39 @@ export interface NavWorld {
   destroy(): void;
 }
 
-/** Build the walking navmesh: statics plus fixed solid entities (props) as obstacles. */
-export function buildNav(b: WorldBundle): NavWorld {
+const losingOf = (b: WorldBundle) => new Set(b.rules.filter((r) => r.when.t === "enter" && r.when.a === "player" && r.then.some((x) => x.e === "lose")).map((r) => r.when.b));
+const standingHazard = (e: WorldBundle["entities"][number], losing: Set<string>) => (e.kind === "hazard" && (e.body === "sensor" || e.body === "fixed")) || losing.has(e.id);
+
+/**
+ * Standing hazards low and short enough to jump over (a laser grid across a doorway, a strip of
+ * spikes): at most 0.6 m tall and 3 m across one way. The walking navmesh goes around them; the
+ * leap navmesh goes through, for a runner that jumps them.
+ */
+export function lowHazards(b: WorldBundle): { id: string; pos: Vec3; size: Vec3 }[] {
+  const losing = losingOf(b);
+  return [...b.entities]
+    .sort((x, y) => (x.id < y.id ? -1 : 1))
+    .filter((e) => !(e.kind !== "npc" && e.kind !== "door" && e.body === "fixed" && e.shape !== "none") && standingHazard(e, losing) && e.size[1] <= 0.6 && Math.min(e.size[0], e.size[2]) <= 3)
+    .map((e) => ({ id: e.id, pos: e.pos, size: e.size }));
+}
+
+/**
+ * Build the walking navmesh: statics plus fixed solid entities (props) as obstacles. With `leap`,
+ * the low hazards (lowHazards) are left out: paths that jump them.
+ */
+export function buildNav(b: WorldBundle, opts: { leap?: boolean } = {}): NavWorld {
   const pos: number[] = [];
   const idx: number[] = [];
   for (const s of [...b.statics].sort((x, y) => (x.id < y.id ? -1 : 1))) pushBox(pos, idx, s.pos, s.size);
   // somewhere you lose by walking into (out of bounds, a pit sensor) is avoided like a hazard
-  const losing = new Set(b.rules.filter((r) => r.when.t === "enter" && r.when.a === "player" && r.then.some((x) => x.e === "lose")).map((r) => r.when.b));
+  const losing = losingOf(b);
+  const low = new Set(opts.leap ? lowHazards(b).map((h) => h.id) : []);
   for (const e of [...b.entities].sort((x, y) => (x.id < y.id ? -1 : 1))) {
     // NPCs move and doors open: both are obstacles for the KCC, never baked in
     if (e.kind !== "npc" && e.kind !== "door" && e.body === "fixed" && e.shape !== "none") pushBox(pos, idx, e.pos, e.size);
     // a standing hazard (lava, spikes) is no place to walk: AI paths go around it, as a player
     // would (moving hazards stay out: they're dodged in time, not in space)
-    else if ((e.kind === "hazard" && (e.body === "sensor" || e.body === "fixed")) || losing.has(e.id)) pushBox(pos, idx, [e.pos[0], e.pos[1] - e.size[1] / 2 + 1.5, e.pos[2]], [e.size[0], 3, e.size[2]]);
+    else if (standingHazard(e, losing) && !low.has(e.id)) pushBox(pos, idx, [e.pos[0], e.pos[1] - e.size[1] / 2 + 1.5, e.pos[2]], [e.size[0], 3, e.size[2]]);
   }
   const { success, navMesh } = generateSoloNavMesh(pos, idx, {
     cs: CS,

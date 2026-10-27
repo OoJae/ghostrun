@@ -1,7 +1,7 @@
 // The placer: binds the fill's zones to a pack's slots and turns anchors into positions.
 // The LLM chooses relations (zone + anchor), never coordinates (Holodeck/LayoutVLM lesson).
 import { stream } from "@ghostrun/detmath";
-import type { Effect, Entity, Static, Vec3, VerbBinding, WorldBundle, Zone } from "@ghostrun/ir";
+import { groupMembers, type Effect, type Entity, type Rule, type Static, type Vec3, type VerbBinding, type WorldBundle, type Zone } from "@ghostrun/ir";
 import { verb } from "@ghostrun/kits";
 import type { PackLayout, ZoneSpec } from "@ghostrun/plugin-api";
 
@@ -150,6 +150,20 @@ export function placeWorld(input: WorldBundle, layout: PackLayout): PlaceResult 
       base = pick ?? [(min[0] + max[0]) / 2, spec.floorY, (min[2] + max[2]) / 2];
       if (e.anchor) notes.push(`${e.id}: anchor '${e.anchor}' not in slot '${spec.slot}', placed in zone`);
     }
+    // a standing hazard in a doorway (a laser grid across it) seals the room: under the lintel no
+    // jump clears it. It stands just inside its own room instead, in front of the doorway, where it
+    // can be jumped or walked around
+    if (e.kind === "hazard" && e.anchor.startsWith("doorway_") && spec.anchors[e.anchor]) {
+      const { min, max } = spec.bounds;
+      const [cx, cz] = [(min[0] + max[0]) / 2, (min[2] + max[2]) / 2];
+      const [hx, hz] = [(max[0] - min[0]) / 2 || 1, (max[2] - min[2]) / 2 || 1];
+      const ax = Math.abs(base[0] - cx) / hx >= Math.abs(base[2] - cz) / hz ? 0 : 2;
+      const inward = Math.sign((ax === 0 ? cx : cz) - base[ax]) || 1;
+      const moved: Vec3 = [base[0], base[1], base[2]];
+      moved[ax] += inward * (e.size[ax] / 2 + 1.8); // room past the lintel for a run-up
+      base = moved;
+      notes.push(`${e.id}: moved off ${e.anchor} just inside ${e.zone} (in the doorway, the lintel leaves no room to jump it)`);
+    }
     const key = `${spec.slot}/${e.anchor}`;
     const k = taken.get(key) ?? 0;
     taken.set(key, k + 1);
@@ -198,7 +212,7 @@ export function placeWorld(input: WorldBundle, layout: PackLayout): PlaceResult 
     if (e.kind === "door" && /^doorway_[ew]$/.test(e.anchor) && e.size[0] > e.size[2]) e.size = [e.size[2], e.size[1], e.size[0]];
   }
   // wins first: a win rule the repairs add (reach the goal) gets the same trigger and verb repairs
-  notes.push(...repairSpawnRefs(b), ...repairAreas(b, bound), ...repairKits(b), ...repairConditions(b), ...repairWin(b), ...repairTriggers(b), ...repairVerbs(b), ...repairExpects(b));
+  notes.push(...repairSpawnRefs(b), ...repairGroups(b), ...repairAreas(b, bound), ...repairKits(b), ...repairConditions(b), ...repairWin(b), ...repairTriggers(b), ...repairVerbs(b), ...repairExpects(b));
   notes.push(...addRivals(b), ...repairDeliveries(b, layout, bound), ...addSecrets(b, layout, bound));
   return { bundle: b, notes };
 }
@@ -358,6 +372,37 @@ export function repairSpawnRefs(b: WorldBundle): string[] {
 }
 
 /**
+ * A rule about a group by its plural ("when the puppies reach home" with pup_1..pup_5 placed, or
+ * "when a star is touched" with star_1..star_3) means each of them: one copy of the rule per
+ * member. Only when the name is nothing in the world and at least two things answer to it. Logged.
+ */
+export function repairGroups(b: WorldBundle): string[] {
+  const notes: string[] = [];
+  const members = (name: string) => groupMembers(name, b.entities);
+  const out: Rule[] = [];
+  const taken = new Set([...b.rules.map((r) => r.id), ...b.entities.map((e) => e.id), ...b.verbs.map((v) => v.id)]);
+  const fresh = (base: string) => {
+    let id = base;
+    for (let k = 2; taken.has(id); k++) id = `${base}_${k}`;
+    taken.add(id);
+    return id;
+  };
+  for (const r of b.rules) {
+    const side = members(r.when.a).length ? "a" : members(r.when.b).length ? "b" : null;
+    if (!side) {
+      out.push(r);
+      continue;
+    }
+    const group = r.when[side];
+    const ms = members(group);
+    for (const [i, m] of ms.entries()) out.push({ ...structuredClone(r), id: i === 0 ? r.id : fresh(`${r.id}_${m}`), when: { ...r.when, [side]: m } });
+    notes.push(`rule ${r.id}: '${group}' isn't one thing; it means each of ${ms.join(", ")} (${ms.length} rules)`);
+  }
+  b.rules.splice(0, b.rules.length, ...out);
+  return notes;
+}
+
+/**
  * A condition on a state nothing in the world can give ("IF the gate is open" with no lock or rule
  * to open it, "IF the departure timer is running" on a prop with no timer) can never hold. With an
  * unused key in the world it means holding the key; a "running" condition with a countdown
@@ -382,10 +427,32 @@ export function repairConditions(b: WorldBundle): string[] {
   const key = b.entities.find((e) => carryable.has(e.id) && !used.has(e.id) && /key|klíč|clef|schlüssel|llave|card|ticket|pass/i.test(`${e.id} ${e.noun} ${e.hyper}`));
   const countdown = b.verbs.some((v) => v.verb === "puzzle.timer");
   const mine = b.entities.some((e) => e.kind === "spawn" && e.team === "red") || !b.entities.some((e) => e.kind === "spawn" && e.team === "blue") ? "red" : "blue";
+  const at = (id: string) => b.entities.find((x) => x.id === id);
   for (const r of b.rules) {
     r.if = r.if.flatMap((c) => {
+      // "<x>.carrier.id eq null": the sim's carrier is an id already, and nobody is ""
+      if (/\.carrier\.id$/.test(c.l)) {
+        c = { ...c, l: c.l.replace(/\.id$/, "") };
+        notes.push(`rule ${r.id}: '${c.l}.id' is '${c.l}'`);
+      }
+      if (/\.carrier$/.test(c.l) && typeof c.r === "string" && /^(null|none|nobody|nothing|undefined|empty)$/i.test(c.r)) c = { ...c, r: "" };
+      // "<a>.zone eq Z" on a rule about entering (or touching) something that stands in Z: entering
+      // it is being there (the sim keeps no zone for movers, so as written it never holds)
+      const z = /^([a-z][a-z0-9_]*)\.zone$/.exec(c.l);
+      if (z && c.op === "eq" && (z[1] === r.when.a || z[1] === "player") && at(r.when.b)?.zone === String(c.r)) {
+        notes.push(`rule ${r.id}: dropped '${c.l} is ${String(c.r)}' (${r.when.b} stands in ${String(c.r)}, so reaching it is being there)`);
+        return [];
+      }
       const m = /^([a-z][a-z0-9_]*)\.state$/.exec(c.l);
       if (!m || c.op !== "eq" || canBe(m[1]!, String(c.r))) return [c];
+      // "the gym exit is open" where nothing opens the exit, but a door beside it can be: that door
+      const self = at(m[1]!);
+      const doors = b.entities.filter((d) => d.kind === "door" && d.id !== m[1] && canBe(d.id, String(c.r)) && b.verbs.some((v) => v.on === d.id));
+      const door = self ? (doors.filter((d) => d.zone === self.zone).length === 1 ? doors.find((d) => d.zone === self.zone) : doors.length === 1 ? doors[0] : undefined) : undefined;
+      if (door) {
+        notes.push(`rule ${r.id}: nothing can make ${m[1]} '${String(c.r)}'; it means ${door.id} beside it`);
+        return [{ ...c, l: `${door.id}.state` }];
+      }
       if (key && String(c.r) !== "running") {
         notes.push(`rule ${r.id}: nothing can make ${m[1]} '${String(c.r)}'; with the ${key.noun || key.id} lying unused, it means holding it`);
         return [{ ...c, l: `${key.id}.carrier.team`, r: mine }];
@@ -527,6 +594,25 @@ export function repairKits(b: WorldBundle): string[] {
     if (!e || b.verbs.some((v) => v.on === e.id && v.verb === "combat_sport.shove")) continue;
     b.verbs.push(vb(uniqueId(b, `vb_shove_${e.id}`), "combat_sport.shove", e.id));
     notes.push(`${e.id}: added combat_sport.shove (rule ${r.id} waits for it to be knocked ${r.when.t === "exit" ? "out of" : "into"} ${r.when.b})`);
+  }
+  // 1c'. a lock whose key names nothing in the world: the one unused key-like pickup is that key;
+  // with none, the door opens on USE (a key nobody can find would lock it forever)
+  const ids = new Set(b.entities.map((e) => e.id));
+  for (const v of b.verbs) {
+    if (v.verb !== "puzzle.lock" || !v.params.key || ids.has(String(v.params.key))) continue;
+    const named = String(v.params.key);
+    const taken = new Set(b.verbs.filter((x) => x.verb === "puzzle.lock").map((x) => String(x.params.key)));
+    const keys = b.entities.filter((e) => e.kind === "pickup" && !taken.has(e.id) && /key|card|pass|badge/.test(`${e.id} ${e.noun}`));
+    const near = keys.filter((e) => e.id.includes(named) || named.includes(e.id));
+    const k = near.length === 1 ? near[0] : keys.length === 1 ? keys[0] : undefined;
+    if (k) {
+      v.params = { ...v.params, key: k.id };
+      if (!bound(k.id, "physics_props.carry")) b.verbs.push(vb(uniqueId(b, `vb_${k.id}`), "physics_props.carry", k.id));
+      notes.push(`${v.on}: its key "${named}" isn't in the world; ${k.id} opens it`);
+    } else {
+      v.params = { ...v.params, key: "" };
+      notes.push(`${v.on}: its key "${named}" isn't in the world, so it opens with USE`);
+    }
   }
   // 1d. one key for several locks: it opens them all (a lock using it up would leave the next
   // door locked forever)
@@ -696,6 +782,27 @@ export function repairWin(b: WorldBundle): string[] {
     if (!win || r.then.some((e) => e.e === "lose")) continue;
     win.e = "lose";
     notes.push(`rule ${r.id}: ${w.a.slice(5)} reaching ${w.n} made you win → you lose (you play ${mine})`);
+  }
+  // several rules each winning when a different thing is brought to the same place ("brew the
+  // potion from three ingredients": the root into the cauldron wins, the scale into the cauldron
+  // wins…) mean bringing all of them: each one goes in (used up), and the last one in wins
+  const into = new Map<string, Rule[]>();
+  for (const r of b.rules) {
+    const w = r.when;
+    if (w.t !== "enter" || !w.a || w.a === "player" || !b.entities.some((e) => e.id === w.a) || !r.then.some((e) => e.e === "win") || r.then.some((e) => e.e === "lose")) continue;
+    into.set(w.b, [...(into.get(w.b) ?? []), r]);
+  }
+  for (const [place, rs] of into) {
+    const items = [...new Set(rs.map((r) => r.when.a))];
+    if (items.length < 2) continue;
+    for (const r of rs) {
+      const item = r.when.a;
+      r.then = [...r.then.filter((e) => e.e !== "win"), { ...fx("set_state", item), v: "in" }, fx("destroy", item)];
+      r.once = true;
+      const others = items.filter((x) => x !== item);
+      b.rules.push({ id: uniqueId(b, `${r.id}_all`), src: "template", layer: "gameplay", when: { ...r.when }, if: others.map((o) => ({ l: `${o}.state`, op: "eq" as const, r: "in", forS: 0 })), then: [fx("win", "player")], once: true, cooldownS: 0, prio: 0 });
+    }
+    notes.push(`${place}: ${items.length} rules each won when a different thing was brought in (${items.join(", ")}); it takes all of them, so each one goes in and the last one wins`);
   }
   if (b.rules.some((r) => r.then.some((e) => e.e === "win"))) return notes;
   const goal = b.entities.find((e) => e.kind === "goal" && (e.team === "red" || !e.team));

@@ -6,3 +6,4 @@ export { JsonStore, PatchError, isCollection, type IrStore, type PatchOp } from 
 export { BUDGETS, FillOp, FillParser, MAX_LINE_BYTES, parseFill, splitObjects, type FillEvent, type FillInit, type FillNote, type FillStats } from "./fill";
 export { gameplayLines, mergeFill, type MergeStats } from "./merge";
 export { layoutLaws, pinLayout } from "./fit";
+export { groupMembers } from "./groups";

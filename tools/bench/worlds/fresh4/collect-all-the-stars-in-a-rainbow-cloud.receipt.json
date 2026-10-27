@@ -1,0 +1,232 @@
+{
+  "prompt": "Collect all the stars in a rainbow cloud kingdom",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "Collectathon Platformer",
+    "setting": "A pastel-colored, ethereal floating island kingdom made of rainbow mist and candy-like clouds.",
+    "role": "A cheerful explorer avatar.",
+    "goal": "To collect all the glowing, floating stars hidden throughout the levels.",
+    "fail": "Failing to retrieve a star resets the current platform section due to physical boundaries.",
+    "mood": "Dreamy, playful, and serene.",
+    "pack": "outdoor",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Player must traverse cloud-based terrain to collect scattered star collectibles.",
+    "nouns": [
+      {
+        "noun": "cloud islands",
+        "hyper": "terrain"
+      },
+      {
+        "noun": "stars",
+        "hyper": "collectibles"
+      },
+      {
+        "noun": "kingdom",
+        "hyper": "game world"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.9,
+      "arousal": 0.4,
+      "tension": 0.2
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "871b70c460cd35792016bc45d0e28744d7fe939ad90aa8bba0b4dab678665b64",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_collect",
+      "text": "Player must traverse cloud-based terrain to collect scattered star collectibles.",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 8 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (team:red reaches 6) ← collect 6 of 6",
+        "src": ""
+      },
+      {
+        "id": "T2:r_collect_star",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_collect_star"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 13,
+        "status": "verified",
+        "text": "r_collect_star fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_collect_star2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_collect_star2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 7,
+        "status": "verified",
+        "text": "r_collect_star2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_collect_star3",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_collect_star3"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 6,
+        "status": "verified",
+        "text": "r_collect_star3 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_collect_star4",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_collect_star4"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_collect_star4 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_collect_star5",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_collect_star5"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_collect_star5 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_collect_star6",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_collect_star6"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_collect_star6 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_hazard_die",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_hazard_die"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_hazard_die fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it (AI par 41.7 s)",
+        "cx": null,
+        "src": "",
+        "ms": 613
+      }
+    ],
+    "par": {
+      "goldS": 41.7,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 924
+  }
+}

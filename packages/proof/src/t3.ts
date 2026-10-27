@@ -3,7 +3,7 @@
 // checks each "requires" (alone: geometry, not tactics).
 import { stream } from "@ghostrun/detmath";
 import { clampLaws, type Expect, type Laws, type Vec3, type WorldBundle } from "@ghostrun/ir";
-import type { NavWorld } from "@ghostrun/nav";
+import { buildNav, lowHazards, type NavWorld } from "@ghostrun/nav";
 import { castBrain } from "@ghostrun/bots";
 import { BTN, SimWorld, type Rapier } from "@ghostrun/sim";
 import type { PlanStep, Want, WinChain } from "./t0";
@@ -12,6 +12,83 @@ import type { Chip } from "./types";
 
 const RUN_TICKS = 120 * 60; // two minutes of play per run (a world's own timer still ends it sooner)
 const TOO_EASY_S = 3;
+
+/**
+ * The hazards low enough to jump (a laser grid across a doorway) and, built the first time a runner
+ * needs it, a navmesh that goes through them; runners jump each one as they reach it. Set for the
+ * length of one t3() or tour() call (both synchronous).
+ */
+interface Leap {
+  boxes: { pos: Vec3; size: Vec3 }[];
+  nav(): NavWorld;
+  free(): void;
+}
+let leap: Leap | null = null;
+function leapFor(b: WorldBundle): Leap | null {
+  const boxes = lowHazards(b);
+  if (!boxes.length) return null;
+  let built: NavWorld | null = null;
+  return { boxes, nav: () => (built ??= buildNav(b, { leap: true })), free: () => built?.destroy() };
+}
+const leapPath = (from: Vec3, to: Vec3) => (leap ? leap.nav().path(from, to) : null);
+
+/**
+ * Where a path runs through a low hazard, cut that stretch out: a run-up point 1 m before it
+ * (jump there) and a landing point 1 m past it, straight across, so the jump is lined up (a
+ * diagonal leap through a doorway clips its jamb). `jumps` holds the run-up indices.
+ */
+function leapify(path: Vec3[]): { pts: Vec3[]; jumps: Set<number> } {
+  const jumps = new Set<number>();
+  if (!leap || path.length < 2) return { pts: path, jumps };
+  // the path, sampled every 10 cm: each sample knows the waypoint it heads for
+  const samples: { q: Vec3; seg: number }[] = [{ q: path[0]!, seg: 0 }];
+  for (let k = 1; k < path.length; k++) {
+    const a = path[k - 1]!;
+    const c = path[k]!;
+    const n = Math.max(1, Math.ceil(Math.sqrt(d2h(a, c)) / 0.1));
+    for (let j = 1; j <= n; j++) samples.push({ q: [a[0] + ((c[0] - a[0]) * j) / n, a[1] + ((c[1] - a[1]) * j) / n, a[2] + ((c[2] - a[2]) * j) / n], seg: k });
+  }
+  const level = (h: { pos: Vec3; size: Vec3 }, q: Vec3) => Math.abs(h.pos[1] - h.size[1] / 2 - q[1]) < 1;
+  // one crossing per hazard: from the first sample inside it to the last (a path along its edge
+  // flickers in and out), in path order; one that starts under the runner is walked off, not jumped
+  const crossings = leap.boxes
+    .map((h) => {
+      const inside = samples.map((x, n) => (level(h, x.q) && inBox(x.q[0], x.q[2], h, 0.4) ? n : -1)).filter((n) => n >= 0);
+      return inside.length && inside[0]! > 0 && inside.at(-1)! < samples.length - 1 ? { h, from: inside[0]!, to: inside.at(-1)! } : null;
+    })
+    .filter((x): x is NonNullable<typeof x> => x !== null)
+    .sort((x, y) => x.from - y.from);
+  const out: Vec3[] = [path[0]!];
+  let next = 1; // the next original waypoint still to copy
+  let past = 0; // the last sample already crossed
+  for (const { h, from, to } of crossings) {
+    if (from <= past) continue;
+    const entry = samples[from]!.q;
+    const exit = samples[to]!.q;
+    for (; next < samples[from]!.seg; next++) out.push(path[next]!);
+    // across it along the axis the path crosses it by; a narrow one (a laser grid in front of a
+    // doorway) on its centre line, where the doorway is
+    const alongX = Math.abs(exit[0] - entry[0]) >= Math.abs(exit[2] - entry[2]);
+    const ax = alongX ? 0 : 2;
+    const lat = alongX ? 2 : 0;
+    const sgn = Math.sign(exit[ax] - entry[ax]) || 1;
+    const side = h.size[lat] <= 3 ? h.pos[lat] : (entry[lat] + exit[lat]) / 2;
+    const edge = (dir: number, off: number): Vec3 => {
+      const v: Vec3 = [0, entry[1], 0];
+      v[ax] = h.pos[ax] + dir * (h.size[ax] / 2 + 0.4 + off);
+      v[lat] = side;
+      return v;
+    };
+    out.push(edge(-sgn, 1.4), edge(-sgn, 0.6)); // line up, then the run-up spot (jump there)
+    jumps.add(out.length - 1);
+    out.push(edge(sgn, 1.0)); // the landing
+    next = samples[to]!.seg;
+    past = to;
+  }
+  for (; next < path.length; next++) out.push(path[next]!);
+  return { pts: out, jumps };
+}
+const inBox = (x: number, z: number, h: { pos: Vec3; size: Vec3 }, grow: number) => Math.abs(x - h.pos[0]) <= h.size[0] / 2 + grow && Math.abs(z - h.pos[2]) <= h.size[2] / 2 + grow;
 
 /** Opt-in trace of the runners' moves (diagnosis only: it never changes what they do). */
 let trace: ((line: string) => void) | null = null;
@@ -43,7 +120,7 @@ function walkTo(sim: SimWorld, nav: NavWorld, goal: Target, rng: () => number, s
   const plan = (aim: Vec3): Vec3[] | null => {
     const from = sim.pos("player");
     const feet: Vec3 = [from[0], from[1] - 0.9, from[2]];
-    let path = nav.path(feet, aim);
+    let path = nav.path(feet, aim) ?? leapPath(feet, aim); // walking, else jumping the low hazards on the way
     if (!path && !moving && b) {
       // ground too narrow for the navmesh (a 0.7 m beam erodes away): on the same surface, go straight
       const ss = surfaces(b);
@@ -55,8 +132,13 @@ function walkTo(sim: SimWorld, nav: NavWorld, goal: Target, rng: () => number, s
       const near = nav.nearest(aim);
       path = (near && nav.path(feet, near)) || [aim];
     }
-    return path && path.map((p, i) => (i === path.length - 1 ? p : ([p[0] + (rng() - 0.5) * 0.3, p[1], p[2] + (rng() - 0.5) * 0.3] as Vec3)));
+    if (!path) return null;
+    const jittered = path.map((p, i) => (i === path.length - 1 ? p : ([p[0] + (rng() - 0.5) * 0.3, p[1], p[2] + (rng() - 0.5) * 0.3] as Vec3)));
+    const l = leapify(jittered);
+    jumps = l.jumps;
+    return l.pts;
   };
+  let jumps = new Set<number>();
   let aim = at(goal);
   let pts = plan(aim);
   if (!pts) return false;
@@ -64,6 +146,7 @@ function walkTo(sim: SimWorld, nav: NavWorld, goal: Target, rng: () => number, s
   let replanAt = sim.tick + 20;
   let lastProgressTick = sim.tick;
   let best = Infinity;
+  let leapNow = false;
   while (budget.ticks > 0 && !sim.result) {
     if (stop()) return true;
     if (moving && sim.tick >= replanAt) {
@@ -77,7 +160,8 @@ function walkTo(sim: SimWorld, nav: NavWorld, goal: Target, rng: () => number, s
       replanAt = sim.tick + 20;
     }
     const p = sim.pos("player");
-    while (i < pts.length && d2h(p, pts[i]!) < 0.45 * 0.45) {
+    while (i < pts.length && d2h(p, pts[i]!) < (jumps.has(i) ? 0.12 * 0.12 : 0.45 * 0.45)) {
+      if (jumps.has(i)) leapNow = true; // on the run-up spot: jump, straight for the landing point
       i++;
       best = Infinity;
     }
@@ -96,11 +180,17 @@ function walkTo(sim: SimWorld, nav: NavWorld, goal: Target, rng: () => number, s
     let wz = Math.round(uz * k);
     let btn = 0;
     if (sim.tick - lastProgressTick > 45) {
+      trace?.(`  stuck at ${v1(p)} heading for ${v1(wp)} (waypoint ${i} of ${pts.length}${moving ? ", moving target" : ""})`);
       // stuck against something: sidestep and hop, deterministically
       wx = Math.round((rng() - 0.5) * 254);
       wz = Math.round((rng() - 0.5) * 254);
       btn = BTN.JUMP;
       lastProgressTick = sim.tick;
+    }
+    if (leapNow) {
+      trace?.(`  jumping a low hazard at ${v1(p)}`);
+      btn = BTN.JUMP;
+      leapNow = false;
     }
     sim.step({ tick: sim.tick + 1, wx, wz, btn });
     budget.ticks--;
@@ -309,9 +399,10 @@ function goTo(sim: SimWorld, nav: NavWorld, b: WorldBundle, target: Target, rng:
   const t = at(target);
   const walkable = () => {
     const q = sim.pos("player");
-    return Boolean(nav.path([q[0], q[1] - 0.9, q[2]], t));
+    const feet: Vec3 = [q[0], q[1] - 0.9, q[2]];
+    return Boolean(nav.path(feet, t) ?? leapPath(feet, t));
   };
-  if (typeof target !== "function" && !nav.path([p[0], p[1] - 0.9, p[2]], t) && !stop()) {
+  if (typeof target !== "function" && !walkable() && !stop()) {
     const below = t[1] < p[1] - 0.9 - 1;
     trace?.(`goTo ${v1(t)} from ${v1(p)}${below ? " (below)" : ""}`);
     const down = () => dropDown(sim, b, t, budget) && walkable();
@@ -365,7 +456,7 @@ function crosses(a: Vec3, b: Vec3, c: Vec3, size: Vec3): boolean {
 /** If a closed door stands on the way to `target`, open it first (once per door per run). */
 function clearDoors(r: Run, target: Vec3) {
   const p = r.sim.pos("player");
-  const path = r.nav.path([p[0], p[1] - 0.9, p[2]], target);
+  const path = r.nav.path([p[0], p[1] - 0.9, p[2]], target) ?? leapPath([p[0], p[1] - 0.9, p[2]], target);
   if (!path) return;
   for (let i = 1; i < path.length; i++) {
     for (const d of r.b.entities) {
@@ -414,19 +505,26 @@ function perform(r: Run, st: PlanStep): "ok" | "lost" | "stuck" {
   const met = (w: Want) => sim.entity(w.id)?.state === w.s;
   switch (st.do) {
     case "pickup": {
+      if (!sim.entity(st.item)) return "stuck"; // nothing by that name in the world
       const has = () => sim.entity(st.item)?.carrier === "player";
       // it may be in someone else's hands: chase the carrier (a tag knocks it loose)
       const where = () => {
         const c = sim.entity(st.item)!.carrier;
         return c ? sim.pos(c) : sim.pos(st.item);
       };
-      // holding something else (picked up on the way): put it down first
-      const holding = sim.entity("player")?.carrying;
-      if (holding && holding !== st.item && !sim.usable()) {
+      // holding something else (a kept key the doors on the way needed, something picked up on the
+      // way): put it down beside the target, clear of anything usable, then pick the right thing up
+      const wrong = () => {
+        const h = sim.entity("player")?.carrying;
+        return Boolean(h && h !== st.item);
+      };
+      const near = () => d2h(sim.pos("player"), where()) < 2.25;
+      const putDown = () => {
+        for (let k = 0; k < 30 && sim.usable() && live(r); k++, budget.ticks--) sim.step({ tick: sim.tick + 1, wx: 0, wz: 127, btn: 0 });
         sim.step({ tick: sim.tick + 1, wx: 0, wz: 0, btn: BTN.USE });
         sim.step({ tick: sim.tick + 1, wx: 0, wz: 0, btn: 0 });
         budget.ticks -= 2;
-      }
+      };
       if (!sim.entity(st.item)!.carrier) {
         clearDoors(r, sim.pos(st.item));
         // lying somewhere the navmesh can't reach (on a platform): climb or hop to it first, unless
@@ -434,11 +532,18 @@ function perform(r: Run, st: PlanStep): "ok" | "lost" | "stuck" {
         const p = sim.pos("player");
         const it = sim.pos(st.item);
         if (!nav.path([p[0], p[1] - 0.9, p[2]], it)) {
-          go(it, () => has() || Boolean(sim.entity(st.item)!.carrier));
+          go(it, () => has() || Boolean(sim.entity(st.item)!.carrier) || (wrong() && near()));
           if (has()) return "ok";
         }
       }
-      return go(where, has) ? "ok" : "stuck";
+      for (let tries = 0; tries < 3 && live(r); tries++) {
+        const ok = go(where, () => has() || (wrong() && near()));
+        if (has()) return "ok";
+        if (!wrong()) return ok ? "ok" : "stuck";
+        trace?.(`  holding ${sim.entity("player")!.carrying} at ${st.item}: putting it down`);
+        putDown();
+      }
+      return has() ? "ok" : "stuck";
     }
     case "deliver": {
       const fired = counter(sim, st.rule);
@@ -593,7 +698,7 @@ function witnessRun(R: Rapier, b: WorldBundle, nav: NavWorld, chain: WinChain, o
     lastTop = sim.tick;
     for (const st of chain.steps) {
       const res = perform(r, st);
-      trace?.(`step ${st.do} ${"item" in st ? st.item : "at" in st ? st.at : "sensor" in st ? st.sensor : ""} → ${res} at ${v1(r.sim.pos("player"))} t=${r.sim.tick}`);
+      trace?.(`step ${st.do} ${"item" in st ? st.item : "at" in st ? st.at : "sensor" in st ? st.sensor : ""} → ${res} at ${v1(r.sim.pos("player"))} t=${r.sim.tick}${"item" in st && st.item !== "player" ? ` (${st.item} at ${v1(r.sim.pos(st.item))})` : ""}`);
       if (res === "lost") continue outer; // tagged on the way: go and win it back
       if (res === "stuck") {
         if (live(r)) stuck++;
@@ -704,6 +809,16 @@ function outOfReach(b: WorldBundle, chain: WinChain, playerTeam: "red" | "blue",
 }
 
 export function t3(R: Rapier, b: WorldBundle, nav: NavWorld, chain: WinChain | null, runs: number, playerTeam: "red" | "blue" = "red", openers: ReadonlyMap<string, PlanStep[]> = new Map()): { chips: Chip[]; par: { goldS: number; runs: number; won: number } | null } {
+  leap = leapFor(b);
+  try {
+    return t3Runs(R, b, nav, chain, runs, playerTeam, openers);
+  } finally {
+    leap?.free();
+    leap = null;
+  }
+}
+
+function t3Runs(R: Rapier, b: WorldBundle, nav: NavWorld, chain: WinChain | null, runs: number, playerTeam: "red" | "blue", openers: ReadonlyMap<string, PlanStep[]>): { chips: Chip[]; par: { goldS: number; runs: number; won: number } | null } {
   const chips: Chip[] = [];
   let par: { goldS: number; runs: number; won: number } | null = null;
   if (chain && b.mode === "play") {
@@ -787,6 +902,16 @@ export function t3(R: Rapier, b: WorldBundle, nav: NavWorld, chain: WinChain | n
  * counterexample (a sealed room, an exhibit inside a wall).
  */
 export function tour(R: Rapier, b: WorldBundle, nav: NavWorld): Chip | null {
+  leap = leapFor(b);
+  try {
+    return tourRun(R, b, nav);
+  } finally {
+    leap?.free();
+    leap = null;
+  }
+}
+
+function tourRun(R: Rapier, b: WorldBundle, nav: NavWorld): Chip | null {
   // what a visitor can always use: exhibits and switches (a lock needs its key, so it isn't a sight)
   const sights = [...new Set(b.verbs.filter((v) => (v.verb === "social.inspect" || v.verb === "puzzle.switch") && b.entities.some((e) => e.id === v.on)).map((v) => v.on))].sort();
   if (!sights.length) return null;

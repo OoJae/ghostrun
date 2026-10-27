@@ -47,6 +47,8 @@ export function carryables(b: WorldBundle): Set<string> {
     const p = verb(vb.verb);
     for (const id of p?.carries?.({ id: vb.id, on: vb.on, params: clampParams(p.params, vb.params), mem: {} }) ?? []) out.add(id);
   }
+  const real = new Set(b.entities.map((e) => e.id));
+  for (const id of out) if (!real.has(id)) out.delete(id); // a key named in a verb but never placed
   return out;
 }
 

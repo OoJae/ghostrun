@@ -1,0 +1,260 @@
+{
+  "prompt": "An ice cave: slide across the frozen floor to reach the crystal heart",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "ice physics puzzle",
+    "setting": "A vast, translucent glacial cavern lit by icy blue refractions and jagged stalactites.",
+    "role": "A lone ice wanderer",
+    "goal": "Slip across the frictionless frozen floor to reach the suspended crystal heart before the glacier calms itself",
+    "fail": "Drift into the frigid crevasse below or collide with the glowing stalactites",
+    "mood": "Cryogenic tension and breathless momentum",
+    "pack": "outdoor",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Glacier cavern needs frictionless sliding",
+    "nouns": [
+      {
+        "noun": "ice cave",
+        "hyper": "cavern"
+      },
+      {
+        "noun": "frozen floor",
+        "hyper": "terrain"
+      },
+      {
+        "noun": "crystal heart",
+        "hyper": "artifact"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.2,
+      "arousal": 0.45,
+      "tension": 0.5
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "64b4d92f3a46488f4d5a6a01c70d27469bfd7e21d2f5dab184cced31177089d8",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_slide",
+      "text": "Glacier cavern needs frictionless sliding",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 9 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (player enters crystal_heart)",
+        "src": ""
+      },
+      {
+        "id": "T2:r_lose_crevasse",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_crevasse"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_lose_crevasse fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lose_spike",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_spike"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 0,
+        "src": "ai",
+        "ms": 5,
+        "status": "counterexample",
+        "text": "r_lose_spike fires exactly once",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "firings",
+          "text": "never fired when forced"
+        }
+      },
+      {
+        "id": "T2:r_lose_stalactite",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_stalactite"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 0,
+        "src": "ai",
+        "ms": 4,
+        "status": "counterexample",
+        "text": "r_lose_stalactite fires exactly once",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "firings",
+          "text": "never fired when forced"
+        }
+      },
+      {
+        "id": "T2:r_secret_center_s",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_center_s"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_center_s fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_center_w",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_center_w"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_center_w fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_n",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_n"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_flank_n fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_s",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_s"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_flank_s fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_sign",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_sign"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_sign fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it (AI par 7 s)",
+        "cx": null,
+        "src": "",
+        "ms": 84
+      }
+    ],
+    "par": {
+      "goldS": 7,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 379
+  }
+}

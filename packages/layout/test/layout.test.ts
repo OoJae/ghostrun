@@ -154,6 +154,70 @@ describe("small repairs found by the third unseen set", () => {
   });
 });
 
+describe("names that aren't in the world (the fourth unseen set)", () => {
+  it("a lock's missing key becomes the one key-like pickup, or the door opens with USE", () => {
+    const withLock = (key: string, ents: string[]) =>
+      parseFill(
+        ctf
+          .replace('{"op":"verb","id":"vb_jump"', [...ents, '{"op":"ent","id":"door_a","kind":"door","noun":"door","zone":"z_red_base","anchor":"doorway_n"}', '{"op":"verb","id":"vb_jump"'].join("\n"))
+          .replace('{"op":"law"', `{"op":"verb","id":"vb_la","verb":"puzzle.lock","on":"door_a","params":{"key":"${key}"}}\n{"op":"law"`),
+        { seed: 7 },
+      );
+    const place = (fill: ReturnType<typeof parseFill>) => placeWorld({ ...fill.draft, engine: "e".repeat(64) }, cityBlock.generate({ seed: 7, params: cityBlock.defaults, sub: fill.draft.pack.sub, laws: fill.draft.laws, harder: false }));
+    const a = place(withLock("principal_key", ['{"op":"ent","id":"office_key","kind":"pickup","noun":"brass key","zone":"z_plaza","anchor":"wall_s"}']));
+    expect(a.bundle.verbs.find((v) => v.id === "vb_la")!.params.key).toBe("office_key");
+    expect(a.notes).toContain('door_a: its key "principal_key" isn\'t in the world; office_key opens it');
+    const b = place(withLock("principal_key", []));
+    // "when the puppies reach home": each puppy
+    const pups = parseFill(
+      ctf
+        .replace('{"op":"verb","id":"vb_jump"', ['{"op":"ent","id":"pup_1","kind":"pickup","noun":"puppy","zone":"z_plaza","anchor":"wall_s"}', '{"op":"ent","id":"pup_2","kind":"pickup","noun":"puppy","zone":"z_plaza","anchor":"wall_e"}', '{"op":"verb","id":"vb_jump"'].join("\n"))
+        .replace('{"op":"rule","id":"r_pickup"', '{"op":"rule","id":"r_pups","when":{"t":"enter","a":"puppies","b":"goal_red"},"then":[{"e":"score","target":"team:red","n":1}]}\n{"op":"rule","id":"r_pickup"'),
+      { seed: 7 },
+    );
+    const c = place(pups);
+    expect(c.bundle.rules.filter((r) => r.id.startsWith("r_pups")).map((r) => r.when.a)).toEqual(["pup_1", "pup_2"]);
+    expect(c.notes).toContain("rule r_pups: 'puppies' isn't one thing; it means each of pup_1, pup_2 (2 rules)");
+    expect(b.bundle.verbs.find((v) => v.id === "vb_la")!.params.key).toBe("");
+    expect(b.notes).toContain('door_a: its key "principal_key" isn\'t in the world, so it opens with USE');
+  });
+});
+
+describe("rules the fourth unseen set wrote", () => {
+  it("'carrier.id eq null' is 'not carried'; a zone condition the trigger already meets goes; an exit's 'open' means the door beside it; one win per ingredient means all of them", () => {
+    const fill = parseFill(
+      ctf
+        .replace('{"op":"verb","id":"vb_jump"', [
+          '{"op":"ent","id":"root","kind":"pickup","noun":"elf root","zone":"z_plaza","anchor":"wall_s"}',
+          '{"op":"ent","id":"scale","kind":"pickup","noun":"dragon scale","zone":"z_plaza","anchor":"wall_e"}',
+          '{"op":"ent","id":"pot","kind":"goal","noun":"cauldron","zone":"z_plaza","anchor":"wall_n"}',
+          '{"op":"ent","id":"gate","kind":"door","noun":"gate","zone":"z_red_base","anchor":"doorway_n"}',
+          '{"op":"ent","id":"exit","kind":"goal","noun":"exit","zone":"z_red_base","anchor":"wall_e"}',
+          '{"op":"ent","id":"gkey","kind":"pickup","noun":"key","zone":"z_plaza","anchor":"wall_w"}',
+          '{"op":"verb","id":"vb_jump"',
+        ].join("\n"))
+        .replace('{"op":"law"', ['{"op":"verb","id":"vb_root","verb":"physics_props.carry","on":"root","params":{}}', '{"op":"verb","id":"vb_scale","verb":"physics_props.carry","on":"scale","params":{}}', '{"op":"verb","id":"vb_gkey","verb":"physics_props.carry","on":"gkey","params":{}}', '{"op":"verb","id":"vb_gate","verb":"puzzle.lock","on":"gate","params":{"key":"gkey"}}', '{"op":"law"'].join("\n"))
+        .replace('{"op":"rule","id":"r_pickup"', [
+          '{"op":"rule","id":"r_w1","when":{"t":"enter","a":"root","b":"pot"},"if":[{"l":"scale.carrier.id","op":"eq","r":"null"}],"then":[{"e":"win","target":"player"}],"once":true}',
+          '{"op":"rule","id":"r_w2","when":{"t":"enter","a":"scale","b":"pot"},"if":[{"l":"root.carrier.id","op":"eq","r":"null"}],"then":[{"e":"win","target":"player"}],"once":true}',
+          '{"op":"rule","id":"r_out","when":{"t":"enter","a":"player","b":"exit"},"if":[{"l":"exit.state","op":"eq","r":"open"},{"l":"player.zone","op":"eq","r":"z_red_base"}],"then":[{"e":"emit","target":"exit","fx":"x"}]}',
+          '{"op":"rule","id":"r_pickup"',
+        ].join("\n")),
+      { seed: 7 },
+    );
+    const layout = cityBlock.generate({ seed: 7, params: cityBlock.defaults, sub: fill.draft.pack.sub, laws: fill.draft.laws, harder: false });
+    const { bundle, notes } = placeWorld({ ...fill.draft, engine: "e".repeat(64) }, layout);
+    const rule = (id: string) => bundle.rules.find((r) => r.id === id)!;
+    expect(rule("r_w1").if).toEqual([{ l: "scale.carrier", op: "eq", r: "", forS: 0 }]);
+    expect(rule("r_w1").then.map((e) => e.e)).toEqual(["set_state", "destroy"]);
+    expect(rule("r_w1_all")).toMatchObject({ when: { t: "enter", a: "root", b: "pot" }, if: [{ l: "scale.state", op: "eq", r: "in" }], then: [{ e: "win" }] });
+    expect(rule("r_out").if).toEqual([{ l: "gate.state", op: "eq", r: "open", forS: 0 }]);
+    expect(notes).toContain("rule r_out: nothing can make exit 'open'; it means gate beside it");
+    expect(notes).toContain("rule r_out: dropped 'player.zone is z_red_base' (exit stands in z_red_base, so reaching it is being there)");
+    expect(notes).toContain("pot: 2 rules each won when a different thing was brought in (root, scale); it takes all of them, so each one goes in and the last one wins");
+  });
+});
+
 describe("conditions nothing can satisfy", () => {
   it("'IF the gate is open' with nothing to open it means holding the unused key; 'IF the timer is running' on a prop goes", () => {
     const fill = parseFill(

@@ -1,0 +1,43 @@
+{"op":"meta","mode":"play","lang":"en","pack":"outdoor","sub":[],"seed":133,"look":"rainbow cloud kingdom","mood":[0.9,0.4,0.2],"timeOfDay":12,"weather":"clear"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Cloud Gate"}
+{"op":"zone","id":"z_clearing","slot":"clearing","tag":"hub","name":"Sunlit Clearing"}
+{"op":"zone","id":"z_west","slot":"clearing_w","tag":"base","name":"West Cloud Terrace"}
+{"op":"zone","id":"z_east","slot":"clearing_e","tag":"base","name":"East Cloud Terrace"}
+{"op":"zone","id":"z_pond","slot":"pond","tag":"water","name":"Misty Pond"}
+{"op":"zone","id":"z_grove","slot":"grove","tag":"trees","name":"Candy Grove"}
+{"op":"zone","id":"z_lookout","slot":"lookout","tag":"high_ground","name":"Rainbow Lookout"}
+{"op":"spawn","id":"sp_red","zone":"z_entrance","anchor":"spawn_pad","team":"red"}
+{"op":"ent","id":"star_1","kind":"pickup","noun":"glowing star","hyper":"star","zone":"z_clearing","anchor":"center_n","body":"dynamic","shape":"sphere","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"star_2","kind":"pickup","noun":"glowing star","hyper":"star","zone":"z_west","anchor":"flank_n","body":"dynamic","shape":"sphere","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"star_3","kind":"pickup","noun":"glowing star","hyper":"star","zone":"z_east","anchor":"flank_s","body":"dynamic","shape":"sphere","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"star_4","kind":"pickup","noun":"glowing star","hyper":"star","zone":"z_pond","anchor":"dock","body":"dynamic","shape":"sphere","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"star_5","kind":"pickup","noun":"glowing star","hyper":"star","zone":"z_grove","anchor":"hollow","body":"dynamic","shape":"sphere","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"star_6","kind":"pickup","noun":"glowing star","hyper":"star","zone":"z_lookout","anchor":"top","body":"dynamic","shape":"sphere","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"jump_pad_1","kind":"plate","noun":"jump pad","hyper":"jump_pad","zone":"z_clearing","anchor":"center","body":"sensor","shape":"box","size":[1,0.2,1]}
+{"op":"ent","id":"osc_platform_1","kind":"platform","noun":"floating platform","hyper":"platform","zone":"z_west","anchor":"flank_s","body":"kinematic","shape":"box","size":[2,0.3,2]}
+{"op":"ent","id":"hazard_1","kind":"hazard","noun":"spike cloud","hyper":"spikes","zone":"z_east","anchor":"flank_n","body":"sensor","shape":"box","size":[2,0.2,2]}
+{"op":"ent","id":"key_cloud","kind":"pickup","noun":"cloud key","hyper":"key","zone":"z_grove","anchor":"roots","body":"dynamic","shape":"box","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"locked_gate","kind":"door","noun":"locked gate","hyper":"door","zone":"z_lookout","anchor":"mid","body":"fixed","shape":"box"}
+{"op":"verb","id":"vb_carry_star_1","verb":"physics_props.carry","on":"star_1","params":{}}
+{"op":"verb","id":"vb_carry_star_2","verb":"physics_props.carry","on":"star_2","params":{}}
+{"op":"verb","id":"vb_carry_star_3","verb":"physics_props.carry","on":"star_3","params":{}}
+{"op":"verb","id":"vb_carry_star_4","verb":"physics_props.carry","on":"star_4","params":{}}
+{"op":"verb","id":"vb_carry_star_5","verb":"physics_props.carry","on":"star_5","params":{}}
+{"op":"verb","id":"vb_carry_star_6","verb":"physics_props.carry","on":"star_6","params":{}}
+{"op":"verb","id":"vb_jump_pad_1","verb":"locomotion.jump_pad","on":"jump_pad_1","params":{"height":5}}
+{"op":"verb","id":"vb_osc_platform_1","verb":"motion_hazards.oscillate","on":"osc_platform_1","params":{"axis":"x","travel":4,"period":3}}
+{"op":"verb","id":"vb_hazard_1","verb":"motion_hazards.hazard","on":"hazard_1","params":{"respawn":true}}
+{"op":"verb","id":"vb_lock_gate","verb":"puzzle.lock","on":"locked_gate","params":{"key":"key_cloud","keep":false}}
+{"op":"verb","id":"vb_inspect_gate","verb":"social.inspect","on":"locked_gate","params":{"text":"A shimmering gate sealed by cloud magic."}}
+{"op":"rule","id":"r_collect_star","when":{"t":"touch","a":"player","b":"star_1"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_collect_star2","when":{"t":"touch","a":"player","b":"star_2"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_collect_star3","when":{"t":"touch","a":"player","b":"star_3"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_collect_star4","when":{"t":"touch","a":"player","b":"star_4"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_collect_star5","when":{"t":"touch","a":"player","b":"star_5"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_collect_star6","when":{"t":"touch","a":"player","b":"star_6"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_win","when":{"t":"score_gte","a":"team:red","n":6},"then":[{"e":"win","target":"player"}]}
+{"op":"rule","id":"r_hazard_die","when":{"t":"hit","a":"player","b":"hazard_1"},"then":[{"e":"lose","target":"player"}]}
+{"op":"expect","id":"x_collect","prop":"win_reachable","a":"sp_red","b":"star_6","headline":true,"text":"Player must traverse cloud-based terrain to collect scattered star collectibles."}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":6}}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

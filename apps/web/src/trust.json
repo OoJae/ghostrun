@@ -42,8 +42,19 @@
    "play": 14,
    "places": 0,
    "firstPass": 7,
-   "now": 9,
+   "now": 10,
    "playableP50Ms": 5603,
+   "controlsP50": 10
+  },
+  {
+   "name": "fresh4",
+   "note": "Fourth unseen set (27 Oct, after triage rounds 1-3 on the committed worlds): the honest first-pass number",
+   "prompts": 14,
+   "play": 14,
+   "places": 0,
+   "firstPass": 8,
+   "now": 12,
+   "playableP50Ms": 2020,
    "controlsP50": 10
   },
   {

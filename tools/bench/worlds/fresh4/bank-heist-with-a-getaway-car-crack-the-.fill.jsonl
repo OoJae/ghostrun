@@ -1,0 +1,28 @@
+{"op":"meta","mode":"play","lang":"en","pack":"floor_plan","sub":[],"seed":134,"look":"bank heist","mood":[0.2,0.8,0.9],"timeOfDay":14,"weather":"clear"}
+{"op":"zone","id":"z_yard","slot":"yard","tag":"outside","name":"Parking lot"}
+{"op":"zone","id":"z_lobby","slot":"entrance","tag":"entrance","name":"Bank lobby"}
+{"op":"zone","id":"z_teller","slot":"room_sw","tag":"room","name":"Teller area"}
+{"op":"zone","id":"z_office","slot":"room_se","tag":"room","name":"Manager office"}
+{"op":"zone","id":"z_security","slot":"room_nw","tag":"room","name":"Security room"}
+{"op":"zone","id":"z_hall","slot":"main_room","tag":"hall","name":"Main banking hall"}
+{"op":"zone","id":"z_vault","slot":"room_ne","tag":"room","name":"Vault"}
+{"op":"spawn","id":"sp_red","zone":"z_yard","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"car_exit","zone":"z_yard","anchor":"corner_w","noun":"getaway car","hyper":"vehicle","team":"red"}
+{"op":"ent","id":"vault_door","kind":"door","noun":"vault door","hyper":"door","zone":"z_vault","anchor":"doorway_w","body":"fixed","shape":"box"}
+{"op":"ent","id":"loot_cash","kind":"pickup","noun":"stack of cash","hyper":"loot","zone":"z_vault","anchor":"center","body":"dynamic","shape":"box","size":[0.4,0.4,0.4]}
+{"op":"ent","id":"tool_lockpick","kind":"pickup","noun":"lockpick set","hyper":"tool","zone":"z_security","anchor":"corner_se","body":"dynamic","shape":"box","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"camera_haz","kind":"hazard","noun":"security camera","hyper":"camera","zone":"z_hall","anchor":"corner_ne","body":"sensor","shape":"box","size":[0.5,0.5,0.5]}
+{"op":"ent","id":"alarm_timer","kind":"prop","noun":"alarm timer","hyper":"timer","zone":"z_hall","anchor":"center","body":"fixed","shape":"box"}
+{"op":"verb","id":"vb_carry_cash","verb":"physics_props.carry","on":"loot_cash","params":{}}
+{"op":"verb","id":"vb_carry_key","verb":"physics_props.carry","on":"tool_lockpick","params":{}}
+{"op":"verb","id":"vb_lock_vault","verb":"puzzle.lock","on":"vault_door","params":{"key":"tool_lockpick","keep":false}}
+{"op":"verb","id":"vb_inspect_cam","verb":"social.inspect","on":"camera_haz","params":{"text":"A rotating security camera. Look away or be seen."}}
+{"op":"verb","id":"vb_alarm","verb":"puzzle.timer","on":"player","params":{"seconds":120}}
+{"op":"verb","id":"vb_haz_camera","verb":"motion_hazards.hazard","on":"camera_haz","params":{"respawn":true}}
+{"op":"rule","id":"r_vault_open","when":{"t":"state_is","a":"vault_door","s":"open"},"then":[{"e":"set_state","target":"vault_door","v":"open"}],"once":true}
+{"op":"rule","id":"r_escape","when":{"t":"enter","a":"loot_cash","b":"car_exit"},"if":[{"l":"loot_cash.carrier.team","op":"eq","r":"red"}],"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_alarm_fail","when":{"t":"timer_end","a":"player"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_cam_detect","when":{"t":"hit","a":"player","b":"camera_haz"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"expect","id":"x_heist","prop":"win_reachable","a":"sp_red","b":"car_exit","headline":true,"text":"Must crack the vault lock and exit to the car within the timer"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

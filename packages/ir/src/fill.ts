@@ -2,6 +2,7 @@
 // every accepted line becomes IR immediately so the world can start building while tokens arrive.
 //   meta zone+ spawn+ goal? ent* verb* law* state* rule* npc* expect* sig? end(gameplay) dress* poster{0,4} end(cosmetic)
 import * as v from "valibot";
+import { groupMembers } from "./groups";
 import { DEFAULT_LAWS } from "./laws";
 import type { Cast, Entity, Expect, Rule, StateVar, VerbBinding, WorldBundle, Zone } from "./schema";
 import {
@@ -193,6 +194,12 @@ const SYNONYMS: Record<string, string | readonly string[]> = {
   character: "npc", teleporter: "portal", car: "vehicle", exhibit: "prop", display: "prop", statue: "prop",
   // triggers: "touch" also covers using something (the sim emits touch a=agent b=thing on USE)
   collect: "touch", interact: "touch", timeout: "timer_end", state: "state_is", state_change: "state_is",
+  // comparison operators in the spellings models use
+  neq: "ne", not_eq: "ne", not_equal: "ne", not_equals: "ne", "!=": "ne", "!==": "ne", "<>": "ne",
+  "==": "eq", "===": "eq", "=": "eq", equals: "eq", equal: "eq", is: "eq",
+  ">=": "gte", ge: "gte", "<=": "lte", le: "lte", ">": "gt", "<": "lt", contains: "has", includes: "has",
+  // weather adjectives
+  foggy: "fog", misty: "fog", mist: "fog", rainy: "rain", snowy: "snow", stormy: "storm", thunderstorm: "storm", sunny: "clear",
 };
 /** Trigger words meaning "the player uses X": rewritten to touch with a = the agent, b = the thing. */
 const USE_WORDS = new Set(["use", "interact", "activate", "press", "click", "open", "inspect", "operate"]);
@@ -353,7 +360,8 @@ export class FillParser {
     const d = this.draft;
     return (
       d.entities.some((e) => e.id === head) || d.zones.some((z) => z.id === head) ||
-      d.states.some((s) => s.id === head) || d.rules.some((r) => r.id === head)
+      d.states.some((s) => s.id === head) || d.rules.some((r) => r.id === head) ||
+      (ref === head && groupMembers(head, d.entities).length > 0) // "puppies": each of them (the placer splits it)
     );
   }
 

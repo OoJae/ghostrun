@@ -1,0 +1,22 @@
+{"op":"meta","mode":"play","lang":"en","pack":"floor_plan","sub":[],"seed":131,"look":"dim cavernous dragon's lair","mood":[-0.2,0.7,0.8],"timeOfDay":22,"weather":"clear"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Entrance corridor"}
+{"op":"zone","id":"z_hall","slot":"main_room","tag":"hall","name":"Dragon's hoard"}
+{"op":"zone","id":"z_tunnel","slot":"room_sw","tag":"room","name":"Side tunnel"}
+{"op":"zone","id":"z_exit","slot":"yard","tag":"outside","name":"Lair exit"}
+{"op":"spawn","id":"sp_red","zone":"z_entrance","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"exit_gate","zone":"z_exit","anchor":"corner_w","noun":"exit corridor","hyper":"door","team":"red"}
+{"op":"ent","id":"golden_egg","kind":"pickup","noun":"golden egg","hyper":"artifact","zone":"z_hall","anchor":"center","body":"dynamic","shape":"sphere","size":[0.4,0.4,0.4]}
+{"op":"ent","id":"key","kind":"pickup","noun":"rusty key","hyper":"key","zone":"z_tunnel","anchor":"corner_sw","body":"dynamic","shape":"box","size":[0.3,0.2,0.2]}
+{"op":"ent","id":"exit_door","kind":"door","noun":"exit door","hyper":"door","zone":"z_exit","anchor":"corner_e","body":"fixed","shape":"box"}
+{"op":"ent","id":"dragon","kind":"npc","noun":"sleeping dragon","hyper":"creature","zone":"z_hall","anchor":"corner_ne","body":"kinematic","shape":"hull"}
+{"op":"ent","id":"spike_trap","kind":"hazard","noun":"spike trap","hyper":"spikes","zone":"z_hall","anchor":"corner_se","body":"sensor","shape":"box","size":[1,0.2,1]}
+{"op":"verb","id":"vb_carry_egg","verb":"physics_props.carry","on":"golden_egg","params":{}}
+{"op":"verb","id":"vb_carry_key","verb":"physics_props.carry","on":"key","params":{}}
+{"op":"verb","id":"vb_lock_exit","verb":"puzzle.lock","on":"exit_door","params":{"key":"key","keep":false}}
+{"op":"verb","id":"vb_hazard_spike","verb":"motion_hazards.hazard","on":"spike_trap","params":{"respawn":true}}
+{"op":"verb","id":"vb_wake_timer","verb":"puzzle.timer","on":"dragon","params":{"seconds":30}}
+{"op":"rule","id":"r_win","when":{"t":"enter","a":"golden_egg","b":"exit_gate"},"if":[{"l":"golden_egg.carrier.team","op":"eq","r":"red"}],"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_wake","when":{"t":"timer_end","a":"dragon"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"expect","id":"x_stealth","prop":"win_reachable","a":"sp_red","b":"exit_gate","headline":true,"text":"Stealth timing: grab the golden egg and reach the exit before the dragon’s wake timer triggers"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}
