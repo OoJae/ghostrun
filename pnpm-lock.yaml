@@ -407,6 +407,9 @@ importers:
       '@ghostrun/pack-city-block':
         specifier: workspace:*
         version: link:../packs/city-block
+      '@ghostrun/pack-floor-plan':
+        specifier: workspace:*
+        version: link:../packs/floor-plan
 
   packages/registry:
     dependencies:

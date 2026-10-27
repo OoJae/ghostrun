@@ -10,6 +10,7 @@ import type { PlanStep, WinChain } from "./t0";
 import type { Chip } from "./types";
 
 const RUN_TICKS = 60 * 60; // one minute of play per run
+const TOO_EASY_S = 3;
 
 interface RunResult {
   won: boolean;
@@ -299,7 +300,9 @@ function perform(r: Run, st: PlanStep, carried: string): "ok" | "lost" | "stuck"
         const left = st.items.filter((id) => !gone(id)).sort((x, y) => d2h(sim.pos(x), p) - d2h(sim.pos(y), p) || (x < y ? -1 : 1));
         if (!left.length) break;
         const it = left[0]!;
-        if (!go(spotBy(r, it), () => gone(it)) && !gone(it)) return "stuck";
+        const t0 = sim.tick;
+        const ok = go(spotBy(r, it), () => gone(it));
+        if (!gone(it) && (!ok || sim.tick === t0)) return "stuck"; // never spin in place
       }
       return fired() >= st.times ? "ok" : "stuck";
     }
@@ -398,6 +401,14 @@ export function t3(R: Rapier, b: WorldBundle, nav: NavWorld, chain: WinChain | n
       src: "",
       ms: Math.round((globalThis.performance?.now?.() ?? 0) - t0),
     });
+    // a win in under 3 s means the world asks nothing of the player: honest, but not a game
+    if (par && par.goldS < TOO_EASY_S) {
+      chips.push({
+        id: "T3:too_easy", tier: "T3", subject: { kind: "property", id: "win_reachable" }, status: "counterexample", method: `physics, ${runs} AI runners`,
+        n: runs, k: won.length, text: `won in ${par.goldS} s: the win needs none of what the world asks for`,
+        cx: { where: null, have: par.goldS, need: TOO_EASY_S, unit: "s", text: `AI par ${par.goldS} s < ${TOO_EASY_S} s` }, src: "", ms: 0,
+      });
+    }
   }
   for (const x of b.expects.filter((e) => e.prop === "requires")) {
     const m = x.need.map((n) => /^jumps>=(\d+)$/.exec(n.replace(/\s/g, ""))).find(Boolean);

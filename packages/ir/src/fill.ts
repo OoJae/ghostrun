@@ -144,13 +144,23 @@ const KIND_BODY: Partial<Record<Entity["kind"], [Entity["body"], Entity["shape"]
 const norm = (s: string) => s.trim().toLowerCase().replace(/[\s-]+/g, "_");
 
 /** Deterministic synonyms for enum values LLMs reach for (from the S2 bench's invalid lines). */
-const SYNONYMS: Record<string, string> = {
+const SYNONYMS: Record<string, string | readonly string[]> = {
   static: "fixed", solid: "fixed", immovable: "fixed", physics: "dynamic", rigid: "dynamic", movable: "dynamic",
   trigger: "sensor", zone: "sensor", area: "sensor", moving: "kinematic", animated: "kinematic",
   cylinder: "capsule", cube: "box", cuboid: "box", ball: "sphere", mesh: "hull",
   none_team: "", neutral: "", no_team: "",
   lose_reachable: "reachable", goal_reachable: "win_reachable", winnable: "win_reachable",
+  headline: "win_reachable", beatable: "win_reachable", completable: "win_reachable",
+  // kinds LLMs invent → the closest real kind (each only applies where it is a valid option)
+  timer: ["prop", "timer_end"], clock: "prop", item: "pickup", collectible: "pickup", coin: "pickup", gem: "pickup", key: "pickup",
+  flag: "pickup", treasure: "pickup", trap: "hazard", lava: "hazard", spikes: "hazard", laser: "hazard", fire: "hazard",
+  button: "switch", lever: "switch", pad: "plate", gate: "door", exit: "goal", finish: "goal", guard: "npc",
+  character: "npc", teleporter: "portal", car: "vehicle", exhibit: "prop", display: "prop", statue: "prop",
+  // triggers: "touch" also covers using something (the sim emits touch a=agent b=thing on USE)
+  collect: "touch", interact: "touch", timeout: "timer_end", state: "state_is", state_change: "state_is",
 };
+/** Trigger words meaning "the player uses X": rewritten to touch with a = the agent, b = the thing. */
+const USE_WORDS = new Set(["use", "interact", "activate", "press", "click", "open", "inspect", "operate"]);
 
 function setAt(obj: unknown, path: (string | number)[], value: unknown) {
   let node = obj as Record<string | number, unknown>;
@@ -168,11 +178,17 @@ function repair(raw: unknown, issues: v.BaseIssue<unknown>[]): boolean {
     if (issue.expected === "number" && typeof input === "string" && /^-?\d+(\.\d+)?$/.test(input.trim())) {
       setAt(raw, path, Number(input));
       changed = true;
+    } else if (path.length === 2 && path[0] === "when" && path[1] === "t" && typeof input === "string" && USE_WORDS.has(norm(input))) {
+      const when = (raw as { when: Record<string, unknown> }).when;
+      when.t = "touch";
+      if (when.b === "player" || !when.b) [when.a, when.b] = ["player", when.a === "player" ? "" : when.a];
+      changed = true;
     } else if (typeof input === "string" && issue.expected?.includes('"')) {
       const options = [...issue.expected.matchAll(/"([^"]*)"/g)].map((m) => m[1]!);
       const n = norm(input);
       const syn = path.at(-1) === "team" && (n === "none" || n === "neutral") ? "" : SYNONYMS[n];
-      const hit = options.find((o) => o === n) ?? options.find((o) => o === syn);
+      const syns = syn === undefined ? [] : typeof syn === "string" ? [syn] : syn;
+      const hit = options.find((o) => o === n) ?? options.find((o) => syns.includes(o));
       if (hit !== undefined) {
         setAt(raw, path, hit);
         changed = true;

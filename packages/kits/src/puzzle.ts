@@ -25,7 +25,7 @@ export const switchVerb: VerbPlugin = {
     label: "flip switch",
     run(c, b) {
       const on = c.ent(b.on)?.state === "on";
-      if (on && b.params.once) return;
+      if (on && b.params.once) return false;
       c.setState(b.on, on ? "off" : "on");
     },
   },
@@ -60,9 +60,9 @@ export const lockVerb: VerbPlugin = {
     radius: 1.8,
     label: "unlock",
     run(c, b, actor) {
-      if (c.ent(b.on)?.state === "open") return;
+      if (c.ent(b.on)?.state === "open") return false;
       const key = String(b.params.key);
-      if (key && c.ent(actor)?.carrying !== key) return;
+      if (key && c.ent(actor)?.carrying !== key) return false;
       if (key) c.destroy(key);
       c.setSolid(b.on, false);
       c.setState(b.on, "open");

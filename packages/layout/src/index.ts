@@ -149,10 +149,21 @@ export function repairExpects(b: WorldBundle): string[] {
       notes.push(`expect ${x.id}: a 'player' → spawn '${spawn.id}'`);
       x.a = spawn.id;
     }
-    if (x.prop === "requires" && !zoneIds.has(x.b) && b.zones.length) {
+    if (x.prop === "requires" && x.need.some((n) => /^jumps>=/.test(n.replace(/\s/g, ""))) && !zoneIds.has(x.b) && b.zones.length) {
       const highest = [...b.zones].sort((p, q) => top(q.id) - top(p.id) || (p.id < q.id ? -1 : 1))[0]!;
       notes.push(`expect ${x.id}: b '${x.b}' is not a zone → '${highest.id}' (highest walkable area)`);
       x.b = highest.id;
+    }
+  }
+  // every play world leads its receipt with something: promote a win check, or add one
+  if (b.mode === "play" && !b.expects.some((x) => x.headline)) {
+    const win = b.expects.find((x) => x.prop === "win_reachable");
+    if (win) {
+      win.headline = true;
+      notes.push(`expect ${win.id}: promoted to headline (the fill gave none)`);
+    } else if (spawn) {
+      b.expects.push({ id: "x_win_auto", src: "template", layer: "gameplay", prop: "win_reachable", a: spawn.id, b: "", need: [], lo: 0, hi: 0, headline: true, text: "You can win this" });
+      notes.push("expect x_win_auto: added as headline (the fill gave none)");
     }
   }
   return notes;

@@ -135,8 +135,11 @@ export interface VerbPlugin {
   initial?: string;
   /** Entities this binding makes carryable (a lock's key). */
   carries?(b: Bound): string[];
-  /** USE within `radius` of the bound entity runs this; the HUD shows `label` ("flip switch"). */
-  use?: { radius: number; label: string; run(c: VerbCtx, b: Bound, actor: string): void };
+  /**
+   * USE within `radius` of the bound entity runs this; the HUD shows `label` ("flip switch").
+   * Return false when it refused (a lock without its key); otherwise the sim logs touch a=actor b=it.
+   */
+  use?: { radius: number; label: string; run(c: VerbCtx, b: Bound, actor: string): boolean | void };
   init?(c: VerbCtx, b: Bound): void;
   /** Once per tick after physics, in binding-id order. */
   tick?(c: VerbCtx, b: Bound): void;

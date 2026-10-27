@@ -17,6 +17,7 @@
   "devDependencies": {
     "@ghostrun/layout": "workspace:*",
     "@ghostrun/pack-arena": "workspace:*",
-    "@ghostrun/pack-city-block": "workspace:*"
+    "@ghostrun/pack-city-block": "workspace:*",
+    "@ghostrun/pack-floor-plan": "workspace:*"
   }
 }

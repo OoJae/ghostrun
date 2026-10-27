@@ -20,7 +20,14 @@ export function producers(b: WorldBundle): Produces[] {
   const out: Produces[] = [];
   for (const vb of [...b.verbs].sort((x, y) => (x.id < y.id ? -1 : 1))) {
     const p = verb(vb.verb);
-    if (p?.produces) out.push(...p.produces({ id: vb.id, on: vb.on, params: clampParams(p.params, vb.params), mem: {} }));
+    if (!p) continue;
+    const made = p.produces?.({ id: vb.id, on: vb.on, params: clampParams(p.params, vb.params), mem: {} }) ?? [];
+    out.push(...made);
+    // every usable verb also logs touch a=agent b=it when used, with the same preconditions
+    if (p.use && !made.some((x) => x.k === "touch" && x.b === vb.on)) {
+      const viaUse = made.find((x) => x.cause?.do === "use" && x.cause.at === vb.on)?.cause;
+      out.push({ k: "touch", a: "player", b: vb.on, cause: viaUse ?? { do: "use", at: vb.on } });
+    }
   }
   return out;
 }
@@ -124,7 +131,9 @@ export function t0(b: WorldBundle, playerTeam: "red" | "blue" = "red"): { chips:
         const ps = made.filter((x) => x.k === w.t && (!w.b || x.b === w.b) && x.cause);
         if (!ps.length) return null;
         if (w.b || ps.length === 1) return { steps: causeSteps(ps[0]!.cause!, r.id), explain: `${r.id} (${w.t} ${ps[0]!.b})` };
-        const items = ps.map((x) => x.b!);
+        // "any of": collect the things you touch; if none are collectible, use the first one
+        const items = ps.filter((x) => x.cause!.do === "touch").map((x) => x.b!);
+        if (!items.length) return { steps: causeSteps(ps[0]!.cause!, r.id), explain: `${r.id} (${w.t} ${ps[0]!.b})` };
         return { steps: [{ do: "collect", items, rule: r.id, times: 1 }], explain: `${r.id} (${w.t} any of ${items.length})` };
       }
       case "timer_end":

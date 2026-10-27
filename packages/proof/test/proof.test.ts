@@ -71,3 +71,22 @@ describe("proof ladder on kit verbs (coin rush: collect, timer, hazard, switch, 
     expect(receipt.headline).toMatchObject({ expect: "x_win", status: "verified" });
   }, 120_000);
 });
+
+describe("a recorded live fill (museum heist, gpt-oss-120b)", () => {
+  it("repairs what the model got wrong, keeps a headline, and flags the too-easy win honestly", async () => {
+    const { floorPlan } = await import("@ghostrun/pack-floor-plan");
+    const text = readFileSync(new URL("../../ir/fixtures/heist-live-1.jsonl", import.meta.url), "utf8");
+    const fill = parseFill(text, { seed: 56112 });
+    // kind "timer" and the "use" triggers are repaired, not dropped; "headline" becomes win_reachable
+    expect(fill.notes.filter((n) => n.kind === "invalid")).toEqual([]);
+    expect(fill.draft.rules.find((r) => r.id === "r_use_key")!.when).toMatchObject({ t: "touch", a: "player", b: "vault_door" });
+    const layout = floorPlan.generate({ seed: 56112, params: floorPlan.defaults, sub: [], laws: fill.draft.laws, harder: false });
+    const placed = placeWorld({ ...fill.draft, engine: ENGINE }, layout);
+    const receipt = await prove(R, placed.bundle, { engine: ENGINE, runs: 4 });
+    expect(receipt.headline?.expect).toBe("x_headline");
+    // the model's win rule needs nothing: runners win in under a second, and the receipt says so
+    expect(receipt.chips.find((c) => c.id === "T3:too_easy")?.status).toBe("counterexample");
+    expect(receipt.headline?.status).toBe("counterexample");
+    expect(receipt.chips.find((c) => c.id === "T1:x_timer")?.status).toBe("not_checkable");
+  }, 120_000);
+});

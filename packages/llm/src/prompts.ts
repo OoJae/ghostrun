@@ -108,6 +108,7 @@ export function fillMessages(prompt: string, intent: IntentOut, layout: PackLayo
         "- shape: none | box | capsule | sphere | hull   - team: \"\" | red | blue   (no team = \"\")",
         "- expect prop: win_reachable | reachable | unreachable | requires | fair_teams   (\"headline\" is a boolean field, not a prop)",
         "Goals are sensors; pickups are carried with the carry verb.",
+        "The win must depend on the objective, never on just walking somewhere: e.g. bring the gem to the exit (when enter a=gem b=exit), collect N coins (touch + score_gte), or flip all switches (state_is). Doors that guard the objective go on doorway anchors when the pack has them.",
         "Make it interactive: 10-20 things the player can use, collect, step on or dodge (switches, plates, locked doors and keys, coins, hazards, jump pads, portals, exhibits to inspect), each bound to its verb and wired with rules so it matters.",
         `Verbs:\n${SUPPORTED.verbs.map((x) => `- ${x.id}: ${x.line}`).join("\n")}`,
         `Rule triggers: ${SUPPORTED.triggers.join("; ")}.`,

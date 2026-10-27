@@ -103,6 +103,10 @@ export function t1(b: WorldBundle, laws: Laws): Chip[] {
     const lowestStep = Math.min(...targets.map((t) => t.top - start.top));
     if (x.prop === "requires") {
       const k = parseNeed(x.need);
+      if (k === null) {
+        chips.push({ ...base, status: "not_checkable", text: `${label(x)}: needs ${x.need.join(", ") || "nothing stated"}, no checker for that yet`, cx: null });
+        continue;
+      }
       const withK = reachable(ss, start, { ...laws, jumpsMax: k }, k);
       const withFewer = reachable(ss, start, { ...laws, jumpsMax: k - 1 }, k - 1);
       const hit = (set: Set<string>) => targets.some((t) => set.has(t.id));
@@ -126,10 +130,10 @@ export function t1(b: WorldBundle, laws: Laws): Chip[] {
 
 const round = (x: number) => Math.round(x * 100) / 100;
 const label = (x: Expect) => x.text || `${x.prop} ${x.a} → ${x.b}`;
-function parseNeed(need: string[]): number {
+function parseNeed(need: string[]): number | null {
   for (const n of need) {
     const m = /^jumps>=(\d+)$/.exec(n.replace(/\s/g, ""));
     if (m) return Number(m[1]);
   }
-  return 1;
+  return null;
 }

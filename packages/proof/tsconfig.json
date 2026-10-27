@@ -45,6 +45,9 @@
     },
     {
       "path": "../packs/arena"
+    },
+    {
+      "path": "../packs/floor-plan"
     }
   ]
 }

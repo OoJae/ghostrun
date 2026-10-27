@@ -368,7 +368,12 @@ export class SimWorld {
       if (down && !this.#useHeld.has(id)) {
         const u = this.usable(id);
         const v = u && this.verbs.find((x) => x.bound.id === u.verb);
-        if (v) v.plugin.use!.run(this.#ctx, v.bound, id);
+        if (v) {
+          const before = evs.length;
+          const acted = v.plugin.use!.run(this.#ctx, v.bound, id) !== false;
+          // "the player used X" is a touch, unless the verb already logged one (inspect, with its text)
+          if (acted && !evs.slice(before).some((e) => e.k === "touch" && e.b === v.bound.on)) push("touch", id, v.bound.on);
+        }
       }
       if (down) this.#useHeld.add(id);
       else this.#useHeld.delete(id);

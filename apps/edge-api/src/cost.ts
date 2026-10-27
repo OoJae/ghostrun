@@ -6,7 +6,7 @@ export const FILL_MODEL = "gpt-oss-120b";
 export const INTENT_MAX_OUT = 800;
 export const FILL_MAX_OUT = 6000;
 /** Input-token bound for the fill call, which is only known after the intent; test-guarded per pack. */
-export const FILL_MAX_IN = 10_000;
+export const FILL_MAX_IN = 12_000; // raised with the kit vocabulary (12 more verb lines)
 
 type Model = typeof INTENT_MODEL | typeof FILL_MODEL;
 // $/M tokens → nano-USD/token: gpt-oss-120b $0.35 in / $0.75 out; qwen-3.8-27b $0.99 in / $1.49 out.
