@@ -28,5 +28,5 @@ describe("outdoor pack on the navmesh", () => {
       }
       nav.destroy();
     }
-  });
+  }, 180_000); // 50 navmeshes: ~14 s alone, slower when the whole suite runs in parallel
 });

@@ -19,7 +19,9 @@ Type any world, and GHOSTRUN turns it into a playable 3D level in the browser in
 5. **Logic X-ray** (press **X**): every rule as a WHEN / IF / THEN sentence with its forced-state mark; hover a tile and that thing lights up in the scene.
 6. **Repair loop.** If the receipt has counterexamples (a win that needs nothing, a rule that never fires, a false claim), the issues go back to the model with concrete hints, the patch is merged by id, re-proved on the device, and offered as "AI repaired it · re-proved · Apply" only if the new receipt is better.
 7. **Change it.** Type a change ("only one jump", "add three more coins", "make it night") and the same world comes back changed, in about a second, and re-proved with its numbers: "jump height 1.6 → 3.4 m · Headline: verified → counterexample · Rooftop lane needs double jump — reachable with 1 jump". Edits patch the world by stable ids and keep its geometry; they can never rewrite what the world promised, so a change that breaks a promise shows up instead of quietly erasing it. Undo is one click.
-8. **Share** a run: the link replays it bit-exactly on any device. **This is wrong** sends a note plus the run.
+8. **Why did I lose?** The result card tells the run's story from the simulation's causal log ("Rival 1 carried the glowing orb into the neon goal ring, 3 times"); every moment replays exactly. Ask the Host anything about the run: it answers from the run's facts only and cites them.
+9. **Share** a run: the link replays it bit-exactly on any device. **This is wrong** sends a note plus the run.
+10. **Gallery** (press **G**): 28 worlds the live AI built from prompts during development, recorded unedited and re-proved on your device when opened: heists, sumo, a Czech ghost maze, a pirate ship, mini golf, places to explore.
 
 Phones get on-screen controls. Browsers with WebXR get **Enter VR** (first person; tested on an emulated Quest 3, not yet on a real headset).
 
@@ -29,7 +31,7 @@ Phones get on-screen controls. Browsers with WebXR get **Enter VR** (first perso
 |---|---|
 | `packages/ir` | IR v1: the typed world document (Valibot), spec hash (SHA-256 over canonical JSON, cosmetics stripped), streaming JSONL fill parser with repairs and synonyms, patch merge |
 | `packages/sim` | Deterministic 60 Hz simulation on `@dimforge/rapier3d-deterministic`: character controllers, carry, tags, triggers, rule cascades, kit verbs, respawns |
-| `packages/kits` | Verb plugins: switch, pressure plate, lock and key, collectible, checkpoint, portal, timer, hazard, crumbling floor, wind, jump pad, inspect (plus jump, carry, oscillate, tag) |
+| `packages/kits` | Verb plugins: switch, pressure plate, lock and key, collectible, checkpoint, portal, timer, hazard, crumbling floor, wind, jump pad, inspect, throw, shove (plus jump, carry, oscillate, tag) |
 | `packages/bots` | NPCs that play their typed menu options (attack, defend, intercept, follow, patrol) on navmesh paths |
 | `packages/packs/*` | Layout packs: city block, floor plan (with doorways), arena, maze, outdoor, obstacle course; each tested over 50 seeds |
 | `packages/layout` | The placer and its logged repairs (verbs implied by kinds, collections, door placement, footprints, win fallbacks…) |
@@ -79,7 +81,7 @@ pnpm --filter @ghostrun/web e2e          # browser tests (Chromium, WebGL2, phon
 pnpm --filter @ghostrun/edge-api test:workerd   # the spend governor under real workerd
 ```
 
-Controls: WASD to move, Space to jump (press again in the air to double jump), F to use, Q/E or drag to turn the camera, P for the receipt, X for the Logic X-ray.
+Controls: WASD to move, Space to jump (press again in the air to double jump), F to use (throw, shove, flip, unlock), Q/E or drag to turn the camera, P for the receipt, X for the Logic X-ray, T to talk to a character, G for the gallery. The mic in the prompt bar speaks a world.
 
 ## AI use
 

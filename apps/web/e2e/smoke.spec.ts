@@ -446,3 +446,19 @@ test("repair loop: a broken promise goes back to the model, the fix is re-proved
   await expect(page.getByTestId("proof-badge")).toContainText("Rooftop lane needs double jump: verified", { timeout: 60_000 });
   expect(errors.filter((e) => !e.includes("503"))).toEqual([]);
 });
+
+test("gallery: G opens 28 recorded live worlds; one opens, is rebuilt and re-proved on the device", async ({ page }) => {
+  const errors = collectErrors(page);
+  await page.goto("/?gl=webgl2&fx=0&dpr=0.5&prewarm=0");
+  await page.waitForFunction(() => window.__GHOSTRUN__?.ready === true, null, { timeout: 90_000 });
+  await page.keyboard.press("KeyG");
+  const gallery = page.getByTestId("gallery");
+  await expect(gallery.getByRole("listitem")).toHaveCount(28);
+  await expect(gallery).toContainText("honest receipt");
+  await gallery.getByTestId("gallery-board-the-enemy-pirate-ship-and-steal-th").click();
+  await expect(gallery).toHaveCount(0);
+  await expect(page.getByTestId("intent-card")).toContainText("course", { timeout: 30_000 });
+  await expect(page.getByRole("textbox", { name: "Describe a world" })).toHaveValue(/pirate ship/i);
+  await expect(page.getByTestId("proof-badge")).toContainText("12 of 12 AI runners won", { timeout: 120_000 });
+  expect(errors).toEqual([]);
+});

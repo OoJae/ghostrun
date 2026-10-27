@@ -16,6 +16,9 @@ interface Props {
   suggestions?: readonly { label: string; prompt: string }[];
   /** The bar gained or lost focus (the side cards step aside while a new world is typed). */
   onFocusChange?(focused: boolean): void;
+  /** Opens the gallery of recorded worlds (shown in the suggestions). */
+  onGallery?(): void;
+  galleryCount?: number;
 }
 
 function Stopwatch({ timing, busy }: { timing: LoadResult | null; busy: boolean }) {
@@ -108,7 +111,7 @@ function Mic({ onText, onDone }: { onText: (t: string) => void; onDone: (t: stri
   );
 }
 
-export function PromptBar({ prompt, onPrompt, onSubmit, collapsed, onExpand, onCollapse, timing, busy, source, suggestions = [], onFocusChange }: Props) {
+export function PromptBar({ prompt, onPrompt, onSubmit, collapsed, onExpand, onCollapse, timing, busy, source, suggestions = [], onFocusChange, onGallery, galleryCount }: Props) {
   const input = useRef<HTMLInputElement>(null);
   const [focused, setFocusedState] = useState(false);
   const setFocused = (f: boolean) => {
@@ -178,6 +181,20 @@ export function PromptBar({ prompt, onPrompt, onSubmit, collapsed, onExpand, onC
               {s.label}
             </button>
           ))}
+          {onGallery && (
+            <button
+              type="button"
+              className="suggest-gallery"
+              data-testid="open-gallery"
+              onMouseDown={(e) => {
+                e.preventDefault();
+                input.current?.blur();
+                onGallery();
+              }}
+            >
+              Gallery: {galleryCount} recorded worlds <kbd>G</kbd>
+            </button>
+          )}
         </div>
       )}
     </form>

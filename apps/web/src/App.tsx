@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { mergeFill, pinLayout } from "@ghostrun/ir";
+import { mergeFill, pinLayout, splitObjects } from "@ghostrun/ir";
 import { better, issuesOf, statusWord, type Chip, type Receipt } from "@ghostrun/proof/light";
 // the engine stack (three, physics, navmesh, bots) is a second chunk, fetched as the shell paints
 import type { Engine, LoadResult } from "./engine";
@@ -10,6 +10,7 @@ import { ResultCard, type RunResult } from "./hud/Result";
 import { IntentCard } from "./hud/IntentCard";
 import { PromptBar } from "./hud/PromptBar";
 import { EditBox, type EditState } from "./hud/Edit";
+import { Gallery, GALLERY, type GalleryEntry } from "./hud/Gallery";
 import { ProofBadge, ReceiptPanel, RepairChip, type ProofState, type RepairState } from "./hud/Proof";
 import { liveAvailable, liveBuild, liveEdit, liveRepair, type LiveIntent } from "./live";
 import { ANGLES, changeSummary, editedPrompt, HARDER, intentFor, newFailures, pickHarder, receiptDelta, suggestionsFor } from "./edits";
@@ -38,6 +39,9 @@ const SUGGESTIONS: readonly { label: string; prompt: string; live?: true }[] = [
   { label: "Bludiště s duchy (Czech)", prompt: "Bludiště s duchy: najdi klíč a uteč východem, než tě chytí.", live: true },
 ];
 
+/** The gallery's worlds, fetched one at a time when opened. */
+const GALLERY_WORLDS = import.meta.glob<{ prompt: string; intent: LiveIntent; fill: string }>("./gallery/worlds/*.json", { import: "default" });
+
 type Status = "booting" | "building" | "playing" | "error";
 type Mode = "checking" | "live" | "fixture";
 
@@ -63,6 +67,7 @@ export function App() {
   const [notice, setNotice] = useState<string>();
   const [collapsed, setCollapsed] = useState(false);
   const [typing, setTyping] = useState(false);
+  const [gallery, setGallery] = useState(false);
   const [hint, setHint] = useState(false);
   const [proof, setProof] = useState<ProofState>({ status: "idle", chips: [], receipt: null });
   const [receiptOpen, setReceiptOpen] = useState(false);
@@ -347,6 +352,7 @@ export function App() {
       if (ev.target instanceof HTMLInputElement || ev.target instanceof HTMLTextAreaElement) return;
       if (ev.code === "KeyP") setReceiptOpen((o) => !o);
       if (ev.code === "KeyX") setXray((o) => !o);
+      if (ev.code === "KeyG") setGallery((o) => !o);
       if (ev.code === "KeyR") againRef.current();
       if (ev.code === "KeyT") {
         const npc = minds.current?.nearby();
@@ -546,6 +552,26 @@ export function App() {
     });
   };
 
+  /** A gallery world: the live AI's recorded fill, rebuilt and re-proved here (and editable, like any live world). */
+  const openGallery = async (entry: GalleryEntry) => {
+    setGallery(false);
+    const load = GALLERY_WORLDS[`./gallery/worlds/${entry.slug}.json`];
+    if (!load) return;
+    const t0 = performance.now();
+    const g = await load();
+    const seed = (JSON.parse(splitObjects(g.fill.split("\n", 1)[0] ?? "{}")[0] ?? "{}") as { seed?: number }).seed ?? 7;
+    const i = g.intent;
+    const world = worldFromFill(g.fill, seed, { genre: i.genre, setting: i.setting, goal: i.goal, fail: i.fail, role: i.role }, i.pack, i.mode);
+    world.source = { prompt: g.prompt, intent: i, fill: world.fill, seed, pack: world.bundle.pack.id };
+    setPrompt(g.prompt);
+    builtPrompt.current = g.prompt;
+    history.current = [];
+    setEdit({ status: "idle" });
+    setStatus("building");
+    await show(world, ++runId.current, t0, [{ label: "gallery", ms: performance.now() - t0 }]);
+    setToast("A recorded live AI world (unedited), re-proved on your device now.");
+  };
+
   /** The same world from the top: a fresh run (and a fresh proof of the same spec). */
   const again = () => {
     const w = current.current;
@@ -582,6 +608,8 @@ export function App() {
             source={SOURCE[mode]}
             suggestions={SUGGESTIONS.filter((x) => mode === "live" || !x.live)}
             onFocusChange={setTyping}
+            onGallery={() => setGallery(true)}
+            galleryCount={GALLERY.length}
           />
         </div>
         {notice && <div className="glass notice" role="status">{notice}</div>}
@@ -694,6 +722,7 @@ export function App() {
             }}
           />
         )}
+        {gallery && <Gallery onOpen={(e) => void openGallery(e)} onClose={() => setGallery(false)} />}
         {receiptOpen && (
           <ReceiptPanel
             proof={proof}

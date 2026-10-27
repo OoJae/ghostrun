@@ -1,0 +1,171 @@
+[
+ {
+  "slug": "a-garden-hedge-maze-with-a-minotaur-hunt",
+  "prompt": "A garden hedge maze with a minotaur hunting you",
+  "pack": "maze",
+  "mode": "play"
+ },
+ {
+  "slug": "a-medieval-castle-siege-open-the-gate-so",
+  "prompt": "A medieval castle siege: open the gate so your army can storm in",
+  "pack": "arena",
+  "mode": "play"
+ },
+ {
+  "slug": "a-ninja-dojo-sneak-past-the-guards-and-r",
+  "prompt": "A ninja dojo: sneak past the guards and ring the bell",
+  "pack": "floor_plan",
+  "mode": "play"
+ },
+ {
+  "slug": "a-sci-fi-lab-restore-power-by-flipping-f",
+  "prompt": "A sci-fi lab: restore power by flipping four breakers, then escape through the airlock",
+  "pack": "floor_plan",
+  "mode": "play"
+ },
+ {
+  "slug": "catch-the-last-train-get-your-ticket-and",
+  "prompt": "Catch the last train: get your ticket and reach the platform before it leaves",
+  "pack": "floor_plan",
+  "mode": "play"
+ },
+ {
+  "slug": "collect-seashells-on-a-sunny-beach-befor",
+  "prompt": "Collect seashells on a sunny beach before the tide comes in",
+  "pack": "outdoor",
+  "mode": "play"
+ },
+ {
+  "slug": "ice-skating-race-against-three-rivals-ar",
+  "prompt": "Ice skating race against three rivals around the frozen lake",
+  "pack": "outdoor",
+  "mode": "play"
+ },
+ {
+  "slug": "mini-golf-get-the-ball-into-the-hole-bef",
+  "prompt": "Mini golf: get the ball into the hole before the windmill blocks it",
+  "pack": "outdoor",
+  "mode": "play"
+ },
+ {
+  "slug": "treasure-hunt-on-a-desert-island-find-th",
+  "prompt": "Treasure hunt on a desert island: find the map, then dig up the chest",
+  "pack": "outdoor",
+  "mode": "play"
+ },
+ {
+  "slug": "a-3-versus-3-soccer-match-on-a-rooftop-a",
+  "prompt": "A 3 versus 3 soccer match on a rooftop at sunset",
+  "pack": "arena",
+  "mode": "play"
+ },
+ {
+  "slug": "a-haunted-mansion-where-ghosts-chase-you",
+  "prompt": "A haunted mansion where ghosts chase you; light all the candles to banish them",
+  "pack": "floor_plan",
+  "mode": "play"
+ },
+ {
+  "slug": "board-the-enemy-pirate-ship-and-steal-th",
+  "prompt": "Board the enemy pirate ship and steal their treasure chest before they sink you",
+  "pack": "course",
+  "mode": "play"
+ },
+ {
+  "slug": "hide-and-seek-in-an-old-library-the-libr",
+  "prompt": "Hide and seek in an old library: the librarian is looking for you",
+  "pack": "floor_plan",
+  "mode": "play"
+ },
+ {
+  "slug": "jump-across-floating-islands-in-the-clou",
+  "prompt": "Jump across floating islands in the clouds to reach the sky castle",
+  "pack": "outdoor",
+  "mode": "play"
+ },
+ {
+  "slug": "race-through-a-desert-canyon-hitting-eve",
+  "prompt": "Race through a desert canyon, hitting every checkpoint before the sandstorm",
+  "pack": "course",
+  "mode": "play"
+ },
+ {
+  "slug": "rob-the-bank-vault-without-touching-the",
+  "prompt": "Rob the bank vault without touching the laser tripwires",
+  "pack": "floor_plan",
+  "mode": "play"
+ },
+ {
+  "slug": "space-station-repair-mission-fix-the-thr",
+  "prompt": "Space station repair mission: fix the three broken panels before oxygen runs out",
+  "pack": "floor_plan",
+  "mode": "play"
+ },
+ {
+  "slug": "a-library-maze-where-you-find-the-secret",
+  "prompt": "a library maze where you find the secret book that opens a hidden door",
+  "pack": "maze",
+  "mode": "play"
+ },
+ {
+  "slug": "a-snowy-mountain-race-with-checkpoints-a",
+  "prompt": "a snowy mountain race with checkpoints and a finish flag",
+  "pack": "course",
+  "mode": "play"
+ },
+ {
+  "slug": "a-space-station-where-the-gravity-is-low",
+  "prompt": "a space station where the gravity is low and you fix three broken panels",
+  "pack": "floor_plan",
+  "mode": "play"
+ },
+ {
+  "slug": "a-feng-shui-handbag-gallery-where-each-b",
+  "prompt": "a Feng Shui handbag gallery where each bag sits in its proper place",
+  "pack": "floor_plan",
+  "mode": "wander"
+ },
+ {
+  "slug": "a-bioluminescent-forest-where-you-climb",
+  "prompt": "a bioluminescent forest where you climb to an owl's lookout",
+  "pack": "outdoor",
+  "mode": "wander"
+ },
+ {
+  "slug": "a-museum-heist-at-night-grab-the-key-unl",
+  "prompt": "a museum heist at night: grab the key, unlock the vault, steal the gem and escape before the alarm",
+  "pack": "floor_plan",
+  "mode": "play"
+ },
+ {
+  "slug": "a-pressure-plate-puzzle-temple-with-crum",
+  "prompt": "a pressure-plate puzzle temple with crumbling floors",
+  "pack": "maze",
+  "mode": "play"
+ },
+ {
+  "slug": "ud-lej-mi-bludi-t-s-duchy-a-kl-em-od-v-c",
+  "prompt": "udělej mi bludiště s duchy a klíčem od východu",
+  "pack": "maze",
+  "mode": "play"
+ },
+ {
+  "slug": "zero-g-basketball-on-a-space-station",
+  "prompt": "zero-g basketball on a space station",
+  "pack": "arena",
+  "mode": "play"
+ },
+ {
+  "slug": "collect-10-crystals-in-a-glowing-cave-be",
+  "prompt": "collect 10 crystals in a glowing cave before the timer runs out, avoid the lava",
+  "pack": "course",
+  "mode": "play",
+  "honest": true
+ },
+ {
+  "slug": "a-sumo-ring-on-a-mountain-top-push-both",
+  "prompt": "A sumo ring on a mountain top: push both rivals out to win",
+  "pack": "arena",
+  "mode": "play"
+ }
+]
