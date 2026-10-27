@@ -41,7 +41,13 @@
       "path": "tools/detcheck"
     },
     {
+      "path": "packages/registry"
+    },
+    {
       "path": "apps/cli"
+    },
+    {
+      "path": "apps/edge-api"
     }
   ]
 }

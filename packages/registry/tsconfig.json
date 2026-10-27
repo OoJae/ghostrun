@@ -1,0 +1,6 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": { "outDir": "dist/types", "rootDir": "." },
+  "include": ["src"],
+  "references": [{ "path": "../plugin-api" }, { "path": "../packs/city-block" }, { "path": "../packs/floor-plan" }, { "path": "../packs/arena" }, { "path": "../packs/maze" }]
+}

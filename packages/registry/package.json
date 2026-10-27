@@ -1,0 +1,13 @@
+{
+  "name": "@ghostrun/registry",
+  "private": true,
+  "type": "module",
+  "exports": { ".": "./src/index.ts" },
+  "dependencies": {
+    "@ghostrun/pack-arena": "workspace:*",
+    "@ghostrun/pack-city-block": "workspace:*",
+    "@ghostrun/pack-floor-plan": "workspace:*",
+    "@ghostrun/pack-maze": "workspace:*",
+    "@ghostrun/plugin-api": "workspace:*"
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "name": "@ghostrun/edge-api",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./handler": "./src/handler.ts"
+  },
+  "dependencies": {
+    "@ghostrun/ir": "workspace:*",
+    "@ghostrun/llm": "workspace:*",
+    "@ghostrun/registry": "workspace:*",
+    "valibot": "catalog:"
+  }
+}
