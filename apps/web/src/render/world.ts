@@ -11,7 +11,9 @@ import { collidersOf, groundBelow, type Box } from "../sim/aabb";
 import { PLAYER_ID } from "../sim/types";
 import { BoxBatch } from "./boxes";
 import { PALETTE, beamMaterial, bodyMaterial, buildingMaterial, glowMaterial, groundMaterial, lin, rimBodyMaterial, stripMaterial } from "./materials";
+import { kitActor, type KitActor } from "./kits";
 import { signMaterial } from "./sign";
+import { verb } from "@ghostrun/kits";
 
 export interface WorldView {
   root: Group;
@@ -20,6 +22,9 @@ export interface WorldView {
   colliders: Box[];
   /** Cosmetic per-frame animation only; never moves an actor's pose. */
   update(t: number): void;
+  /** Sim state changes and removals (switch on, door open, coin collected). */
+  setState(id: string, s: string): void;
+  gone(id: string): void;
   dispose(): void;
 }
 
@@ -209,9 +214,30 @@ export function buildWorldView(bundle: WorldBundle): WorldView {
     return g;
   };
 
+  // kit verbs bound per entity, lock keys, and each entity's starting state
+  const verbsOn = new Map<string, string[]>();
+  const keys = new Set<string>();
+  const initial = new Map<string, string>();
+  for (const v of bundle.verbs) {
+    verbsOn.set(v.on, [...(verbsOn.get(v.on) ?? []), v.verb]);
+    if (v.verb === "puzzle.lock" && v.params.key) keys.add(String(v.params.key));
+    const first = verb(v.verb)?.initial;
+    if (first && !initial.has(v.on)) initial.set(v.on, first);
+  }
+  const kits = new Map<string, KitActor>();
+
   for (const e of bundle.entities) {
     const team = TEAM_HEX[e.team] ?? PALETTE.cyan;
     let obj: Object3D | undefined;
+    const kit = kitActor(e, verbsOn.get(e.id) ?? [], keys.has(e.id), { keep, animated });
+    if (kit) {
+      kits.set(e.id, kit);
+      kit.setState?.(e.init || initial.get(e.id) || "");
+      kit.obj.name = e.id;
+      root.add(kit.obj);
+      actors.set(e.id, kit.obj);
+      continue;
+    }
     switch (e.kind) {
       case "spawn": {
         const g = new Group();
@@ -339,6 +365,17 @@ export function buildWorldView(bundle: WorldBundle): WorldView {
     root,
     actors,
     colliders,
+    setState(id: string, st: string) {
+      kits.get(id)?.setState?.(st);
+    },
+    gone(id: string) {
+      const k = kits.get(id);
+      if (k?.gone) k.gone();
+      else {
+        const a = actors.get(id);
+        if (a) a.visible = false;
+      }
+    },
     update(t: number) {
       for (const f of animated) f(t);
       marker.position.y = 1.35 + Math.sin(t * 2.4) * 0.06;

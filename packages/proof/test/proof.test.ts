@@ -55,7 +55,7 @@ describe("proof ladder on the organizer's CTF brief", () => {
 describe("proof ladder on kit verbs (coin rush: collect, timer, hazard, switch, jump pad)", () => {
   it("regresses the win to collecting coins, forces every kit trigger, and runners collect all five", async () => {
     const { arena } = await import("@ghostrun/pack-arena");
-    const text = readFileSync(new URL("./fixtures/coin-rush.jsonl", import.meta.url), "utf8");
+    const text = readFileSync(new URL("../../ir/fixtures/coin-rush.jsonl", import.meta.url), "utf8");
     const fill = parseFill(text, { seed: 11 });
     expect(fill.notes.filter((n) => n.kind === "invalid" || n.kind === "unresolved")).toEqual([]);
     const layout = arena.generate({ seed: 11, params: arena.defaults, sub: [], laws: fill.draft.laws, harder: false });

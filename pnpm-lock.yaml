@@ -135,6 +135,9 @@ importers:
       '@ghostrun/ir':
         specifier: workspace:*
         version: link:../../packages/ir
+      '@ghostrun/kits':
+        specifier: workspace:*
+        version: link:../../packages/kits
       '@ghostrun/layout':
         specifier: workspace:*
         version: link:../../packages/layout

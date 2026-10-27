@@ -6,12 +6,14 @@ import { IntentCard } from "./hud/IntentCard";
 import { PromptBar } from "./hud/PromptBar";
 import { ProofBadge, ReceiptPanel, type ProofState } from "./hud/Proof";
 import { liveAvailable, liveBuild } from "./live";
-import { BRIEF, buildWorld, ENGINE_HASH, hashWorld, worldFromFill, type Intent, type World } from "./pipeline";
+import { BRIEF, buildWorld, ENGINE_HASH, FIXTURE_PROMPTS, hashWorld, worldFromFill, type Intent, type World } from "./pipeline";
 import { probe } from "./probe";
 import { loadNav, loadRapier, WASM_URLS } from "./sim/boot";
 import { RapierSim } from "./sim/rapier";
 
 const HINT_MS = 6000;
+const FIXTURE = new URLSearchParams(window.location.search).get("fixture") ?? "ctf";
+const FIRST_PROMPT = FIXTURE_PROMPTS[FIXTURE] ?? BRIEF;
 
 type Status = "booting" | "building" | "playing" | "error";
 type Mode = "checking" | "live" | "fixture";
@@ -27,7 +29,7 @@ export function App() {
   const engine = useRef<Engine | null>(null);
   const worker = useRef<Worker | null>(null);
   const runId = useRef(0);
-  const [prompt, setPrompt] = useState(BRIEF);
+  const [prompt, setPrompt] = useState(FIRST_PROMPT);
   const [intent, setIntent] = useState<Intent | null>(null);
   const [specHash, setSpecHash] = useState<string>();
   const [timing, setTiming] = useState<LoadResult | null>(null);
@@ -40,6 +42,10 @@ export function App() {
   const [proof, setProof] = useState<ProofState>({ status: "idle", chips: [], receipt: null });
   const [receiptOpen, setReceiptOpen] = useState(false);
   const [score, setScore] = useState<{ red: number; blue: number; result: string | null }>({ red: 0, blue: 0, result: null });
+  const [teams, setTeams] = useState(true);
+  const [useHint, setUseHint] = useState<string | null>(null);
+  const [toast, setToast] = useState<string | null>(null);
+  const [clock, setClock] = useState<number | null>(null);
 
   /** Prove the world on the device worker (until the edge proof service is deployed). */
   const startProof = useCallback((world: World, id: number) => {
@@ -70,13 +76,18 @@ export function App() {
       setStatus("playing");
       setHint(true);
       const sim = e.rapierSim;
+      setTeams(world.bundle.rules.some((r) => r.then.some((fx) => fx.target === "team:blue")));
+      setUseHint(null);
+      setToast(null);
       if (sim) {
         sim.onEvents = (evs) => {
           for (const ev of evs) {
             if (ev.k === "score") setScore((s) => ({ ...s, [ev.a === "team:blue" ? "blue" : "red"]: Number(ev.v) }));
             if (ev.k === "win" || ev.k === "lose") setScore((s) => ({ ...s, result: ev.k }));
+            if (ev.k === "touch" && ev.a === "player" && ev.v) setToast(String(ev.v)); // an inspected exhibit's text
           }
         };
+        sim.onHint = setUseHint;
       }
       startProof(world, id);
       const h = await hashWorld(world.bundle);
@@ -115,7 +126,7 @@ export function App() {
         setNotice(`Live AI unavailable (${r.reason.slice(0, 60)}): showing the fixture world instead.`);
         setMode("fixture");
       }
-      await show(buildWorld(text), id, startedAt, extraSplits);
+      await show(buildWorld(text, FIXTURE), id, startedAt, extraSplits);
     },
     [show],
   );
@@ -154,7 +165,7 @@ export function App() {
           }
         }
         // First load: the recorded world appears instantly; Enter builds live.
-        return run(BRIEF, 0, [{ label: "gpu init", ms: e.initMs }]);
+        return run(FIRST_PROMPT, 0, [{ label: "gpu init", ms: e.initMs }]);
       })
       .catch((err: unknown) => {
         console.error(err);
@@ -173,6 +184,18 @@ export function App() {
       engine.current = null;
     };
   }, [run]);
+
+  useEffect(() => {
+    if (!toast) return;
+    const t = setTimeout(() => setToast(null), 5000);
+    return () => clearTimeout(t);
+  }, [toast]);
+
+  useEffect(() => {
+    if (status !== "playing") return;
+    const t = setInterval(() => setClock(engine.current?.rapierSim?.countdown ?? null), 250);
+    return () => clearInterval(t);
+  }, [status, timing]);
 
   useEffect(() => {
     if (!hint) return;
@@ -208,12 +231,25 @@ export function App() {
         </div>
         {notice && <div className="glass notice" role="status">{notice}</div>}
         {!collapsed && intent && <IntentCard intent={intent} specHash={specHash} />}
-        {(score.red > 0 || score.blue > 0 || score.result) && (
+        {(score.red > 0 || score.blue > 0 || score.result || clock !== null) && (
           <div className={`glass scoreline ${score.result ?? ""}`} data-testid="score">
-            <span className="red">RED {score.red}</span> – <span className="blue">{score.blue} BLUE</span>
+            {teams ? (
+              <>
+                <span className="red">RED {score.red}</span> – <span className="blue">{score.blue} BLUE</span>
+              </>
+            ) : (
+              <span className="red">SCORE {score.red}</span>
+            )}
+            {clock !== null && !score.result && <span className="clock"> · {Math.floor(clock / 60)}:{String(Math.floor(clock % 60)).padStart(2, "0")}</span>}
             {score.result && <strong>{score.result === "win" ? " · You win!" : " · You lose"}</strong>}
           </div>
         )}
+        {useHint && status === "playing" && (
+          <div className="glass usehint" data-testid="use-hint">
+            <kbd>F</kbd> {useHint}
+          </div>
+        )}
+        {toast && <div className="glass toast" role="status">{toast}</div>}
         <ProofBadge proof={proof} onOpen={() => setReceiptOpen((o) => !o)} />
         {receiptOpen && <ReceiptPanel proof={proof} onClose={() => setReceiptOpen(false)} />}
         <KeyHint visible={hint && status === "playing"} />

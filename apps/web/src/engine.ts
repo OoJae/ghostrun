@@ -143,6 +143,12 @@ export class Engine {
     this.#follow.setColliders(view.colliders);
     const sim = this.simFactory ? this.simFactory(world.bundle) : new StubSim(world.bundle);
     this.rapierSim = this.simFactory ? (sim as RapierSim) : null;
+    this.rapierSim?.subscribe((evs) => {
+      for (const ev of evs) {
+        if (ev.k === "state") view.setState(ev.a, String(ev.v));
+        else if (ev.k === "destroy") view.gone(ev.a);
+      }
+    });
     this.#follow.reset(sim.spawnYaw);
     const player = view.actors.get(PLAYER_ID);
     if (player) this.#follow.update(0, player.position);

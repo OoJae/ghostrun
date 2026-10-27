@@ -14,6 +14,9 @@ export function KeyHint({ visible }: { visible: boolean }) {
       <span className="sep">·</span>
       <kbd>Space</kbd>
       <span className="sep">·</span>
+      <kbd>F</kbd>
+      <span>use</span>
+      <span className="sep">·</span>
       <span>drag to orbit</span>
     </div>
   );

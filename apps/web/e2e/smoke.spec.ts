@@ -121,3 +121,16 @@ test("automatic backend selection boots cleanly and Enter re-runs the pipeline",
   await page.waitForFunction((h) => window.__GHOSTRUN__.specHash === h, p.specHash!, { timeout: 10_000 });
   expect(errors).toEqual([]);
 });
+
+test("kit verbs: coin rush proves green and walking over a coin scores", async ({ page }) => {
+  const errors = collectErrors(page);
+  await page.goto("/?gl=webgl2&fx=0&dpr=0.5&fixture=coin-rush");
+  await page.waitForFunction(() => window.__GHOSTRUN__?.ready === true, null, { timeout: 90_000 });
+  await expect(page.getByTestId("proof-badge")).toContainText("All 5 coins before the clock runs out: verified", { timeout: 60_000 });
+  await expect(page.getByTestId("score")).toContainText("SCORE 0");
+  // coin_1 sits on the midfield line ahead of the spawn
+  await page.keyboard.down("KeyW");
+  await expect(page.getByTestId("score")).toContainText("SCORE 1", { timeout: 15_000 });
+  await page.keyboard.up("KeyW");
+  expect(errors).toEqual([]);
+});

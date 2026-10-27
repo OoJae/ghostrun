@@ -13,6 +13,7 @@
     "@dimforge/rapier3d-deterministic": "catalog:",
     "@ghostrun/bots": "workspace:*",
     "@ghostrun/ir": "workspace:*",
+    "@ghostrun/kits": "workspace:*",
     "@ghostrun/layout": "workspace:*",
     "@ghostrun/nav": "workspace:*",
     "@ghostrun/plugin-api": "workspace:*",

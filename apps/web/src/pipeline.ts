@@ -1,6 +1,7 @@
 // The real world pipeline, fed by the fixture until the fill lane streams from an LLM:
 //   JSONL fill → parseFill → pack.generate → placeWorld → placed WorldBundle.
 import fixtureFill from "../../../packages/ir/fixtures/ctf-neon.jsonl?raw";
+import coinRushFill from "../../../packages/ir/fixtures/coin-rush.jsonl?raw";
 import { parseFill, specHash, type FillNote, type FillStats, type WorldBundle } from "@ghostrun/ir";
 import { placeWorld } from "@ghostrun/layout";
 import { packFor, PACKS } from "@ghostrun/registry";
@@ -56,9 +57,17 @@ function fillSeed(text: string): number {
  * Runs the pipeline. The prompt is shown and recorded, but the "fixture LLM" always answers with
  * the CTF fill; the live fill lane replaces `fixtureFill` with the streamed text.
  */
-export function buildWorld(_prompt: string): World {
-  return worldFromFill(fixtureFill, fillSeed(fixtureFill));
+export function buildWorld(_prompt: string, fixture = "ctf"): World {
+  const text = FIXTURES[fixture] ?? fixtureFill;
+  return worldFromFill(text, fillSeed(text));
 }
+
+/** Recorded fills: the organizer's CTF brief, and a kit-verb world (?fixture=coin-rush). */
+export const FIXTURES: Record<string, string> = { ctf: fixtureFill, "coin-rush": coinRushFill };
+export const FIXTURE_PROMPTS: Record<string, string> = {
+  ctf: BRIEF,
+  "coin-rush": "Collect five gold coins in a neon arena before the clock runs out. Mind the lava.",
+};
 
 /** Fill text (fixture or a live stream) → placed world, choosing the pack from the registry. */
 export function worldFromFill(fillText: string, seed: number, live?: Intent["live"]): World {

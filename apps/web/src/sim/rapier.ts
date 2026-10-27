@@ -21,6 +21,10 @@ export class RapierSim implements FrameSource {
   /** Every tick's input as the simulation saw it (for replays and share links). */
   readonly inputs: SimInput[] = [];
   onEvents: ((evs: SimEvent[]) => void) | undefined;
+  /** The nearest thing the player could USE changed ("flip switch"), or null. */
+  onHint: ((label: string | null) => void) | undefined;
+  #subs = new Set<(evs: SimEvent[]) => void>();
+  #hint: string | null = null;
 
   #in: InputFrame = { tick: 0, mx: 0, my: 0, yaw: 0, btn: 0 };
   #lastBtn = 0;
@@ -55,6 +59,18 @@ export class RapierSim implements FrameSource {
     if (f.btn & BTN_JUMP && !(this.#lastBtn & BTN_JUMP)) this.#pressQueued = true;
     this.#lastBtn = f.btn;
     this.#in = f;
+  }
+
+  /** Renderer hook for sim events (state changes, removals); returns an unsubscribe. */
+  subscribe(fn: (evs: SimEvent[]) => void): () => void {
+    this.#subs.add(fn);
+    return () => this.#subs.delete(fn);
+  }
+
+  /** Seconds left on the world's countdown (a timer verb), or null if it has none. */
+  get countdown(): number | null {
+    const v = this.sim.verbs.find((x) => x.plugin.id === "puzzle.timer");
+    return v ? Math.max(0, (Number(v.bound.mem.end) - this.sim.tick) / 60) : null;
   }
 
   stop(): void {
@@ -97,7 +113,15 @@ export class RapierSim implements FrameSource {
     const frame: SimInput = { tick: this.sim.tick + 1, wx: q8(x), wz: q8(z), btn };
     this.inputs.push(frame);
     const evs = this.sim.step(frame);
-    if (evs.length) this.onEvents?.(evs);
+    if (evs.length) {
+      this.onEvents?.(evs);
+      for (const f of this.#subs) f(evs);
+    }
+    const label = this.sim.usable()?.label ?? null;
+    if (label !== this.#hint) {
+      this.#hint = label;
+      this.onHint?.(label);
+    }
   }
 
   #emit() {
