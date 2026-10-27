@@ -7,6 +7,7 @@ import type { NavWorld } from "@ghostrun/nav";
 import { castBrain } from "@ghostrun/bots";
 import { BTN, SimWorld, type Rapier } from "@ghostrun/sim";
 import type { PlanStep, WinChain } from "./t0";
+import { apex, gap, hopRoute, reachAt, surfaceUnder as surfaceAt, surfaces, type Surface } from "./t1";
 import type { Chip } from "./types";
 
 const RUN_TICKS = 60 * 60; // one minute of play per run
@@ -169,6 +170,76 @@ function dropDown(sim: SimWorld, b: WorldBundle, target: Vec3, budget: { ticks: 
   return false;
 }
 
+const clampTo = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
+
+/**
+ * One hop between surfaces: walk across when they touch at step height, walk off when the next
+ * one is below, otherwise jump with the fewest jumps the T1 model needs and air-jump at each apex.
+ */
+function hop(sim: SimWorld, nav: NavWorld, a: Surface, n: Surface, budget: { ticks: number }): boolean {
+  const laws = sim.laws;
+  const rise = n.top - a.top;
+  const on = () => {
+    const q = sim.pos("player");
+    return sim.player.grounded && q[0] >= n.min[0] && q[0] <= n.max[0] && q[2] >= n.min[1] && q[2] <= n.max[1] && q[1] - 0.9 > n.top - 0.15;
+  };
+  // take-off: the point of a nearest n, 0.3 m inside a; aim: the point of n nearest that, pushed in
+  const ncx = (n.min[0] + n.max[0]) / 2;
+  const ncz = (n.min[1] + n.max[1]) / 2;
+  const tx = clampTo(clampTo(ncx, a.min[0], a.max[0]), a.min[0] + 0.3, a.max[0] - 0.3);
+  const tz = clampTo(clampTo(ncz, a.min[1], a.max[1]), a.min[1] + 0.3, a.max[1] - 0.3);
+  const ax = clampTo(clampTo(tx, n.min[0], n.max[0]), n.min[0] + Math.min(1.2, (n.max[0] - n.min[0]) / 2), n.max[0] - Math.min(1.2, (n.max[0] - n.min[0]) / 2));
+  const az = clampTo(clampTo(tz, n.min[1], n.max[1]), n.min[1] + Math.min(1.2, (n.max[1] - n.min[1]) / 2), n.max[1] - Math.min(1.2, (n.max[1] - n.min[1]) / 2));
+  const steer = (x: number, z: number, k: number, btn: number) => {
+    const p = sim.pos("player");
+    const ux = x - p[0];
+    const uz = z - p[2];
+    const s = Math.min(127, (Math.sqrt(ux * ux + uz * uz) * k) || 0) / (Math.sqrt(ux * ux + uz * uz) || 1);
+    sim.step({ tick: sim.tick + 1, wx: Math.round(ux * s), wz: Math.round(uz * s), btn });
+    budget.ticks--;
+  };
+  const walkTo = (x: number, z: number, tol: number) => {
+    for (let t = 0; t < 900 && budget.ticks > 0 && !sim.result; t++) {
+      const p = sim.pos("player");
+      if ((p[0] - x) * (p[0] - x) + (p[2] - z) * (p[2] - z) < tol * tol) return true;
+      steer(x, z, 120, 0);
+    }
+    return false;
+  };
+  if (gap(a, n) <= 0.01 && Math.abs(rise) < 0.41) {
+    for (let t = 0; t < 900 && budget.ticks > 0 && !sim.result && !on(); t++) steer(ax, az, 120, 0);
+    return on();
+  }
+  let jumps = rise <= 0 && gap(a, n) <= reachAt(laws, 0, rise) ? 0 : 1;
+  while (jumps > 0 && jumps < laws.jumpsMax && !(rise <= apex(laws, jumps) + 1e-9 && gap(a, n) <= reachAt(laws, jumps, rise))) jumps++;
+  // a big surface (the ground) is crossed on the navmesh; pads are crossed straight
+  const p0 = sim.pos("player");
+  const path = nav.path([p0[0], p0[1] - 0.9, p0[2]], [tx, a.top, tz]);
+  if (path) for (const w of path.slice(1, -1)) walkTo(w[0], w[2], 0.45);
+  if (!walkTo(tx, tz, 0.08)) return false;
+  for (let t = 0; t < 300 && budget.ticks > 0 && !sim.result; t++) {
+    const again = jumps > 1 && t > 6 && sim.player.vy <= 0.5 && sim.player.jumpsUsed > 0 && sim.player.jumpsUsed < jumps;
+    steer(ax, az, 1e9, (jumps > 0 && t === 0) || again ? BTN.JUMP : 0);
+    if (again) steer(ax, az, 1e9, 0); // release, so the next press is a fresh one
+    if (t > 2 && on()) return true;
+    if (sim.pos("player")[1] - 0.9 < Math.min(a.top, n.top) - 1.5) return false; // fell
+  }
+  return on();
+}
+
+/** Follow a T1 hop route to the target's surface (gaps, pads, beams the navmesh can't link). */
+function hopTo(sim: SimWorld, nav: NavWorld, b: WorldBundle, target: Vec3, budget: { ticks: number }): boolean {
+  const ss = surfaces(b).filter((s) => !b.statics.some((x) => x.id === s.id && x.surf === "wall"));
+  const p = sim.pos("player");
+  const from = surfaceAt(ss, [p[0], p[1] - 0.8, p[2]]);
+  const to = surfaceAt(ss, [target[0], target[1] + 0.1, target[2]]);
+  if (!from || !to) return false;
+  const route = hopRoute(ss, from, to, sim.laws);
+  if (!route) return false;
+  for (let i = 1; i < route.length; i++) if (!hop(sim, nav, route[i - 1]!, route[i]!, budget)) return false;
+  return true;
+}
+
 /** Walk there, climbing onto a raised surface first if the navmesh can't reach it on foot. */
 function goTo(sim: SimWorld, nav: NavWorld, b: WorldBundle, target: Target, rng: () => number, speed: number, budget: { ticks: number }, stop: () => boolean): boolean {
   const p = sim.pos("player");
@@ -177,7 +248,7 @@ function goTo(sim: SimWorld, nav: NavWorld, b: WorldBundle, target: Target, rng:
     const q = sim.pos("player");
     if (dropDown(sim, b, t, budget) && nav.path([q[0], q[1] - 0.9, q[2]], t)) {
       // down, and the target is walkable from here
-    } else if (!nav.path([sim.pos("player")[0], sim.pos("player")[1] - 0.9, sim.pos("player")[2]], t) && !climbOnto(sim, nav, b, t, rng, budget)) return stop();
+    } else if (!nav.path([sim.pos("player")[0], sim.pos("player")[1] - 0.9, sim.pos("player")[2]], t) && !climbOnto(sim, nav, b, t, rng, budget) && !hopTo(sim, nav, b, t, budget)) return stop();
   }
   return walkTo(sim, nav, target, rng, speed, budget, stop);
 }

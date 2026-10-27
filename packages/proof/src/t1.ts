@@ -4,7 +4,7 @@
 import type { Expect, Laws, Vec3, WorldBundle } from "@ghostrun/ir";
 import type { Chip } from "./types";
 
-interface Surface {
+export interface Surface {
   id: string;
   zone: string;
   top: number;
@@ -14,7 +14,7 @@ interface Surface {
 
 const EULER_LOSS = 0.06; // fixed-step integration reaches slightly less than the analytic apex
 
-function surfaces(b: WorldBundle): Surface[] {
+export function surfaces(b: WorldBundle): Surface[] {
   return b.statics
     .filter((s) => s.surf === "floor" || s.surf === "ledge" || s.surf === "roof" || s.surf === "wall")
     .map((s) => ({
@@ -28,13 +28,13 @@ function surfaces(b: WorldBundle): Surface[] {
 }
 
 /** Horizontal gap between two footprints (0 if they touch or overlap). */
-function gap(a: Surface, b: Surface): number {
+export function gap(a: Surface, b: Surface): number {
   const dx = Math.max(0, a.min[0] - b.max[0], b.min[0] - a.max[0]);
   const dz = Math.max(0, a.min[1] - b.max[1], b.min[1] - a.max[1]);
   return Math.sqrt(dx * dx + dz * dz);
 }
 
-function surfaceUnder(ss: Surface[], p: Vec3): Surface | undefined {
+export function surfaceUnder(ss: Surface[], p: Vec3): Surface | undefined {
   let best: Surface | undefined;
   for (const s of ss) {
     if (p[0] < s.min[0] || p[0] > s.max[0] || p[2] < s.min[1] || p[2] > s.max[1]) continue;
@@ -63,6 +63,32 @@ export function reachAt(laws: Laws, jumps: number, rise: number): number {
   if (disc < 0) return -1;
   const t = ((jumps - 1) * v) / g + (v + Math.sqrt(disc)) / g;
   return laws.speed * t * 0.85;
+}
+
+/** Can a runner get from s onto t with up to `jumps` jumps (walking when they touch at step height)? */
+export function hopOk(s: Surface, t: Surface, laws: Laws, jumps: number): boolean {
+  const rise = t.top - s.top;
+  if (rise > apex(laws, jumps) + 1e-9) return false;
+  const limit = Math.abs(rise) < 0.41 ? 0.01 : reachAt(laws, jumps, rise);
+  return limit >= 0 && gap(s, t) <= limit;
+}
+
+/** Fewest-hop route between two surfaces over floors, ledges and roofs (T3 runners follow it). */
+export function hopRoute(ss: Surface[], start: Surface, goal: Surface, laws: Laws): Surface[] | null {
+  const parent = new Map<string, Surface | null>([[start.id, null]]);
+  const queue = [start];
+  while (queue.length && !parent.has(goal.id)) {
+    const s = queue.shift()!;
+    for (const t of ss) {
+      if (parent.has(t.id) || !hopOk(s, t, laws, laws.jumpsMax)) continue;
+      parent.set(t.id, s);
+      queue.push(t);
+    }
+  }
+  if (!parent.has(goal.id)) return null;
+  const route: Surface[] = [];
+  for (let s: Surface | null | undefined = goal; s; s = parent.get(s.id)) route.unshift(s);
+  return route;
 }
 
 /** BFS over surfaces; returns the set reachable from `start` with `jumps` jumps per hop. */

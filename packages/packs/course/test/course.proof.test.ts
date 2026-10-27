@@ -62,7 +62,7 @@ describe("course pack, end to end through the proof ladder", () => {
   // can be won by them; the receipt says "no AI runner could win · 0 of 12". The runner above
   // shows the world is winnable; T3 needs hop-by-hop jump links over the T1 surface graph.
   // `it.fails` flips red the day T3 learns to jump gaps, as a reminder to make it a plain `it`.
-  it.fails("AI runners win by playing it in physics (blocked: T3 has no multi-hop jump links)", () => {
+  it("AI runners win by playing it in physics (T3 hop routes)", () => {
     const win = receipt.chips.find((c) => c.id === "T3:win")!;
     expect(win.status).toBe("played");
     expect(win.k).toBeGreaterThanOrEqual(10);
