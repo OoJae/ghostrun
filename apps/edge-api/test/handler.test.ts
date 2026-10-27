@@ -26,7 +26,8 @@ describe("edge API", () => {
     expect(empty.status).toBe(400);
   });
 
-  it.skipIf(!key())("streams intent then fill ops that parse into a world (live Cerebras)", async () => {
+  // Live LLM test: opt-in (LIVE=1) so the default suite stays free and deterministic.
+  it.skipIf(!key() || !process.env.LIVE)("streams intent then fill ops that parse into a world (live Cerebras)", async () => {
     const res = await handle(
       new Request("http://x/v1/build", { method: "POST", body: JSON.stringify({ prompt: "a maze with ghosts and a key that opens the exit", seed: 11 }) }),
       { CEREBRAS_API_KEY: key()! },
