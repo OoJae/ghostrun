@@ -322,7 +322,9 @@ async function main() {
           console.log(`  ${f}: the proof crashed (${String(e).slice(0, 120)})`);
           return null;
         });
-        if ((r?.chips.find((c) => c.id === "T3:win")?.k ?? 0) >= 10) now++;
+        const won = r?.chips.find((c) => c.id === "T3:win");
+        if ((won?.k ?? 0) >= 10) now++;
+        else console.log(`  not won: ${name}/${f.replace(".fill.jsonl", "")} · ${won ? `${won.k} of ${won.n}` : (r?.chips.find((c) => c.status === "counterexample")?.text ?? "no T3")}`);
         if (/^(1[0-2])\/12$/.test(bench.find((x) => x.prompt === saved.prompt)?.t3win ?? "")) firstPass++;
       }
       // a prompt the live lane crashed on left no world to re-prove: it counts as lost in both columns

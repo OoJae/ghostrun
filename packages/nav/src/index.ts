@@ -49,8 +49,15 @@ export interface NavWorld {
   destroy(): void;
 }
 
-const losingOf = (b: WorldBundle) => new Set(b.rules.filter((r) => r.when.t === "enter" && r.when.a === "player" && r.then.some((x) => x.e === "lose")).map((r) => r.when.b));
-const standingHazard = (e: WorldBundle["entities"][number], losing: Set<string>) => (e.kind === "hazard" && (e.body === "sensor" || e.body === "fixed")) || losing.has(e.id);
+// somewhere you lose by walking into or touching (out of bounds, a pit sensor, a zombie standing
+// in the hall), and anything that hurts like a hazard does
+const losingOf = (b: WorldBundle) =>
+  new Set([
+    ...b.rules.filter((r) => (r.when.t === "enter" || r.when.t === "hit") && r.when.a === "player" && r.then.some((x) => x.e === "lose")).map((r) => r.when.b),
+    ...b.verbs.filter((v) => v.verb === "motion_hazards.hazard").map((v) => v.on),
+  ]);
+// moving ones (on an oscillate verb) stay out: they're dodged in time, not in space
+const standingHazard = (e: WorldBundle["entities"][number], losing: Set<string>) => (e.kind === "hazard" || losing.has(e.id)) && (e.body === "sensor" || e.body === "fixed");
 
 /**
  * Standing hazards low and short enough to jump over (a laser grid across a doorway, a strip of
@@ -73,7 +80,6 @@ export function buildNav(b: WorldBundle, opts: { leap?: boolean } = {}): NavWorl
   const pos: number[] = [];
   const idx: number[] = [];
   for (const s of [...b.statics].sort((x, y) => (x.id < y.id ? -1 : 1))) pushBox(pos, idx, s.pos, s.size);
-  // somewhere you lose by walking into (out of bounds, a pit sensor) is avoided like a hazard
   const losing = losingOf(b);
   const low = new Set(opts.leap ? lowHazards(b).map((h) => h.id) : []);
   for (const e of [...b.entities].sort((x, y) => (x.id < y.id ? -1 : 1))) {

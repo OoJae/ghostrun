@@ -31,6 +31,7 @@ describe("recorded unseen worlds", () => {
     ["fresh4", "a-wizard-school", "three rules each winning on one ingredient mean all three go in the cauldron"],
     ["fresh4", "a-treehouse-village", "'IF the player is in z_finish' on reaching the bell is dropped as already true"],
     ["fresh3", "a-spy-mission", "a runner holding the kept key puts it down to pick up the documents"],
+    ["fresh4", "a-zombie-school", "zombies you lose by touching are walked around, and the exit nothing opens means the locked gym door"],
   ])("%s %s: %s", async (set, prefix) => {
     const w = recorded(set, prefix);
     const r = await prove(R, w.bundle, { engine: ENGINE_HASH, runs: 12 });
