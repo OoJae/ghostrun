@@ -17,6 +17,9 @@
       "path": "packages/layout"
     },
     {
+      "path": "packages/packs/floor-plan"
+    },
+    {
       "path": "packages/sim"
     },
     {

@@ -20,8 +20,11 @@ export function initNav(module: WebAssembly.Module): Promise<void> {
 }
 
 export const AGENT = { radius: 0.35, height: 1.8, climb: 0.4 } as const;
-const CS = 0.2;
-const CH = 0.2;
+// 0.1 m voxels with a 0.3 m erosion keep real-scale 0.9 m doorways open for a 0.7 m capsule
+// (at 0.2 m, ceil-rounded erosion of 0.4 m per side seals them). Physics witnesses (T3) still
+// catch any gap the slightly smaller erosion lets through.
+const CS = 0.1;
+const CH = 0.1;
 
 function pushBox(pos: number[], idx: number[], c: Vec3, s: Vec3) {
   const b = pos.length / 3;
@@ -54,7 +57,7 @@ export function buildNav(b: WorldBundle): NavWorld {
   const { success, navMesh } = generateSoloNavMesh(pos, idx, {
     cs: CS,
     ch: CH,
-    walkableRadius: Math.ceil(AGENT.radius / CS),
+    walkableRadius: Math.floor(AGENT.radius / CS),
     walkableHeight: Math.ceil(AGENT.height / CH),
     walkableClimb: Math.floor(AGENT.climb / CH),
     walkableSlopeAngle: 45,

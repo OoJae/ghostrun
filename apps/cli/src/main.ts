@@ -8,12 +8,19 @@ import { placeWorld } from "@ghostrun/layout";
 import { chatJson, fillMessages, IntentOut, intentJsonSchema, intentMessages, streamChat } from "@ghostrun/llm";
 import { loadNavNode } from "@ghostrun/nav/node";
 import { cityBlock } from "@ghostrun/pack-city-block";
+import { floorPlan } from "@ghostrun/pack-floor-plan";
+import type { LayoutPack } from "@ghostrun/plugin-api";
 import { chipLine, prove, type Receipt } from "@ghostrun/proof";
 import { loadRapierNode } from "@ghostrun/sim/node";
 import * as v from "valibot";
 
 const ENGINE = "dev-engine";
-const PACKS = [{ id: "city_block", blurb: "neon streets between two bases, optional rooftop lane" }];
+const PACKS = [
+  { id: "city_block", blurb: "streets between two team bases with an optional rooftop lane: team games, races, chases, city scenes" },
+  { id: "floor_plan", blurb: "single-storey interior at real scale (yard, entrance, main room, 4 side rooms): tours, shops, galleries, museums, heists, homes" },
+];
+const PACK_IMPL: Record<string, LayoutPack> = { city_block: cityBlock as unknown as LayoutPack, floor_plan: floorPlan as unknown as LayoutPack };
+const packFor = (id: string) => PACK_IMPL[id] ?? (cityBlock as unknown as LayoutPack);
 
 function loadDevVars() {
   let dir = process.cwd();
@@ -32,7 +39,8 @@ function loadDevVars() {
 
 function placeFromFill(text: string, seed: number): { bundle: WorldBundle; invalid: number; lines: number } {
   const fill = parseFill(text, { seed });
-  const layout = cityBlock.generate({ seed, params: cityBlock.defaults, sub: fill.draft.pack.sub, laws: fill.draft.laws, harder: false });
+  const pack = packFor(fill.draft.pack.id);
+  const layout = pack.generate({ seed, params: pack.defaults, sub: fill.draft.pack.sub, laws: fill.draft.laws, harder: false });
   const placed = placeWorld({ ...fill.draft, engine: ENGINE }, layout);
   for (const n of fill.notes) console.log(`  · fill line ${n.line}: ${n.kind} — ${n.text}`);
   return { bundle: placed.bundle, invalid: fill.stats.invalid, lines: fill.stats.lines };
@@ -78,7 +86,8 @@ async function build(prompt: string, seed: number, outDir: string | null): Promi
   if (intent.safety === "block") throw new Error(`blocked by moderation: ${intent.setting}`);
 
   // 2. fill (gpt-oss-120b, streamed JSONL, low reasoning), parsed line by line as it arrives
-  const layout = cityBlock.generate({ seed, params: cityBlock.defaults, sub: intent.sub, laws: { gravityScale: 1, jumpH: 1.6, speed: 6, jumpsMax: 1, airControl: 0.6, coyoteMs: 120, bufferMs: 100, thrust: 0 }, harder: false });
+  const chosen = packFor(intent.pack);
+  const layout = chosen.generate({ seed, params: chosen.defaults, sub: intent.sub, laws: { gravityScale: 1, jumpH: 1.6, speed: 6, jumpsMax: 1, airControl: 0.6, coyoteMs: 120, bufferMs: 100, thrust: 0 }, harder: false });
   const example = readFileSync(resolve(import.meta.dirname, "../../../packages/ir/fixtures/ctf-neon.jsonl"), "utf8");
   const parser = new FillParser({ seed, pack: layout.packId });
   let fillText = "";

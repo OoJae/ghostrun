@@ -55,3 +55,26 @@ The memory cap held everywhere.
 - **Licences:** Recast/Detour (Zlib), the Emscripten runtime (NCSA) and the fdlibm SunPro notice were approved by the user on 2026-10-27 as documented permissive exceptions. They are attribution-only and must be credited in THIRD_PARTY_NOTICES.
 
 Run it yourself: `pnpm --filter @ghostrun/detcheck quick` (2k ticks) or `full` (10k ticks).
+
+## S2: live fast lane (Cerebras intent + streamed fill): **latency GO; fill validity being fixed** (2026-10-27)
+
+10 varied dev prompts (`tools/bench/prompts-s2.txt`, written by us, so never part of the external eval set). Pipeline: qwen-3.8-27b intent (strict JSON schema, reasoning none) → gpt-oss-120b streamed JSONL fill (reasoning low), parsed line by line → placed → proof ladder. Measured from Lagos on the free tier. These are timings of *our pipeline*, not a vendor comparison (Cerebras ToS forbids competitive benchmarking).
+
+| Metric | p50 | p90 | Gate |
+|---|---|---|---|
+| Intent | 0.59 s | 0.91 s | p50 ≤ 0.8 s ✅ |
+| First entity on screen | 1.21 s | 1.42 s | — |
+| **Playable (gameplay layer final + placed)** | **1.48 s** | **1.66 s** | p50 ≤ 3.5 s, p90 ≤ 7 s ✅ |
+| Proof ladder (T0–T3, Node) | 0.05 s | 0.38 s | — |
+| Invalid fill lines | 7.7% (18 / 235) | | < 1% ❌ |
+
+**Fixes applied.**
+- 12 of the 18 invalid lines were `"body":"static"`. A deterministic enum synonym table in the parser's single repair pass now handles it (static→fixed, cylinder→capsule, team "none"→"", lose_reachable→reachable and others).
+- The fill prompt now lists the exact enum values.
+- The floor_plan pack was added, so interior prompts (villa tour, gallery, ramen shop, museum heist) are no longer forced into a street grid.
+- Re-run pending.
+
+**Open.**
+- Median interactive controls per world is well under the target of 15. The prompt and completeness contract must ask for more affordances.
+- Headline counterexamples on prompts that don't fit the available packs. The repair loop (counterexample-guided repair, CEGR) and more packs/kits address this.
+- The parkour prompt: 0/12 runners. The witness planner can't jump yet (needs jump links in the navmesh).

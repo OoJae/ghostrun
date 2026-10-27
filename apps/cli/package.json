@@ -19,7 +19,9 @@
     "@ghostrun/proof": "workspace:*",
     "@ghostrun/sim": "workspace:*",
     "@recast-navigation/wasm": "0.43.1",
-    "valibot": "catalog:"
+    "valibot": "catalog:",
+    "@ghostrun/pack-floor-plan": "workspace:*",
+    "@ghostrun/plugin-api": "workspace:*"
   },
   "devDependencies": {
     "vite": "catalog:"

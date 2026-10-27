@@ -170,3 +170,18 @@ describe("JsonStore patches", () => {
     st.apply([{ op: "replace", path: "/expects/x_win/lo", value: 0 }], "user");
   });
 });
+
+describe("fill repairs from the S2 bench", () => {
+  it("maps the synonyms LLMs reach for onto the real enums", () => {
+    const lines = [
+      '{"op":"zone","id":"z_a"}',
+      '{"op":"ent","id":"wall_1","kind":"prop","zone":"z_a","body":"static","shape":"cylinder","team":"none"}',
+      '{"op":"expect","id":"x_1","prop":"lose_reachable","a":"wall_1","b":"z_a"}',
+    ].join("\n");
+    const p = parseFill(lines, { seed: 1 });
+    expect(p.stats.invalid).toBe(0);
+    const e = p.draft.entities[0]!;
+    expect([e.body, e.shape, e.team]).toEqual(["fixed", "capsule", ""]);
+    expect(p.draft.expects[0]!.prop).toBe("reachable");
+  });
+});

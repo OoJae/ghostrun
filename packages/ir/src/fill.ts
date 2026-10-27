@@ -143,6 +143,15 @@ const KIND_BODY: Partial<Record<Entity["kind"], [Entity["body"], Entity["shape"]
 /** Normalise near-miss enum values ("Pressure Plate" → "pressure_plate"). */
 const norm = (s: string) => s.trim().toLowerCase().replace(/[\s-]+/g, "_");
 
+/** Deterministic synonyms for enum values LLMs reach for (from the S2 bench's invalid lines). */
+const SYNONYMS: Record<string, string> = {
+  static: "fixed", solid: "fixed", immovable: "fixed", physics: "dynamic", rigid: "dynamic", movable: "dynamic",
+  trigger: "sensor", zone: "sensor", area: "sensor", moving: "kinematic", animated: "kinematic",
+  cylinder: "capsule", cube: "box", cuboid: "box", ball: "sphere", mesh: "hull",
+  none_team: "", neutral: "", no_team: "",
+  lose_reachable: "reachable", goal_reachable: "win_reachable", winnable: "win_reachable",
+};
+
 function setAt(obj: unknown, path: (string | number)[], value: unknown) {
   let node = obj as Record<string | number, unknown>;
   for (let i = 0; i < path.length - 1; i++) node = node[path[i]!] as Record<string | number, unknown>;
@@ -161,7 +170,9 @@ function repair(raw: unknown, issues: v.BaseIssue<unknown>[]): boolean {
       changed = true;
     } else if (typeof input === "string" && issue.expected?.includes('"')) {
       const options = [...issue.expected.matchAll(/"([^"]*)"/g)].map((m) => m[1]!);
-      const hit = options.find((o) => o === norm(input));
+      const n = norm(input);
+      const syn = path.at(-1) === "team" && (n === "none" || n === "neutral") ? "" : SYNONYMS[n];
+      const hit = options.find((o) => o === n) ?? options.find((o) => o === syn);
       if (hit !== undefined) {
         setAt(raw, path, hit);
         changed = true;

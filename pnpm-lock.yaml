@@ -65,6 +65,12 @@ importers:
       '@ghostrun/pack-city-block':
         specifier: workspace:*
         version: link:../../packages/packs/city-block
+      '@ghostrun/pack-floor-plan':
+        specifier: workspace:*
+        version: link:../../packages/packs/floor-plan
+      '@ghostrun/plugin-api':
+        specifier: workspace:*
+        version: link:../../packages/plugin-api
       '@ghostrun/proof':
         specifier: workspace:*
         version: link:../../packages/proof
@@ -154,6 +160,25 @@ importers:
       '@ghostrun/plugin-api':
         specifier: workspace:*
         version: link:../../plugin-api
+
+  packages/packs/floor-plan:
+    dependencies:
+      '@ghostrun/detmath':
+        specifier: workspace:*
+        version: link:../../detmath
+      '@ghostrun/ir':
+        specifier: workspace:*
+        version: link:../../ir
+      '@ghostrun/plugin-api':
+        specifier: workspace:*
+        version: link:../../plugin-api
+    devDependencies:
+      '@ghostrun/layout':
+        specifier: workspace:*
+        version: link:../../layout
+      '@ghostrun/nav':
+        specifier: workspace:*
+        version: link:../../nav
 
   packages/plugin-api:
     dependencies:
