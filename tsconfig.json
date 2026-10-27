@@ -18,6 +18,9 @@
     },
     {
       "path": "tools/detcheck"
+    },
+    {
+      "path": "apps/web"
     }
   ]
 }
