@@ -211,6 +211,28 @@ describe("putting things down", () => {
   });
 });
 
+describe("what USE picks", () => {
+  it("the nearest, but for things to look at, the one you face; a window above your head is in reach to look at", () => {
+    // a cushion 0.8 m east, a window 1.6 m north and 2.4 m up: walking north faces the window
+    const sim = world(
+      [ent("cushion", "prop", [0.8, 0.25, 0], [0.5, 0.5, 0.5], "fixed"), ent("window", "prop", [0, 2.4, 1.6], [1.5, 2, 0.1], "fixed")],
+      [vb("vb_c", "social.inspect", "cushion", { text: "A cushion" }), vb("vb_w", "social.inspect", "window", { text: "Rain on the glass" })],
+    );
+    run(sim, 20);
+    expect(sim.usable()?.on).toBe("cushion");
+    sim.step({ tick: sim.tick + 1, wx: 0, wz: 40, btn: 0 });
+    expect(sim.usable()?.on).toBe("window");
+    // a switch (a hand, not a look) still goes to the nearest
+    const sim2 = world(
+      [ent("lever_a", "switch", [0.8, 0.5, 0], [0.3, 1, 0.3], "fixed"), ent("lever_b", "switch", [0, 0.5, 1.6], [0.3, 1, 0.3], "fixed")],
+      [vb("vb_a", "puzzle.switch", "lever_a"), vb("vb_b", "puzzle.switch", "lever_b")],
+    );
+    run(sim2, 20);
+    sim2.step({ tick: sim2.tick + 1, wx: 0, wz: 40, btn: 0 });
+    expect(sim2.usable()?.on).toBe("lever_a");
+  });
+});
+
 describe("rule cascades", () => {
   it("what a score threshold sets off cascades in the same tick: points open the door, the open door wins", () => {
     const sim = world(

@@ -83,6 +83,7 @@ export class SimWorld {
   #emit: (k: string, a: string, b?: string, v?: number | string) => void = () => {};
   #checkpoint = new Map<string, Vec3>();
   #useHeld = new Set<string>();
+  #facing = new Map<string, [number, number]>(); // agent → the way it last moved (unit), for USE
   /** Items thrown with combat_sport.throw: only the player picks them up. */
   readonly #thrown = new Set<string>();
   #agents: string[] = [];
@@ -239,11 +240,24 @@ export class SimWorld {
       // never itself (a shove bound on the player is for the rivals to use), nor something being
       // carried (a switch in your hands would take every press meant to put it down)
       // (a ball you throw is used while carried: its verb says it carries the thing)
-      if (!u || !e || e.destroyed || bound.on === agent || (e.carrier && !plugin.carries) || !this.#near(agent, bound.on, u.radius + Math.max(e.size[0], e.size[2]) / 2)) continue;
+      if (!u || !e || e.destroyed || bound.on === agent || (e.carrier && !plugin.carries)) continue;
+      // (in reach up to its own height: a window above head height is looked at from below; and
+      // looking at something reaches further up than a hand: a speaker on the wall, a sign)
+      const up = plugin.id === "social.inspect" ? 2 : Math.max(0, e.size[1] / 2 - 0.5);
+      if (!this.#near(agent, bound.on, u.radius + Math.max(e.size[0], e.size[2]) / 2, up)) continue;
       const p = this.pos(agent);
       const q = this.pos(bound.on);
-      const d = (p[0] - q[0]) * (p[0] - q[0]) + (p[2] - q[2]) * (p[2] - q[2]);
-      if (d < bestD) ((bestD = d), (best = { verb: bound.id, on: bound.on, label: u.label }));
+      const dx = q[0] - p[0];
+      const dz = q[2] - p[2];
+      // the nearest, but for things to look at, what you're facing first: a window behind a
+      // cushion, and the one you turned toward is the one you meant
+      const d = Math.sqrt(dx * dx + dz * dz);
+      const f = this.#facing.get(agent);
+      // (only for looking: a shove or a throw goes to the nearest body, whichever way you face)
+      const facing = plugin.id === "social.inspect" && f && d > 0.05 && (dx * f[0] + dz * f[1]) / d > 0.8;
+      // (what you carry comes first: the ball in your hands is what USE throws)
+      const score = e.carrier === agent ? -Infinity : d - (facing ? 1.5 : 0);
+      if (score < bestD) ((bestD = score), (best = { verb: bound.id, on: bound.on, label: u.label }));
     }
     return best;
   }
@@ -359,6 +373,14 @@ export class SimWorld {
     this.#emit = (k, a, b = "", v = "") => push(k, a, b, v);
     // 0. the cast decides from where everything stood at the end of the last tick
     const npcIn = this.#brain?.think(this);
+    // which way each agent faces: the way it last pushed the stick
+    const face = (id: string, f: InputFrame | null | undefined) => {
+      if (!f) return;
+      const m = Math.sqrt(f.wx * f.wx + f.wz * f.wz);
+      if (m > 20) this.#facing.set(id, [f.wx / m, f.wz / m]);
+    };
+    face("player", input);
+    if (npcIn) for (const [id, f] of npcIn) face(id, f);
 
     // 1. characters move, the player first, then NPCs in id order
     const c = this.#move("player", this.player, input);
@@ -531,12 +553,12 @@ export class SimWorld {
     );
   }
 
-  #near(a: string, b: string, r: number): boolean {
+  #near(a: string, b: string, r: number, up = 0): boolean {
     const p = this.pos(a);
     const q = this.pos(b);
     const dx = p[0] - q[0];
     const dz = p[2] - q[2];
-    return dx * dx + dz * dz <= r * r && Math.abs(p[1] - q[1]) <= 1.4;
+    return dx * dx + dz * dz <= r * r && Math.abs(p[1] - q[1]) <= 1.4 + up;
   }
 
   #drop(itemId: string, carrierId: string, towardId: string) {

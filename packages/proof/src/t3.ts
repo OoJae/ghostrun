@@ -171,13 +171,13 @@ function walkTo(sim: SimWorld, nav: NavWorld, goal: Target, rng: () => number, s
       path = (near && nav.path(feet, near)) || [aim];
     }
     if (!path) return null;
-    // seeded variety in the line each runner takes, but never beside a wall: a 0.9 m doorway leaves
-    // a 0.7 m runner 0.1 m a side, and a waypoint nudged 0.15 m walks it into the jamb
+    // seeded variety in the line each runner takes, a third as much beside a wall: a 0.9 m doorway
+    // leaves a 0.7 m runner 0.1 m a side, and a waypoint nudged 0.15 m walks it into the jamb
     const nearWall = (q: Vec3) => Boolean(b?.statics.some((st) => st.surf === "wall" && Math.abs(q[0] - st.pos[0]) < st.size[0] / 2 + 0.8 && Math.abs(q[2] - st.pos[2]) < st.size[2] / 2 + 0.8 && q[1] < st.pos[1] + st.size[1] / 2));
     const jittered = path.map((p, i) => {
-      const dx = (rng() - 0.5) * 0.3;
-      const dz = (rng() - 0.5) * 0.3;
-      return i === path.length - 1 || nearWall(p) ? p : ([p[0] + dx, p[1], p[2] + dz] as Vec3);
+      if (i === path.length - 1) return p;
+      const k = nearWall(p) ? 0.1 : 0.3;
+      return [p[0] + (rng() - 0.5) * k, p[1], p[2] + (rng() - 0.5) * k] as Vec3;
     });
     const l = leapify(jittered);
     jumps = l.jumps;
@@ -654,6 +654,18 @@ const spotBy = (r: Run, id: string): Vec3 => {
   return spots.find((q) => r.nav.path(feet, q)) ?? spots[0] ?? r.nav.nearest([e.pos[0], floor, e.pos[2]]) ?? e.pos;
 };
 
+/** Turn toward a thing (one short nudge of the stick): USE takes what you face. */
+function faceTo(r: Run, id: string) {
+  const p = r.sim.pos("player");
+  const q = r.sim.pos(id);
+  const dx = q[0] - p[0];
+  const dz = q[2] - p[2];
+  const d = Math.sqrt(dx * dx + dz * dz);
+  if (d < 0.05 || r.budget.ticks <= 0 || r.sim.result) return;
+  r.sim.step({ tick: r.sim.tick + 1, wx: Math.round((dx / d) * 30), wz: Math.round((dz / d) * 30), btn: 0 });
+  r.budget.ticks--;
+}
+
 /**
  * Two things in reach and USE takes the nearer: a sculpture with its guide beside it. Step toward
  * the one wanted until it is the one USE would pick (or it's right there).
@@ -773,6 +785,7 @@ function perform(r: Run, st: PlanStep): "ok" | "lost" | "stuck" {
         go(spot, () => sim.usable()?.on === st.at || done());
         // arrived mid-hop (an unsticking jump): come down first, it's out of reach from the air
         for (let k = 0; k < 60 && !sim.player.grounded && sim.usable()?.on !== st.at && live(r); k++, budget.ticks--) sim.step(null);
+        if (sim.usable()?.on !== st.at && !done()) faceTo(r, st.at);
         if (sim.usable() && sim.usable()?.on !== st.at && !done()) closeIn(r, st.at);
         trace?.(`  use ${st.at} ${attempt}: spot ${v1(typeof spot === "function" ? spot() : spot)}, at ${v1(sim.pos("player"))}, usable ${sim.usable()?.on ?? "-"}`);
         if (sim.usable()?.on !== st.at || !live(r)) continue;
@@ -839,6 +852,7 @@ function perform(r: Run, st: PlanStep): "ok" | "lost" | "stuck" {
       const placed = () => (ring || pit ? d2h(sim.pos("player"), inner()) < 0.6 * 0.6 : true) && sim.usable()?.on === st.at;
       for (let attempt = 0; attempt < 10 * (st.times ?? 1) && live(r) && !done(); attempt++) {
         go(inner, () => placed() || done());
+        if (sim.usable()?.on !== st.at && !done()) faceTo(r, st.at);
         trace?.(`shove ${attempt}: at ${v1(sim.pos("player"))}, ${st.at} at ${v1(sim.pos(st.at))}, usable ${sim.usable()?.on ?? "-"}, fired ${fired()}`);
         if (sim.usable()?.on !== st.at || done()) continue;
         sim.step({ tick: sim.tick + 1, wx: 0, wz: 0, btn: BTN.USE });
@@ -1170,6 +1184,7 @@ function tourRun(R: Rapier, b: WorldBundle, nav: NavWorld, openers: ReadonlyMap<
       const spot = spotBy(r, next);
       clearDoors(r, spot);
       goTo(sim, nav, b, spot, r.rng, r.speed, r.budget, () => sim.usable()?.on === next);
+      if (sim.usable()?.on !== next) faceTo(r, next);
       if (sim.usable()?.on !== next) closeIn(r, next);
       trace?.(`tour ${next}: at ${v1(sim.pos("player"))}, usable ${sim.usable()?.on ?? "-"}`);
       if (sim.usable()?.on === next) {
