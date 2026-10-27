@@ -338,3 +338,38 @@ test("harder but fair: three candidates race, the hardest fair one is kept, each
   await expect(page.getByTestId("proof-badge")).toContainText("Rooftop lane needs double jump: verified");
   expect(errors.filter((e) => !e.includes("503"))).toEqual([]);
 });
+
+test("the Host: a loss explains itself from the causal log, answers questions from it, and ▶ replays that moment exactly", async ({ page }) => {
+  const errors = collectErrors(page);
+  let asked: { question?: string; facts?: string[] } = {};
+  await page.route("**/v1/health", (r) => r.fulfill({ json: { ok: true, packs: [], llm: true, gate: "dev", sitekey: null } }));
+  await page.route("**/v1/mind", (r) => r.fulfill({ status: 503, json: { error: "off in this test" } }));
+  await page.route("**/v1/host", (r) => {
+    asked = r.request().postDataJSON() as typeof asked;
+    return r.fulfill({ json: { answer: "Rival 1 ran the orb home three times while you waited.", cites: [2, 1] } });
+  });
+  await page.goto("/?gl=webgl2&fx=0&dpr=0.5&prewarm=0");
+  await page.waitForFunction(() => window.__GHOSTRUN__?.ready === true, null, { timeout: 90_000 });
+  // stand still: the rivals carry the orb home three times
+  const result = page.getByTestId("result");
+  await expect(result).toContainText("You lose", { timeout: 90_000 });
+  await expect(result).toContainText("blue team reached 3");
+  const story = page.getByTestId("story");
+  await expect(story).toContainText("Rival 1 carried the glowing orb into the neon goal ring, 3 times (blue 1–3)");
+  const ended = await probe(page).then((p) => p.tick ?? 0);
+  await page.getByTestId("host-input").fill("why did I lose?");
+  await page.getByTestId("host-input").press("Enter");
+  await expect(page.getByTestId("host-answer")).toContainText("Rival 1 ran the orb home three times while you waited.");
+  expect(asked.question).toBe("why did I lose?");
+  expect(asked.facts?.[0]).toMatch(/^You lost at \d+:\d\d: blue team reached 3$/);
+  expect(asked.facts).toContain("Rule: WHEN blue team reaches 3 THEN you lose (once)");
+  await expect(page.getByTestId("host-answer").getByRole("button")).toHaveCount(2); // each cited moment replays
+  await story.getByRole("button").first().click();
+  await expect(result).toHaveCount(0);
+  await expect(page.getByRole("status").filter({ hasText: "Replaying from" })).toBeVisible();
+  // fast-forwarded to four seconds before the moment, then played to the same loss on the same tick
+  expect((await probe(page)).tick ?? 0).toBeGreaterThan(ended - 300);
+  await expect(result).toContainText("You lose", { timeout: 20_000 });
+  expect(Math.abs(((await probe(page)).tick ?? 0) - ended)).toBeLessThan(5);
+  expect(errors.filter((e) => !e.includes("503"))).toEqual([]);
+});

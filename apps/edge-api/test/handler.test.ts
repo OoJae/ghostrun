@@ -64,6 +64,23 @@ describe("POST /v1/mind", () => {
   });
 });
 
+describe("POST /v1/host", () => {
+  const call = async (env: Env, body: unknown) =>
+    handle(new Request("https://g.example/v1/host", { method: "POST", headers: { "cf-connecting-ip": freshIp(), "x-judge-token": TOKEN }, body: JSON.stringify(body) }), env, waiter());
+  it("answers from the numbered facts, keeps only citations that exist, and charges the pool", async () => {
+    const w = world({ up: { intent: { inTok: 700, outTok: 40, body: { answer: "Rival 1 tagged you on the plaza and ran the orb home.", cites: [2, 2, 9, 1] } } } });
+    const facts = ["0:20 You picked up the glowing orb", "0:24 Rival 1 tagged you and took the glowing orb", "0:32 Rival 1 carried the glowing orb into the neon goal ring (blue 3)"];
+    const r = await call(w.env, { question: "why did I lose?", facts });
+    expect(r.status).toBe(200);
+    expect(await r.json()).toMatchObject({ answer: "Rival 1 tagged you on the plaza and ran the orb home.", cites: [2, 1] });
+    const sent = w.f.hits.find((h) => h.url.includes("cerebras"))!.body;
+    expect(sent).toContain("[2] 0:24 Rival 1 tagged you and took the glowing orb");
+    expect(sent).toContain("using ONLY the numbered facts");
+    expect(w.pool("judge").spent).toBe(costMicroUsd(INTENT_MODEL, 700, 40));
+    expect((await call(w.env, { question: "why?", facts: [] })).status).toBe(400);
+  });
+});
+
 describe("POST /v1/repair", () => {
   it("streams the model's patch lines, charges the caller's pool, and rejects bad requests before any model call", async () => {
     const w = world({ up: { fill: { inTok: 9000, outTok: 300, lines: ['{"op":"rule","id":"r_win","when":{"t":"enter","a":"gem","b":"exit"},"then":[{"e":"win","target":"player"}]}', '{"op":"del","id":"x_old"}'] } } });

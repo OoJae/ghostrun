@@ -1,29 +1,15 @@
 // Export a world to take elsewhere: geometry as glTF (named by id, with kind, noun, zone and verbs
 // in each node's extras), the logic as logic.json in triggers / states / rules terms (each rule as
 // a sentence and as data, with its proof status), and the receipt as a standalone HTML report.
-import type { Rule, WorldBundle } from "@ghostrun/ir";
+import type { WorldBundle } from "@ghostrun/ir";
 import { verb } from "@ghostrun/kits";
 import { chipLine, type Receipt } from "@ghostrun/proof";
 import { BoxGeometry, CapsuleGeometry, Color, Group, Mesh, MeshStandardMaterial, SphereGeometry } from "three";
 import { GLTFExporter } from "three/addons/exporters/GLTFExporter.js";
+import { sentence } from "./host";
 
 const SURFACE: Record<string, string> = { floor: "#5b5f6e", wall: "#30323d", ledge: "#7a7f95", roof: "#7a7f95", glass: "#9fd6ff", water: "#3a86c8", hazard: "#ff4a1c" };
 const KIND: Record<string, string> = { pickup: "#ffe45c", goal: "#3dffa8", hazard: "#ff4a1c", door: "#8a6a4a", switch: "#19e3ff", plate: "#ffb02e", npc: "#ff3b5c", portal: "#ff2bd6", checkpoint: "#ffb02e", spawn: "#ffffff" };
-
-const name = (b: WorldBundle, id: string) => (id.startsWith("team:") ? `${id.slice(5)} team` : b.entities.find((e) => e.id === id)?.noun || id.replace(/_/g, " "));
-
-/** A rule as one readable sentence (the same reading as the Logic X-ray). */
-export function sentence(b: WorldBundle, r: Rule): string {
-  const w = r.when;
-  const n = (id: string) => (id ? name(b, id) : "anything");
-  const when =
-    w.t === "score_gte" ? `${n(w.a)} reaches ${w.n}` : w.t === "state_is" ? `${n(w.a)} becomes ${w.s}` : w.t === "timer_end" ? "the timer runs out" : w.t === "every" ? `every ${w.n} s` : `${n(w.a)} ${w.t.replace("_", " ")}s ${n(w.b)}`;
-  const iff = r.if.map((c) => `${n(c.l.split(".")[0]!)} ${c.l.split(".").slice(1).join(" ")} ${c.op} ${String(c.r)}`).join(" and ");
-  const then = r.then
-    .map((e) => (e.e === "score" ? `+${e.n || 1} ${n(e.target)}` : e.e === "win" || e.e === "lose" ? `you ${e.e}` : e.e === "set_state" ? `${n(e.target)} becomes ${String(e.v)}` : e.e === "emit" ? `effect ${e.fx}` : `${e.e} ${n(e.target)}`))
-    .join(", ");
-  return `WHEN ${when}${iff ? ` IF ${iff}` : ""} THEN ${then}${r.once ? " (once)" : ""}`;
-}
 
 export function logicJson(b: WorldBundle, spec: string, receipt: Receipt | null) {
   const status = (id: string) => receipt?.chips.find((c) => c.id === id)?.status ?? "not_checked";

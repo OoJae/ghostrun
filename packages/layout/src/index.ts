@@ -117,6 +117,17 @@ export function placeWorld(input: WorldBundle, layout: PackLayout): PlaceResult 
     const alongZ = Math.abs(base[0]) >= Math.abs(base[2]);
     // doors stand on the zone's floor even when the fill names a wall-height anchor
     if (e.kind === "door") base = [base[0], spec.floorY, base[2]];
+    // places the player walks into stand on what's under them (a goal named after a wall-height
+    // anchor such as a scoreboard would float out of reach); a ledge or rooftop keeps its height
+    if ((e.kind === "goal" || e.kind === "checkpoint" || e.kind === "plate") && base[1] > spec.floorY + 0.05) {
+      const [x, y, z] = base;
+      const under = layout.statics.filter((st) => st.surf !== "wall" && Math.abs(x - st.pos[0]) <= st.size[0] / 2 && Math.abs(z - st.pos[2]) <= st.size[2] / 2 && st.pos[1] + st.size[1] / 2 <= y + 0.05);
+      const top = Math.max(spec.floorY, ...under.map((st) => st.pos[1] + st.size[1] / 2));
+      if (top < y - 0.05) {
+        notes.push(`${e.id}: ${e.kind} lowered from ${Math.round(y * 10) / 10} m to ${Math.round(top * 10) / 10} m (it stood on nothing)`);
+        base = [x, top, z];
+      }
+    }
     const solid = e.body === "fixed" || e.body === "kinematic" || e.body === "dynamic";
     // signs are decor unless a rule needs to touch them; inspecting works by proximity
     if (e.kind === "sign" && solid && !b.rules.some((r) => r.when.b === e.id || r.when.a === e.id)) {
@@ -266,9 +277,13 @@ export function repairKits(b: WorldBundle): string[] {
       [w.t, w.a, w.b] = ["pickup", w.b, "player"];
     }
   }
-  // 2b. a score goal with nothing that scores: each collected thing scores a point
+  // 2b. a score goal with nothing that scores: each thing the player collects scores a point, for
+  // the player's own team only (the rivals' points never come from what the player does)
+  const spawnOf = (t: string) => b.entities.some((e) => e.kind === "spawn" && e.team === t);
+  const mine = `team:${!spawnOf("red") && spawnOf("blue") ? "blue" : "red"}`;
   for (const g of b.rules.filter((r) => r.when.t === "score_gte")) {
     const team = g.when.a;
+    if (team.startsWith("team:") && team !== mine) continue;
     if (b.rules.some((r) => r.then.some((e) => e.e === "score" && e.target === team))) continue;
     const touchRules = b.rules.filter((r) => r.when.t === "touch" && collected.has(r.when.b));
     if (touchRules.length) {

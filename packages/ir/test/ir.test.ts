@@ -186,6 +186,23 @@ describe("fill repairs from the S2 bench", () => {
   });
 });
 
+describe("references", () => {
+  it("rule conditions on special refs with a path (player.team, team:red.score) are kept", async () => {
+    const { parseFill } = await import("../src");
+    const fill = [
+      '{"op":"meta","mode":"play","pack":"arena","seed":3}',
+      '{"op":"zone","id":"z_a","slot":"midfield","tag":"center"}',
+      '{"op":"spawn","id":"sp","zone":"z_a","team":"red"}',
+      '{"op":"goal","id":"cap","zone":"z_a"}',
+      '{"op":"rule","id":"r_cap","when":{"t":"enter","a":"player","b":"cap"},"if":[{"l":"player.team","op":"eq","r":"red"},{"l":"team:red.score","op":"lt","r":3}],"then":[{"e":"score","target":"team:red","n":1}]}',
+      '{"op":"end","layer":"gameplay"}',
+    ].join("\n");
+    const p = parseFill(fill, { seed: 3 });
+    expect(p.notes.filter((n) => n.kind === "unresolved")).toEqual([]);
+    expect(p.draft.rules.map((r) => r.id)).toEqual(["r_cap"]);
+  });
+});
+
 describe("mergeFill (repair patches)", () => {
   const base = [
     '{"op":"meta","mode":"play","pack":"arena","seed":3}',

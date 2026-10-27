@@ -71,11 +71,16 @@ export class RapierSim implements FrameSource {
     this.#timer = setInterval(() => this.#pump(), 4);
   }
 
-  /** Play back a recorded run frame by frame (a share link), minds included; any input takes over. */
-  replay(frames: readonly SimInput[], minds: readonly MindChoice[] = []) {
+  /**
+   * Play back a recorded run frame by frame (a share link), minds included; any input takes over.
+   * `from` fast-forwards to that tick first (the Host's "show me"): every event still reaches the
+   * subscribers, so the scene is exactly as it was at that moment.
+   */
+  replay(frames: readonly SimInput[], minds: readonly MindChoice[] = [], from = 0) {
     this.#replay = [...frames];
     this.#ri = 0;
     this.#replayMinds = [...minds];
+    while (this.#replay && this.sim.tick < from && !this.sim.result) this.#step();
   }
 
   /** A mind picked a menu option: it takes effect on the next tick (and is logged with it). */

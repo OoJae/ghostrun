@@ -194,6 +194,36 @@ export function editMessages(prompt: string, change: string, intent: IntentOut, 
   ];
 }
 
+/** The Host answers from numbered facts only (the run's causal log, the world's rules), citing them. */
+export function hostJsonSchema(facts: number): Record<string, unknown> {
+  return {
+    type: "object",
+    additionalProperties: false,
+    required: ["answer", "cites"],
+    properties: {
+      answer: { type: "string", maxLength: 280 },
+      cites: { type: "array", maxItems: 4, items: { type: "integer", minimum: 1, maximum: Math.max(1, facts) } },
+    },
+  };
+}
+
+export function hostMessages(question: string, facts: string[]): Msg[] {
+  return [
+    {
+      role: "system",
+      content: [
+        "You are the Host of a small 3D game. The player asks about the run they just played or about the world.",
+        "Answer in at most two short sentences, warm and plain, using ONLY the numbered facts below; cite the facts you used by number in cites.",
+        "Times are minutes:seconds into the run. 'You' in the facts is the player. Never invent events, places or numbers that are not in the facts.",
+        "If the facts don't answer the question, say you can't tell from this run, and cite nothing.",
+        "Facts:",
+        ...facts.map((f, i) => `[${i + 1}] ${f}`),
+      ].join("\n"),
+    },
+    { role: "user", content: question },
+  ];
+}
+
 /** What a mind sees: who it is, its typed menu, the situation in a few lines, and what just happened. */
 export interface MindInput {
   npc: string;

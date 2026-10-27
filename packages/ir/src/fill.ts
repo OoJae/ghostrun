@@ -311,8 +311,8 @@ export class FillParser {
   }
 
   #has(ref: string): boolean {
-    if ((SPECIAL_REFS as readonly string[]).includes(ref) || ref === "" || ref.startsWith("tag:")) return true;
-    const head = ref.split(".")[0]!;
+    const head = ref.split(".")[0]!; // a path ("player.team", "team:red.score") names its head
+    if ((SPECIAL_REFS as readonly string[]).includes(head) || ref === "" || ref.startsWith("tag:")) return true;
     const d = this.draft;
     return (
       d.entities.some((e) => e.id === head) || d.zones.some((z) => z.id === head) ||

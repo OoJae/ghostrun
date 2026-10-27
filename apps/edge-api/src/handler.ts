@@ -5,7 +5,7 @@
 // Every route but health sits behind the gate (gate.ts). A build reserves its worst-case cost with
 // the governor before any model call and commits the metered cost when it ends (governor.ts).
 import { DEFAULT_LAWS, gameplayLines } from "@ghostrun/ir";
-import { chatJson, editMessages, fillMessages, IntentOut, intentJsonSchema, intentMessages, LlmError, mindJsonSchema, mindMessages, repairMessages, streamChat } from "@ghostrun/llm";
+import { chatJson, editMessages, fillMessages, hostJsonSchema, hostMessages, IntentOut, intentJsonSchema, intentMessages, LlmError, mindJsonSchema, mindMessages, repairMessages, streamChat } from "@ghostrun/llm";
 import { ALL_SUBS, PACKS, packFor } from "@ghostrun/registry";
 import * as v from "valibot";
 // the vault heist teaches goal-dependent wins, doorway doors, keys and inspectable exhibits (an A/B
@@ -80,6 +80,7 @@ export async function handle(req: Request, env: Env, ctx?: WaitUntil): Promise<R
   if (path === "/v1/repair" && req.method === "POST") return patch("repair", req, env, url, later);
   if (path === "/v1/edit" && req.method === "POST") return patch("edit", req, env, url, later);
   if (path === "/v1/mind" && req.method === "POST") return mind(req, env, url);
+  if (path === "/v1/host" && req.method === "POST") return host(req, env, url);
   const shareId = /^\/v1\/share\/([a-z2-7]{16})$/.exec(path)?.[1];
   const post = req.method === "POST";
   const route =
@@ -193,6 +194,49 @@ async function mind(req: Request, env: Env, url: URL): Promise<Response> {
   } catch (e) {
     if (e instanceof LlmError && e.status !== 200) cost = 0;
     return json({ error: e instanceof Error ? e.message.slice(0, 200) : "mind failed", retryable: true }, 502);
+  } finally {
+    await held(cost).catch(() => undefined);
+  }
+}
+
+/**
+ * POST /v1/host: the player's question about their run, answered from the numbered facts the
+ * client sends (the run's causal log and the world's rules) and nothing else, with the facts cited.
+ * Same lane and limits as a mind: the fast model, a strict schema, no reasoning.
+ */
+async function host(req: Request, env: Env, url: URL): Promise<Response> {
+  if (!env.CEREBRAS_API_KEY) return json({ error: "llm not configured" }, 503);
+  const gate = await identify(req, url, env);
+  if (!gate.ok) return json(gate.body, gate.status);
+  const caller = gate.caller;
+  const ip = ipOf(req);
+  if (!mindBuckets.allow(caller.session ?? ip, intVar(env.MINDS_PER_WINDOW, 120))) return json({ error: "rate limited", retryMs: WINDOW_MS }, 429);
+  const body = await readJson(req, 16 * 1024);
+  if (!body.ok) return json({ error: body.error }, body.status);
+  const i = (body.value ?? {}) as { question?: unknown; facts?: unknown };
+  const question = str(i.question, 200).trim();
+  const facts = Array.isArray(i.facts) ? i.facts.filter((x): x is string => typeof x === "string").slice(0, 40).map((x) => x.slice(0, 200)) : [];
+  if (!question || !facts.length) return json({ error: "bad host request" }, 400);
+  if (await paused(env)) return json({ error: "builds paused", retryable: true }, 503);
+  const est = costMicroUsd(INTENT_MODEL, 3000, 200);
+  const held = await reserveFor(env, url, caller, ip, est);
+  if (held instanceof Response) return held;
+  let cost = est;
+  try {
+    const r = await chatJson<{ answer?: unknown; cites?: unknown }>({
+      apiKey: env.CEREBRAS_API_KEY,
+      model: INTENT_MODEL,
+      reasoningEffort: "none",
+      maxTokens: 200,
+      jsonSchema: { name: "host", schema: hostJsonSchema(facts.length) },
+      messages: hostMessages(question, facts),
+    });
+    if (r.inTok > 0) cost = costMicroUsd(INTENT_MODEL, r.inTok, r.outTok);
+    const cites = Array.isArray(r.value.cites) ? [...new Set(r.value.cites.filter((n): n is number => Number.isInteger(n) && n >= 1 && n <= facts.length))].slice(0, 4) : [];
+    return json({ answer: str(r.value.answer, 280), cites, ms: r.ms });
+  } catch (e) {
+    if (e instanceof LlmError && e.status !== 200) cost = 0;
+    return json({ error: e instanceof Error ? e.message.slice(0, 200) : "host failed", retryable: true }, 502);
   } finally {
     await held(cost).catch(() => undefined);
   }

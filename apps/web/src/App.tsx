@@ -18,6 +18,7 @@ import { Minds } from "./minds";
 import { propose, twistWorld } from "./director";
 import { BRIEF, buildWorld, ENGINE_HASH, FIXTURE_PROMPTS, FIXTURES, hashWorld, worldFromFill, type Intent, type World } from "./pipeline";
 import { probe } from "./probe";
+import { askHost, clock as mmss, facts, story } from "./host";
 
 const HINT_MS = 6000;
 const FIXTURE = new URLSearchParams(window.location.search).get("fixture") ?? "ctf";
@@ -184,7 +185,7 @@ export function App() {
             if (ev.k === "score") setScore((s) => ({ ...s, [ev.a === "team:blue" ? "blue" : "red"]: Number(ev.v) }));
             if (ev.k === "win" || ev.k === "lose") {
               setScore((s) => ({ ...s, result: ev.k }));
-              const res: RunResult = { k: ev.k, tick: ev.tick, rule: ev.rule };
+              const res: RunResult = { k: ev.k, tick: ev.tick, rule: ev.rule, story: story(world.bundle, sim.sim.log, sim.trail), facts: facts(world.bundle, sim.sim.log, sim.trail) };
               setResult(res);
               void directorFor(world, sim.trail, res, id);
             }
@@ -491,6 +492,27 @@ export function App() {
     void show(prev, ++runId.current, performance.now(), []);
   };
 
+  /**
+   * The Host's "show me": the same world rebuilt and this run replayed exactly (inputs and minds
+   * as logged), from four seconds before the moment; any key takes over.
+   */
+  const replayMoment = (tick: number) => {
+    const w = current.current;
+    const sim = engine.current?.rapierSim;
+    if (!w || !sim) return;
+    const inputs = [...sim.inputs];
+    const chosen = [...sim.minds];
+    const from = Math.max(0, tick - 240);
+    setResult(null);
+    void show(w, ++runId.current, performance.now(), []).then(() => {
+      const s2 = engine.current?.rapierSim;
+      if (!s2) return;
+      s2.replay(inputs, chosen, from);
+      s2.onReplayEnd = () => setNotice(undefined);
+      setNotice(`Replaying from ${mmss(from)}, exactly as it happened. Press any key to take over.`);
+    });
+  };
+
   /** The same world from the top: a fresh run (and a fresh proof of the same spec). */
   const again = () => {
     const w = current.current;
@@ -558,6 +580,8 @@ export function App() {
             par={proof.receipt?.par?.goldS ?? null}
             onAgain={again}
             onShare={() => void shareRun()}
+            onReplay={replayMoment}
+            onAsk={mode === "live" && result.facts?.length ? (q) => askHost(q, result.facts!) : undefined}
             director={director}
             onTwist={() => {
               const w = director?.world;
