@@ -106,3 +106,12 @@ All five are identical. **A proof computed at the edge is valid in the judge's b
 | 10,000 | `f9f49770` (before secrets: re-measure) | `88ef8300` | 134 | red 1, blue 3 (blue wins) | all 5 identical |
 
 State hashes re-baselined later the same night when signs became decor (no collider); the event logs are unchanged. **Re-baselined again overnight 27 Oct:** the placer now adds up to six "secrets" (bonus collectibles that only sparkle and count apart from the win) to play worlds with fewer than ten things to use, so the CTF gains five neon shards on its rooftop lane and decks. The 2k state hash moved from `59f5b58f` to `becbbeec`; the event log is unchanged (the scripted run touches none of them), and all five runtimes still agree. The 10k figure is from before the secrets and is re-measured by the nightly run. Recast path queries inside the tick are bit-exact on every runtime too, so **a proof the edge ran against the bots holds for the bots in the judge's browser.** The T3 receipt on the CTF brief: 12 of 12 AI runners won against 3 bots, AI par 36.9 s (26.2 s against static NPCs).
+
+## S6: Cerebras terms: **GO** (2026-10-28)
+
+Read against the [Cerebras ToS](https://cerebras.ai/terms-of-service) (effective 27 Aug 2024) and the model pages; the user gave the GO on 28 Oct.
+
+- **Outputs are ours to license.** Cerebras claims no ownership; gpt-oss-120b and Qwen3.8-27B are Apache-2.0, compatible with T&C 7.2 and the organizer's sublicence (11.4).
+- **No training on API data; serving end users inside the app is allowed** (reselling keys is not, and we don't). No EU restriction beyond standard US export controls.
+- **Condition: no vendor comparisons.** The terms forbid using the service "for benchmarking or competitive analysis of the Service". The README, video, description and trust panel publish only GHOSTRUN's own end-to-end timings ("prompt to playable"), never a Cerebras-vs-anyone table or a per-provider speed claim.
+- **Anthropic stays in the routing** (user decision, 28 Oct): Haiku is the fallback rung for Cerebras 429s and the NPC-minds alternative, Sonnet runs the Director's cut and hard repairs. MiMo is dev-only, behind a flag that is off in production.
