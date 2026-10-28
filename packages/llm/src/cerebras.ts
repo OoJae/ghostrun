@@ -1,27 +1,8 @@
 // Cerebras adapter (OpenAI-compatible chat completions). Streams text deltas and drops the
 // reasoning channel; reports time-to-first-answer-token so the stopwatch can show real splits.
-export interface ChatMessage {
-  role: "system" | "user" | "assistant";
-  content: string;
-}
+import { clock, jsonIn, post, sseData, type ChatOptions, type StreamEvent } from "./wire";
 
-export interface ChatOptions {
-  apiKey: string;
-  model: string;
-  messages: ChatMessage[];
-  reasoningEffort?: "none" | "low" | "medium" | "high";
-  maxTokens?: number;
-  jsonSchema?: { name: string; schema: Record<string, unknown> };
-  baseUrl?: string;
-  signal?: AbortSignal;
-  now?: () => number;
-}
-
-export type StreamEvent =
-  | { type: "text"; delta: string }
-  | { type: "first_token"; ms: number }
-  | { type: "usage"; inTok: number; outTok: number }
-  | { type: "done"; ms: number };
+export { LlmError, RETRY_MS, type ChatMessage, type ChatOptions, type StreamEvent } from "./wire";
 
 const BASE = "https://api.cerebras.ai/v1";
 
@@ -37,91 +18,41 @@ function body(o: ChatOptions, stream: boolean) {
   });
 }
 
-export class LlmError extends Error {
-  constructor(message: string, readonly status: number, readonly retryable: boolean) {
-    super(message);
-  }
-}
-
-/** Waits `ms`, or less if the caller gives up. */
-const pause = (ms: number, signal?: AbortSignal) =>
-  new Promise<void>((resolve) => {
-    if (signal?.aborted) return resolve();
-    const t = setTimeout(resolve, ms);
-    signal?.addEventListener("abort", () => (clearTimeout(t), resolve()), { once: true });
-  });
-
-/** Backoff before each retry of a busy provider (429) or a server error: a second or two, not a failed world. */
-export const RETRY_MS = [700, 1500] as const;
-
-async function post(o: ChatOptions, stream: boolean): Promise<Response> {
-  for (let attempt = 0; ; attempt++) {
-    const res = await fetch(`${o.baseUrl ?? BASE}/chat/completions`, {
-      method: "POST",
-      headers: { authorization: `Bearer ${o.apiKey}`, "content-type": "application/json" },
-      body: body(o, stream),
-      ...(o.signal ? { signal: o.signal } : {}),
-    });
-    if (res.ok) return res;
-    const text = await res.text().catch(() => "");
-    const retryable = res.status === 429 || res.status >= 500;
-    const wait = RETRY_MS[attempt];
-    if (!retryable || wait === undefined || o.signal?.aborted) throw new LlmError(`cerebras ${res.status}: ${text.slice(0, 300)}`, res.status, retryable);
-    // the provider's own hint when it gives one (in seconds), never more than 2 s
-    const hint = Number(res.headers.get("retry-after"));
-    await pause(Number.isFinite(hint) && hint > 0 ? Math.min(2000, hint * 1000) : wait, o.signal);
-  }
-}
+const send = (o: ChatOptions, stream: boolean) => post("cerebras", `${o.baseUrl ?? BASE}/chat/completions`, { authorization: `Bearer ${o.apiKey}` }, body(o, stream), o);
 
 /** Stream answer text (reasoning deltas are dropped). */
 export async function* streamChat(o: ChatOptions): AsyncGenerator<StreamEvent> {
-  const now = o.now ?? (() => globalThis.performance?.now?.() ?? 0);
+  const now = clock(o);
   const t0 = now();
-  const res = await post(o, true);
-  const reader = res.body!.getReader();
-  const dec = new TextDecoder();
-  let buf = "";
+  const res = await send(o, true);
   let first = true;
-  for (;;) {
-    const { value, done } = await reader.read();
-    if (done) break;
-    buf += dec.decode(value, { stream: true });
-    let nl: number;
-    while ((nl = buf.indexOf("\n")) >= 0) {
-      const line = buf.slice(0, nl).trim();
-      buf = buf.slice(nl + 1);
-      if (!line.startsWith("data:")) continue;
-      const data = line.slice(5).trim();
-      if (data === "[DONE]") continue;
-      let chunk: { choices?: { delta?: { content?: string | null } }[]; usage?: { prompt_tokens: number; completion_tokens: number } };
-      try {
-        chunk = JSON.parse(data);
-      } catch {
-        continue;
-      }
-      const delta = chunk.choices?.[0]?.delta?.content;
-      if (delta) {
-        if (first) {
-          first = false;
-          yield { type: "first_token", ms: Math.round(now() - t0) };
-        }
-        yield { type: "text", delta };
-      }
-      if (chunk.usage) yield { type: "usage", inTok: chunk.usage.prompt_tokens, outTok: chunk.usage.completion_tokens };
+  for await (const data of sseData(res)) {
+    if (data === "[DONE]") continue;
+    let chunk: { choices?: { delta?: { content?: string | null } }[]; usage?: { prompt_tokens: number; completion_tokens: number } };
+    try {
+      chunk = JSON.parse(data);
+    } catch {
+      continue;
     }
+    const delta = chunk.choices?.[0]?.delta?.content;
+    if (delta) {
+      if (first) {
+        first = false;
+        yield { type: "first_token", ms: Math.round(now() - t0) };
+      }
+      yield { type: "text", delta };
+    }
+    if (chunk.usage) yield { type: "usage", inTok: chunk.usage.prompt_tokens, outTok: chunk.usage.completion_tokens, model: o.model };
   }
   yield { type: "done", ms: Math.round(now() - t0) };
 }
 
 /** One-shot JSON answer (used for the intent call, ideally with a strict json schema). */
-export async function chatJson<T>(o: ChatOptions): Promise<{ value: T; ms: number; inTok: number; outTok: number }> {
-  const now = o.now ?? (() => globalThis.performance?.now?.() ?? 0);
+export async function chatJson<T>(o: ChatOptions): Promise<{ value: T; ms: number; inTok: number; outTok: number; model: string }> {
+  const now = clock(o);
   const t0 = now();
-  const res = await post(o, false);
+  const res = await send(o, false);
   const j = (await res.json()) as { choices: { message: { content: string } }[]; usage?: { prompt_tokens: number; completion_tokens: number } };
-  const text = j.choices[0]?.message.content ?? "";
-  const start = text.indexOf("{");
-  const end = text.lastIndexOf("}");
-  if (start < 0 || end < start) throw new LlmError(`no JSON object in answer: ${text.slice(0, 200)}`, 200, true);
-  return { value: JSON.parse(text.slice(start, end + 1)) as T, ms: Math.round(now() - t0), inTok: j.usage?.prompt_tokens ?? 0, outTok: j.usage?.completion_tokens ?? 0 };
+  const value = jsonIn<T>(j.choices[0]?.message.content ?? "");
+  return { value, ms: Math.round(now() - t0), inTok: j.usage?.prompt_tokens ?? 0, outTok: j.usage?.completion_tokens ?? 0, model: o.model };
 }

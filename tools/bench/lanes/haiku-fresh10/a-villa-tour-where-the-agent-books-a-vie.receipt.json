@@ -1,0 +1,100 @@
+{
+  "prompt": "A villa tour where the agent books a viewing at the end",
+  "intent": {
+    "lang": "en",
+    "mode": "wander",
+    "genre": "real estate showcase",
+    "setting": "a single-storey villa with a yard, entrance, main room and four side rooms",
+    "role": "prospective buyer touring the villa",
+    "goal": "view every room and book a viewing with the agent at the end",
+    "fail": "leaving the villa without booking a viewing",
+    "mood": "calm and inviting",
+    "pack": "floor_plan",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Booking a viewing with the agent must be reachable from the final room.",
+    "nouns": [
+      {
+        "noun": "villa",
+        "hyper": "a single-storey house with a yard"
+      },
+      {
+        "noun": "agent",
+        "hyper": "a helpful property representative waiting at the end of the tour"
+      },
+      {
+        "noun": "viewing",
+        "hyper": "a scheduled appointment to see the property in person"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.6,
+      "arousal": 0.2,
+      "tension": -0.2
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "ff16df4a9e7fe585672db2de964dd64d1058d3be5717d55f1716fa6c05424516",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_booking",
+      "text": "Booking a viewing with the agent must be reachable from the final room.",
+      "status": "verified",
+      "method": "kinematic reachability (jump apex model)"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 0 rules reference existing things",
+        "src": ""
+      },
+      {
+        "id": "T1:x_booking",
+        "tier": "T1",
+        "subject": {
+          "kind": "property",
+          "id": "x_booking"
+        },
+        "method": "kinematic reachability (jump apex model)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "Booking a viewing with the agent must be reachable from the final room.",
+        "cx": null
+      },
+      {
+        "id": "T3:tour",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "tour"
+        },
+        "status": "played",
+        "method": "physics, an AI visitor walks to and uses each",
+        "n": 7,
+        "k": 7,
+        "text": "walked to and inspected 7 of 7 things",
+        "cx": null,
+        "src": "",
+        "ms": 34
+      }
+    ],
+    "par": null,
+    "ms": 60
+  }
+}

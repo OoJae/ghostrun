@@ -1,0 +1,28 @@
+{"op":"meta","mode":"wander","lang":"it","pack":"floor_plan","sub":[],"seed":30,"look":"museo d'arte moderna","mood":[0.4,-0.2,-0.3],"timeOfDay":11,"weather":"clear"}
+{"op":"zone","id":"z_yard","slot":"yard","tag":"outside","name":"Piazza del museo"}
+{"op":"zone","id":"z_lobby","slot":"entrance","tag":"entrance","name":"Atrio"}
+{"op":"zone","id":"z_sw","slot":"room_sw","tag":"room","name":"Sala contemporanea"}
+{"op":"zone","id":"z_se","slot":"room_se","tag":"room","name":"Sala astratta"}
+{"op":"zone","id":"z_nw","slot":"room_nw","tag":"room","name":"Sala fotografica"}
+{"op":"zone","id":"z_hall","slot":"main_room","tag":"hall","name":"Grande sala centrale"}
+{"op":"zone","id":"z_ne","slot":"room_ne","tag":"room","name":"Sala scultura"}
+{"op":"spawn","id":"sp_red","zone":"z_yard","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"uscita","zone":"z_yard","anchor":"gate","noun":"uscita del museo","hyper":"portal","team":""}
+{"op":"ent","id":"quadro_1","kind":"prop","noun":"tela astratta","hyper":"painting","zone":"z_sw","anchor":"wall_n","body":"fixed","shape":"box","size":[2,1.5,0.1]}
+{"op":"ent","id":"quadro_2","kind":"prop","noun":"ritratto moderno","hyper":"painting","zone":"z_nw","anchor":"wall_e","body":"fixed","shape":"box","size":[1.2,1.6,0.1]}
+{"op":"ent","id":"scultura_1","kind":"prop","noun":"scultura in bronzo","hyper":"sculpture","zone":"z_hall","anchor":"center","body":"fixed","shape":"box","size":[0.8,1.8,0.8]}
+{"op":"ent","id":"scultura_2","kind":"prop","noun":"figura in marmo","hyper":"sculpture","zone":"z_ne","anchor":"center","body":"fixed","shape":"box","size":[0.9,1.6,0.9]}
+{"op":"ent","id":"installazione","kind":"prop","noun":"installazione luminosa","hyper":"installation","zone":"z_se","anchor":"center","body":"fixed","shape":"box","size":[2,1,2]}
+{"op":"ent","id":"fotografia","kind":"prop","noun":"fotografia in bianco e nero","hyper":"photo","zone":"z_nw","anchor":"wall_n","body":"fixed","shape":"box","size":[1,0.8,0.1]}
+{"op":"verb","id":"vb_look_1","verb":"social.inspect","on":"quadro_1","params":{"text":"Un campo di colori che sfida la forma: l'artista cerca il ritmo puro."}}
+{"op":"verb","id":"vb_look_2","verb":"social.inspect","on":"quadro_2","params":{"text":"Un volto scomposto in piani geometrici, tipico del primo Novecento."}}
+{"op":"verb","id":"vb_look_3","verb":"social.inspect","on":"scultura_1","params":{"text":"Bronzo fuso: forme aperte che invitano lo sguardo a girarci intorno."}}
+{"op":"verb","id":"vb_look_4","verb":"social.inspect","on":"scultura_2","params":{"text":"Marmo levigato: la figura emerge lentamente dalla pietra."}}
+{"op":"verb","id":"vb_look_5","verb":"social.inspect","on":"installazione","params":{"text":"Luci che si accendono a ritmo lento, come un respiro collettivo."}}
+{"op":"verb","id":"vb_look_6","verb":"social.inspect","on":"fotografia","params":{"text":"Un istante di città, catturato in bianco e nero da una finestra."}}
+{"op":"npc","id":"guida","role":"guide","zone":"z_lobby","anchor":"center","team":"","menu":["guide.tour"],"dflt":"guide.tour"}
+{"op":"npc","id":"visitatore_1","role":"citizen","zone":"z_hall","anchor":"corner_nw","team":"","menu":["citizen.wander"],"dflt":"citizen.wander"}
+{"op":"expect","id":"x_tour","prop":"reachable","a":"sp_red","b":"z_hall","headline":true,"text":"La guida accompagna il visitatore tra le sale del museo d'arte moderna."}
+{"op":"expect","id":"x_inspect","prop":"reachable","a":"sp_red","b":"z_ne","text":"Le opere si possono osservare da vicino"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

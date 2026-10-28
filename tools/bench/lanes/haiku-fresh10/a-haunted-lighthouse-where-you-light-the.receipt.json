@@ -1,0 +1,278 @@
+{
+  "prompt": "A haunted lighthouse where you light the lamp at the top",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "horror adventure",
+    "setting": "a haunted coastal lighthouse at night",
+    "role": "lighthouse keeper",
+    "goal": "climb to the top and light the lamp",
+    "fail": "caught by the restless spirits or run out of time",
+    "mood": "eerie and tense",
+    "pack": "course",
+    "sub": [
+      "rooftop"
+    ],
+    "safety": "arcade",
+    "headline": "Lamp at the top needs timed vertical climbs with spirit chases.",
+    "nouns": [
+      {
+        "noun": "lighthouse",
+        "hyper": "a tall spiral tower of stone and iron"
+      },
+      {
+        "noun": "lamp",
+        "hyper": "a brass lantern that glows once lit"
+      },
+      {
+        "noun": "spirit",
+        "hyper": "a pale drifting ghost of a former keeper"
+      }
+    ],
+    "moodVec": {
+      "valence": -0.6,
+      "arousal": 0.7,
+      "tension": 0.8
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "d48347b207852fae407612bce273aabdbbe4ba1ff821244c82253838554f13f8",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_lamp",
+      "text": "Lamp at the top needs timed vertical climbs with spirit chases.",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners vs 2 bots"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 5 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (player enters lamp) [after lamp_switch on]",
+        "src": ""
+      },
+      {
+        "id": "T1:x_switch",
+        "tier": "T1",
+        "subject": {
+          "kind": "property",
+          "id": "x_switch"
+        },
+        "method": "kinematic reachability (jump apex model)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "Valve lever on the beam needs a double jump",
+        "cx": null
+      },
+      {
+        "id": "T1:x_gap",
+        "tier": "T1",
+        "subject": {
+          "kind": "property",
+          "id": "x_gap"
+        },
+        "method": "kinematic reachability (jump apex model)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "Broken catwalk needs a double jump",
+        "cx": null
+      },
+      {
+        "id": "T1:x_fuel",
+        "tier": "T1",
+        "subject": {
+          "kind": "property",
+          "id": "x_fuel"
+        },
+        "method": "kinematic reachability (jump apex model)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "Oil flask is reachable in the cellar",
+        "cx": null
+      },
+      {
+        "id": "T2:r_light",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_light"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 9,
+        "status": "verified",
+        "text": "r_light fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_plate_fx",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_plate_fx"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 6,
+        "status": "verified",
+        "text": "r_plate_fx fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_spirit_lose",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_spirit_lose"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_spirit_lose fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_timeout",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_timeout"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_timeout fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners vs 2 bots",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it vs 2 bots (AI par 22.7 s)",
+        "cx": null,
+        "src": "",
+        "ms": 1503
+      },
+      {
+        "id": "T3:x_switch",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "x_switch"
+        },
+        "status": "counterexample",
+        "method": "physics jump witness, 4 attempts per jump count",
+        "n": 4,
+        "k": 0,
+        "text": "Valve lever on the beam needs a double jump: reached with 2 jumps 0 of 4, with 1 0 of 4",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 0,
+          "unit": "attempts",
+          "text": "never reached with 2 jumps"
+        },
+        "src": "ai",
+        "ms": 27
+      },
+      {
+        "id": "T3:x_gap",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "x_gap"
+        },
+        "status": "counterexample",
+        "method": "physics jump witness, 4 attempts per jump count",
+        "n": 4,
+        "k": 0,
+        "text": "Broken catwalk needs a double jump: reached with 2 jumps 0 of 4, with 1 0 of 4",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 0,
+          "unit": "attempts",
+          "text": "never reached with 2 jumps"
+        },
+        "src": "ai",
+        "ms": 26
+      }
+    ],
+    "par": {
+      "goldS": 22.7,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 1929
+  }
+}

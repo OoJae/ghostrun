@@ -1,0 +1,280 @@
+{
+  "prompt": "A football penalty shootout against a goalkeeper who dives",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "sports",
+    "setting": "football penalty shootout on a stadium pitch",
+    "role": "striker taking penalties",
+    "goal": "score past the goalkeeper",
+    "fail": "goalkeeper saves the shot",
+    "mood": "tense and competitive",
+    "pack": "arena",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Keeper dives left or right, so aiming away from the dive must beat the save.",
+    "nouns": [
+      {
+        "noun": "penalty kick",
+        "hyper": "a single shot from the spot"
+      },
+      {
+        "noun": "goalkeeper",
+        "hyper": "a diving keeper who reacts to the shooter"
+      },
+      {
+        "noun": "goal",
+        "hyper": "a netted target at the end of the pitch"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.1,
+      "arousal": 0.7,
+      "tension": 0.8
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "4da5adab4abb139cf725b2c4c16d5d3fe38793c9d1310a991e8b7c7990d8a309",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_shot",
+      "text": "Keeper dives left or right, so aiming away from the dive must beat the save.",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners vs 1 bot"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 10 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (team:red reaches 1) ← r_goal (ball into net, carried by red) ← pick up ball",
+        "src": ""
+      },
+      {
+        "id": "T1:x_fair",
+        "tier": "T1",
+        "subject": {
+          "kind": "property",
+          "id": "x_fair"
+        },
+        "method": "kinematic reachability (jump apex model)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "reachable sp_red → spot",
+        "cx": null
+      },
+      {
+        "id": "T2:r_goal",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_goal"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_goal fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_miss",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_miss"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_miss fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_save",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_save"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_save: nothing produces touch on ball",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_deck_center",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_deck_center"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_deck_center fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_deck_e",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_deck_e"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_secret_deck_e fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_deck_e_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_deck_e_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_secret_deck_e_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_deck_w",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_deck_w"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_secret_deck_w fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_s",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_s"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_secret_flank_s fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_time",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_time"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_time fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners vs 1 bot",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it vs 1 bot (AI par 3 s)",
+        "cx": null,
+        "src": "",
+        "ms": 55
+      }
+    ],
+    "par": {
+      "goldS": 3,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 185
+  }
+}

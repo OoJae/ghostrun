@@ -35,6 +35,8 @@ export interface Upstream {
   fill?: { inTok: number; outTok: number; lines?: string[]; status?: number; usage?: boolean };
   /** Delay before Cerebras answers (to let a test cancel mid-flight). */
   delayMs?: number;
+  /** The Claude fallback: the same intent and fill lines, over the Messages API. */
+  claude?: { inTok: number; outTok: number; status?: number };
 }
 
 export interface Hit {
@@ -66,6 +68,20 @@ export function fakeFetch(up: Upstream = {}) {
       if (f.usage !== false) chunks.push(`data: ${JSON.stringify({ choices: [], usage: { prompt_tokens: f.inTok, completion_tokens: f.outTok } })}\n\n`);
       chunks.push("data: [DONE]\n\n");
       return new Response(chunks.join(""), { headers: { "content-type": "text/event-stream" } });
+    }
+    if (url.hostname === "api.anthropic.com") {
+      const o = JSON.parse(body) as { stream: boolean };
+      const c = up.claude ?? { inTok: 900, outTok: 300 };
+      if (c.status && c.status !== 200) return new Response("upstream says no", { status: c.status });
+      if (!o.stream) return Response.json({ content: [{ type: "text", text: JSON.stringify(up.intent?.body ?? INTENT) }], stop_reason: "end_turn", usage: { input_tokens: c.inTok, output_tokens: c.outTok } });
+      const lines = up.fill?.lines ?? ['{"op":"meta","v":1}', '{"op":"zone","id":"z_a"}', '{"op":"end","layer":"gameplay"}'];
+      const events = [
+        { type: "message_start", message: { usage: { input_tokens: c.inTok } } },
+        ...lines.map((l) => ({ type: "content_block_delta", index: 0, delta: { type: "text_delta", text: `${l}\n` } })),
+        { type: "message_delta", delta: { stop_reason: "end_turn" }, usage: { output_tokens: c.outTok } },
+        { type: "message_stop" },
+      ];
+      return new Response(events.map((e) => `event: ${e.type}\ndata: ${JSON.stringify(e)}\n\n`).join(""), { headers: { "content-type": "text/event-stream" } });
     }
     if (url.hostname === "challenges.cloudflare.com") {
       const form = new URLSearchParams(body);

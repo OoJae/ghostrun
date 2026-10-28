@@ -1,0 +1,204 @@
+{
+  "prompt": "Bludiště s duchy: najdi klíč a uteč z hradu",
+  "intent": {
+    "lang": "cs",
+    "mode": "play",
+    "genre": "horror escape",
+    "setting": "hrad s duchy a bludištěm chodeb",
+    "role": "hráč prozkoumávající hrad",
+    "goal": "najít klíč a uniknout z hradu",
+    "fail": "chycen duchem nebo uvězněn v bludišti",
+    "mood": "strašidelný a napjatý",
+    "pack": "maze",
+    "sub": [],
+    "safety": "arcade",
+    "headline": "Hráč musí najít klíč v bludišti a dostat se k východu dřív, než ho chytí duch.",
+    "nouns": [
+      {
+        "noun": "klíč",
+        "hyper": "zlatý klíč zářící slabým světlem"
+      },
+      {
+        "noun": "duch",
+        "hyper": "průsvitný bílý duch vznášející se nad podlahou"
+      },
+      {
+        "noun": "hrad",
+        "hyper": "temný středověký hrad s úzkými chodbami"
+      },
+      {
+        "noun": "bludiště",
+        "hyper": "spletitá síť kamenných chodeb bez konce"
+      }
+    ],
+    "moodVec": {
+      "valence": -0.6,
+      "arousal": 0.7,
+      "tension": 0.8
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "9213897f0227e33de9da03ffe48da9d715d21f2ee8489705416eb7e6530c8040",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_klic",
+      "text": "Hráč musí najít klíč v bludišti a dostat se k východu dřív, než ho chytí duch.",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 6 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_uprchni (klic into vychod, carried by red) ← pick up klic",
+        "src": ""
+      },
+      {
+        "id": "T2:r_brana",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_brana"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_brana fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_casovac",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_casovac"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_casovac fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_chyceni",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_chyceni"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_chyceni fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_chyceni2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_chyceni2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_chyceni2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_entrance",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_entrance"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_entrance fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_uprchni",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_uprchni"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_uprchni fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it (AI par 5.2 s)",
+        "cx": null,
+        "src": "",
+        "ms": 95
+      }
+    ],
+    "par": {
+      "goldS": 5.2,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 137
+  }
+}

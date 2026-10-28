@@ -1,0 +1,234 @@
+{
+  "prompt": "A jungle river rafting race through the rapids",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "racing",
+    "setting": "jungle river with rapids",
+    "role": "rafter",
+    "goal": "reach the finish first through the rapids",
+    "fail": "capsize or fall behind the rival rafts",
+    "mood": "energetic and competitive",
+    "pack": "course",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Rapids course needs timed jumps over each obstacle segment to finish first.",
+    "nouns": [
+      {
+        "noun": "river",
+        "hyper": "a wild jungle river with churning rapids"
+      },
+      {
+        "noun": "raft",
+        "hyper": "a sturdy inflatable raft that bounces over waves"
+      },
+      {
+        "noun": "rapids",
+        "hyper": "fast white-water drops that tilt the raft hard"
+      },
+      {
+        "noun": "finish line",
+        "hyper": "a glowing buoy across the water"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.6,
+      "arousal": 0.8,
+      "tension": 0.5
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "ec54cf9f04c09e4717ef1a1c943044cf094485ca193d8b9639aa363131d67fe0",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_race",
+      "text": "Rapids course needs timed jumps over each obstacle segment to finish first.",
+      "status": "counterexample",
+      "method": "static goal regression over rules"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 5 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "chain",
+          "text": "win unreachable in the rule graph"
+        },
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "counterexample",
+        "method": "static goal regression over rules",
+        "text": "no rule chain lets the player trigger the win",
+        "src": ""
+      },
+      {
+        "id": "T1:x_jump",
+        "tier": "T1",
+        "subject": {
+          "kind": "property",
+          "id": "x_jump"
+        },
+        "method": "kinematic reachability (jump apex model)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "counterexample",
+        "text": "Ledge drop needs double jump",
+        "cx": {
+          "where": null,
+          "have": 1.5,
+          "need": 1.1,
+          "unit": "m",
+          "text": "reachable with 1 jump: step 1.1 m ≤ apex 1.5 m"
+        }
+      },
+      {
+        "id": "T1:x_pit",
+        "tier": "T1",
+        "subject": {
+          "kind": "property",
+          "id": "x_pit"
+        },
+        "method": "kinematic reachability (jump apex model)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "Whirlpool pit can be crossed",
+        "cx": null
+      },
+      {
+        "id": "T2:r_cp1",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_cp1"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 12,
+        "status": "verified",
+        "text": "r_cp1 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_cp5",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_cp5"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 6,
+        "status": "verified",
+        "text": "r_cp5 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lose",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_lose fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_score",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_score fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:x_jump",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "x_jump"
+        },
+        "status": "counterexample",
+        "method": "physics jump witness, 4 attempts per jump count",
+        "n": 4,
+        "k": 3,
+        "text": "Ledge drop needs double jump: reached with 2 jumps 3 of 4, with 1 3 of 4",
+        "cx": {
+          "where": null,
+          "have": 3,
+          "need": 0,
+          "unit": "attempts",
+          "text": "reached with only 1 jump(s)"
+        },
+        "src": "ai",
+        "ms": 24
+      }
+    ],
+    "par": null,
+    "ms": 387
+  }
+}

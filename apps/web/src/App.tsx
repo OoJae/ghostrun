@@ -48,9 +48,11 @@ type Mode = "checking" | "live" | "fixture";
 
 const SOURCE: Record<Mode, { label: string; title: string }> = {
   checking: { label: "…", title: "checking the live AI lane" },
-  live: { label: "live AI", title: "Intent and fill are generated live (Cerebras), streamed line by line" },
+  live: { label: "live AI", title: "Intent and fill are generated live (Cerebras, with Claude Haiku as the fallback), streamed line by line" },
   fixture: { label: "fixture", title: "Live AI unavailable: showing the recorded CTF fixture world" },
 };
+/** A live world the fallback rung wrote: same proof, said plainly. */
+const FELL_BACK = { label: "live AI · Haiku", title: "The fast lane was busy, so Claude Haiku (Anthropic) wrote this world. It is proved the same way." };
 
 export function App() {
   const canvas = useRef<HTMLCanvasElement>(null);
@@ -64,6 +66,7 @@ export function App() {
   const [timing, setTiming] = useState<LoadResult | null>(null);
   const [status, setStatus] = useState<Status>("booting");
   const [mode, setMode] = useState<Mode>("checking");
+  const [fellBack, setFellBack] = useState(false);
   const [error, setError] = useState<string>();
   const [notice, setNotice] = useState<string>();
   const [collapsed, setCollapsed] = useState(false);
@@ -254,6 +257,7 @@ export function App() {
       setEdit({ status: "idle" });
       builtPrompt.current = text;
       setSpecHash(undefined);
+      setFellBack(false);
       setProof({ status: "idle", chips: [], receipt: null });
       delete probe().specHash;
       if (useLive) {
@@ -266,7 +270,8 @@ export function App() {
           const world = worldFromFill(r.fill, r.seed, { genre: r.intent.genre, setting: r.intent.setting, goal: r.intent.goal, fail: r.intent.fail, role: r.intent.role }, r.intent.pack, r.intent.mode);
           world.source = { prompt: text, intent: r.intent, fill: r.fill, seed: r.seed, pack: r.intent.pack };
           setNotice(undefined);
-          await show(world, id, startedAt, [...extraSplits, { label: "intent", ms: r.intentMs }, { label: "fill", ms: r.gameplayMs - r.intentMs }]);
+          setFellBack(r.fallback !== null);
+          await show(world, id, startedAt, [...extraSplits, { label: "intent", ms: r.intentMs }, { label: r.fallback ? `fill (${r.fallback})` : "fill", ms: r.gameplayMs - r.intentMs }]);
           return;
         }
         if (r.kind === "refused") {
@@ -330,6 +335,7 @@ export function App() {
         const shared = params.get("s") ? await loadShare(params.get("s")!) : null;
         if (shared && !disposed) {
           setPrompt("Shared run");
+          setFellBack(false);
           await show(shared.world, ++runId.current, 0, [{ label: "gpu init", ms: e.initMs }]);
           const sim = e.rapierSim;
           if (sim) {
@@ -595,6 +601,7 @@ export function App() {
     history.current = [];
     setEdit({ status: "idle" });
     setStatus("building");
+    setFellBack(false);
     await show(world, ++runId.current, t0, [{ label: "gallery", ms: performance.now() - t0 }]);
     setToast("A recorded live AI world (unedited), re-proved on your device now.");
   };
@@ -632,7 +639,7 @@ export function App() {
             onCollapse={() => setCollapsed(true)}
             timing={timing}
             busy={status === "building" || status === "booting"}
-            source={SOURCE[mode]}
+            source={mode === "live" && fellBack ? FELL_BACK : SOURCE[mode]}
             suggestions={SUGGESTIONS.filter((x) => mode === "live" || !x.live)}
             onFocusChange={setTyping}
             onGallery={() => setGallery(true)}

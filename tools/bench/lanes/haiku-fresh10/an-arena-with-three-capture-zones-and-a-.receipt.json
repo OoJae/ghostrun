@@ -1,0 +1,256 @@
+{
+  "prompt": "An arena with three capture zones and a two-minute timer: hold more zones than the blue team",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "team capture game",
+    "setting": "walled symmetric field with cover and raised side decks",
+    "role": "team player",
+    "goal": "hold more of the three capture zones than the blue team when the two-minute timer ends",
+    "fail": "blue team holds more zones when the timer runs out",
+    "mood": "competitive and tense",
+    "pack": "arena",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Three capture zones with a two-minute timer need a per-zone majority check that a playtest can verify.",
+    "nouns": [
+      {
+        "noun": "capture zone",
+        "hyper": "a marked ground pad that scores for the team standing on it most"
+      },
+      {
+        "noun": "timer",
+        "hyper": "a two-minute countdown that ends the match and decides the winner"
+      },
+      {
+        "noun": "blue team",
+        "hyper": "the opposing team whose zone count sets the score to beat"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.1,
+      "arousal": 0.7,
+      "tension": 0.8
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "c5e74957af92efe587efe0e3ab7b531d9452312fe60bdae504c65eb723bd67dc",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_majority",
+      "text": "Three capture zones with a two-minute timer need a per-zone majority check that a playtest can verify.",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 1,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 6 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 1,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_end_win (the timer runs out) [after red scores 2]",
+        "src": ""
+      },
+      {
+        "id": "T1:x_north_deck",
+        "tier": "T1",
+        "subject": {
+          "kind": "property",
+          "id": "x_north_deck"
+        },
+        "method": "kinematic reachability (jump apex model)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "counterexample",
+        "text": "North deck capture needs double jump",
+        "cx": {
+          "where": null,
+          "have": 1.5,
+          "need": 2.6,
+          "unit": "m",
+          "text": "reachable with 1 jump: step 2.6 m ≤ apex 1.5 m"
+        }
+      },
+      {
+        "id": "T2:r_end_lose",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_end_lose"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_end_lose fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_end_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_end_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_end_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_score_mid",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score_mid"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 0,
+        "src": "ai",
+        "ms": 2,
+        "status": "counterexample",
+        "text": "r_score_mid fires exactly once",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "firings",
+          "text": "never fired when forced"
+        }
+      },
+      {
+        "id": "T2:r_score_n",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score_n"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 0,
+        "src": "ai",
+        "ms": 4,
+        "status": "counterexample",
+        "text": "r_score_n fires exactly once",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "firings",
+          "text": "never fired when forced"
+        }
+      },
+      {
+        "id": "T2:r_score_s",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score_s"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 0,
+        "src": "ai",
+        "ms": 3,
+        "status": "counterexample",
+        "text": "r_score_s fires exactly once",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "firings",
+          "text": "never fired when forced"
+        }
+      },
+      {
+        "id": "T2:r_tag_drop",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_tag_drop"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_tag_drop: nothing produces touch",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it (AI par 120 s)",
+        "cx": null,
+        "src": "",
+        "ms": 752
+      },
+      {
+        "id": "T3:x_north_deck",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "x_north_deck"
+        },
+        "status": "played",
+        "method": "physics jump witness, 4 attempts per jump count",
+        "n": 4,
+        "k": 2,
+        "text": "North deck capture needs double jump: reached with 2 jumps 2 of 4, with 1 0 of 4",
+        "cx": null,
+        "src": "ai",
+        "ms": 27
+      }
+    ],
+    "par": {
+      "goldS": 120,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 911
+  }
+}

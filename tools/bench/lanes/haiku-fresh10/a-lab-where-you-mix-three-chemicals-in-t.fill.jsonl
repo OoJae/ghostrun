@@ -1,0 +1,43 @@
+{"op":"meta","mode":"play","lang":"en","pack":"floor_plan","sub":[],"seed":23,"look":"sterile laboratory","mood":[-0.2,0.5,0.7],"timeOfDay":14,"weather":"clear"}
+{"op":"zone","id":"z_yard","slot":"yard","tag":"outside","name":"Loading apron"}
+{"op":"zone","id":"z_entry","slot":"entrance","tag":"entrance","name":"Lab entrance"}
+{"op":"zone","id":"z_store_w","slot":"room_sw","tag":"room","name":"Acid store"}
+{"op":"zone","id":"z_store_e","slot":"room_se","tag":"room","name":"Solvent store"}
+{"op":"zone","id":"z_bench","slot":"main_room","tag":"hall","name":"Mixing bench hall"}
+{"op":"zone","id":"z_office","slot":"room_ne","tag":"room","name":"Technician office"}
+{"op":"spawn","id":"sp_red","zone":"z_entry","anchor":"center","team":"red"}
+{"op":"goal","id":"exit","zone":"z_yard","anchor":"gate","noun":"loading door","hyper":"door","team":"red"}
+{"op":"ent","id":"flask_a","kind":"pickup","noun":"chemical flask A","hyper":"reagent flask","zone":"z_store_w","anchor":"center","body":"dynamic","shape":"capsule","size":[0.2,0.4,0.2]}
+{"op":"ent","id":"flask_b","kind":"pickup","noun":"chemical flask B","hyper":"reagent flask","zone":"z_store_e","anchor":"center","body":"dynamic","shape":"capsule","size":[0.2,0.4,0.2]}
+{"op":"ent","id":"flask_c","kind":"pickup","noun":"chemical flask C","hyper":"reagent flask","zone":"z_office","anchor":"center","body":"dynamic","shape":"capsule","size":[0.2,0.4,0.2]}
+{"op":"ent","id":"bench_1","kind":"switch","noun":"mixing bench","hyper":"mixing station","zone":"z_bench","anchor":"center","body":"fixed","shape":"box","size":[2,1,1]}
+{"op":"ent","id":"stage_1","kind":"plate","noun":"stage plate 1","hyper":"plate","zone":"z_bench","anchor":"corner_nw","body":"sensor","shape":"box","size":[1,0.1,1]}
+{"op":"ent","id":"stage_2","kind":"plate","noun":"stage plate 2","hyper":"plate","zone":"z_bench","anchor":"center","body":"sensor","shape":"box","size":[1,0.1,1]}
+{"op":"ent","id":"stage_3","kind":"plate","noun":"stage plate 3","hyper":"plate","zone":"z_bench","anchor":"corner_ne","body":"sensor","shape":"box","size":[1,0.1,1]}
+{"op":"ent","id":"fume_hood","kind":"hazard","noun":"fume hood","hyper":"hazard","zone":"z_bench","anchor":"wall_e","body":"sensor","shape":"box","size":[1.5,2,1.5]}
+{"op":"ent","id":"batch_door","kind":"door","noun":"batch cabinet","hyper":"door","zone":"z_bench","anchor":"doorway_s","body":"fixed","shape":"box"}
+{"op":"ent","id":"sign_safety","kind":"sign","noun":"safety notice","hyper":"sign","zone":"z_entry","anchor":"wall_n","body":"fixed","shape":"box","size":[0.8,0.6,0.05]}
+{"op":"ent","id":"sign_ledger","kind":"sign","noun":"batch ledger","hyper":"sign","zone":"z_office","anchor":"wall_s","body":"fixed","shape":"box","size":[0.8,0.6,0.05]}
+{"op":"verb","id":"vb_carry_a","verb":"physics_props.carry","on":"flask_a","params":{}}
+{"op":"verb","id":"vb_carry_b","verb":"physics_props.carry","on":"flask_b","params":{}}
+{"op":"verb","id":"vb_carry_c","verb":"physics_props.carry","on":"flask_c","params":{}}
+{"op":"verb","id":"vb_bench","verb":"puzzle.switch","on":"bench_1","params":{"once":false}}
+{"op":"verb","id":"vb_plate1","verb":"puzzle.plate","on":"stage_1","params":{"latch":true}}
+{"op":"verb","id":"vb_plate2","verb":"puzzle.plate","on":"stage_2","params":{"latch":true}}
+{"op":"verb","id":"vb_plate3","verb":"puzzle.plate","on":"stage_3","params":{"latch":true}}
+{"op":"verb","id":"vb_fume","verb":"motion_hazards.hazard","on":"fume_hood","params":{"respawn":true}}
+{"op":"verb","id":"vb_batch","verb":"puzzle.lock","on":"batch_door","params":{"key":"flask_c","keep":true}}
+{"op":"verb","id":"vb_timer","verb":"puzzle.timer","on":"player","params":{"seconds":180}}
+{"op":"verb","id":"vb_ledger","verb":"social.inspect","on":"sign_ledger","params":{"text":"Batch order: A then B then C. Any other order ruins the batch."}}
+{"op":"verb","id":"vb_safety","verb":"social.inspect","on":"sign_safety","params":{"text":"Wear goggles. Add acid to water, never water to acid."}}
+{"op":"law","player":{"jumpsMax":1,"jumpH":1.2,"speed":5}}
+{"op":"rule","id":"r_order_ok","when":{"t":"state_is","a":"stage_3","s":"down"},"if":[{"l":"stage_1.state","op":"eq","r":"down"},{"l":"stage_2.state","op":"eq","r":"down"}],"then":[{"e":"set_state","target":"batch_door","v":"open"},{"e":"score","target":"team:red","n":100}],"once":true}
+{"op":"rule","id":"r_order_bad","when":{"t":"state_is","a":"stage_3","s":"down"},"if":[{"l":"stage_1.state","op":"eq","r":"up"}],"then":[{"e":"emit","target":"bench_1","fx":"fizz"},{"e":"reset","target":"stage_1"},{"e":"reset","target":"stage_2"},{"e":"reset","target":"stage_3"},{"e":"reset","target":"vb_timer"}]}
+{"op":"rule","id":"r_timeout","when":{"t":"timer_end","a":"player"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_win","when":{"t":"state_is","a":"batch_door","s":"open"},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"npc","id":"supervisor_1","role":"guide","zone":"z_office","anchor":"center","team":"","menu":["guide.explain"],"dflt":"guide.explain"}
+{"op":"expect","id":"x_order","prop":"win_reachable","a":"sp_red","b":"batch_door","headline":true,"text":"Wrong mixing order must reset the batch so the sequence matters."}
+{"op":"expect","id":"x_flasks","prop":"reachable","a":"sp_red","b":"z_store_w","text":"All three flasks can be fetched from their stores"}
+{"op":"expect","id":"x_fume","prop":"reachable","a":"sp_red","b":"z_bench","text":"The fume hood is a hazard that respawns the player"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

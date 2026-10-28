@@ -1,0 +1,220 @@
+{
+  "prompt": "A greenhouse maze where you collect seeds and plant them at the centre",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "puzzle adventure",
+    "setting": "a greenhouse maze overgrown with plants",
+    "role": "gardener",
+    "goal": "collect seeds scattered through the maze and plant them at the centre",
+    "fail": "running out of time or being caught by the sprinklers",
+    "mood": "calm but tense",
+    "pack": "maze",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Seeds must be carried back to a planting pad at the maze centre.",
+    "nouns": [
+      {
+        "noun": "seed",
+        "hyper": "plant"
+      },
+      {
+        "noun": "greenhouse",
+        "hyper": "building"
+      },
+      {
+        "noun": "maze",
+        "hyper": "puzzle"
+      },
+      {
+        "noun": "centre",
+        "hyper": "place"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.3,
+      "arousal": 0.2,
+      "tension": 0.4
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "010567bbfca3f7cb30a4c30672adb9a083d727c0599b77a51abef3039f725431",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_plant",
+      "text": "Seeds must be carried back to a planting pad at the maze centre.",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 6 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (team:red reaches 4) ← r_seed1 (seed_1 into plant_pad) ← pick up seed_1 + r_seed2 (seed_2 into plant_pad) ← pick up seed_2 + r_seed3 (seed_3 into plant_pad) ← pick up seed_3 + r_seed4 (seed_4 into plant_pad) ← pick up seed_4",
+        "src": ""
+      },
+      {
+        "id": "T1:x_sprinkler",
+        "tier": "T1",
+        "subject": {
+          "kind": "property",
+          "id": "x_sprinkler"
+        },
+        "method": "kinematic reachability (jump apex model)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "Sprinklers guard the route but can be dodged",
+        "cx": null
+      },
+      {
+        "id": "T2:r_seed1",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_seed1"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 8,
+        "status": "verified",
+        "text": "r_seed1 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_seed2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_seed2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 6,
+        "status": "verified",
+        "text": "r_seed2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_seed3",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_seed3"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_seed3 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_seed4",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_seed4"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_seed4 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_timeout",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_timeout"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_timeout fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it (AI par 71.5 s)",
+        "cx": null,
+        "src": "",
+        "ms": 1190
+      }
+    ],
+    "par": {
+      "goldS": 71.5,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 1237
+  }
+}

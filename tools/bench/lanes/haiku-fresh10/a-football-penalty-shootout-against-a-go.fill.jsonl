@@ -1,0 +1,32 @@
+{"op":"meta","mode":"play","lang":"en","pack":"arena","sub":[],"seed":31,"look":"stadium night floodlit pitch","mood":[0.1,0.7,0.8],"timeOfDay":21,"weather":"clear"}
+{"op":"zone","id":"z_mid","slot":"midfield","tag":"midfield","name":"Centre circle"}
+{"op":"zone","id":"z_west","slot":"west_half","tag":"base","name":"West penalty area"}
+{"op":"zone","id":"z_east","slot":"east_half","tag":"base","name":"East penalty area"}
+{"op":"zone","id":"z_north","slot":"north_deck","tag":"platform","name":"North stand"}
+{"op":"zone","id":"z_south","slot":"south_deck","tag":"platform","name":"South stand"}
+{"op":"spawn","id":"sp_red","zone":"z_mid","anchor":"center_s","team":"red"}
+{"op":"goal","id":"net","zone":"z_east","anchor":"goal_ring","noun":"goal net","hyper":"goal","team":"red"}
+{"op":"ent","id":"ball","kind":"pickup","noun":"match ball","hyper":"ball","zone":"z_mid","anchor":"center","body":"dynamic","shape":"sphere","size":[0.22,0.22,0.22]}
+{"op":"ent","id":"spot","kind":"plate","noun":"penalty spot","hyper":"spot","zone":"z_mid","anchor":"center_n","body":"sensor","shape":"box","size":[0.5,0.05,0.5]}
+{"op":"ent","id":"keeper","kind":"npc","noun":"goalkeeper","hyper":"keeper","zone":"z_east","anchor":"hoop","body":"kinematic","shape":"capsule","size":[0.4,1.8,0.4],"team":"blue"}
+{"op":"ent","id":"scoreboard","kind":"sign","noun":"scoreboard","hyper":"scoreboard","zone":"z_mid","anchor":"scoreboard","body":"fixed","shape":"box"}
+{"op":"ent","id":"crossbar","kind":"hazard","noun":"crossbar","hyper":"post","zone":"z_east","anchor":"goal_ring","body":"sensor","shape":"box","size":[7.3,0.12,0.12]}
+{"op":"ent","id":"flag_l","kind":"prop","noun":"corner flag","hyper":"flag","zone":"z_west","anchor":"flank_n","body":"fixed","shape":"box"}
+{"op":"ent","id":"flag_r","kind":"prop","noun":"corner flag","hyper":"flag","zone":"z_east","anchor":"flank_s","body":"fixed","shape":"box"}
+{"op":"ent","id":"keeper_mark","kind":"switch","noun":"keeper dive lever","hyper":"lever","zone":"z_east","anchor":"flank_n","body":"fixed","shape":"box"}
+{"op":"verb","id":"vb_ball","verb":"physics_props.carry","on":"ball","params":{}}
+{"op":"verb","id":"vb_jump","verb":"locomotion.jump","on":"player","params":{"jumpsMax":1}}
+{"op":"verb","id":"vb_keeper","verb":"puzzle.switch","on":"keeper_mark","params":{"once":true}}
+{"op":"verb","id":"vb_crossbar","verb":"motion_hazards.hazard","on":"crossbar","params":{"respawn":true}}
+{"op":"verb","id":"vb_look","verb":"social.inspect","on":"scoreboard","params":{"text":"Penalties: first to score past the keeper wins the shootout."}}
+{"op":"verb","id":"vb_clock","verb":"puzzle.timer","on":"player","params":{"seconds":60}}
+{"op":"law","player":{"jumpsMax":1,"jumpH":1.0,"speed":6}}
+{"op":"rule","id":"r_goal","when":{"t":"enter","a":"ball","b":"net"},"if":[{"l":"ball.carrier.team","op":"eq","r":"red"}],"then":[{"e":"score","target":"team:red","n":1},{"e":"emit","target":"net","fx":"net_ripple"}],"once":true}
+{"op":"rule","id":"r_save","when":{"t":"touch","a":"keeper","b":"ball"},"then":[{"e":"set_state","target":"keeper_mark","v":"on"},{"e":"emit","target":"keeper","fx":"save_flash"}]}
+{"op":"rule","id":"r_miss","when":{"t":"hit","a":"player","b":"crossbar"},"then":[{"e":"reset","target":"ball"}]}
+{"op":"rule","id":"r_time","when":{"t":"timer_end","a":"player"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_win","when":{"t":"score_gte","a":"team:red","n":1},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"expect","id":"x_shot","prop":"win_reachable","a":"sp_red","b":"net","headline":true,"text":"Keeper dives left or right, so aiming away from the dive must beat the save."}
+{"op":"expect","id":"x_fair","prop":"reachable","a":"sp_red","b":"spot"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

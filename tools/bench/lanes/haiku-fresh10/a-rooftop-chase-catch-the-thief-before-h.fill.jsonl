@@ -1,0 +1,40 @@
+{"op":"meta","mode":"play","lang":"en","pack":"city_block","sub":["rooftop"],"seed":18,"look":"city rooftops at night","mood":[-0.3,0.9,0.85],"timeOfDay":22,"weather":"clear"}
+{"op":"zone","id":"z_street_w","slot":"street_w","tag":"street","name":"West street"}
+{"op":"zone","id":"z_street_e","slot":"street_e","tag":"street","name":"East street"}
+{"op":"zone","id":"z_roof","slot":"roof_lane_a","tag":"rooftop","name":"Rooftop lane"}
+{"op":"zone","id":"z_plaza","slot":"center","tag":"plaza","name":"Plaza"}
+{"op":"zone","id":"z_pad","slot":"east_block","tag":"base","name":"Helipad block"}
+{"op":"spawn","id":"sp_red","zone":"z_street_w","anchor":"spawn_pad","team":"red"}
+{"op":"spawn","id":"sp_blue","zone":"z_pad","anchor":"spawn_pad","team":"blue"}
+{"op":"goal","id":"heli","zone":"z_pad","anchor":"goal_ring","noun":"helicopter","hyper":"vehicle","team":"blue"}
+{"op":"ent","id":"thief","kind":"npc","noun":"fleeing thief","hyper":"thief","zone":"z_roof","anchor":"lane_start","body":"dynamic","shape":"capsule","size":[0.4,1.8,0.4],"team":"blue"}
+{"op":"ent","id":"ledge_gap","kind":"hazard","noun":"rooftop gap","hyper":"gap","zone":"z_roof","anchor":"gap_mid","body":"sensor","shape":"box","size":[3,0.2,3]}
+{"op":"ent","id":"roof_ledge","kind":"platform","noun":"raised ledge","hyper":"ledge","zone":"z_roof","anchor":"lane_end","body":"fixed","shape":"box","size":[4,0.4,3]}
+{"op":"ent","id":"vent_1","kind":"prop","noun":"rooftop vent","hyper":"vent","zone":"z_roof","anchor":"edge","body":"fixed","shape":"box","size":[1,1,1]}
+{"op":"ent","id":"crate_1","kind":"pickup","noun":"supply crate","hyper":"crate","zone":"z_plaza","anchor":"plinth","body":"dynamic","shape":"box","size":[0.6,0.6,0.6]}
+{"op":"ent","id":"cover_wall","kind":"prop","noun":"parapet wall","hyper":"wall","zone":"z_plaza","anchor":"wall_n","body":"fixed","shape":"box","size":[4,1.2,0.4]}
+{"op":"ent","id":"jump_pad_1","kind":"platform","noun":"bounce pad","hyper":"jump_pad","zone":"z_street_e","anchor":"spawn_pad","body":"sensor","shape":"box","size":[1.5,0.2,1.5]}
+{"op":"ent","id":"vent_pad","kind":"plate","noun":"vent plate","hyper":"plate","zone":"z_roof","anchor":"gap_mid","body":"sensor","shape":"box","size":[1.2,0.1,1.2]}
+{"op":"ent","id":"wind_gust","kind":"hazard","noun":"rooftop gust","hyper":"wind","zone":"z_roof","anchor":"lane_end","body":"sensor","shape":"box","size":[3,2,3]}
+{"op":"ent","id":"checkpoint_1","kind":"checkpoint","noun":"lane checkpoint","hyper":"checkpoint","zone":"z_roof","anchor":"lane_start","body":"sensor","shape":"box","size":[1,1,1]}
+{"op":"ent","id":"sign_roof","kind":"sign","noun":"warning sign","hyper":"sign","zone":"z_street_w","anchor":"spawn_pad","body":"fixed","shape":"box","size":[0.6,1,0.1]}
+{"op":"verb","id":"vb_jump","verb":"locomotion.jump","on":"player","params":{"jumpsMax":2}}
+{"op":"verb","id":"vb_tag","verb":"combat_sport.tag_drop","on":"player","params":{"radius":1.5}}
+{"op":"verb","id":"vb_catch","verb":"combat_sport.catch","on":"thief","params":{}}
+{"op":"verb","id":"vb_gap","verb":"motion_hazards.hazard","on":"ledge_gap","params":{"respawn":true}}
+{"op":"verb","id":"vb_vent","verb":"puzzle.plate","on":"vent_pad","params":{"latch":false}}
+{"op":"verb","id":"vb_gust","verb":"motion_hazards.wind","on":"wind_gust","params":{"x":6,"z":0}}
+{"op":"verb","id":"vb_bounce","verb":"locomotion.jump_pad","on":"jump_pad_1","params":{"height":4}}
+{"op":"verb","id":"vb_cp","verb":"puzzle.checkpoint","on":"checkpoint_1","params":{}}
+{"op":"verb","id":"vb_look","verb":"social.inspect","on":"sign_roof","params":{"text":"Rooftop lane. Mind the gaps and the wind."}}
+{"op":"verb","id":"vb_chase","verb":"puzzle.timer","on":"player","params":{"seconds":90}}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":6}}
+{"op":"rule","id":"r_caught","when":{"t":"touch","a":"player","b":"thief"},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_escape","when":{"t":"enter","a":"thief","b":"heli"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_timeout","when":{"t":"timer_end","a":"player"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_gap","when":{"t":"hit","a":"player","b":"ledge_gap"},"then":[{"e":"emit","target":"ledge_gap","fx":"spark"}]}
+{"op":"rule","id":"r_vent","when":{"t":"state_is","a":"vent_pad","s":"down"},"then":[{"e":"emit","target":"vent_pad","fx":"steam"}]}
+{"op":"expect","id":"x_roof","prop":"requires","a":"sp_red","b":"roof_ledge","need":["jumps>=2"],"headline":true,"text":"Rooftop lane needs double jump to catch the thief"}
+{"op":"expect","id":"x_catch","prop":"win_reachable","a":"sp_red","b":"thief","text":"The thief can be caught before the helicopter"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

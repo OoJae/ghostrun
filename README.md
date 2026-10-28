@@ -74,9 +74,10 @@ Without an API key the app opens recorded worlds: `?fixture=ctf` (default), `coi
 
 ```
 CEREBRAS_API_KEY=...
+ANTHROPIC_API_KEY=...   # optional: Claude Haiku answers when the fast lane is busy or down
 ```
 
-The dev server runs the real edge handler in-process; keys never reach the browser.
+The dev server runs the real edge handler in-process; keys never reach the browser. Either key alone is enough to build.
 
 ```bash
 pnpm gate                                # typecheck, unit tests, 5-runtime determinism check
@@ -89,6 +90,7 @@ Controls: WASD to move, Space to jump (press again in the air to double jump), F
 ## AI use
 
 - **At runtime:** an intent model (Qwen3.8-27B) and a fill/repair model (gpt-oss-120b), both open-weight Apache-2.0 models served by Cerebras. They write the world as typed data; they never write code that runs. Everything they produce is validated, repaired deterministically where possible, and proved before it is trusted.
+- **The rung below:** when that lane is busy or down before it has written anything, the same request goes to Claude Haiku 5.5 (Anthropic), and the build says which model answered. Its worlds go through the same proof.
 - **Building it:** the code was written with Claude Code (Anthropic), directed and reviewed by the author.
 
 ## Licence and credits

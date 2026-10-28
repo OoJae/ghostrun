@@ -1,0 +1,16 @@
+{"op":"meta","mode":"wander","lang":"en","pack":"floor_plan","sub":[],"seed":12,"look":"minimalist museum","mood":[0.4,-0.5,-0.3],"timeOfDay":11,"weather":"clear"}
+{"op":"zone","id":"z_entry","slot":"entrance","tag":"entrance","name":"Entrance hall"}
+{"op":"zone","id":"z_west","slot":"room_sw","tag":"room","name":"West gallery"}
+{"op":"zone","id":"z_hall","slot":"main_room","tag":"hall","name":"Central hall"}
+{"op":"zone","id":"z_ne","slot":"room_ne","tag":"room","name":"Northeast gallery"}
+{"op":"spawn","id":"sp_red","zone":"z_entry","anchor":"center","team":"red"}
+{"op":"ent","id":"sculpt_1","kind":"prop","noun":"sculpture","hyper":"sculpture","zone":"z_west","anchor":"center","body":"fixed","shape":"box","size":[1.0,1.8,1.0]}
+{"op":"ent","id":"sculpt_2","kind":"prop","noun":"sculpture","hyper":"sculpture","zone":"z_hall","anchor":"center","body":"fixed","shape":"box","size":[1.2,2.2,1.2]}
+{"op":"ent","id":"sculpt_3","kind":"prop","noun":"sculpture","hyper":"sculpture","zone":"z_ne","anchor":"center","body":"fixed","shape":"box","size":[0.9,1.5,0.9]}
+{"op":"verb","id":"vb_look_1","verb":"social.inspect","on":"sculpt_1","params":{"text":"A single steel column, leaning slightly toward the light."}}
+{"op":"verb","id":"vb_look_2","verb":"social.inspect","on":"sculpt_2","params":{"text":"Stacked white volumes that play with balance and empty space."}}
+{"op":"verb","id":"vb_look_3","verb":"social.inspect","on":"sculpt_3","params":{"text":"A dark cube with a hollow core, meant to be seen from every side."}}
+{"op":"npc","id":"guide_1","role":"guide","zone":"z_entry","anchor":"corner_ne","team":"","menu":["guide.explain"],"dflt":"guide.explain"}
+{"op":"expect","id":"x_explain","prop":"reachable","a":"sp_red","b":"z_hall","headline":true,"text":"Each sculpture must trigger a guide explanation when the visitor approaches it."}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

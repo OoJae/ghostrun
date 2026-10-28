@@ -1,0 +1,100 @@
+{
+  "prompt": "A car showroom where the salesperson lets you sit in the sports car",
+  "intent": {
+    "lang": "en",
+    "mode": "wander",
+    "genre": "showroom exploration",
+    "setting": "a car showroom with polished floors and gleaming vehicles on display",
+    "role": "customer visiting the showroom",
+    "goal": "sit in the sports car while the salesperson lets you try it out",
+    "fail": "none, relaxed browsing with no lose state",
+    "mood": "calm, curious and admiring",
+    "pack": "floor_plan",
+    "sub": [],
+    "safety": "ok",
+    "headline": "The sports car must be enterable and seat the player, with the salesperson nearby.",
+    "nouns": [
+      {
+        "noun": "sports car",
+        "hyper": "vehicle"
+      },
+      {
+        "noun": "salesperson",
+        "hyper": "person"
+      },
+      {
+        "noun": "showroom",
+        "hyper": "building"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.6,
+      "arousal": 0.2,
+      "tension": 0.1
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "a8a3f592972ded0a2d3b59eaafe1812d95e21cd3cafd4eec3cad5d2394ef0be9",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_sit",
+      "text": "The sports car must be enterable and seat the player, with the salesperson nearby.",
+      "status": "verified",
+      "method": "kinematic reachability (jump apex model)"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 0 rules reference existing things",
+        "src": ""
+      },
+      {
+        "id": "T1:x_sit",
+        "tier": "T1",
+        "subject": {
+          "kind": "property",
+          "id": "x_sit"
+        },
+        "method": "kinematic reachability (jump apex model)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "The sports car must be enterable and seat the player, with the salesperson nearby.",
+        "cx": null
+      },
+      {
+        "id": "T3:tour",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "tour"
+        },
+        "status": "played",
+        "method": "physics, an AI visitor walks to and uses each",
+        "n": 5,
+        "k": 5,
+        "text": "walked to and inspected 5 of 5 things",
+        "cx": null,
+        "src": "",
+        "ms": 27
+      }
+    ],
+    "par": null,
+    "ms": 53
+  }
+}

@@ -1,0 +1,31 @@
+{"op":"meta","mode":"play","lang":"cs","pack":"maze","sub":[],"seed":25,"look":"hrad s duchy, temné kamenné chodby","mood":[-0.6,0.7,0.8],"timeOfDay":22,"weather":"clear"}
+{"op":"zone","id":"z_nadvori","slot":"start","tag":"outside","name":"Nádvoří hradu"}
+{"op":"zone","id":"z_bludiste","slot":"maze","tag":"maze","name":"Bludiště chodeb"}
+{"op":"spawn","id":"sp_red","zone":"z_nadvori","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"vychod","zone":"z_nadvori","anchor":"sign","noun":"východní brána","hyper":"gate","team":"red"}
+{"op":"ent","id":"klic","kind":"pickup","noun":"zlatý klíč","hyper":"key","zone":"z_bludiste","anchor":"center","body":"dynamic","shape":"box","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"dver_brany","kind":"door","noun":"železná brána","hyper":"door","zone":"z_nadvori","anchor":"exit","body":"fixed","shape":"box"}
+{"op":"ent","id":"duch_1","kind":"hazard","noun":"průsvitný duch","hyper":"ghost","zone":"z_bludiste","anchor":"dead_end_1","body":"sensor","shape":"sphere","size":[0.8,0.8,0.8]}
+{"op":"ent","id":"duch_2","kind":"hazard","noun":"průsvitný duch","hyper":"ghost","zone":"z_bludiste","anchor":"dead_end_3","body":"sensor","shape":"sphere","size":[0.8,0.8,0.8]}
+{"op":"ent","id":"pochodeň","kind":"prop","noun":"pochodeň","hyper":"torch","zone":"z_bludiste","anchor":"entrance","body":"fixed","shape":"box","size":[0.2,0.6,0.2]}
+{"op":"ent","id":"sukno_1","kind":"prop","noun":"stará tapiserie","hyper":"painting","zone":"z_bludiste","anchor":"dead_end_2","body":"fixed","shape":"box","size":[1.2,1.6,0.1]}
+{"op":"ent","id":"sarkofag","kind":"prop","noun":"kamenný sarkofág","hyper":"sarcophagus","zone":"z_bludiste","anchor":"dead_end_4","body":"fixed","shape":"box","size":[1.0,0.8,0.6]}
+{"op":"ent","id":"past_1","kind":"plate","noun":"tlaková deska","hyper":"plate","zone":"z_bludiste","anchor":"center","body":"sensor","shape":"box","size":[1.0,0.1,1.0]}
+{"op":"ent","id":"lustr","kind":"hazard","noun":"padající lustr","hyper":"chandelier","zone":"z_bludiste","anchor":"exit","body":"sensor","shape":"box","size":[1.0,0.5,1.0]}
+{"op":"verb","id":"vb_carry_klic","verb":"physics_props.carry","on":"klic","params":{}}
+{"op":"verb","id":"vb_lock_brana","verb":"puzzle.lock","on":"dver_brany","params":{"key":"klic"}}
+{"op":"verb","id":"vb_duch_1","verb":"motion_hazards.hazard","on":"duch_1","params":{"respawn":true}}
+{"op":"verb","id":"vb_duch_2","verb":"motion_hazards.hazard","on":"duch_2","params":{"respawn":true}}
+{"op":"verb","id":"vb_plate","verb":"puzzle.plate","on":"past_1","params":{"latch":false}}
+{"op":"verb","id":"vb_lustr","verb":"motion_hazards.hazard","on":"lustr","params":{"respawn":true}}
+{"op":"verb","id":"vb_sukno","verb":"social.inspect","on":"sukno_1","params":{"text":"Vybledlá tapiserie znázorňuje hrabě, který zmizel v bludišti."}}
+{"op":"verb","id":"vb_sarkofag","verb":"social.inspect","on":"sarkofag","params":{"text":"Nápis na víku: Kdo nese klíč, nesmí se ohlédnout."}}
+{"op":"verb","id":"vb_alarm","verb":"puzzle.timer","on":"player","params":{"seconds":150}}
+{"op":"rule","id":"r_uprchni","when":{"t":"enter","a":"klic","b":"vychod"},"if":[{"l":"klic.carrier.team","op":"eq","r":"red"}],"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_chyceni","when":{"t":"hit","a":"player","b":"duch_1"},"then":[{"e":"emit","target":"player","fx":"ghost_flash"}]}
+{"op":"rule","id":"r_chyceni2","when":{"t":"hit","a":"player","b":"duch_2"},"then":[{"e":"emit","target":"player","fx":"ghost_flash"}]}
+{"op":"rule","id":"r_casovac","when":{"t":"timer_end","a":"player"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_brana","when":{"t":"state_is","a":"dver_brany","s":"open"},"then":[{"e":"emit","target":"dver_brany","fx":"gate_creak"}]}
+{"op":"expect","id":"x_klic","prop":"win_reachable","a":"sp_red","b":"vychod","headline":true,"text":"Hráč musí najít klíč v bludišti a dostat se k východu dřív, než ho chytí duch."}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

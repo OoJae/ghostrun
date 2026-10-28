@@ -1,0 +1,56 @@
+{"op":"meta","mode":"play","lang":"en","pack":"course","sub":[],"seed":22,"look":"snowy mountain slope","mood":[0.2,0.8,0.7],"timeOfDay":14,"weather":"snow"}
+{"op":"zone","id":"z_start","slot":"start","tag":"start","name":"Summit start gate"}
+{"op":"zone","id":"z_ledge","slot":"seg_1","tag":"ledge","name":"Icy ledge"}
+{"op":"zone","id":"z_gaps","slot":"seg_2","tag":"gaps","name":"Crevasse gaps"}
+{"op":"zone","id":"z_steps","slot":"seg_3","tag":"steps","name":"Powder steps"}
+{"op":"zone","id":"z_beam","slot":"seg_4","tag":"beam","name":"Snow beam"}
+{"op":"zone","id":"z_pit","slot":"seg_5","tag":"pit","name":"Deep drift pit"}
+{"op":"zone","id":"z_steps2","slot":"seg_6","tag":"steps","name":"Final steps"}
+{"op":"zone","id":"z_finish","slot":"finish","tag":"finish","name":"Valley finish line"}
+{"op":"spawn","id":"sp_red","zone":"z_start","anchor":"spawn_pad","team":"red"}
+{"op":"spawn","id":"sp_rival_1","zone":"z_start","anchor":"spawn_alt","team":"blue"}
+{"op":"goal","id":"finish_line","zone":"z_finish","anchor":"goal","noun":"finish line","hyper":"finish","team":"red"}
+{"op":"ent","id":"cp_1","kind":"checkpoint","noun":"checkpoint flag 1","hyper":"flag","zone":"z_ledge","anchor":"cp_1","body":"sensor","shape":"sphere","size":[0.5,0.5,0.5]}
+{"op":"ent","id":"cp_2","kind":"checkpoint","noun":"checkpoint flag 2","hyper":"flag","zone":"z_gaps","anchor":"cp_2","body":"sensor","shape":"sphere","size":[0.5,0.5,0.5]}
+{"op":"ent","id":"cp_3","kind":"checkpoint","noun":"checkpoint flag 3","hyper":"flag","zone":"z_steps","anchor":"cp_3","body":"sensor","shape":"sphere","size":[0.5,0.5,0.5]}
+{"op":"ent","id":"cp_4","kind":"checkpoint","noun":"checkpoint flag 4","hyper":"flag","zone":"z_beam","anchor":"cp_4","body":"sensor","shape":"sphere","size":[0.5,0.5,0.5]}
+{"op":"ent","id":"cp_5","kind":"checkpoint","noun":"checkpoint flag 5","hyper":"flag","zone":"z_pit","anchor":"cp_5","body":"sensor","shape":"sphere","size":[0.5,0.5,0.5]}
+{"op":"ent","id":"coin_1","kind":"pickup","noun":"speed coin","hyper":"coin","zone":"z_ledge","anchor":"pickup_1","body":"sensor","shape":"sphere","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"coin_2","kind":"pickup","noun":"speed coin","hyper":"coin","zone":"z_gaps","anchor":"pickup_2","body":"sensor","shape":"sphere","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"coin_3","kind":"pickup","noun":"speed coin","hyper":"coin","zone":"z_steps","anchor":"pickup_3","body":"sensor","shape":"sphere","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"coin_4","kind":"pickup","noun":"speed coin","hyper":"coin","zone":"z_beam","anchor":"pickup_4","body":"sensor","shape":"sphere","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"coin_5","kind":"pickup","noun":"speed coin","hyper":"coin","zone":"z_pit","anchor":"pickup_5","body":"sensor","shape":"sphere","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"ice_crack","kind":"hazard","noun":"ice crack","hyper":"hazard","zone":"z_gaps","anchor":"cp_2","body":"sensor","shape":"box","size":[2,0.2,2]}
+{"op":"ent","id":"drift_spikes","kind":"hazard","noun":"snow spikes","hyper":"hazard","zone":"z_pit","anchor":"pit_5","body":"sensor","shape":"box","size":[2,0.4,2]}
+{"op":"ent","id":"jump_pad","kind":"platform","noun":"snow ramp","hyper":"ramp","zone":"z_steps2","anchor":"pickup_6","body":"fixed","shape":"box","size":[2,0.3,3]}
+{"op":"ent","id":"crumble_ledge","kind":"platform","noun":"crumbling snow ledge","hyper":"ledge","zone":"z_ledge","anchor":"cp_1","body":"fixed","shape":"box","size":[3,0.3,3]}
+{"op":"ent","id":"start_sign","kind":"sign","noun":"race sign","hyper":"sign","zone":"z_start","anchor":"sign","body":"fixed","shape":"box"}
+{"op":"verb","id":"vb_jump","verb":"locomotion.jump","on":"player","params":{"jumpsMax":2}}
+{"op":"verb","id":"vb_coin1","verb":"puzzle.collect","on":"coin_1","params":{}}
+{"op":"verb","id":"vb_coin2","verb":"puzzle.collect","on":"coin_2","params":{}}
+{"op":"verb","id":"vb_coin3","verb":"puzzle.collect","on":"coin_3","params":{}}
+{"op":"verb","id":"vb_coin4","verb":"puzzle.collect","on":"coin_4","params":{}}
+{"op":"verb","id":"vb_coin5","verb":"puzzle.collect","on":"coin_5","params":{}}
+{"op":"verb","id":"vb_cp1","verb":"puzzle.checkpoint","on":"cp_1","params":{}}
+{"op":"verb","id":"vb_cp2","verb":"puzzle.checkpoint","on":"cp_2","params":{}}
+{"op":"verb","id":"vb_cp3","verb":"puzzle.checkpoint","on":"cp_3","params":{}}
+{"op":"verb","id":"vb_cp4","verb":"puzzle.checkpoint","on":"cp_4","params":{}}
+{"op":"verb","id":"vb_cp5","verb":"puzzle.checkpoint","on":"cp_5","params":{}}
+{"op":"verb","id":"vb_ice","verb":"motion_hazards.hazard","on":"ice_crack","params":{"respawn":true}}
+{"op":"verb","id":"vb_spikes","verb":"motion_hazards.hazard","on":"drift_spikes","params":{"respawn":true}}
+{"op":"verb","id":"vb_ramp","verb":"locomotion.jump_pad","on":"jump_pad","params":{"height":4}}
+{"op":"verb","id":"vb_crumble","verb":"motion_hazards.crumble","on":"crumble_ledge","params":{"delay":1,"back":4}}
+{"op":"verb","id":"vb_clock","verb":"puzzle.timer","on":"player","params":{"seconds":120}}
+{"op":"verb","id":"vb_inspect","verb":"social.inspect","on":"start_sign","params":{"text":"Two rivals, one finish. Stay on the line."}}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":6}}
+{"op":"rule","id":"r_finish","when":{"t":"enter","a":"player","b":"finish_line"},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_time","when":{"t":"timer_end","a":"player"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_hit","when":{"t":"hit","a":"player","b":"ice_crack"},"then":[{"e":"reset","target":"player"}]}
+{"op":"rule","id":"r_spike","when":{"t":"hit","a":"player","b":"drift_spikes"},"then":[{"e":"reset","target":"player"}]}
+{"op":"rule","id":"r_coins","when":{"t":"score_gte","a":"team:red","n":5},"then":[{"e":"score","target":"team:red","n":10}],"once":true}
+{"op":"npc","id":"rival_1","role":"rival","zone":"z_start","anchor":"spawn_alt","team":"blue","menu":["guard.patrol"],"dflt":"guard.patrol"}
+{"op":"npc","id":"rival_2","role":"rival","zone":"z_start","anchor":"host","team":"blue","menu":["guard.patrol"],"dflt":"guard.patrol"}
+{"op":"expect","id":"x_race","prop":"win_reachable","a":"sp_red","b":"finish_line","headline":true,"text":"Race is against the clock through a linear snowy course with checkpoints to the finish."}
+{"op":"expect","id":"x_ramp","prop":"requires","a":"sp_red","b":"z_steps2","need":["jumps>=2"],"text":"Final ramp needs a double jump to clear the drift"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

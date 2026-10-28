@@ -1,0 +1,44 @@
+{"op":"meta","mode":"play","lang":"en","pack":"course","sub":["rooftop"],"seed":9,"look":"harbour at dusk","mood":[-0.1,0.8,0.7],"timeOfDay":19,"weather":"overcast"}
+{"op":"zone","id":"z_start","slot":"start","tag":"start","name":"Quay start"}
+{"op":"zone","id":"z_ledge","slot":"seg_1","tag":"ledge","name":"Container ledge"}
+{"op":"zone","id":"z_gaps","slot":"seg_2","tag":"gaps","name":"Stack gaps"}
+{"op":"zone","id":"z_beam","slot":"seg_3","tag":"beam","name":"Crane beam"}
+{"op":"zone","id":"z_pit","slot":"seg_4","tag":"pit","name":"Harbour pit"}
+{"op":"zone","id":"z_beam2","slot":"seg_5","tag":"beam","name":"Second beam"}
+{"op":"zone","id":"z_steps","slot":"seg_6","tag":"steps","name":"Container steps"}
+{"op":"zone","id":"z_finish","slot":"finish","tag":"finish","name":"Finish pad"}
+{"op":"spawn","id":"sp_red","zone":"z_start","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"finish_pad","zone":"z_finish","anchor":"goal","noun":"finish pad","hyper":"goal","team":"red"}
+{"op":"ent","id":"crate_1","kind":"platform","noun":"shipping container","hyper":"oversized steel crate stacked like blocks","zone":"z_ledge","anchor":"cp_1","body":"fixed","shape":"box","size":[3,2.6,6]}
+{"op":"ent","id":"crate_2","kind":"platform","noun":"shipping container","hyper":"oversized steel crate stacked like blocks","zone":"z_gaps","anchor":"cp_2","body":"fixed","shape":"box","size":[3,2.6,6]}
+{"op":"ent","id":"crate_3","kind":"platform","noun":"shipping container","hyper":"oversized steel crate stacked like blocks","zone":"z_gaps","anchor":"pickup_2","body":"fixed","shape":"box","size":[3,5.2,6]}
+{"op":"ent","id":"beam_1","kind":"platform","noun":"crane beam","hyper":"gantry girder","zone":"z_beam","anchor":"cp_3","body":"fixed","shape":"box","size":[1,0.5,12]}
+{"op":"ent","id":"pit_water","kind":"hazard","noun":"harbour water","hyper":"dark churning sea below the quay","zone":"z_pit","anchor":"pit_4","body":"sensor","shape":"box","size":[14,0.5,14]}
+{"op":"ent","id":"crate_4","kind":"platform","noun":"shipping container","hyper":"oversized steel crate stacked like blocks","zone":"z_pit","anchor":"cp_4","body":"fixed","shape":"box","size":[3,2.6,6]}
+{"op":"ent","id":"beam_2","kind":"platform","noun":"crane beam","hyper":"gantry girder","zone":"z_beam2","anchor":"cp_5","body":"fixed","shape":"box","size":[1,0.5,12]}
+{"op":"ent","id":"crate_5","kind":"platform","noun":"shipping container","hyper":"oversized steel crate stacked like blocks","zone":"z_steps","anchor":"pickup_6","body":"fixed","shape":"box","size":[3,2.6,6]}
+{"op":"ent","id":"crane_1","kind":"prop","noun":"crane","hyper":"crane","zone":"z_beam","anchor":"cp_3","body":"fixed","shape":"box","size":[4,18,4]}
+{"op":"ent","id":"coin_1","kind":"pickup","noun":"time bonus token","hyper":"coin","zone":"z_ledge","anchor":"pickup_1","body":"sensor","shape":"sphere","size":[0.4,0.4,0.4]}
+{"op":"ent","id":"coin_2","kind":"pickup","noun":"time bonus token","hyper":"coin","zone":"z_gaps","anchor":"pickup_2","body":"sensor","shape":"sphere","size":[0.4,0.4,0.4]}
+{"op":"ent","id":"coin_3","kind":"pickup","noun":"time bonus token","hyper":"coin","zone":"z_beam","anchor":"pickup_3","body":"sensor","shape":"sphere","size":[0.4,0.4,0.4]}
+{"op":"ent","id":"plate_1","kind":"plate","noun":"jump pad","hyper":"jump_pad","zone":"z_pit","anchor":"pickup_4","body":"sensor","shape":"box","size":[2,0.2,2]}
+{"op":"ent","id":"timer_1","kind":"prop","noun":"race clock","hyper":"clock","zone":"z_start","anchor":"sign","body":"fixed","shape":"box","size":[0.6,1.2,0.2]}
+{"op":"verb","id":"vb_jump","verb":"locomotion.jump","on":"player","params":{"jumpsMax":2}}
+{"op":"verb","id":"vb_coin1","verb":"puzzle.collect","on":"coin_1","params":{}}
+{"op":"verb","id":"vb_coin2","verb":"puzzle.collect","on":"coin_2","params":{}}
+{"op":"verb","id":"vb_coin3","verb":"puzzle.collect","on":"coin_3","params":{}}
+{"op":"verb","id":"vb_water","verb":"motion_hazards.hazard","on":"pit_water","params":{"respawn":true}}
+{"op":"verb","id":"vb_pad","verb":"locomotion.jump_pad","on":"plate_1","params":{"height":4}}
+{"op":"verb","id":"vb_clock","verb":"puzzle.timer","on":"player","params":{"seconds":90}}
+{"op":"verb","id":"vb_crumble","verb":"motion_hazards.crumble","on":"crate_4","params":{"delay":1,"back":4}}
+{"op":"verb","id":"vb_sweep","verb":"motion_hazards.oscillate","on":"beam_2","params":{"axis":"x","travel":3,"period":6}}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":6}}
+{"op":"rule","id":"r_finish","when":{"t":"enter","a":"player","b":"finish_pad"},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_fall","when":{"t":"hit","a":"player","b":"pit_water"},"then":[{"e":"emit","target":"player","fx":"splash"}]}
+{"op":"rule","id":"r_clock","when":{"t":"timer_end","a":"player"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_bonus","when":{"t":"touch","a":"player","b":"coin_1"},"then":[{"e":"score","target":"team:red","n":10}],"once":true}
+{"op":"expect","id":"x_double","prop":"win_reachable","a":"sp_red","b":"finish_pad","headline":true,"text":"Container stacks need precise double jumps to beat the clock"}
+{"op":"expect","id":"x_gaps","prop":"requires","a":"sp_red","b":"z_gaps","need":["jumps>=2"],"text":"Stack gaps need double jump"}
+{"op":"expect","id":"x_beam","prop":"requires","a":"sp_red","b":"z_beam","need":["jumps>=2"],"text":"Crane beam needs double jump"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

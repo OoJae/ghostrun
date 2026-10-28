@@ -1,0 +1,30 @@
+{"op":"meta","mode":"wander","lang":"en","pack":"floor_plan","sub":[],"seed":15,"look":"sunlit villa","mood":[0.6,0.2,-0.2],"timeOfDay":11,"weather":"clear"}
+{"op":"zone","id":"z_yard","slot":"yard","tag":"outside","name":"Villa yard"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Entrance hall"}
+{"op":"zone","id":"z_main","slot":"main_room","tag":"hall","name":"Main room"}
+{"op":"zone","id":"z_sw","slot":"room_sw","tag":"room","name":"Southwest bedroom"}
+{"op":"zone","id":"z_se","slot":"room_se","tag":"room","name":"Southeast bedroom"}
+{"op":"zone","id":"z_nw","slot":"room_nw","tag":"room","name":"Northwest study"}
+{"op":"zone","id":"z_ne","slot":"room_ne","tag":"room","name":"Northeast kitchen"}
+{"op":"spawn","id":"sp_red","zone":"z_yard","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"agent_desk","zone":"z_ne","anchor":"corner_se","noun":"agent desk","hyper":"sign","team":""}
+{"op":"ent","id":"viewing_booking","kind":"sign","noun":"viewing booking card","hyper":"sign","zone":"z_ne","anchor":"center","body":"fixed","shape":"box","size":[0.4,0.3,0.05]}
+{"op":"ent","id":"fireplace","kind":"prop","noun":"stone fireplace","hyper":"fixture","zone":"z_main","anchor":"wall_n","body":"fixed","shape":"box","size":[2,1.5,0.6]}
+{"op":"ent","id":"kitchen_island","kind":"prop","noun":"marble kitchen island","hyper":"fixture","zone":"z_ne","anchor":"center","body":"fixed","shape":"box","size":[2,0.9,1]}
+{"op":"ent","id":"study_shelf","kind":"prop","noun":"bookshelf","hyper":"fixture","zone":"z_nw","anchor":"wall_w","body":"fixed","shape":"box","size":[0.4,2,1.5]}
+{"op":"ent","id":"bed_sw","kind":"prop","noun":"king bed","hyper":"furniture","zone":"z_sw","anchor":"center","body":"fixed","shape":"box","size":[2,0.6,1.8]}
+{"op":"ent","id":"bed_se","kind":"prop","noun":"twin beds","hyper":"furniture","zone":"z_se","anchor":"center","body":"fixed","shape":"box","size":[2,0.6,1.8]}
+{"op":"ent","id":"pool","kind":"prop","noun":"reflecting pool","hyper":"water","zone":"z_yard","anchor":"corner_e","body":"fixed","shape":"box","size":[4,0.1,2]}
+{"op":"verb","id":"vb_look_fire","verb":"social.inspect","on":"fireplace","params":{"text":"A hand-laid stone fireplace with a warm oak mantel."}}
+{"op":"verb","id":"vb_look_island","verb":"social.inspect","on":"kitchen_island","params":{"text":"A marble island with built-in induction cooktop."}}
+{"op":"verb","id":"vb_look_shelf","verb":"social.inspect","on":"study_shelf","params":{"text":"Floor-to-ceiling shelves, ideal for a home library."}}
+{"op":"verb","id":"vb_look_bed_sw","verb":"social.inspect","on":"bed_sw","params":{"text":"A king bed facing a garden view through tall windows."}}
+{"op":"verb","id":"vb_look_bed_se","verb":"social.inspect","on":"bed_se","params":{"text":"Two twin beds, each with its own reading lamp."}}
+{"op":"verb","id":"vb_look_pool","verb":"social.inspect","on":"pool","params":{"text":"A long reflecting pool bordered by lavender beds."}}
+{"op":"verb","id":"vb_book","verb":"social.inspect","on":"viewing_booking","params":{"text":"Ask the agent to book an in-person viewing."}}
+{"op":"npc","id":"agent","role":"guide","zone":"z_ne","anchor":"corner_se","team":"","menu":["guide.tour"],"dflt":"guide.tour"}
+{"op":"npc","id":"gardener","role":"citizen","zone":"z_yard","anchor":"corner_w","team":"","menu":["citizen.idle"],"dflt":"citizen.idle"}
+{"op":"expect","id":"x_booking","prop":"reachable","a":"sp_red","b":"z_ne","headline":true,"text":"Booking a viewing with the agent must be reachable from the final room."}
+{"op":"expect","id":"x_tour","prop":"win_reachable","a":"sp_red","b":"agent_desk","text":"Every room can be viewed before reaching the agent desk"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

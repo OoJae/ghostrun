@@ -1,0 +1,266 @@
+{
+  "prompt": "Create a capture-the-flag game in a neon city. Add double jump. Score when the orb reaches the goal.",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "capture the flag",
+    "setting": "neon city",
+    "role": "runner carrying an orb between team bases",
+    "goal": "carry the orb to the goal to score",
+    "fail": "orb is lost or the runner is tagged before scoring",
+    "mood": "fast, competitive, electric",
+    "pack": "city_block",
+    "sub": [
+      "rooftop"
+    ],
+    "safety": "arcade",
+    "headline": "Rooftop lane needs double jump to reach the orb goal.",
+    "nouns": [
+      {
+        "noun": "orb",
+        "hyper": "glowing neon sphere that must reach the goal"
+      },
+      {
+        "noun": "goal",
+        "hyper": "illuminated scoring pad at the enemy base"
+      },
+      {
+        "noun": "rooftop lane",
+        "hyper": "elevated neon walkway reachable by double jump"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.4,
+      "arousal": 0.8,
+      "tension": 0.6
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "25f37203751353c827b696629aa0008e15acb54203af1c2c66e01604ca3bb09a",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_roof",
+      "text": "Rooftop lane needs double jump to reach the orb goal.",
+      "status": "verified",
+      "method": "kinematic reachability (jump apex model) + physics jump witness, 4 attempts per jump count"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 1,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 8 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 1,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (team:red reaches 3) ← r_score_red (orb into goal_red, carried by red) ← pick up orb",
+        "src": ""
+      },
+      {
+        "id": "T1:x_roof",
+        "tier": "T1",
+        "subject": {
+          "kind": "property",
+          "id": "x_roof"
+        },
+        "method": "kinematic reachability (jump apex model)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "Rooftop lane needs double jump to reach the orb goal.",
+        "cx": null
+      },
+      {
+        "id": "T2:r_cp",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_cp"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 71,
+        "status": "verified",
+        "text": "r_cp fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_laser",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_laser"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 14,
+        "status": "verified",
+        "text": "r_laser fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lose",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_lose fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_orb_lost",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_orb_lost"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_orb_lost: nothing produces hit on orb",
+        "cx": null
+      },
+      {
+        "id": "T2:r_score_blue",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score_blue"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 12,
+        "status": "verified",
+        "text": "r_score_blue fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_score_red",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score_red"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 10,
+        "status": "verified",
+        "text": "r_score_red fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_sw",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_sw"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 10,
+        "status": "verified",
+        "text": "r_sw fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners vs 2 bots",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it vs 2 bots (AI par 26.3 s)",
+        "cx": null,
+        "src": "",
+        "ms": 808
+      },
+      {
+        "id": "T3:x_roof",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "x_roof"
+        },
+        "status": "played",
+        "method": "physics jump witness, 4 attempts per jump count",
+        "n": 4,
+        "k": 4,
+        "text": "Rooftop lane needs double jump to reach the orb goal.: reached with 2 jumps 4 of 4, with 1 0 of 4",
+        "cx": null,
+        "src": "ai",
+        "ms": 90
+      }
+    ],
+    "par": {
+      "goldS": 26.3,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 1212
+  }
+}

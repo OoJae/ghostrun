@@ -1,0 +1,52 @@
+{"op":"meta","mode":"play","lang":"en","pack":"arena","sub":[],"seed":19,"look":"castle siege at dusk","mood":[-0.4,0.8,0.9],"timeOfDay":18,"weather":"overcast"}
+{"op":"zone","id":"z_mid","slot":"midfield","tag":"gate","name":"Castle gate"}
+{"op":"zone","id":"z_west","slot":"west_half","tag":"outer","name":"West approach"}
+{"op":"zone","id":"z_east","slot":"east_half","tag":"outer","name":"East approach"}
+{"op":"zone","id":"z_north","slot":"north_deck","tag":"wall","name":"North battlements"}
+{"op":"zone","id":"z_south","slot":"south_deck","tag":"wall","name":"South battlements"}
+{"op":"spawn","id":"sp_red","zone":"z_mid","anchor":"center_s","team":"red"}
+{"op":"goal","id":"gate","zone":"z_mid","anchor":"center","noun":"castle gate","hyper":"fortified entrance","team":"red"}
+{"op":"ent","id":"gate_door","kind":"door","noun":"iron gate","hyper":"door","zone":"z_mid","anchor":"center_n","body":"fixed","shape":"box","size":[4,3,0.6]}
+{"op":"ent","id":"wall_w","kind":"prop","noun":"stone wall","hyper":"wall","zone":"z_west","anchor":"flank_n","body":"fixed","shape":"box","size":[1,3,8]}
+{"op":"ent","id":"wall_e","kind":"prop","noun":"stone wall","hyper":"wall","zone":"z_east","anchor":"flank_n","body":"fixed","shape":"box","size":[1,3,8]}
+{"op":"ent","id":"ram","kind":"hazard","noun":"battering ram","hyper":"ram","zone":"z_west","anchor":"hoop","body":"kinematic","shape":"box","size":[2,1,1]}
+{"op":"ent","id":"oil_pot","kind":"pickup","noun":"pot of boiling oil","hyper":"oil","zone":"z_north","anchor":"deck_w","body":"dynamic","shape":"sphere","size":[0.4,0.4,0.4]}
+{"op":"ent","id":"stone_pile","kind":"pickup","noun":"pile of stones","hyper":"stone","zone":"z_south","anchor":"deck_e","body":"dynamic","shape":"sphere","size":[0.4,0.4,0.4]}
+{"op":"ent","id":"coin_1","kind":"pickup","noun":"gold coin","hyper":"coin","zone":"z_north","anchor":"deck_center","body":"sensor","shape":"sphere","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"coin_2","kind":"pickup","noun":"gold coin","hyper":"coin","zone":"z_south","anchor":"deck_center","body":"sensor","shape":"sphere","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"lever_gate","kind":"switch","noun":"portcullis lever","hyper":"lever","zone":"z_mid","anchor":"center_s","body":"fixed","shape":"box","size":[0.4,1,0.4]}
+{"op":"ent","id":"plate_w","kind":"plate","noun":"trapdoor plate","hyper":"plate","zone":"z_west","anchor":"hoop","body":"sensor","shape":"box","size":[2,0.1,2]}
+{"op":"ent","id":"plate_e","kind":"plate","noun":"trapdoor plate","hyper":"plate","zone":"z_east","anchor":"hoop","body":"sensor","shape":"box","size":[2,0.1,2]}
+{"op":"ent","id":"moat_hazard","kind":"hazard","noun":"spiked pit","hyper":"spikes","zone":"z_west","anchor":"goal_ring","body":"sensor","shape":"box","size":[3,0.2,3]}
+{"op":"ent","id":"tower_alarm","kind":"checkpoint","noun":"alarm bell","hyper":"bell","zone":"z_north","anchor":"deck_center","body":"sensor","shape":"sphere","size":[0.5,0.5,0.5]}
+{"op":"verb","id":"vb_jump","verb":"locomotion.jump","on":"player","params":{"jumpsMax":1}}
+{"op":"verb","id":"vb_carry_oil","verb":"physics_props.carry","on":"oil_pot","params":{}}
+{"op":"verb","id":"vb_carry_stone","verb":"physics_props.carry","on":"stone_pile","params":{}}
+{"op":"verb","id":"vb_lever","verb":"puzzle.switch","on":"lever_gate","params":{"once":false}}
+{"op":"verb","id":"vb_plate_w","verb":"puzzle.plate","on":"plate_w","params":{"latch":false}}
+{"op":"verb","id":"vb_plate_e","verb":"puzzle.plate","on":"plate_e","params":{"latch":false}}
+{"op":"verb","id":"vb_ram","verb":"motion_hazards.oscillate","on":"ram","params":{"axis":"x","travel":6,"period":4}}
+{"op":"verb","id":"vb_spikes","verb":"motion_hazards.hazard","on":"moat_hazard","params":{"respawn":true}}
+{"op":"verb","id":"vb_timer","verb":"puzzle.timer","on":"player","params":{"seconds":90}}
+{"op":"verb","id":"vb_throw","verb":"combat_sport.throw","on":"stone_pile","params":{"range":12,"at":"knight_1,knight_2"}}
+{"op":"verb","id":"vb_shove","verb":"combat_sport.shove","on":"knight_1","params":{"force":8}}
+{"op":"law","player":{"jumpsMax":1,"jumpH":1.2,"speed":5}}
+{"op":"state","id":"gate_door","s":"closed"}
+{"op":"state","id":"lever_gate","s":"off"}
+{"op":"rule","id":"r_hold","when":{"t":"timer_end","a":"player"},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_fall","when":{"t":"state_is","a":"gate_door","s":"open"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_lever_open","when":{"t":"state_is","a":"lever_gate","s":"on"},"then":[{"e":"open","target":"gate_door"}]}
+{"op":"rule","id":"r_lever_shut","when":{"t":"state_is","a":"lever_gate","s":"off"},"then":[{"e":"close","target":"gate_door"}]}
+{"op":"rule","id":"r_ram_hit","when":{"t":"hit","a":"player","b":"ram"},"then":[{"e":"emit","target":"player","fx":"stun"}]}
+{"op":"rule","id":"r_pit","when":{"t":"hit","a":"player","b":"moat_hazard"},"then":[{"e":"reset","target":"player"}]}
+{"op":"rule","id":"r_bell","when":{"t":"enter","a":"player","b":"tower_alarm"},"then":[{"e":"emit","target":"tower_alarm","fx":"bell_ring"},{"e":"score","target":"team:red","n":10}]}
+{"op":"npc","id":"knight_1","role":"rival","zone":"z_west","anchor":"flank_s","team":"blue","menu":["guard.patrol"],"dflt":"guard.patrol"}
+{"op":"npc","id":"knight_2","role":"rival","zone":"z_east","anchor":"flank_s","team":"blue","menu":["guard.patrol"],"dflt":"guard.patrol"}
+{"op":"expect","id":"x_hold","prop":"win_reachable","a":"sp_red","b":"gate","headline":true,"text":"Gate must survive ninety seconds of knight waves approaching from both sides."}
+{"op":"expect","id":"x_fair","prop":"fair_teams","a":"sp_red","b":"gate","text":"Both approaches give the defender equal access to projectiles and the lever."}
+{"op":"end","layer":"gameplay"}
+{"op":"dress","id":"d_torch_w","zone":"z_west","anchor":"flank_n","noun":"wall torch","fx":"torch_flicker"}
+{"op":"dress","id":"d_torch_e","zone":"z_east","anchor":"flank_n","noun":"wall torch","fx":"torch_flicker"}
+{"op":"dress","id":"d_banner","zone":"z_mid","anchor":"center_n","noun":"tattered banner","fx":"cloth_sway"}
+{"op":"poster","id":"p_gate","zone":"z_mid","anchor":"center_s","text":"Hold the gate. Ninety seconds."}
+{"op":"end","layer":"cosmetic"}

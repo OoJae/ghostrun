@@ -1,0 +1,152 @@
+{
+  "prompt": "A space station where a robot guide shows you the bridge, the lab and the garden",
+  "intent": {
+    "lang": "en",
+    "mode": "wander",
+    "genre": "sci-fi",
+    "setting": "space station with bridge, lab and garden",
+    "role": "explorer",
+    "goal": "tour the station with a robot guide",
+    "fail": "none",
+    "mood": "calm and curious",
+    "pack": "floor_plan",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Robot guide must lead you through bridge, lab and garden in order.",
+    "nouns": [
+      {
+        "noun": "robot guide",
+        "hyper": "robot"
+      },
+      {
+        "noun": "bridge",
+        "hyper": "room"
+      },
+      {
+        "noun": "lab",
+        "hyper": "room"
+      },
+      {
+        "noun": "garden",
+        "hyper": "room"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.6,
+      "arousal": -0.2,
+      "tension": -0.3
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "a3573de82990e7bad64b7a08c4f7a53cc5ea302d7baaffe24ef0ecb60b8ced97",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_tour",
+      "text": "Robot guide must lead you through bridge, lab and garden in order.",
+      "status": "not_checkable",
+      "method": "kinematic reachability (jump apex model)"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 1 rules reference existing things",
+        "src": ""
+      },
+      {
+        "id": "T1:x_tour",
+        "tier": "T1",
+        "subject": {
+          "kind": "property",
+          "id": "x_tour"
+        },
+        "method": "kinematic reachability (jump apex model)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "Robot guide must lead you through bridge, lab and garden in order.",
+        "cx": null
+      },
+      {
+        "id": "T1:x_lab",
+        "tier": "T1",
+        "subject": {
+          "kind": "property",
+          "id": "x_lab"
+        },
+        "method": "kinematic reachability (jump apex model)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "The laboratory is reachable from the atrium.",
+        "cx": null
+      },
+      {
+        "id": "T1:x_garden",
+        "tier": "T1",
+        "subject": {
+          "kind": "property",
+          "id": "x_garden"
+        },
+        "method": "kinematic reachability (jump apex model)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "The hydroponic garden is reachable on the tour.",
+        "cx": null
+      },
+      {
+        "id": "T2:r_tour_done",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_tour_done"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 7,
+        "status": "verified",
+        "text": "r_tour_done fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:tour",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "tour"
+        },
+        "status": "played",
+        "method": "physics, an AI visitor walks to and uses each",
+        "n": 4,
+        "k": 4,
+        "text": "walked to and inspected 4 of 4 things",
+        "cx": null,
+        "src": "",
+        "ms": 34
+      }
+    ],
+    "par": null,
+    "ms": 64
+  }
+}

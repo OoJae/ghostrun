@@ -1,0 +1,51 @@
+{"op":"meta","mode":"play","lang":"en","pack":"course","sub":[],"seed":32,"look":"jungle river rapids","mood":[0.6,0.8,0.5],"timeOfDay":14,"weather":"clear"}
+{"op":"zone","id":"z_start","slot":"start","tag":"start","name":"Put-in bank"}
+{"op":"zone","id":"z_ledge","slot":"seg_1","tag":"ledge","name":"Ledge drop"}
+{"op":"zone","id":"z_steps","slot":"seg_2","tag":"steps","name":"Stepped rapids"}
+{"op":"zone","id":"z_beam","slot":"seg_3","tag":"beam","name":"Log crossing"}
+{"op":"zone","id":"z_pit","slot":"seg_4","tag":"pit","name":"Whirlpool pit"}
+{"op":"zone","id":"z_beam2","slot":"seg_5","tag":"beam","name":"Fallen trunk"}
+{"op":"zone","id":"z_gaps","slot":"seg_6","tag":"gaps","name":"Stone gaps"}
+{"op":"zone","id":"z_finish","slot":"finish","tag":"finish","name":"Finish buoy"}
+{"op":"spawn","id":"sp_red","zone":"z_start","anchor":"spawn_pad","team":"red"}
+{"op":"spawn","id":"sp_blue","zone":"z_start","anchor":"spawn_alt","team":"blue"}
+{"op":"goal","id":"buoy","zone":"z_finish","anchor":"goal","noun":"glowing finish buoy","hyper":"finish","team":"red"}
+{"op":"ent","id":"raft","kind":"vehicle","noun":"inflatable raft","hyper":"raft","zone":"z_start","anchor":"spawn_pad","body":"dynamic","shape":"box","size":[1.5,0.3,2.5]}
+{"op":"ent","id":"cp_1","kind":"checkpoint","noun":"ledge checkpoint","hyper":"checkpoint","zone":"z_ledge","anchor":"cp_1","body":"sensor","shape":"box","size":[2,0.2,2]}
+{"op":"ent","id":"cp_2","kind":"checkpoint","noun":"steps checkpoint","hyper":"checkpoint","zone":"z_steps","anchor":"cp_2","body":"sensor","shape":"box","size":[2,0.2,2]}
+{"op":"ent","id":"cp_3","kind":"checkpoint","noun":"beam checkpoint","hyper":"checkpoint","zone":"z_beam","anchor":"cp_3","body":"sensor","shape":"box","size":[2,0.2,2]}
+{"op":"ent","id":"cp_4","kind":"checkpoint","noun":"pit checkpoint","hyper":"checkpoint","zone":"z_pit","anchor":"cp_4","body":"sensor","shape":"box","size":[2,0.2,2]}
+{"op":"ent","id":"cp_5","kind":"checkpoint","noun":"trunk checkpoint","hyper":"checkpoint","zone":"z_beam2","anchor":"cp_5","body":"sensor","shape":"box","size":[2,0.2,2]}
+{"op":"ent","id":"coin_1","kind":"pickup","noun":"river coin","hyper":"coin","zone":"z_ledge","anchor":"pickup_1","body":"sensor","shape":"sphere","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"coin_2","kind":"pickup","noun":"river coin","hyper":"coin","zone":"z_steps","anchor":"pickup_2","body":"sensor","shape":"sphere","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"coin_3","kind":"pickup","noun":"river coin","hyper":"coin","zone":"z_beam","anchor":"pickup_3","body":"sensor","shape":"sphere","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"coin_4","kind":"pickup","noun":"river coin","hyper":"coin","zone":"z_pit","anchor":"pickup_4","body":"sensor","shape":"sphere","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"coin_5","kind":"pickup","noun":"river coin","hyper":"coin","zone":"z_gaps","anchor":"pickup_6","body":"sensor","shape":"sphere","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"rock_hazard","kind":"hazard","noun":"sharp rock","hyper":"rock","zone":"z_steps","anchor":"center","body":"sensor","shape":"box","size":[1.5,1,1.5]}
+{"op":"ent","id":"whirl","kind":"hazard","noun":"whirlpool","hyper":"whirlpool","zone":"z_pit","anchor":"pit_4","body":"sensor","shape":"sphere","size":[2,0.5,2]}
+{"op":"ent","id":"jump_pad_1","kind":"platform","noun":"wave jump pad","hyper":"jump_pad","zone":"z_ledge","anchor":"cp_1","body":"fixed","shape":"box","size":[2,0.2,2]}
+{"op":"ent","id":"log_plate","kind":"plate","noun":"log pressure plate","hyper":"plate","zone":"z_beam","anchor":"center","body":"fixed","shape":"box","size":[1.5,0.1,1.5]}
+{"op":"ent","id":"trunk_gate","kind":"door","noun":"trunk gate","hyper":"door","zone":"z_beam2","anchor":"doorway_w","body":"fixed","shape":"box"}
+{"op":"ent","id":"stone_plat","kind":"platform","noun":"moving stone platform","hyper":"platform","zone":"z_gaps","anchor":"center","body":"kinematic","shape":"box","size":[2,0.3,2]}
+{"op":"ent","id":"fall_sign","kind":"sign","noun":"warning sign","hyper":"sign","zone":"z_start","anchor":"sign","body":"fixed","shape":"box","size":[0.6,1,0.1]}
+{"op":"verb","id":"vb_jump","verb":"locomotion.jump","on":"player","params":{"jumpsMax":2}}
+{"op":"verb","id":"vb_carry_coin","verb":"physics_props.carry","on":"coin_1","params":{}}
+{"op":"verb","id":"vb_pad","verb":"locomotion.jump_pad","on":"jump_pad_1","params":{"height":4}}
+{"op":"verb","id":"vb_hazard_rock","verb":"motion_hazards.hazard","on":"rock_hazard","params":{"respawn":true}}
+{"op":"verb","id":"vb_hazard_whirl","verb":"motion_hazards.hazard","on":"whirl","params":{"respawn":true}}
+{"op":"verb","id":"vb_plate","verb":"puzzle.plate","on":"log_plate","params":{"latch":false}}
+{"op":"verb","id":"vb_gate","verb":"puzzle.lock","on":"trunk_gate","params":{"key":"coin_5","keep":true}}
+{"op":"verb","id":"vb_stone","verb":"motion_hazards.oscillate","on":"stone_plat","params":{"axis":"x","travel":3,"period":4}}
+{"op":"verb","id":"vb_clock","verb":"puzzle.timer","on":"player","params":{"seconds":120}}
+{"op":"verb","id":"vb_sign","verb":"social.inspect","on":"fall_sign","params":{"text":"Rapids ahead. Time your jumps over each drop."}}
+{"op":"rule","id":"r_win","when":{"t":"enter","a":"raft","b":"buoy"},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose","when":{"t":"timer_end","a":"player"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_cp1","when":{"t":"enter","a":"raft","b":"cp_1"},"then":[{"e":"set_state","target":"cp_1","v":"reached"}]}
+{"op":"rule","id":"r_cp5","when":{"t":"enter","a":"raft","b":"cp_5"},"then":[{"e":"set_state","target":"cp_5","v":"reached"}]}
+{"op":"rule","id":"r_score","when":{"t":"touch","a":"player","b":"coin_1"},"then":[{"e":"score","target":"team:red","n":10}]}
+{"op":"expect","id":"x_race","prop":"win_reachable","a":"sp_red","b":"buoy","headline":true,"text":"Rapids course needs timed jumps over each obstacle segment to finish first."}
+{"op":"expect","id":"x_jump","prop":"requires","a":"sp_red","b":"z_ledge","need":["jumps>=2"],"text":"Ledge drop needs double jump"}
+{"op":"expect","id":"x_pit","prop":"reachable","a":"sp_red","b":"z_pit","text":"Whirlpool pit can be crossed"}
+{"op":"end","layer":"gameplay"}
+{"op":"poster","id":"po_river","zone":"z_start","noun":"rafting race poster","text":"Jungle River Rapids Race - first raft to the buoy wins!"}
+{"op":"end","layer":"cosmetic"}

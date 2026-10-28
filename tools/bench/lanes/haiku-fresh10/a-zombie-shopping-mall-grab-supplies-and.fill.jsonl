@@ -1,0 +1,45 @@
+{"op":"meta","mode":"play","lang":"en","pack":"floor_plan","sub":["rooftop"],"seed":24,"look":"abandoned mall at dusk","mood":[-0.6,0.8,0.9],"timeOfDay":18,"weather":"overcast"}
+{"op":"zone","id":"z_yard","slot":"yard","tag":"outside","name":"Mall car park"}
+{"op":"zone","id":"z_lobby","slot":"entrance","tag":"entrance","name":"Mall entrance"}
+{"op":"zone","id":"z_food","slot":"room_sw","tag":"room","name":"Food court"}
+{"op":"zone","id":"z_pharm","slot":"room_se","tag":"room","name":"Pharmacy"}
+{"op":"zone","id":"z_atrium","slot":"main_room","tag":"hall","name":"Central atrium"}
+{"op":"zone","id":"z_stock","slot":"room_nw","tag":"room","name":"Stockroom"}
+{"op":"zone","id":"z_roof","slot":"room_ne","tag":"room","name":"Roof stairwell"}
+{"op":"spawn","id":"sp_red","zone":"z_yard","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"roof_hatch","zone":"z_roof","anchor":"center","noun":"roof hatch","hyper":"checkpoint","team":"red"}
+{"op":"ent","id":"food_pack","kind":"pickup","noun":"food pack","hyper":"supplies","zone":"z_food","anchor":"center","body":"dynamic","shape":"box","size":[0.4,0.4,0.4]}
+{"op":"ent","id":"medkit","kind":"pickup","noun":"medkit","hyper":"supplies","zone":"z_pharm","anchor":"center","body":"dynamic","shape":"box","size":[0.4,0.3,0.4]}
+{"op":"ent","id":"toolbox","kind":"pickup","noun":"toolbox","hyper":"supplies","zone":"z_stock","anchor":"center","body":"dynamic","shape":"box","size":[0.5,0.3,0.4]}
+{"op":"ent","id":"stock_key","kind":"pickup","noun":"stair key","hyper":"key","zone":"z_stock","anchor":"corner_sw","body":"dynamic","shape":"box","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"roof_gate","kind":"door","noun":"roof gate","hyper":"door","zone":"z_roof","anchor":"doorway_s","body":"fixed","shape":"box"}
+{"op":"ent","id":"alarm_switch","kind":"switch","noun":"power switch","hyper":"switch","zone":"z_atrium","anchor":"wall_n","body":"fixed","shape":"box","size":[0.3,0.4,0.1]}
+{"op":"ent","id":"escalator_plate","kind":"plate","noun":"escalator plate","hyper":"plate","zone":"z_atrium","anchor":"center","body":"fixed","shape":"box","size":[1.5,0.1,1.5]}
+{"op":"ent","id":"spike_floor","kind":"hazard","noun":"broken glass","hyper":"hazard","zone":"z_lobby","anchor":"center","body":"sensor","shape":"box","size":[2,0.1,2]}
+{"op":"ent","id":"checkpoint_1","kind":"checkpoint","noun":"security desk","hyper":"checkpoint","zone":"z_lobby","anchor":"corner_ne","body":"sensor","shape":"box","size":[1,1,1]}
+{"op":"ent","id":"jump_pad","kind":"platform","noun":"fallen crate","hyper":"platform","zone":"z_atrium","anchor":"corner_se","body":"fixed","shape":"box","size":[1,0.6,1]}
+{"op":"ent","id":"sign_1","kind":"sign","noun":"store directory","hyper":"sign","zone":"z_atrium","anchor":"wall_s","body":"fixed","shape":"box","size":[1,1,0.1]}
+{"op":"ent","id":"poster_1","kind":"prop","noun":"blood-smeared poster","hyper":"poster","zone":"z_food","anchor":"wall_n","body":"fixed","shape":"box","size":[1,1.2,0.1]}
+{"op":"verb","id":"vb_carry_food","verb":"physics_props.carry","on":"food_pack","params":{}}
+{"op":"verb","id":"vb_carry_med","verb":"physics_props.carry","on":"medkit","params":{}}
+{"op":"verb","id":"vb_carry_tool","verb":"physics_props.carry","on":"toolbox","params":{}}
+{"op":"verb","id":"vb_carry_key","verb":"physics_props.carry","on":"stock_key","params":{}}
+{"op":"verb","id":"vb_lock","verb":"puzzle.lock","on":"roof_gate","params":{"key":"stock_key"}}
+{"op":"verb","id":"vb_switch","verb":"puzzle.switch","on":"alarm_switch","params":{"once":false}}
+{"op":"verb","id":"vb_plate","verb":"puzzle.plate","on":"escalator_plate","params":{"latch":false}}
+{"op":"verb","id":"vb_spikes","verb":"motion_hazards.hazard","on":"spike_floor","params":{"respawn":true}}
+{"op":"verb","id":"vb_check","verb":"puzzle.checkpoint","on":"checkpoint_1","params":{}}
+{"op":"verb","id":"vb_pad","verb":"locomotion.jump_pad","on":"jump_pad","params":{"height":4}}
+{"op":"verb","id":"vb_look_sign","verb":"social.inspect","on":"sign_1","params":{"text":"Floor 3: Pharmacy. Floor 4: Food court. Roof access via stairwell only."}}
+{"op":"verb","id":"vb_look_poster","verb":"social.inspect","on":"poster_1","params":{"text":"Stay calm. Supplies at the pharmacy. Do not go to the roof."}}
+{"op":"verb","id":"vb_timer","verb":"puzzle.timer","on":"player","params":{"seconds":300}}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":6}}
+{"op":"rule","id":"r_supplies_done","when":{"t":"state_is","a":"alarm_switch","s":"on"},"then":[{"e":"emit","target":"alarm_switch","fx":"alarm_flash"}]}
+{"op":"rule","id":"r_gate_open","when":{"t":"state_is","a":"roof_gate","s":"open"},"then":[{"e":"emit","target":"roof_gate","fx":"gate_creak"}]}
+{"op":"rule","id":"r_win_roof","when":{"t":"enter","a":"player","b":"roof_hatch"},"if":[{"l":"food_pack.carrier.team","op":"eq","r":"red"},{"l":"medkit.carrier.team","op":"eq","r":"red"},{"l":"toolbox.carrier.team","op":"eq","r":"red"}],"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose_timer","when":{"t":"timer_end","a":"player"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_spike_hit","when":{"t":"hit","a":"player","b":"spike_floor"},"then":[{"e":"emit","target":"spike_floor","fx":"blood_splash"}]}
+{"op":"expect","id":"x_roof_order","prop":"win_reachable","a":"sp_red","b":"roof_hatch","headline":true,"text":"Roof access must be reachable only after collecting supplies, so the route order matters."}
+{"op":"expect","id":"x_roof_gate","prop":"requires","a":"sp_red","b":"z_roof","need":["jumps>=2"],"text":"Roof stairwell needs the stair key and a double jump over the debris"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

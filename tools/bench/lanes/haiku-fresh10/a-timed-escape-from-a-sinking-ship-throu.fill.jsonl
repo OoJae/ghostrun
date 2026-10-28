@@ -1,0 +1,59 @@
+{"op":"meta","mode":"play","lang":"en","pack":"course","sub":[],"seed":17,"look":"sinking ship night","mood":[-0.6,0.9,0.9],"timeOfDay":2,"weather":"storm"}
+{"op":"zone","id":"z_start","slot":"start","tag":"start","name":"Upper promenade"}
+{"op":"zone","id":"z_ledge","slot":"seg_1","tag":"ledge","name":"Flooded deck one"}
+{"op":"zone","id":"z_gaps","slot":"seg_2","tag":"gaps","name":"Flooded deck two"}
+{"op":"zone","id":"z_steps","slot":"seg_3","tag":"steps","name":"Companionway stairs"}
+{"op":"zone","id":"z_pit","slot":"seg_4","tag":"pit","name":"Engine pit"}
+{"op":"zone","id":"z_beam","slot":"seg_5","tag":"beam","name":"Collapsed beam"}
+{"op":"zone","id":"z_finish","slot":"finish","tag":"finish","name":"Lifeboat deck"}
+{"op":"spawn","id":"sp_red","zone":"z_start","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"lifeboat","zone":"z_finish","anchor":"goal","noun":"lifeboat","hyper":"vehicle","team":"red"}
+{"op":"ent","id":"air_tank","kind":"pickup","noun":"oxygen tank","hyper":"tank","zone":"z_ledge","anchor":"pickup_1","body":"dynamic","shape":"capsule","size":[0.3,0.6,0.3]}
+{"op":"ent","id":"radio","kind":"pickup","noun":"emergency radio","hyper":"radio","zone":"z_gaps","anchor":"pickup_2","body":"dynamic","shape":"box","size":[0.3,0.2,0.2]}
+{"op":"ent","id":"fuse","kind":"pickup","noun":"spare fuse","hyper":"fuse","zone":"z_steps","anchor":"pickup_3","body":"dynamic","shape":"box","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"cp_a","kind":"checkpoint","noun":"deck one hatch","hyper":"checkpoint","zone":"z_ledge","anchor":"cp_1","body":"sensor","shape":"box","size":[1.5,2,1.5]}
+{"op":"ent","id":"cp_b","kind":"checkpoint","noun":"deck two hatch","hyper":"checkpoint","zone":"z_gaps","anchor":"cp_2","body":"sensor","shape":"box","size":[1.5,2,1.5]}
+{"op":"ent","id":"cp_c","kind":"checkpoint","noun":"stair landing","hyper":"checkpoint","zone":"z_steps","anchor":"cp_3","body":"sensor","shape":"box","size":[1.5,2,1.5]}
+{"op":"ent","id":"pump_switch","kind":"switch","noun":"bilge pump lever","hyper":"lever","zone":"z_pit","anchor":"pit_4","body":"fixed","shape":"box","size":[0.4,0.8,0.2]}
+{"op":"ent","id":"bulkhead","kind":"door","noun":"watertight bulkhead","hyper":"door","zone":"z_pit","anchor":"cp_4","body":"fixed","shape":"box","size":[2,2.5,0.3]}
+{"op":"ent","id":"catwalk","kind":"platform","noun":"rusted catwalk","hyper":"platform","zone":"z_beam","anchor":"cp_5","body":"fixed","shape":"box","size":[3,0.2,1.5]}
+{"op":"ent","id":"pressure_plate","kind":"plate","noun":"deck drain plate","hyper":"plate","zone":"z_gaps","anchor":"pickup_2","body":"sensor","shape":"box","size":[1.5,0.1,1.5]}
+{"op":"ent","id":"seawater","kind":"hazard","noun":"rising seawater","hyper":"water","zone":"z_pit","anchor":"pit_4","body":"sensor","shape":"box","size":[4,0.5,4]}
+{"op":"ent","id":"sparks","kind":"hazard","noun":"exposed live wire","hyper":"electric","zone":"z_beam","anchor":"cp_5","body":"sensor","shape":"box","size":[1,0.3,1]}
+{"op":"ent","id":"jump_pad","kind":"platform","noun":"debris raft","hyper":"raft","zone":"z_ledge","anchor":"pickup_1","body":"fixed","shape":"box","size":[1.5,0.2,1.5]}
+{"op":"ent","id":"logbook","kind":"prop","noun":"captain's logbook","hyper":"book","zone":"z_start","anchor":"sign","body":"fixed","shape":"box","size":[0.3,0.1,0.4]}
+{"op":"ent","id":"chart","kind":"prop","noun":"deck chart","hyper":"chart","zone":"z_steps","anchor":"cp_3","body":"fixed","shape":"box","size":[0.8,0.1,0.6]}
+{"op":"ent","id":"stairwell_portal","kind":"portal","noun":"service shaft","hyper":"portal","zone":"z_steps","anchor":"cp_3","body":"sensor","shape":"box","size":[1,2,1]}
+{"op":"ent","id":"shaft_exit","kind":"portal","noun":"shaft exit","hyper":"portal","zone":"z_beam","anchor":"cp_5","body":"sensor","shape":"box","size":[1,2,1]}
+{"op":"verb","id":"vb_jump","verb":"locomotion.jump","on":"player","params":{"jumpsMax":2}}
+{"op":"verb","id":"vb_carry_tank","verb":"physics_props.carry","on":"air_tank","params":{}}
+{"op":"verb","id":"vb_carry_radio","verb":"physics_props.carry","on":"radio","params":{}}
+{"op":"verb","id":"vb_carry_fuse","verb":"physics_props.carry","on":"fuse","params":{}}
+{"op":"verb","id":"vb_pump","verb":"puzzle.switch","on":"pump_switch","params":{"once":false}}
+{"op":"verb","id":"vb_bulkhead","verb":"puzzle.lock","on":"bulkhead","params":{"key":"fuse","keep":false}}
+{"op":"verb","id":"vb_plate","verb":"puzzle.plate","on":"pressure_plate","params":{"latch":false}}
+{"op":"verb","id":"vb_collect_1","verb":"puzzle.collect","on":"air_tank","params":{}}
+{"op":"verb","id":"vb_cp_a","verb":"puzzle.checkpoint","on":"cp_a","params":{}}
+{"op":"verb","id":"vb_cp_b","verb":"puzzle.checkpoint","on":"cp_b","params":{}}
+{"op":"verb","id":"vb_cp_c","verb":"puzzle.checkpoint","on":"cp_c","params":{}}
+{"op":"verb","id":"vb_portal","verb":"puzzle.portal","on":"stairwell_portal","params":{"to":"shaft_exit"}}
+{"op":"verb","id":"vb_flood","verb":"motion_hazards.hazard","on":"seawater","params":{"respawn":true}}
+{"op":"verb","id":"vb_wire","verb":"motion_hazards.hazard","on":"sparks","params":{"respawn":true}}
+{"op":"verb","id":"vb_crumble","verb":"motion_hazards.crumble","on":"catwalk","params":{"delay":1,"back":4}}
+{"op":"verb","id":"vb_raft","verb":"locomotion.jump_pad","on":"jump_pad","params":{"height":4}}
+{"op":"verb","id":"vb_timer","verb":"puzzle.timer","on":"player","params":{"seconds":300}}
+{"op":"verb","id":"vb_look_log","verb":"social.inspect","on":"logbook","params":{"text":"Listing 14 degrees. Flooding in all three decks. Lifeboats aft."}}
+{"op":"verb","id":"vb_look_chart","verb":"social.inspect","on":"chart","params":{"text":"Deck chart: stairs lead to the engine pit, then the beam to the lifeboat deck."}}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":6}}
+{"op":"rule","id":"r_pump","when":{"t":"state_is","a":"pump_switch","s":"on"},"then":[{"e":"set_state","target":"seawater","v":"draining"}]}
+{"op":"rule","id":"r_bulkhead","when":{"t":"state_is","a":"bulkhead","s":"open"},"then":[{"e":"emit","target":"bulkhead","fx":"water_spray"}]}
+{"op":"rule","id":"r_plate","when":{"t":"state_is","a":"pressure_plate","s":"down"},"then":[{"e":"set_state","target":"seawater","v":"lowered"}]}
+{"op":"rule","id":"r_collect","when":{"t":"touch","a":"player","b":"air_tank"},"then":[{"e":"score","target":"team:red","n":10}]}
+{"op":"rule","id":"r_win","when":{"t":"enter","a":"player","b":"lifeboat"},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_sink","when":{"t":"timer_end","a":"player"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_drown","when":{"t":"hit","a":"player","b":"seawater"},"then":[{"e":"emit","target":"player","fx":"splash"}]}
+{"op":"expect","id":"x_escape","prop":"win_reachable","a":"sp_red","b":"lifeboat","headline":true,"text":"Three flooded decks each need a timed climb or swim to the exit."}
+{"op":"expect","id":"x_climb","prop":"requires","a":"sp_red","b":"z_beam","need":["jumps>=2"],"text":"The collapsed beam needs a double jump"}
+{"op":"expect","id":"x_time","prop":"reachable","a":"sp_red","b":"z_finish","text":"The lifeboat deck is reachable within the five minute timer"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

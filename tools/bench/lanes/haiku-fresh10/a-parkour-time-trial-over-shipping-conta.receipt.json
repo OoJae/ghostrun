@@ -1,0 +1,294 @@
+{
+  "prompt": "A parkour time trial over shipping containers in a harbour",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "parkour time trial",
+    "setting": "a harbour of stacked shipping containers",
+    "role": "runner",
+    "goal": "reach the finish pad as fast as possible",
+    "fail": "fall into the water or run out of time",
+    "mood": "tense and kinetic",
+    "pack": "course",
+    "sub": [
+      "rooftop"
+    ],
+    "safety": "ok",
+    "headline": "Container stacks need precise double jumps to beat the clock",
+    "nouns": [
+      {
+        "noun": "shipping container",
+        "hyper": "oversized steel crate stacked like blocks"
+      },
+      {
+        "noun": "harbour water",
+        "hyper": "dark churning sea below the quay"
+      },
+      {
+        "noun": "crane",
+        "hyper": "towering gantry casting long shadows across the course"
+      }
+    ],
+    "moodVec": {
+      "valence": -0.1,
+      "arousal": 0.8,
+      "tension": 0.7
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "c96d63c17e1693f763f6b4bb717c4bcee25faa5937ba0ecc94d68f7f2a26b35a",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_double",
+      "text": "Container stacks need precise double jumps to beat the clock",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 7 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_finish (player enters finish_pad)",
+        "src": ""
+      },
+      {
+        "id": "T1:x_gaps",
+        "tier": "T1",
+        "subject": {
+          "kind": "property",
+          "id": "x_gaps"
+        },
+        "method": "kinematic reachability (jump apex model)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "Stack gaps need double jump",
+        "cx": null
+      },
+      {
+        "id": "T1:x_beam",
+        "tier": "T1",
+        "subject": {
+          "kind": "property",
+          "id": "x_beam"
+        },
+        "method": "kinematic reachability (jump apex model)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "Crane beam needs double jump",
+        "cx": null
+      },
+      {
+        "id": "T2:r_bonus",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_bonus"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 11,
+        "status": "verified",
+        "text": "r_bonus fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_clock",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_clock"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_clock fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_fall",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_fall"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 6,
+        "status": "verified",
+        "text": "r_fall fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_finish",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_finish"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_finish fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_host",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_host"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_secret_host fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_pickup_5",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_pickup_5"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_secret_pickup_5 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_trophy",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_trophy"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_trophy fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it (AI par 20.1 s)",
+        "cx": null,
+        "src": "",
+        "ms": 212
+      },
+      {
+        "id": "T3:x_gaps",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "x_gaps"
+        },
+        "status": "counterexample",
+        "method": "physics jump witness, 4 attempts per jump count",
+        "n": 4,
+        "k": 0,
+        "text": "Stack gaps need double jump: reached with 2 jumps 0 of 4, with 1 0 of 4",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 0,
+          "unit": "attempts",
+          "text": "never reached with 2 jumps"
+        },
+        "src": "ai",
+        "ms": 14
+      },
+      {
+        "id": "T3:x_beam",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "x_beam"
+        },
+        "status": "counterexample",
+        "method": "physics jump witness, 4 attempts per jump count",
+        "n": 4,
+        "k": 0,
+        "text": "Crane beam needs double jump: reached with 2 jumps 0 of 4, with 1 0 of 4",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 0,
+          "unit": "attempts",
+          "text": "never reached with 2 jumps"
+        },
+        "src": "ai",
+        "ms": 12
+      }
+    ],
+    "par": {
+      "goldS": 20.1,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 620
+  }
+}

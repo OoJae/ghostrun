@@ -1,0 +1,34 @@
+{"op":"meta","mode":"wander","lang":"en","pack":"city_block","sub":["rooftop"],"seed":10,"look":"neon night market, rain","mood":[0.3,0.5,0.2],"timeOfDay":22,"weather":"rain"}
+{"op":"zone","id":"z_plaza","slot":"center","tag":"plaza","name":"Night market plaza"}
+{"op":"zone","id":"z_west","slot":"west_block","tag":"base","name":"West stalls"}
+{"op":"zone","id":"z_east","slot":"east_block","tag":"base","name":"East stalls"}
+{"op":"zone","id":"z_street_w","slot":"street_w","tag":"street","name":"Market street west"}
+{"op":"zone","id":"z_street_e","slot":"street_e","tag":"street","name":"Market street east"}
+{"op":"zone","id":"z_roof","slot":"roof_lane_a","tag":"rooftop","name":"Rooftop overlook"}
+{"op":"spawn","id":"sp_red","zone":"z_street_w","team":"red"}
+{"op":"goal","id":"drink_stall","zone":"z_east","anchor":"goal_ring","noun":"drink stall","hyper":"merchant","team":""}
+{"op":"ent","id":"vendor_stall","kind":"prop","noun":"drink stall counter","hyper":"merchant","zone":"z_east","anchor":"spawn_pad","body":"fixed","shape":"box","size":[2,1,1]}
+{"op":"ent","id":"glow_drink","kind":"pickup","noun":"glowing drink","hyper":"beverage","zone":"z_east","anchor":"goal_ring","body":"dynamic","shape":"capsule","size":[0.2,0.4,0.2]}
+{"op":"ent","id":"neon_sign_1","kind":"sign","noun":"neon sign","hyper":"signage","zone":"z_street_w","body":"fixed","shape":"box","size":[1.5,1,0.2]}
+{"op":"ent","id":"neon_sign_2","kind":"sign","noun":"neon sign","hyper":"signage","zone":"z_plaza","anchor":"wall_n","body":"fixed","shape":"box","size":[2,1,0.2]}
+{"op":"ent","id":"lantern_stall","kind":"prop","noun":"lantern stall","hyper":"merchant","zone":"z_west","anchor":"spawn_pad","body":"fixed","shape":"box","size":[1.5,1.2,1]}
+{"op":"ent","id":"noodle_cart","kind":"prop","noun":"noodle cart","hyper":"merchant","zone":"z_street_e","body":"fixed","shape":"box","size":[1.6,1,1]}
+{"op":"ent","id":"rain_puddle","kind":"hazard","noun":"rain puddle","hyper":"puddle","zone":"z_street_e","body":"sensor","shape":"box","size":[2,0.05,2]}
+{"op":"ent","id":"roof_sign","kind":"sign","noun":"holo billboard","hyper":"signage","zone":"z_roof","anchor":"edge","body":"fixed","shape":"box","size":[2,1,0.2]}
+{"op":"verb","id":"vb_look_sign","verb":"social.inspect","on":"neon_sign_1","params":{"text":"KAZE NOODLES - OPEN LATE - THE RAIN IS FREE."}}
+{"op":"verb","id":"vb_look_sign2","verb":"social.inspect","on":"neon_sign_2","params":{"text":"Market rules: no weapons, no cameras, no refunds."}}
+{"op":"verb","id":"vb_look_lantern","verb":"social.inspect","on":"lantern_stall","params":{"text":"Paper lanterns that hum faintly when touched."}}
+{"op":"verb","id":"vb_look_noodle","verb":"social.inspect","on":"noodle_cart","params":{"text":"Steam rises from a cart of ten-year-old broth."}}
+{"op":"verb","id":"vb_look_billboard","verb":"social.inspect","on":"roof_sign","params":{"text":"Your city. Your neon. Your debt."}}
+{"op":"verb","id":"vb_carry_drink","verb":"physics_props.carry","on":"glow_drink","params":{}}
+{"op":"verb","id":"vb_puddle","verb":"motion_hazards.hazard","on":"rain_puddle","params":{"respawn":false}}
+{"op":"npc","id":"vendor_1","role":"merchant","zone":"z_east","anchor":"goal_ring","team":"","menu":["guard.patrol"],"dflt":"guard.patrol"}
+{"op":"npc","id":"guide_1","role":"guide","zone":"z_street_w","team":"","menu":["guard.patrol"],"dflt":"guard.patrol"}
+{"op":"rule","id":"r_buy","when":{"t":"pickup","a":"glow_drink","b":"player"},"then":[{"e":"emit","target":"glow_drink","fx":"neon_glow"}]}
+{"op":"expect","id":"x_drink","prop":"win_reachable","a":"sp_red","b":"drink_stall","headline":true,"text":"Glowing drink vendor stall must be reachable from the market street"}
+{"op":"expect","id":"x_roof","prop":"reachable","a":"sp_red","b":"z_roof","headline":false,"text":"Rooftop overlook is reachable from the market street"}
+{"op":"end","layer":"gameplay"}
+{"op":"dress","id":"d_rain","zone":"z_plaza","fx":"rain_drizzle"}
+{"op":"dress","id":"d_steam","zone":"z_street_e","fx":"steam_vent"}
+{"op":"poster","id":"p_kaze","zone":"z_street_w","text":"KAZE NOODLES - OPEN LATE"}
+{"op":"end","layer":"cosmetic"}

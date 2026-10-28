@@ -1,0 +1,134 @@
+{
+  "prompt": "A cyberpunk night market where a vendor sells you a glowing drink",
+  "intent": {
+    "lang": "en",
+    "mode": "wander",
+    "genre": "cyberpunk",
+    "setting": "a neon-lit night market in a rain-soaked future city",
+    "role": "visitor browsing stalls",
+    "goal": "explore the market and buy a glowing drink from a vendor",
+    "fail": "none; wandering with no fail state",
+    "mood": "hazy, electric, curious",
+    "pack": "city_block",
+    "sub": [
+      "rooftop"
+    ],
+    "safety": "ok",
+    "headline": "Glowing drink vendor stall must be reachable from the market street",
+    "nouns": [
+      {
+        "noun": "vendor",
+        "hyper": "merchant"
+      },
+      {
+        "noun": "glowing drink",
+        "hyper": "beverage"
+      },
+      {
+        "noun": "neon sign",
+        "hyper": "signage"
+      },
+      {
+        "noun": "night market",
+        "hyper": "marketplace"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.3,
+      "arousal": 0.5,
+      "tension": 0.2
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "277d328b01c2259156e3339fb569e013d70edcdc4494cfdba9f272c42ea5187d",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_drink",
+      "text": "Glowing drink vendor stall must be reachable from the market street",
+      "status": "not_checkable",
+      "method": "none"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 1 rules reference existing things",
+        "src": ""
+      },
+      {
+        "id": "T1:x_roof",
+        "tier": "T1",
+        "subject": {
+          "kind": "property",
+          "id": "x_roof"
+        },
+        "method": "kinematic reachability (jump apex model)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "counterexample",
+        "text": "Rooftop overlook is reachable from the market street",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "route",
+          "text": "no route found"
+        }
+      },
+      {
+        "id": "T2:r_buy",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_buy"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 10,
+        "status": "verified",
+        "text": "r_buy fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:tour",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "tour"
+        },
+        "status": "counterexample",
+        "method": "physics, an AI visitor walks to and uses each",
+        "n": 6,
+        "k": 4,
+        "text": "walked to and inspected 4 of 6 things",
+        "cx": {
+          "where": null,
+          "have": 4,
+          "need": 6,
+          "unit": "things",
+          "text": "couldn't reach neon_sign_2, roof_sign"
+        },
+        "src": "",
+        "ms": 199
+      }
+    ],
+    "par": null,
+    "ms": 304
+  }
+}

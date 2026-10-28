@@ -1,0 +1,180 @@
+{
+  "prompt": "Escapa del laberinto antes de que se acabe el tiempo",
+  "intent": {
+    "lang": "es",
+    "mode": "play",
+    "genre": "escape",
+    "setting": "laberinto",
+    "role": "jugador que escapa",
+    "goal": "llegar a la salida del laberinto antes de que se acabe el tiempo",
+    "fail": "se agota el tiempo antes de encontrar la salida",
+    "mood": "tenso",
+    "pack": "maze",
+    "sub": [],
+    "safety": "ok",
+    "headline": "El laberinto necesita una salida alcanzable antes del límite de tiempo",
+    "nouns": [
+      {
+        "noun": "laberinto",
+        "hyper": "laberinto sembrado con pasillos sin salida y una salida única"
+      },
+      {
+        "noun": "tiempo",
+        "hyper": "cuenta regresiva visible que obliga a elegir rutas rápido"
+      }
+    ],
+    "moodVec": {
+      "valence": -0.3,
+      "arousal": 0.8,
+      "tension": 0.9
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "8b9368fb07d2a376fdfb16a71dd4959b126c0640712c8a1c682cd53c6a9513c5",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_escape",
+      "text": "El laberinto necesita una salida alcanzable antes del límite de tiempo",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 4 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_escape (player enters exit)",
+        "src": ""
+      },
+      {
+        "id": "T1:x_gate",
+        "tier": "T1",
+        "subject": {
+          "kind": "property",
+          "id": "x_gate"
+        },
+        "method": "kinematic reachability (jump apex model)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "La puerta de hierro se abre con la palanca",
+        "cx": null
+      },
+      {
+        "id": "T2:r_escape",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_escape"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_escape fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_gate_open",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_gate_open"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_gate_open fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_hit",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_hit"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_hit fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_timeout",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_timeout"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_timeout fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it (AI par 26.9 s)",
+        "cx": null,
+        "src": "",
+        "ms": 439
+      }
+    ],
+    "par": {
+      "goldS": 26.9,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 473
+  }
+}

@@ -1,0 +1,64 @@
+{"op":"meta","mode":"play","lang":"en","pack":"course","sub":["rooftop"],"seed":34,"look":"haunted coastal lighthouse at night","mood":[-0.6,0.7,0.8],"timeOfDay":23,"weather":"fog"}
+{"op":"zone","id":"z_start","slot":"start","tag":"entrance","name":"Keeper's door"}
+{"op":"zone","id":"z_ledge","slot":"seg_1","tag":"ledge","name":"Spiral landing"}
+{"op":"zone","id":"z_pit","slot":"seg_2","tag":"pit","name":"Oil cellar"}
+{"op":"zone","id":"z_steps","slot":"seg_3","tag":"steps","name":"Iron stairs"}
+{"op":"zone","id":"z_beam","slot":"seg_4","tag":"beam","name":"Lens gallery beam"}
+{"op":"zone","id":"z_gaps","slot":"seg_5","tag":"gaps","name":"Broken catwalk"}
+{"op":"zone","id":"z_top","slot":"finish","tag":"finish","name":"Lamp room"}
+{"op":"spawn","id":"sp_red","zone":"z_start","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"lamp","zone":"z_top","anchor":"goal","noun":"brass lamp","hyper":"lantern","team":"red"}
+{"op":"ent","id":"lamp_fuel","kind":"pickup","noun":"oil flask","hyper":"fuel","zone":"z_pit","anchor":"pit_2","body":"dynamic","shape":"box","size":[0.3,0.4,0.3]}
+{"op":"ent","id":"match","kind":"pickup","noun":"matchbox","hyper":"match","zone":"z_start","anchor":"host","body":"dynamic","shape":"box","size":[0.2,0.1,0.2]}
+{"op":"ent","id":"coin_1","kind":"pickup","noun":"silver coin","hyper":"coin","zone":"z_ledge","anchor":"pickup_1","body":"sensor","shape":"sphere","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"coin_2","kind":"pickup","noun":"silver coin","hyper":"coin","zone":"z_steps","anchor":"pickup_3","body":"sensor","shape":"sphere","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"coin_3","kind":"pickup","noun":"silver coin","hyper":"coin","zone":"z_gaps","anchor":"pickup_5","body":"sensor","shape":"sphere","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"cp_a","kind":"checkpoint","noun":"ledge lantern","hyper":"checkpoint","zone":"z_ledge","anchor":"cp_1","body":"sensor","shape":"box"}
+{"op":"ent","id":"cp_b","kind":"checkpoint","noun":"stair lantern","hyper":"checkpoint","zone":"z_steps","anchor":"cp_3","body":"sensor","shape":"box"}
+{"op":"ent","id":"cp_c","kind":"checkpoint","noun":"gallery lantern","hyper":"checkpoint","zone":"z_gaps","anchor":"cp_5","body":"sensor","shape":"box"}
+{"op":"ent","id":"lamp_switch","kind":"switch","noun":"valve lever","hyper":"lever","zone":"z_beam","anchor":"cp_4","body":"fixed","shape":"box"}
+{"op":"ent","id":"oil_spill","kind":"hazard","noun":"oil slick","hyper":"hazard","zone":"z_pit","anchor":"pit_2","body":"sensor","shape":"box","size":[2,0.1,2]}
+{"op":"ent","id":"spike_gap","kind":"hazard","noun":"broken spikes","hyper":"hazard","zone":"z_gaps","anchor":"pickup_5","body":"sensor","shape":"box","size":[2,0.2,2]}
+{"op":"ent","id":"crate_ledge","kind":"platform","noun":"rotting crate","hyper":"platform","zone":"z_ledge","anchor":"cp_1","body":"fixed","shape":"box","size":[1.2,0.6,1.2]}
+{"op":"ent","id":"plank_gap","kind":"platform","noun":"creaking plank","hyper":"platform","zone":"z_gaps","anchor":"cp_5","body":"fixed","shape":"box","size":[1.5,0.1,1]}
+{"op":"ent","id":"ledger_1","kind":"sign","noun":"keeper's ledger","hyper":"book","zone":"z_start","anchor":"sign","body":"fixed","shape":"box","size":[0.4,0.3,0.1]}
+{"op":"ent","id":"logbook_2","kind":"prop","noun":"logbook","hyper":"book","zone":"z_steps","anchor":"cp_3","body":"fixed","shape":"box","size":[0.4,0.3,0.1]}
+{"op":"ent","id":"portrait_1","kind":"prop","noun":"keeper portrait","hyper":"painting","zone":"z_beam","anchor":"cp_4","body":"fixed","shape":"box","size":[1,1.4,0.2]}
+{"op":"ent","id":"lamp_door","kind":"door","noun":"lamp room hatch","hyper":"door","zone":"z_top","anchor":"doorway_w","body":"fixed","shape":"box"}
+{"op":"ent","id":"tower_plate","kind":"plate","noun":"stone plate","hyper":"plate","zone":"z_steps","anchor":"cp_3","body":"fixed","shape":"box","size":[1,0.1,1]}
+{"op":"ent","id":"jump_pad","kind":"platform","noun":"spring pad","hyper":"pad","zone":"z_gaps","anchor":"pickup_5","body":"fixed","shape":"box","size":[1,0.2,1]}
+{"op":"verb","id":"vb_jump","verb":"locomotion.jump","on":"player","params":{"jumpsMax":2}}
+{"op":"verb","id":"vb_carry_fuel","verb":"physics_props.carry","on":"lamp_fuel","params":{}}
+{"op":"verb","id":"vb_carry_match","verb":"physics_props.carry","on":"match","params":{}}
+{"op":"verb","id":"vb_coin1","verb":"puzzle.collect","on":"coin_1","params":{}}
+{"op":"verb","id":"vb_coin2","verb":"puzzle.collect","on":"coin_2","params":{}}
+{"op":"verb","id":"vb_coin3","verb":"puzzle.collect","on":"coin_3","params":{}}
+{"op":"verb","id":"vb_cp_a","verb":"puzzle.checkpoint","on":"cp_a","params":{}}
+{"op":"verb","id":"vb_cp_b","verb":"puzzle.checkpoint","on":"cp_b","params":{}}
+{"op":"verb","id":"vb_cp_c","verb":"puzzle.checkpoint","on":"cp_c","params":{}}
+{"op":"verb","id":"vb_switch","verb":"puzzle.switch","on":"lamp_switch","params":{"once":true}}
+{"op":"verb","id":"vb_plate","verb":"puzzle.plate","on":"tower_plate","params":{"latch":false}}
+{"op":"verb","id":"vb_lock","verb":"puzzle.lock","on":"lamp_door","params":{"key":"match","keep":true}}
+{"op":"verb","id":"vb_hazard_oil","verb":"motion_hazards.hazard","on":"oil_spill","params":{"respawn":true}}
+{"op":"verb","id":"vb_hazard_spike","verb":"motion_hazards.hazard","on":"spike_gap","params":{"respawn":true}}
+{"op":"verb","id":"vb_crumble","verb":"motion_hazards.crumble","on":"plank_gap","params":{"delay":1,"back":4}}
+{"op":"verb","id":"vb_pad","verb":"locomotion.jump_pad","on":"jump_pad","params":{"height":5}}
+{"op":"verb","id":"vb_timer","verb":"puzzle.timer","on":"player","params":{"seconds":240}}
+{"op":"verb","id":"vb_inspect_1","verb":"social.inspect","on":"ledger_1","params":{"text":"Last entry: The lamp must be lit before the fog returns. Do not look up."}}
+{"op":"verb","id":"vb_inspect_2","verb":"social.inspect","on":"portrait_1","params":{"text":"The keeper who vanished in 1887. His eyes follow you up the stairs."}}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":6}}
+{"op":"state","id":"lamp_door","s":"closed"}
+{"op":"state","id":"lamp_switch","s":"off"}
+{"op":"rule","id":"r_light","when":{"t":"state_is","a":"lamp_switch","s":"on"},"then":[{"e":"open","target":"lamp_door"},{"e":"emit","target":"lamp","fx":"lamp_glow"}]}
+{"op":"rule","id":"r_win","when":{"t":"enter","a":"player","b":"lamp"},"if":[{"l":"lamp_switch.state","op":"eq","r":"on"}],"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_spirit_lose","when":{"t":"hit","a":"player","b":"oil_spill"},"then":[{"e":"reset","target":"player"}]}
+{"op":"rule","id":"r_timeout","when":{"t":"timer_end","a":"player"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_plate_fx","when":{"t":"state_is","a":"tower_plate","s":"down"},"then":[{"e":"emit","target":"tower_plate","fx":"ghost_chill"}]}
+{"op":"npc","id":"spirit_1","role":"creature","zone":"z_steps","anchor":"cp_3","team":"","menu":["guard.patrol"],"dflt":"guard.patrol"}
+{"op":"npc","id":"spirit_2","role":"creature","zone":"z_beam","anchor":"cp_4","team":"","menu":["guard.patrol"],"dflt":"guard.patrol"}
+{"op":"expect","id":"x_lamp","prop":"win_reachable","a":"sp_red","b":"lamp","headline":true,"text":"Lamp at the top needs timed vertical climbs with spirit chases."}
+{"op":"expect","id":"x_switch","prop":"requires","a":"sp_red","b":"lamp_switch","need":["jumps>=2"],"text":"Valve lever on the beam needs a double jump"}
+{"op":"expect","id":"x_gap","prop":"requires","a":"sp_red","b":"plank_gap","need":["jumps>=2"],"text":"Broken catwalk needs a double jump"}
+{"op":"expect","id":"x_fuel","prop":"reachable","a":"sp_red","b":"lamp_fuel","text":"Oil flask is reachable in the cellar"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

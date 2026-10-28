@@ -1,0 +1,29 @@
+{"op":"meta","mode":"wander","lang":"en","pack":"floor_plan","sub":[],"seed":14,"look":"calm Feng Shui living room","mood":[0.6,-0.5,-0.4],"timeOfDay":10,"weather":"clear"}
+{"op":"zone","id":"z_yard","slot":"yard","tag":"outside","name":"Garden path"}
+{"op":"zone","id":"z_entry","slot":"entrance","tag":"entrance","name":"Entry"}
+{"op":"zone","id":"z_living","slot":"main_room","tag":"hall","name":"Living room"}
+{"op":"zone","id":"z_sw","slot":"room_sw","tag":"room","name":"Reading corner"}
+{"op":"zone","id":"z_ne","slot":"room_ne","tag":"room","name":"Garden alcove"}
+{"op":"spawn","id":"sp_red","zone":"z_entry","anchor":"center","team":"red"}
+{"op":"goal","id":"exit_garden","zone":"z_yard","anchor":"gate","noun":"garden gate","hyper":"exit","team":""}
+{"op":"ent","id":"sofa","kind":"prop","noun":"sofa","hyper":"a supportive sofa placed with its back to a solid wall","zone":"z_living","anchor":"wall_n","body":"fixed","shape":"box","size":[2.4,0.9,0.9]}
+{"op":"ent","id":"plant","kind":"prop","noun":"plant","hyper":"a lush green plant in the wealth corner","zone":"z_living","anchor":"corner_se","body":"fixed","shape":"capsule","size":[0.4,1.4,0.4]}
+{"op":"ent","id":"mirror","kind":"prop","noun":"mirror","hyper":"a mirror reflecting the view of the garden","zone":"z_living","anchor":"wall_e","body":"fixed","shape":"box","size":[0.1,1.2,0.9]}
+{"op":"ent","id":"rug","kind":"prop","noun":"rug","hyper":"a woven rug anchoring the seating area","zone":"z_living","anchor":"center","body":"fixed","shape":"box","size":[2.2,0.02,1.6]}
+{"op":"ent","id":"lamp","kind":"prop","noun":"floor lamp","hyper":"a warm lamp beside the reading chair","zone":"z_sw","anchor":"corner_sw","body":"fixed","shape":"capsule","size":[0.3,1.6,0.3]}
+{"op":"ent","id":"bookshelf","kind":"prop","noun":"bookshelf","hyper":"a tall shelf of books against the solid wall","zone":"z_sw","anchor":"wall_w","body":"fixed","shape":"box","size":[0.4,2,1.2]}
+{"op":"ent","id":"vase","kind":"prop","noun":"vase","hyper":"a ceramic vase holding fresh flowers","zone":"z_ne","anchor":"center","body":"fixed","shape":"sphere","size":[0.3,0.4,0.3]}
+{"op":"ent","id":"bonsai","kind":"prop","noun":"bonsai","hyper":"a small bonsai on the east side, representing growth","zone":"z_ne","anchor":"corner_ne","body":"fixed","shape":"box","size":[0.5,0.6,0.5]}
+{"op":"verb","id":"vb_look_sofa","verb":"social.inspect","on":"sofa","params":{"text":"Placed with its back to a solid wall, giving support and a clear view of the door."}}
+{"op":"verb","id":"vb_look_plant","verb":"social.inspect","on":"plant","params":{"text":"Sits in the wealth corner, its lush leaves inviting growth into the room."}}
+{"op":"verb","id":"vb_look_mirror","verb":"social.inspect","on":"mirror","params":{"text":"Reflects the garden view, bringing the outside energy inside without blocking the path."}}
+{"op":"verb","id":"vb_look_rug","verb":"social.inspect","on":"rug","params":{"text":"Anchors the seating group so the furniture gathers around a shared centre."}}
+{"op":"verb","id":"vb_look_lamp","verb":"social.inspect","on":"lamp","params":{"text":"Warm light beside the reading chair, softening the corner's energy."}}
+{"op":"verb","id":"vb_look_shelf","verb":"social.inspect","on":"bookshelf","params":{"text":"Solid and grounded against the wall, storing knowledge in a stable position."}}
+{"op":"verb","id":"vb_look_vase","verb":"social.inspect","on":"vase","params":{"text":"Fresh flowers in a ceramic vase, a sign of renewal placed in the garden alcove."}}
+{"op":"verb","id":"vb_look_bonsai","verb":"social.inspect","on":"bonsai","params":{"text":"A small bonsai in the east corner, representing growth and family vitality."}}
+{"op":"npc","id":"guide_1","role":"guide","zone":"z_entry","anchor":"center","team":"","menu":["guide.explain"],"dflt":"guide.explain"}
+{"op":"expect","id":"x_flow","prop":"reachable","a":"sp_red","b":"z_living","headline":true,"text":"Each object should sit in a balanced, flow-aligned position that can be checked on walkthrough."}
+{"op":"expect","id":"x_garden","prop":"reachable","a":"sp_red","b":"z_ne","text":"The garden alcove is reachable for viewing the bonsai and vase"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

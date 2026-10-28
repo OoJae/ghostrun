@@ -5,7 +5,7 @@ import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 
 import { dirname, join, resolve } from "node:path";
 import { FillParser, layoutLaws, mergeFill, parseFill, pinLayout, splitObjects, type WorldBundle } from "@ghostrun/ir";
 import { placeWorld } from "@ghostrun/layout";
-import { chatJson, editMessages, fillMessages, IntentOut, intentJsonSchema, intentMessages, repairMessages, settleIntent, streamChat } from "@ghostrun/llm";
+import { editMessages, fillMessages, IntentOut, intentJsonSchema, intentMessages, jsonLanes, lanesFor, repairMessages, settleIntent, streamLanes, type Keys } from "@ghostrun/llm";
 import { loadNavNode } from "@ghostrun/nav/node";
 import { better, caught, chipLine, issuesOf, plants, prove, provedWon, traceRunners, type Receipt } from "@ghostrun/proof";
 import { ALL_SUBS, PACKS, packFor } from "@ghostrun/registry";
@@ -27,6 +27,14 @@ function loadDevVars() {
     }
     dir = dirname(dir);
   }
+}
+
+/** The providers a run may use: both (the fast lane, then Haiku when it's busy); GR_LANE pins one to measure it alone. */
+function cliKeys(): Keys {
+  const lane = process.env.GR_LANE;
+  const keys = { cerebras: lane === "anthropic" ? undefined : process.env.CEREBRAS_API_KEY, anthropic: lane === "cerebras" ? undefined : process.env.ANTHROPIC_API_KEY };
+  if (!keys.cerebras && !keys.anthropic) throw new Error("no model key (put CEREBRAS_API_KEY or ANTHROPIC_API_KEY in .dev.vars)");
+  return keys;
 }
 
 function placeFromFill(text: string, seed: number, packId?: string, mode?: WorldBundle["mode"]): { bundle: WorldBundle; invalid: number; lines: number; notes: string[] } {
@@ -58,6 +66,9 @@ interface BuildTimings {
   outTok: number;
   invalid: number;
   lines: number;
+  /** The models that answered (a fallback shows up here). */
+  intentModel: string;
+  fillModel: string;
 }
 
 /** The gameplay lines of a fill (the repair call never needs the cosmetic tail). */
@@ -68,19 +79,19 @@ const gameplayOf = (fill: string) => {
 };
 
 /**
- * One counterexample-guided repair round: the receipt's failures go back to gpt-oss-120b as a
+ * One counterexample-guided repair round: the receipt's failures go back to the fill model as a
  * patch request; the patched fill is re-placed and re-proved, and kept only if it is better.
  */
 async function repairRound(R: Awaited<ReturnType<typeof loadRapierNode>>, prompt: string, intent: IntentOut, fill: string, seed: number, packId: string, receipt: Receipt, bundle: WorldBundle, notes: string[]) {
-  const key = process.env.CEREBRAS_API_KEY;
+  const keys = cliKeys();
   const issues = issuesOf(receipt, bundle);
-  if (!key || !issues.length) return null;
+  if (!issues.length) return null;
   const t0 = performance.now();
   const pack = packFor(packId);
   const layout = pack.generate({ seed, params: pack.defaults, sub: intent.sub, laws: bundle.laws, harder: false });
   const context = notes.filter((n) => !/^(interior|arena|outdoor|course|maze|rooftop|fall floor|lookout)/.test(n)).slice(0, 6);
   let patch = "";
-  for await (const ev of streamChat({ apiKey: key, model: "gpt-oss-120b", reasoningEffort: "low", maxTokens: 4000, messages: repairMessages(prompt, intent, layout, gameplayOf(fill), [...issues, ...(context.length ? [`(already repaired by the placer: ${context.join("; ")})`] : [])]) })) {
+  for await (const ev of streamLanes(lanesFor("patch", keys, { maxTokens: 4000, messages: repairMessages(prompt, intent, layout, gameplayOf(fill), [...issues, ...(context.length ? [`(already repaired by the placer: ${context.join("; ")})`] : [])]) }))) {
     if (ev.type === "text") patch += ev.delta;
   }
   const merged = mergeFill(fill, patch);
@@ -97,25 +108,17 @@ function controlsOf(b: WorldBundle): number {
 }
 
 async function build(prompt: string, seed: number, outDir: string | null): Promise<{ timings: BuildTimings; receipt: Receipt; intent: IntentOut; fill: string; controls: number }> {
-  const key = process.env.CEREBRAS_API_KEY;
-  if (!key) throw new Error("CEREBRAS_API_KEY missing (put it in .dev.vars)");
+  const keys = cliKeys();
   const now = () => performance.now();
   const t0 = now();
 
-  // 1. intent (qwen-3.8-27b, strict schema, no reasoning)
-  const intentRes = await chatJson<unknown>({
-    apiKey: key,
-    model: "qwen-3.8-27b",
-    reasoningEffort: "none",
-    messages: intentMessages(prompt, PACKS),
-    jsonSchema: { name: "intent", schema: intentJsonSchema(PACKS.map((p) => p.id), ALL_SUBS) },
-    maxTokens: 800,
-  });
+  // 1. intent (strict schema, no reasoning)
+  const intentRes = await jsonLanes<unknown>(lanesFor("intent", keys, { messages: intentMessages(prompt, PACKS), jsonSchema: { name: "intent", schema: intentJsonSchema(PACKS.map((p) => p.id), ALL_SUBS) }, maxTokens: 800 }));
   const intent = settleIntent(prompt, v.parse(IntentOut, intentRes.value));
   const intentMs = Math.round(now() - t0);
   if (intent.safety === "block") throw new Error(`blocked by moderation: ${intent.setting}`);
 
-  // 2. fill (gpt-oss-120b, streamed JSONL, low reasoning), parsed line by line as it arrives
+  // 2. fill (streamed JSONL), parsed line by line as it arrives
   const chosen = packFor(intent.pack);
   const layout = chosen.generate({ seed, params: chosen.defaults, sub: intent.sub, laws: { gravityScale: 1, jumpH: 1.6, speed: 6, jumpsMax: 1, airControl: 0.6, coyoteMs: 120, bufferMs: 100, thrust: 0 }, harder: false });
   const fx = (f: string) => readFileSync(resolve(import.meta.dirname, `../../../packages/ir/fixtures/${f}`), "utf8");
@@ -127,9 +130,11 @@ async function build(prompt: string, seed: number, outDir: string | null): Promi
   let firstEntityMs = -1;
   let gameplayEndMs = -1;
   let outTok = 0;
-  for await (const ev of streamChat({ apiKey: key, model: "gpt-oss-120b", reasoningEffort: "low", maxTokens: 6000, messages: fillMessages(prompt, intent, layout, example, seed) })) {
+  let fillModel = "";
+  for await (const ev of streamLanes(lanesFor("fill", keys, { maxTokens: 6000, messages: fillMessages(prompt, intent, layout, example, seed) }))) {
     if (ev.type === "first_token") fillFirstTokenMs = Math.round(now() - t0);
-    if (ev.type === "usage") outTok = ev.outTok;
+    if (ev.type === "fallback") console.log(`  · ${ev.from} answered ${ev.status}: the fill falls back to ${ev.to}`);
+    if (ev.type === "usage") [outTok, fillModel] = [ev.outTok, ev.model];
     if (ev.type !== "text") continue;
     fillText += ev.delta;
     for (const e of parser.push(ev.delta)) {
@@ -159,7 +164,7 @@ async function build(prompt: string, seed: number, outDir: string | null): Promi
   // (the runners' routes stay out of the recorded receipt: they're for the app, and large)
   if (outDir) writeFileSync(join(outDir, `${slug}.receipt.json`), JSON.stringify({ prompt, intent, receipt: { ...receipt, trails: undefined } }, null, 2));
   return {
-    timings: { intentMs, fillFirstTokenMs, firstEntityMs, gameplayEndMs, fillDoneMs, playableMs, proofMs, outTok, invalid, lines },
+    timings: { intentMs, fillFirstTokenMs, firstEntityMs, gameplayEndMs, fillDoneMs, playableMs, proofMs, outTok, invalid, lines, intentModel: intentRes.model, fillModel },
     receipt,
     intent,
     fill: fillText,
@@ -250,8 +255,7 @@ async function main() {
     const dir = args[0]!;
     const changes = readFileSync(args[1]!, "utf8").split("\n").map((l) => l.trim()).filter((l) => l && !l.startsWith("#"));
     const limit = Number(args[args.indexOf("--worlds") + 1]) || 6;
-    const key = process.env.CEREBRAS_API_KEY;
-    if (!key) throw new Error("CEREBRAS_API_KEY missing (.dev.vars)");
+    const keys = cliKeys();
     const R = await loadRapierNode();
     await loadNavNode();
     const row = (rc: Receipt, bd: WorldBundle) => {
@@ -278,7 +282,7 @@ async function main() {
           const t0 = performance.now();
           try {
             patch = "";
-            for await (const ev of streamChat({ apiKey: key, model: "gpt-oss-120b", reasoningEffort: "low", maxTokens: 4000, messages: editMessages(saved.prompt, change, saved.intent, layout, gameplayOf(text0)) })) if (ev.type === "text") patch += ev.delta;
+            for await (const ev of streamLanes(lanesFor("patch", keys, { maxTokens: 4000, messages: editMessages(saved.prompt, change, saved.intent, layout, gameplayOf(text0)) }))) if (ev.type === "text") patch += ev.delta;
             ms = Math.round(performance.now() - t0);
             break;
           } catch (e) {
@@ -447,7 +451,7 @@ async function main() {
         rows.push({ prompt: p, error: String(e) });
         console.log(`[${i + 1}/${prompts.length}] ERROR ${String(e).slice(0, 200)}`);
       }
-      await new Promise((r) => setTimeout(r, 13_000)); // free tier: qwen-3.8-27b allows 5 requests/min
+      await new Promise((r) => setTimeout(r, process.env.GR_LANE === "anthropic" ? 1000 : 13_000)); // free tier: qwen-3.8-27b allows 5 requests/min
     }
     mkdirSync(outDir, { recursive: true });
     writeFileSync(join(outDir, "bench.json"), JSON.stringify(rows, null, 2));

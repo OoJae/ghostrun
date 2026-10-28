@@ -1,0 +1,276 @@
+{
+  "prompt": "A timed escape from a sinking ship through three flooded decks",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "survival escape",
+    "setting": "a sinking ship with three flooded decks",
+    "role": "survivor",
+    "goal": "reach the lifeboat deck before time runs out",
+    "fail": "the ship sinks or the timer hits zero",
+    "mood": "tense and urgent",
+    "pack": "course",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Three flooded decks each need a timed climb or swim to the exit.",
+    "nouns": [
+      {
+        "noun": "ship",
+        "hyper": "vessel"
+      },
+      {
+        "noun": "deck",
+        "hyper": "structure"
+      },
+      {
+        "noun": "floodwater",
+        "hyper": "liquid"
+      },
+      {
+        "noun": "lifeboat",
+        "hyper": "vehicle"
+      }
+    ],
+    "moodVec": {
+      "valence": -0.6,
+      "arousal": 0.9,
+      "tension": 0.9
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "c819ecc262bd84ff897e95d160c16a3db1f88eab83e0437e74249f9cd01d19b0",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_escape",
+      "text": "Three flooded decks each need a timed climb or swim to the exit.",
+      "status": "counterexample",
+      "method": "static goal regression over rules + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 7 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (player enters lifeboat)",
+        "src": ""
+      },
+      {
+        "id": "T1:x_climb",
+        "tier": "T1",
+        "subject": {
+          "kind": "property",
+          "id": "x_climb"
+        },
+        "method": "kinematic reachability (jump apex model)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "The collapsed beam needs a double jump",
+        "cx": null
+      },
+      {
+        "id": "T1:x_time",
+        "tier": "T1",
+        "subject": {
+          "kind": "property",
+          "id": "x_time"
+        },
+        "method": "kinematic reachability (jump apex model)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "The lifeboat deck is reachable within the five minute timer",
+        "cx": null
+      },
+      {
+        "id": "T2:r_bulkhead",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_bulkhead"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 11,
+        "status": "verified",
+        "text": "r_bulkhead fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_collect",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_collect"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 7,
+        "status": "verified",
+        "text": "r_collect fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_drown",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_drown"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 6,
+        "status": "verified",
+        "text": "r_drown fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_plate",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_plate"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_plate fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_pump",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_pump"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_pump fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_sink",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_sink"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_sink fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "counterexample",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 0,
+        "text": "no AI runner could win",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "wins",
+          "text": "12 lost (the timer ran out ×12)"
+        },
+        "src": "",
+        "ms": 5575
+      },
+      {
+        "id": "T3:x_climb",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "x_climb"
+        },
+        "status": "counterexample",
+        "method": "physics jump witness, 4 attempts per jump count",
+        "n": 4,
+        "k": 0,
+        "text": "The collapsed beam needs a double jump: reached with 2 jumps 0 of 4, with 1 0 of 4",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 0,
+          "unit": "attempts",
+          "text": "never reached with 2 jumps"
+        },
+        "src": "ai",
+        "ms": 47
+      }
+    ],
+    "par": null,
+    "ms": 6014
+  }
+}

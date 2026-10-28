@@ -1,0 +1,126 @@
+{
+  "prompt": "A Feng Shui living room where each object sits in its proper place",
+  "intent": {
+    "lang": "en",
+    "mode": "wander",
+    "genre": "interior design",
+    "setting": "a Feng Shui living room with carefully placed furniture and objects",
+    "role": "visitor",
+    "goal": "explore the room and observe how each object sits in its proper place",
+    "fail": "none",
+    "mood": "calm and harmonious",
+    "pack": "floor_plan",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Each object should sit in a balanced, flow-aligned position that can be checked on walkthrough.",
+    "nouns": [
+      {
+        "noun": "living room",
+        "hyper": "a serene single-storey room arranged for balanced energy flow"
+      },
+      {
+        "noun": "sofa",
+        "hyper": "a supportive sofa placed with its back to a solid wall"
+      },
+      {
+        "noun": "plant",
+        "hyper": "a lush green plant in the wealth corner"
+      },
+      {
+        "noun": "mirror",
+        "hyper": "a mirror reflecting the view of the garden"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.6,
+      "arousal": -0.5,
+      "tension": -0.4
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "0f2f4aae59750de821dd6bd161932454958c43caa26350245de2a7fc1a5d0d96",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_flow",
+      "text": "Each object should sit in a balanced, flow-aligned position that can be checked on walkthrough.",
+      "status": "verified",
+      "method": "kinematic reachability (jump apex model)"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 0 rules reference existing things",
+        "src": ""
+      },
+      {
+        "id": "T1:x_flow",
+        "tier": "T1",
+        "subject": {
+          "kind": "property",
+          "id": "x_flow"
+        },
+        "method": "kinematic reachability (jump apex model)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "Each object should sit in a balanced, flow-aligned position that can be checked on walkthrough.",
+        "cx": null
+      },
+      {
+        "id": "T1:x_garden",
+        "tier": "T1",
+        "subject": {
+          "kind": "property",
+          "id": "x_garden"
+        },
+        "method": "kinematic reachability (jump apex model)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "The garden alcove is reachable for viewing the bonsai and vase",
+        "cx": null
+      },
+      {
+        "id": "T3:tour",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "tour"
+        },
+        "status": "counterexample",
+        "method": "physics, an AI visitor walks to and uses each",
+        "n": 8,
+        "k": 6,
+        "text": "walked to and inspected 6 of 8 things",
+        "cx": {
+          "where": null,
+          "have": 6,
+          "need": 8,
+          "unit": "things",
+          "text": "couldn't reach bonsai, vase"
+        },
+        "src": "",
+        "ms": 47
+      }
+    ],
+    "par": null,
+    "ms": 72
+  }
+}

@@ -1,0 +1,224 @@
+{
+  "prompt": "Sbírej všechny hvězdy v kouzelném lese",
+  "intent": {
+    "lang": "cs",
+    "mode": "play",
+    "genre": "adventure",
+    "setting": "kouzelný les",
+    "role": "průzkumník",
+    "goal": "sbírat všechny hvězdy rozeseté po lese",
+    "fail": "vyčerpání času nebo ztráta všech životů",
+    "mood": "tajemná a pohádková",
+    "pack": "outdoor",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Všechny hvězdy musí být sebratelné cestou z hlavní stezky k palouku.",
+    "nouns": [
+      {
+        "noun": "hvězda",
+        "hyper": "zářící hvězdička ležící na zemi nebo visící na větvi"
+      },
+      {
+        "noun": "les",
+        "hyper": "bioluminiscenční les s třpytivými stromy"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.6,
+      "arousal": 0.4,
+      "tension": 0.2
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "38587c4a345d17bc41ac7135804e406db0412da8d9e9e489dc8b814895bb88cd",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_stars",
+      "text": "Všechny hvězdy musí být sebratelné cestou z hlavní stezky k palouku.",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 5 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_all_stars (team:red reaches 5) ← r_collect_score (touch any of 5)",
+        "src": ""
+      },
+      {
+        "id": "T1:x_lift",
+        "tier": "T1",
+        "subject": {
+          "kind": "property",
+          "id": "x_lift"
+        },
+        "method": "kinematic reachability (jump apex model)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 1,
+        "status": "counterexample",
+        "text": "Hvězdy na vyhlídce vyžadují dvojskok",
+        "cx": {
+          "where": null,
+          "have": 1.5,
+          "need": 0.2,
+          "unit": "m",
+          "text": "reachable with 1 jump: step 0.2 m ≤ apex 1.5 m"
+        }
+      },
+      {
+        "id": "T2:r_all_stars",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_all_stars"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_all_stars fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_collect_score",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_collect_score"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 8,
+        "status": "verified",
+        "text": "r_collect_score fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_pad_light",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_pad_light"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 7,
+        "status": "verified",
+        "text": "r_pad_light fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_time_out",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_time_out"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_time_out fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_wisp_score",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_wisp_score"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_wisp_score fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it (AI par 41.6 s)",
+        "cx": null,
+        "src": "",
+        "ms": 550
+      },
+      {
+        "id": "T3:x_lift",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "x_lift"
+        },
+        "status": "counterexample",
+        "method": "physics jump witness, 4 attempts per jump count",
+        "n": 4,
+        "k": 4,
+        "text": "Hvězdy na vyhlídce vyžadují dvojskok: reached with 2 jumps 4 of 4, with 1 4 of 4",
+        "cx": {
+          "where": null,
+          "have": 4,
+          "need": 0,
+          "unit": "attempts",
+          "text": "reached with only 1 jump(s)"
+        },
+        "src": "ai",
+        "ms": 53
+      }
+    ],
+    "par": {
+      "goldS": 41.6,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 894
+  }
+}

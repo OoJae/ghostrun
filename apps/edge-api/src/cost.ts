@@ -1,22 +1,29 @@
 // What a build costs. Prices are integer nano-USD per token so the ledger never rounds; the
 // pre-flight estimate is an upper bound (input at ≤2 UTF-8 bytes per token, output at its max
-// token budget), so a commit almost never exceeds its hold.
-export const INTENT_MODEL = "qwen-3.8-27b";
-export const FILL_MODEL = "gpt-oss-120b";
+// token budget), so a commit almost never exceeds its hold. The estimate prices the fast lane;
+// the Haiku fallback costs less per token than either of its models, so a hold covers it too.
+import { ROUTES } from "@ghostrun/llm";
+
+export const INTENT_MODEL = ROUTES.intent.cerebras.model;
+export const FILL_MODEL = ROUTES.fill.cerebras.model;
 export const INTENT_MAX_OUT = 800;
 export const FILL_MAX_OUT = 6000;
 /** Input-token bound for the fill call, which is only known after the intent; test-guarded per pack. */
 export const FILL_MAX_IN = 12_000; // raised with the kit vocabulary (12 more verb lines)
 
-type Model = typeof INTENT_MODEL | typeof FILL_MODEL;
-// $/M tokens → nano-USD/token: gpt-oss-120b $0.35 in / $0.75 out; qwen-3.8-27b $0.99 in / $1.49 out.
-const NANO: Record<Model, { in: number; out: number }> = {
-  [FILL_MODEL]: { in: 350, out: 750 },
-  [INTENT_MODEL]: { in: 990, out: 1490 },
+// $/M tokens → nano-USD/token: gpt-oss-120b $0.35 in / $0.75 out; qwen-3.8-27b $0.99 in / $1.49 out;
+// Claude Haiku 5.5 $0.10 / $0.50 (prompts ≤100K tokens); Claude Sonnet 5.5 $2 / $10.
+const NANO: Record<string, { in: number; out: number }> = {
+  "gpt-oss-120b": { in: 350, out: 750 },
+  "qwen-3.8-27b": { in: 990, out: 1490 },
+  "claude-haiku-5-5": { in: 100, out: 500 },
+  "claude-sonnet-5-5": { in: 2000, out: 10000 },
 };
+/** A model missing from the table is charged at the dearest price in it (fail closed). */
+const DEAREST = { in: Math.max(...Object.values(NANO).map((p) => p.in)), out: Math.max(...Object.values(NANO).map((p) => p.out)) };
 
-export function costMicroUsd(model: Model, inTok: number, outTok: number): number {
-  const p = NANO[model];
+export function costMicroUsd(model: string, inTok: number, outTok: number): number {
+  const p = NANO[model] ?? DEAREST;
   return Math.ceil((Math.max(0, inTok) * p.in + Math.max(0, outTok) * p.out) / 1000);
 }
 

@@ -33,7 +33,7 @@ function devEdgeApi(): Plugin {
             ...(req.method === "POST" ? { body: Buffer.concat(chunks) } : {}),
           });
           // DEV_OPEN opens the gate for localhost only; the governor and share store run in-process.
-          const response = await handle(request, { CEREBRAS_API_KEY: env.CEREBRAS_API_KEY ?? "", DEV_OPEN: "1" });
+          const response = await handle(request, { CEREBRAS_API_KEY: env.CEREBRAS_API_KEY ?? "", ...(env.ANTHROPIC_API_KEY ? { ANTHROPIC_API_KEY: env.ANTHROPIC_API_KEY } : {}), DEV_OPEN: "1" });
           res.statusCode = response.status;
           response.headers.forEach((v, k) => res.setHeader(k, v));
           if (!response.body) return res.end();

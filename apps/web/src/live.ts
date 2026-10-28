@@ -20,7 +20,7 @@ export interface LiveIntent {
 }
 
 export type LiveResult =
-  | { kind: "world"; fill: string; seed: number; intent: LiveIntent; intentMs: number; gameplayMs: number; lines: number }
+  | { kind: "world"; fill: string; seed: number; intent: LiveIntent; intentMs: number; gameplayMs: number; lines: number; /** The model that took over when the fast lane was busy. */ fallback: string | null }
   | { kind: "refused"; message: string }
   | { kind: "unavailable"; reason: string };
 
@@ -52,6 +52,7 @@ export async function liveBuild(prompt: string, onIntent?: (i: LiveIntent, ms: n
   let seed = 1;
   let intentMs = 0;
   let lines = 0;
+  let fallback: string | null = null;
   let parser: FillParser | null = null;
   try {
     for (;;) {
@@ -72,6 +73,8 @@ export async function liveBuild(prompt: string, onIntent?: (i: LiveIntent, ms: n
           intentMs = Math.round(performance.now() - t0);
           parser = new FillParser({ seed });
           onIntent?.(intent, intentMs);
+        } else if (event === "fallback") {
+          fallback = String(payload.to);
         } else if (event === "refusal") {
           return { kind: "refused", message: String(payload.message) };
         } else if (event === "error") {
@@ -83,7 +86,7 @@ export async function liveBuild(prompt: string, onIntent?: (i: LiveIntent, ms: n
           onLine?.(++lines);
           if (parser.gameplayDone) {
             ctl.abort(); // the cosmetic tail is optional; play starts now
-            return { kind: "world", fill, seed, intent, intentMs, gameplayMs: Math.round(performance.now() - t0), lines };
+            return { kind: "world", fill, seed, intent, intentMs, gameplayMs: Math.round(performance.now() - t0), lines, fallback };
           }
         }
       }
@@ -91,7 +94,7 @@ export async function liveBuild(prompt: string, onIntent?: (i: LiveIntent, ms: n
   } catch (e) {
     if (!(e instanceof DOMException && e.name === "AbortError")) return { kind: "unavailable", reason: String(e) };
   }
-  if (intent && fill) return { kind: "world", fill, seed, intent, intentMs, gameplayMs: Math.round(performance.now() - t0), lines };
+  if (intent && fill) return { kind: "world", fill, seed, intent, intentMs, gameplayMs: Math.round(performance.now() - t0), lines, fallback };
   return { kind: "unavailable", reason: "stream ended before the gameplay layer" };
 }
 

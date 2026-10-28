@@ -1,0 +1,224 @@
+{
+  "prompt": "A snowy mountain race against two rival skiers",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "racing",
+    "setting": "snowy mountain slope",
+    "role": "skier",
+    "goal": "beat two rival skiers to the finish line",
+    "fail": "being overtaken by both rivals or losing time on the course",
+    "mood": "tense and fast-paced",
+    "pack": "course",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Race is against the clock through a linear snowy course with checkpoints to the finish.",
+    "nouns": [
+      {
+        "noun": "skier",
+        "hyper": "a fast downhill racer carving through powder"
+      },
+      {
+        "noun": "rival",
+        "hyper": "a competitor skiing in a rival team's colors"
+      },
+      {
+        "noun": "snow slope",
+        "hyper": "a steep icy mountainside with jumps and gaps"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.2,
+      "arousal": 0.8,
+      "tension": 0.7
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "b18f39ad40d5ccb03868137da0bbd051be41b64eeb59e1d7c699bf04ef3e4086",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_race",
+      "text": "Race is against the clock through a linear snowy course with checkpoints to the finish.",
+      "status": "counterexample",
+      "method": "static goal regression over rules + physics, 12 AI runners vs 2 bots"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 5 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_finish (player enters finish_line)",
+        "src": ""
+      },
+      {
+        "id": "T1:x_ramp",
+        "tier": "T1",
+        "subject": {
+          "kind": "property",
+          "id": "x_ramp"
+        },
+        "method": "kinematic reachability (jump apex model)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "Final ramp needs a double jump to clear the drift",
+        "cx": null
+      },
+      {
+        "id": "T2:r_coins",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_coins"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 18,
+        "status": "verified",
+        "text": "r_coins fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_finish",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_finish"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_finish fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_hit",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_hit"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 11,
+        "status": "verified",
+        "text": "r_hit fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_spike",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_spike"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 8,
+        "status": "verified",
+        "text": "r_spike fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_time",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_time"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_time fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "counterexample",
+        "method": "physics, 12 AI runners vs 2 bots",
+        "n": 12,
+        "k": 0,
+        "text": "no AI runner could win vs 2 bots",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "wins",
+          "text": "12 got stuck (in the Summit start gate ×12)"
+        },
+        "src": "",
+        "ms": 960
+      },
+      {
+        "id": "T3:x_ramp",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "x_ramp"
+        },
+        "status": "counterexample",
+        "method": "physics jump witness, 4 attempts per jump count",
+        "n": 4,
+        "k": 0,
+        "text": "Final ramp needs a double jump to clear the drift: reached with 2 jumps 0 of 4, with 1 0 of 4",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 0,
+          "unit": "attempts",
+          "text": "never reached with 2 jumps"
+        },
+        "src": "ai",
+        "ms": 34
+      }
+    ],
+    "par": null,
+    "ms": 1379
+  }
+}

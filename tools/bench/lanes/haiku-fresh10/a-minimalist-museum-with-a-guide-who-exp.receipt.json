@@ -1,0 +1,96 @@
+{
+  "prompt": "A minimalist museum with a guide who explains each sculpture",
+  "intent": {
+    "lang": "en",
+    "mode": "wander",
+    "genre": "museum tour",
+    "setting": "minimalist museum with sculptures",
+    "role": "visitor",
+    "goal": "explore galleries and hear the guide explain each sculpture",
+    "fail": "none",
+    "mood": "calm and contemplative",
+    "pack": "floor_plan",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Each sculpture must trigger a guide explanation when the visitor approaches it.",
+    "nouns": [
+      {
+        "noun": "guide",
+        "hyper": "narrator who explains each artwork"
+      },
+      {
+        "noun": "sculpture",
+        "hyper": "abstract three-dimensional art piece"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.4,
+      "arousal": -0.5,
+      "tension": -0.3
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "227e354facd5753eff22c8aae87ac7667d2178e01fa315988bf06ff6ad1fc095",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_explain",
+      "text": "Each sculpture must trigger a guide explanation when the visitor approaches it.",
+      "status": "verified",
+      "method": "kinematic reachability (jump apex model)"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 0 rules reference existing things",
+        "src": ""
+      },
+      {
+        "id": "T1:x_explain",
+        "tier": "T1",
+        "subject": {
+          "kind": "property",
+          "id": "x_explain"
+        },
+        "method": "kinematic reachability (jump apex model)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "Each sculpture must trigger a guide explanation when the visitor approaches it.",
+        "cx": null
+      },
+      {
+        "id": "T3:tour",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "tour"
+        },
+        "status": "played",
+        "method": "physics, an AI visitor walks to and uses each",
+        "n": 3,
+        "k": 3,
+        "text": "walked to and inspected 3 of 3 things",
+        "cx": null,
+        "src": "",
+        "ms": 16
+      }
+    ],
+    "par": null,
+    "ms": 45
+  }
+}

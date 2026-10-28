@@ -1,0 +1,48 @@
+{"op":"meta","mode":"play","lang":"pl","pack":"outdoor","sub":[],"seed":29,"look":"sunny beach","mood":[0.7,0.3,0.2],"timeOfDay":14,"weather":"clear"}
+{"op":"zone","id":"z_entry","slot":"entrance","tag":"entrance","name":"Wejście na plażę"}
+{"op":"zone","id":"z_hub","slot":"clearing","tag":"hub","name":"Główna plaża"}
+{"op":"zone","id":"z_west","slot":"clearing_w","tag":"base","name":"Zachodnia plaża"}
+{"op":"zone","id":"z_east","slot":"clearing_e","tag":"base","name":"Wschodnia plaża"}
+{"op":"zone","id":"z_shore","slot":"pond","tag":"water","name":"Brzeg morza"}
+{"op":"spawn","id":"sp_red","zone":"z_entry","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"exit","zone":"z_entry","anchor":"gate","noun":"plażowy wyjście","hyper":"gate","team":"red"}
+{"op":"ent","id":"coin_1","kind":"pickup","noun":"złota moneta","hyper":"coin","zone":"z_hub","anchor":"center_n","body":"sensor","shape":"sphere","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"coin_2","kind":"pickup","noun":"złota moneta","hyper":"coin","zone":"z_hub","anchor":"center_s","body":"sensor","shape":"sphere","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"coin_3","kind":"pickup","noun":"złota moneta","hyper":"coin","zone":"z_west","anchor":"flank_n","body":"sensor","shape":"sphere","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"coin_4","kind":"pickup","noun":"złota moneta","hyper":"coin","zone":"z_west","anchor":"flank_s","body":"sensor","shape":"sphere","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"coin_5","kind":"pickup","noun":"złota moneta","hyper":"coin","zone":"z_east","anchor":"flank_n","body":"sensor","shape":"sphere","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"coin_6","kind":"pickup","noun":"złota moneta","hyper":"coin","zone":"z_east","anchor":"flank_s","body":"sensor","shape":"sphere","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"coin_7","kind":"pickup","noun":"złota moneta","hyper":"coin","zone":"z_shore","anchor":"shore","body":"sensor","shape":"sphere","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"coin_8","kind":"pickup","noun":"złota moneta","hyper":"coin","zone":"z_shore","anchor":"dock","body":"sensor","shape":"sphere","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"wave_zone","kind":"hazard","noun":"fala przypływu","hyper":"wave","zone":"z_shore","anchor":"water","body":"sensor","shape":"box","size":[4,0.5,2]}
+{"op":"ent","id":"sun_plate","kind":"plate","noun":"płyta z piaskiem","hyper":"plate","zone":"z_hub","anchor":"center","body":"fixed","shape":"box","size":[1.5,0.1,1.5]}
+{"op":"ent","id":"jump_pad","kind":"platform","noun":"trampolina","hyper":"pad","zone":"z_east","anchor":"flank_n","body":"fixed","shape":"box","size":[1.2,0.2,1.2]}
+{"op":"ent","id":"sign_1","kind":"sign","noun":"tablica","hyper":"sign","zone":"z_entry","anchor":"sign","body":"fixed","shape":"box","size":[0.8,1.2,0.1]}
+{"op":"verb","id":"vb_coin_1","verb":"puzzle.collect","on":"coin_1","params":{}}
+{"op":"verb","id":"vb_coin_2","verb":"puzzle.collect","on":"coin_2","params":{}}
+{"op":"verb","id":"vb_coin_3","verb":"puzzle.collect","on":"coin_3","params":{}}
+{"op":"verb","id":"vb_coin_4","verb":"puzzle.collect","on":"coin_4","params":{}}
+{"op":"verb","id":"vb_coin_5","verb":"puzzle.collect","on":"coin_5","params":{}}
+{"op":"verb","id":"vb_coin_6","verb":"puzzle.collect","on":"coin_6","params":{}}
+{"op":"verb","id":"vb_coin_7","verb":"puzzle.collect","on":"coin_7","params":{}}
+{"op":"verb","id":"vb_coin_8","verb":"puzzle.collect","on":"coin_8","params":{}}
+{"op":"verb","id":"vb_wave","verb":"motion_hazards.hazard","on":"wave_zone","params":{"respawn":true}}
+{"op":"verb","id":"vb_timer","verb":"puzzle.timer","on":"player","params":{"seconds":120}}
+{"op":"verb","id":"vb_jump","verb":"locomotion.jump_pad","on":"jump_pad","params":{"height":4}}
+{"op":"verb","id":"vb_sign","verb":"social.inspect","on":"sign_1","params":{"text":"Zbierz wszystkie monety, zanim czas minie."}}
+{"op":"law","player":{"jumpsMax":1,"jumpH":1.6,"speed":6}}
+{"op":"rule","id":"r_score_1","when":{"t":"touch","a":"player","b":"coin_1"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_score_2","when":{"t":"touch","a":"player","b":"coin_2"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_score_3","when":{"t":"touch","a":"player","b":"coin_3"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_score_4","when":{"t":"touch","a":"player","b":"coin_4"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_score_5","when":{"t":"touch","a":"player","b":"coin_5"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_score_6","when":{"t":"touch","a":"player","b":"coin_6"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_score_7","when":{"t":"touch","a":"player","b":"coin_7"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_score_8","when":{"t":"touch","a":"player","b":"coin_8"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_win","when":{"t":"score_gte","a":"team:red","n":8},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose","when":{"t":"timer_end","a":"player"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_hit","when":{"t":"hit","a":"player","b":"wave_zone"},"then":[{"e":"emit","target":"player","fx":"splash"}]}
+{"op":"expect","id":"x_coins","prop":"win_reachable","a":"sp_red","b":"exit","headline":true,"text":"All coins must be collected on the open beach before time runs out."}
+{"op":"expect","id":"x_wave","prop":"reachable","a":"sp_red","b":"z_shore","text":"The shoreline can be reached, but waves push you back"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

@@ -1,0 +1,216 @@
+{
+  "prompt": "Trouve le trésor caché dans le château et sors avant minuit",
+  "intent": {
+    "lang": "fr",
+    "mode": "play",
+    "genre": "aventure",
+    "setting": "château",
+    "role": "explorateur",
+    "goal": "trouver le trésor caché dans le château",
+    "fail": "ne pas sortir avant minuit",
+    "mood": "mystérieux et urgent",
+    "pack": "floor_plan",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Le trésor doit être trouvé et la sortie atteinte avant minuit, un chronomètre à vérifier.",
+    "nouns": [
+      {
+        "noun": "trésor",
+        "hyper": "coffre"
+      },
+      {
+        "noun": "château",
+        "hyper": "bâtiment"
+      },
+      {
+        "noun": "minuit",
+        "hyper": "limite temporelle"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.1,
+      "arousal": 0.7,
+      "tension": 0.8
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "b741e80fb72989603752e34711c65e90058768bb1862f7ba5321bc0e197597fe",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_tresor",
+      "text": "Le trésor doit être trouvé et la sortie atteinte avant minuit, un chronomètre à vérifier.",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 5 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_tresor_sortie (tresor into sortie, carried by red) ← pick up tresor",
+        "src": ""
+      },
+      {
+        "id": "T1:x_crypte",
+        "tier": "T1",
+        "subject": {
+          "kind": "property",
+          "id": "x_crypte"
+        },
+        "method": "kinematic reachability (jump apex model)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "La crypte exige la clé trouvée dans la bibliothèque",
+        "cx": null
+      },
+      {
+        "id": "T1:x_pont",
+        "tier": "T1",
+        "subject": {
+          "kind": "property",
+          "id": "x_pont"
+        },
+        "method": "kinematic reachability (jump apex model)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "Le hall est accessible depuis la cour",
+        "cx": null
+      },
+      {
+        "id": "T2:r_crypte_ouverte",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_crypte_ouverte"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_crypte_ouverte fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_levier_pont",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_levier_pont"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_levier_pont: no room to stand next to interrupteur",
+        "cx": null
+      },
+      {
+        "id": "T2:r_minuit",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_minuit"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_minuit fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_piege",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_piege"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_piege fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_tresor_sortie",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_tresor_sortie"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_tresor_sortie fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it (AI par 14.1 s)",
+        "cx": null,
+        "src": "",
+        "ms": 295
+      }
+    ],
+    "par": {
+      "goldS": 14.1,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 326
+  }
+}

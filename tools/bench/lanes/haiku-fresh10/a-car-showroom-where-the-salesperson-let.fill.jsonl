@@ -1,0 +1,23 @@
+{"op":"meta","mode":"wander","lang":"en","pack":"floor_plan","sub":[],"seed":13,"look":"car showroom polished floors","mood":[0.6,0.2,0.1],"timeOfDay":14,"weather":"clear"}
+{"op":"zone","id":"z_yard","slot":"yard","tag":"outside","name":"Forecourt"}
+{"op":"zone","id":"z_lobby","slot":"entrance","tag":"entrance","name":"Showroom entrance"}
+{"op":"zone","id":"z_west","slot":"room_sw","tag":"room","name":"Compact row"}
+{"op":"zone","id":"z_hall","slot":"main_room","tag":"hall","name":"Showroom floor"}
+{"op":"zone","id":"z_vault","slot":"room_ne","tag":"room","name":"Performance bay"}
+{"op":"spawn","id":"sp_red","zone":"z_lobby","anchor":"center","team":"red"}
+{"op":"ent","id":"sports_car","kind":"vehicle","noun":"sports car","hyper":"vehicle","zone":"z_hall","anchor":"center","body":"fixed","shape":"box","size":[4.5,1.2,2]}
+{"op":"ent","id":"sales_desk","kind":"prop","noun":"sales desk","hyper":"desk","zone":"z_lobby","anchor":"wall_n","body":"fixed","shape":"box","size":[2,1,0.8]}
+{"op":"ent","id":"salesperson","kind":"npc","noun":"salesperson","hyper":"person","zone":"z_hall","anchor":"corner_ne","body":"kinematic","shape":"capsule"}
+{"op":"ent","id":"brochure_rack","kind":"prop","noun":"brochure rack","hyper":"sign","zone":"z_lobby","anchor":"wall_e","body":"fixed","shape":"box","size":[0.6,1.5,0.4]}
+{"op":"ent","id":"compact_car","kind":"vehicle","noun":"compact hatchback","hyper":"vehicle","zone":"z_west","anchor":"center","body":"fixed","shape":"box","size":[3.8,1.3,1.8]}
+{"op":"ent","id":"engine_display","kind":"prop","noun":"engine display","hyper":"exhibit","zone":"z_vault","anchor":"center","body":"fixed","shape":"box","size":[1.2,1,0.6]}
+{"op":"verb","id":"vb_look_car","verb":"social.inspect","on":"sports_car","params":{"text":"A low-slung two-seater with a turbocharged engine and leather bucket seats."}}
+{"op":"verb","id":"vb_look_compact","verb":"social.inspect","on":"compact_car","params":{"text":"A practical hatchback, ideal for city driving and easy parking."}}
+{"op":"verb","id":"vb_look_engine","verb":"social.inspect","on":"engine_display","params":{"text":"A cutaway of the 3.0 litre twin-turbo engine, polished to a shine."}}
+{"op":"verb","id":"vb_look_brochure","verb":"social.inspect","on":"brochure_rack","params":{"text":"Glossy brochures listing this season's models and financing options."}}
+{"op":"npc","id":"sales_guide","role":"guide","zone":"z_hall","anchor":"corner_ne","team":"","menu":["guide.tour"],"dflt":"guide.tour"}
+{"op":"expect","id":"x_sit","prop":"reachable","a":"sp_red","b":"z_hall","headline":true,"text":"The sports car must be enterable and seat the player, with the salesperson nearby."}
+{"op":"end","layer":"gameplay"}
+{"op":"dress","id":"d_floor","kind":"prop","noun":"polished floor tiles","zone":"z_hall","anchor":"center","body":"fixed","shape":"box","size":[12,0.05,12]}
+{"op":"dress","id":"d_spot","kind":"prop","noun":"ceiling spotlight","zone":"z_hall","anchor":"corner_nw","body":"fixed","shape":"sphere","size":[0.3,0.3,0.3]}
+{"op":"end","layer":"cosmetic"}

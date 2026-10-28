@@ -1,0 +1,132 @@
+{
+  "prompt": "A bioluminescent forest where fireflies lead you to a hidden shrine",
+  "intent": {
+    "lang": "en",
+    "mode": "wander",
+    "genre": "fantasy exploration",
+    "setting": "a bioluminescent forest",
+    "role": "explorer following fireflies",
+    "goal": "reach the hidden shrine",
+    "fail": "",
+    "mood": "mystical and calm",
+    "pack": "outdoor",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Fireflies must lead the player along the paths to a shrine hidden on a knoll.",
+    "nouns": [
+      {
+        "noun": "fireflies",
+        "hyper": "insects"
+      },
+      {
+        "noun": "shrine",
+        "hyper": "sacred place"
+      },
+      {
+        "noun": "forest",
+        "hyper": "terrain"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.6,
+      "arousal": -0.3,
+      "tension": 0.2
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "a3fc01bbec726a6cc7868ae4e17d7d093ded0e6ba71847b9f760d4d9a874895f",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_shrine",
+      "text": "Fireflies must lead the player along the paths to a shrine hidden on a knoll.",
+      "status": "not_checkable",
+      "method": "none"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 1 rules reference existing things",
+        "src": ""
+      },
+      {
+        "id": "T1:x_knoll_climb",
+        "tier": "T1",
+        "subject": {
+          "kind": "property",
+          "id": "x_knoll_climb"
+        },
+        "method": "kinematic reachability (jump apex model)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "The knoll path rises steeply and needs a double jump",
+        "cx": null
+      },
+      {
+        "id": "T2:r_hub_save",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_hub_save"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_hub_save: nothing produces touch on checkpoint_hub",
+        "cx": null
+      },
+      {
+        "id": "T3:x_knoll_climb",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "x_knoll_climb"
+        },
+        "status": "played",
+        "method": "physics jump witness, 4 attempts per jump count",
+        "n": 4,
+        "k": 3,
+        "text": "The knoll path rises steeply and needs a double jump: reached with 2 jumps 3 of 4, with 1 0 of 4",
+        "cx": null,
+        "src": "ai",
+        "ms": 42
+      },
+      {
+        "id": "T3:tour",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "tour"
+        },
+        "status": "played",
+        "method": "physics, an AI visitor walks to and uses each",
+        "n": 7,
+        "k": 7,
+        "text": "walked to and inspected 7 of 7 things",
+        "cx": null,
+        "src": "",
+        "ms": 37
+      }
+    ],
+    "par": null,
+    "ms": 363
+  }
+}

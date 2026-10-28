@@ -1,0 +1,218 @@
+{
+  "prompt": "Defend the castle gate from the knights for ninety seconds",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "tower defense",
+    "setting": "castle gate under siege",
+    "role": "castle defender",
+    "goal": "hold the gate against knights for ninety seconds",
+    "fail": "the gate falls before ninety seconds pass",
+    "mood": "tense and desperate",
+    "pack": "arena",
+    "sub": [],
+    "safety": "arcade",
+    "headline": "Gate must survive ninety seconds of knight waves approaching from both sides.",
+    "nouns": [
+      {
+        "noun": "castle gate",
+        "hyper": "fortified entrance"
+      },
+      {
+        "noun": "knight",
+        "hyper": "armored melee attacker"
+      }
+    ],
+    "moodVec": {
+      "valence": -0.4,
+      "arousal": 0.8,
+      "tension": 0.9
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "0d8cde51b4eaa7ac26f35dd5443767a71487059883de28126c259217a1dbfbee",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_hold",
+      "text": "Gate must survive ninety seconds of knight waves approaching from both sides.",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners vs 2 bots"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 7 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_hold (the timer runs out)",
+        "src": ""
+      },
+      {
+        "id": "T2:r_bell",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_bell"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 11,
+        "status": "verified",
+        "text": "r_bell fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_fall",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_fall"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_fall: nothing in the world makes gate_door 'open'",
+        "cx": null
+      },
+      {
+        "id": "T2:r_hold",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_hold"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_hold fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lever_open",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lever_open"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_lever_open fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lever_shut",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lever_shut"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "counterexample",
+        "text": "r_lever_shut fires exactly once",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "firings",
+          "text": "never fired when forced"
+        }
+      },
+      {
+        "id": "T2:r_pit",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_pit"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 7,
+        "status": "verified",
+        "text": "r_pit fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_ram_hit",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_ram_hit"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_ram_hit: nothing produces hit on ram",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners vs 2 bots",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it vs 2 bots (AI par 90 s)",
+        "cx": null,
+        "src": "",
+        "ms": 1795
+      }
+    ],
+    "par": {
+      "goldS": 90,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 1935
+  }
+}

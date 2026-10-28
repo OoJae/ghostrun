@@ -1,0 +1,41 @@
+{"op":"meta","mode":"play","lang":"fr","pack":"floor_plan","sub":[],"seed":28,"look":"château mystérieux de nuit","mood":[0.1,0.7,0.8],"timeOfDay":23,"weather":"clear"}
+{"op":"zone","id":"z_cour","slot":"yard","tag":"outside","name":"Cour du château"}
+{"op":"zone","id":"z_entree","slot":"entrance","tag":"entrance","name":"Hall d'entrée"}
+{"op":"zone","id":"z_sw","slot":"room_sw","tag":"room","name":"Salle sud-ouest"}
+{"op":"zone","id":"z_se","slot":"room_se","tag":"room","name":"Salle sud-est"}
+{"op":"zone","id":"z_nw","slot":"room_nw","tag":"room","name":"Bibliothèque"}
+{"op":"zone","id":"z_salle","slot":"main_room","tag":"hall","name":"Grande salle"}
+{"op":"zone","id":"z_ne","slot":"room_ne","tag":"room","name":"Crypte"}
+{"op":"spawn","id":"sp_red","zone":"z_cour","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"sortie","zone":"z_cour","anchor":"gate","noun":"porte du château","hyper":"sortie","team":"red"}
+{"op":"ent","id":"tresor","kind":"pickup","noun":"coffre au trésor","hyper":"coffre","zone":"z_ne","anchor":"center","body":"dynamic","shape":"box","size":[0.6,0.4,0.4]}
+{"op":"ent","id":"cle_crypte","kind":"pickup","noun":"clé de la crypte","hyper":"clé","zone":"z_nw","anchor":"corner_sw","body":"dynamic","shape":"box","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"porte_crypte","kind":"door","noun":"porte de la crypte","hyper":"porte","zone":"z_ne","anchor":"doorway_w","body":"fixed","shape":"box"}
+{"op":"ent","id":"interrupteur","kind":"switch","noun":"levier mural","hyper":"levier","zone":"z_salle","anchor":"wall_n","body":"fixed","shape":"box","size":[0.3,0.5,0.1]}
+{"op":"ent","id":"pont_levis","kind":"platform","noun":"pont-levis","hyper":"pont","zone":"z_entree","anchor":"doorway_s","body":"kinematic","shape":"box","size":[2,0.2,2]}
+{"op":"ent","id":"dalle_piege","kind":"plate","noun":"dalle piégée","hyper":"dalle","zone":"z_se","anchor":"center","body":"sensor","shape":"box","size":[1.5,0.1,1.5]}
+{"op":"ent","id":"lave","kind":"hazard","noun":"fosse de braises","hyper":"lave","zone":"z_sw","anchor":"center","body":"sensor","shape":"box","size":[2,0.2,2]}
+{"op":"ent","id":"portrait","kind":"prop","noun":"portrait du seigneur","hyper":"tableau","zone":"z_salle","anchor":"wall_e","body":"fixed","shape":"box","size":[1.2,1.6,0.3]}
+{"op":"ent","id":"parchemin","kind":"prop","noun":"parchemin ancien","hyper":"document","zone":"z_nw","anchor":"center","body":"fixed","shape":"box","size":[0.5,0.4,0.1]}
+{"op":"ent","id":"checkpoint_entree","kind":"checkpoint","noun":"point de passage","hyper":"checkpoint","zone":"z_entree","anchor":"center","body":"sensor","shape":"box","size":[1,0.1,1]}
+{"op":"verb","id":"vb_carry_tresor","verb":"physics_props.carry","on":"tresor","params":{}}
+{"op":"verb","id":"vb_carry_cle","verb":"physics_props.carry","on":"cle_crypte","params":{}}
+{"op":"verb","id":"vb_lock_crypte","verb":"puzzle.lock","on":"porte_crypte","params":{"key":"cle_crypte"}}
+{"op":"verb","id":"vb_levier","verb":"puzzle.switch","on":"interrupteur","params":{"once":false}}
+{"op":"verb","id":"vb_pont","verb":"locomotion.jump_pad","on":"pont_levis","params":{"height":2}}
+{"op":"verb","id":"vb_piege","verb":"motion_hazards.crumble","on":"dalle_piege","params":{"delay":1,"back":4}}
+{"op":"verb","id":"vb_lave","verb":"motion_hazards.hazard","on":"lave","params":{"respawn":true}}
+{"op":"verb","id":"vb_portrait","verb":"social.inspect","on":"portrait","params":{"text":"Le seigneur tient une clé dorée. Le cadre semble mobile."}}
+{"op":"verb","id":"vb_parchemin","verb":"social.inspect","on":"parchemin","params":{"text":"Le trésor repose sous la crypte, derrière trois serments."}}
+{"op":"verb","id":"vb_checkpoint","verb":"puzzle.checkpoint","on":"checkpoint_entree","params":{}}
+{"op":"verb","id":"vb_chrono","verb":"puzzle.timer","on":"player","params":{"seconds":300}}
+{"op":"rule","id":"r_tresor_sortie","when":{"t":"enter","a":"tresor","b":"sortie"},"if":[{"l":"tresor.carrier.team","op":"eq","r":"red"}],"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_minuit","when":{"t":"timer_end","a":"player"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_levier_pont","when":{"t":"state_is","a":"interrupteur","s":"on"},"then":[{"e":"set_state","target":"pont_levis","v":"open"}]}
+{"op":"rule","id":"r_crypte_ouverte","when":{"t":"state_is","a":"porte_crypte","s":"open"},"then":[{"e":"emit","target":"porte_crypte","fx":"grincement"}]}
+{"op":"rule","id":"r_piege","when":{"t":"hit","a":"player","b":"lave"},"then":[{"e":"reset","target":"player"}]}
+{"op":"expect","id":"x_tresor","prop":"win_reachable","a":"sp_red","b":"sortie","headline":true,"text":"Le trésor doit être trouvé et la sortie atteinte avant minuit, un chronomètre à vérifier."}
+{"op":"expect","id":"x_crypte","prop":"requires","a":"sp_red","b":"z_ne","need":["key:cle_crypte"],"text":"La crypte exige la clé trouvée dans la bibliothèque"}
+{"op":"expect","id":"x_pont","prop":"reachable","a":"sp_red","b":"z_entree","text":"Le hall est accessible depuis la cour"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

@@ -1,0 +1,51 @@
+{"op":"meta","mode":"play","lang":"en","pack":"city_block","sub":["rooftop"],"seed":7,"look":"neon city","mood":[0.4,0.8,0.6],"timeOfDay":22,"weather":"clear"}
+{"op":"zone","id":"z_plaza","slot":"center","tag":"plaza","name":"Neon plaza"}
+{"op":"zone","id":"z_base_red","slot":"west_block","tag":"base","name":"Red base"}
+{"op":"zone","id":"z_base_blue","slot":"east_block","tag":"base","name":"Blue base"}
+{"op":"zone","id":"z_street_w","slot":"street_w","tag":"street","name":"West street"}
+{"op":"zone","id":"z_street_e","slot":"street_e","tag":"street","name":"East street"}
+{"op":"zone","id":"z_roof","slot":"roof_lane_a","tag":"rooftop","name":"Rooftop lane"}
+{"op":"spawn","id":"sp_red","zone":"z_base_red","anchor":"spawn_pad","team":"red"}
+{"op":"spawn","id":"sp_blue","zone":"z_base_blue","anchor":"spawn_pad","team":"blue"}
+{"op":"goal","id":"goal_red","zone":"z_base_red","anchor":"goal_ring","noun":"scoring pad","hyper":"goal","team":"red"}
+{"op":"goal","id":"goal_blue","zone":"z_base_blue","anchor":"goal_ring","noun":"scoring pad","hyper":"goal","team":"blue"}
+{"op":"ent","id":"orb","kind":"pickup","noun":"neon orb","hyper":"orb","zone":"z_plaza","anchor":"plinth","body":"dynamic","shape":"sphere","size":[0.4,0.4,0.4]}
+{"op":"ent","id":"plat_roof","kind":"platform","noun":"rooftop walkway","hyper":"platform","zone":"z_roof","anchor":"gap_mid","body":"kinematic","shape":"box","size":[3,0.3,2]}
+{"op":"ent","id":"jump_pad_w","kind":"platform","noun":"jump pad","hyper":"pad","zone":"z_street_w","body":"fixed","shape":"box","size":[1.5,0.2,1.5]}
+{"op":"ent","id":"laser_plaza","kind":"hazard","noun":"neon laser grid","hyper":"laser","zone":"z_plaza","anchor":"wall_n","body":"sensor","shape":"box","size":[2,0.2,2]}
+{"op":"ent","id":"plate_e","kind":"plate","noun":"pressure plate","hyper":"plate","zone":"z_street_e","body":"fixed","shape":"box","size":[1.2,0.1,1.2]}
+{"op":"ent","id":"sw_blue","kind":"switch","noun":"neon switch","hyper":"switch","zone":"z_base_blue","anchor":"spawn_pad","body":"fixed","shape":"box","size":[0.4,0.6,0.4]}
+{"op":"ent","id":"cp_mid","kind":"checkpoint","noun":"checkpoint","hyper":"checkpoint","zone":"z_street_w","body":"sensor","shape":"box","size":[1.5,0.2,1.5]}
+{"op":"ent","id":"coin_1","kind":"pickup","noun":"neon coin","hyper":"coin","zone":"z_street_e","body":"sensor","shape":"sphere","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"coin_2","kind":"pickup","noun":"neon coin","hyper":"coin","zone":"z_roof","anchor":"lane_end","body":"sensor","shape":"sphere","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"portal_roof","kind":"portal","noun":"roof portal","hyper":"portal","zone":"z_roof","anchor":"lane_start","body":"sensor","shape":"box","size":[1.2,2,0.2]}
+{"op":"verb","id":"vb_jump","verb":"locomotion.jump","on":"player","params":{"jumpsMax":2}}
+{"op":"verb","id":"vb_carry_orb","verb":"physics_props.carry","on":"orb","params":{}}
+{"op":"verb","id":"vb_tag","verb":"combat_sport.tag_drop","on":"player","params":{"radius":1.5}}
+{"op":"verb","id":"vb_plat","verb":"motion_hazards.oscillate","on":"plat_roof","params":{"axis":"x","travel":4,"period":6}}
+{"op":"verb","id":"vb_jpad","verb":"locomotion.jump_pad","on":"jump_pad_w","params":{"height":6}}
+{"op":"verb","id":"vb_laser","verb":"motion_hazards.hazard","on":"laser_plaza","params":{"respawn":true}}
+{"op":"verb","id":"vb_plate","verb":"puzzle.plate","on":"plate_e","params":{"latch":false}}
+{"op":"verb","id":"vb_sw","verb":"puzzle.switch","on":"sw_blue","params":{"once":true}}
+{"op":"verb","id":"vb_cp","verb":"puzzle.checkpoint","on":"cp_mid","params":{}}
+{"op":"verb","id":"vb_coin1","verb":"puzzle.collect","on":"coin_1","params":{}}
+{"op":"verb","id":"vb_coin2","verb":"puzzle.collect","on":"coin_2","params":{}}
+{"op":"verb","id":"vb_portal","verb":"puzzle.portal","on":"portal_roof","params":{"to":"goal_blue"}}
+{"op":"verb","id":"vb_timer","verb":"puzzle.timer","on":"player","params":{"seconds":180}}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":6}}
+{"op":"state","id":"sw_blue","v":"off"}
+{"op":"rule","id":"r_score_red","when":{"t":"enter","a":"orb","b":"goal_red"},"if":[{"l":"orb.carrier.team","op":"eq","r":"red"}],"then":[{"e":"score","target":"team:red","n":1},{"e":"reset","target":"orb"}]}
+{"op":"rule","id":"r_score_blue","when":{"t":"enter","a":"orb","b":"goal_blue"},"if":[{"l":"orb.carrier.team","op":"eq","r":"blue"}],"then":[{"e":"score","target":"team:blue","n":1},{"e":"reset","target":"orb"}]}
+{"op":"rule","id":"r_win","when":{"t":"score_gte","a":"team:red","n":3},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose","when":{"t":"timer_end","a":"player"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_laser","when":{"t":"hit","a":"player","b":"laser_plaza"},"then":[{"e":"emit","target":"player","fx":"spark"}]}
+{"op":"rule","id":"r_cp","when":{"t":"enter","a":"player","b":"cp_mid"},"then":[{"e":"set_state","target":"cp_mid","v":"reached"}]}
+{"op":"rule","id":"r_sw","when":{"t":"state_is","a":"sw_blue","s":"on"},"then":[{"e":"emit","target":"goal_blue","fx":"glow"}]}
+{"op":"rule","id":"r_orb_lost","when":{"t":"hit","a":"player","b":"orb"},"then":[{"e":"reset","target":"orb"}]}
+{"op":"npc","id":"guard_1","role":"guard","zone":"z_plaza","anchor":"plinth","team":"blue","menu":["guard.patrol"],"dflt":"guard.patrol"}
+{"op":"npc","id":"rival_1","role":"rival","zone":"z_street_e","team":"blue","menu":["guard.patrol"],"dflt":"guard.patrol"}
+{"op":"expect","id":"x_roof","prop":"requires","a":"sp_red","b":"z_roof","need":["jumps>=2"],"headline":true,"text":"Rooftop lane needs double jump to reach the orb goal."}
+{"op":"expect","id":"x_win","prop":"win_reachable","a":"sp_red","b":"goal_red","text":"The orb can be carried to the red goal and scored"}
+{"op":"expect","id":"x_fair","prop":"fair_teams","a":"sp_red","b":"sp_blue","text":"Both bases have equal access to the orb"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

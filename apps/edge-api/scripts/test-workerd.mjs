@@ -31,6 +31,7 @@ const JKEY = "workerd-test-judge-key-0123456789abcdef";
 const TOKEN = newToken();
 const vars = {
   CEREBRAS_API_KEY: "test-key",
+  ANTHROPIC_API_KEY: "test-claude-key",
   TURNSTILE_SECRET: "1x0000000000000000000000000000000AA",
   SESSION_SECRET: "workerd-test-session-secret-0123456789",
   JUDGE_TOKEN_KEY: JKEY,
@@ -108,7 +109,7 @@ const until = async (fn, ms = 3000) => {
   }
 };
 const events = (text) => text.split("\n\n").filter(Boolean).map((b) => /^event: (.+)$/m.exec(b)?.[1]);
-const build = (headers) => fetch(`${base}/v1/build`, { method: "POST", headers, body: JSON.stringify({ prompt: "capture the flag on neon rooftops", seed: 11 }) });
+const build = (headers, prompt = "capture the flag on neon rooftops") => fetch(`${base}/v1/build`, { method: "POST", headers, body: JSON.stringify({ prompt, seed: 11 }) });
 const METERED = Math.ceil((1000 * 990 + 200 * 1490) / 1000) + Math.ceil((3000 * 350 + 1500 * 750) / 1000); // fake upstream usage at list price
 
 try {
@@ -155,6 +156,14 @@ try {
   check("judge-token build streams intent → ops → done", jb.headers.get("content-type") === "text/event-stream" && jev.join(",") === "intent,op,op,op,done", jev.join(","));
   const judge = await until(async () => ((await pool("judge")).spent === METERED ? pool("judge") : null));
   check("judge build is committed at the metered cost from usage", judge?.spent === METERED && judge?.held === 0, `${JSON.stringify(judge)} expected ${METERED}`);
+
+  // 6b. The fast lane is busy for this one: the fill fails over to Claude Haiku inside workerd.
+  const fb = await build({ "x-judge-token": TOKEN, "cf-connecting-ip": "198.51.100.3" }, "busy lane: a maze with a key");
+  const fev = events(await fb.text());
+  check("a busy fast lane fails over to Haiku: intent → fallback → ops → done", fev.join(",") === "intent,fallback,op,op,op,done", fev.join(","));
+  const HAIKU = Math.ceil((1000 * 990 + 200 * 1490) / 1000) + Math.ceil((4000 * 100 + 1800 * 500) / 1000); // fast-lane intent + Haiku fill
+  const judge2 = await until(async () => ((await pool("judge")).spent === METERED + HAIKU ? pool("judge") : null));
+  check("the failed-over build is committed at Haiku's price", judge2?.held === 0, `${JSON.stringify(await pool("judge"))} expected ${METERED + HAIKU}`);
 
   // 7. Tokenless needs a Turnstile session.
   const anon = await build({ "cf-connecting-ip": "198.51.100.2" });

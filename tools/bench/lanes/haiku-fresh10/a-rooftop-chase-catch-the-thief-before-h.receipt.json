@@ -1,0 +1,250 @@
+{
+  "prompt": "A rooftop chase: catch the thief before he reaches the helicopter",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "chase",
+    "setting": "city rooftops at night",
+    "role": "pursuer",
+    "goal": "catch the thief before he reaches the helicopter",
+    "fail": "the thief reaches the helicopter and escapes",
+    "mood": "tense and fast",
+    "pack": "city_block",
+    "sub": [
+      "rooftop"
+    ],
+    "safety": "arcade",
+    "headline": "Rooftop lane needs double jump to catch the thief",
+    "nouns": [
+      {
+        "noun": "thief",
+        "hyper": "a fleeing rogue who vaults rooftops"
+      },
+      {
+        "noun": "helicopter",
+        "hyper": "a waiting getaway chopper with its rotors spinning"
+      },
+      {
+        "noun": "rooftop",
+        "hyper": "a narrow ledge-lined rooftop lane above the streets"
+      }
+    ],
+    "moodVec": {
+      "valence": -0.3,
+      "arousal": 0.9,
+      "tension": 0.85
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "f093a7fdbccd2ea8b53918a547f13391c12851bea84ed9ba159caee54c09bf0e",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_roof",
+      "text": "Rooftop lane needs double jump to catch the thief",
+      "status": "verified",
+      "method": "kinematic reachability (jump apex model) + physics jump witness, 4 attempts per jump count"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 7 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_caught (touch thief)",
+        "src": ""
+      },
+      {
+        "id": "T1:x_roof",
+        "tier": "T1",
+        "subject": {
+          "kind": "property",
+          "id": "x_roof"
+        },
+        "method": "kinematic reachability (jump apex model)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "Rooftop lane needs double jump to catch the thief",
+        "cx": null
+      },
+      {
+        "id": "T2:r_caught",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_caught"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_caught fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_escape",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_escape"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_escape fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_gap",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_gap"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 8,
+        "status": "verified",
+        "text": "r_gap fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_floor_ne",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_floor_ne"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_floor_ne fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_floor_sw",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_floor_sw"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_floor_sw fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_timeout",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_timeout"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_timeout fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_vent",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_vent"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_vent fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners vs 1 bot",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it vs 1 bot (AI par 4.5 s)",
+        "cx": null,
+        "src": "",
+        "ms": 171
+      },
+      {
+        "id": "T3:x_roof",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "x_roof"
+        },
+        "status": "played",
+        "method": "physics jump witness, 4 attempts per jump count",
+        "n": 4,
+        "k": 4,
+        "text": "Rooftop lane needs double jump to catch the thief: reached with 2 jumps 4 of 4, with 1 0 of 4",
+        "cx": null,
+        "src": "ai",
+        "ms": 52
+      }
+    ],
+    "par": {
+      "goldS": 4.5,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 329
+  }
+}

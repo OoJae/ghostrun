@@ -1,0 +1,31 @@
+{"op":"meta","mode":"play","lang":"es","pack":"maze","sub":[],"seed":27,"look":"laberinto de piedra antiguo","mood":[-0.3,0.8,0.9],"timeOfDay":20,"weather":"clear"}
+{"op":"zone","id":"z_start","slot":"start","tag":"outside","name":"Entrada del laberinto"}
+{"op":"zone","id":"z_maze","slot":"maze","tag":"maze","name":"Corredores del laberinto"}
+{"op":"spawn","id":"sp_red","zone":"z_start","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"exit","zone":"z_maze","anchor":"exit","noun":"salida","hyper":"portal","team":""}
+{"op":"ent","id":"timer_sign","kind":"sign","noun":"reloj de arena","hyper":"sign","zone":"z_start","anchor":"sign","body":"fixed","shape":"box","size":[0.6,1.2,0.2]}
+{"op":"ent","id":"lever_1","kind":"switch","noun":"palanca oxidada","hyper":"switch","zone":"z_maze","anchor":"entrance","body":"fixed","shape":"box","size":[0.3,0.8,0.2]}
+{"op":"ent","id":"gate_1","kind":"door","noun":"puerta de hierro","hyper":"door","zone":"z_maze","anchor":"center","body":"fixed","shape":"box","size":[2,2.4,0.3]}
+{"op":"ent","id":"plate_1","kind":"plate","noun":"placa de presión","hyper":"plate","zone":"z_maze","anchor":"dead_end_1","body":"sensor","shape":"box","size":[1,0.1,1]}
+{"op":"ent","id":"spikes_1","kind":"hazard","noun":"pinchos","hyper":"spikes","zone":"z_maze","anchor":"dead_end_2","body":"sensor","shape":"box","size":[1.5,0.2,1.5]}
+{"op":"ent","id":"coin_1","kind":"pickup","noun":"moneda de oro","hyper":"coin","zone":"z_maze","anchor":"dead_end_3","body":"sensor","shape":"sphere","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"coin_2","kind":"pickup","noun":"moneda de oro","hyper":"coin","zone":"z_maze","anchor":"dead_end_4","body":"sensor","shape":"sphere","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"fresco_1","kind":"prop","noun":"fresco antiguo","hyper":"painting","zone":"z_maze","anchor":"center","body":"fixed","shape":"box","size":[1.2,1.6,0.2]}
+{"op":"verb","id":"vb_lever","verb":"puzzle.switch","on":"lever_1","params":{"once":false}}
+{"op":"verb","id":"vb_gate","verb":"puzzle.lock","on":"gate_1","params":{"key":"lever_1","keep":true}}
+{"op":"verb","id":"vb_plate","verb":"puzzle.plate","on":"plate_1","params":{"latch":false}}
+{"op":"verb","id":"vb_spikes","verb":"motion_hazards.hazard","on":"spikes_1","params":{"respawn":true}}
+{"op":"verb","id":"vb_coin1","verb":"puzzle.collect","on":"coin_1","params":{}}
+{"op":"verb","id":"vb_coin2","verb":"puzzle.collect","on":"coin_2","params":{}}
+{"op":"verb","id":"vb_fresco","verb":"social.inspect","on":"fresco_1","params":{"text":"Un mural que muestra un camino de vuelta a la luz."}}
+{"op":"verb","id":"vb_timer","verb":"puzzle.timer","on":"player","params":{"seconds":180}}
+{"op":"verb","id":"vb_jump","verb":"locomotion.jump","on":"player","params":{"jumpsMax":1}}
+{"op":"law","player":{"jumpsMax":1,"jumpH":1.2,"speed":5}}
+{"op":"rule","id":"r_escape","when":{"t":"enter","a":"player","b":"exit"},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_timeout","when":{"t":"timer_end","a":"player"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_hit","when":{"t":"hit","a":"player","b":"spikes_1"},"then":[{"e":"emit","target":"player","fx":"spark"}]}
+{"op":"rule","id":"r_gate_open","when":{"t":"state_is","a":"gate_1","s":"open"},"then":[{"e":"emit","target":"gate_1","fx":"dust"}]}
+{"op":"expect","id":"x_escape","prop":"win_reachable","a":"sp_red","b":"exit","headline":true,"text":"El laberinto necesita una salida alcanzable antes del límite de tiempo"}
+{"op":"expect","id":"x_gate","prop":"reachable","a":"sp_red","b":"z_maze","text":"La puerta de hierro se abre con la palanca"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

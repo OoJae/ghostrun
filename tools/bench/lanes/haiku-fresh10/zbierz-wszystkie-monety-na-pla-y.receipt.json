@@ -1,0 +1,292 @@
+{
+  "prompt": "Zbierz wszystkie monety na plaży",
+  "intent": {
+    "lang": "pl",
+    "mode": "play",
+    "genre": "adventure",
+    "setting": "beach",
+    "role": "beachcomber",
+    "goal": "collect all the coins on the beach",
+    "fail": "time runs out before all coins are gathered",
+    "mood": "sunny and relaxed",
+    "pack": "outdoor",
+    "sub": [],
+    "safety": "ok",
+    "headline": "All coins must be collected on the open beach before time runs out.",
+    "nouns": [
+      {
+        "noun": "coin",
+        "hyper": "gold coin scattered across the sand"
+      },
+      {
+        "noun": "beach",
+        "hyper": "wide sandy shore with gentle waves"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.7,
+      "arousal": 0.3,
+      "tension": 0.2
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "b957f39095661f02744c31ca4893d57cc98868d1762552a4a9a2dfddb8c32558",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_coins",
+      "text": "All coins must be collected on the open beach before time runs out.",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 11 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (team:red reaches 8) ← collect 8 of 8",
+        "src": ""
+      },
+      {
+        "id": "T1:x_wave",
+        "tier": "T1",
+        "subject": {
+          "kind": "property",
+          "id": "x_wave"
+        },
+        "method": "kinematic reachability (jump apex model)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "The shoreline can be reached, but waves push you back",
+        "cx": null
+      },
+      {
+        "id": "T2:r_hit",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_hit"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 9,
+        "status": "verified",
+        "text": "r_hit fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lose",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_lose fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_score_1",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score_1"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 7,
+        "status": "verified",
+        "text": "r_score_1 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_score_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_score_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_score_3",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score_3"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_score_3 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_score_4",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score_4"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_score_4 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_score_5",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score_5"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_score_5 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_score_6",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score_6"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_score_6 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_score_7",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score_7"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_score_7 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_score_8",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score_8"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_score_8 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it (AI par 19.2 s)",
+        "cx": null,
+        "src": "",
+        "ms": 507
+      }
+    ],
+    "par": {
+      "goldS": 19.2,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 917
+  }
+}

@@ -1,0 +1,188 @@
+{
+  "prompt": "A lab where you mix three chemicals in the right order",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "puzzle",
+    "setting": "a single-storey laboratory with a mixing bench and side rooms holding chemical stores",
+    "role": "lab technician",
+    "goal": "mix the three chemicals in the correct order",
+    "fail": "a wrong mixing order ruins the batch and the timer resets",
+    "mood": "tense and methodical",
+    "pack": "floor_plan",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Wrong mixing order must reset the batch so the sequence matters.",
+    "nouns": [
+      {
+        "noun": "chemical",
+        "hyper": "reagent flask"
+      },
+      {
+        "noun": "bench",
+        "hyper": "mixing station"
+      }
+    ],
+    "moodVec": {
+      "valence": -0.2,
+      "arousal": 0.5,
+      "tension": 0.7
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "461b4fa4687446435fc6aefa7a02b517868a78b49747d17bc3631265059ea875",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_order",
+      "text": "Wrong mixing order must reset the batch so the sequence matters.",
+      "status": "counterexample",
+      "method": "static goal regression over rules + physics, 12 AI runners vs 1 bot"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 3 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (batch_door becomes open: use batch_door)",
+        "src": ""
+      },
+      {
+        "id": "T1:x_flasks",
+        "tier": "T1",
+        "subject": {
+          "kind": "property",
+          "id": "x_flasks"
+        },
+        "method": "kinematic reachability (jump apex model)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "counterexample",
+        "text": "All three flasks can be fetched from their stores",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "route",
+          "text": "no route found"
+        }
+      },
+      {
+        "id": "T1:x_fume",
+        "tier": "T1",
+        "subject": {
+          "kind": "property",
+          "id": "x_fume"
+        },
+        "method": "kinematic reachability (jump apex model)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "The fume hood is a hazard that respawns the player",
+        "cx": null
+      },
+      {
+        "id": "T2:r_order_ok",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_order_ok"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_order_ok fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_timeout",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_timeout"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_timeout fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "counterexample",
+        "method": "physics, 12 AI runners vs 1 bot",
+        "n": 12,
+        "k": 0,
+        "text": "no AI runner could win vs 1 bot",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "wins",
+          "text": "12 lost (the timer ran out ×12)"
+        },
+        "src": "",
+        "ms": 3092
+      }
+    ],
+    "par": null,
+    "ms": 3123
+  }
+}

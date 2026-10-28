@@ -4,8 +4,9 @@
 // Keys never leave the server. The client parses ops into the IR, places, simulates and proves.
 // Every route but health sits behind the gate (gate.ts). A build reserves its worst-case cost with
 // the governor before any model call and commits the metered cost when it ends (governor.ts).
+// Each model call runs on the fast lane with Claude Haiku as the rung below it (llm/lanes.ts).
 import { DEFAULT_LAWS, gameplayLines } from "@ghostrun/ir";
-import { chatJson, editMessages, fillMessages, hostJsonSchema, hostMessages, IntentOut, intentJsonSchema, intentMessages, LlmError, mindJsonSchema, mindMessages, repairMessages, settleIntent, streamChat } from "@ghostrun/llm";
+import { editMessages, fillMessages, hostJsonSchema, hostMessages, IntentOut, intentJsonSchema, intentMessages, jsonLanes, lanesFor, LlmError, mindJsonSchema, mindMessages, repairMessages, settleIntent, streamLanes, type Keys, type Provider } from "@ghostrun/llm";
 import { ALL_SUBS, PACKS, packFor } from "@ghostrun/registry";
 import * as v from "valibot";
 // the vault heist teaches goal-dependent wins, doorway doors, keys and inspectable exhibits (an A/B
@@ -21,6 +22,8 @@ import { getShare, memoryBlobs, postReport, postShare, postWrong, r2Blobs, type 
 
 export interface Env extends GateEnv, GovernorEnv {
   CEREBRAS_API_KEY: string;
+  /** Claude Haiku: the fallback when the fast lane is busy or down (and the primary under route:primary). */
+  ANTHROPIC_API_KEY?: string;
   /** Public Turnstile sitekey, echoed by /v1/health for the client widget. */
   TURNSTILE_SITEKEY?: string;
   /** Tokenless builds per IP per isolate per 10 min (default 30). */
@@ -41,6 +44,8 @@ export interface Env extends GateEnv, GovernorEnv {
 const MAX_PROMPT = 500;
 /** KV key in FLAGS: any value pauses new builds (an instant, deploy-free kill switch). */
 export const PAUSE_FLAG = "builds:paused";
+/** KV key in FLAGS: "anthropic" puts Haiku first and the fast lane second (the runbook's "Cerebras down"). */
+export const PRIMARY_FLAG = "route:primary";
 
 const buildBuckets = new Buckets();
 const apiBuckets = new Buckets();
@@ -70,11 +75,23 @@ async function paused(env: Env): Promise<boolean> {
   }
 }
 
+const keysOf = (env: Env): Keys => ({ cerebras: env.CEREBRAS_API_KEY || undefined, anthropic: env.ANTHROPIC_API_KEY || undefined });
+const hasModel = (env: Env) => Boolean(env.CEREBRAS_API_KEY || env.ANTHROPIC_API_KEY);
+
+/** The pause switch and the primary provider, read together (both cached at the edge for a minute). */
+async function switches(env: Env): Promise<{ paused: boolean; primary: Provider }> {
+  const [stop, primary] = await Promise.all([
+    paused(env),
+    env.FLAGS?.get(PRIMARY_FLAG, { cacheTtl: 60 }).catch(() => null),
+  ]);
+  return { paused: stop, primary: primary === "anthropic" ? "anthropic" : "cerebras" };
+}
+
 export async function handle(req: Request, env: Env, ctx?: WaitUntil): Promise<Response> {
   const url = new URL(req.url);
   const path = url.pathname;
   const later = (p: Promise<unknown>) => (ctx ? ctx.waitUntil(p) : void p.catch(() => undefined));
-  if (path === "/v1/health") return json({ ok: true, packs: PACKS.map((p) => p.id), llm: Boolean(env.CEREBRAS_API_KEY), gate: gateMode(env, url), sitekey: env.TURNSTILE_SITEKEY ?? null });
+  if (path === "/v1/health") return json({ ok: true, packs: PACKS.map((p) => p.id), llm: hasModel(env), fallback: Boolean(env.CEREBRAS_API_KEY && env.ANTHROPIC_API_KEY), gate: gateMode(env, url), sitekey: env.TURNSTILE_SITEKEY ?? null });
   if (path === "/v1/session" && req.method === "POST") return session(req, env, url);
   if (path === "/v1/build" && req.method === "POST") return build(req, env, url, later);
   if (path === "/v1/repair" && req.method === "POST") return patch("repair", req, env, url, later);
@@ -163,7 +180,7 @@ const str = (x: unknown, max: number) => (typeof x === "string" ? x.slice(0, max
  * here: a mind can never act off-menu, and the simulation plays the option deterministically.
  */
 async function mind(req: Request, env: Env, url: URL): Promise<Response> {
-  if (!env.CEREBRAS_API_KEY) return json({ error: "llm not configured" }, 503);
+  if (!hasModel(env)) return json({ error: "llm not configured" }, 503);
   const gate = await identify(req, url, env);
   if (!gate.ok) return json(gate.body, gate.status);
   const caller = gate.caller;
@@ -175,20 +192,21 @@ async function mind(req: Request, env: Env, url: URL): Promise<Response> {
   const menu = Array.isArray(i.menu) ? i.menu.filter((x): x is string => typeof x === "string" && OPTION.test(x)).slice(0, 8) : [];
   const current = str(i.current, 48);
   if (!menu.length || !str(i.npc, 32)) return json({ error: "bad mind request" }, 400);
-  if (await paused(env)) return json({ error: "builds paused", retryable: true }, 503);
+  const sw = await switches(env);
+  if (sw.paused) return json({ error: "builds paused", retryable: true }, 503);
   const held = await reserveFor(env, url, caller, ip, costMicroUsd(INTENT_MODEL, 1500, 120));
   if (held instanceof Response) return held;
   let cost = costMicroUsd(INTENT_MODEL, 1500, 120);
   try {
-    const r = await chatJson<{ option?: unknown; line?: unknown }>({
-      apiKey: env.CEREBRAS_API_KEY,
-      model: INTENT_MODEL,
-      reasoningEffort: "none",
-      maxTokens: 120,
-      jsonSchema: { name: "mind", schema: mindJsonSchema(menu) },
-      messages: mindMessages({ npc: str(i.npc, 32), role: str(i.role, 32), persona: str(i.persona, 400), menu, current, situation: str(i.situation, 600), event: str(i.event, 200), ...(typeof i.said === "string" ? { said: str(i.said, 200) } : {}) }),
-    });
-    if (r.inTok > 0) cost = costMicroUsd(INTENT_MODEL, r.inTok, r.outTok);
+    const r = await jsonLanes<{ option?: unknown; line?: unknown }>(
+      lanesFor("mind", keysOf(env), {
+        primary: sw.primary,
+        maxTokens: 120,
+        jsonSchema: { name: "mind", schema: mindJsonSchema(menu) },
+        messages: mindMessages({ npc: str(i.npc, 32), role: str(i.role, 32), persona: str(i.persona, 400), menu, current, situation: str(i.situation, 600), event: str(i.event, 200), ...(typeof i.said === "string" ? { said: str(i.said, 200) } : {}) }),
+      }),
+    );
+    if (r.inTok > 0) cost = costMicroUsd(r.model, r.inTok, r.outTok);
     const option = typeof r.value.option === "string" && menu.includes(r.value.option) ? r.value.option : menu.includes(current) ? current : menu[0]!;
     return json({ option, line: str(r.value.line, 120), ms: r.ms });
   } catch (e) {
@@ -205,7 +223,7 @@ async function mind(req: Request, env: Env, url: URL): Promise<Response> {
  * Same lane and limits as a mind: the fast model, a strict schema, no reasoning.
  */
 async function host(req: Request, env: Env, url: URL): Promise<Response> {
-  if (!env.CEREBRAS_API_KEY) return json({ error: "llm not configured" }, 503);
+  if (!hasModel(env)) return json({ error: "llm not configured" }, 503);
   const gate = await identify(req, url, env);
   if (!gate.ok) return json(gate.body, gate.status);
   const caller = gate.caller;
@@ -217,21 +235,17 @@ async function host(req: Request, env: Env, url: URL): Promise<Response> {
   const question = str(i.question, 200).trim();
   const facts = Array.isArray(i.facts) ? i.facts.filter((x): x is string => typeof x === "string").slice(0, 40).map((x) => x.slice(0, 200)) : [];
   if (!question || !facts.length) return json({ error: "bad host request" }, 400);
-  if (await paused(env)) return json({ error: "builds paused", retryable: true }, 503);
+  const sw = await switches(env);
+  if (sw.paused) return json({ error: "builds paused", retryable: true }, 503);
   const est = costMicroUsd(INTENT_MODEL, 3000, 200);
   const held = await reserveFor(env, url, caller, ip, est);
   if (held instanceof Response) return held;
   let cost = est;
   try {
-    const r = await chatJson<{ answer?: unknown; cites?: unknown }>({
-      apiKey: env.CEREBRAS_API_KEY,
-      model: INTENT_MODEL,
-      reasoningEffort: "none",
-      maxTokens: 200,
-      jsonSchema: { name: "host", schema: hostJsonSchema(facts.length) },
-      messages: hostMessages(question, facts),
-    });
-    if (r.inTok > 0) cost = costMicroUsd(INTENT_MODEL, r.inTok, r.outTok);
+    const r = await jsonLanes<{ answer?: unknown; cites?: unknown }>(
+      lanesFor("host", keysOf(env), { primary: sw.primary, maxTokens: 200, jsonSchema: { name: "host", schema: hostJsonSchema(facts.length) }, messages: hostMessages(question, facts) }),
+    );
+    if (r.inTok > 0) cost = costMicroUsd(r.model, r.inTok, r.outTok);
     const cites = Array.isArray(r.value.cites) ? [...new Set(r.value.cites.filter((n): n is number => Number.isInteger(n) && n >= 1 && n <= facts.length))].slice(0, 4) : [];
     return json({ answer: str(r.value.answer, 280), cites, ms: r.ms });
   } catch (e) {
@@ -249,7 +263,7 @@ async function host(req: Request, env: Env, url: URL): Promise<Response> {
  * a repair is offered only if the receipt got better, an edit comes back with its new numbers.
  */
 async function patch(kind: "repair" | "edit", req: Request, env: Env, url: URL, later: (p: Promise<unknown>) => void): Promise<Response> {
-  if (!env.CEREBRAS_API_KEY) return json({ error: "llm not configured" }, 503);
+  if (!hasModel(env)) return json({ error: "llm not configured" }, 503);
   const gate = await identify(req, url, env);
   if (!gate.ok) return json(gate.body, gate.status);
   const caller = gate.caller;
@@ -264,7 +278,8 @@ async function patch(kind: "repair" | "edit", req: Request, env: Env, url: URL, 
   const change = typeof input.change === "string" ? input.change.trim().slice(0, MAX_PROMPT) : "";
   const intent = v.safeParse(IntentOut, input.intent);
   if (!prompt || !fill || !intent.success || !Number.isInteger(input.seed) || (kind === "repair" ? !issues.length : !change)) return json({ error: `bad ${kind} request` }, 400);
-  if (await paused(env)) return json({ error: "builds paused", retryable: true }, 503);
+  const sw = await switches(env);
+  if (sw.paused) return json({ error: "builds paused", retryable: true }, 503);
   const held = await reserveFor(env, url, caller, ip, costMicroUsd(FILL_MODEL, REPAIR_MAX_IN, REPAIR_MAX_OUT));
   if (held instanceof Response) return held;
   const out = sseStream();
@@ -279,8 +294,10 @@ async function patch(kind: "repair" | "edit", req: Request, env: Env, url: URL, 
         const messages = kind === "repair" ? repairMessages(prompt, intent.output, layout, lines, issues) : editMessages(prompt, change, intent.output, layout, lines);
         let buf = "";
         let i = 0;
-        for await (const ev of streamChat({ apiKey: env.CEREBRAS_API_KEY, model: FILL_MODEL, reasoningEffort: "low", maxTokens: REPAIR_MAX_OUT, messages, signal: out.signal })) {
-          if (ev.type === "usage") cost = costMicroUsd(FILL_MODEL, ev.inTok, ev.outTok);
+        let model = "";
+        for await (const ev of streamLanes(lanesFor("patch", keysOf(env), { primary: sw.primary, maxTokens: REPAIR_MAX_OUT, messages, signal: out.signal }))) {
+          if (ev.type === "usage") [cost, model] = [costMicroUsd(ev.model, ev.inTok, ev.outTok), ev.model];
+          if (ev.type === "fallback") await out.send("fallback", ev);
           if (ev.type !== "text") continue;
           buf += ev.delta;
           let nl: number;
@@ -291,7 +308,7 @@ async function patch(kind: "repair" | "edit", req: Request, env: Env, url: URL, 
           }
         }
         if (buf.trim()) await out.send("op", { i: i++, line: buf.trim() });
-        await out.send("done", { totalMs: Date.now() - t0, lines: i });
+        await out.send("done", { totalMs: Date.now() - t0, lines: i, model });
       } catch (e) {
         if (e instanceof LlmError && e.status !== 200) cost = 0;
         await out.send("error", { message: e instanceof Error ? e.message.slice(0, 200) : `${kind} failed`, retryable: e instanceof LlmError ? e.retryable : true });
@@ -305,7 +322,7 @@ async function patch(kind: "repair" | "edit", req: Request, env: Env, url: URL, 
 }
 
 async function build(req: Request, env: Env, url: URL, later: (p: Promise<unknown>) => void): Promise<Response> {
-  if (!env.CEREBRAS_API_KEY) return json({ error: "llm not configured" }, 503);
+  if (!hasModel(env)) return json({ error: "llm not configured" }, 503);
   const gate = await identify(req, url, env);
   if (!gate.ok) return json(gate.body, gate.status);
   const caller = gate.caller;
@@ -319,7 +336,9 @@ async function build(req: Request, env: Env, url: URL, later: (p: Promise<unknow
   const prompt = typeof input.prompt === "string" ? input.prompt.trim().slice(0, MAX_PROMPT) : "";
   if (!prompt) return json({ error: "empty prompt" }, 400);
   const seed = Number.isInteger(input.seed) ? (input.seed as number) : 1 + Math.floor(Date.now() % 100000);
-  if (await paused(env)) return json({ error: "builds paused", retryable: true }, 503);
+  const sw = await switches(env);
+  if (sw.paused) return json({ error: "builds paused", retryable: true }, 503);
+  const keys = keysOf(env);
 
   const intentMsgs = intentMessages(prompt, PACKS);
   const est = buildEstimate(intentMsgs);
@@ -350,16 +369,11 @@ async function build(req: Request, env: Env, url: URL, later: (p: Promise<unknow
       let intentCost = est.intent;
       let fillCost = 0;
       try {
-        const intentRes = await chatJson<unknown>({
-          apiKey: env.CEREBRAS_API_KEY,
-          model: INTENT_MODEL,
-          reasoningEffort: "none",
-          messages: intentMsgs,
-          jsonSchema: { name: "intent", schema: intentJsonSchema(PACKS.map((p) => p.id), ALL_SUBS) },
-          maxTokens: INTENT_MAX_OUT,
-          signal: upstream.signal,
-        });
-        if (intentRes.inTok > 0) intentCost = costMicroUsd(INTENT_MODEL, intentRes.inTok, intentRes.outTok);
+        const intentRes = await jsonLanes<unknown>(
+          lanesFor("intent", keys, { primary: sw.primary, messages: intentMsgs, jsonSchema: { name: "intent", schema: intentJsonSchema(PACKS.map((p) => p.id), ALL_SUBS) }, maxTokens: INTENT_MAX_OUT, signal: upstream.signal }),
+        );
+        if (intentRes.inTok > 0) intentCost = costMicroUsd(intentRes.model, intentRes.inTok, intentRes.outTok);
+        if (intentRes.fellBack) await send("fallback", { job: "intent", to: intentRes.model });
         const intent = settleIntent(prompt, v.parse(IntentOut, intentRes.value));
         await send("intent", { intent, seed, ms: Date.now() - t0 });
         if (intent.safety === "block") {
@@ -373,9 +387,11 @@ async function build(req: Request, env: Env, url: URL, later: (p: Promise<unknow
         let buf = "";
         let i = 0;
         let firstMs = -1;
-        const stream = streamChat({ apiKey: env.CEREBRAS_API_KEY, model: FILL_MODEL, reasoningEffort: "low", maxTokens: FILL_MAX_OUT, messages: fillMessages(prompt, intent, layout, EXAMPLE, seed), signal: upstream.signal });
+        let fillModel = "";
+        const stream = streamLanes(lanesFor("fill", keys, { primary: sw.primary, maxTokens: FILL_MAX_OUT, messages: fillMessages(prompt, intent, layout, EXAMPLE, seed), signal: upstream.signal }));
         for await (const ev of stream) {
-          if (ev.type === "usage") fillCost = costMicroUsd(FILL_MODEL, ev.inTok, ev.outTok);
+          if (ev.type === "usage") [fillCost, fillModel] = [costMicroUsd(ev.model, ev.inTok, ev.outTok), ev.model];
+          if (ev.type === "fallback") await send("fallback", { job: "fill", ...ev });
           if (ev.type === "first_token") firstMs = Date.now() - t0;
           if (ev.type !== "text") continue;
           buf += ev.delta;
@@ -388,7 +404,7 @@ async function build(req: Request, env: Env, url: URL, later: (p: Promise<unknow
         }
         phase = "after";
         if (buf.trim()) await send("op", { i: i++, line: buf.trim() });
-        await send("done", { intentMs: intentRes.ms, fillFirstTokenMs: firstMs, totalMs: Date.now() - t0, lines: i });
+        await send("done", { intentMs: intentRes.ms, fillFirstTokenMs: firstMs, totalMs: Date.now() - t0, lines: i, intentModel: intentRes.model, fillModel });
       } catch (e) {
         if (e instanceof LlmError && e.status !== 200) {
           if (phase === "intent") intentCost = 0;

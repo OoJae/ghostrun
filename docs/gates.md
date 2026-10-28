@@ -115,3 +115,25 @@ Read against the [Cerebras ToS](https://cerebras.ai/terms-of-service) (effective
 - **No training on API data; serving end users inside the app is allowed** (reselling keys is not, and we don't). No EU restriction beyond standard US export controls.
 - **Condition: no vendor comparisons.** The terms forbid using the service "for benchmarking or competitive analysis of the Service". The README, video, description and trust panel publish only GHOSTRUN's own end-to-end timings ("prompt to playable"), never a Cerebras-vs-anyone table or a per-provider speed claim.
 - **Anthropic stays in the routing** (user decision, 28 Oct): Haiku is the fallback rung for Cerebras 429s and the NPC-minds alternative, Sonnet runs the Director's cut and hard repairs. MiMo is dev-only, behind a flag that is off in production.
+
+## S5b: the fallback rung (Claude Haiku 5.5): **GO** (2026-10-28)
+
+When the fast lane is busy (429) or down (5xx) before it has written a word, the same request goes to Claude Haiku 5.5 over the Messages API (`packages/llm/src/lanes.ts`). The primary gets one quick retry (0.7 s, or the provider's own hint) before failing over. Once text has streamed, a failure is final: the client has already placed those lines. A bad request (4xx) or a refusal never fails over. Every route uses it: intent, fill, repair and edit patches, NPC minds and the Host.
+
+- **Said plainly:** the build stream sends a `fallback` event and `done` names the model that answered. The app labels such a world "live AI · Haiku", and the stopwatch split says which model wrote the fill. The receipt and its proof are unchanged.
+- **Charged honestly:** the governor commits the cost at the price of the model that answered. The hold is priced on the fast lane, which costs more per token than Haiku, so a hold still covers a fallback. An HTTP error is free; a mid-stream error is charged at its estimate (fail closed).
+- **Switch:** KV `route:primary = anthropic` puts Haiku first for every call, deploy-free (the runbook's "fast lane down for an hour"). Without `ANTHROPIC_API_KEY` there is one lane, as before.
+- **Plain fetch, not the SDK:** `@anthropic-ai/sdk` bundles `fast-sha256` (Unlicense) through its webhooks module, which our licence list doesn't allow. The adapter calls the Messages API directly (API version 2026-10-21; no sampling parameters; thinking off at low effort for these fast jobs; structured outputs with the JSON-schema bounds it rejects removed, since every caller re-checks them).
+- **Tested:** unit tests for each failover rule; the edge handler end to end with a fake upstream; and the same build failing over inside real workerd (`test:workerd`, 17 checks).
+
+**The lane on its own.** The 28 prompts of `prompts-fresh10.txt` (the organizer's likely prompts), with Haiku forced as the only lane (`GR_LANE=anthropic ghostrun bench`), recorded in `tools/bench/lanes/haiku-fresh10/`:
+
+| | |
+|---|---|
+| Builds that errored | 0 of 28 |
+| Games won by the AI runners (≥10 of 12), first pass | 16 of 20 (one more had its win chain disproved before any run) |
+| Places | 8 (headline verified on 5) |
+| Prompt to playable | p50 11.8 s, p90 13.6 s |
+| Invalid fill lines | 1.8% (19 of 1,083) |
+
+It is slower, and a fallback it stays: a world in twelve seconds beats a lost one. These describe our pipeline on this lane; they are not a comparison between providers.

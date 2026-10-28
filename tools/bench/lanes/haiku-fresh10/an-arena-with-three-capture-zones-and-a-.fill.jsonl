@@ -1,0 +1,37 @@
+{"op":"meta","mode":"play","lang":"en","pack":"arena","sub":[],"seed":8,"look":"walled symmetric arena","mood":[0.1,0.7,0.8],"timeOfDay":14,"weather":"clear"}
+{"op":"zone","id":"z_mid","slot":"midfield","tag":"center","name":"Central field"}
+{"op":"zone","id":"z_west","slot":"west_half","tag":"base","name":"West base"}
+{"op":"zone","id":"z_east","slot":"east_half","tag":"base","name":"East base"}
+{"op":"zone","id":"z_north","slot":"north_deck","tag":"platform","name":"North deck"}
+{"op":"zone","id":"z_south","slot":"south_deck","tag":"platform","name":"South deck"}
+{"op":"spawn","id":"sp_red","zone":"z_west","anchor":"spawn_pad","team":"red"}
+{"op":"spawn","id":"sp_blue","zone":"z_east","anchor":"spawn_pad","team":"blue"}
+{"op":"goal","id":"cap_mid","zone":"z_mid","anchor":"center","noun":"capture zone","hyper":"capture","team":""}
+{"op":"goal","id":"cap_north","zone":"z_north","anchor":"deck_center","noun":"capture zone","hyper":"capture","team":""}
+{"op":"goal","id":"cap_south","zone":"z_south","anchor":"deck_center","noun":"capture zone","hyper":"capture","team":""}
+{"op":"ent","id":"timer_clock","kind":"sign","noun":"match clock","hyper":"timer","zone":"z_mid","anchor":"scoreboard","body":"fixed","shape":"box","size":[1.5,0.6,0.1]}
+{"op":"ent","id":"cover_w","kind":"prop","noun":"crate wall","hyper":"cover","zone":"z_west","anchor":"flank_n","body":"fixed","shape":"box","size":[2,1.2,0.6]}
+{"op":"ent","id":"cover_e","kind":"prop","noun":"crate wall","hyper":"cover","zone":"z_east","anchor":"flank_s","body":"fixed","shape":"box","size":[2,1.2,0.6]}
+{"op":"ent","id":"ramp_n","kind":"platform","noun":"north ramp","hyper":"ramp","zone":"z_north","anchor":"deck_w","body":"fixed","shape":"box","size":[3,0.3,2]}
+{"op":"ent","id":"ramp_s","kind":"platform","noun":"south ramp","hyper":"ramp","zone":"z_south","anchor":"deck_e","body":"fixed","shape":"box","size":[3,0.3,2]}
+{"op":"verb","id":"vb_jump","verb":"locomotion.jump","on":"player","params":{"jumpsMax":2}}
+{"op":"verb","id":"vb_tag","verb":"combat_sport.tag_drop","on":"player","params":{"radius":1.5}}
+{"op":"verb","id":"vb_clock","verb":"puzzle.timer","on":"player","params":{"seconds":120}}
+{"op":"verb","id":"vb_plate_mid","verb":"puzzle.plate","on":"cap_mid","params":{"latch":false}}
+{"op":"verb","id":"vb_plate_n","verb":"puzzle.plate","on":"cap_north","params":{"latch":false}}
+{"op":"verb","id":"vb_plate_s","verb":"puzzle.plate","on":"cap_south","params":{"latch":false}}
+{"op":"verb","id":"vb_jump_n","verb":"locomotion.jump_pad","on":"ramp_n","params":{"height":4}}
+{"op":"verb","id":"vb_jump_s","verb":"locomotion.jump_pad","on":"ramp_s","params":{"height":4}}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":6}}
+{"op":"state","id":"score_red","entity":"cap_mid","value":"0"}
+{"op":"rule","id":"r_score_mid","when":{"t":"every","n":1},"if":[{"l":"cap_mid.state","op":"eq","r":"down"}],"then":[{"e":"score","target":"team:red","n":1}]}
+{"op":"rule","id":"r_score_n","when":{"t":"every","n":1},"if":[{"l":"cap_north.state","op":"eq","r":"down"}],"then":[{"e":"score","target":"team:red","n":1}]}
+{"op":"rule","id":"r_score_s","when":{"t":"every","n":1},"if":[{"l":"cap_south.state","op":"eq","r":"down"}],"then":[{"e":"score","target":"team:red","n":1}]}
+{"op":"rule","id":"r_end_win","when":{"t":"timer_end","a":"player"},"if":[{"l":"team:red.score","op":"gte","r":"team:blue.score"}],"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_end_lose","when":{"t":"timer_end","a":"player"},"if":[{"l":"team:red.score","op":"lt","r":"team:blue.score"}],"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_tag_drop","when":{"t":"touch","a":"player","b":""},"then":[{"e":"emit","target":"player","fx":"tag_spark"}]}
+{"op":"expect","id":"x_majority","prop":"win_reachable","a":"sp_red","b":"cap_mid","headline":true,"text":"Three capture zones with a two-minute timer need a per-zone majority check that a playtest can verify."}
+{"op":"expect","id":"x_north_deck","prop":"requires","a":"sp_red","b":"cap_north","need":["jumps>=2"],"text":"North deck capture needs double jump"}
+{"op":"expect","id":"x_fair","prop":"fair_teams","a":"sp_red","b":"sp_blue","text":"Both bases are symmetric in reach"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

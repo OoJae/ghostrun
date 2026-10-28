@@ -1,0 +1,31 @@
+{"op":"meta","mode":"wander","lang":"en","pack":"outdoor","sub":[],"seed":11,"look":"bioluminescent forest at dusk","mood":[0.6,-0.3,0.2],"timeOfDay":21,"weather":"clear"}
+{"op":"zone","id":"z_gate","slot":"entrance","tag":"entrance","name":"Forest threshold"}
+{"op":"zone","id":"z_hub","slot":"clearing","tag":"hub","name":"Glowing clearing"}
+{"op":"zone","id":"z_pond","slot":"pond","tag":"water","name":"Luminous pond"}
+{"op":"zone","id":"z_grove","slot":"grove","tag":"trees","name":"Old grove"}
+{"op":"zone","id":"z_knoll","slot":"lookout","tag":"high_ground","name":"Shrine knoll"}
+{"op":"spawn","id":"sp_red","zone":"z_gate","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"shrine","zone":"z_knoll","anchor":"top","noun":"hidden shrine","hyper":"sacred place","team":""}
+{"op":"ent","id":"firefly_1","kind":"prop","noun":"firefly","hyper":"insects","zone":"z_gate","anchor":"guide","body":"kinematic","shape":"sphere","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"firefly_2","kind":"prop","noun":"firefly","hyper":"insects","zone":"z_hub","anchor":"center_n","body":"kinematic","shape":"sphere","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"firefly_3","kind":"prop","noun":"firefly","hyper":"insects","zone":"z_grove","anchor":"hollow","body":"kinematic","shape":"sphere","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"lily_pad","kind":"platform","noun":"glowing lily pad","hyper":"plant","zone":"z_pond","anchor":"dock","body":"fixed","shape":"box","size":[1.5,0.1,1.5]}
+{"op":"ent","id":"mushroom_ring","kind":"prop","noun":"mushroom ring","hyper":"fungus","zone":"z_grove","anchor":"heart","body":"fixed","shape":"sphere","size":[2,0.5,2]}
+{"op":"ent","id":"ancient_stone","kind":"sign","noun":"carved stone","hyper":"monument","zone":"z_gate","anchor":"sign","body":"fixed","shape":"box","size":[0.6,1.2,0.3]}
+{"op":"ent","id":"moss_stump","kind":"prop","noun":"moss-covered stump","hyper":"tree","zone":"z_grove","anchor":"stump","body":"fixed","shape":"box","size":[1,0.8,1]}
+{"op":"ent","id":"shrine_lantern","kind":"prop","noun":"stone lantern","hyper":"lantern","zone":"z_knoll","anchor":"mid","body":"fixed","shape":"box","size":[0.5,1.4,0.5]}
+{"op":"ent","id":"checkpoint_hub","kind":"checkpoint","noun":"waystone","hyper":"checkpoint","zone":"z_hub","anchor":"center","body":"sensor","shape":"sphere","size":[1.5,1.5,1.5]}
+{"op":"verb","id":"vb_inspect_stone","verb":"social.inspect","on":"ancient_stone","params":{"text":"Worn runes name the path: follow the lights where the trees part."}}
+{"op":"verb","id":"vb_inspect_ring","verb":"social.inspect","on":"mushroom_ring","params":{"text":"Mushrooms ring a circle that hums faintly when you step inside."}}
+{"op":"verb","id":"vb_inspect_lantern","verb":"social.inspect","on":"shrine_lantern","params":{"text":"The lantern still burns, fed by a light no one has tended for years."}}
+{"op":"verb","id":"vb_inspect_stump","verb":"social.inspect","on":"moss_stump","params":{"text":"Rings in the wood count three hundred summers."}}
+{"op":"verb","id":"vb_checkpoint","verb":"puzzle.checkpoint","on":"checkpoint_hub","params":{}}
+{"op":"verb","id":"vb_lily","verb":"locomotion.jump_pad","on":"lily_pad","params":{"height":1.5}}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":6}}
+{"op":"rule","id":"r_hub_save","when":{"t":"touch","a":"player","b":"checkpoint_hub"},"then":[{"e":"emit","target":"checkpoint_hub","fx":"soft_glow"}]}
+{"op":"npc","id":"guide_firefly","role":"guide","zone":"z_gate","anchor":"guide","team":"","menu":["guard.patrol"],"dflt":"guard.patrol"}
+{"op":"expect","id":"x_shrine","prop":"win_reachable","a":"sp_red","b":"shrine","headline":true,"text":"Fireflies must lead the player along the paths to a shrine hidden on a knoll."}
+{"op":"expect","id":"x_knoll_climb","prop":"requires","a":"sp_red","b":"z_knoll","need":["jumps>=2"],"text":"The knoll path rises steeply and needs a double jump"}
+{"op":"end","layer":"gameplay"}
+{"op":"poster","id":"poster_forest","zone":"z_gate","anchor":"sign","text":"Follow the fireflies to the shrine on the knoll."}
+{"op":"end","layer":"cosmetic"}

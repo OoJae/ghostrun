@@ -1,0 +1,33 @@
+{"op":"meta","mode":"play","lang":"en","pack":"maze","sub":[],"seed":21,"look":"greenhouse maze overgrown with plants","mood":[0.3,0.2,0.4],"timeOfDay":10,"weather":"humid"}
+{"op":"zone","id":"z_outside","slot":"start","tag":"outside","name":"Greenhouse door"}
+{"op":"zone","id":"z_maze","slot":"maze","tag":"maze","name":"Overgrown maze"}
+{"op":"spawn","id":"sp_red","zone":"z_outside","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"plant_pad","zone":"z_maze","anchor":"center","noun":"planting pad","hyper":"place","team":"red"}
+{"op":"ent","id":"seed_1","kind":"pickup","noun":"seed","hyper":"plant","zone":"z_maze","anchor":"dead_end_1","body":"dynamic","shape":"sphere","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"seed_2","kind":"pickup","noun":"seed","hyper":"plant","zone":"z_maze","anchor":"dead_end_2","body":"dynamic","shape":"sphere","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"seed_3","kind":"pickup","noun":"seed","hyper":"plant","zone":"z_maze","anchor":"dead_end_3","body":"dynamic","shape":"sphere","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"seed_4","kind":"pickup","noun":"seed","hyper":"plant","zone":"z_maze","anchor":"dead_end_4","body":"dynamic","shape":"sphere","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"sprinkler_1","kind":"hazard","noun":"sprinkler","hyper":"sprinkler","zone":"z_maze","anchor":"entrance","body":"sensor","shape":"sphere","size":[1.5,1.5,1.5]}
+{"op":"ent","id":"sprinkler_2","kind":"hazard","noun":"sprinkler","hyper":"sprinkler","zone":"z_maze","anchor":"exit","body":"sensor","shape":"sphere","size":[1.5,1.5,1.5]}
+{"op":"ent","id":"gate","kind":"door","noun":"glass gate","hyper":"door","zone":"z_maze","anchor":"entrance","body":"fixed","shape":"box"}
+{"op":"ent","id":"plot_sign","kind":"sign","noun":"plot notice","hyper":"sign","zone":"z_outside","anchor":"sign","body":"fixed","shape":"box","size":[0.8,1.0,0.1]}
+{"op":"ent","id":"fern_1","kind":"prop","noun":"fern","hyper":"plant","zone":"z_maze","anchor":"center","body":"fixed","shape":"box","size":[0.8,1.2,0.8]}
+{"op":"verb","id":"vb_carry_seed1","verb":"physics_props.carry","on":"seed_1","params":{}}
+{"op":"verb","id":"vb_carry_seed2","verb":"physics_props.carry","on":"seed_2","params":{}}
+{"op":"verb","id":"vb_carry_seed3","verb":"physics_props.carry","on":"seed_3","params":{}}
+{"op":"verb","id":"vb_carry_seed4","verb":"physics_props.carry","on":"seed_4","params":{}}
+{"op":"verb","id":"vb_sprinkler1","verb":"motion_hazards.hazard","on":"sprinkler_1","params":{"respawn":true}}
+{"op":"verb","id":"vb_sprinkler2","verb":"motion_hazards.hazard","on":"sprinkler_2","params":{"respawn":true}}
+{"op":"verb","id":"vb_gate","verb":"puzzle.lock","on":"gate","params":{"key":"seed_1","keep":true}}
+{"op":"verb","id":"vb_sign","verb":"social.inspect","on":"plot_sign","params":{"text":"Plant all four seeds on the pad at the centre before the timer runs out."}}
+{"op":"verb","id":"vb_timer","verb":"puzzle.timer","on":"player","params":{"seconds":150}}
+{"op":"rule","id":"r_seed1","when":{"t":"enter","a":"seed_1","b":"plant_pad"},"then":[{"e":"score","target":"team:red","n":1},{"e":"destroy","target":"seed_1"}],"once":true}
+{"op":"rule","id":"r_seed2","when":{"t":"enter","a":"seed_2","b":"plant_pad"},"then":[{"e":"score","target":"team:red","n":1},{"e":"destroy","target":"seed_2"}],"once":true}
+{"op":"rule","id":"r_seed3","when":{"t":"enter","a":"seed_3","b":"plant_pad"},"then":[{"e":"score","target":"team:red","n":1},{"e":"destroy","target":"seed_3"}],"once":true}
+{"op":"rule","id":"r_seed4","when":{"t":"enter","a":"seed_4","b":"plant_pad"},"then":[{"e":"score","target":"team:red","n":1},{"e":"destroy","target":"seed_4"}],"once":true}
+{"op":"rule","id":"r_win","when":{"t":"score_gte","a":"team:red","n":4},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_timeout","when":{"t":"timer_end","a":"player"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"expect","id":"x_plant","prop":"win_reachable","a":"sp_red","b":"plant_pad","headline":true,"text":"Seeds must be carried back to a planting pad at the maze centre."}
+{"op":"expect","id":"x_sprinkler","prop":"reachable","a":"sp_red","b":"plant_pad","text":"Sprinklers guard the route but can be dodged"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

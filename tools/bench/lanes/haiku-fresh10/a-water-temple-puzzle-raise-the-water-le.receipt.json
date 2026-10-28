@@ -1,0 +1,272 @@
+{
+  "prompt": "A water temple puzzle: raise the water level to reach the door",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "puzzle adventure",
+    "setting": "ancient water temple with flooding chambers",
+    "role": "explorer",
+    "goal": "raise the water level to reach the door",
+    "fail": "being trapped or drowned before the door opens",
+    "mood": "mysterious and tense",
+    "pack": "floor_plan",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Water level must be raised by a checkable mechanism to reach the door.",
+    "nouns": [
+      {
+        "noun": "water level",
+        "hyper": "the height of the flood that must rise high enough to lift the exit"
+      },
+      {
+        "noun": "door",
+        "hyper": "the sealed exit that opens only once the water reaches it"
+      }
+    ],
+    "moodVec": {
+      "valence": -0.2,
+      "arousal": 0.5,
+      "tension": 0.7
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "1f89f054794568f9d55d3cc0218688511ce12ea05bd3287bbfaacbb46c452e4d",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_flood",
+      "text": "Water level must be raised by a checkable mechanism to reach the door.",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 8 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_escape (player enters exit)",
+        "src": ""
+      },
+      {
+        "id": "T1:x_gate",
+        "tier": "T1",
+        "subject": {
+          "kind": "property",
+          "id": "x_gate"
+        },
+        "method": "kinematic reachability (jump apex model)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "counterexample",
+        "text": "Basin requires a jump onto the dais",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 0,
+          "unit": "m",
+          "text": "reachable with 0 jumps: step 0 m ≤ apex 0 m"
+        }
+      },
+      {
+        "id": "T2:r_basin",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_basin"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_basin fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_drown",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_drown"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_drown fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_escape",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_escape"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_escape fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_flood",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_flood"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_flood fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_ne",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_ne"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_corner_ne fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_ne_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_ne_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_corner_ne_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_nw",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_nw"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_corner_nw fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_time",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_time"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_time fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it (AI par 4.8 s)",
+        "cx": null,
+        "src": "",
+        "ms": 73
+      },
+      {
+        "id": "T3:x_gate",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "x_gate"
+        },
+        "status": "counterexample",
+        "method": "physics jump witness, 4 attempts per jump count",
+        "n": 4,
+        "k": 0,
+        "text": "Basin requires a jump onto the dais: reached with 1 jumps 0 of 4, with 0 0 of 4",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 0,
+          "unit": "attempts",
+          "text": "never reached with 1 jumps"
+        },
+        "src": "ai",
+        "ms": 30
+      }
+    ],
+    "par": {
+      "goldS": 4.8,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 143
+  }
+}

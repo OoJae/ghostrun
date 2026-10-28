@@ -1,0 +1,26 @@
+{"op":"meta","mode":"wander","lang":"en","pack":"floor_plan","sub":[],"seed":33,"look":"space station calm","mood":[0.6,-0.2,-0.3],"timeOfDay":12,"weather":"clear"}
+{"op":"zone","id":"z_dock","slot":"yard","tag":"outside","name":"Docking ring"}
+{"op":"zone","id":"z_atrium","slot":"entrance","tag":"entrance","name":"Atrium"}
+{"op":"zone","id":"z_bridge","slot":"room_nw","tag":"room","name":"Bridge"}
+{"op":"zone","id":"z_lab","slot":"room_sw","tag":"room","name":"Laboratory"}
+{"op":"zone","id":"z_garden","slot":"room_ne","tag":"room","name":"Hydroponic garden"}
+{"op":"zone","id":"z_hall","slot":"main_room","tag":"hall","name":"Central corridor"}
+{"op":"spawn","id":"sp_red","zone":"z_dock","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"tour_end","zone":"z_garden","anchor":"center","noun":"garden viewing deck","hyper":"room","team":""}
+{"op":"ent","id":"console_bridge","kind":"sign","noun":"navigation console","hyper":"console","zone":"z_bridge","anchor":"center","body":"fixed","shape":"box","size":[1.5,1,0.6]}
+{"op":"ent","id":"lab_bench","kind":"prop","noun":"sample bench","hyper":"bench","zone":"z_lab","anchor":"center","body":"fixed","shape":"box","size":[2,1,1]}
+{"op":"ent","id":"plant_tank","kind":"prop","noun":"hydroponic tank","hyper":"planter","zone":"z_garden","anchor":"center","body":"fixed","shape":"box","size":[2,1.2,1]}
+{"op":"ent","id":"star_chart","kind":"prop","noun":"star chart","hyper":"painting","zone":"z_atrium","anchor":"wall_n","body":"fixed","shape":"box","size":[1.4,1,0.1]}
+{"op":"ent","id":"airlock_door","kind":"door","noun":"airlock","hyper":"door","zone":"z_dock","anchor":"gate","body":"fixed","shape":"box"}
+{"op":"verb","id":"vb_look_bridge","verb":"social.inspect","on":"console_bridge","params":{"text":"The navigation console hums softly, plotting our orbit around the blue giant."}}
+{"op":"verb","id":"vb_look_lab","verb":"social.inspect","on":"lab_bench","params":{"text":"Sample trays hold crystals grown in microgravity."}}
+{"op":"verb","id":"vb_look_garden","verb":"social.inspect","on":"plant_tank","params":{"text":"Tomatoes and basil grow under violet light, fed by recycled water."}}
+{"op":"verb","id":"vb_look_chart","verb":"social.inspect","on":"star_chart","params":{"text":"A hand-drawn chart of routes between the colony worlds."}}
+{"op":"rule","id":"r_tour_done","when":{"t":"enter","a":"player","b":"tour_end"},"then":[{"e":"emit","target":"tour_end","fx":"welcome_chime"}]}
+{"op":"npc","id":"robot_guide","role":"guide","zone":"z_atrium","anchor":"center","team":"","menu":["guide.lead"],"dflt":"guide.lead"}
+{"op":"npc","id":"crew_botanist","role":"citizen","zone":"z_garden","anchor":"corner_sw","team":"","menu":["citizen.idle"],"dflt":"citizen.idle"}
+{"op":"expect","id":"x_tour","prop":"reachable","a":"sp_red","b":"z_bridge","headline":true,"text":"Robot guide must lead you through bridge, lab and garden in order."}
+{"op":"expect","id":"x_lab","prop":"reachable","a":"sp_red","b":"z_lab","text":"The laboratory is reachable from the atrium."}
+{"op":"expect","id":"x_garden","prop":"reachable","a":"sp_red","b":"z_garden","text":"The hydroponic garden is reachable on the tour."}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

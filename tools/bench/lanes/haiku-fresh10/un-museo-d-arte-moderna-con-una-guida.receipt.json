@@ -1,0 +1,118 @@
+{
+  "prompt": "Un museo d'arte moderna con una guida",
+  "intent": {
+    "lang": "it",
+    "mode": "wander",
+    "genre": "museo d'arte",
+    "setting": "museo d'arte moderna",
+    "role": "visitatore con guida",
+    "goal": "esplorare le sale e ascoltare la guida",
+    "fail": "nessuno",
+    "mood": "contemplativo",
+    "pack": "floor_plan",
+    "sub": [],
+    "safety": "ok",
+    "headline": "La guida accompagna il visitatore tra le sale del museo d'arte moderna.",
+    "nouns": [
+      {
+        "noun": "museo",
+        "hyper": "edificio espositivo"
+      },
+      {
+        "noun": "guida",
+        "hyper": "persona che accompagna"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.4,
+      "arousal": -0.2,
+      "tension": -0.3
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "c321574aadc3835a79cb7d2efc1c48a070a4d6f81fddf9a3b85316261c7115a9",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_tour",
+      "text": "La guida accompagna il visitatore tra le sale del museo d'arte moderna.",
+      "status": "verified",
+      "method": "kinematic reachability (jump apex model)"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 0 rules reference existing things",
+        "src": ""
+      },
+      {
+        "id": "T1:x_tour",
+        "tier": "T1",
+        "subject": {
+          "kind": "property",
+          "id": "x_tour"
+        },
+        "method": "kinematic reachability (jump apex model)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "La guida accompagna il visitatore tra le sale del museo d'arte moderna.",
+        "cx": null
+      },
+      {
+        "id": "T1:x_inspect",
+        "tier": "T1",
+        "subject": {
+          "kind": "property",
+          "id": "x_inspect"
+        },
+        "method": "kinematic reachability (jump apex model)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "counterexample",
+        "text": "Le opere si possono osservare da vicino",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "route",
+          "text": "no route found"
+        }
+      },
+      {
+        "id": "T3:tour",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "tour"
+        },
+        "status": "played",
+        "method": "physics, an AI visitor walks to and uses each",
+        "n": 6,
+        "k": 6,
+        "text": "walked to and inspected 6 of 6 things",
+        "cx": null,
+        "src": "",
+        "ms": 20
+      }
+    ],
+    "par": null,
+    "ms": 32
+  }
+}

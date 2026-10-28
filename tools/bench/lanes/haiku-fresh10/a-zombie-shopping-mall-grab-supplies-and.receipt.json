@@ -1,0 +1,304 @@
+{
+  "prompt": "A zombie shopping mall: grab supplies and reach the roof",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "survival horror",
+    "setting": "abandoned shopping mall overrun by zombies",
+    "role": "survivor scavenging supplies",
+    "goal": "grab supplies and reach the roof",
+    "fail": "caught by zombies before reaching the roof",
+    "mood": "tense and desperate",
+    "pack": "floor_plan",
+    "sub": [
+      "rooftop"
+    ],
+    "safety": "arcade",
+    "headline": "Roof access must be reachable only after collecting supplies, so the route order matters.",
+    "nouns": [
+      {
+        "noun": "supplies",
+        "hyper": "scavenged food, medicine and tools"
+      },
+      {
+        "noun": "zombies",
+        "hyper": "shambling undead hordes"
+      },
+      {
+        "noun": "roof",
+        "hyper": "rooftop escape hatch above the mall"
+      }
+    ],
+    "moodVec": {
+      "valence": -0.6,
+      "arousal": 0.8,
+      "tension": 0.9
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "177f29203998d513d7f98a8733319efc65d1e3bbb6d1c6365c526311375b2ce3",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_roof_order",
+      "text": "Roof access must be reachable only after collecting supplies, so the route order matters.",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 1,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 10 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 1,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win_roof_food_pack_all (food_pack into roof_hatch, carried by red) ← pick up food_pack [after medkit in, toolbox in]",
+        "src": ""
+      },
+      {
+        "id": "T1:x_roof_gate",
+        "tier": "T1",
+        "subject": {
+          "kind": "property",
+          "id": "x_roof_gate"
+        },
+        "method": "kinematic reachability (jump apex model)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "Roof stairwell needs the stair key and a double jump over the debris",
+        "cx": null
+      },
+      {
+        "id": "T2:r_gate_open",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_gate_open"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 8,
+        "status": "verified",
+        "text": "r_gate_open fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lose_timer",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_timer"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_lose_timer fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_spike_hit",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_spike_hit"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_spike_hit fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_supplies_done",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_supplies_done"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_supplies_done: no room to stand next to alarm_switch",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win_roof_food_pack",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win_roof_food_pack"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_win_roof_food_pack fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win_roof_food_pack_all",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win_roof_food_pack_all"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_win_roof_food_pack_all fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win_roof_medkit",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win_roof_medkit"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_win_roof_medkit fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win_roof_medkit_all",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win_roof_medkit_all"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_win_roof_medkit_all fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win_roof_toolbox",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win_roof_toolbox"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_win_roof_toolbox fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win_roof_toolbox_all",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win_roof_toolbox_all"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_win_roof_toolbox_all fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it (AI par 27.9 s)",
+        "cx": null,
+        "src": "",
+        "ms": 396
+      },
+      {
+        "id": "T3:x_roof_gate",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "x_roof_gate"
+        },
+        "status": "counterexample",
+        "method": "physics jump witness, 4 attempts per jump count",
+        "n": 4,
+        "k": 0,
+        "text": "Roof stairwell needs the stair key and a double jump over the debris: reached with 2 jumps 0 of 4, with 1 0 of 4",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 0,
+          "unit": "attempts",
+          "text": "never reached with 2 jumps"
+        },
+        "src": "ai",
+        "ms": 0
+      }
+    ],
+    "par": {
+      "goldS": 27.9,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 439
+  }
+}

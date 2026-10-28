@@ -5,7 +5,7 @@ import { FillParser } from "@ghostrun/ir";
 import type { DoNamespace } from "../src/cf";
 import { costMicroUsd, FILL_MODEL, INTENT_MODEL } from "../src/cost";
 import { capsFromEnv, Governor, localCall, MemoryLedger, type Caps } from "../src/governor";
-import { handle, PAUSE_FLAG, type Env } from "../src/handler";
+import { handle, PAUSE_FLAG, PRIMARY_FLAG, type Env } from "../src/handler";
 import { fakeFetch, governorNs, INTENT, readSse, silentNs, TURNSTILE, waiter, type Upstream } from "./fakes";
 
 // Only read the gitignored keys file when the live test is explicitly requested.
@@ -219,6 +219,32 @@ describe("edge API", () => {
     expect(fail.headers.get("set-cookie")).toBeNull();
     const spent = await handle(new Request("https://g.example/v1/session", { method: "POST", body: JSON.stringify({ token: TURNSTILE.dummyToken }) }), { ...w.env, TURNSTILE_SECRET: TURNSTILE.secretSpent });
     expect(await spent.json()).toMatchObject({ codes: ["timeout-or-duplicate"] });
+  });
+
+  it("a busy fast lane hands the fill to Haiku: the world still arrives, the switch is announced, Haiku's price is charged", async () => {
+    const w = world({ up: { fill: { inTok: 0, outTok: 0, status: 429 }, claude: { inTok: 4000, outTok: 1800 } }, env: { ANTHROPIC_API_KEY: "ak" } });
+    const { res, ctx } = await w.build(judge);
+    const events = await readSse(res);
+    expect(events.map((e) => e.event)).toEqual(["intent", "fallback", "op", "op", "op", "done"]);
+    expect(events[1]!.data).toMatchObject({ job: "fill", from: FILL_MODEL, to: "claude-haiku-5-5", status: 429 });
+    expect(events.at(-1)!.data).toMatchObject({ intentModel: INTENT_MODEL, fillModel: "claude-haiku-5-5", lines: 3 });
+    await ctx.settled();
+    expect(w.pool("judge")).toMatchObject({ spent: costMicroUsd(INTENT_MODEL, 1000, 200) + costMicroUsd("claude-haiku-5-5", 4000, 1800), held: 0 });
+    expect(w.f.to("api.cerebras.ai").length).toBe(3); // intent, then the fill and its one quick retry
+    expect(w.f.to("api.anthropic.com").length).toBe(1);
+  });
+
+  it("route:primary=anthropic puts Haiku first; without the Claude key the fast lane is the only lane", async () => {
+    const w = world({ env: { ANTHROPIC_API_KEY: "ak", FLAGS: { get: async (k: string) => (k === PRIMARY_FLAG ? "anthropic" : null) } } });
+    const { res } = await w.build(judge);
+    const events = await readSse(res);
+    expect(events.at(-1)).toMatchObject({ event: "done", data: { intentModel: "claude-haiku-5-5", fillModel: "claude-haiku-5-5" } });
+    expect(w.f.to("api.cerebras.ai").length).toBe(0);
+
+    const solo = world({ up: { fill: { inTok: 0, outTok: 0, status: 429 } } });
+    const r = await solo.build(judge);
+    expect((await readSse(r.res)).at(-1)).toMatchObject({ event: "error", data: { retryable: true } });
+    expect(solo.f.to("api.anthropic.com").length).toBe(0);
   });
 
   it("the FLAGS kill switch pauses builds before any reservation", async () => {

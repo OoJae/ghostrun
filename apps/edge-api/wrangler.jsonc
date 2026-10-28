@@ -8,6 +8,7 @@
 //
 // Secrets: never in this file. Set per env: `wrangler secret put <NAME> --env <env>`.
 //   CEREBRAS_API_KEY    Cerebras inference key; never leaves the server.
+//   ANTHROPIC_API_KEY   Optional Claude key (a capped workspace): Haiku answers when Cerebras is busy or down.
 //   TURNSTILE_SECRET    Turnstile widget secret key. Its presence closes the gate: /v1/build, /v1/share,
 //                       /v1/report and /v1/wrong then need the session cookie or a judge token.
 //   SESSION_SECRET      ≥32 random bytes. Signs the 30-minute session cookie; keys the IP hashes.

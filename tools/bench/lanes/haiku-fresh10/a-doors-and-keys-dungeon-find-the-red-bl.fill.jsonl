@@ -1,0 +1,31 @@
+{"op":"meta","mode":"play","lang":"en","pack":"maze","sub":[],"seed":16,"look":"dark stone dungeon","mood":[0.1,0.6,0.7],"timeOfDay":22,"weather":"clear"}
+{"op":"zone","id":"z_entry","slot":"start","tag":"outside","name":"Dungeon entrance"}
+{"op":"zone","id":"z_maze","slot":"maze","tag":"maze","name":"Locked halls"}
+{"op":"spawn","id":"sp_red","zone":"z_entry","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"treasure","zone":"z_maze","anchor":"center","noun":"treasure chest","hyper":"treasure chest","team":"red"}
+{"op":"ent","id":"key_red","kind":"pickup","noun":"red key","hyper":"colored key","zone":"z_maze","anchor":"dead_end_1","body":"dynamic","shape":"box","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"key_blue","kind":"pickup","noun":"blue key","hyper":"colored key","zone":"z_maze","anchor":"dead_end_2","body":"dynamic","shape":"box","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"key_green","kind":"pickup","noun":"green key","hyper":"colored key","zone":"z_maze","anchor":"dead_end_3","body":"dynamic","shape":"box","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"door_red","kind":"door","noun":"red locked door","hyper":"locked door","zone":"z_maze","anchor":"entrance","body":"fixed","shape":"box"}
+{"op":"ent","id":"door_blue","kind":"door","noun":"blue locked door","hyper":"locked door","zone":"z_maze","anchor":"center","body":"fixed","shape":"box"}
+{"op":"ent","id":"door_green","kind":"door","noun":"green locked door","hyper":"locked door","zone":"z_maze","anchor":"exit","body":"fixed","shape":"box"}
+{"op":"ent","id":"plate_trap","kind":"plate","noun":"pressure plate","hyper":"plate","zone":"z_maze","anchor":"dead_end_4","body":"sensor","shape":"box","size":[1,0.1,1]}
+{"op":"ent","id":"spikes","kind":"hazard","noun":"spike pit","hyper":"spikes","zone":"z_maze","anchor":"dead_end_4","body":"sensor","shape":"box","size":[2,0.2,2]}
+{"op":"ent","id":"sign_hint","kind":"sign","noun":"carved sign","hyper":"sign","zone":"z_entry","anchor":"sign","body":"fixed","shape":"box"}
+{"op":"verb","id":"vb_carry_red","verb":"physics_props.carry","on":"key_red","params":{}}
+{"op":"verb","id":"vb_carry_blue","verb":"physics_props.carry","on":"key_blue","params":{}}
+{"op":"verb","id":"vb_carry_green","verb":"physics_props.carry","on":"key_green","params":{}}
+{"op":"verb","id":"vb_lock_red","verb":"puzzle.lock","on":"door_red","params":{"key":"key_red","keep":false}}
+{"op":"verb","id":"vb_lock_blue","verb":"puzzle.lock","on":"door_blue","params":{"key":"key_blue","keep":false}}
+{"op":"verb","id":"vb_lock_green","verb":"puzzle.lock","on":"door_green","params":{"key":"key_green","keep":false}}
+{"op":"verb","id":"vb_trap","verb":"motion_hazards.hazard","on":"spikes","params":{"respawn":true}}
+{"op":"verb","id":"vb_sign","verb":"social.inspect","on":"sign_hint","params":{"text":"Red opens the first door, blue the second, green the last. Beware the plates."}}
+{"op":"verb","id":"vb_clock","verb":"puzzle.timer","on":"player","params":{"seconds":240}}
+{"op":"law","player":{"jumpsMax":1,"jumpH":1.2,"speed":5}}
+{"op":"rule","id":"r_win","when":{"t":"enter","a":"player","b":"treasure"},"if":[{"l":"door_green.state","op":"eq","r":"open"}],"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_time","when":{"t":"timer_end","a":"player"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_fall","when":{"t":"hit","a":"player","b":"spikes"},"then":[{"e":"emit","target":"spikes","fx":"dust_puff"}]}
+{"op":"expect","id":"x_keys","prop":"win_reachable","a":"sp_red","b":"treasure","headline":true,"text":"Each colored key must unlock its matching door before the treasure is reachable."}
+{"op":"expect","id":"x_order","prop":"requires","a":"sp_red","b":"door_green","need":["key_red","key_blue","key_green"],"text":"Green door needs all three keys"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}
