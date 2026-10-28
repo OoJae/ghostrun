@@ -137,6 +137,29 @@ export interface RepairState {
   headline?: string;
   /** The repair round under way (working), or how many rounds the offer took. */
   round?: number;
+  /** The stronger model's round (Claude Sonnet), after the fast repair couldn't fix it all. */
+  hard?: boolean;
+}
+
+export type CutState = { status: "idle" } | { status: "working" } | { status: "proving"; summary: string[] } | { status: "offer"; summary: string[] };
+
+/** The Director's cut in one line: Sonnet reworking the world, proving it, or a re-proved version to apply. */
+export function CutChip({ cut, onApply }: { cut: CutState; onApply: () => void }) {
+  if (cut.status === "idle") return null;
+  if (cut.status !== "offer") {
+    return (
+      <div className="glass repair cut working" data-testid="cut-chip">
+        <span className="dot" aria-hidden="true" />
+        {cut.status === "working" ? "Director's cut: Claude Sonnet is reworking this world…" : `Director's cut: AI runners are playing it (${cut.summary.slice(0, 3).join(", ")})…`}
+      </div>
+    );
+  }
+  return (
+    <button type="button" className="glass repair cut offer" data-testid="cut-chip" onClick={onApply} title="Claude Sonnet's version of this world, re-proved on this device: it plays at least as well as the one you have">
+      <span className="dot" aria-hidden="true" />
+      Director's cut ready: {cut.summary.slice(0, 4).join(", ")} · re-proved · <strong>Apply</strong>
+    </button>
+  );
 }
 
 /** The repair loop's one line: working, or a re-proved better world to apply between runs. */
@@ -146,14 +169,14 @@ export function RepairChip({ repair, onApply }: { repair: RepairState; onApply: 
     return (
       <div className="glass repair working" data-testid="repair-chip">
         <span className="dot" aria-hidden="true" />
-        AI repairing {repair.issues} issue{repair.issues > 1 ? "s" : ""} the proof found{repair.round && repair.round > 1 ? ` (round ${repair.round} of 3)` : ""}…
+        {repair.hard ? "Claude Sonnet taking a harder look at" : "AI repairing"} {repair.issues} issue{repair.issues > 1 ? "s" : ""} the proof found{!repair.hard && repair.round && repair.round > 1 ? ` (round ${repair.round} of 3)` : ""}…
       </div>
     );
   }
   return (
     <button type="button" className="glass repair offer" data-testid="repair-chip" onClick={onApply} title="The repaired world was re-proved on this device and beats the original receipt">
       <span className="dot" aria-hidden="true" />
-      {repair.left ? `AI improved it (${repair.left} issue${repair.left > 1 ? "s" : ""} left)` : "AI repaired it"}
+      {repair.left ? `${repair.hard ? "Claude Sonnet" : "AI"} improved it (${repair.left} issue${repair.left > 1 ? "s" : ""} left)` : `${repair.hard ? "Claude Sonnet" : "AI"} repaired it`}
       {repair.headline ? `: ${repair.headline}` : ""} · re-proved{repair.round && repair.round > 1 ? ` · ${repair.round} rounds` : ""} · <strong>Apply</strong>
     </button>
   );

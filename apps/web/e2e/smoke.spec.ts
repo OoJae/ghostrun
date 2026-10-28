@@ -448,6 +448,39 @@ test("repair loop: a broken promise goes back to the model, the fix is re-proved
   expect(errors.filter((e) => !e.includes("503"))).toEqual([]);
 });
 
+test("director's cut: 'surprise me' asks Claude Sonnet for its version; it is re-proved, offered, applied between runs, and Undo brings yours back", async ({ page }) => {
+  const errors = collectErrors(page);
+  const sse = (lines: string[]) => `${lines.map((line, i) => `event: op\ndata: ${JSON.stringify({ i, line })}\n\n`).join("")}event: done\ndata: {"lines":${lines.length},"model":"claude-sonnet-5-5"}\n\n`;
+  const notes: string[][] = [];
+  await page.route("**/v1/health", (r) => r.fulfill({ json: { ok: true, packs: [], llm: true, gate: "dev", sitekey: null } }));
+  await page.route("**/v1/mind", (r) => r.fulfill({ status: 503, json: { error: "off in this test" } }));
+  await page.route("**/v1/repair", (r) => r.fulfill({ contentType: "text/event-stream", body: 'event: error\ndata: {"message":"off in this test"}\n\n' }));
+  await page.route("**/v1/director", (r) => {
+    notes.push((r.request().postDataJSON() as { notes: string[] }).notes);
+    return r.fulfill({
+      contentType: "text/event-stream",
+      body: sse(['{"op":"ent","id":"x_kiosk","kind":"prop","noun":"ramen kiosk","hyper":"stall","zone":"z_plaza","body":"fixed","shape":"box"}', '{"op":"verb","id":"vb_kiosk","verb":"social.inspect","on":"x_kiosk","params":{"text":"Best noodles in the district."}}']),
+    });
+  });
+  await page.goto("/?gl=webgl2&fx=0&dpr=0.5&prewarm=0");
+  await page.waitForFunction(() => window.__GHOSTRUN__?.ready === true, null, { timeout: 90_000 });
+  await expect(page.getByTestId("proof-badge")).toContainText("Rooftop lane needs double jump: verified", { timeout: 60_000 });
+  await page.getByTestId("edit-box").getByRole("button", { name: "surprise me" }).click();
+  const chip = page.getByTestId("cut-chip");
+  await expect(chip).toContainText("Director's cut ready: +1 ramen kiosk", { timeout: 90_000 });
+  await expect(chip).toContainText("re-proved");
+  expect(notes[0]?.some((n) => n.includes("Rooftop lane needs double jump"))).toBe(true); // the Director hears what the playtest found
+  await chip.click();
+  await expect(chip).toHaveCount(0);
+  await expect(page.getByTestId("edit-box")).toContainText("Director's cut");
+  await expect(page.getByTestId("edit-box")).toContainText("+1 ramen kiosk");
+  await expect(page.getByTestId("proof-badge")).toContainText("Rooftop lane needs double jump: verified", { timeout: 60_000 });
+  await page.getByTestId("edit-undo").click();
+  await expect(page.getByTestId("proof-badge")).toContainText("Rooftop lane needs double jump: verified", { timeout: 60_000 });
+  await expect(page.getByTestId("edit-box")).not.toContainText("ramen kiosk");
+  expect(errors.filter((e) => !e.includes("503"))).toEqual([]);
+});
+
 test("gallery: G opens the recorded live worlds; one opens, is rebuilt and re-proved on the device", async ({ page }) => {
   const errors = collectErrors(page);
   await page.goto("/?gl=webgl2&fx=0&dpr=0.5&prewarm=0");

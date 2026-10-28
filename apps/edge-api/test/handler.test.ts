@@ -6,7 +6,7 @@ import { resetLaneHealth } from "@ghostrun/llm";
 import type { DoNamespace } from "../src/cf";
 import { costMicroUsd, FILL_MODEL, INTENT_MODEL } from "../src/cost";
 import { capsFromEnv, Governor, localCall, MemoryLedger, type Caps } from "../src/governor";
-import { handle, PAUSE_FLAG, PRIMARY_FLAG, type Env } from "../src/handler";
+import { handle, PAUSE_FLAG, PRIMARY_FLAG, SONNET_FLAG, type Env } from "../src/handler";
 import { fakeFetch, governorNs, INTENT, readSse, silentNs, TURNSTILE, waiter, type Upstream } from "./fakes";
 
 // Only read the gitignored keys file when the live test is explicitly requested.
@@ -107,6 +107,50 @@ describe("POST /v1/repair", () => {
     expect(sent).toContain("won in 1.2 s");
     expect(sent).not.toContain("crate");
     expect(w.pool("judge").spent).toBe(costMicroUsd(FILL_MODEL, 9000, 300));
+  });
+});
+
+describe("POST /v1/director and hard repairs (the Sonnet jobs)", () => {
+  const fill = '{"op":"meta","mode":"play","pack":"arena","seed":3}\n{"op":"end","layer":"gameplay"}';
+  const post = async (env: Env, path: string, body: unknown) => {
+    const ctx = waiter();
+    const res = await handle(new Request(`https://g.example${path}`, { method: "POST", headers: { "cf-connecting-ip": freshIp(), ...judge }, body: JSON.stringify(body) }), env, ctx);
+    return { res, ctx };
+  };
+
+  it("the Director's cut streams Sonnet's patch from the playtest notes, charged at Sonnet's price", async () => {
+    const w = world({ up: { fill: { inTok: 0, outTok: 0, lines: ['{"op":"ent","id":"x_lever","kind":"switch","zone":"z_a"}'] }, claude: { inTok: 5500, outTok: 1400 } }, env: { ANTHROPIC_API_KEY: "ak" } });
+    const { res, ctx } = await post(w.env, "/v1/director", { prompt: "steal the gem", intent: { ...INTENT, pack: "arena" }, fill, notes: ["nobody went near: the lever"], seed: 3 });
+    const events = await readSse(res);
+    await ctx.settled();
+    expect(events.filter((e) => e.event === "op").map((e) => (e.data as { line: string }).line)).toEqual(['{"op":"ent","id":"x_lever","kind":"switch","zone":"z_a"}']);
+    expect(events.at(-1)).toMatchObject({ event: "done", data: { model: "claude-sonnet-5-5" } });
+    const sent = JSON.parse(w.f.to("api.anthropic.com")[0]!.body) as { model: string; system: string; messages: { content: string }[]; thinking?: unknown };
+    expect(sent.model).toBe("claude-sonnet-5-5");
+    expect(sent.system).toContain("You are the Director");
+    expect(sent.messages[0]!.content).toContain("nobody went near: the lever");
+    expect(w.f.to("api.cerebras.ai")).toHaveLength(0);
+    expect(w.pool("judge")).toMatchObject({ spent: costMicroUsd("claude-sonnet-5-5", 5500, 1400), held: 0 });
+  });
+
+  it("a hard repair goes to Sonnet; the fast repair stays on the patch lane", async () => {
+    const w = world({ env: { ANTHROPIC_API_KEY: "ak" } });
+    const body = { prompt: "steal the gem", intent: { ...INTENT, pack: "arena" }, fill, issues: ["no runner won"], seed: 3 };
+    await readSse((await post(w.env, "/v1/repair", { ...body, hard: true })).res);
+    expect(JSON.parse(w.f.to("api.anthropic.com")[0]!.body).model).toBe("claude-sonnet-5-5");
+    await readSse((await post(w.env, "/v1/repair", body)).res);
+    expect(JSON.parse(w.f.to("api.cerebras.ai")[0]!.body).model).toBe(FILL_MODEL);
+  });
+
+  it("the KV switch and a missing Claude key both refuse before any hold or model call", async () => {
+    const off = world({ env: { ANTHROPIC_API_KEY: "ak", FLAGS: { get: async (k: string) => (k === SONNET_FLAG ? "off" : null) } } });
+    const r1 = await post(off.env, "/v1/director", { prompt: "x", intent: INTENT, fill, seed: 3 });
+    expect(r1.res.status).toBe(503);
+    expect(await r1.res.json()).toMatchObject({ error: "the Sonnet lane is off" });
+    const keyless = world();
+    expect((await post(keyless.env, "/v1/director", { prompt: "x", intent: INTENT, fill, seed: 3 })).res.status).toBe(503);
+    for (const w of [off, keyless]) expect((w.ns as ReturnType<typeof governorNs>).calls).toEqual([]);
+    expect([...off.f.hits, ...keyless.f.hits].filter((h) => /anthropic|cerebras/.test(h.url))).toHaveLength(0);
   });
 });
 

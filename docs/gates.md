@@ -139,3 +139,21 @@ When the fast lane is busy (429) or down (5xx) before it has written a word, the
 | Invalid fill lines | 1.8% (19 of 1,083) |
 
 It is slower, and a fallback it stays: a world in twelve seconds beats a lost one. These describe our pipeline on this lane; they are not a comparison between providers.
+
+## S5c: the Director's cut and hard repairs (Claude Sonnet 5.5): **GO** (2026-10-28)
+
+The first live world of a session that proves clean, and any world on "surprise me", goes to Claude Sonnet 5.5 (`/v1/director`, `directorMessages`) with what the playtest found (the headline, how the runners did, what nobody went near). Sonnet answers with a patch in the edit format: one signature upgrade, more to use, a persona for every character, one twist. The client merges it with the world's promises locked, proves it in its own worker while you play, and offers it ("Director's cut ready: +1 irrigation lever, … · re-proved · Apply") only if the receipt is no worse and a world the runners won is still won by at least 10 of 12. Apply swaps it in between runs, shows it like an edit (what changed, how the receipt moved) and Undo brings the old world back. Nothing applies itself, and nothing changes mid-run.
+
+When the fast repair can't fix every issue the proof found, one more round goes to Sonnet (`/v1/repair` with `hard`), kept only if it beats the receipt. KV `ff.sonnet_lane = off` turns both off without a deploy; without an Anthropic key they are refused before any hold.
+
+**Measured** (`ghostrun director`, 18 recorded live worlds from `fresh10` and `judges`, 9 games and 9 places; rows in `tools/bench/lanes/director-cut.json`):
+
+| | |
+|---|---|
+| Offered (re-proved, no worse, still won) | 13 of 18 |
+| Withheld | 5: one world already failing, two cuts that broke a won world (lab, ski race), two showrooms whose tour could no longer reach everything |
+| Time to the patch | p50 9.4 s, p90 11.3 s, max 13.4 s (gate: p90 ≤ 25 s) |
+| Cost | $0.025 a cut on average, $0.027 at most |
+| What an offered cut adds | median +6 things to use; every one gave the cast personas |
+
+Seen live in the app on 28 Oct: "a greenhouse maze where you collect seeds…" came back with an overgrown vine gate, an irrigation lever, a glowing terrarium and a potting bench, re-proved 12 of 12, offered about 30 s after the prompt.

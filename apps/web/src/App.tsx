@@ -12,9 +12,9 @@ import { PromptBar } from "./hud/PromptBar";
 import { EditBox, type EditState } from "./hud/Edit";
 import { Gallery, GALLERY, type GalleryEntry } from "./hud/Gallery";
 import { TrustPanel } from "./hud/Trust";
-import { ProofBadge, ReceiptPanel, RepairChip, type Fooled, type ProofState, type RepairState } from "./hud/Proof";
-import { liveAvailable, liveBuild, liveEdit, liveRepair, type LiveIntent } from "./live";
-import { ANGLES, changeSummary, editedPrompt, HARDER, intentFor, newFailures, pickHarder, receiptDelta, suggestionsFor } from "./edits";
+import { CutChip, ProofBadge, ReceiptPanel, RepairChip, type CutState, type Fooled, type ProofState, type RepairState } from "./hud/Proof";
+import { liveAvailable, liveBuild, liveDirector, liveEdit, liveRepair, type LiveIntent } from "./live";
+import { ANGLES, changeSummary, cutHolds, cutNotes, editedPrompt, HARDER, intentFor, newFailures, pickHarder, receiptDelta, suggestionsFor, SURPRISE } from "./edits";
 import { createShare, loadShare, reportWrong } from "./share";
 import { Minds } from "./minds";
 import { propose, twistWorld } from "./director";
@@ -90,6 +90,11 @@ export function App() {
   const [clock, setClock] = useState<number | null>(null);
   const [repair, setRepair] = useState<RepairState>({ status: "idle", issues: 0 });
   const [edit, setEdit] = useState<EditState>({ status: "idle" });
+  const [cut, setCut] = useState<CutState>({ status: "idle" });
+  /** The Director's cut on offer, and whether this session's first live world has had one. */
+  const cutWorld = useRef<World | null>(null);
+  const cutTried = useRef(false);
+  const autoCut = useRef<(w: World, r: Receipt) => void>(() => undefined);
   /** Worlds before each edit, for Undo; cleared by a new prompt. */
   const history = useRef<World[]>([]);
   const builtPrompt = useRef(FIRST_PROMPT);
@@ -175,10 +180,27 @@ export function App() {
       best = { world: w2, receipt: r2, round };
       base = w2;
     }
+    // the fast lane couldn't fix it all: one round on the stronger model before giving up
+    let hard = false;
+    const still = best ? issuesOf(best.receipt, best.world.bundle) : first;
+    if (still.length) {
+      const src = base.source!;
+      setRepair({ status: "working", issues: still.length, hard: true });
+      const patch = await liveRepair(src.prompt, src.intent as LiveIntent, src.fill, still, src.seed, true);
+      if (id !== runId.current) return;
+      if (patch) {
+        const merged = mergeFill(src.fill, patch, { edit: Boolean(src.edits?.length) }).text;
+        const w3 = worldFromFill(merged, src.seed, base.intent.live, src.pack);
+        w3.source = { ...src, fill: merged };
+        const r3 = await proveOnDevice(w3, -id * 10 - 9).catch(() => null);
+        if (id !== runId.current) return;
+        if (r3 && better(r3, best?.receipt ?? receipt)) ((best = { world: w3, receipt: r3, round: (best?.round ?? 0) + 1 }), (hard = true));
+      }
+    }
     if (!best) return setRepair({ status: "failed", issues: first.length });
     repaired.current = best.world;
     const left = best.receipt.chips.filter((c) => c.status === "counterexample").length;
-    setRepair({ status: "offer", issues: first.length, left, round: best.round, ...(best.receipt.headline ? { headline: `${best.receipt.headline.text} (${statusWord(best.receipt.headline.status)})` } : {}) });
+    setRepair({ status: "offer", issues: first.length, left, round: best.round, hard, ...(best.receipt.headline ? { headline: `${best.receipt.headline.text} (${statusWord(best.receipt.headline.status)})` } : {}) });
   }, [proveOnDevice]);
 
   /** Prove the world on the device worker (until the edge proof service is deployed). */
@@ -195,6 +217,7 @@ export function App() {
         afterProof.current.get(id)?.(receipt);
         afterProof.current.delete(id);
         void maybeRepair(world, receipt, id);
+        autoCut.current(world, receipt);
       })
       .catch((err: Error) => id === runId.current && setProof((p) => ({ ...p, status: "error", error: err.message })));
   }, [proveOnDevice, maybeRepair]);
@@ -211,6 +234,8 @@ export function App() {
       setReported(undefined);
       setResult(null);
       setDirector(null);
+      setCut({ status: "idle" });
+      cutWorld.current = null;
       const result = await e.load(world, startedAt);
       if (id !== runId.current) return;
       setTiming({ ttffMs: result.ttffMs, splits: [...extra, ...result.splits] });
@@ -451,6 +476,7 @@ export function App() {
   const editWorld = async (change: string) => {
     const w = current.current;
     if (!w || modeRef.current !== "live") return;
+    if (SURPRISE.test(change) && receiptRef.current) return void cutFor(w, receiptRef.current, true);
     if (HARDER.test(change) && w.bundle.mode === "play" && receiptRef.current) return raceHarder(w, change, receiptRef.current);
     const base = runId.current;
     const before = receiptRef.current;
@@ -557,6 +583,60 @@ export function App() {
     await show(w2, id, t0, [{ label: "race", ms: performance.now() - t0 }]);
   };
 
+  /**
+   * The Director's cut: Claude Sonnet reworks a world that plays into the best version of its
+   * prompt (a signature upgrade, more to use, voices for the cast, one twist). It is proved in its
+   * own worker while you play and offered only if it plays at least as well; Apply swaps it in
+   * between runs, and Undo brings the old world back. `asked`: the person said "surprise me", so a
+   * cut that doesn't hold up is reported instead of dropped quietly.
+   */
+  const cutFor = async (w: World, before: Receipt, asked = false) => {
+    if (modeRef.current !== "live") return;
+    const base = runId.current;
+    const quiet = (why: string) => (setCut({ status: "idle" }), asked && setToast(why));
+    setCut({ status: "working" });
+    const original = w.source?.base ?? w.source?.prompt ?? builtPrompt.current;
+    const edits = w.source?.edits ?? [];
+    const fill0 = pinLayout(w.fill);
+    const patch = await liveDirector(editedPrompt(original, edits), intentFor(w, original), fill0, cutNotes(w.bundle, before), w.seed);
+    if (runId.current !== base) return;
+    if (!patch) return quiet("The Director's cut isn't available just now.");
+    const { text } = mergeFill(fill0, patch, { edit: true });
+    const w2 = worldFromFill(text, w.seed, w.intent.live, w.bundle.pack.id, w.bundle.mode);
+    const summary = changeSummary(w.bundle, w2.bundle);
+    if (!summary.length) return quiet("The Director's cut changed nothing in this world.");
+    w2.source = { prompt: editedPrompt(original, edits), intent: intentFor(w, original), fill: w2.fill, seed: w.seed, pack: w2.bundle.pack.id, base: original, edits };
+    setCut({ status: "proving", summary });
+    const after = await proveOnce(w2, 12).catch(() => null);
+    if (runId.current !== base) return;
+    if (!after || !cutHolds(before, after)) return quiet("The Director's cut didn't play as well as your world, so it wasn't offered.");
+    cutWorld.current = w2;
+    setCut({ status: "offer", summary });
+  };
+  // the first live world of the session that proves clean gets one without asking
+  autoCut.current = (w, r) => {
+    if (cutTried.current || modeRef.current !== "live" || !w.source || w.source.edits?.length || r.chips.some((c) => c.status === "counterexample")) return;
+    cutTried.current = true;
+    void cutFor(w, r);
+  };
+
+  /** Apply the Director's cut between runs: shown like an edit (what changed, how the receipt moved), with Undo. */
+  const applyCut = () => {
+    const w2 = cutWorld.current;
+    const w = current.current;
+    const before = receiptRef.current;
+    if (!w2 || !w) return;
+    cutWorld.current = null;
+    setCut({ status: "idle" });
+    history.current.push(w);
+    const change = "Director's cut (Claude Sonnet)";
+    const summary = changeSummary(w.bundle, w2.bundle);
+    setEdit({ status: "proving", change, summary, locked: 0 });
+    const id = ++runId.current;
+    afterProof.current.set(id, (after) => setEdit({ status: "done", change, summary, locked: 0, delta: before ? receiptDelta(before, after) : null, failures: before ? newFailures(before, after) : [] }));
+    void show(w2, id, performance.now(), []);
+  };
+
   const undo = () => {
     const prev = history.current.pop();
     if (!prev) return;
@@ -649,7 +729,7 @@ export function App() {
         {notice && <div className="glass notice" role="status">{notice}</div>}
         {!collapsed && !typing && intent && <IntentCard intent={intent} specHash={specHash} />}
         {current.current && status !== "booting" && !typing && (!collapsed || edit.status === "editing" || edit.status === "racing" || edit.status === "proving") && (
-          <EditBox state={edit} enabled={mode === "live"} suggestions={suggestionsFor(current.current.bundle)} canUndo={history.current.length > 0} onEdit={(c) => void editWorld(c)} onUndo={undo} />
+          <EditBox state={edit} enabled={mode === "live"} suggestions={[...suggestionsFor(current.current.bundle), "surprise me"]} canUndo={history.current.length > 0} onEdit={(c) => void editWorld(c)} onUndo={undo} />
         )}
         {(score.red > 0 || score.blue > 0 || score.result || clock !== null || secrets.found > 0) && (
           <div className={`glass scoreline ${score.result ?? ""}`} data-testid="score">
@@ -708,6 +788,7 @@ export function App() {
           </form>
         )}
         <ProofBadge proof={proof} onOpen={() => setReceiptOpen((o) => !o)} />
+        <CutChip cut={cut} onApply={applyCut} />
         <RepairChip
           repair={repair}
           onApply={() => {

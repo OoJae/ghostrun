@@ -5,9 +5,9 @@ import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 
 import { dirname, join, resolve } from "node:path";
 import { FillParser, layoutLaws, mergeFill, parseFill, pinLayout, splitObjects, type WorldBundle } from "@ghostrun/ir";
 import { placeWorld } from "@ghostrun/layout";
-import { editMessages, fillMessages, hostJsonSchema, hostMessages, IntentOut, intentJsonSchema, intentMessages, jsonLanes, lanesFor, mindJsonSchema, mindMessages, repairMessages, settleIntent, streamLanes, type JobCall, type Keys } from "@ghostrun/llm";
+import { directorMessages, editMessages, fillMessages, hostJsonSchema, hostMessages, IntentOut, intentJsonSchema, intentMessages, jsonLanes, lanesFor, mindJsonSchema, mindMessages, repairMessages, settleIntent, streamLanes, type JobCall, type Keys } from "@ghostrun/llm";
 import { loadNavNode } from "@ghostrun/nav/node";
-import { better, caught, chipLine, issuesOf, plants, prove, provedWon, traceRunners, type Receipt } from "@ghostrun/proof";
+import { badness, better, caught, chipLine, insights, issuesOf, plants, prove, provedWon, traceRunners, type Receipt } from "@ghostrun/proof";
 import { ALL_SUBS, PACKS, packFor } from "@ghostrun/registry";
 import { loadRapierNode } from "@ghostrun/sim/node";
 import * as v from "valibot";
@@ -435,6 +435,63 @@ async function main() {
       t.fool = { worlds, planted, caught: got, byTier: Object.fromEntries(byTier), byKind: Object.fromEntries([...byKind].map(([k, [n, c]]) => [k, { planted: n, caught: c }])) };
       writeFileSync(out, `${JSON.stringify(t, null, 1)}\n`);
     }
+  } else if (cmd === "director") {
+    // the Director's cut on saved live worlds, re-proved offline: how long it takes, what it adds,
+    // and whether the reworked world still plays at least as well (the rule the app offers it by)
+    const dir = args[0]!;
+    const limit = Number(args[args.indexOf("--worlds") + 1]) || 6;
+    const skip = args.includes("--start") ? Number(args[args.indexOf("--start") + 1]) : 0;
+    const keys = cliKeys();
+    const R = await loadRapierNode();
+    await loadNavNode();
+    const win = (r: Receipt) => r.chips.find((c) => c.id === "T3:win");
+    const rows: unknown[] = [];
+    for (const f of readdirSync(dir).filter((x) => x.endsWith(".fill.jsonl")).sort().slice(skip, skip + limit)) {
+      const rp = join(dir, f.replace(".fill.jsonl", ".receipt.json"));
+      if (!existsSync(rp)) continue;
+      const saved = JSON.parse(readFileSync(rp, "utf8")) as { prompt: string; intent: IntentOut };
+      const text0 = pinLayout(readFileSync(join(dir, f), "utf8"));
+      const s0 = (JSON.parse(splitObjects(text0.split("\n", 1)[0] ?? "{}")[0] ?? "{}") as { seed?: number }).seed ?? 7;
+      const base = placeFromFill(text0, s0, saved.intent.pack, saved.intent.mode);
+      const r0 = await prove(R, base.bundle, { engine: ENGINE, runs: 12 });
+      const seen = insights(base.bundle, r0.trails ?? []);
+      const notes = [
+        r0.headline ? `headline "${r0.headline.text}": ${r0.headline.status}` : "",
+        win(r0) ? `AI runners won ${win(r0)!.k} of ${win(r0)!.n}${r0.par ? `, par ${r0.par.goldS} s` : ""}` : "",
+        `${controlsOf(base.bundle)} things to use`,
+        seen.unused.length ? `nobody went near: ${seen.unused.map((u) => u.noun).slice(0, 5).join(", ")}` : "",
+        ...r0.chips.filter((c) => c.status === "counterexample").map((c) => `failing: ${c.text}`).slice(0, 3),
+      ].filter(Boolean);
+      const pack = packFor(saved.intent.pack);
+      const layout = pack.generate({ seed: s0, params: pack.defaults, sub: saved.intent.sub, laws: base.bundle.laws, harder: false });
+      const t0 = performance.now();
+      let patch = "";
+      let first = -1;
+      let model = "";
+      let tok = [0, 0];
+      try {
+        for await (const ev of streamLanes(lanesFor("director", keys, { maxTokens: 6000, messages: directorMessages(saved.prompt, saved.intent, layout, gameplayOf(text0), notes) }))) {
+          if (ev.type === "first_token") first = Math.round(performance.now() - t0);
+          if (ev.type === "usage") [model, tok] = [ev.model, [ev.inTok, ev.outTok]];
+          if (ev.type === "text") patch += ev.delta;
+        }
+      } catch (e) {
+        console.log(`${saved.prompt.slice(0, 60)}  ERROR ${String(e).slice(0, 160)}`);
+        continue;
+      }
+      const ms = Math.round(performance.now() - t0);
+      const merged = mergeFill(text0, patch, { edit: true });
+      const placed = placeFromFill(merged.text, s0, saved.intent.pack, saved.intent.mode);
+      const r1 = await prove(R, placed.bundle, { engine: ENGINE, runs: 12 });
+      const kept = (w0: ReturnType<typeof win>, w1: ReturnType<typeof win>) => !w0 || (w1 !== undefined && w1.k >= Math.min(w0.k, 10));
+      const ok = badness(r1) <= badness(r0) && kept(win(r0), win(r1)) && controlsOf(placed.bundle) > controlsOf(base.bundle);
+      const personas = placed.bundle.cast.filter((c) => c.persona?.identity).length;
+      const row = { prompt: saved.prompt, model, ms, firstMs: first, inTok: tok[0], outTok: tok[1], stats: merged.stats, controls: [controlsOf(base.bundle), controlsOf(placed.bundle)], rules: [base.bundle.rules.length, placed.bundle.rules.length], npcs: [base.bundle.cast.length, placed.bundle.cast.length], personas, t3: [win(r0) ? `${win(r0)!.k}/${win(r0)!.n}` : "-", win(r1) ? `${win(r1)!.k}/${win(r1)!.n}` : "-"], headline: [r0.headline?.status ?? "none", r1.headline?.status ?? "none"], badness: [badness(r0), badness(r1)], offered: ok, failing: r1.chips.filter((c) => c.status === "counterexample").map((c) => `${c.id}: ${c.text}${c.cx ? ` (${c.cx.text})` : ""}`), patch };
+      rows.push(row);
+      console.log(`${saved.prompt.slice(0, 50).padEnd(50)} ${ok ? "OFFER" : "no   "} ${String(ms).padStart(6)} ms  ctrl ${row.controls.join("→")}  rules ${row.rules.join("→")}  npc ${row.npcs.join("→")} (${personas} voiced)  T3 ${row.t3.join("→")}  head ${row.headline.join("→")}  ${tok[1]} tok`);
+      if (!ok) for (const x of row.failing) console.log(`    ✗ ${x.slice(0, 200)}`);
+    }
+    if (args.includes("--out")) writeFileSync(args[args.indexOf("--out") + 1]!, JSON.stringify(rows, null, 2));
   } else if (cmd === "canary") {
     // every structured-output job on each lane on its own (no failover): does each schema still
     // answer, how fast, and with what. The plan's twice-daily canary; also how we pick a lane per job.

@@ -204,6 +204,37 @@ export function editMessages(prompt: string, change: string, intent: IntentOut, 
   ];
 }
 
+/**
+ * The Director's cut: a stronger model reworks a world that already plays into the best version of
+ * what the person asked for, as a patch in the edit format. The client re-proves the result and
+ * offers it only if it still plays at least as well; nothing applies mid-run.
+ */
+export function directorMessages(prompt: string, intent: IntentOut, layout: PackLayout, fill: string, notes: string[]): Msg[] {
+  return [
+    {
+      role: "system",
+      content: [
+        "You are the Director. A GHOSTRUN world already works; you turn it into the best version of what the person asked for. Output ONLY JSON Lines, no prose, no code fences:",
+        "- a changed line keeps its id and replaces the old one entirely (repeat every field you keep);",
+        "- a new thing gets a new id; {\"op\":\"del\",\"id\":\"...\"} removes a line;",
+        "- never repeat unchanged lines; never output end, expect, dress or poster lines.",
+        "Make four changes, each small, complete and working (bind every new thing's verbs and wire its rules):",
+        "1. One signature upgrade: the mechanic the prompt is about becomes central and memorable (a route that needs it, a set piece built around it, a reward for mastering it).",
+        "2. More to use: 3-6 new interactive things in different zones, some where the playtest says nobody goes yet.",
+        "3. A voice for the cast: every npc gets a persona that fits the world, e.g. \"persona\":{\"identity\":\"the harbour master\",\"personality\":\"gruff, secretly kind\",\"knowledge\":\"which crates hide the shortcut\",\"replyStyle\":\"short, salty\",\"safety\":\"family-friendly\"}. If the world suits a character and has none, add one npc with a menu of two or more options.",
+        "4. One twist: a rule that changes the run partway (a door that opens once the timer passes half, a shortcut a switch reveals, a hazard that starts moving after the first score), wired so the world stays winnable.",
+        "Never break what works: keep the spawn, the objective and the way to win; never delete a thing or character the prompt names; keep the world's expectations as they are (the proof re-checks them after your change).",
+        "A place to explore (mode wander) gets no win or lose rules: its upgrade is more to look at and use, and characters who guide; its twist is something revealed (a hidden room a switch opens, an exhibit that comes alive).",
+        ...worldRules(layout),
+      ].join("\n"),
+    },
+    {
+      role: "user",
+      content: `Original prompt: ${prompt}\nIntent: ${JSON.stringify(intent)}\nMode: ${intent.mode}\nCurrent world (gameplay lines):\n${fill.trim()}\nWhat the playtest found:\n${(notes.length ? notes : ["nothing unusual"]).map((n) => `- ${n}`).join("\n")}`,
+    },
+  ];
+}
+
 /** The Host answers from numbered facts only (the run's causal log, the world's rules), citing them. */
 export function hostJsonSchema(facts: number): Record<string, unknown> {
   return {

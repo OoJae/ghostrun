@@ -506,6 +506,11 @@ kbd {
 .repair.offer { cursor: pointer; border: 1px solid rgba(61, 255, 168, 0.4); }
 .repair.offer .dot { background: #3dffa8; }
 .repair.offer strong { color: #3dffa8; }
+.repair.cut { bottom: 100px; }
+.repair.cut .dot { background: #b48cff; }
+.repair.cut.offer { border-color: rgba(180, 140, 255, 0.5); }
+.repair.cut.offer .dot { background: #b48cff; }
+.repair.cut.offer strong { color: #c9adff; }
 @keyframes pulse { from { opacity: 0.35; } to { opacity: 1; } }
 
 .receipt-actions { display: flex; gap: 8px; margin-top: 10px; }
@@ -539,6 +544,7 @@ kbd {
 /* on phones the thumbs own the bottom of the screen: status moves under the prompt pill */
 .touch-mode .proof { top: 64px; bottom: auto; left: 12px; right: auto; max-width: calc(100vw - 24px); }
 .touch-mode .repair { top: 104px; bottom: auto; left: 12px; }
+.touch-mode .repair.cut { top: 142px; }
 .touch-mode .scoreline { top: 64px; left: auto; right: 12px; transform: none; }
 .touch-mode .toast { bottom: auto; top: 150px; }
 

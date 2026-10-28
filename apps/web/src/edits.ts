@@ -3,7 +3,7 @@
 // re-proved, and the change comes back with its numbers: what changed in the world, and how the
 // receipt moved (headline, AI runners, par, counterexamples, force-tested rules).
 import type { Entity, WorldBundle } from "@ghostrun/ir";
-import { fraction, statusWord, type Chip, type Receipt } from "@ghostrun/proof/light";
+import { badness, fraction, insights, statusWord, type Chip, type Receipt } from "@ghostrun/proof/light";
 import type { LiveIntent } from "./live";
 import type { World } from "./pipeline";
 
@@ -127,6 +127,30 @@ export function newFailures(a: Receipt, b: Receipt): string[] {
     .map((c) => `${c.text.split(":")[0]}${c.cx ? ` — ${c.cx.text}` : ""}`);
 }
 
+/**
+ * Does a Director's cut still play at least as well? No worse a receipt than before, and a world
+ * the AI runners won is still won by most of them. Only then is it offered; it never applies itself.
+ */
+export function cutHolds(before: Receipt, after: Receipt): boolean {
+  if (badness(after) > badness(before)) return false;
+  const a = before.chips.find((c) => c.id === "T3:win");
+  const b = after.chips.find((c) => c.id === "T3:win");
+  return !a || (b !== undefined && b.k >= Math.min(a.k, 10));
+}
+
+/** What the playtest found, for the Director: the headline, how the runners did, what nobody went near. */
+export function cutNotes(b: WorldBundle, r: Receipt): string[] {
+  const win = r.chips.find((c) => c.id === "T3:win");
+  const seen = r.trails?.length ? insights(b, r.trails) : null;
+  const tour = r.chips.find((c) => c.id === "T3:tour");
+  return [
+    r.headline ? `headline "${r.headline.text}": ${r.headline.status}` : "",
+    win ? `AI runners won ${win.k} of ${win.n}${r.par ? `, par ${r.par.goldS} s` : ""}` : "",
+    tour ? `tour: ${tour.text}` : "",
+    seen?.unused.length ? `nobody went near: ${seen.unused.map((u) => u.noun).slice(0, 5).join(", ")}` : "",
+  ].filter(Boolean);
+}
+
 /** The prompt a repair of an edited world should keep in mind: the original, then each change. */
 export const editedPrompt = (prompt: string, edits: readonly string[]) => [prompt, ...edits.map((e) => `Then: ${e}`)].join("\n");
 
@@ -144,6 +168,9 @@ export function suggestionsFor(b: WorldBundle): string[] {
   if (b.mode === "play" && out.length < 3) out.push("make it harder but fair");
   return out.slice(0, 3);
 }
+
+/** "Surprise me" asks for the Director's cut (Claude Sonnet's version of the world, re-proved first). */
+export const SURPRISE = /^\s*surprise me\b/i;
 
 /** "Make it harder" is raced: one candidate per angle, each proved, the hardest fair one kept. */
 export const HARDER = /\b(harder|tougher|more (difficult|challenging)|challenge me|too easy)\b/i;

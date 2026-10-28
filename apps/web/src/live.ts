@@ -129,8 +129,14 @@ async function livePatch(path: string, body: unknown): Promise<string | null> {
   return patch || null;
 }
 
-/** POST /v1/repair: the proof's issues for a live world → the model's patch lines (JSONL). */
-export const liveRepair = (prompt: string, intent: LiveIntent, fill: string, issues: string[], seed: number) => livePatch("/v1/repair", { prompt, intent, fill, issues, seed });
+/**
+ * POST /v1/repair: the proof's issues for a live world → the model's patch lines (JSONL). `hard`
+ * asks the stronger model (Claude Sonnet), after the fast repair couldn't make it better.
+ */
+export const liveRepair = (prompt: string, intent: LiveIntent, fill: string, issues: string[], seed: number, hard = false) => livePatch("/v1/repair", { prompt, intent, fill, issues, seed, ...(hard ? { hard: true } : {}) });
+
+/** POST /v1/director: the Director's cut of a world that plays (Claude Sonnet) → patch lines (JSONL). */
+export const liveDirector = (prompt: string, intent: LiveIntent, fill: string, notes: string[], seed: number) => livePatch("/v1/director", { prompt, intent, fill, notes, seed });
 
 /** POST /v1/edit: the person's change to the world → the model's patch lines (JSONL). */
 export const liveEdit = (prompt: string, change: string, intent: LiveIntent, fill: string, seed: number) => livePatch("/v1/edit", { prompt, change, intent, fill, seed });

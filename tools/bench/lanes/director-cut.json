@@ -1,0 +1,758 @@
+[
+  {
+    "prompt": "A bioluminescent forest where fireflies lead you to a hidden shrine",
+    "model": "claude-sonnet-5-5",
+    "ms": 12961,
+    "firstMs": 5822,
+    "inTok": 5641,
+    "outTok": 1397,
+    "stats": {
+      "replaced": 2,
+      "added": 12,
+      "deleted": 0,
+      "ignored": 0,
+      "locked": 0
+    },
+    "controls": [
+      10,
+      16
+    ],
+    "rules": [
+      0,
+      0
+    ],
+    "npcs": [
+      2,
+      3
+    ],
+    "personas": 3,
+    "t3": [
+      "-",
+      "-"
+    ],
+    "headline": [
+      "verified",
+      "verified"
+    ],
+    "badness": [
+      3,
+      3
+    ],
+    "offered": true,
+    "patch": "{\"op\":\"ent\",\"id\":\"lantern_stone\",\"kind\":\"switch\",\"noun\":\"spirit lantern\",\"hyper\":\"sacred lantern\",\"zone\":\"z_grove\",\"anchor\":\"hollow\",\"body\":\"fixed\",\"shape\":\"box\",\"size\":[0.4,0.8,0.4]}\n{\"op\":\"verb\",\"id\":\"vb_lantern\",\"verb\":\"puzzle.switch\",\"on\":\"lantern_stone\",\"params\":{\"once\":true}}\n{\"op\":\"ent\",\"id\":\"hidden_alcove\",\"kind\":\"prop\",\"noun\":\"hidden alcove of glowing glyphs\",\"hyper\":\"sacred structure\",\"zone\":\"z_shrine\",\"anchor\":\"flank_n\",\"body\":\"fixed\",\"shape\":\"box\",\"size\":[1.5,2,0.4]}\n{\"op\":\"verb\",\"id\":\"vb_inspect_alcove\",\"verb\":\"social.inspect\",\"on\":\"hidden_alcove\",\"params\":{\"text\":\"Glyphs flare awake: the lantern has called the shrine's memory.\"}}\n{\"op\":\"ent\",\"id\":\"moss_pad\",\"kind\":\"plate\",\"noun\":\"springy moss\",\"hyper\":\"moss\",\"zone\":\"z_clearing\",\"anchor\":\"center_e\",\"body\":\"sensor\",\"shape\":\"box\",\"size\":[1.5,0.2,1.5]}\n{\"op\":\"verb\",\"id\":\"vb_moss_pad\",\"verb\":\"locomotion.jump_pad\",\"on\":\"moss_pad\",\"params\":{\"height\":4}}\n{\"op\":\"ent\",\"id\":\"lookout_orb\",\"kind\":\"prop\",\"noun\":\"glowing dew orb\",\"hyper\":\"orb\",\"zone\":\"z_pond\",\"anchor\":\"dock\",\"body\":\"fixed\",\"shape\":\"sphere\",\"size\":[0.4,0.4,0.4]}\n{\"op\":\"verb\",\"id\":\"vb_inspect_orb\",\"verb\":\"social.inspect\",\"on\":\"lookout_orb\",\"params\":{\"text\":\"The orb hums, tuned to the fireflies' rhythm.\"}}\n{\"op\":\"ent\",\"id\":\"camp_stall_lamp\",\"kind\":\"prop\",\"noun\":\"traveler's lantern\",\"hyper\":\"lantern\",\"zone\":\"z_camp\",\"anchor\":\"stall_1\",\"body\":\"fixed\",\"shape\":\"box\",\"size\":[0.3,0.5,0.3]}\n{\"op\":\"verb\",\"id\":\"vb_inspect_lamp\",\"verb\":\"social.inspect\",\"on\":\"camp_stall_lamp\",\"params\":{\"text\":\"Travelers left notes: follow the light, not the dark.\"}}\n{\"op\":\"rule\",\"id\":\"r_lantern_reveal\",\"when\":{\"t\":\"state_is\",\"a\":\"lantern_stone\",\"s\":\"on\"},\"do\":[{\"e\":\"emit\",\"target\":\"hidden_alcove\",\"fx\":\"sparkle\"},{\"e\":\"emit\",\"target\":\"fireflies_3\",\"fx\":\"glow\"}]}\n{\"op\":\"npc\",\"id\":\"guide_elf\",\"role\":\"guide\",\"zone\":\"z_entrance\",\"anchor\":\"sign\",\"team\":\"\",\"menu\":[\"guide.point\"],\"dflt\":\"guide.point\",\"persona\":{\"identity\":\"the forest warden elf\",\"personality\":\"calm, gentle, mysterious\",\"knowledge\":\"fireflies lead from the clearing through the grove to the shrine\",\"replyStyle\":\"soft, short, poetic\",\"safety\":\"family-friendly\"}}\n{\"op\":\"npc\",\"id\":\"elf_2\",\"role\":\"guide\",\"zone\":\"z_grove\",\"anchor\":\"heart\",\"team\":\"\",\"menu\":[\"guide.point\"],\"dflt\":\"guide.point\",\"persona\":{\"identity\":\"a grove sprite keeper\",\"personality\":\"playful, whispery\",\"knowledge\":\"the spirit lantern in the grove awakens the shrine's hidden glyphs\",\"replyStyle\":\"short, teasing\",\"safety\":\"family-friendly\"}}\n{\"op\":\"npc\",\"id\":\"camp_hermit\",\"role\":\"citizen\",\"zone\":\"z_camp\",\"anchor\":\"tent\",\"team\":\"\",\"menu\":[\"hermit.talk\",\"hermit.rest\"],\"dflt\":\"hermit.talk\",\"persona\":{\"identity\":\"an old hermit by the fire\",\"personality\":\"warm, sleepy, wise\",\"knowledge\":\"the pond orb and moss pad in the clearing, and the shrine lies west\",\"replyStyle\":\"slow, kindly\",\"safety\":\"family-friendly\"}}"
+  },
+  {
+    "prompt": "A car showroom where the salesperson lets you sit in the sports car",
+    "model": "claude-sonnet-5-5",
+    "ms": 9704,
+    "firstMs": 1744,
+    "inTok": 5535,
+    "outTok": 1423,
+    "stats": {
+      "replaced": 2,
+      "added": 15,
+      "deleted": 0,
+      "ignored": 1,
+      "locked": 0
+    },
+    "controls": [
+      7,
+      14
+    ],
+    "rules": [
+      0,
+      0
+    ],
+    "npcs": [
+      1,
+      2
+    ],
+    "personas": 2,
+    "t3": [
+      "-",
+      "-"
+    ],
+    "headline": [
+      "not_checkable",
+      "not_checkable"
+    ],
+    "badness": [
+      3,
+      3
+    ],
+    "offered": true,
+    "patch": "{\"op\":\"zone\",\"id\":\"z_vault\",\"slot\":\"room_ne\",\"tag\":\"room\",\"name\":\"Collector's Vault\"}\n{\"op\":\"ent\",\"id\":\"vault_switch\",\"kind\":\"switch\",\"noun\":\"vault lever\",\"hyper\":\"switch\",\"zone\":\"z_showroom\",\"anchor\":\"wall_w\",\"body\":\"fixed\",\"shape\":\"box\"}\n{\"op\":\"ent\",\"id\":\"vault_door\",\"kind\":\"door\",\"noun\":\"vault door\",\"hyper\":\"door\",\"zone\":\"z_showroom\",\"anchor\":\"doorway_s\",\"body\":\"fixed\",\"shape\":\"box\"}\n{\"op\":\"ent\",\"id\":\"classic_car\",\"kind\":\"vehicle\",\"noun\":\"vintage gold roadster\",\"hyper\":\"vehicle\",\"zone\":\"z_vault\",\"anchor\":\"center\",\"body\":\"fixed\",\"shape\":\"hull\",\"size\":[2.0,1.2,4.2]}\n{\"op\":\"ent\",\"id\":\"trophy\",\"kind\":\"prop\",\"noun\":\"racing trophy\",\"hyper\":\"prop\",\"zone\":\"z_vault\",\"anchor\":\"corner_ne\",\"body\":\"fixed\",\"shape\":\"box\",\"size\":[0.4,0.6,0.4]}\n{\"op\":\"ent\",\"id\":\"price_sign\",\"kind\":\"sign\",\"noun\":\"price board\",\"hyper\":\"sign\",\"zone\":\"z_entrance\",\"anchor\":\"wall_n\",\"body\":\"fixed\",\"shape\":\"box\"}\n{\"op\":\"ent\",\"id\":\"turntable\",\"kind\":\"plate\",\"noun\":\"display turntable\",\"hyper\":\"plate\",\"zone\":\"z_corner\",\"anchor\":\"wall_n\",\"body\":\"sensor\",\"shape\":\"box\"}\n{\"op\":\"verb\",\"id\":\"vb_vault_switch\",\"verb\":\"puzzle.switch\",\"on\":\"vault_switch\",\"params\":{\"once\":true}}\n{\"op\":\"verb\",\"id\":\"vb_inspect_classic\",\"verb\":\"social.inspect\",\"on\":\"classic_car\",\"params\":{\"text\":\"A 1960s gold roadster, never sold. The owner's pride.\"}}\n{\"op\":\"verb\",\"id\":\"vb_inspect_trophy\",\"verb\":\"social.inspect\",\"on\":\"trophy\",\"params\":{\"text\":\"Winner's trophy from a famous coastal road race.\"}}\n{\"op\":\"verb\",\"id\":\"vb_inspect_price\",\"verb\":\"social.inspect\",\"on\":\"price_sign\",\"params\":{\"text\":\"Today's special: test sit in the red sports car, free!\"}}\n{\"op\":\"verb\",\"id\":\"vb_turntable\",\"verb\":\"puzzle.plate\",\"on\":\"turntable\",\"params\":{\"latch\":false}}\n{\"op\":\"rule\",\"id\":\"r_vault_open\",\"when\":{\"t\":\"state_is\",\"a\":\"vault_switch\",\"s\":\"on\"},\"do\":[{\"e\":\"open\",\"target\":\"vault_door\"},{\"e\":\"emit\",\"target\":\"classic_car\",\"fx\":\"sparkle\"}]}\n{\"op\":\"rule\",\"id\":\"r_turntable\",\"when\":{\"t\":\"state_is\",\"a\":\"turntable\",\"s\":\"down\"},\"do\":[{\"e\":\"emit\",\"target\":\"suv\",\"fx\":\"sparkle\"}]}\n{\"op\":\"rule\",\"id\":\"r_seat\",\"when\":{\"t\":\"state_is\",\"a\":\"car_door\",\"s\":\"open\"},\"do\":[{\"e\":\"emit\",\"target\":\"driver_seat\",\"fx\":\"glow\"}]}\n{\"op\":\"npc\",\"id\":\"salesperson\",\"role\":\"merchant\",\"zone\":\"z_showroom\",\"anchor\":\"doorway_n\",\"team\":\"\",\"menu\":[\"sales.offer\",\"sales.tour\"],\"dflt\":\"sales.offer\",\"persona\":{\"identity\":\"the showroom salesperson\",\"personality\":\"polished, warm, proud of the cars\",\"knowledge\":\"the car key is in the corner display, and the vault lever is on the west wall\",\"replyStyle\":\"smooth, friendly, brief\",\"safety\":\"family-friendly\"}}\n{\"op\":\"npc\",\"id\":\"guide_1\",\"role\":\"guide\",\"zone\":\"z_showroom\",\"anchor\":\"doorway_w\",\"team\":\"\",\"menu\":[\"guide.welcome\"],\"dflt\":\"guide.welcome\",\"persona\":{\"identity\":\"the showroom greeter\",\"personality\":\"cheerful, curious\",\"knowledge\":\"layout of the showroom and the hidden vault\",\"replyStyle\":\"short, upbeat\",\"safety\":\"family-friendly\"}}\n\nWait, the lines above include the rule/npc ordering as needed; the ent for the existing salesperson also stays."
+  },
+  {
+    "prompt": "A cyberpunk night market where a vendor sells you a glowing drink",
+    "model": "claude-sonnet-5-5",
+    "ms": 10077,
+    "firstMs": 2534,
+    "inTok": 5307,
+    "outTok": 1469,
+    "stats": {
+      "replaced": 2,
+      "added": 14,
+      "deleted": 0,
+      "ignored": 0,
+      "locked": 0
+    },
+    "controls": [
+      6,
+      12
+    ],
+    "rules": [
+      0,
+      0
+    ],
+    "npcs": [
+      0,
+      3
+    ],
+    "personas": 3,
+    "t3": [
+      "-",
+      "-"
+    ],
+    "headline": [
+      "not_checkable",
+      "not_checkable"
+    ],
+    "badness": [
+      3,
+      3
+    ],
+    "offered": true,
+    "patch": "{\"op\":\"ent\",\"id\":\"drone_lamp\",\"kind\":\"prop\",\"noun\":\"drone lamp\",\"hyper\":\"lamp\",\"zone\":\"z_pond\",\"anchor\":\"dock\",\"body\":\"fixed\",\"shape\":\"sphere\",\"size\":[0.5,0.5,0.5]}\n{\"op\":\"ent\",\"id\":\"noodle_stall\",\"kind\":\"prop\",\"noun\":\"noodle stall\",\"hyper\":\"stall\",\"zone\":\"z_camp\",\"anchor\":\"stall_1\",\"body\":\"fixed\",\"shape\":\"box\",\"size\":[1.5,1,1]}\n{\"op\":\"ent\",\"id\":\"hidden_switch\",\"kind\":\"switch\",\"noun\":\"maintenance lever\",\"hyper\":\"lever\",\"zone\":\"z_lookout\",\"anchor\":\"ledge\",\"body\":\"fixed\",\"shape\":\"box\",\"size\":[0.3,0.6,0.3]}\n{\"op\":\"ent\",\"id\":\"secret_booth\",\"kind\":\"prop\",\"noun\":\"hidden booth\",\"hyper\":\"booth\",\"zone\":\"z_lookout\",\"anchor\":\"top\",\"body\":\"fixed\",\"shape\":\"box\",\"size\":[1.5,1.5,1.5]}\n{\"op\":\"ent\",\"id\":\"neon_pad\",\"kind\":\"plate\",\"noun\":\"neon pad\",\"hyper\":\"pad\",\"zone\":\"z_grove\",\"anchor\":\"heart\",\"body\":\"sensor\",\"shape\":\"box\",\"size\":[1.5,0.1,1.5]}\n{\"op\":\"ent\",\"id\":\"tea_vendor\",\"kind\":\"npc\",\"noun\":\"tea seller\",\"hyper\":\"person\",\"zone\":\"z_camp\",\"anchor\":\"stall_2\",\"body\":\"fixed\",\"shape\":\"box\"}\n{\"op\":\"verb\",\"id\":\"vb_inspect_lamp\",\"verb\":\"social.inspect\",\"on\":\"drone_lamp\",\"params\":{\"text\":\"A drone lamp hums, painting the rain pool in pink.\"}}\n{\"op\":\"verb\",\"id\":\"vb_inspect_noodle\",\"verb\":\"social.inspect\",\"on\":\"noodle_stall\",\"params\":{\"text\":\"Steaming bowls under a buzzing sign. Smells like ginger.\"}}\n{\"op\":\"verb\",\"id\":\"vb_lever\",\"verb\":\"puzzle.switch\",\"on\":\"hidden_switch\",\"params\":{\"once\":true}}\n{\"op\":\"verb\",\"id\":\"vb_inspect_booth\",\"verb\":\"social.inspect\",\"on\":\"secret_booth\",\"params\":{\"text\":\"A secret booth: a rare violet brew glows on the counter.\"}}\n{\"op\":\"verb\",\"id\":\"vb_pad\",\"verb\":\"locomotion.jump_pad\",\"on\":\"neon_pad\",\"params\":{\"height\":4}}\n{\"op\":\"verb\",\"id\":\"vb_carry_drink\",\"verb\":\"physics_props.carry\",\"on\":\"drink_item\"}\n{\"op\":\"rule\",\"id\":\"r_lever_reveal\",\"when\":{\"t\":\"state_is\",\"a\":\"hidden_switch\",\"s\":\"on\"},\"do\":[{\"fx\":\"emit\",\"target\":\"secret_booth\"}]}\n{\"op\":\"npc\",\"id\":\"vendor_npc\",\"role\":\"merchant\",\"zone\":\"z_west\",\"anchor\":\"center\",\"team\":\"\",\"menu\":[\"vendor.sell\",\"vendor.chat\"],\"dflt\":\"vendor.sell\",\"persona\":{\"identity\":\"the neon vendor selling glowing drinks\",\"personality\":\"smooth, noir, secretly warm\",\"knowledge\":\"the glowing drink recipe and the maintenance lever on the high walkway\",\"replyStyle\":\"short, low-key, cyberpunk slang\",\"safety\":\"family-friendly\"}}\n{\"op\":\"npc\",\"id\":\"guide_npc\",\"role\":\"guide\",\"zone\":\"z_clearing\",\"anchor\":\"center_e\",\"team\":\"\",\"menu\":[\"guide.help\"],\"dflt\":\"guide.help\",\"persona\":{\"identity\":\"the market guide\",\"personality\":\"cheerful, rain-soaked, helpful\",\"knowledge\":\"the vendor is in the west stall by the blue light; a lever above reveals a booth\",\"replyStyle\":\"brief, friendly\",\"safety\":\"family-friendly\"}}\n{\"op\":\"npc\",\"id\":\"tea_npc\",\"role\":\"citizen\",\"zone\":\"z_camp\",\"anchor\":\"stall_3\",\"team\":\"\",\"menu\":[\"citizen.chat\",\"citizen.gossip\"],\"dflt\":\"citizen.chat\",\"persona\":{\"identity\":\"a tea seller at the food camp\",\"personality\":\"sleepy, gossipy\",\"knowledge\":\"rumors of a hidden violet brew up on the walkway\",\"replyStyle\":\"murmured, wry\",\"safety\":\"family-friendly\"}}"
+  },
+  {
+    "prompt": "A doors-and-keys dungeon: find the red, blue and green keys to reach the treasure",
+    "model": "claude-sonnet-5-5",
+    "ms": 10302,
+    "firstMs": 3112,
+    "inTok": 5529,
+    "outTok": 1323,
+    "stats": {
+      "replaced": 0,
+      "added": 16,
+      "deleted": 0,
+      "ignored": 0,
+      "locked": 0
+    },
+    "controls": [
+      8,
+      15
+    ],
+    "rules": [
+      4,
+      7
+    ],
+    "npcs": [
+      0,
+      1
+    ],
+    "personas": 1,
+    "t3": [
+      "12/12",
+      "12/12"
+    ],
+    "headline": [
+      "verified",
+      "verified"
+    ],
+    "badness": [
+      0,
+      0
+    ],
+    "offered": true,
+    "patch": "{\"op\":\"ent\",\"id\":\"key_gold\",\"kind\":\"pickup\",\"noun\":\"gold master key\",\"hyper\":\"key\",\"zone\":\"z_maze\",\"anchor\":\"dead_end_4\",\"body\":\"dynamic\",\"shape\":\"box\",\"size\":[0.2,0.4,0.1]}\n{\"op\":\"ent\",\"id\":\"door_vault_gate\",\"kind\":\"door\",\"noun\":\"gilded vault gate\",\"hyper\":\"door\",\"zone\":\"z_maze\",\"anchor\":\"exit\",\"body\":\"fixed\",\"shape\":\"box\"}\n{\"op\":\"ent\",\"id\":\"sign_hint\",\"kind\":\"sign\",\"noun\":\"carved rune tablet\",\"hyper\":\"sign\",\"zone\":\"z_start\",\"anchor\":\"sign\",\"body\":\"fixed\",\"shape\":\"box\"}\n{\"op\":\"ent\",\"id\":\"plate_alarm\",\"kind\":\"plate\",\"noun\":\"pressure stone\",\"hyper\":\"plate\",\"zone\":\"z_maze\",\"anchor\":\"dead_end_1\",\"body\":\"sensor\",\"shape\":\"box\",\"size\":[0.6,0.2,0.6]}\n{\"op\":\"ent\",\"id\":\"lever_gate\",\"kind\":\"switch\",\"noun\":\"rusty lever\",\"hyper\":\"switch\",\"zone\":\"z_maze\",\"anchor\":\"dead_end_3\",\"body\":\"fixed\",\"shape\":\"box\"}\n{\"op\":\"ent\",\"id\":\"statue_exhibit\",\"kind\":\"prop\",\"noun\":\"weeping statue\",\"hyper\":\"statue\",\"zone\":\"z_maze\",\"anchor\":\"dead_end_2\",\"body\":\"fixed\",\"shape\":\"box\"}\n{\"op\":\"verb\",\"id\":\"vb_carry_gold\",\"verb\":\"physics_props.carry\",\"on\":\"key_gold\",\"params\":{}}\n{\"op\":\"verb\",\"id\":\"vb_lock_gate\",\"verb\":\"puzzle.lock\",\"on\":\"door_vault_gate\",\"params\":{\"key\":\"key_gold\",\"keep\":false}}\n{\"op\":\"verb\",\"id\":\"vb_sign_hint\",\"verb\":\"social.inspect\",\"on\":\"sign_hint\",\"params\":{\"text\":\"Three colors, three doors. Each key fits only its own door. A gold key waits past the last one.\"}}\n{\"op\":\"verb\",\"id\":\"vb_alarm\",\"verb\":\"puzzle.plate\",\"on\":\"plate_alarm\",\"params\":{\"latch\":true}}\n{\"op\":\"verb\",\"id\":\"vb_lever\",\"verb\":\"puzzle.switch\",\"on\":\"lever_gate\",\"params\":{\"once\":true}}\n{\"op\":\"verb\",\"id\":\"vb_statue\",\"verb\":\"social.inspect\",\"on\":\"statue_exhibit\",\"params\":{\"text\":\"Its stone tears point toward the blue door at the heart of the maze.\"}}\n{\"op\":\"rule\",\"id\":\"r_gate_open\",\"when\":{\"t\":\"state_is\",\"a\":\"door_vault_gate\",\"s\":\"open\"},\"then\":[{\"e\":\"emit\",\"target\":\"door_vault_gate\",\"fx\":\"unlock_glow\"}]}\n{\"op\":\"rule\",\"id\":\"r_lever_twist\",\"when\":{\"t\":\"state_is\",\"a\":\"lever_gate\",\"s\":\"on\"},\"then\":[{\"e\":\"destroy\",\"target\":\"hazard_spikes\"},{\"e\":\"emit\",\"target\":\"key_blue\",\"fx\":\"unlock_glow\"}]}\n{\"op\":\"rule\",\"id\":\"r_alarm\",\"when\":{\"t\":\"state_is\",\"a\":\"plate_alarm\",\"s\":\"down\"},\"then\":[{\"e\":\"emit\",\"target\":\"plate_alarm\",\"fx\":\"alarm_flash\"}]}\n{\"op\":\"npc\",\"id\":\"old_warden\",\"role\":\"guide\",\"zone\":\"z_start\",\"anchor\":\"sign\",\"team\":\"\",\"menu\":[\"guide.hint\",\"guide.lore\"],\"dflt\":\"guide.hint\",\"persona\":{\"identity\":\"the old dungeon warden, a ghostly caretaker\",\"personality\":\"dry, wry, secretly kind\",\"knowledge\":\"red key in the first dead end, blue key near the spike trap, green key by the lever, the lever disarms the spikes, a gold key opens the vault gate\",\"replyStyle\":\"short, dusty riddles with a clear hint\",\"safety\":\"family-friendly\"}}"
+  },
+  {
+    "prompt": "A Feng Shui living room where each object sits in its proper place",
+    "model": "claude-sonnet-5-5",
+    "ms": 8943,
+    "firstMs": 2182,
+    "inTok": 5330,
+    "outTok": 1220,
+    "stats": {
+      "replaced": 1,
+      "added": 14,
+      "deleted": 0,
+      "ignored": 0,
+      "locked": 0
+    },
+    "controls": [
+      7,
+      13
+    ],
+    "rules": [
+      0,
+      0
+    ],
+    "npcs": [
+      1,
+      1
+    ],
+    "personas": 1,
+    "t3": [
+      "-",
+      "-"
+    ],
+    "headline": [
+      "verified",
+      "verified"
+    ],
+    "badness": [
+      3,
+      3
+    ],
+    "offered": true,
+    "patch": "{\"op\":\"zone\",\"id\":\"z_study\",\"slot\":\"room_ne\",\"tag\":\"room\",\"name\":\"Quiet study\"}\n{\"op\":\"zone\",\"id\":\"z_garden\",\"slot\":\"room_nw\",\"tag\":\"room\",\"name\":\"Hidden tea garden\"}\n{\"op\":\"ent\",\"id\":\"bagua_mirror\",\"kind\":\"sign\",\"noun\":\"bagua mirror\",\"hyper\":\"exhibit\",\"zone\":\"z_living\",\"anchor\":\"wall_e\",\"body\":\"fixed\",\"shape\":\"box\",\"size\":[0.8,0.8,0.1]}\n{\"op\":\"ent\",\"id\":\"chi_switch\",\"kind\":\"switch\",\"noun\":\"jade chime lever\",\"hyper\":\"switch\",\"zone\":\"z_living\",\"anchor\":\"wall_w\",\"body\":\"fixed\",\"shape\":\"box\",\"size\":[0.4,0.8,0.2],\"state\":\"off\"}\n{\"op\":\"ent\",\"id\":\"fountain\",\"kind\":\"prop\",\"noun\":\"water fountain\",\"hyper\":\"decor\",\"zone\":\"z_garden\",\"anchor\":\"center\",\"body\":\"fixed\",\"shape\":\"cylinder\",\"size\":[0.9,0.8,0.9]}\n{\"op\":\"ent\",\"id\":\"scroll\",\"kind\":\"sign\",\"noun\":\"calligraphy scroll\",\"hyper\":\"exhibit\",\"zone\":\"z_study\",\"anchor\":\"wall_n\",\"body\":\"fixed\",\"shape\":\"box\",\"size\":[0.8,1.2,0.1]}\n{\"op\":\"ent\",\"id\":\"compass\",\"kind\":\"prop\",\"noun\":\"luopan compass\",\"hyper\":\"exhibit\",\"zone\":\"z_study\",\"anchor\":\"center\",\"body\":\"fixed\",\"shape\":\"box\",\"size\":[0.5,0.2,0.5]}\n{\"op\":\"ent\",\"id\":\"garden_door\",\"kind\":\"door\",\"noun\":\"moon gate\",\"hyper\":\"door\",\"zone\":\"z_living\",\"anchor\":\"doorway_w\",\"body\":\"fixed\",\"shape\":\"box\",\"size\":[1.2,2.2,0.2],\"state\":\"closed\"}\n{\"op\":\"verb\",\"id\":\"vb_chi_switch\",\"verb\":\"puzzle.switch\",\"on\":\"chi_switch\",\"params\":{\"once\":true}}\n{\"op\":\"verb\",\"id\":\"vb_inspect_mirror\",\"verb\":\"social.inspect\",\"on\":\"bagua_mirror\",\"params\":{\"text\":\"The bagua mirror deflects harsh energy at the east wall.\"}}\n{\"op\":\"verb\",\"id\":\"vb_inspect_fountain\",\"verb\":\"social.inspect\",\"on\":\"fountain\",\"params\":{\"text\":\"Flowing water in the garden invites wealth and calm.\"}}\n{\"op\":\"verb\",\"id\":\"vb_inspect_scroll\",\"verb\":\"social.inspect\",\"on\":\"scroll\",\"params\":{\"text\":\"A scroll reads: balance is the root of harmony.\"}}\n{\"op\":\"verb\",\"id\":\"vb_inspect_compass\",\"verb\":\"social.inspect\",\"on\":\"compass\",\"params\":{\"text\":\"The luopan compass confirms every piece faces its proper direction.\"}}\n{\"op\":\"rule\",\"id\":\"r_open_garden\",\"when\":{\"t\":\"state_is\",\"a\":\"chi_switch\",\"s\":\"on\"},\"do\":[{\"e\":\"open\",\"target\":\"garden_door\"},{\"e\":\"emit\",\"target\":\"fountain\",\"fx\":\"sparkle\"}]}\n{\"op\":\"npc\",\"id\":\"guide_1\",\"role\":\"guide\",\"zone\":\"z_living\",\"anchor\":\"wall_n\",\"team\":\"\",\"menu\":[\"guide.tour\"],\"dflt\":\"guide.tour\",\"persona\":{\"identity\":\"an elderly Feng Shui master\",\"personality\":\"serene, gently witty\",\"knowledge\":\"why each object sits where it does; the jade chime lever reveals a hidden tea garden\",\"replyStyle\":\"short, calm, poetic\",\"safety\":\"family-friendly\"}}"
+  },
+  {
+    "prompt": "A football penalty shootout against a goalkeeper who dives",
+    "model": "claude-sonnet-5-5",
+    "ms": 13446,
+    "firstMs": 3369,
+    "inTok": 4871,
+    "outTok": 1210,
+    "stats": {
+      "replaced": 0,
+      "added": 14,
+      "deleted": 0,
+      "ignored": 0,
+      "locked": 0
+    },
+    "controls": [
+      8,
+      9
+    ],
+    "rules": [
+      8,
+      4
+    ],
+    "npcs": [
+      0,
+      2
+    ],
+    "personas": 2,
+    "t3": [
+      "12/12",
+      "12/12"
+    ],
+    "headline": [
+      "verified",
+      "verified"
+    ],
+    "badness": [
+      0,
+      0
+    ],
+    "offered": true,
+    "patch": "{\"op\":\"ent\",\"id\":\"keeper_lane\",\"kind\":\"platform\",\"noun\":\"diving lane\",\"hyper\":\"platform\",\"zone\":\"z_field\",\"anchor\":\"center_n\",\"body\":\"kinematic\",\"shape\":\"box\",\"size\":[2,0.2,1]}\n{\"op\":\"verb\",\"id\":\"vb_keeper_dive\",\"verb\":\"motion_hazards.oscillate\",\"on\":\"keeper_lane\",\"params\":{\"axis\":\"x\",\"travel\":3,\"period\":2}}\n{\"op\":\"ent\",\"id\":\"slow_plate\",\"kind\":\"plate\",\"noun\":\"slow pad\",\"hyper\":\"plate\",\"zone\":\"z_field\",\"anchor\":\"center_w\",\"body\":\"sensor\",\"shape\":\"box\",\"size\":[1,0.1,1]}\n{\"op\":\"verb\",\"id\":\"vb_slow_plate\",\"verb\":\"puzzle.plate\",\"on\":\"slow_plate\",\"params\":{\"latch\":true}}\n{\"op\":\"ent\",\"id\":\"corner_sign\",\"kind\":\"sign\",\"noun\":\"aim board\",\"hyper\":\"sign\",\"zone\":\"z_field\",\"anchor\":\"center_e\",\"body\":\"fixed\",\"shape\":\"box\"}\n{\"op\":\"verb\",\"id\":\"vb_corner_sign\",\"verb\":\"social.inspect\",\"on\":\"corner_sign\",\"params\":{\"text\":\"The keeper dives fast to the left. Aim wide and low.\"}}\n{\"op\":\"ent\",\"id\":\"lookout_board\",\"kind\":\"sign\",\"noun\":\"replay board\",\"hyper\":\"sign\",\"zone\":\"z_entrance\",\"anchor\":\"sign\",\"body\":\"fixed\",\"shape\":\"box\"}\n{\"op\":\"verb\",\"id\":\"vb_lookout_board\",\"verb\":\"social.inspect\",\"on\":\"lookout_board\",\"params\":{\"text\":\"Step on the slow pad to weaken the keeper's dive.\"}}\n{\"op\":\"ent\",\"id\":\"extra_time\",\"kind\":\"pickup\",\"noun\":\"stopwatch\",\"hyper\":\"clock\",\"zone\":\"z_entrance\",\"anchor\":\"gate\",\"body\":\"sensor\",\"shape\":\"sphere\",\"size\":[0.3,0.3,0.3]}\n{\"op\":\"verb\",\"id\":\"vb_extra_time\",\"verb\":\"puzzle.collect\",\"on\":\"extra_time\",\"params\":{}}\n{\"op\":\"rule\",\"id\":\"r_slow\",\"when\":{\"t\":\"state_is\",\"a\":\"slow_plate\",\"s\":\"down\"},\"then\":[{\"e\":\"set_state\",\"target\":\"keeper_lane\",\"v\":\"slow\"},{\"e\":\"emit\",\"target\":\"goalkeeper\",\"fx\":\"sparkle\"}],\"once\":true}\n{\"op\":\"rule\",\"id\":\"r_stopwatch\",\"when\":{\"t\":\"touch\",\"a\":\"player\",\"b\":\"extra_time\"},\"then\":[{\"e\":\"reset\",\"target\":\"timer_gate\"}],\"once\":true}\n{\"op\":\"npc\",\"id\":\"goalkeeper_mind\",\"role\":\"rival\",\"zone\":\"z_field\",\"anchor\":\"center_s\",\"team\":\"blue\",\"menu\":[\"guard.patrol\",\"chat\"],\"dflt\":\"guard.patrol\",\"persona\":{\"identity\":\"the diving goalkeeper\",\"personality\":\"cocky, secretly respectful\",\"knowledge\":\"he dives fast to one side and tires after the slow pad\",\"replyStyle\":\"short, taunting\",\"safety\":\"family-friendly\"}}\n{\"op\":\"npc\",\"id\":\"coach\",\"role\":\"guide\",\"zone\":\"z_entrance\",\"anchor\":\"guide\",\"team\":\"\",\"menu\":[\"guide.tips\",\"chat\"],\"dflt\":\"guide.tips\",\"persona\":{\"identity\":\"the striker's coach\",\"personality\":\"calm, encouraging\",\"knowledge\":\"the slow pad weakens the keeper dive; the stopwatch resets the timer\",\"replyStyle\":\"brief, upbeat\",\"safety\":\"family-friendly\"}}"
+  },
+  {
+    "prompt": "A greenhouse maze where you collect seeds and plant them at the centre",
+    "model": "claude-sonnet-5-5",
+    "ms": 8500,
+    "firstMs": 2474,
+    "inTok": 5622,
+    "outTok": 1187,
+    "stats": {
+      "replaced": 0,
+      "added": 14,
+      "deleted": 0,
+      "ignored": 0,
+      "locked": 0
+    },
+    "controls": [
+      5,
+      12
+    ],
+    "rules": [
+      7,
+      8
+    ],
+    "npcs": [
+      0,
+      1
+    ],
+    "personas": 1,
+    "t3": [
+      "12/12",
+      "12/12"
+    ],
+    "headline": [
+      "verified",
+      "verified"
+    ],
+    "badness": [
+      0,
+      0
+    ],
+    "offered": true,
+    "patch": "{\"op\":\"ent\",\"id\":\"sprout_switch\",\"kind\":\"switch\",\"noun\":\"watering valve\",\"hyper\":\"brass watering valve\",\"zone\":\"z_maze\",\"anchor\":\"dead_end_3\",\"body\":\"fixed\",\"shape\":\"box\",\"size\":[0.3,0.6,0.3]}\n{\"op\":\"ent\",\"id\":\"bloom_gate\",\"kind\":\"door\",\"noun\":\"trellis gate\",\"hyper\":\"vine trellis gate\",\"zone\":\"z_maze\",\"anchor\":\"exit\",\"body\":\"fixed\",\"shape\":\"box\",\"size\":[1.5,2,0.2]}\n{\"op\":\"ent\",\"id\":\"fern_pad\",\"kind\":\"plate\",\"noun\":\"mossy jump pad\",\"hyper\":\"springy moss pad\",\"zone\":\"z_maze\",\"anchor\":\"dead_end_1\",\"body\":\"sensor\",\"shape\":\"box\",\"size\":[1,0.1,1]}\n{\"op\":\"ent\",\"id\":\"thorn_bush\",\"kind\":\"hazard\",\"noun\":\"thorn bush\",\"hyper\":\"thorny bramble\",\"zone\":\"z_maze\",\"anchor\":\"dead_end_4\",\"body\":\"sensor\",\"shape\":\"box\",\"size\":[0.8,0.6,0.8]}\n{\"op\":\"ent\",\"id\":\"garden_sign\",\"kind\":\"sign\",\"noun\":\"bed label\",\"hyper\":\"brass bed label\",\"zone\":\"z_start\",\"anchor\":\"sign\",\"body\":\"fixed\",\"shape\":\"box\",\"size\":[0.6,0.8,0.1]}\n{\"op\":\"ent\",\"id\":\"checkpoint_mid\",\"kind\":\"checkpoint\",\"noun\":\"potting bench\",\"hyper\":\"potting bench\",\"zone\":\"z_maze\",\"anchor\":\"entrance\",\"body\":\"sensor\",\"shape\":\"box\",\"size\":[1,0.2,1]}\n{\"op\":\"verb\",\"id\":\"vb_valve\",\"verb\":\"puzzle.switch\",\"on\":\"sprout_switch\",\"params\":{\"once\":true}}\n{\"op\":\"verb\",\"id\":\"vb_pad\",\"verb\":\"locomotion.jump_pad\",\"on\":\"fern_pad\",\"params\":{\"height\":4}}\n{\"op\":\"verb\",\"id\":\"vb_thorn\",\"verb\":\"motion_hazards.hazard\",\"on\":\"thorn_bush\",\"params\":{\"respawn\":true}}\n{\"op\":\"verb\",\"id\":\"vb_label\",\"verb\":\"social.inspect\",\"on\":\"garden_sign\",\"params\":{\"text\":\"Plant five seed pods in the central bed. Open the valve to wake the bloom.\"}}\n{\"op\":\"verb\",\"id\":\"vb_check\",\"verb\":\"puzzle.checkpoint\",\"on\":\"checkpoint_mid\",\"params\":{}}\n{\"op\":\"verb\",\"id\":\"vb_gate\",\"verb\":\"puzzle.lock\",\"on\":\"bloom_gate\",\"params\":{\"key\":\"seed_5\",\"keep\":true}}\n{\"op\":\"rule\",\"id\":\"r_valve_bloom\",\"when\":{\"t\":\"state_is\",\"a\":\"sprout_switch\",\"s\":\"on\"},\"then\":[{\"e\":\"emit\",\"target\":\"central_bed\",\"fx\":\"bloom\"},{\"e\":\"destroy\",\"target\":\"thorn_bush\"}],\"once\":true}\n{\"op\":\"npc\",\"id\":\"gardener_guide\",\"role\":\"guide\",\"zone\":\"z_start\",\"anchor\":\"sign\",\"team\":\"\",\"menu\":[\"guide.hint\",\"guide.chat\"],\"dflt\":\"guide.hint\",\"persona\":{\"identity\":\"the old head gardener\",\"personality\":\"gentle, patient, quietly proud\",\"knowledge\":\"seed pods sit in the four dead ends and by the entrance; the brass valve in a dead end calms the thorn bush\",\"replyStyle\":\"soft, short, leafy metaphors\",\"safety\":\"family-friendly\"}}"
+  },
+  {
+    "prompt": "A haunted lighthouse where you light the lamp at the top",
+    "model": "claude-sonnet-5-5",
+    "ms": 9149,
+    "firstMs": 1772,
+    "inTok": 5910,
+    "outTok": 1413,
+    "stats": {
+      "replaced": 0,
+      "added": 18,
+      "deleted": 1,
+      "ignored": 0,
+      "locked": 0
+    },
+    "controls": [
+      10,
+      12
+    ],
+    "rules": [
+      6,
+      5
+    ],
+    "npcs": [
+      0,
+      1
+    ],
+    "personas": 1,
+    "t3": [
+      "0/12",
+      "0/12"
+    ],
+    "headline": [
+      "counterexample",
+      "counterexample"
+    ],
+    "badness": [
+      18,
+      28
+    ],
+    "offered": false,
+    "patch": "{\"op\":\"verb\",\"id\":\"vb_jump_law\",\"verb\":\"locomotion.jump\",\"on\":\"player\",\"params\":{\"jumpsMax\":2}}\n{\"op\":\"law\",\"player\":{\"jumpsMax\":2,\"jumpH\":1.6,\"speed\":6}}\n{\"op\":\"rule\",\"id\":\"r_lamp_win\",\"when\":{\"t\":\"enter\",\"a\":\"player\",\"b\":\"lamp_goal\"},\"if\":[{\"l\":\"lamp_goal.state\",\"op\":\"eq\",\"r\":\"on\"}],\"then\":[{\"e\":\"win\",\"target\":\"player\"}],\"once\":true}\n{\"op\":\"del\",\"id\":\"r_lamp_win\"}\n{\"op\":\"ent\",\"id\":\"stair_pad\",\"kind\":\"plate\",\"noun\":\"stair jump pad\",\"hyper\":\"platform\",\"zone\":\"z_stairs\",\"anchor\":\"center\",\"body\":\"sensor\",\"shape\":\"box\",\"size\":[2,0.2,2]}\n{\"op\":\"verb\",\"id\":\"vb_stair_pad\",\"verb\":\"locomotion.jump_pad\",\"on\":\"stair_pad\",\"params\":{\"height\":4}}\n{\"op\":\"ent\",\"id\":\"keeper_log\",\"kind\":\"sign\",\"noun\":\"keeper's log\",\"hyper\":\"book\",\"zone\":\"z_quarters\",\"anchor\":\"wall_n\",\"body\":\"fixed\",\"shape\":\"box\"}\n{\"op\":\"verb\",\"id\":\"vb_log\",\"verb\":\"social.inspect\",\"on\":\"keeper_log\",\"params\":{\"text\":\"The lamp must burn before the tide takes the door. Take the key.\"}}\n{\"op\":\"ent\",\"id\":\"old_lantern\",\"kind\":\"pickup\",\"noun\":\"old lantern\",\"hyper\":\"lamp\",\"zone\":\"z_storage\",\"anchor\":\"corner_ne\",\"body\":\"dynamic\",\"shape\":\"box\",\"size\":[0.3,0.3,0.3]}\n{\"op\":\"verb\",\"id\":\"vb_lantern\",\"verb\":\"physics_props.carry\",\"on\":\"old_lantern\",\"params\":{}}\n{\"op\":\"ent\",\"id\":\"coal_wind\",\"kind\":\"hazard\",\"noun\":\"draft vent\",\"hyper\":\"wind\",\"zone\":\"z_engine\",\"anchor\":\"corner_se\",\"body\":\"sensor\",\"shape\":\"box\",\"size\":[2,1,2]}\n{\"op\":\"verb\",\"id\":\"vb_coal_wind\",\"verb\":\"motion_hazards.wind\",\"on\":\"coal_wind\",\"params\":{\"x\":4,\"z\":0}}\n{\"op\":\"ent\",\"id\":\"ghost_npc_marker\",\"kind\":\"checkpoint\",\"noun\":\"lantern hook\",\"hyper\":\"lamp\",\"zone\":\"z_stairs\",\"anchor\":\"corner_sw\",\"body\":\"sensor\",\"shape\":\"box\"}\n{\"op\":\"verb\",\"id\":\"vb_ckpt\",\"verb\":\"puzzle.checkpoint\",\"on\":\"ghost_npc_marker\",\"params\":{}}\n{\"op\":\"verb\",\"id\":\"vb_tide_timer\",\"verb\":\"puzzle.timer\",\"on\":\"player\",\"params\":{\"seconds\":300}}\n{\"op\":\"rule\",\"id\":\"r_tide_lose\",\"when\":{\"t\":\"timer_end\",\"a\":\"player\"},\"then\":[{\"e\":\"lose\",\"target\":\"player\"}],\"once\":true}\n{\"op\":\"rule\",\"id\":\"r_lamp_win2\",\"when\":{\"t\":\"enter\",\"a\":\"player\",\"b\":\"lamp_goal\"},\"if\":[{\"l\":\"switch_top.state\",\"op\":\"eq\",\"r\":\"on\"}],\"then\":[{\"e\":\"win\",\"target\":\"player\"}]}\n{\"op\":\"rule\",\"id\":\"r_lamp_activate\",\"when\":{\"t\":\"state_is\",\"a\":\"switch_top\",\"s\":\"on\"},\"then\":[{\"e\":\"set_state\",\"target\":\"lamp_goal\",\"v\":\"on\"},{\"e\":\"emit\",\"target\":\"lamp_goal\",\"fx\":\"beam\"},{\"e\":\"open\",\"target\":\"door_top\"}],\"once\":true}\n{\"op\":\"npc\",\"id\":\"ghost_keeper\",\"role\":\"guide\",\"zone\":\"z_stairs\",\"anchor\":\"corner_ne\",\"team\":\"\",\"menu\":[\"guide.hint\",\"guide.warn\"],\"dflt\":\"guide.hint\",\"persona\":{\"identity\":\"the ghost of the previous keeper\",\"personality\":\"mournful, urgent, protective\",\"knowledge\":\"key is in the quarters, lever opens the door, lamp switch is at the top\",\"replyStyle\":\"whispery, short\",\"safety\":\"family-friendly\"}}"
+  },
+  {
+    "prompt": "A jungle river rafting race through the rapids",
+    "model": "claude-sonnet-5-5",
+    "ms": 8997,
+    "firstMs": 2510,
+    "inTok": 5732,
+    "outTok": 1228,
+    "stats": {
+      "replaced": 0,
+      "added": 15,
+      "deleted": 0,
+      "ignored": 0,
+      "locked": 0
+    },
+    "controls": [
+      10,
+      14
+    ],
+    "rules": [
+      8,
+      7
+    ],
+    "npcs": [
+      0,
+      1
+    ],
+    "personas": 1,
+    "t3": [
+      "12/12",
+      "12/12"
+    ],
+    "headline": [
+      "verified",
+      "verified"
+    ],
+    "badness": [
+      0,
+      0
+    ],
+    "offered": true,
+    "patch": "{\"op\":\"ent\",\"id\":\"rapid_wind\",\"kind\":\"hazard\",\"noun\":\"rushing current\",\"hyper\":\"current\",\"zone\":\"z_rapids\",\"anchor\":\"dock\",\"body\":\"sensor\",\"shape\":\"box\",\"size\":[4,0.5,3]}\n{\"op\":\"verb\",\"id\":\"vb_current\",\"verb\":\"motion_hazards.wind\",\"on\":\"rapid_wind\",\"params\":{\"x\":0,\"z\":6}}\n{\"op\":\"ent\",\"id\":\"boost_pad\",\"kind\":\"plate\",\"noun\":\"jungle spring pad\",\"hyper\":\"jump_pad\",\"zone\":\"z_clearing\",\"anchor\":\"center_e\",\"body\":\"sensor\",\"shape\":\"box\",\"size\":[1.5,0.2,1.5]}\n{\"op\":\"verb\",\"id\":\"vb_boost\",\"verb\":\"locomotion.jump_pad\",\"on\":\"boost_pad\",\"params\":{\"height\":4}}\n{\"op\":\"ent\",\"id\":\"coin_camp\",\"kind\":\"pickup\",\"noun\":\"golden idol coin\",\"hyper\":\"coin\",\"zone\":\"z_camp\",\"anchor\":\"stall_1\",\"body\":\"sensor\",\"shape\":\"sphere\",\"size\":[0.4,0.4,0.4]}\n{\"op\":\"verb\",\"id\":\"vb_coin_camp\",\"verb\":\"puzzle.collect\",\"on\":\"coin_camp\",\"params\":{}}\n{\"op\":\"ent\",\"id\":\"rapids_sign\",\"kind\":\"sign\",\"noun\":\"warning carving\",\"hyper\":\"sign\",\"zone\":\"z_rapids\",\"anchor\":\"shore\",\"body\":\"fixed\",\"shape\":\"box\",\"size\":[0.6,1.2,0.2]}\n{\"op\":\"verb\",\"id\":\"vb_sign\",\"verb\":\"social.inspect\",\"on\":\"rapids_sign\",\"params\":{\"text\":\"Rocks ahead! Steer wide around the boulders and mind the rolling log.\"}}\n{\"op\":\"ent\",\"id\":\"grove_totem\",\"kind\":\"prop\",\"noun\":\"mossy totem\",\"hyper\":\"totem\",\"zone\":\"z_clearing\",\"anchor\":\"center_w\",\"body\":\"fixed\",\"shape\":\"box\",\"size\":[0.8,2,0.8]}\n{\"op\":\"verb\",\"id\":\"vb_totem\",\"verb\":\"social.inspect\",\"on\":\"grove_totem\",\"params\":{\"text\":\"Carved by river folk: the gate opens for those who carry the key.\"}}\n{\"op\":\"ent\",\"id\":\"shortcut_switch\",\"kind\":\"switch\",\"noun\":\"vine lever\",\"hyper\":\"lever\",\"zone\":\"z_camp\",\"anchor\":\"tent\",\"body\":\"fixed\",\"shape\":\"box\",\"size\":[0.4,1,0.4]}\n{\"op\":\"verb\",\"id\":\"vb_lever\",\"verb\":\"puzzle.switch\",\"on\":\"shortcut_switch\",\"params\":{\"once\":true}}\n{\"op\":\"rule\",\"id\":\"r_twist\",\"when\":{\"t\":\"state_is\",\"a\":\"shortcut_switch\",\"s\":\"on\"},\"then\":[{\"e\":\"destroy\",\"target\":\"rock_left\"},{\"e\":\"emit\",\"target\":\"rock_right\",\"fx\":\"splash\"}],\"once\":true}\n{\"op\":\"rule\",\"id\":\"r_coin\",\"when\":{\"t\":\"touch\",\"a\":\"player\",\"b\":\"coin_camp\"},\"then\":[{\"e\":\"score\",\"target\":\"team:red\",\"n\":1}],\"once\":true}\n{\"op\":\"npc\",\"id\":\"guide_river\",\"role\":\"guide\",\"zone\":\"z_camp\",\"anchor\":\"stall_2\",\"team\":\"\",\"menu\":[\"guide.talk\",\"guide.hint\"],\"dflt\":\"guide.talk\",\"persona\":{\"identity\":\"the old river guide\",\"personality\":\"cheerful, weathered, wise\",\"knowledge\":\"the vine lever at the tent clears the left rock; current speeds the raft; steer wide of boulders\",\"replyStyle\":\"short, lively river slang\",\"safety\":\"family-friendly\"}}"
+  },
+  {
+    "prompt": "A lab where you mix three chemicals in the right order",
+    "model": "claude-sonnet-5-5",
+    "ms": 7639,
+    "firstMs": 1503,
+    "inTok": 5967,
+    "outTok": 1190,
+    "stats": {
+      "replaced": 0,
+      "added": 14,
+      "deleted": 0,
+      "ignored": 0,
+      "locked": 0
+    },
+    "controls": [
+      10,
+      13
+    ],
+    "rules": [
+      7,
+      7
+    ],
+    "npcs": [
+      0,
+      1
+    ],
+    "personas": 1,
+    "t3": [
+      "12/12",
+      "0/12"
+    ],
+    "headline": [
+      "verified",
+      "counterexample"
+    ],
+    "badness": [
+      0,
+      28
+    ],
+    "offered": false,
+    "patch": "{\"op\":\"ent\",\"id\":\"wrong_vent\",\"kind\":\"hazard\",\"noun\":\"reaction vent\",\"hyper\":\"hazard\",\"zone\":\"z_lab\",\"anchor\":\"corner_nw\",\"body\":\"sensor\",\"shape\":\"box\",\"size\":[1,0.2,1]}\n{\"op\":\"verb\",\"id\":\"vb_vent_hazard\",\"verb\":\"motion_hazards.hazard\",\"on\":\"wrong_vent\",\"params\":{\"respawn\":true}}\n{\"op\":\"ent\",\"id\":\"recipe_board\",\"kind\":\"sign\",\"noun\":\"recipe board\",\"hyper\":\"sign\",\"zone\":\"z_entrance\",\"anchor\":\"wall_n\",\"body\":\"sensor\",\"shape\":\"none\"}\n{\"op\":\"verb\",\"id\":\"vb_recipe\",\"verb\":\"social.inspect\",\"on\":\"recipe_board\",\"params\":{\"text\":\"Order matters: A first, then B, then C. Wrong step resets the stage.\"}}\n{\"op\":\"ent\",\"id\":\"gear_shelf\",\"kind\":\"prop\",\"noun\":\"protective gear shelf\",\"hyper\":\"shelf\",\"zone\":\"z_storage\",\"anchor\":\"wall_w\",\"body\":\"sensor\",\"shape\":\"none\"}\n{\"op\":\"verb\",\"id\":\"vb_gear\",\"verb\":\"social.inspect\",\"on\":\"gear_shelf\",\"params\":{\"text\":\"Goggles and gloves. Safety first, researcher.\"}}\n{\"op\":\"ent\",\"id\":\"lab_notes\",\"kind\":\"prop\",\"noun\":\"lab notes\",\"hyper\":\"notes\",\"zone\":\"z_storage\",\"anchor\":\"center\",\"body\":\"sensor\",\"shape\":\"none\"}\n{\"op\":\"verb\",\"id\":\"vb_notes\",\"verb\":\"social.inspect\",\"on\":\"lab_notes\",\"params\":{\"text\":\"Chemicals are carried to the bench. Spills reset the experiment.\"}}\n{\"op\":\"ent\",\"id\":\"seq_check\",\"kind\":\"checkpoint\",\"noun\":\"bench checkpoint\",\"hyper\":\"checkpoint\",\"zone\":\"z_lab\",\"anchor\":\"doorway_s\",\"body\":\"sensor\",\"shape\":\"none\"}\n{\"op\":\"verb\",\"id\":\"vb_seq_check\",\"verb\":\"puzzle.checkpoint\",\"on\":\"seq_check\",\"params\":{}}\n{\"op\":\"rule\",\"id\":\"r_vent\",\"when\":{\"t\":\"touch\",\"a\":\"player\",\"b\":\"wrong_vent\"},\"then\":[{\"e\":\"set_state\",\"target\":\"beaker_stage\",\"v\":\"0\"}],\"once\":false}\n{\"op\":\"rule\",\"id\":\"r_wrong_b\",\"when\":{\"t\":\"state_is\",\"a\":\"switch_b\",\"s\":\"on\"},\"if\":[{\"l\":\"beaker_stage.state\",\"op\":\"eq\",\"r\":\"0\"}],\"then\":[{\"e\":\"set_state\",\"target\":\"switch_b\",\"v\":\"off\"}],\"once\":false}\n{\"op\":\"rule\",\"id\":\"r_wrong_c\",\"when\":{\"t\":\"state_is\",\"a\":\"switch_c\",\"s\":\"on\"},\"if\":[{\"l\":\"beaker_stage.state\",\"op\":\"eq\",\"r\":\"0\"}],\"then\":[{\"e\":\"set_state\",\"target\":\"switch_c\",\"v\":\"off\"}],\"once\":false}\n{\"op\":\"npc\",\"id\":\"prof_vale\",\"role\":\"guide\",\"zone\":\"z_entrance\",\"anchor\":\"center\",\"team\":\"\",\"menu\":[\"guide.hint\",\"guide.chat\"],\"dflt\":\"guide.hint\",\"persona\":{\"identity\":\"Professor Vale, the lab supervisor\",\"personality\":\"calm, precise, quietly encouraging\",\"knowledge\":\"the synthesis order is A, then B, then C, and the spill and vent reset the stage\",\"replyStyle\":\"short, clear, scientific\",\"safety\":\"family-friendly\"}}"
+  },
+  {
+    "prompt": "a car showroom with a supercar on a turntable and a salesperson",
+    "model": "claude-sonnet-5-5",
+    "ms": 11262,
+    "firstMs": 1976,
+    "inTok": 5260,
+    "outTok": 1687,
+    "stats": {
+      "replaced": 2,
+      "added": 18,
+      "deleted": 0,
+      "ignored": 0,
+      "locked": 0
+    },
+    "controls": [
+      7,
+      15
+    ],
+    "rules": [
+      0,
+      0
+    ],
+    "npcs": [
+      2,
+      3
+    ],
+    "personas": 3,
+    "t3": [
+      "-",
+      "-"
+    ],
+    "headline": [
+      "not_checkable",
+      "not_checkable"
+    ],
+    "badness": [
+      3,
+      13
+    ],
+    "offered": false,
+    "patch": "{\"op\":\"zone\",\"id\":\"z_vip\",\"slot\":\"room_ne\",\"tag\":\"room\",\"name\":\"VIP lounge\"}\n{\"op\":\"zone\",\"id\":\"z_garage\",\"slot\":\"room_se\",\"tag\":\"room\",\"name\":\"Prototype garage\"}\n{\"op\":\"ent\",\"id\":\"turn_switch\",\"kind\":\"switch\",\"noun\":\"turntable switch\",\"hyper\":\"switch\",\"zone\":\"z_showroom\",\"anchor\":\"wall_s\",\"body\":\"fixed\",\"shape\":\"box\",\"size\":[0.4,1,0.2],\"state\":\"off\"}\n{\"op\":\"verb\",\"id\":\"vb_turn_switch\",\"verb\":\"puzzle.switch\",\"on\":\"turn_switch\",\"params\":{\"once\":false}}\n{\"op\":\"ent\",\"id\":\"vip_door\",\"kind\":\"door\",\"noun\":\"VIP door\",\"hyper\":\"door\",\"zone\":\"z_showroom\",\"anchor\":\"doorway_e\",\"body\":\"fixed\",\"shape\":\"box\",\"size\":[2,2.5,0.2]}\n{\"op\":\"verb\",\"id\":\"vb_vip_lock\",\"verb\":\"puzzle.lock\",\"on\":\"vip_door\",\"params\":{\"key\":\"vip_card\",\"keep\":false}}\n{\"op\":\"ent\",\"id\":\"vip_card\",\"kind\":\"pickup\",\"noun\":\"VIP card\",\"hyper\":\"key\",\"zone\":\"z_entrance\",\"anchor\":\"corner_se\",\"body\":\"dynamic\",\"shape\":\"box\",\"size\":[0.3,0.05,0.2]}\n{\"op\":\"verb\",\"id\":\"vb_card_carry\",\"verb\":\"physics_props.carry\",\"on\":\"vip_card\",\"params\":{}}\n{\"op\":\"ent\",\"id\":\"proto_car\",\"kind\":\"vehicle\",\"noun\":\"prototype car\",\"hyper\":\"vehicle\",\"zone\":\"z_vip\",\"anchor\":\"center\",\"body\":\"fixed\",\"shape\":\"hull\",\"size\":[4,1.1,1.9]}\n{\"op\":\"verb\",\"id\":\"vb_inspect_proto\",\"verb\":\"social.inspect\",\"on\":\"proto_car\",\"params\":{\"text\":\"A secret prototype, unveiled only to VIP guests.\"}}\n{\"op\":\"ent\",\"id\":\"engine_display\",\"kind\":\"prop\",\"noun\":\"engine display\",\"hyper\":\"exhibit\",\"zone\":\"z_garage\",\"anchor\":\"center\",\"body\":\"fixed\",\"shape\":\"box\",\"size\":[1.5,1,1.5]}\n{\"op\":\"verb\",\"id\":\"vb_inspect_engine\",\"verb\":\"social.inspect\",\"on\":\"engine_display\",\"params\":{\"text\":\"A 900hp hybrid V8, cutaway to show the pistons.\"}}\n{\"op\":\"ent\",\"id\":\"trophy\",\"kind\":\"prop\",\"noun\":\"racing trophy\",\"hyper\":\"exhibit\",\"zone\":\"z_garage\",\"anchor\":\"corner_ne\",\"body\":\"fixed\",\"shape\":\"box\",\"size\":[0.6,0.8,0.6]}\n{\"op\":\"verb\",\"id\":\"vb_inspect_trophy\",\"verb\":\"social.inspect\",\"on\":\"trophy\",\"params\":{\"text\":\"Le Mans winner, 2019.\"}}\n{\"op\":\"ent\",\"id\":\"garage_door\",\"kind\":\"door\",\"noun\":\"garage shutter\",\"hyper\":\"door\",\"zone\":\"z_garage\",\"anchor\":\"doorway_w\",\"body\":\"fixed\",\"shape\":\"box\",\"size\":[2,2.5,0.2]}\n{\"op\":\"rule\",\"id\":\"r_turn_on\",\"when\":{\"t\":\"state_is\",\"a\":\"turn_switch\",\"s\":\"on\"},\"do\":[{\"e\":\"emit\",\"target\":\"turntable\",\"fx\":\"spin\"},{\"e\":\"open\",\"target\":\"garage_door\"}]}\n{\"op\":\"rule\",\"id\":\"r_vip_open\",\"when\":{\"t\":\"state_is\",\"a\":\"vip_door\",\"s\":\"open\"},\"do\":[{\"e\":\"emit\",\"target\":\"proto_car\",\"fx\":\"reveal\"}]}\n{\"op\":\"npc\",\"id\":\"salesperson_mind\",\"role\":\"merchant\",\"zone\":\"z_showroom\",\"anchor\":\"wall_n\",\"team\":\"\",\"menu\":[\"merchant.talk\",\"merchant.offer\"],\"dflt\":\"merchant.talk\",\"persona\":{\"identity\":\"the showroom salesperson\",\"personality\":\"polished, warm, quietly proud\",\"knowledge\":\"the supercar specs, the turntable switch, the VIP card by the entrance\",\"replyStyle\":\"smooth, brief\",\"safety\":\"family-friendly\"}}\n{\"op\":\"npc\",\"id\":\"guide_1\",\"role\":\"guide\",\"zone\":\"z_entrance\",\"anchor\":\"doorway_e\",\"team\":\"\",\"menu\":[\"guide.patrol\"],\"dflt\":\"guide.patrol\",\"persona\":{\"identity\":\"entrance host\",\"personality\":\"cheerful\",\"knowledge\":\"where the VIP card lies\",\"replyStyle\":\"short, friendly\",\"safety\":\"family-friendly\"}}\n{\"op\":\"npc\",\"id\":\"guide_2\",\"role\":\"guide\",\"zone\":\"z_showroom\",\"anchor\":\"doorway_w\",\"team\":\"\",\"menu\":[\"guide.patrol\"],\"dflt\":\"guide.patrol\",\"persona\":{\"identity\":\"floor guide\",\"personality\":\"calm, knowledgeable\",\"knowledge\":\"the turntable switch and the prototype garage\",\"replyStyle\":\"concise\",\"safety\":\"family-friendly\"}}"
+  },
+  {
+    "prompt": "a cyberpunk night market with food stalls, drones and a pickpocket you have to catch",
+    "model": "claude-sonnet-5-5",
+    "ms": 8913,
+    "firstMs": 1905,
+    "inTok": 5323,
+    "outTok": 1419,
+    "stats": {
+      "replaced": 1,
+      "added": 16,
+      "deleted": 0,
+      "ignored": 0,
+      "locked": 0
+    },
+    "controls": [
+      9,
+      10
+    ],
+    "rules": [
+      10,
+      6
+    ],
+    "npcs": [
+      0,
+      2
+    ],
+    "personas": 2,
+    "t3": [
+      "12/12",
+      "12/12"
+    ],
+    "headline": [
+      "verified",
+      "verified"
+    ],
+    "badness": [
+      0,
+      0
+    ],
+    "offered": true,
+    "patch": "{\"op\":\"ent\",\"id\":\"thief\",\"kind\":\"npc\",\"noun\":\"pickpocket\",\"hyper\":\"thief\",\"zone\":\"z_midfield\",\"anchor\":\"center\",\"body\":\"dynamic\",\"shape\":\"capsule\"}\n{\"op\":\"verb\",\"id\":\"vb_catch\",\"verb\":\"combat_sport.catch\",\"on\":\"thief\",\"params\":{}}\n{\"op\":\"ent\",\"id\":\"alley_pad\",\"kind\":\"plate\",\"noun\":\"jump pad\",\"hyper\":\"launcher\",\"zone\":\"z_south\",\"anchor\":\"deck_w\",\"body\":\"sensor\",\"shape\":\"box\",\"size\":[2,0.2,2]}\n{\"op\":\"verb\",\"id\":\"vb_alley_pad\",\"verb\":\"locomotion.jump_pad\",\"on\":\"alley_pad\",\"params\":{\"height\":5}}\n{\"op\":\"ent\",\"id\":\"alarm_switch\",\"kind\":\"switch\",\"noun\":\"alarm lever\",\"hyper\":\"lever\",\"zone\":\"z_north\",\"anchor\":\"deck_w\",\"body\":\"fixed\",\"shape\":\"box\",\"size\":[0.6,1.2,0.6]}\n{\"op\":\"verb\",\"id\":\"vb_alarm\",\"verb\":\"puzzle.switch\",\"on\":\"alarm_switch\",\"params\":{\"once\":true}}\n{\"op\":\"ent\",\"id\":\"noodle_sign\",\"kind\":\"sign\",\"noun\":\"noodle menu\",\"hyper\":\"sign\",\"zone\":\"z_east\",\"anchor\":\"spawn_pad\",\"body\":\"fixed\",\"shape\":\"box\",\"size\":[1,1.5,0.2]}\n{\"op\":\"verb\",\"id\":\"vb_noodle\",\"verb\":\"social.inspect\",\"on\":\"noodle_sign\",\"params\":{\"text\":\"Neon noodles, 5 credits. The vendor saw a thief run past.\"}}\n{\"op\":\"ent\",\"id\":\"crumble_walk\",\"kind\":\"platform\",\"noun\":\"rickety walkway\",\"hyper\":\"platform\",\"zone\":\"z_south\",\"anchor\":\"deck_e\",\"body\":\"fixed\",\"shape\":\"box\",\"size\":[3,0.3,3]}\n{\"op\":\"verb\",\"id\":\"vb_crumble\",\"verb\":\"motion_hazards.crumble\",\"on\":\"crumble_walk\",\"params\":{\"delay\":0.8,\"back\":4}}\n{\"op\":\"ent\",\"id\":\"drone_3\",\"kind\":\"hazard\",\"noun\":\"delivery drone\",\"hyper\":\"autonomous vehicle\",\"zone\":\"z_south\",\"anchor\":\"deck_center\",\"body\":\"sensor\",\"shape\":\"sphere\",\"size\":[0.5,0.5,0.5]}\n{\"op\":\"verb\",\"id\":\"vb_drone3_hazard\",\"verb\":\"motion_hazards.hazard\",\"on\":\"drone_3\",\"params\":{\"respawn\":true}}\n{\"op\":\"verb\",\"id\":\"vb_drone3_move\",\"verb\":\"motion_hazards.oscillate\",\"on\":\"drone_3\",\"params\":{\"axis\":\"x\",\"travel\":6,\"period\":4}}\n{\"op\":\"rule\",\"id\":\"r_drone3_hit\",\"when\":{\"t\":\"hit\",\"a\":\"player\",\"b\":\"drone_3\"},\"then\":[{\"e\":\"lose\",\"target\":\"player\"}],\"once\":false}\n{\"op\":\"rule\",\"id\":\"r_alarm_twist\",\"when\":{\"t\":\"state_is\",\"a\":\"alarm_switch\",\"s\":\"on\"},\"then\":[{\"e\":\"destroy\",\"target\":\"drone_1\"},{\"e\":\"destroy\",\"target\":\"drone_2\"}],\"once\":true}\n{\"op\":\"npc\",\"id\":\"thief_npc\",\"role\":\"rival\",\"zone\":\"z_midfield\",\"anchor\":\"center_s\",\"team\":\"\",\"menu\":[\"guard.patrol\",\"thief.flee\"],\"dflt\":\"thief.flee\",\"persona\":{\"identity\":\"a nervous pickpocket in a hooded jacket\",\"personality\":\"jittery, cocky\",\"knowledge\":\"back alleys and the exit gate\",\"replyStyle\":\"short, taunting\",\"safety\":\"family-friendly\"}}\n{\"op\":\"npc\",\"id\":\"vendor_1\",\"role\":\"merchant\",\"zone\":\"z_west\",\"anchor\":\"flank_n\",\"team\":\"\",\"menu\":[\"vendor.sell\",\"vendor.gossip\"],\"dflt\":\"vendor.gossip\",\"persona\":{\"identity\":\"a noodle stall vendor\",\"personality\":\"chatty, wary of thieves\",\"knowledge\":\"the alarm lever on the upper promenade shuts down drones\",\"replyStyle\":\"short, friendly\",\"safety\":\"family-friendly\"}}"
+  },
+  {
+    "prompt": "a Feng Shui handbag gallery where each bag sits in its proper place",
+    "model": "claude-sonnet-5-5",
+    "ms": 9880,
+    "firstMs": 1189,
+    "inTok": 5474,
+    "outTok": 1575,
+    "stats": {
+      "replaced": 1,
+      "added": 17,
+      "deleted": 0,
+      "ignored": 0,
+      "locked": 0
+    },
+    "controls": [
+      7,
+      15
+    ],
+    "rules": [
+      0,
+      0
+    ],
+    "npcs": [
+      1,
+      2
+    ],
+    "personas": 2,
+    "t3": [
+      "-",
+      "-"
+    ],
+    "headline": [
+      "not_checkable",
+      "not_checkable"
+    ],
+    "badness": [
+      3,
+      13
+    ],
+    "offered": false,
+    "patch": "{\"op\":\"zone\",\"id\":\"z_north\",\"slot\":\"room_nw\",\"tag\":\"room\",\"name\":\"Hidden jade study\"}\n{\"op\":\"ent\",\"id\":\"flow_switch\",\"kind\":\"switch\",\"noun\":\"bronze chime of balance\",\"hyper\":\"exhibit\",\"zone\":\"z_hall\",\"anchor\":\"wall_s\",\"body\":\"fixed\",\"shape\":\"box\",\"size\":[0.3,0.5,0.3]}\n{\"op\":\"ent\",\"id\":\"study_door\",\"kind\":\"door\",\"noun\":\"bamboo screen door\",\"hyper\":\"door\",\"zone\":\"z_hall\",\"anchor\":\"doorway_w\",\"body\":\"fixed\",\"shape\":\"box\",\"size\":[0.3,2.2,1.4]}\n{\"op\":\"ent\",\"id\":\"bag_secret\",\"kind\":\"prop\",\"noun\":\"jade dragon evening bag\",\"hyper\":\"fashion_item\",\"zone\":\"z_north\",\"anchor\":\"center\",\"body\":\"fixed\",\"shape\":\"box\",\"size\":[0.4,0.3,0.2]}\n{\"op\":\"ent\",\"id\":\"fountain_east\",\"kind\":\"prop\",\"noun\":\"water fountain for flowing chi\",\"hyper\":\"exhibit\",\"zone\":\"z_east\",\"anchor\":\"center\",\"body\":\"fixed\",\"shape\":\"sphere\",\"size\":[0.8,0.8,0.8]}\n{\"op\":\"ent\",\"id\":\"compass_west\",\"kind\":\"prop\",\"noun\":\"bagua compass inlaid in the floor\",\"hyper\":\"exhibit\",\"zone\":\"z_west\",\"anchor\":\"center\",\"body\":\"fixed\",\"shape\":\"box\",\"size\":[1.2,0.05,1.2]}\n{\"op\":\"ent\",\"id\":\"lantern_yard\",\"kind\":\"prop\",\"noun\":\"red paper lantern\",\"hyper\":\"exhibit\",\"zone\":\"z_yard\",\"anchor\":\"gate\",\"body\":\"fixed\",\"shape\":\"sphere\",\"size\":[0.4,0.4,0.4]}\n{\"op\":\"ent\",\"id\":\"door_note\",\"kind\":\"sign\",\"noun\":\"foyer plaque on arrival\",\"hyper\":\"sign\",\"zone\":\"z_entrance\",\"anchor\":\"wall_n\",\"body\":\"fixed\",\"shape\":\"box\",\"size\":[0.8,0.2,0.1]}\n{\"op\":\"verb\",\"id\":\"vb_flow_switch\",\"verb\":\"puzzle.switch\",\"on\":\"flow_switch\",\"params\":{\"once\":true}}\n{\"op\":\"verb\",\"id\":\"vb_study_lock\",\"verb\":\"puzzle.lock\",\"on\":\"study_door\",\"params\":{\"key\":\"flow_switch\",\"keep\":false}}\n{\"op\":\"verb\",\"id\":\"vb_inspect_secret\",\"verb\":\"social.inspect\",\"on\":\"bag_secret\",\"params\":{\"text\":\"Jade dragon \u2013 revealed once the hall's chi was balanced.\"}}\n{\"op\":\"verb\",\"id\":\"vb_inspect_fountain\",\"verb\":\"social.inspect\",\"on\":\"fountain_east\",\"params\":{\"text\":\"Flowing water carries chi gently through the east wing.\"}}\n{\"op\":\"verb\",\"id\":\"vb_inspect_compass\",\"verb\":\"social.inspect\",\"on\":\"compass_west\",\"params\":{\"text\":\"The bagua map: each bag rests in its proper sector.\"}}\n{\"op\":\"verb\",\"id\":\"vb_inspect_lantern\",\"verb\":\"social.inspect\",\"on\":\"lantern_yard\",\"params\":{\"text\":\"Red lanterns welcome good fortune at the gate.\"}}\n{\"op\":\"verb\",\"id\":\"vb_inspect_note\",\"verb\":\"social.inspect\",\"on\":\"door_note\",\"params\":{\"text\":\"Walk slowly. Let the flow guide you to each bag.\"}}\n{\"op\":\"rule\",\"id\":\"r_open_study\",\"when\":{\"t\":\"state_is\",\"a\":\"flow_switch\",\"s\":\"on\"},\"do\":[{\"e\":\"open\",\"target\":\"study_door\"},{\"e\":\"emit\",\"target\":\"bag_secret\",\"fx\":\"sparkle\"}]}\n{\"op\":\"npc\",\"id\":\"guide_1\",\"role\":\"guide\",\"zone\":\"z_entrance\",\"anchor\":\"center\",\"team\":\"\",\"menu\":[\"guide.tour\"],\"dflt\":\"guide.tour\",\"persona\":{\"identity\":\"the gallery feng shui master\",\"personality\":\"calm, warm, quietly witty\",\"knowledge\":\"why each bag sits in its direction, and that the bronze chime in the hall reveals a hidden study\",\"replyStyle\":\"soft, short, poetic\",\"safety\":\"family-friendly\"}}\n{\"op\":\"npc\",\"id\":\"keeper_1\",\"role\":\"citizen\",\"zone\":\"z_west\",\"anchor\":\"wall_w\",\"team\":\"\",\"menu\":[\"guide.tour\",\"guide.chat\"],\"dflt\":\"guide.chat\",\"persona\":{\"identity\":\"the wing curator\",\"personality\":\"gentle, proud of the collection\",\"knowledge\":\"the meaning of the wealth bags and the bagua compass\",\"replyStyle\":\"serene, brief\",\"safety\":\"family-friendly\"}}"
+  },
+  {
+    "prompt": "a kids' playground with slides, swings and a treasure hunt",
+    "model": "claude-sonnet-5-5",
+    "ms": 8154,
+    "firstMs": 1544,
+    "inTok": 5340,
+    "outTok": 1266,
+    "stats": {
+      "replaced": 1,
+      "added": 14,
+      "deleted": 0,
+      "ignored": 0,
+      "locked": 0
+    },
+    "controls": [
+      7,
+      13
+    ],
+    "rules": [
+      0,
+      0
+    ],
+    "npcs": [
+      1,
+      2
+    ],
+    "personas": 2,
+    "t3": [
+      "-",
+      "-"
+    ],
+    "headline": [
+      "not_checkable",
+      "not_checkable"
+    ],
+    "badness": [
+      3,
+      3
+    ],
+    "offered": true,
+    "patch": "{\"op\":\"zone\",\"id\":\"z_pond\",\"slot\":\"pond\",\"tag\":\"pond\",\"name\":\"Duck Pond\"}\n{\"op\":\"zone\",\"id\":\"z_lookout\",\"slot\":\"lookout\",\"tag\":\"lookout\",\"name\":\"Treehouse Lookout\"}\n{\"op\":\"ent\",\"id\":\"slide_pad\",\"kind\":\"plate\",\"noun\":\"bouncy pad\",\"hyper\":\"playground equipment\",\"zone\":\"z_lookout\",\"anchor\":\"ledge\",\"body\":\"sensor\",\"shape\":\"box\",\"size\":[1.5,0.1,1.5]}\n{\"op\":\"ent\",\"id\":\"secret_lever\",\"kind\":\"switch\",\"noun\":\"golden lever\",\"hyper\":\"clue\",\"zone\":\"z_lookout\",\"anchor\":\"top\",\"body\":\"fixed\",\"shape\":\"box\",\"size\":[0.3,0.6,0.3]}\n{\"op\":\"ent\",\"id\":\"hidden_chest\",\"kind\":\"prop\",\"noun\":\"rainbow chest\",\"hyper\":\"treasure\",\"zone\":\"z_sandbox\",\"anchor\":\"tent\",\"body\":\"fixed\",\"shape\":\"box\",\"size\":[0.8,0.5,0.5]}\n{\"op\":\"ent\",\"id\":\"duck_sign\",\"kind\":\"sign\",\"noun\":\"duck pond sign\",\"hyper\":\"sign\",\"zone\":\"z_pond\",\"anchor\":\"dock\",\"body\":\"fixed\",\"shape\":\"box\",\"size\":[0.6,0.8,0.1]}\n{\"op\":\"ent\",\"id\":\"sand_bell\",\"kind\":\"prop\",\"noun\":\"brass bell\",\"hyper\":\"playground equipment\",\"zone\":\"z_pond\",\"anchor\":\"shore\",\"body\":\"fixed\",\"shape\":\"box\",\"size\":[0.3,0.5,0.3]}\n{\"op\":\"verb\",\"id\":\"vb_pad\",\"verb\":\"locomotion.jump_pad\",\"on\":\"slide_pad\",\"params\":{\"height\":6}}\n{\"op\":\"verb\",\"id\":\"vb_lever\",\"verb\":\"puzzle.switch\",\"on\":\"secret_lever\",\"params\":{\"once\":true}}\n{\"op\":\"verb\",\"id\":\"vb_chest\",\"verb\":\"social.inspect\",\"on\":\"hidden_chest\",\"params\":{\"text\":\"The rainbow chest is full of toys! The treasure is yours.\"}}\n{\"op\":\"verb\",\"id\":\"vb_duck\",\"verb\":\"social.inspect\",\"on\":\"duck_sign\",\"params\":{\"text\":\"Quack! Ducks say: try the golden lever up high.\"}}\n{\"op\":\"verb\",\"id\":\"vb_bell\",\"verb\":\"social.inspect\",\"on\":\"sand_bell\",\"params\":{\"text\":\"Ding! Three clues lead to the sandbox treasure.\"}}\n{\"op\":\"rule\",\"id\":\"r_lever_reveal\",\"when\":{\"t\":\"state_is\",\"a\":\"secret_lever\",\"s\":\"on\"},\"do\":[{\"fx\":\"emit\",\"target\":\"hidden_chest\"}]}\n{\"op\":\"npc\",\"id\":\"guide_npc\",\"role\":\"guide\",\"zone\":\"z_hub\",\"anchor\":\"center\",\"team\":\"\",\"menu\":[\"guide.patrol\"],\"dflt\":\"guide.patrol\",\"persona\":{\"identity\":\"Pip, the playground helper\",\"personality\":\"cheerful, playful, encouraging\",\"knowledge\":\"the three golden clues, the sandbox treasure, and the golden lever at the lookout\",\"replyStyle\":\"short, sunny, kid-friendly\",\"safety\":\"family-friendly\"}}\n{\"op\":\"npc\",\"id\":\"duck_keeper\",\"role\":\"citizen\",\"zone\":\"z_pond\",\"anchor\":\"bank\",\"team\":\"\",\"menu\":[\"guide.patrol\",\"guide.greet\"],\"dflt\":\"guide.patrol\",\"persona\":{\"identity\":\"Mabel, the duck pond keeper\",\"personality\":\"gentle, giggly, a bit secretive\",\"knowledge\":\"a secret chest appears in the sandbox when the golden lever is pulled\",\"replyStyle\":\"whispery, short\",\"safety\":\"family-friendly\"}}"
+  },
+  {
+    "prompt": "a library maze where you find the secret book that opens a hidden door",
+    "model": "claude-sonnet-5-5",
+    "ms": 7945,
+    "firstMs": 1311,
+    "inTok": 5021,
+    "outTok": 1159,
+    "stats": {
+      "replaced": 0,
+      "added": 14,
+      "deleted": 0,
+      "ignored": 0,
+      "locked": 0
+    },
+    "controls": [
+      6,
+      11
+    ],
+    "rules": [
+      5,
+      4
+    ],
+    "npcs": [
+      0,
+      1
+    ],
+    "personas": 1,
+    "t3": [
+      "12/12",
+      "12/12"
+    ],
+    "headline": [
+      "verified",
+      "verified"
+    ],
+    "badness": [
+      0,
+      0
+    ],
+    "offered": true,
+    "patch": "{\"op\":\"ent\",\"id\":\"lantern_key\",\"kind\":\"pickup\",\"noun\":\"brass reading lantern\",\"hyper\":\"objects\",\"zone\":\"z_maze\",\"anchor\":\"entrance\",\"body\":\"dynamic\",\"shape\":\"box\",\"size\":[0.2,0.3,0.2]}\n{\"op\":\"ent\",\"id\":\"hint_sign\",\"kind\":\"sign\",\"noun\":\"card catalogue\",\"hyper\":\"objects\",\"zone\":\"z_maze\",\"anchor\":\"dead_end_4\",\"body\":\"fixed\",\"shape\":\"box\",\"size\":[0.6,1,0.4]}\n{\"op\":\"ent\",\"id\":\"coin_scroll\",\"kind\":\"pickup\",\"noun\":\"old scroll\",\"hyper\":\"objects\",\"zone\":\"z_maze\",\"anchor\":\"dead_end_3\",\"body\":\"sensor\",\"shape\":\"box\",\"size\":[0.3,0.1,0.3]}\n{\"op\":\"ent\",\"id\":\"jump_pad_alcove\",\"kind\":\"plate\",\"noun\":\"springy rug\",\"hyper\":\"plate\",\"zone\":\"z_maze\",\"anchor\":\"dead_end_4\",\"body\":\"sensor\",\"shape\":\"box\",\"size\":[0.8,0.1,0.8]}\n{\"op\":\"ent\",\"id\":\"shortcut_door\",\"kind\":\"door\",\"noun\":\"hidden shelf passage\",\"hyper\":\"door\",\"zone\":\"z_maze\",\"anchor\":\"dead_end_1\",\"body\":\"fixed\",\"shape\":\"box\"}\n{\"op\":\"ent\",\"id\":\"reveal_lever\",\"kind\":\"switch\",\"noun\":\"brass lever\",\"hyper\":\"switch\",\"zone\":\"z_maze\",\"anchor\":\"dead_end_2\",\"body\":\"fixed\",\"shape\":\"box\",\"size\":[0.3,0.6,0.3]}\n{\"op\":\"verb\",\"id\":\"vb_inspect_sign\",\"verb\":\"social.inspect\",\"on\":\"hint_sign\",\"params\":{\"text\":\"Entry: the secret book rests at the heart of the maze.\"}}\n{\"op\":\"verb\",\"id\":\"vb_carry_lantern\",\"verb\":\"physics_props.carry\",\"on\":\"lantern_key\",\"params\":{}}\n{\"op\":\"verb\",\"id\":\"vb_collect_scroll\",\"verb\":\"puzzle.collect\",\"on\":\"coin_scroll\",\"params\":{}}\n{\"op\":\"verb\",\"id\":\"vb_pad\",\"verb\":\"locomotion.jump_pad\",\"on\":\"jump_pad_alcove\",\"params\":{\"height\":4}}\n{\"op\":\"verb\",\"id\":\"vb_lever\",\"verb\":\"puzzle.switch\",\"on\":\"reveal_lever\",\"params\":{\"once\":true}}\n{\"op\":\"verb\",\"id\":\"vb_shortcut_lock\",\"verb\":\"puzzle.lock\",\"on\":\"shortcut_door\",\"params\":{\"key\":\"lantern_key\"}}\n{\"op\":\"rule\",\"id\":\"r_lever_opens\",\"when\":{\"t\":\"state_is\",\"a\":\"reveal_lever\",\"s\":\"on\"},\"then\":[{\"e\":\"open\",\"target\":\"shortcut_door\"},{\"e\":\"emit\",\"target\":\"shortcut_door\",\"fx\":\"spark\"}],\"once\":true}\n{\"op\":\"npc\",\"id\":\"librarian\",\"role\":\"guide\",\"zone\":\"z_start\",\"anchor\":\"sign\",\"team\":\"\",\"menu\":[\"guide.hint\",\"guide.chat\"],\"dflt\":\"guide.hint\",\"persona\":{\"identity\":\"the old head librarian\",\"personality\":\"hushed, wry, secretly fond of readers\",\"knowledge\":\"the book is at the maze center, a brass lever reveals a shelf shortcut, the hourglass is the time limit\",\"replyStyle\":\"whispered, short, bookish\",\"safety\":\"family-friendly\"}}"
+  },
+  {
+    "prompt": "a minimalist white museum with five sculptures and an audio guide",
+    "model": "claude-sonnet-5-5",
+    "ms": 11049,
+    "firstMs": 2445,
+    "inTok": 5974,
+    "outTok": 1474,
+    "stats": {
+      "replaced": 1,
+      "added": 17,
+      "deleted": 0,
+      "ignored": 0,
+      "locked": 0
+    },
+    "controls": [
+      11,
+      18
+    ],
+    "rules": [
+      0,
+      0
+    ],
+    "npcs": [
+      1,
+      2
+    ],
+    "personas": 2,
+    "t3": [
+      "-",
+      "-"
+    ],
+    "headline": [
+      "not_checkable",
+      "not_checkable"
+    ],
+    "badness": [
+      3,
+      3
+    ],
+    "offered": true,
+    "patch": "{\"op\":\"zone\",\"id\":\"z_east_room\",\"slot\":\"room_ne\",\"tag\":\"room\",\"name\":\"Quiet annex\"}\n{\"op\":\"zone\",\"id\":\"z_south_room\",\"slot\":\"room_sw\",\"tag\":\"room\",\"name\":\"Light study\"}\n{\"op\":\"ent\",\"id\":\"annex_switch\",\"kind\":\"switch\",\"noun\":\"brass lever\",\"hyper\":\"switch\",\"zone\":\"z_gallery\",\"anchor\":\"wall_n\",\"body\":\"fixed\",\"shape\":\"box\",\"size\":[0.4,0.8,0.2]}\n{\"op\":\"ent\",\"id\":\"annex_door\",\"kind\":\"door\",\"noun\":\"white sliding door\",\"hyper\":\"door\",\"zone\":\"z_gallery\",\"anchor\":\"doorway_e\",\"body\":\"fixed\",\"shape\":\"box\",\"size\":[0.3,2.4,2.0]}\n{\"op\":\"ent\",\"id\":\"annex_piece\",\"kind\":\"prop\",\"noun\":\"hidden sculpture\",\"hyper\":\"artwork\",\"zone\":\"z_east_room\",\"anchor\":\"center\",\"body\":\"fixed\",\"shape\":\"box\",\"size\":[1.0,1.2,1.0]}\n{\"op\":\"ent\",\"id\":\"plaque_south\",\"kind\":\"sign\",\"noun\":\"wall plaque\",\"hyper\":\"sign\",\"zone\":\"z_south_room\",\"anchor\":\"wall_s\",\"body\":\"fixed\",\"shape\":\"box\",\"size\":[0.8,0.6,0.1]}\n{\"op\":\"ent\",\"id\":\"bench_study\",\"kind\":\"prop\",\"noun\":\"stone bench\",\"hyper\":\"bench\",\"zone\":\"z_south_room\",\"anchor\":\"center\",\"body\":\"fixed\",\"shape\":\"box\",\"size\":[1.6,0.5,0.6]}\n{\"op\":\"ent\",\"id\":\"entry_plate\",\"kind\":\"plate\",\"noun\":\"floor sensor\",\"hyper\":\"plate\",\"zone\":\"z_entrance\",\"anchor\":\"doorway_n\",\"body\":\"sensor\",\"shape\":\"box\",\"size\":[1.5,0.1,1.5]}\n{\"op\":\"verb\",\"id\":\"vb_annex_switch\",\"verb\":\"puzzle.switch\",\"on\":\"annex_switch\",\"params\":{\"once\":true}}\n{\"op\":\"verb\",\"id\":\"vb_annex_lock\",\"verb\":\"puzzle.lock\",\"on\":\"annex_door\",\"params\":{\"key\":\"\",\"keep\":true}}\n{\"op\":\"verb\",\"id\":\"vb_annex_inspect\",\"verb\":\"social.inspect\",\"on\":\"annex_piece\",\"params\":{\"text\":\"A secret sixth form: a glowing ring of folded white paper.\"}}\n{\"op\":\"verb\",\"id\":\"vb_plaque\",\"verb\":\"social.inspect\",\"on\":\"plaque_south\",\"params\":{\"text\":\"Light Study: notice how shadows turn the walls gray.\"}}\n{\"op\":\"verb\",\"id\":\"vb_bench\",\"verb\":\"social.inspect\",\"on\":\"bench_study\",\"params\":{\"text\":\"Sit a moment. Silence is part of the exhibit.\"}}\n{\"op\":\"verb\",\"id\":\"vb_entry_plate\",\"verb\":\"puzzle.plate\",\"on\":\"entry_plate\",\"params\":{\"latch\":true}}\n{\"op\":\"rule\",\"id\":\"r_annex_open\",\"when\":{\"t\":\"state_is\",\"a\":\"annex_switch\",\"s\":\"on\"},\"do\":[{\"fx\":\"open\",\"target\":\"annex_door\"}]}\n{\"op\":\"rule\",\"id\":\"r_welcome\",\"when\":{\"t\":\"state_is\",\"a\":\"entry_plate\",\"s\":\"down\"},\"do\":[{\"fx\":\"emit\",\"target\":\"guide_center\",\"v\":\"chime\"}]}\n{\"op\":\"npc\",\"id\":\"guide_npc\",\"role\":\"guide\",\"zone\":\"z_entrance\",\"anchor\":\"wall_n\",\"team\":\"\",\"menu\":[\"guide.tour\"],\"dflt\":\"guide.tour\",\"persona\":{\"identity\":\"the museum audio docent\",\"personality\":\"calm, warm, quietly passionate about art\",\"knowledge\":\"the five sculptures, the audio stops near each one, and the lever that opens the hidden annex\",\"replyStyle\":\"soft, brief, poetic\",\"safety\":\"family-friendly\"}}\n{\"op\":\"npc\",\"id\":\"curator_npc\",\"role\":\"citizen\",\"zone\":\"z_south_room\",\"anchor\":\"corner_nw\",\"team\":\"\",\"menu\":[\"guide.tour\",\"guide.chat\"],\"dflt\":\"guide.chat\",\"persona\":{\"identity\":\"the shy curator\",\"personality\":\"gentle, thoughtful, a little nervous\",\"knowledge\":\"why the museum is all white and where the brass lever hides in the gallery\",\"replyStyle\":\"hushed, short sentences\",\"safety\":\"family-friendly\"}}"
+  },
+  {
+    "prompt": "a real-estate tour of a beachfront villa; the agent books a viewing at the end",
+    "model": "claude-sonnet-5-5",
+    "ms": 8059,
+    "firstMs": 1435,
+    "inTok": 5770,
+    "outTok": 1206,
+    "stats": {
+      "replaced": 1,
+      "added": 13,
+      "deleted": 0,
+      "ignored": 0,
+      "locked": 0
+    },
+    "controls": [
+      8,
+      14
+    ],
+    "rules": [
+      0,
+      0
+    ],
+    "npcs": [
+      1,
+      1
+    ],
+    "personas": 1,
+    "t3": [
+      "-",
+      "-"
+    ],
+    "headline": [
+      "not_checkable",
+      "not_checkable"
+    ],
+    "badness": [
+      3,
+      3
+    ],
+    "offered": true,
+    "patch": "{\"op\":\"ent\",\"id\":\"sea_telescope\",\"kind\":\"prop\",\"noun\":\"brass telescope\",\"hyper\":\"instrument\",\"zone\":\"z_deck\",\"anchor\":\"wall_n\",\"body\":\"fixed\",\"shape\":\"box\",\"size\":[0.5,1.4,0.5]}\n{\"op\":\"verb\",\"id\":\"vb_inspect_scope\",\"verb\":\"social.inspect\",\"on\":\"sea_telescope\",\"params\":{\"text\":\"Spot dolphins past your private beach.\"}}\n{\"op\":\"ent\",\"id\":\"wine_fridge\",\"kind\":\"prop\",\"noun\":\"wine cellar fridge\",\"hyper\":\"appliance\",\"zone\":\"z_kitchen\",\"anchor\":\"wall_e\",\"body\":\"fixed\",\"shape\":\"box\",\"size\":[0.8,1.8,0.7]}\n{\"op\":\"verb\",\"id\":\"vb_inspect_wine\",\"verb\":\"social.inspect\",\"on\":\"wine_fridge\",\"params\":{\"text\":\"Climate-controlled cellar for 200 bottles.\"}}\n{\"op\":\"ent\",\"id\":\"gate_plaque\",\"kind\":\"sign\",\"noun\":\"villa nameplate\",\"hyper\":\"sign\",\"zone\":\"z_yard\",\"anchor\":\"gate\",\"body\":\"fixed\",\"shape\":\"box\",\"size\":[1,0.6,0.2]}\n{\"op\":\"verb\",\"id\":\"vb_inspect_plaque\",\"verb\":\"social.inspect\",\"on\":\"gate_plaque\",\"params\":{\"text\":\"Villa Azul: 5 bedrooms, 40 steps to the sand.\"}}\n{\"op\":\"ent\",\"id\":\"floor_plan_board\",\"kind\":\"sign\",\"noun\":\"floor plan display\",\"hyper\":\"sign\",\"zone\":\"z_entrance\",\"anchor\":\"wall_n\",\"body\":\"fixed\",\"shape\":\"box\",\"size\":[1.2,1.6,0.1]}\n{\"op\":\"verb\",\"id\":\"vb_inspect_plan\",\"verb\":\"social.inspect\",\"on\":\"floor_plan_board\",\"params\":{\"text\":\"Tour order: living, kitchen, hall, then the deck.\"}}\n{\"op\":\"ent\",\"id\":\"sunset_switch\",\"kind\":\"switch\",\"noun\":\"sunset lighting switch\",\"hyper\":\"switch\",\"zone\":\"z_main\",\"anchor\":\"wall_n\",\"body\":\"fixed\",\"shape\":\"box\",\"size\":[0.3,0.4,0.1]}\n{\"op\":\"verb\",\"id\":\"vb_sunset\",\"verb\":\"puzzle.switch\",\"on\":\"sunset_switch\",\"params\":{\"once\":true}}\n{\"op\":\"ent\",\"id\":\"master_suite\",\"kind\":\"prop\",\"noun\":\"master suite showcase\",\"hyper\":\"bedroom\",\"zone\":\"z_living\",\"anchor\":\"wall_w\",\"body\":\"fixed\",\"shape\":\"box\",\"size\":[2,0.6,2]}\n{\"op\":\"verb\",\"id\":\"vb_inspect_suite\",\"verb\":\"social.inspect\",\"on\":\"master_suite\",\"params\":{\"text\":\"Hidden master suite with a private ocean balcony.\"}}\n{\"op\":\"rule\",\"id\":\"r_sunset_glow\",\"when\":{\"t\":\"state_is\",\"a\":\"sunset_switch\",\"s\":\"on\"},\"do\":[{\"fx\":\"emit\",\"target\":\"master_suite\"}]}\n{\"op\":\"npc\",\"id\":\"guide_agent\",\"role\":\"guide\",\"zone\":\"z_deck\",\"anchor\":\"corner_ne\",\"team\":\"\",\"menu\":[\"guide.points\",\"guide.book\"],\"dflt\":\"guide.points\",\"persona\":{\"identity\":\"Marina, the villa's property agent\",\"personality\":\"warm, polished, quietly eager to close\",\"knowledge\":\"every room, the sunset lighting switch, and how to book a viewing at 555-1234\",\"replyStyle\":\"short, upbeat, aspirational\",\"safety\":\"family-friendly\"}}"
+  },
+  {
+    "prompt": "a snowy mountain race with checkpoints and a finish flag",
+    "model": "claude-sonnet-5-5",
+    "ms": 9804,
+    "firstMs": 1988,
+    "inTok": 5559,
+    "outTok": 1484,
+    "stats": {
+      "replaced": 0,
+      "added": 17,
+      "deleted": 0,
+      "ignored": 0,
+      "locked": 0
+    },
+    "controls": [
+      10,
+      15
+    ],
+    "rules": [
+      6,
+      3
+    ],
+    "npcs": [
+      0,
+      2
+    ],
+    "personas": 2,
+    "t3": [
+      "12/12",
+      "0/12"
+    ],
+    "headline": [
+      "verified",
+      "counterexample"
+    ],
+    "badness": [
+      0,
+      28
+    ],
+    "offered": false,
+    "patch": "{\"op\":\"ent\",\"id\":\"ice_pad\",\"kind\":\"plate\",\"noun\":\"boost pad\",\"hyper\":\"surface\",\"zone\":\"z_seg_2\",\"anchor\":\"pickup_2\",\"body\":\"sensor\",\"shape\":\"box\",\"size\":[1.5,0.1,1.5]}\n{\"op\":\"verb\",\"id\":\"vb_ice_pad\",\"verb\":\"locomotion.jump_pad\",\"on\":\"ice_pad\",\"params\":{\"height\":4}}\n{\"op\":\"ent\",\"id\":\"wind_gust\",\"kind\":\"hazard\",\"noun\":\"tailwind gust\",\"hyper\":\"wind\",\"zone\":\"z_seg_3\",\"anchor\":\"pickup_3\",\"body\":\"sensor\",\"shape\":\"box\",\"size\":[3,1,3]}\n{\"op\":\"verb\",\"id\":\"vb_wind\",\"verb\":\"motion_hazards.wind\",\"on\":\"wind_gust\",\"params\":{\"x\":0,\"z\":6}}\n{\"op\":\"ent\",\"id\":\"crumble_ice\",\"kind\":\"platform\",\"noun\":\"thin ice\",\"hyper\":\"surface\",\"zone\":\"z_seg_5\",\"anchor\":\"pickup_5\",\"body\":\"fixed\",\"shape\":\"box\",\"size\":[2,0.3,2]}\n{\"op\":\"verb\",\"id\":\"vb_crumble\",\"verb\":\"motion_hazards.crumble\",\"on\":\"crumble_ice\",\"params\":{\"delay\":0.8,\"back\":4}}\n{\"op\":\"ent\",\"id\":\"trail_sign\",\"kind\":\"sign\",\"noun\":\"trail marker\",\"hyper\":\"marker\",\"zone\":\"z_seg_6\",\"anchor\":\"pickup_6\",\"body\":\"fixed\",\"shape\":\"box\",\"size\":[0.5,1.5,0.2]}\n{\"op\":\"verb\",\"id\":\"vb_trail\",\"verb\":\"social.inspect\",\"on\":\"trail_sign\",\"params\":{\"text\":\"Last stretch: the gaps close fast. Keep your speed and double jump!\"}}\n{\"op\":\"ent\",\"id\":\"summit_view\",\"kind\":\"sign\",\"noun\":\"summit plaque\",\"hyper\":\"marker\",\"zone\":\"z_start\",\"anchor\":\"sign\",\"body\":\"fixed\",\"shape\":\"box\",\"size\":[0.6,1.2,0.2]}\n{\"op\":\"verb\",\"id\":\"vb_summit\",\"verb\":\"social.inspect\",\"on\":\"summit_view\",\"params\":{\"text\":\"Pass every checkpoint on the way down. Cold wind, fast snow.\"}}\n{\"op\":\"ent\",\"id\":\"shortcut_switch\",\"kind\":\"switch\",\"noun\":\"lever\",\"hyper\":\"switch\",\"zone\":\"z_seg_1\",\"anchor\":\"pickup_1\",\"body\":\"fixed\",\"shape\":\"box\",\"size\":[0.4,0.8,0.4]}\n{\"op\":\"verb\",\"id\":\"vb_sc_switch\",\"verb\":\"puzzle.switch\",\"on\":\"shortcut_switch\",\"params\":{\"once\":true}}\n{\"op\":\"ent\",\"id\":\"bonus_pad\",\"kind\":\"plate\",\"noun\":\"shortcut jump pad\",\"hyper\":\"surface\",\"zone\":\"z_seg_4\",\"anchor\":\"pickup_4\",\"body\":\"sensor\",\"shape\":\"box\",\"size\":[1.5,0.1,1.5]}\n{\"op\":\"verb\",\"id\":\"vb_bonus_pad\",\"verb\":\"locomotion.jump_pad\",\"on\":\"bonus_pad\",\"params\":{\"height\":6}}\n{\"op\":\"rule\",\"id\":\"r_lever_reveal\",\"when\":{\"t\":\"state_is\",\"a\":\"shortcut_switch\",\"s\":\"on\"},\"then\":[{\"e\":\"emit\",\"target\":\"bonus_pad\",\"fx\":\"sparkle\"}]}\n{\"op\":\"npc\",\"id\":\"coach\",\"role\":\"guide\",\"zone\":\"z_start\",\"anchor\":\"host\",\"team\":\"\",\"menu\":[\"guide.tips\",\"guide.hint\"],\"dflt\":\"guide.tips\",\"persona\":{\"identity\":\"the old ski patrol coach\",\"personality\":\"upbeat, wry, loves speed\",\"knowledge\":\"checkpoints go in order, thin ice crumbles, the lever near the first ledge powers a jump pad over the pit\",\"replyStyle\":\"short, brisk, snowy slang\",\"safety\":\"family-friendly\"}}\n{\"op\":\"npc\",\"id\":\"flagger\",\"role\":\"guide\",\"zone\":\"z_finish\",\"anchor\":\"host\",\"team\":\"\",\"menu\":[\"guide.tips\",\"guide.cheer\"],\"dflt\":\"guide.cheer\",\"persona\":{\"identity\":\"the valley flag marshal\",\"personality\":\"cheerful, bundled up\",\"knowledge\":\"the finish flag is just ahead and the pit is deadly\",\"replyStyle\":\"warm, short\",\"safety\":\"family-friendly\"}}"
+  }
+]

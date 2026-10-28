@@ -2,7 +2,7 @@
 // pre-flight estimate is an upper bound (input at ≤2 UTF-8 bytes per token, output at its max
 // token budget), so a commit almost never exceeds its hold. The estimate prices the fast lane;
 // the Haiku fallback costs less per token than either of its models, so a hold covers it too.
-import { ROUTES } from "@ghostrun/llm";
+import { ROUTES, type Job } from "@ghostrun/llm";
 
 export const INTENT_MODEL = ROUTES.intent[0]!.model;
 export const FILL_MODEL = ROUTES.fill[0]!.model;
@@ -41,6 +41,11 @@ export function buildEstimate(intentMessages: { content: string }[]): { intent: 
     intent: costMicroUsd(INTENT_MODEL, inputBound(intentMessages), INTENT_MAX_OUT),
     fill: costMicroUsd(FILL_MODEL, FILL_MAX_IN, FILL_MAX_OUT),
   };
+}
+
+/** The hold for a job: its dearest lane at this call's input bound and output budget. */
+export function jobEstimate(job: Job, messages: { content: string }[], maxOut: number): number {
+  return Math.max(...ROUTES[job].map((r) => costMicroUsd(r.model, inputBound(messages), maxOut)));
 }
 
 /** A repair call reads the fill plus the world rules and writes a patch. */

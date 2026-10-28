@@ -6,7 +6,7 @@
 // the governor before any model call and commits the metered cost when it ends (governor.ts).
 // Each model call runs on the fast lane with Claude Haiku as the rung below it (llm/lanes.ts).
 import { DEFAULT_LAWS, gameplayLines } from "@ghostrun/ir";
-import { editMessages, fillMessages, hostJsonSchema, hostMessages, IntentOut, intentJsonSchema, intentMessages, jsonLanes, lanesFor, LlmError, mindJsonSchema, mindMessages, repairMessages, settleIntent, streamLanes, type Keys, type Provider } from "@ghostrun/llm";
+import { directorMessages, editMessages, fillMessages, hostJsonSchema, hostMessages, IntentOut, intentJsonSchema, intentMessages, jsonLanes, lanesFor, LlmError, mindJsonSchema, mindMessages, repairMessages, settleIntent, streamLanes, type ChatMessage, type Job, type Keys, type Provider } from "@ghostrun/llm";
 import { ALL_SUBS, PACKS, packFor } from "@ghostrun/registry";
 import * as v from "valibot";
 // the vault heist teaches goal-dependent wins, doorway doors, keys and inspectable exhibits (an A/B
@@ -14,7 +14,7 @@ import * as v from "valibot";
 import EXAMPLE from "../../../packages/ir/fixtures/vault-heist.jsonl?raw";
 import { Buckets, intVar, WINDOW_MS } from "./buckets";
 import type { DoNamespace, KvNamespace, R2Bucket, WaitUntil } from "./cf";
-import { buildEstimate, costMicroUsd, FILL_MAX_OUT, FILL_MODEL, INTENT_MAX_OUT, INTENT_MODEL, REPAIR_MAX_IN, REPAIR_MAX_OUT } from "./cost";
+import { buildEstimate, costMicroUsd, FILL_MAX_OUT, FILL_MODEL, INTENT_MAX_OUT, INTENT_MODEL, jobEstimate, REPAIR_MAX_IN, REPAIR_MAX_OUT } from "./cost";
 import { capsFromEnv, doCall, Governor, governorClient, localCall, MemoryLedger, type GovernorApi, type GovernorEnv } from "./governor";
 import { devOpen, gateMode, identify, ipKey, ipOf, mintSession, verifyTurnstile, type Caller, type GateEnv } from "./gate";
 import { json, ntfy, readJson } from "./http";
@@ -46,6 +46,8 @@ const MAX_PROMPT = 500;
 export const PAUSE_FLAG = "builds:paused";
 /** KV key in FLAGS: "anthropic" (or "cerebras") puts that provider first for every job (the runbook's "Cerebras down"). */
 export const PRIMARY_FLAG = "route:primary";
+/** KV key in FLAGS: "off" turns the Sonnet jobs (the Director's cut, hard repairs) off, deploy-free. */
+export const SONNET_FLAG = "ff.sonnet_lane";
 
 const buildBuckets = new Buckets();
 const apiBuckets = new Buckets();
@@ -96,6 +98,7 @@ export async function handle(req: Request, env: Env, ctx?: WaitUntil): Promise<R
   if (path === "/v1/build" && req.method === "POST") return build(req, env, url, later);
   if (path === "/v1/repair" && req.method === "POST") return patch("repair", req, env, url, later);
   if (path === "/v1/edit" && req.method === "POST") return patch("edit", req, env, url, later);
+  if (path === "/v1/director" && req.method === "POST") return patch("director", req, env, url, later);
   if (path === "/v1/mind" && req.method === "POST") return mind(req, env, url);
   if (path === "/v1/host" && req.method === "POST") return host(req, env, url);
   const shareId = /^\/v1\/share\/([a-z2-7]{16})$/.exec(path)?.[1];
@@ -262,7 +265,7 @@ async function host(req: Request, env: Env, url: URL): Promise<Response> {
  * an edit makes the person's own change. Either way the client merges, re-places and re-proves:
  * a repair is offered only if the receipt got better, an edit comes back with its new numbers.
  */
-async function patch(kind: "repair" | "edit", req: Request, env: Env, url: URL, later: (p: Promise<unknown>) => void): Promise<Response> {
+async function patch(kind: "repair" | "edit" | "director", req: Request, env: Env, url: URL, later: (p: Promise<unknown>) => void): Promise<Response> {
   if (!hasModel(env)) return json({ error: "llm not configured" }, 503);
   const gate = await identify(req, url, env);
   if (!gate.ok) return json(gate.body, gate.status);
@@ -271,31 +274,45 @@ async function patch(kind: "repair" | "edit", req: Request, env: Env, url: URL, 
   if (caller.via !== "token" && !buildBuckets.allow(ip, intVar(env.BUILDS_PER_WINDOW, 30))) return json({ error: "rate limited", retryMs: WINDOW_MS }, 429);
   const body = await readJson(req, 96 * 1024);
   if (!body.ok) return json({ error: body.error }, body.status);
-  const input = (body.value ?? {}) as { prompt?: unknown; change?: unknown; intent?: unknown; fill?: unknown; issues?: unknown; seed?: unknown };
+  const input = (body.value ?? {}) as { prompt?: unknown; change?: unknown; intent?: unknown; fill?: unknown; issues?: unknown; seed?: unknown; notes?: unknown; hard?: unknown };
   const prompt = typeof input.prompt === "string" ? input.prompt.trim().slice(0, MAX_PROMPT * 2) : "";
   const fill = typeof input.fill === "string" && input.fill.length <= 64 * 1024 ? input.fill : "";
   const issues = Array.isArray(input.issues) ? input.issues.filter((x): x is string => typeof x === "string").slice(0, 10).map((x) => x.slice(0, 600)) : [];
   const change = typeof input.change === "string" ? input.change.trim().slice(0, MAX_PROMPT) : "";
+  const notes = Array.isArray(input.notes) ? input.notes.filter((x): x is string => typeof x === "string").slice(0, 8).map((x) => x.slice(0, 300)) : [];
   const intent = v.safeParse(IntentOut, input.intent);
-  if (!prompt || !fill || !intent.success || !Number.isInteger(input.seed) || (kind === "repair" ? !issues.length : !change)) return json({ error: `bad ${kind} request` }, 400);
+  if (!prompt || !fill || !intent.success || !Number.isInteger(input.seed) || (kind === "repair" && !issues.length) || (kind === "edit" && !change)) return json({ error: `bad ${kind} request` }, 400);
+  // the Director's cut and a repair the fast lane gave up on are Sonnet's; everything else the patch lane's
+  const job: Job = kind === "director" ? "director" : kind === "repair" && input.hard === true ? "hard_repair" : "patch";
   const sw = await switches(env);
   if (sw.paused) return json({ error: "builds paused", retryable: true }, 503);
-  const held = await reserveFor(env, url, caller, ip, costMicroUsd(FILL_MODEL, REPAIR_MAX_IN, REPAIR_MAX_OUT));
+  if (job !== "patch" && (await env.FLAGS?.get(SONNET_FLAG, { cacheTtl: 60 }).catch(() => null)) === "off") return json({ error: "the Sonnet lane is off", retryable: false }, 503);
+  if (!lanesFor(job, keysOf(env), { messages: [] }).length) return json({ error: `no model provider for ${kind}`, retryable: false }, 503);
+  let messages: ChatMessage[];
+  try {
+    const pack = packFor(intent.output.pack);
+    const layout = pack.generate({ seed: input.seed as number, params: pack.defaults, sub: intent.output.sub, laws: DEFAULT_LAWS, harder: false });
+    const lines = gameplayLines(fill);
+    messages =
+      kind === "repair" ? repairMessages(prompt, intent.output, layout, lines, issues)
+      : kind === "edit" ? editMessages(prompt, change, intent.output, layout, lines)
+      : directorMessages(prompt, intent.output, layout, lines, notes);
+  } catch {
+    return json({ error: `bad ${kind} request` }, 400);
+  }
+  const est = job === "patch" ? costMicroUsd(FILL_MODEL, REPAIR_MAX_IN, REPAIR_MAX_OUT) : jobEstimate(job, messages, REPAIR_MAX_OUT);
+  const held = await reserveFor(env, url, caller, ip, est);
   if (held instanceof Response) return held;
   const out = sseStream();
   later(
     (async () => {
       const t0 = Date.now();
-      let cost = costMicroUsd(FILL_MODEL, REPAIR_MAX_IN, REPAIR_MAX_OUT);
+      let cost = est;
       try {
-        const pack = packFor(intent.output.pack);
-        const layout = pack.generate({ seed: input.seed as number, params: pack.defaults, sub: intent.output.sub, laws: DEFAULT_LAWS, harder: false });
-        const lines = gameplayLines(fill);
-        const messages = kind === "repair" ? repairMessages(prompt, intent.output, layout, lines, issues) : editMessages(prompt, change, intent.output, layout, lines);
         let buf = "";
         let i = 0;
         let model = "";
-        for await (const ev of streamLanes(lanesFor("patch", keysOf(env), { primary: sw.primary, maxTokens: REPAIR_MAX_OUT, messages, signal: out.signal }))) {
+        for await (const ev of streamLanes(lanesFor(job, keysOf(env), { primary: sw.primary, maxTokens: REPAIR_MAX_OUT, messages, signal: out.signal }))) {
           if (ev.type === "usage") [cost, model] = [costMicroUsd(ev.model, ev.inTok, ev.outTok), ev.model];
           if (ev.type === "fallback") await out.send("fallback", ev);
           if (ev.type !== "text") continue;
