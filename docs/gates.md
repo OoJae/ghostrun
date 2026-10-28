@@ -157,3 +157,15 @@ When the fast repair can't fix every issue the proof found, one more round goes 
 | What an offered cut adds | median +6 things to use; every one gave the cast personas |
 
 Seen live in the app on 28 Oct: "a greenhouse maze where you collect seeds…" came back with an overgrown vine gate, an irrigation lever, a glowing terrarium and a potting bench, re-proved 12 of 12, offered about 30 s after the prompt.
+
+## Staging: deployed and smoke-tested (2026-10-28)
+
+`ghostrun-edge-staging` on workers.dev (Workers Paid), one Worker serving the app and `/v1/*`, with its own KV (`FLAGS`), R2 (`ghostrun-shares-staging`) and the governor Durable Object. Token-only for now: without a Turnstile secret the gate is closed to anyone without a judge/dev token; pool caps $1–2. Secrets are set by the owner with `pnpm --filter @ghostrun/edge-api secrets:staging` (reads the gitignored `.dev.vars`, prints names only).
+
+| Check | Result |
+|---|---|
+| `/v1/health` | ok; both providers configured; gate closed |
+| Build without a token, with a wrong token | refused (503) |
+| The organizer's CTF brief with the dev token | intent 0.5 s, first fill line 1.1 s, 34 lines done 1.35 s server-side; fast lane, no fallback |
+| An NPC mind (Haiku) | on-menu answer in 2.8 s (cold isolate) |
+| The app with `?t=` | token moved to session storage and out of the address bar |
