@@ -160,7 +160,7 @@ Seen live in the app on 28 Oct: "a greenhouse maze where you collect seeds…" c
 
 ## Staging: deployed and smoke-tested (2026-10-28)
 
-`ghostrun-edge-staging` on workers.dev (Workers Paid), one Worker serving the app and `/v1/*`, with its own KV (`FLAGS`), R2 (`ghostrun-shares-staging`) and the governor Durable Object. Token-only for now: without a Turnstile secret the gate is closed to anyone without a judge/dev token; pool caps $1–2. Secrets are set by the owner with `pnpm --filter @ghostrun/edge-api secrets:staging` (reads the gitignored `.dev.vars`, prints names only).
+`ghostrun-edge-staging` at ghostrun-edge-staging.ghostrun.workers.dev (Workers Paid; production is the `play` Worker at play.ghostrun.workers.dev), one Worker serving the app and `/v1/*`, with its own KV (`FLAGS`), R2 (`ghostrun-shares-staging`) and the governor Durable Object. Token-only for now: without a Turnstile secret the gate is closed to anyone without a judge/dev token; pool caps $1–2. Secrets are set by the owner with `pnpm --filter @ghostrun/edge-api secrets:staging` (reads the gitignored `.dev.vars`, prints names only).
 
 | Check | Result |
 |---|---|
