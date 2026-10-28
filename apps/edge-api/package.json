@@ -10,7 +10,10 @@
     "build": "node scripts/build.mjs",
     "test:workerd": "node scripts/build.mjs && node scripts/test-workerd.mjs",
     "judge-token": "node scripts/judge-token.mjs",
-    "secrets:staging": "node scripts/staging-secrets.mjs"
+    "secrets:staging": "node scripts/staging-secrets.mjs",
+    "secrets:production": "node scripts/production-secrets.mjs",
+    "deploy:staging": "node scripts/deploy.mjs staging",
+    "deploy:production": "node scripts/deploy.mjs production"
   },
   "dependencies": {
     "@ghostrun/ir": "workspace:*",

@@ -59,18 +59,17 @@
       }
     },
     "production": {
-      "name": "ghostrun-edge-production",
-      // TODO(owner): attach the public hostname, e.g. "routes": [{ "pattern": "<host>", "custom_domain": true }].
+      // Served at https://play.ghostrun.workers.dev (the account's workers.dev subdomain is "ghostrun").
+      "name": "play",
       "durable_objects": { "bindings": [{ "name": "GOVERNOR", "class_name": "GovernorDO" }] },
-      // TODO(owner): `wrangler kv namespace create FLAGS --env production`, paste the id.
-      "kv_namespaces": [{ "binding": "FLAGS", "id": "TODO(owner)" }],
-      // TODO(owner): `wrangler r2 bucket create ghostrun-shares`.
+      "kv_namespaces": [{ "binding": "FLAGS", "id": "183af14963654b6d8ba2f7ad21d34dd0" }],
       "r2_buckets": [{ "binding": "SHARES", "bucket_name": "ghostrun-shares" }],
+      // Secrets: `pnpm --filter @ghostrun/edge-api secrets:production` (run by the owner).
       "vars": {
-        // TODO(owner): the production widget's sitekey and the hostname(s) it is served on.
-        "TURNSTILE_SITEKEY": "TODO(owner)",
-        "TURNSTILE_HOSTNAMES": "TODO(owner)",
-        // Budget: $72 of pool caps under the $100 total, the rest is headroom.
+        // the "ghostrun-production" Turnstile widget (Managed, hostname ghostrun.workers.dev); its secret is a Worker secret
+        "TURNSTILE_SITEKEY": "0x4AAAAAAFqKRv_Wicv3Caoy",
+        "TURNSTILE_HOSTNAMES": "play.ghostrun.workers.dev",
+        // Pool caps (lifetime, all providers): the judge and public pools draw mostly on the $200 Anthropic credit.
         "CAP_SESSION_JUDGE_USD": "0.60",
         "CAP_SESSION_PUBLIC_USD": "0.15",
         "CAP_IP_DAY_USD": "0.30",
