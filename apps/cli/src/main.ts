@@ -5,7 +5,7 @@ import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 
 import { dirname, join, resolve } from "node:path";
 import { FillParser, layoutLaws, mergeFill, parseFill, pinLayout, splitObjects, type WorldBundle } from "@ghostrun/ir";
 import { placeWorld } from "@ghostrun/layout";
-import { editMessages, fillMessages, IntentOut, intentJsonSchema, intentMessages, jsonLanes, lanesFor, repairMessages, settleIntent, streamLanes, type Keys } from "@ghostrun/llm";
+import { editMessages, fillMessages, hostJsonSchema, hostMessages, IntentOut, intentJsonSchema, intentMessages, jsonLanes, lanesFor, mindJsonSchema, mindMessages, repairMessages, settleIntent, streamLanes, type JobCall, type Keys } from "@ghostrun/llm";
 import { loadNavNode } from "@ghostrun/nav/node";
 import { better, caught, chipLine, issuesOf, plants, prove, provedWon, traceRunners, type Receipt } from "@ghostrun/proof";
 import { ALL_SUBS, PACKS, packFor } from "@ghostrun/registry";
@@ -434,6 +434,30 @@ async function main() {
       const t = JSON.parse(readFileSync(out, "utf8")) as Record<string, unknown>;
       t.fool = { worlds, planted, caught: got, byTier: Object.fromEntries(byTier), byKind: Object.fromEntries([...byKind].map(([k, [n, c]]) => [k, { planted: n, caught: c }])) };
       writeFileSync(out, `${JSON.stringify(t, null, 1)}\n`);
+    }
+  } else if (cmd === "canary") {
+    // every structured-output job on each lane on its own (no failover): does each schema still
+    // answer, how fast, and with what. The plan's twice-daily canary; also how we pick a lane per job.
+    const keys = cliKeys();
+    const menu = ["guard.patrol", "guard.chase", "guard.investigate"];
+    const jobs: Record<"intent" | "mind" | "host", JobCall> = {
+      intent: { messages: intentMessages("a maze with ghosts and a key that opens the exit", PACKS), jsonSchema: { name: "intent", schema: intentJsonSchema(PACKS.map((p) => p.id), ALL_SUBS) }, maxTokens: 800 },
+      mind: { messages: mindMessages({ npc: "guard_1", role: "guard", persona: "Gruff but fair; hates noise.", menu, current: "guard.patrol", situation: "The vault corridor. The player is 4 m away, carrying the key.", event: "the player picked up the key" }), jsonSchema: { name: "mind", schema: mindJsonSchema(menu) }, maxTokens: 120 },
+      host: { messages: hostMessages("why did I lose?", ["0:12 you fell into the lava pit", "the lava pit lies between the start and the key", "you had 1 jump"]), jsonSchema: { name: "host", schema: hostJsonSchema(3) }, maxTokens: 200 },
+    };
+    const times = Number(args[args.indexOf("--repeat") + 1]) || 1;
+    for (const [job, call] of Object.entries(jobs) as [keyof typeof jobs, JobCall][]) {
+      for (const lane of lanesFor(job, keys, call)) {
+        for (let n = 0; n < times; n++) {
+          const t0 = performance.now();
+          try {
+            const r = await jsonLanes<Record<string, unknown>>([{ ...lane, retryMs: [] }]);
+            console.log(`${job.padEnd(7)} ${lane.model.padEnd(18)} ${String(Math.round(performance.now() - t0)).padStart(5)} ms  ${JSON.stringify(r.value).slice(0, 110)}`);
+          } catch (e) {
+            console.log(`${job.padEnd(7)} ${lane.model.padEnd(18)} FAILED ${String(e).slice(0, 160)}`);
+          }
+        }
+      }
     }
   } else if (cmd === "bench") {
     const prompts = readFileSync(args[0]!, "utf8").split("\n").map((l) => l.trim()).filter((l) => l && !l.startsWith("#"));

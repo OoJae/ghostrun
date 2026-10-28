@@ -4,8 +4,8 @@
 // the Haiku fallback costs less per token than either of its models, so a hold covers it too.
 import { ROUTES } from "@ghostrun/llm";
 
-export const INTENT_MODEL = ROUTES.intent.cerebras.model;
-export const FILL_MODEL = ROUTES.fill.cerebras.model;
+export const INTENT_MODEL = ROUTES.intent[0]!.model;
+export const FILL_MODEL = ROUTES.fill[0]!.model;
 export const INTENT_MAX_OUT = 800;
 export const FILL_MAX_OUT = 6000;
 /** Input-token bound for the fill call, which is only known after the intent; test-guarded per pack. */

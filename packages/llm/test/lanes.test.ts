@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { claudeSchema } from "../src/anthropic";
-import { jsonLanes, lanesFor, streamLanes } from "../src/lanes";
+import { jsonLanes, lanesFor, resetLaneHealth, ROUTES, streamLanes } from "../src/lanes";
 import type { StreamEvent } from "../src/wire";
 
 const KEYS = { cerebras: "csk", anthropic: "ak" };
@@ -37,7 +37,10 @@ const drain = async (it: AsyncGenerator<StreamEvent>) => {
 };
 const textOf = (evs: StreamEvent[]) => evs.map((e) => (e.type === "text" ? e.delta : "")).join("");
 
-afterEach(() => vi.unstubAllGlobals());
+afterEach(() => {
+  vi.unstubAllGlobals();
+  resetLaneHealth();
+});
 
 describe("the fallback rung", () => {
   it("a busy fast lane hands the fill to Haiku before it has said a word, and says so", async () => {
@@ -73,7 +76,7 @@ describe("the fallback rung", () => {
       () => new Response(JSON.stringify({ content: [{ type: "text", text: '{"answer":"You fell at 0:12.","cites":[2]}' }], stop_reason: "end_turn", usage: { input_tokens: 300, output_tokens: 20 } }), { status: 200 }),
     ]);
     const schema = { type: "object", additionalProperties: false, required: ["answer", "cites"], properties: { answer: { type: "string", maxLength: 280 }, cites: { type: "array", maxItems: 4, items: { type: "integer", minimum: 1, maximum: 9 } } } };
-    const r = await jsonLanes<{ answer: string; cites: number[] }>(lanesFor("host", KEYS, { messages: [{ role: "user", content: "why?" }], maxTokens: 200, jsonSchema: { name: "host", schema } }));
+    const r = await jsonLanes<{ answer: string; cites: number[] }>(lanesFor("intent", KEYS, { messages: [{ role: "user", content: "why?" }], maxTokens: 200, jsonSchema: { name: "host", schema } }));
     expect(r).toMatchObject({ value: { answer: "You fell at 0:12.", cites: [2] }, model: "claude-haiku-5-5", fellBack: true, inTok: 300, outTok: 20 });
     expect((calls[2]!.body.output_config as { format: unknown }).format).toEqual({
       type: "json_schema",
@@ -93,6 +96,25 @@ describe("the fallback rung", () => {
     const calls = providers([], [() => new Response(JSON.stringify({ content: [], stop_reason: "refusal", usage: {} }), { status: 200 })]);
     await expect(jsonLanes(lanesFor("mind", KEYS, { primary: "anthropic", messages: [{ role: "user", content: "x" }] }))).rejects.toMatchObject({ retryable: false });
     expect(calls).toHaveLength(1);
+  });
+
+  it("a fast lane out of credit (402) hands over at once, and is tried last for a while after", async () => {
+    const calls = providers([() => new Response("insufficient credits", { status: 402 })], [() => claudeStream(["a"]), () => claudeStream(["b"])]);
+    const msgs = { messages: [{ role: "user" as const, content: "x" }] };
+    expect(textOf(await drain(streamLanes(lanesFor("fill", KEYS, msgs))))).toBe("a");
+    expect(calls.map((c) => c.provider)).toEqual(["cerebras", "anthropic"]); // no retry of a refusal to serve
+    // the next build doesn't wait on it: Haiku first, the fast lane kept as the last resort
+    const next = lanesFor("fill", KEYS, msgs);
+    expect(next.map((l) => l.provider)).toEqual(["anthropic", "cerebras"]);
+    expect(textOf(await drain(streamLanes(next)))).toBe("b");
+    resetLaneHealth();
+    expect(lanesFor("fill", KEYS, msgs)[0]!.provider).toBe("cerebras");
+  });
+
+  it("minds and the Host start on Haiku (they would eat the fast lane's five requests a minute); builds start on the fast lane", () => {
+    const first = (job: keyof typeof ROUTES) => lanesFor(job, KEYS, { messages: [] })[0]!.model;
+    expect([first("mind"), first("host"), first("intent"), first("fill"), first("director")]).toEqual(["claude-haiku-5-5", "claude-haiku-5-5", "qwen-3.8-27b", "gpt-oss-120b", "claude-sonnet-5-5"]);
+    expect(lanesFor("mind", KEYS, { messages: [], primary: "cerebras" })[0]!.model).toBe("qwen-3.8-27b");
   });
 
   it("the fast lane still answers first when it's well", async () => {

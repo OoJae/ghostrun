@@ -1,12 +1,18 @@
-// Which model does which job, and the rung below it. Cerebras is the fast lane; when it is busy or
-// down before it has said a word, the same request goes to Claude Haiku instead of losing the world.
-// Once text has streamed the call is final either way (the client has already placed those lines).
+// Which model does which job, and the rungs below it. Cerebras is the fast lane; when it is busy,
+// down or out of credit before it has said a word, the same request goes to Claude instead of
+// losing the world. Once text has streamed the call is final either way (the client has already
+// placed those lines).
 import { claudeJson, streamClaude } from "./anthropic";
 import { chatJson, streamChat } from "./cerebras";
 import { LlmError, type ChatMessage, type ChatOptions, type StreamEvent } from "./wire";
 
 export type Provider = "cerebras" | "anthropic";
-export type Job = "intent" | "fill" | "patch" | "mind" | "host";
+export type Job = "intent" | "fill" | "patch" | "mind" | "host" | "director" | "hard_repair";
+export interface Route {
+  provider: Provider;
+  model: string;
+  reasoningEffort: NonNullable<ChatOptions["reasoningEffort"]>;
+}
 export interface Lane extends ChatOptions {
   provider: Provider;
 }
@@ -15,16 +21,25 @@ export interface Keys {
   anthropic?: string | undefined;
 }
 
-type Route = { model: string; reasoningEffort: NonNullable<ChatOptions["reasoningEffort"]> };
-const HAIKU: Route = { model: "claude-haiku-5-5", reasoningEffort: "none" };
+const QWEN: Route = { provider: "cerebras", model: "qwen-3.8-27b", reasoningEffort: "none" };
+const GPT_OSS: Route = { provider: "cerebras", model: "gpt-oss-120b", reasoningEffort: "low" };
+const HAIKU: Route = { provider: "anthropic", model: "claude-haiku-5-5", reasoningEffort: "none" };
+const SONNET: Route = { provider: "anthropic", model: "claude-sonnet-5-5", reasoningEffort: "low" };
 
-/** The routing table. The model ids are part of the template hash (a change re-proves the gallery). */
-export const ROUTES: Record<Job, Record<Provider, Route>> = {
-  intent: { cerebras: { model: "qwen-3.8-27b", reasoningEffort: "none" }, anthropic: HAIKU },
-  fill: { cerebras: { model: "gpt-oss-120b", reasoningEffort: "low" }, anthropic: HAIKU },
-  patch: { cerebras: { model: "gpt-oss-120b", reasoningEffort: "low" }, anthropic: HAIKU },
-  mind: { cerebras: { model: "qwen-3.8-27b", reasoningEffort: "none" }, anthropic: HAIKU },
-  host: { cerebras: { model: "qwen-3.8-27b", reasoningEffort: "none" }, anthropic: HAIKU },
+/**
+ * The routing table, each job's lanes in the order to try them. Minds and the Host start on Haiku:
+ * they are frequent and short, and the fast lane's free tier allows five requests a minute per
+ * model, which world builds need. The Director's cut and hard repairs are Sonnet's. The model ids
+ * are part of the template hash (a change re-proves the gallery).
+ */
+export const ROUTES: Record<Job, Route[]> = {
+  intent: [QWEN, HAIKU],
+  fill: [GPT_OSS, HAIKU],
+  patch: [GPT_OSS, HAIKU],
+  mind: [HAIKU, QWEN],
+  host: [HAIKU, QWEN],
+  director: [SONNET, HAIKU],
+  hard_repair: [SONNET, HAIKU],
 };
 
 export interface JobCall {
@@ -32,23 +47,40 @@ export interface JobCall {
   maxTokens?: number;
   jsonSchema?: NonNullable<ChatOptions["jsonSchema"]>;
   signal?: AbortSignal;
-  /** Which provider goes first (a KV switch at the edge); the other one, if it has a key, is the fallback. */
-  primary?: Provider;
+  /** A provider to put first for every job (a KV switch at the edge); unset keeps the table's order. */
+  primary?: Provider | undefined;
 }
 
-/** One quick retry of the primary before failing over: a 429 often clears in under a second. */
+/** One quick retry of the first lane before failing over: a 429 often clears in under a second. */
 export const FAILOVER_RETRY_MS = [700] as const;
+
+// Providers this isolate just saw fail, and until when to try them last: a busy one briefly, one
+// that turned the key away (out of credit, trial over) for longer. Builds stop waiting on it.
+const resting = new Map<Provider, number>();
+const restMs = (status: number) => (status === 429 ? 20_000 : OUT.has(status) ? 600_000 : 10_000);
+/** Statuses that mean this provider won't serve us now, whatever we send: try the other one. */
+const OUT = new Set([401, 402, 403]);
+
+/** Forget which providers failed (tests; a fresh isolate starts this way). */
+export function resetLaneHealth() {
+  resting.clear();
+}
 
 /** The lanes for a job, in the order to try them. Empty if no provider has a key. */
 export function lanesFor(job: Job, keys: Keys, call: JobCall): Lane[] {
-  const order: Provider[] = call.primary === "anthropic" ? ["anthropic", "cerebras"] : ["cerebras", "anthropic"];
-  const usable = order.filter((p) => keys[p]);
-  const { primary: _, ...rest } = call;
-  return usable.map((provider, k) => ({ ...rest, ...ROUTES[job][provider], provider, apiKey: keys[provider]!, ...(k === 0 && usable.length > 1 ? { retryMs: FAILOVER_RETRY_MS } : {}) }));
+  const { primary, ...rest } = call;
+  const now = Date.now();
+  const score = (r: Route) => ((resting.get(r.provider) ?? 0) > now ? 2 : 0) + (primary && r.provider !== primary ? 1 : 0);
+  const usable = ROUTES[job].filter((r) => keys[r.provider]).sort((a, b) => score(a) - score(b)); // stable: ties keep the table's order
+  return usable.map((r, k) => ({ ...rest, ...r, apiKey: keys[r.provider]!, ...(k === 0 && usable.length > 1 ? { retryMs: FAILOVER_RETRY_MS } : {}) }));
 }
 
-/** May the next lane take over from this failure? Only a busy or broken provider, never a bad request. */
-const failsOver = (e: unknown, lane: Lane, next: Lane | undefined): next is Lane => Boolean(next) && e instanceof LlmError && e.retryable && !lane.signal?.aborted;
+/** May the next lane take over from this failure? A busy, broken or refusing provider; never a bad request. */
+function failsOver(e: unknown, lane: Lane, next: Lane | undefined): next is Lane {
+  if (!(e instanceof LlmError) || !(e.retryable || OUT.has(e.status)) || lane.signal?.aborted) return false;
+  if (e.status !== 200) resting.set(lane.provider, Date.now() + restMs(e.status));
+  return Boolean(next);
+}
 
 /** Stream from the first lane that answers; a `fallback` event marks each switch. */
 export async function* streamLanes(lanes: Lane[]): AsyncGenerator<StreamEvent> {
@@ -70,7 +102,7 @@ export async function* streamLanes(lanes: Lane[]): AsyncGenerator<StreamEvent> {
   }
 }
 
-/** A JSON answer from the first lane that gives one; `fellBack` says the primary didn't. */
+/** A JSON answer from the first lane that gives one; `fellBack` says the first lane didn't. */
 export async function jsonLanes<T>(lanes: Lane[]): Promise<{ value: T; ms: number; inTok: number; outTok: number; model: string; fellBack: boolean }> {
   if (!lanes.length) throw new LlmError("no model provider configured", 503, false);
   for (let k = 0; ; k++) {

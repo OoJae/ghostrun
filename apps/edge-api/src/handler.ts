@@ -44,7 +44,7 @@ export interface Env extends GateEnv, GovernorEnv {
 const MAX_PROMPT = 500;
 /** KV key in FLAGS: any value pauses new builds (an instant, deploy-free kill switch). */
 export const PAUSE_FLAG = "builds:paused";
-/** KV key in FLAGS: "anthropic" puts Haiku first and the fast lane second (the runbook's "Cerebras down"). */
+/** KV key in FLAGS: "anthropic" (or "cerebras") puts that provider first for every job (the runbook's "Cerebras down"). */
 export const PRIMARY_FLAG = "route:primary";
 
 const buildBuckets = new Buckets();
@@ -78,13 +78,13 @@ async function paused(env: Env): Promise<boolean> {
 const keysOf = (env: Env): Keys => ({ cerebras: env.CEREBRAS_API_KEY || undefined, anthropic: env.ANTHROPIC_API_KEY || undefined });
 const hasModel = (env: Env) => Boolean(env.CEREBRAS_API_KEY || env.ANTHROPIC_API_KEY);
 
-/** The pause switch and the primary provider, read together (both cached at the edge for a minute). */
-async function switches(env: Env): Promise<{ paused: boolean; primary: Provider }> {
+/** The pause switch and the provider to put first, read together (both cached at the edge for a minute). */
+async function switches(env: Env): Promise<{ paused: boolean; primary: Provider | undefined }> {
   const [stop, primary] = await Promise.all([
     paused(env),
     env.FLAGS?.get(PRIMARY_FLAG, { cacheTtl: 60 }).catch(() => null),
   ]);
-  return { paused: stop, primary: primary === "anthropic" ? "anthropic" : "cerebras" };
+  return { paused: stop, primary: primary === "anthropic" || primary === "cerebras" ? primary : undefined };
 }
 
 export async function handle(req: Request, env: Env, ctx?: WaitUntil): Promise<Response> {

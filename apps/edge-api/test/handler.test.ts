@@ -2,6 +2,7 @@ import { createHmac } from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { FillParser } from "@ghostrun/ir";
+import { resetLaneHealth } from "@ghostrun/llm";
 import type { DoNamespace } from "../src/cf";
 import { costMicroUsd, FILL_MODEL, INTENT_MODEL } from "../src/cost";
 import { capsFromEnv, Governor, localCall, MemoryLedger, type Caps } from "../src/governor";
@@ -41,7 +42,10 @@ function world(opts: { caps?: Partial<Caps["pool"]>; up?: Upstream; ns?: (g: Gov
 const judge = { "x-judge-token": TOKEN };
 const metered = costMicroUsd(INTENT_MODEL, 1000, 200) + costMicroUsd(FILL_MODEL, 3000, 1500);
 
-afterEach(() => vi.unstubAllGlobals());
+afterEach(() => {
+  vi.unstubAllGlobals();
+  resetLaneHealth();
+});
 
 describe("POST /v1/mind", () => {
   const call = async (env: Env, body: unknown) =>
