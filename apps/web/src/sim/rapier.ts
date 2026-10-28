@@ -44,6 +44,7 @@ export class RapierSim implements FrameSource {
 
   #in: InputFrame = { tick: 0, mx: 0, my: 0, yaw: 0, btn: 0 };
   #lastBtn = 0;
+  #activeTick = 0;
   #pressQueued = false;
   #facing = 0;
   readonly #npcFacing = new Map<string, number>();
@@ -111,7 +112,13 @@ export class RapierSim implements FrameSource {
     this.onReplayEnd?.();
   }
 
+  /** Ticks since the player last touched the controls. */
+  get idleTicks(): number {
+    return this.sim.tick - this.#activeTick;
+  }
+
   input(f: InputFrame): void {
+    if (f.mx !== 0 || f.my !== 0 || f.btn !== 0) this.#activeTick = this.sim.tick;
     if (this.#replay && (f.mx !== 0 || f.my !== 0 || f.btn !== 0)) this.#endReplay();
     if (f.btn & BTN_JUMP && !(this.#lastBtn & BTN_JUMP)) this.#pressQueued = true;
     this.#lastBtn = f.btn;

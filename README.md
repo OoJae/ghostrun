@@ -4,6 +4,8 @@
 
 Type any world, and GHOSTRUN turns it into a playable 3D level in the browser in about two seconds. Then it does what builders usually skip: AI runners play the level in a deterministic physics simulation, every rule is force-tested, and a receipt states what was verified, what was played and what could not be checked. When the proof finds a problem, the AI repairs the world, re-proves it, and offers the fix.
 
+**Play it:** https://play.ghostrun.workers.dev (no login; a Cloudflare Turnstile check, usually invisible, guards the live AI).
+
 > Built for the Victoria VR AI Builder Hackathon 2026. Not affiliated with or endorsed by Victoria VR.
 
 ## What a session looks like

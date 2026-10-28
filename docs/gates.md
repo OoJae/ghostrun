@@ -169,3 +169,19 @@ Seen live in the app on 28 Oct: "a greenhouse maze where you collect seeds…" c
 | The organizer's CTF brief with the dev token | intent 0.5 s, first fill line 1.1 s, 34 lines done 1.35 s server-side; fast lane, no fallback |
 | An NPC mind (Haiku) | on-menu answer in 2.8 s (cold isolate) |
 | The app with `?t=` | token moved to session storage and out of the address bar |
+
+## Production: live and smoke-tested (2026-10-29)
+
+The `play` Worker at **https://play.ghostrun.workers.dev**, with its own KV, R2 (`ghostrun-shares`), governor and the `ghostrun-production` Turnstile widget (Managed, interaction-only in the app). Secrets set by the owner with `pnpm --filter @ghostrun/edge-api secrets:production` (hidden prompts; the judge and canary tokens it mints stay in the gitignored `.dev.vars`).
+
+| Check | Result |
+|---|---|
+| `/v1/health` | ok; both providers; gate `turnstile` |
+| A build with no token, with a wrong token | 401 `need: turnstile` |
+| A visitor in Edge with no token | Turnstile passed without a click; `/v1/session` set the cookie; live calls went through |
+| The organizer's CTF brief with the judge token | intent 0.48 s, first fill line 0.98 s, 35 lines done 1.47 s server-side (2.4 s from the client); fast lane, no fallback |
+| Director's cut of that world (Sonnet 5.5) | 15 patch lines in 7.9 s: 6 new things to use, 2 rules, a new character |
+| An NPC mind (Haiku) | on-menu answer and a line in 1.1 s |
+| The Host | answered "Why did I lose?" from the run's facts in 1.5 s, citing 4 |
+
+Found on the way: the landing world's three minded NPCs all thought on every pickup, score and tag, about 2.4 calls a second in a bot-played match, which spends the edge's 120 minds per session in under a minute, after which talking to a character gets no answer. Now one NPC thinks on its own at most every 8 s, in turn (about 75 calls in 10 minutes), only while someone is playing (a minute without input stops it) and never during replays; a 429 pauses them for a minute; talking always goes through. Unit-tested in `apps/web/test/minds.test.ts`.
