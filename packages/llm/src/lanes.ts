@@ -28,9 +28,9 @@ const SONNET: Route = { provider: "anthropic", model: "claude-sonnet-5-5", reaso
 
 /**
  * The routing table, each job's lanes in the order to try them. Minds and the Host start on Haiku:
- * they are frequent and short, and the fast lane's free tier allows five requests a minute per
- * model, which world builds need. The Director's cut and hard repairs are Sonnet's. The model ids
- * are part of the template hash (a change re-proves the gallery).
+ * they are frequent and short, a Haiku mind costs about a ninth of a qwen one, and every fast-lane
+ * token comes out of a small trial credit that world builds need. The Director's cut and hard
+ * repairs are Sonnet's. The model ids are part of the template hash (a change re-proves the gallery).
  */
 export const ROUTES: Record<Job, Route[]> = {
   intent: [QWEN, HAIKU],

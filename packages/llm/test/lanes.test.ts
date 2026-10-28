@@ -111,7 +111,7 @@ describe("the fallback rung", () => {
     expect(lanesFor("fill", KEYS, msgs)[0]!.provider).toBe("cerebras");
   });
 
-  it("minds and the Host start on Haiku (they would eat the fast lane's five requests a minute); builds start on the fast lane", () => {
+  it("minds and the Host start on Haiku (cheaper, and they'd spend the fast lane's trial credit); builds start on the fast lane", () => {
     const first = (job: keyof typeof ROUTES) => lanesFor(job, KEYS, { messages: [] })[0]!.model;
     expect([first("mind"), first("host"), first("intent"), first("fill"), first("director")]).toEqual(["claude-haiku-5-5", "claude-haiku-5-5", "qwen-3.8-27b", "gpt-oss-120b", "claude-sonnet-5-5"]);
     expect(lanesFor("mind", KEYS, { messages: [], primary: "cerebras" })[0]!.model).toBe("qwen-3.8-27b");

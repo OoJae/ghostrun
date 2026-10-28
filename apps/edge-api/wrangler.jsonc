@@ -46,13 +46,12 @@
     "staging": {
       "name": "ghostrun-edge-staging",
       "durable_objects": { "bindings": [{ "name": "GOVERNOR", "class_name": "GovernorDO" }] },
-      // TODO(owner): `wrangler kv namespace create FLAGS --env staging`, paste the id.
-      "kv_namespaces": [{ "binding": "FLAGS", "id": "TODO(owner)" }],
-      // TODO(owner): `wrangler r2 bucket create ghostrun-shares-staging`.
+      "kv_namespaces": [{ "binding": "FLAGS", "id": "80b2558697194d9cb16ef2d9455265ec" }],
       "r2_buckets": [{ "binding": "SHARES", "bucket_name": "ghostrun-shares-staging" }],
+      // Token-only for now: no TURNSTILE_SECRET on staging, so the gate is closed to everyone
+      // without a judge/dev token (?t=). Add the staging widget's sitekey here with its secret
+      // to open the tokenless lane.
       "vars": {
-        // TODO(owner): the staging widget's sitekey (or Cloudflare's always-pass test pair for a smoke test).
-        "TURNSTILE_SITEKEY": "TODO(owner)",
         "CAP_POOL_JUDGE_USD": "2",
         "CAP_POOL_PUBLIC_USD": "1",
         "CAP_POOL_DEV_USD": "1",
