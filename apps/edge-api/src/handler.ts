@@ -18,6 +18,7 @@ import { buildEstimate, costMicroUsd, FILL_MAX_OUT, FILL_MODEL, INTENT_MAX_OUT, 
 import { capsFromEnv, doCall, Governor, governorClient, localCall, MemoryLedger, type GovernorApi, type GovernorEnv } from "./governor";
 import { devOpen, gateMode, identify, ipKey, ipOf, mintSession, verifyTurnstile, type Caller, type GateEnv } from "./gate";
 import { json, ntfy, readJson } from "./http";
+import { getBoard, postBoard } from "./board";
 import { getShare, memoryBlobs, postReport, postShare, postWrong, r2Blobs, type BlobStore, type ShareCtx } from "./share";
 
 export interface Env extends GateEnv, GovernorEnv {
@@ -28,7 +29,7 @@ export interface Env extends GateEnv, GovernorEnv {
   TURNSTILE_SITEKEY?: string;
   /** Tokenless builds per IP per isolate per 10 min (default 30). */
   BUILDS_PER_WINDOW?: string;
-  /** Session/share/report/wrong requests per IP per isolate per 10 min (default 60). */
+  /** Session/share/board/report/wrong requests per IP per isolate per 10 min (default 60). */
   RATE_PER_WINDOW?: string;
   /** Builds per judge token per isolate per 10 min while the governor is unreachable (default 10). */
   JUDGE_FALLBACK_PER_WINDOW?: string;
@@ -102,12 +103,15 @@ export async function handle(req: Request, env: Env, ctx?: WaitUntil): Promise<R
   if (path === "/v1/mind" && req.method === "POST") return mind(req, env, url);
   if (path === "/v1/host" && req.method === "POST") return host(req, env, url);
   const shareId = /^\/v1\/share\/([a-z2-7]{16})$/.exec(path)?.[1];
+  const boardOf = /^\/v1\/board\/([0-9a-f]{64})$/.exec(path)?.[1];
   const post = req.method === "POST";
   const route =
     path === "/v1/share" && post ? postShare
     : path === "/v1/report" && post ? postReport
     : path === "/v1/wrong" && post ? postWrong
+    : path === "/v1/board" && post ? postBoard
     : shareId && req.method === "GET" ? (_: Request, c: ShareCtx) => getShare(shareId, c)
+    : boardOf && req.method === "GET" ? (_: Request, c: ShareCtx) => getBoard(boardOf, c)
     : undefined;
   if (!route) return json({ error: "not found" }, 404);
 

@@ -10,6 +10,8 @@ import type { WorldBundle } from "@ghostrun/ir";
 import type { World } from "./pipeline";
 import { probe } from "./probe";
 import { FollowCamera } from "./render/camera";
+import { ghostActor } from "./render/ghost";
+import type { GhostTrack, Rival } from "./race";
 import { makeRain } from "./render/rain";
 import { lookOf } from "./render/looks";
 import { beamMaterial, PALETTE } from "./render/materials";
@@ -36,6 +38,8 @@ export interface LoadResult {
 }
 
 const TICK_MS = 1000 / TICK_HZ;
+/** Where the ghost waits while there is nothing to race (far under the world, past the far plane). */
+const PARKED_Y = -1e4;
 const _q0 = new Quaternion();
 const _q1 = new Quaternion();
 const _ear = new Vector3();
@@ -98,6 +102,10 @@ export class Engine {
     m.renderOrder = 2;
     return m;
   })();
+  /** The ghost you race: parked out of sight when there is none (still drawn, so its shader is compiled with the world). */
+  readonly #ghost = ghostActor();
+  #ghostTrack: GhostTrack | null = null;
+  #ghostShown = true;
 
   private constructor(canvas: HTMLCanvasElement, renderer: WebGPURenderer, opts: EngineOptions, initMs: number) {
     this.#canvas = canvas;
@@ -121,6 +129,8 @@ export class Engine {
     this.#env = env;
     s.add(this.#rain.object);
     s.add(this.#beacon);
+    this.#ghost.obj.position.set(0, PARKED_Y, 0);
+    s.add(this.#ghost.obj);
     this.#rig.add(this.#camera);
     s.add(this.#rig);
 
@@ -295,6 +305,44 @@ export class Engine {
     return { p: [_ear.x, _ear.y, _ear.z], yaw: Math.atan2(-_look.x, -_look.z) };
   }
 
+  /**
+   * Race a ghost: it runs beside the player by simulation tick from the start of the run (so its
+   * clock is the result card's clock), translucent and outside the simulation. null puts it away.
+   */
+  setGhost(track: GhostTrack | null, kind: Rival["kind"] = "ai") {
+    this.#ghostTrack = track;
+    this.#ghost.setKind(kind);
+    if (!track) this.#ghost.obj.position.set(0, PARKED_Y, 0);
+  }
+
+  /** Hide or show the ghost (it keeps its place in the run either way). */
+  set ghostShown(on: boolean) {
+    this.#ghostShown = on;
+  }
+
+  #placeGhost(now: number) {
+    const track = this.#ghostTrack;
+    const curr = this.#curr;
+    const pr = probe();
+    if (!track || !curr) {
+      if (pr.ghost) delete pr.ghost;
+      return;
+    }
+    const prev = this.#prev ?? curr;
+    const a = Math.min(1, Math.max(0, (now - this.#currAt) / TICK_MS));
+    const tick = prev.tick + (curr.tick - prev.tick) * a;
+    const { p, yaw } = track.pose(tick);
+    const g = this.#ghost.obj;
+    // first person in VR: the ghost would stand in your eyes at the start, so it shows once it's a step away
+    const player = this.#view?.actors.get(PLAYER_ID);
+    const near = this.#vr && player ? Math.hypot(player.position.x - p[0], player.position.z - p[2]) < 1 : false;
+    if (this.#ghostShown && !near) g.position.set(p[0], p[1], p[2]);
+    else g.position.set(0, PARKED_Y, 0);
+    g.rotation.set(0, yaw, 0);
+    this.#ghost.setFade(tick >= track.ticks ? 0.4 : 1);
+    pr.ghost = { shown: this.#ghostShown, tick: Math.round(tick), p: [round2(p[0]), round2(p[1]), round2(p[2])], finished: tick >= track.ticks };
+  }
+
   /** Light up one thing (Logic X-ray hover); null puts the beam away. */
   highlight(id: string | null) {
     this.#focus = id;
@@ -356,6 +404,7 @@ export class Engine {
     if (this.#bloom) this.#bloom.strength.value = look.bloom;
     const view = buildWorldView(world.bundle, look);
     this.showTrails(null); // another world's routes
+    this.setGhost(null); // and its ghost: the caller hands this world's rival in once it's loaded
     this.#scene.add(view.root);
     this.#view = view;
     // cutaway interiors: the camera looks down over the walls instead of bumping into them
@@ -428,6 +477,7 @@ export class Engine {
     this.#follow.dispose();
     this.#input.dispose();
     this.#rain.dispose();
+    this.#ghost.dispose();
     this.#env.dispose();
     window.removeEventListener("resize", this.#onResize);
     this.#renderer.dispose();
@@ -486,6 +536,7 @@ export class Engine {
     if (this.#vr) this.#vrInput();
     this.#pushInput();
     this.#applyPoses(now);
+    this.#placeGhost(now);
 
     const player = view?.actors.get(PLAYER_ID);
     if (player && this.#vr) {

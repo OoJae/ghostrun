@@ -19,7 +19,8 @@ export interface ShareRecord {
 /** The last ten minutes of input at most, ticks strictly increasing (what the store accepts). */
 const clip = (inputs: readonly InputFrame[]) => inputs.slice(-36_000);
 
-export async function createShare(world: World, specHash: string, inputs: readonly InputFrame[], minds: readonly MindChoice[] = []): Promise<string | null> {
+/** Store a run; its share id, or null when the share service isn't reachable. */
+export async function storeRun(world: World, specHash: string, inputs: readonly InputFrame[], minds: readonly MindChoice[] = []): Promise<string | null> {
   try {
     const r = await api("/v1/share", {
       method: "POST",
@@ -27,10 +28,50 @@ export async function createShare(world: World, specHash: string, inputs: readon
       body: JSON.stringify({ v: 1, engine: ENGINE_HASH, specHash, seed: world.seed, fill: world.fill, inputs: clip(inputs), ...(minds.length ? { minds: minds.slice(-500) } : {}) }),
     });
     if (!r.ok) return null;
-    const { id } = (await r.json()) as { id: string };
-    return `${window.location.origin}${window.location.pathname}?s=${id}`;
+    return ((await r.json()) as { id: string }).id;
   } catch {
     return null;
+  }
+}
+
+export async function createShare(world: World, specHash: string, inputs: readonly InputFrame[], minds: readonly MindChoice[] = []): Promise<string | null> {
+  const id = await storeRun(world, specHash, inputs, minds);
+  return id && `${window.location.origin}${window.location.pathname}?s=${id}`;
+}
+
+/** The longest run the store keeps whole (ten minutes): a race link must replay from the first tick. */
+export const MAX_RACE_TICKS = 36_000;
+
+/** A winning run up to the tick it won on: what a race link and a best time stand on. */
+export const upToWin = (inputs: readonly InputFrame[], minds: readonly MindChoice[], tick: number) => ({ inputs: inputs.filter((f) => f.tick <= tick), minds: minds.filter((m) => m.tick <= tick) });
+
+/** Opens the same world with this run as the ghost to beat (the name is what the sender typed). */
+export const raceLink = (id: string, name = "") => `${window.location.origin}${window.location.pathname}?race=${id}${name ? `&by=${encodeURIComponent(name)}` : ""}`;
+
+export interface BoardEntry {
+  shareId: string;
+  ticks: number;
+  name: string;
+}
+
+/** A world's ten best times as the edge holds them (claims until this device replays them). */
+export async function loadBoard(specHash: string): Promise<BoardEntry[] | null> {
+  try {
+    const r = await api(`/v1/board/${specHash}`);
+    return r.ok ? ((await r.json()) as { entries: BoardEntry[] }).entries : null;
+  } catch {
+    return null;
+  }
+}
+
+export async function postBest(specHash: string, shareId: string, ticks: number, name: string): Promise<{ ok: true; entries: BoardEntry[] } | { ok: false; why: string }> {
+  try {
+    const r = await api("/v1/board", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ specHash, shareId, ticks, ...(name.trim() ? { name } : {}) }) });
+    const body = (await r.json().catch(() => ({}))) as { entries?: BoardEntry[]; error?: string; why?: string };
+    if (r.ok && body.entries) return { ok: true, entries: body.entries };
+    return { ok: false, why: body.why ?? body.error ?? "the board isn't reachable" };
+  } catch {
+    return { ok: false, why: "the board isn't reachable" };
   }
 }
 

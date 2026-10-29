@@ -161,8 +161,8 @@ async function build(prompt: string, seed: number, outDir: string | null): Promi
   await loadNavNode();
   const receipt = await prove(R, bundle, { engine: ENGINE, runs: 12 });
   const proofMs = receipt.ms;
-  // (the runners' routes stay out of the recorded receipt: they're for the app, and large)
-  if (outDir) writeFileSync(join(outDir, `${slug}.receipt.json`), JSON.stringify({ prompt, intent, receipt: { ...receipt, trails: undefined } }, null, 2));
+  // (the runners' routes and the par runner's ghost stay out of the recorded receipt: they're for the app, and large)
+  if (outDir) writeFileSync(join(outDir, `${slug}.receipt.json`), JSON.stringify({ prompt, intent, receipt: { ...receipt, trails: undefined, ghost: undefined } }, null, 2));
   return {
     timings: { intentMs, fillFirstTokenMs, firstEntityMs, gameplayEndMs, fillDoneMs, playableMs, proofMs, outTok, invalid, lines, intentModel: intentRes.model, fillModel },
     receipt,

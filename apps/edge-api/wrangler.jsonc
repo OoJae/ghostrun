@@ -10,7 +10,7 @@
 //   CEREBRAS_API_KEY    Cerebras inference key; never leaves the server.
 //   ANTHROPIC_API_KEY   Optional Claude key (a capped workspace): Haiku answers when Cerebras is busy or down.
 //   TURNSTILE_SECRET    Turnstile widget secret key. Its presence closes the gate: /v1/build, /v1/share,
-//                       /v1/report and /v1/wrong then need the session cookie or a judge token.
+//                       /v1/board, /v1/report and /v1/wrong then need the session cookie or a judge token.
 //   SESSION_SECRET      ≥32 random bytes. Signs the 30-minute session cookie; keys the IP hashes.
 //   JUDGE_TOKEN_KEY     ≥32 random bytes. HMAC key for judge tokens (`pnpm --filter @ghostrun/edge-api judge-token`).
 //   JUDGE_TOKEN_HASHES  Comma list of `[judge:|dev:|canary:]hex(HMAC-SHA256(JUDGE_TOKEN_KEY, token))`.

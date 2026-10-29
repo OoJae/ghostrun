@@ -157,14 +157,6 @@ try {
   const judge = await until(async () => ((await pool("judge")).spent === METERED ? pool("judge") : null));
   check("judge build is committed at the metered cost from usage", judge?.spent === METERED && judge?.held === 0, `${JSON.stringify(judge)} expected ${METERED}`);
 
-  // 6b. The fast lane is busy for this one: the fill fails over to Claude Haiku inside workerd.
-  const fb = await build({ "x-judge-token": TOKEN, "cf-connecting-ip": "198.51.100.3" }, "busy lane: a maze with a key");
-  const fev = events(await fb.text());
-  check("a busy fast lane fails over to Haiku: intent → fallback → ops → done", fev.join(",") === "intent,fallback,op,op,op,done", fev.join(","));
-  const HAIKU = Math.ceil((1000 * 990 + 200 * 1490) / 1000) + Math.ceil((4000 * 100 + 1800 * 500) / 1000); // fast-lane intent + Haiku fill
-  const judge2 = await until(async () => ((await pool("judge")).spent === METERED + HAIKU ? pool("judge") : null));
-  check("the failed-over build is committed at Haiku's price", judge2?.held === 0, `${JSON.stringify(await pool("judge"))} expected ${METERED + HAIKU}`);
-
   // 7. Tokenless needs a Turnstile session.
   const anon = await build({ "cf-connecting-ip": "198.51.100.2" });
   check("tokenless build without a session cookie is 401", anon.status === 401, String(anon.status));
@@ -192,6 +184,15 @@ try {
   });
   check("60 parallel builds on one session: every one either built or was capped", okRuns + capped === 60, `${okRuns} built, ${capped} session_cap`);
   check("session spend is exactly builds × metered cost and within the $0.15 cap", settled !== null && okRuns * METERED <= 150_000 && capped > 0, `spent ${settled ? settled.spent - before : "?"} µ$`);
+
+  // 9. The fast lane is busy for this one: the fill fails over to Claude Haiku inside workerd. Last,
+  // because the isolate then tries Cerebras second for 20 s, which would move the builds above to Haiku.
+  const fb = await build({ "x-judge-token": TOKEN, "cf-connecting-ip": "198.51.100.3" }, "busy lane: a maze with a key");
+  const fev = events(await fb.text());
+  check("a busy fast lane fails over to Haiku: intent → fallback → ops → done", fev.join(",") === "intent,fallback,op,op,op,done", fev.join(","));
+  const HAIKU = Math.ceil((1000 * 990 + 200 * 1490) / 1000) + Math.ceil((4000 * 100 + 1800 * 500) / 1000); // fast-lane intent + Haiku fill
+  const judge2 = await until(async () => ((await pool("judge")).spent === METERED + HAIKU ? pool("judge") : null));
+  check("the failed-over build is committed at Haiku's price", judge2?.held === 0, `${JSON.stringify(await pool("judge"))} expected ${METERED + HAIKU}`);
 } catch (e) {
   failures++;
   console.error(e);

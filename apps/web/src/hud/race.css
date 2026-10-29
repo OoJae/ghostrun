@@ -1,0 +1,43 @@
+/* ---- racing a ghost: the HUD line, the result card's line, the best-times board ------------- */
+
+.race { position: absolute; top: 72px; right: 20px; display: flex; align-items: center; gap: 7px; padding: 7px 8px 7px 12px; font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.race-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--magenta); box-shadow: 0 0 10px var(--magenta); }
+.race.run .race-dot { background: var(--amber); box-shadow: 0 0 10px var(--amber); }
+.race .sep { opacity: 0.4; }
+.race .ahead { color: #3dffa8; }
+.race .behind { color: #ff8095; }
+.race .muted { font-weight: 500; }
+.race button { font: inherit; font-size: 11px; font-weight: 500; padding: 3px 8px; border-radius: 999px; cursor: pointer; color: var(--ink-dim); background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.16); }
+.race button:hover { color: var(--ink); border-color: rgba(255, 255, 255, 0.3); }
+.touch-mode .race { top: 142px; right: 12px; }
+@media (max-width: 720px) {
+  .race { right: 12px; left: 12px; justify-content: center; flex-wrap: wrap; white-space: normal; }
+}
+
+.result-card { margin: 12px 0 0; display: flex; gap: 6px; align-items: stretch; text-align: left; }
+.result-card output { flex: 1; min-width: 0; font: 12px/1.45 ui-monospace, monospace; padding: 7px 9px; border-radius: 8px; background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.12); user-select: all; overflow-wrap: anywhere; }
+.result-card button { flex: none; font: inherit; font-size: 12px; padding: 0 10px; border-radius: 8px; cursor: pointer; color: inherit; background: rgba(25, 227, 255, 0.12); border: 1px solid rgba(25, 227, 255, 0.4); }
+.result-race { margin: 8px 0 0; font-size: 12.5px; }
+.result-race .ahead { color: #3dffa8; }
+.result-race .behind { color: #ff8095; }
+
+/* .glass.board: this sheet loads before styles.css, whose .glass would otherwise win the background */
+.glass.board { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: min(520px, calc(100vw - 32px)); max-height: min(80vh, 680px); overflow: auto; padding: 14px 18px; background: rgba(12, 9, 26, 0.96); z-index: 20; font-size: 13px; line-height: 1.45; }
+.board-head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 8px; }
+.board-head .muted { font-size: 11.5px; font-family: ui-monospace, monospace; }
+.board-head button { margin-left: auto; background: none; border: 0; color: inherit; font-size: 20px; cursor: pointer; }
+.board ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.board li { display: grid; grid-template-columns: 26px 1fr auto auto; gap: 8px; align-items: center; padding: 5px 4px; border-bottom: 1px solid rgba(255, 255, 255, 0.06); font-variant-numeric: tabular-nums; }
+.board li .rank { color: var(--ink-faint); text-align: right; }
+.board li .time { font-weight: 700; }
+.board li .how { grid-column: 2 / -1; font-size: 11.5px; color: var(--ink-dim); }
+.board li.ai .name { color: #ff8ae8; }
+.board li.verified .how { color: #3dffa8; }
+.board li.unverified { opacity: 0.6; }
+.board li.unverified .time { text-decoration: line-through; }
+.board li button { font: inherit; font-size: 11.5px; padding: 3px 9px; border-radius: 999px; cursor: pointer; color: inherit; background: rgba(255, 194, 74, 0.12); border: 1px solid rgba(255, 194, 74, 0.45); }
+.board form { display: flex; gap: 6px; margin-top: 12px; align-items: center; flex-wrap: wrap; }
+.board form input { flex: 1; min-width: 120px; height: 32px; padding: 0 10px; border-radius: 8px; font: inherit; color: inherit; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.14); outline: none; }
+.board form button { height: 32px; font: inherit; padding: 0 12px; border-radius: 8px; cursor: pointer; color: inherit; background: rgba(25, 227, 255, 0.12); border: 1px solid rgba(25, 227, 255, 0.4); }
+.board .note { margin: 8px 0 0; font-size: 11.5px; color: var(--ink-dim); }
+.board .warn { color: #ffb02e; }

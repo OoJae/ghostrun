@@ -8,3 +8,5 @@ export type { Chip, ChipStatus, Counterexample, Receipt, Tier, Trail } from "./t
 export { insights, type Insights } from "./insights";
 export { badness, better, issuesOf } from "./issues";
 export { caught, plants, provedWon, type Planted } from "./fool";
+export { GHOST_EVERY, GhostRecorder, Progress, secretsOf, type Ghost, type ProgressSim } from "./ghost";
+export { replayRun, type Replayed } from "./replay";

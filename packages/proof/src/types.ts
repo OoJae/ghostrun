@@ -1,4 +1,5 @@
 import type { Vec3 } from "@ghostrun/ir";
+import type { Ghost } from "./ghost";
 
 export type Tier = "T0" | "T1" | "T2" | "T3";
 export type ChipStatus = "verified" | "played" | "modelled" | "not_checkable" | "counterexample";
@@ -43,4 +44,6 @@ export interface Receipt {
   ms: number;
   /** The AI runners' routes (play analytics: where they went, what nobody went near). */
   trails?: Trail[];
+  /** The par runner's run, sampled for racing it (present when a runner won). */
+  ghost?: Ghost;
 }
