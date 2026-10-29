@@ -1,0 +1,30 @@
+{"op":"meta","mode":"play","lang":"en","pack":"arena","sub":[],"seed":21,"look":"neon","mood":[0.2,0.8,0.7],"timeOfDay":21,"weather":"clear"}
+{"op":"zone","id":"z_floor","slot":"midfield","tag":"center","name":"Duelling floor"}
+{"op":"zone","id":"z_west","slot":"west_half","tag":"base","name":"Your circle"}
+{"op":"zone","id":"z_east","slot":"east_half","tag":"base","name":"The rival's circle"}
+{"op":"zone","id":"z_balcony","slot":"north_deck","tag":"platform","name":"Mana balcony"}
+{"op":"spawn","id":"sp_red","zone":"z_west","anchor":"spawn_pad","team":"red"}
+{"op":"spawn","id":"sp_blue","zone":"z_east","anchor":"spawn_pad","team":"blue"}
+{"op":"ent","id":"potion_1","kind":"pickup","noun":"healing potion","hyper":"potion","zone":"z_west","anchor":"flank_n","body":"sensor","shape":"sphere"}
+{"op":"ent","id":"potion_2","kind":"pickup","noun":"healing potion","hyper":"potion","zone":"z_west","anchor":"flank_s","body":"sensor","shape":"sphere"}
+{"op":"ent","id":"crystal","kind":"pickup","noun":"storm crystal","hyper":"crystal","zone":"z_balcony","anchor":"deck_center","body":"sensor","shape":"sphere"}
+{"op":"verb","id":"vb_jump","verb":"locomotion.jump","on":"player","params":{"jumpsMax":2}}
+{"op":"verb","id":"vb_fireball","verb":"combat_sport.shoot","on":"player","params":{"range":16,"speed":18,"damage":20,"cooldown":0.6}}
+{"op":"verb","id":"vb_hp_you","verb":"combat_sport.health","on":"player","params":{"hp":100,"respawn":false}}
+{"op":"verb","id":"vb_frost","verb":"combat_sport.shoot","on":"rival_wizard","params":{"range":14,"speed":14,"damage":10,"cooldown":1.6}}
+{"op":"verb","id":"vb_hp_rival","verb":"combat_sport.health","on":"rival_wizard","params":{"hp":100,"respawn":false}}
+{"op":"verb","id":"vb_potion_1","verb":"puzzle.collect","on":"potion_1"}
+{"op":"verb","id":"vb_potion_2","verb":"puzzle.collect","on":"potion_2"}
+{"op":"verb","id":"vb_crystal","verb":"puzzle.collect","on":"crystal"}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6}}
+{"op":"rule","id":"r_win","when":{"t":"health_lte","a":"rival_wizard","n":0},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose","when":{"t":"health_lte","a":"player","n":0},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_stagger","when":{"t":"health_lte","a":"rival_wizard","n":50},"then":[{"e":"emit","target":"rival_wizard","fx":"stagger"}],"once":true}
+{"op":"rule","id":"r_potion_1","when":{"t":"touch","a":"player","b":"potion_1"},"then":[{"e":"heal","target":"player","n":30},{"e":"emit","target":"player","fx":"sparkle"}],"once":true}
+{"op":"rule","id":"r_potion_2","when":{"t":"touch","a":"player","b":"potion_2"},"then":[{"e":"heal","target":"player","n":30},{"e":"emit","target":"player","fx":"sparkle"}],"once":true}
+{"op":"rule","id":"r_storm","when":{"t":"touch","a":"player","b":"crystal"},"then":[{"e":"damage","target":"rival_wizard","n":30},{"e":"emit","target":"rival_wizard","fx":"lightning"}],"once":true}
+{"op":"npc","id":"rival_wizard","role":"rival","zone":"z_east","anchor":"goal_ring","team":"blue","noun":"rival wizard","hyper":"wizard","menu":["rival.attack","rival.defend","rival.patrol"],"dflt":"rival.attack","persona":{"identity":"Morwen the frost mage","personality":"proud, theatrical","knowledge":"the storm crystal on the balcony hurts her","replyStyle":"short, icy taunts","safety":"family-friendly"}}
+{"op":"expect","id":"x_duel","prop":"win_reachable","a":"sp_red","b":"z_east","headline":true,"text":"The rival wizard can be beaten with fireballs"}
+{"op":"end","layer":"gameplay"}
+{"op":"dress","id":"d_runes","noun":"glowing rune circle","zone":"z_floor","anchor":"center"}
+{"op":"end","layer":"cosmetic"}

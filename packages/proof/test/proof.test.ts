@@ -208,6 +208,70 @@ describe("try to fool it", () => {
   }, 180_000);
 });
 
+describe("fights (a wizard duel; a zombie horde)", () => {
+  const combat = async (name: string) => {
+    const { arena } = await import("@ghostrun/pack-arena");
+    const text = readFileSync(new URL(`../../ir/fixtures/${name}.jsonl`, import.meta.url), "utf8");
+    const seed = (JSON.parse(text.split("\n", 1)[0]!) as { seed: number }).seed;
+    const fill = parseFill(text, { seed });
+    expect(fill.notes.filter((n) => n.kind === "invalid" || n.kind === "unresolved")).toEqual([]);
+    const layout = arena.generate({ seed, params: arena.defaults, sub: [], laws: fill.draft.laws, harder: false });
+    return placeWorld({ ...fill.draft, engine: ENGINE }, layout).bundle;
+  };
+  const forced = (r: Awaited<ReturnType<typeof prove>>) => r.chips.filter((c) => c.tier === "T2").map((c) => [c.subject.id, c.status]);
+
+  it.each([
+    ["wizard-duel", "win ← r_win (rival_wizard down to 0 HP) ← shoot rival_wizard (5 hits of 20)"],
+    ["zombie-survival", "win ← r_win (team:red reaches 10) ← r_down (team:blue down to 0 HP) ← shoot team:blue (3 hits of 20)"],
+  ])("%s: the win regresses through knock-outs, every shot lands in the range model, every rule is forced, and runners win the fight", async (name, explain) => {
+    const b = await combat(name);
+    const r = await prove(R, b, { engine: ENGINE, runs: 12 });
+    console.log(["", `${name} · ${r.ms} ms`, ...r.chips.map(chipLine), `par: ${JSON.stringify(r.par)}`].join("\n"));
+    expect(r.chips.find((c) => c.id === "T0:win_chain")).toMatchObject({ status: "verified", text: explain });
+    expect(r.chips.filter((c) => c.id.startsWith("T0:refs:"))).toEqual([]);
+    const range = r.chips.filter((c) => c.id.startsWith("T1:range:"));
+    expect(range.length).toBeGreaterThan(0);
+    expect(range.every((c) => c.status === "verified")).toBe(true);
+    expect(forced(r)).toEqual(b.rules.map((x) => [x.id, "verified"]).sort());
+    expect(r.chips.find((c) => c.id === "T3:win")!.k).toBeGreaterThanOrEqual(10);
+    expect(r.chips.find((c) => c.id === "T3:envelope")?.status).toBe("played");
+    expect(r.headline?.status).toBe("verified");
+  }, 120_000);
+
+  it("a weapon that does no harm: no chain to the win (T0), and the knock-out never fires when forced (T2)", async () => {
+    const { plants, caught } = await import("../src");
+    const { t2 } = await import("../src/t2");
+    const b = await combat("wizard-duel");
+    const p = plants(b, 4.9).find((x) => x.id === "harmless_weapon")!;
+    expect(p.text).toBe("your weapon does no damage");
+    expect(t2(R, p.bundle).find((c) => c.id === "T2:r_win")).toMatchObject({ status: "counterexample", cx: { text: "never fired when forced" } });
+    const r = await prove(R, p.bundle, { engine: ENGINE, runs: 2 });
+    expect(caught(r).by).toMatchObject({ id: "T0:win_chain", status: "counterexample" });
+  }, 60_000);
+
+  it("a rival sealed in stone is out of any shot (T1's range model says why); one that heals faster than you hurt it beats every runner (T3)", async () => {
+    const { plants, caught, t1Range } = await import("../src");
+    const b = await combat("wizard-duel");
+    const ps = plants(b, 4.9);
+    expect(ps.map((p) => p.id)).toEqual(["impossible_condition", "harmless_weapon", "walled_in", "invulnerable"]);
+    const walled = ps.find((p) => p.id === "walled_in")!;
+    expect(t1Range(walled.bundle, walled.bundle.laws).find((c) => c.id === "T1:range:r_win")).toMatchObject({ status: "counterexample", cx: { text: "every spot within 16 m of the rival wizard is behind cover (no clear line)" } });
+    const healed = await prove(R, ps.find((p) => p.id === "invulnerable")!.bundle, { engine: ENGINE, runs: 6 });
+    const c = caught(healed);
+    expect(c.by?.id).toBe("T3:win");
+    expect(c.by?.k).toBe(0);
+  }, 120_000);
+
+  it("a planted heal on something with no hit points is flagged statically and by its forced test", async () => {
+    const { t0 } = await import("../src/t0");
+    const { t2 } = await import("../src/t2");
+    const b = await combat("wizard-duel");
+    const broken = { ...b, verbs: b.verbs.filter((v) => !(v.verb === "combat_sport.health" && v.on === "player")) };
+    expect(t0(broken).chips.find((c) => c.id === "T0:refs:r_potion_1")?.text).toBe("rule r_potion_1 needs hit points nothing has: player (heal)");
+    expect(t2(R, broken).find((c) => c.id === "T2:r_potion_1")).toMatchObject({ status: "counterexample", cx: { text: "fired, but its heal on player moved no hit points" } });
+  }, 60_000);
+});
+
 describe("where the runners went", () => {
   it("the receipt carries each runner's route; nothing the CTF asks for goes unvisited, and the time goes near the orb's path", async () => {
     const { insights } = await import("../src");

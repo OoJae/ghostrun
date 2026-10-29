@@ -6,6 +6,8 @@ import forestFill from "../../../packages/packs/outdoor/test/fixtures/glow-fores
 import parkourFill from "../../../packages/packs/course/test/fixtures/parkour-time-trial.jsonl?raw";
 import heistFill from "../../../packages/ir/fixtures/heist-live-1.jsonl?raw";
 import vaultFill from "../../../packages/ir/fixtures/vault-heist.jsonl?raw";
+import duelFill from "../../../packages/ir/fixtures/wizard-duel.jsonl?raw";
+import zombieFill from "../../../packages/ir/fixtures/zombie-survival.jsonl?raw";
 import { layoutLaws, parseFill, specHash, type FillNote, type FillStats, type WorldBundle } from "@ghostrun/ir";
 import { placeWorld } from "@ghostrun/layout";
 import { packFor, PACKS } from "@ghostrun/registry";
@@ -72,7 +74,7 @@ export function buildWorld(_prompt: string, fixture = "ctf"): World {
 }
 
 /** Recorded fills: the organizer's CTF brief, and a kit-verb world (?fixture=coin-rush). */
-export const FIXTURES: Record<string, string> = { ctf: fixtureFill, "coin-rush": coinRushFill, forest: forestFill, parkour: parkourFill, heist: heistFill, vault: vaultFill };
+export const FIXTURES: Record<string, string> = { ctf: fixtureFill, "coin-rush": coinRushFill, forest: forestFill, parkour: parkourFill, heist: heistFill, vault: vaultFill, duel: duelFill, zombies: zombieFill };
 export const FIXTURE_PROMPTS: Record<string, string> = {
   ctf: BRIEF,
   "coin-rush": "Collect five gold coins in a neon arena before the clock runs out. Mind the lava.",
@@ -80,6 +82,8 @@ export const FIXTURE_PROMPTS: Record<string, string> = {
   vault: "A museum at night: find the brass key, open the vault, steal the star sapphire and get to the van before the alarm.",
   heist: "A museum heist: grab the key, unlock the vault, steal the gem and escape before the alarm timer runs out.",
   parkour: "A parkour time trial: double jump the opening wall, then race the gaps and beams to the finish.",
+  duel: "A wizard duel in a neon arena: fireballs against a frost mage, healing potions in your circle, a storm crystal on the balcony.",
+  zombies: "Zombie survival: hold the yard with a blaster and knock out ten zombies before they get you.",
 };
 
 /** Fill text (fixture or a live stream) → placed world, choosing the pack from the registry. */
