@@ -228,6 +228,9 @@ export class VrMode {
   readonly #toast = new Panel("toast", PANELS.toast.px, PANELS.toast.width);
   readonly #bark = new Panel("bark", PANELS.bark.px, PANELS.bark.width);
   readonly #panels = [this.#wrist, this.#result, this.#sheet, this.#toast, this.#bark];
+  /** The panels with buttons to point at. */
+  readonly #targets = [this.#wrist, this.#result, this.#sheet];
+  readonly #hands = [this.#left, this.#right] as const;
   readonly #vignette = new Vignette();
   readonly #models: Record<"left" | "right", Group>;
   readonly #rays: Record<"left" | "right", Mesh>;
@@ -344,14 +347,15 @@ export class VrMode {
     if (frame && ref && session) {
       const vp = frame.getViewerPose(ref);
       if (vp) (set(this.#head, vp.transform), (this.#head.ok = true));
-      const seen = new Set<Hand>();
+      let left = false;
+      let right = false;
       for (const src of session.inputSources) {
-        const hand = src.handedness === "left" ? this.#left : src.handedness === "right" ? this.#right : null;
-        if (!hand || !src.gamepad || seen.has(hand)) continue;
-        hand.read(src, frame, ref, now);
-        seen.add(hand);
+        if (!src.gamepad) continue;
+        if (src.handedness === "left" && !left) ((left = true), this.#left.read(src, frame, ref, now));
+        if (src.handedness === "right" && !right) ((right = true), this.#right.read(src, frame, ref, now));
       }
-      for (const h of [this.#left, this.#right]) if (!seen.has(h)) h.lost();
+      if (!left) this.#left.lost();
+      if (!right) this.#right.lost();
     }
     this.#controls(now, w);
     this.#cpuMs = performance.now() - t0;
@@ -363,7 +367,7 @@ export class VrMode {
     const input = this.#h.input;
     if (L.pressed(FACE_2) || R.pressed(FACE_2)) this.onMute?.();
     // the trigger on a panel clicks the button there, and is no shot or use until it is let go
-    for (const h of [L, R]) {
+    for (const h of this.#hands) {
       if (h.pressed(TRIGGER) && h.hover) {
         h.clicked = true;
         if (h.hover.button) (h.buzz(0.6, 30), this.#click(h.hover.button, now));
@@ -668,10 +672,10 @@ export class VrMode {
       // out of the seat: on foot, facing the way you were, standing where the seat was
       this.#yaw = this.#seat.yaw;
       this.#seat = null;
-      this.#centred = false;
       this.#blinkUntil = now + 250;
       const [hx, hz] = turnXZ(hl.x, hl.z, this.#yaw);
-      ((this.#off.x = -hx), (this.#off.z = -hz), (this.#centred = true));
+      this.#off.x = -hx;
+      this.#off.z = -hz;
     }
     rig.rotation.set(0, this.#yaw, 0);
     rig.position.set(player.position.x + this.#off.x, player.position.y - 0.9, player.position.z + this.#off.z);
@@ -688,7 +692,7 @@ export class VrMode {
     const head = this.#head;
     head.wp.copy(head.p).applyMatrix4(rig.matrixWorld);
     head.wq.copy(_rigQ).multiply(head.q);
-    for (const h of [this.#left, this.#right]) {
+    for (const h of this.#hands) {
       h.wRay.p.copy(h.ray.p).applyMatrix4(rig.matrixWorld);
       h.wRay.q.copy(_rigQ).multiply(h.ray.q);
       h.wRay.d.set(0, 0, -1).applyQuaternion(h.wRay.q);
@@ -768,9 +772,9 @@ export class VrMode {
       this.#wrist.shown = _f.dot(_v) > 0.25;
     } else this.#wrist.shown = false;
 
-    // the result card: in front of you when the run ends, and it stays there
+    // the result card: in front of you when the run ends, and it stays there (until a new world is on its way)
     const res = this.#hud.result;
-    if (res && !this.#sheetOpen) {
+    if (res && !this.#sheetOpen && !this.#hud.busy) {
       if (res.tick !== this.#resultTick) ((this.#resultTick = res.tick), this.#placeAhead(this.#result, PANELS.result.at, -0.1));
       if (this.#painted.result !== this.#ver) ((this.#painted.result = this.#ver), this.#paintResult(res));
       this.#result.shown = true;
@@ -819,9 +823,12 @@ export class VrMode {
         this.#ahead(m, 1.6, toast ? -0.5 : -0.38, 0.2);
       }
       this.#bark.show(`b:${bark.at}:${bark.name}:${bark.line}`, (ui) => {
-        ui.card("rgba(10, 7, 22, 0.86)");
+        // as tall as the words: the card sits on the panel's bottom edge, just over their head
         const px = PANELS.bark.font;
-        ui.text(`${bark.name}: ${bark.line}`, 40, 28, px, INK, { maxW: ui.w - 80, max: 3 });
+        const said = `${bark.name}: ${bark.line}`;
+        const top = ui.h - ui.wrap(said, px, ui.w - 80, 3).length * px * 1.25 - 56;
+        ui.card("rgba(10, 7, 22, 0.86)", undefined, Math.max(0, top));
+        ui.text(said, 40, Math.max(0, top) + 28, px, INK, { maxW: ui.w - 80, max: 3 });
       });
     } else ((this.#bark.shown = false), (this.#barkAt = null));
   }
@@ -912,25 +919,23 @@ export class VrMode {
 
   /** Rays from the controllers: what they point at on a panel lights up, and the trigger clicks it. */
   #pointers() {
-    const targets = [this.#wrist, this.#result, this.#sheet].filter((p) => p.shown);
     const shooting = /shoot/.test(this.#hud.hint ?? "");
-    const lit = new Map<Panel, string | null>(targets.map((p) => [p, null]));
-    for (const h of [this.#left, this.#right]) {
+    const open = this.#result.shown || this.#sheet.shown;
+    for (const h of this.#hands) {
       const ray = this.#rays[h.side];
       const tip = this.#tips[h.side];
       let best: Hand["hover"] = null;
       if (h.connected) {
-        for (const p of targets) {
-          if (h.side === "left" && p === this.#wrist) continue; // (the hand the watch is on can't point at it)
+        for (const p of this.#targets) {
+          if (!p.shown || (h.side === "left" && p === this.#wrist)) continue; // (the hand the watch is on can't point at it)
           const hit = p.hit(h.wRay.p, h.wRay.d);
           if (hit && (!best || hit.t < best.t)) best = { panel: p, button: hit.button, t: hit.t };
         }
       }
       if (best?.button && best.button !== h.hover?.button) h.buzz(0.15, 12);
       h.hover = best;
-      if (best?.button && !lit.get(best.panel)) lit.set(best.panel, best.button);
       // a ray shows on a panel, while one is open to point at, or to aim a weapon
-      const len = best ? best.t : targets.some((p) => p !== this.#wrist) ? 2.5 : shooting && h === this.#right ? 8 : 0;
+      const len = best ? best.t : open ? 2.5 : shooting && h === this.#right ? 8 : 0;
       ray.visible = h.connected && len > 0;
       tip.visible = Boolean(best);
       if (!ray.visible) continue;
@@ -940,7 +945,10 @@ export class VrMode {
       ray.scale.set(1, 1, len);
       if (best) tip.position.copy(h.wRay.p).addScaledVector(h.wRay.d, best.t);
     }
-    for (const [p, id] of lit) p.hover = id;
+    // (the right hand's button wins when both point at the same panel)
+    const R = this.#right.hover;
+    const L = this.#left.hover;
+    for (const p of this.#targets) p.hover = (R?.panel === p ? R.button : null) ?? (L?.panel === p ? L.button : null);
   }
 
   /** The teleport arc as dots, and a ring where it lands (cyan: you can go there). */

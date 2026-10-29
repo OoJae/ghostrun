@@ -237,8 +237,14 @@ export class Engine {
     if (this.#vrMode) this.#vrMode.hud = h;
   }
 
+  /** What a VR frame plays in (one object, refreshed each frame rather than made anew). */
+  readonly #vrW: VrWorld = { view: null, sim: null, building: false };
   #vrWorld(): VrWorld {
-    return { view: this.#view, sim: this.rapierSim, building: this.#preview !== null };
+    const w = this.#vrW;
+    w.view = this.#view;
+    w.sim = this.rapierSim;
+    w.building = this.#preview !== null;
+    return w;
   }
 
   #trails: Group | null = null;

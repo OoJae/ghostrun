@@ -39,10 +39,10 @@ export class Ui {
     readonly hover: string | null,
   ) {}
 
-  /** The panel's glass: a dark rounded card. */
-  card(fill = "rgba(10, 7, 22, 0.9)", edge = "rgba(255, 255, 255, 0.14)") {
+  /** The panel's glass: a dark rounded card (from `top` down, when the words need less than the whole panel). */
+  card(fill = "rgba(10, 7, 22, 0.9)", edge = "rgba(255, 255, 255, 0.14)", top = 0) {
     const g = this.g;
-    round(g, 3, 3, this.w - 6, this.h - 6, 28);
+    round(g, 3, top + 3, this.w - 6, this.h - top - 6, 28);
     g.fillStyle = fill;
     g.fill();
     g.lineWidth = 3;
