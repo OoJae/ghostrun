@@ -25,6 +25,8 @@ export interface GhostrunProbe {
   overview?: { routes: number; heat: number };
   /** The sound: "off" until the first gesture starts it, "disabled" with ?audio=0. */
   audio?: AudioProbe;
+  /** The build preview on screen (absent when there is none): statics risen and entities popped in so far. */
+  materialise?: { statics: number; entities: number };
 }
 
 export interface AudioProbe {

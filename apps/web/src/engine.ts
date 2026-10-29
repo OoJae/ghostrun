@@ -15,7 +15,8 @@ import type { GhostTrack, Rival } from "./race";
 import { combatView, type CombatView } from "./render/combat";
 import { heatView, type HeatCells } from "./render/heat";
 import { makeRain } from "./render/rain";
-import { lookOf } from "./render/looks";
+import { lookOf, type LookStyle } from "./render/looks";
+import { Materialise, type MaterialiseSpec } from "./render/materialise";
 import { beamMaterial, PALETTE } from "./render/materials";
 import { applySky, makeFog, neonEnvironment, skyNode } from "./render/sky";
 import { buildWorldView, type WorldView } from "./render/world";
@@ -40,6 +41,8 @@ export interface LoadResult {
 }
 
 const TICK_MS = 1000 / TICK_HZ;
+/** A build preview waits this long before drawing: a world that is already complete never pays for one. */
+const PREVIEW_AFTER_MS = 120;
 /** Where the ghost waits while there is nothing to race (far under the world, past the far plane). */
 const PARKED_Y = -1e4;
 const _q0 = new Quaternion();
@@ -109,6 +112,15 @@ export class Engine {
   readonly #ghost = ghostActor();
   #ghostTrack: GhostTrack | null = null;
   #ghostShown = true;
+  /** The world being built, shown in place of the current one until load() swaps the real one in. */
+  #preview: Materialise | null = null;
+  #previewAsk: { spec: MaterialiseSpec; at: number } | null = null;
+  #previewDraft: WorldBundle | null = null;
+  /** Bumped whenever a preview ends, so one still compiling is dropped. */
+  #previewGen = 0;
+  /** The shown world's look, put back when a preview ends without a new world. */
+  #look: LookStyle | null = null;
+  #warmPreview: Materialise | null = null;
 
   private constructor(canvas: HTMLCanvasElement, renderer: WebGPURenderer, opts: EngineOptions, initMs: number) {
     this.#canvas = canvas;
@@ -388,7 +400,83 @@ export class Engine {
       }
       this.#warm.push(view);
     }
+    // and the build preview's few programs, so the first reveal never waits on a compile
+    if (!this.#warmPreview) {
+      const p = (this.#warmPreview = Materialise.sample());
+      const s = new Scene();
+      s.fog = this.#scene.fog;
+      s.add(p.root);
+      await this.#renderer.compileAsync(s, this.#camera).catch((e: unknown) => console.warn("prewarm skipped the preview", e));
+    }
     return performance.now() - t0;
+  }
+
+  /**
+   * Show the world being built (render/materialise.ts) from its intent: ground and walls rise,
+   * then entities pop in as materialiseLine() feeds the fill. load() swaps the real world in.
+   */
+  materialise(spec: MaterialiseSpec) {
+    this.#stopPreview();
+    if (this.#vr) return;
+    this.#previewAsk = { spec, at: performance.now() };
+  }
+
+  /** The fill so far (the parser's growing draft). */
+  materialiseLine(draft: WorldBundle) {
+    this.#previewDraft = draft;
+    const p = this.#preview;
+    if (!p) return;
+    const look = p.feed(draft);
+    if (look) this.#applyLook(look);
+    probe().materialise = p.counts;
+  }
+
+  /** Back to the world that was showing (the build was refused). */
+  endPreview() {
+    const shown = this.#preview !== null;
+    this.#stopPreview();
+    if (shown && this.#look) this.#applyLook(this.#look);
+  }
+
+  async #startPreview(spec: MaterialiseSpec) {
+    this.#previewAsk = null;
+    const gen = this.#previewGen;
+    const p = new Materialise(spec);
+    // its programs compile off to the side (once a session, then shared), never on a frame
+    const s = new Scene();
+    s.fog = this.#scene.fog;
+    s.add(p.root);
+    await this.#renderer.compileAsync(s, this.#camera).catch(() => undefined);
+    if (gen !== this.#previewGen) return p.dispose();
+    if (this.#previewDraft) p.feed(this.#previewDraft);
+    this.showTrails(null);
+    for (const o of [this.#view?.root, this.#combat?.root, this.#ghost.obj]) if (o) o.visible = false;
+    this.#beacon.visible = false;
+    this.#scene.add(p.root);
+    this.#applyLook(p.look);
+    p.start(performance.now());
+    this.#preview = p;
+    probe().materialise = p.counts;
+  }
+
+  #stopPreview() {
+    this.#previewGen++;
+    this.#previewAsk = null;
+    this.#previewDraft = null;
+    const p = this.#preview;
+    if (!p) return;
+    this.#preview = null;
+    p.dispose();
+    for (const o of [this.#view?.root, this.#combat?.root, this.#ghost.obj]) if (o) o.visible = true;
+    delete probe().materialise;
+  }
+
+  #applyLook(look: LookStyle) {
+    applySky(look, this.#scene.fog as Fog);
+    this.#rain.object.visible = look.rain;
+    this.#renderer.toneMappingExposure = look.exposure;
+    this.#scene.environmentIntensity = look.env;
+    if (this.#bloom) this.#bloom.strength.value = look.bloom;
   }
 
   /** Swap in a new world. Resolves after its first frame has been rendered. */
@@ -399,17 +487,15 @@ export class Engine {
     ];
     const pr = probe();
     pr.ready = false;
+    this.#stopPreview(); // the real world is here: the preview of it goes, whatever it had got to
     this.#unload();
     // Frames rendered while the new world compiles must not apply the old world's poses.
     this.#prev = this.#curr = null;
 
     let t = performance.now();
     const look = lookOf(world.bundle);
-    applySky(look, this.#scene.fog as Fog);
-    this.#rain.object.visible = look.rain;
-    this.#renderer.toneMappingExposure = look.exposure;
-    this.#scene.environmentIntensity = look.env;
-    if (this.#bloom) this.#bloom.strength.value = look.bloom;
+    this.#look = look;
+    this.#applyLook(look);
     const view = buildWorldView(world.bundle, look);
     this.showTrails(null); // another world's routes
     this.setGhost(null); // and its ghost: the caller hands this world's rival in once it's loaded
@@ -485,6 +571,8 @@ export class Engine {
 
   dispose() {
     void this.#renderer.setAnimationLoop(null);
+    this.#stopPreview();
+    this.#warmPreview?.dispose();
     this.#unload();
     this.#follow.dispose();
     this.#input.dispose();
@@ -552,8 +640,15 @@ export class Engine {
     this.#applyPoses(now);
     this.#placeGhost(now);
 
+    const ask = this.#previewAsk;
+    if (ask && now - ask.at > PREVIEW_AFTER_MS) void this.#startPreview(ask.spec);
+    const preview = this.#preview;
     const player = view?.actors.get(PLAYER_ID);
-    if (player && this.#vr) {
+    if (preview) {
+      // building: the camera circles the layout instead of following the player
+      preview.update(now, this.#camera);
+      this.#rain.follow(this.#camera.position);
+    } else if (player && this.#vr) {
       // first person: the rig stands on the player's feet; the headset adds the eye height
       player.visible = false;
       this.#rig.position.set(player.position.x, player.position.y - 0.9, player.position.z);

@@ -1,0 +1,12 @@
+# Prompts warm-cache builds once (one per line; # starts a comment). The organizer's brief and the
+# landing's one-click starts and suggestions: keep in step with BRIEF and FIXTURE_PROMPTS in
+# apps/web/src/pipeline.ts and STARTERS/SUGGESTIONS in apps/web/src/App.tsx. Case and spacing don't
+# matter (the cache key normalises them); wording does.
+Create a capture-the-flag game in a neon city. Add double jump. Score when the orb reaches the goal.
+A museum at night: find the brass key, open the vault, steal the star sapphire and get to the van before the alarm.
+A bioluminescent forest at night: climb to the owl lookout before the fog rolls in.
+Collect five gold coins in a neon arena before the clock runs out. Mind the lava.
+A parkour time trial: double jump the opening wall, then race the gaps and beams to the finish.
+A minimalist white museum with five sculptures and a guide who explains each one.
+A wizard duel on floating islands: knock your rival off the edge before they knock you off.
+Bludiště s duchy: najdi klíč a uteč východem, než tě chytí.

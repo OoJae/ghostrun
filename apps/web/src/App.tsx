@@ -14,7 +14,7 @@ import { EditBox, type EditState } from "./hud/Edit";
 import { Gallery, GALLERY, type GalleryEntry } from "./hud/Gallery";
 import { TrustPanel } from "./hud/Trust";
 import { CutChip, ProofBadge, ReceiptPanel, RepairChip, type CutState, type Fooled, type ProofState, type RepairState } from "./hud/Proof";
-import { liveAvailable, liveBuild, liveDirector, liveEdit, liveRepair, type LiveIntent } from "./live";
+import { liveAvailable, liveBuild, liveDirector, liveEdit, liveRepair, type LiveCached, type LiveIntent } from "./live";
 import { ANGLES, changeSummary, cutHolds, cutNotes, editedPrompt, HARDER, intentFor, newFailures, pickHarder, receiptDelta, suggestionsFor, SURPRISE } from "./edits";
 import { createShare, loadShare, reportWrong } from "./share";
 import { Minds } from "./minds";
@@ -70,6 +70,19 @@ const SOURCE: Record<Mode, { label: string; title: string }> = {
 };
 /** A live world the fallback rung wrote: same proof, said plainly. */
 const FELL_BACK = { label: "live AI · Haiku", title: "The fast lane was busy, so Claude Haiku (Anthropic) wrote this world. It is proved the same way." };
+const MODEL_NAME: Record<string, string> = { "claude-haiku-5-5": "Claude Haiku", "claude-sonnet-5-5": "Claude Sonnet", "qwen-3.8-27b": "Qwen 3.8" };
+const model = (id: string) => MODEL_NAME[id] ?? (id || "the live AI");
+/** A world the edge replayed from its cache: never passed off as live, and one click from a fresh build. */
+const fromCache = (c: LiveCached, fresh: () => void) => {
+  const at = new Date(c.at);
+  const day = at.toLocaleDateString("en-GB", { day: "numeric", month: "short", timeZone: "UTC" });
+  const when = `${at.toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short", timeZone: "UTC" })} UTC`;
+  return {
+    label: `cached · built live ${day} by ${model(c.fillModel)}`,
+    title: `Replayed from the cache, not built now: this prompt was built live on ${when} (intent by ${model(c.intentModel)}, world by ${model(c.fillModel)}), and it is proved again on your device. Build it fresh asks the AI for a new one.`,
+    action: { label: "Build it fresh", run: fresh },
+  };
+};
 
 export function App() {
   const canvas = useRef<HTMLCanvasElement>(null);
@@ -90,6 +103,10 @@ export function App() {
   const [status, setStatus] = useState<Status>("booting");
   const [mode, setMode] = useState<Mode>("checking");
   const [fellBack, setFellBack] = useState(false);
+  /** The live world came from the edge's cache: when and by whom it was built. */
+  const [cachedFrom, setCachedFrom] = useState<LiveCached | null>(null);
+  /** Fill lines streamed so far while the world is built (its preview is on screen). */
+  const [building, setBuilding] = useState<number | null>(null);
   const [error, setError] = useState<string>();
   const [notice, setNotice] = useState<string>();
   const [collapsed, setCollapsed] = useState(false);
@@ -283,6 +300,7 @@ export function App() {
       if (id !== runId.current) return;
       setTiming({ ttffMs: result.ttffMs, splits: [...extra, ...result.splits] });
       setStatus("playing");
+      setBuilding(null);
       setHint(true);
       const sim = e.rapierSim;
       setTeams(world.bundle.rules.some((r) => r.then.some((fx) => fx.target === "team:blue" && fx.e !== "damage" && fx.e !== "heal")));
@@ -318,7 +336,7 @@ export function App() {
   );
 
   const run = useCallback(
-    async (text: string, startedAt: number, extraSplits: LoadResult["splits"] = [], useLive = false) => {
+    async (text: string, startedAt: number, extraSplits: LoadResult["splits"] = [], useLive = false, rebuild = false) => {
       const id = ++runId.current;
       setStatus("building");
       setNotice(undefined);
@@ -327,12 +345,25 @@ export function App() {
       builtPrompt.current = text;
       setSpecHash(undefined);
       setFellBack(false);
+      setCachedFrom(null);
+      setBuilding(null);
       setProof({ status: "idle", chips: [], receipt: null });
       delete probe().specHash;
       if (useLive) {
-        const r = await liveBuild(text, (i, ms) => {
-          if (id !== runId.current) return;
-          setNotice(`${i.genre} · ${i.setting.slice(0, 80)} (${ms} ms)`);
+        const r = await liveBuild(text, {
+          fresh: rebuild,
+          onIntent: (i, ms, seed) => {
+            if (id !== runId.current) return;
+            setNotice(`${i.genre} · ${i.setting.slice(0, 80)} (${ms} ms)`);
+            // the layout follows from the intent alone: it rises while the fill streams in
+            engine.current?.materialise({ pack: i.pack, sub: i.sub, seed, look: `${i.setting} ${i.mood}` });
+            setBuilding(0);
+          },
+          onLine: (n, draft) => {
+            if (id !== runId.current) return;
+            engine.current?.materialiseLine(draft);
+            setBuilding(n);
+          },
         });
         if (id !== runId.current) return;
         if (r.kind === "world") {
@@ -340,10 +371,13 @@ export function App() {
           world.source = { prompt: text, intent: r.intent, fill: r.fill, seed: r.seed, pack: r.intent.pack };
           setNotice(undefined);
           setFellBack(r.fallback !== null);
-          await show(world, id, startedAt, [...extraSplits, { label: "intent", ms: r.intentMs }, { label: r.fallback ? `fill (${r.fallback})` : "fill", ms: r.gameplayMs - r.intentMs }]);
+          setCachedFrom(r.cached);
+          await show(world, id, startedAt, [...extraSplits, { label: r.cached ? "intent (cached)" : "intent", ms: r.intentMs }, { label: r.cached ? "fill (cached)" : r.fallback ? `fill (${r.fallback})` : "fill", ms: r.gameplayMs - r.intentMs }]);
           return;
         }
+        setBuilding(null);
         if (r.kind === "refused") {
+          engine.current?.endPreview();
           setNotice(r.message);
           setStatus("playing");
           return;
@@ -747,6 +781,7 @@ export function App() {
     setEdit({ status: "idle" });
     setStatus("building");
     setFellBack(false);
+    setCachedFrom(null);
     await show(world, ++runId.current, t0, [{ label: "gallery", ms: performance.now() - t0 }]);
     setToast("A recorded live AI world (unedited), re-proved on your device now.");
   };
@@ -761,13 +796,14 @@ export function App() {
   const againRef = useRef(again);
   againRef.current = again;
 
-  const submit = (text: string) => {
+  /** Build a prompt; `rebuild` skips the edge's cache ("Build it fresh"). */
+  const submit = (text: string, rebuild = false) => {
     setCollapsed(false);
     setFresh(false);
     // offline, a gallery prompt (the bar's examples) opens its recorded world rather than the fixture
     const recorded = mode === "live" ? undefined : GALLERY.find((g) => g.prompt === text);
     if (recorded) return void openGallery(recorded);
-    run(text, performance.now(), [], mode === "live").catch((err: unknown) => {
+    run(text, performance.now(), [], mode === "live", rebuild).catch((err: unknown) => {
       console.error(err);
       setError(err instanceof Error ? err.message : String(err));
       setStatus("error");
@@ -797,7 +833,7 @@ export function App() {
             onCollapse={() => setCollapsed(true)}
             timing={timing}
             busy={status === "building" || status === "booting"}
-            source={mode === "live" && fellBack ? FELL_BACK : SOURCE[mode]}
+            source={mode === "live" && cachedFrom ? fromCache(cachedFrom, () => submit(builtPrompt.current, true)) : mode === "live" && fellBack ? FELL_BACK : SOURCE[mode]}
             suggestions={SUGGESTIONS.filter((x) => mode === "live" || !x.live)}
             onFocusChange={setTyping}
             onGallery={() => setGallery(true)}
@@ -808,7 +844,7 @@ export function App() {
           {landing && <Landing starters={STARTERS} ready={status === "playing"} onPick={pickStarter} />}
         </div>
         {notice && <div className="glass notice" role="status">{notice}</div>}
-        {!collapsed && !typing && intent && <IntentCard intent={intent} specHash={specHash} note={note} />}
+        {!collapsed && !typing && intent && building === null && <IntentCard intent={intent} specHash={specHash} note={note} />}
         {current.current && status !== "booting" && !typing && (!collapsed || edit.status === "editing" || edit.status === "racing" || edit.status === "proving") && (
           <EditBox state={edit} enabled={mode === "live"} suggestions={[...suggestionsFor(current.current.bundle), "surprise me"]} canUndo={history.current.length > 0} onEdit={(c) => void editWorld(c)} onUndo={undo} />
         )}
@@ -972,7 +1008,14 @@ export function App() {
           />
         )}
         {status === "booting" && <div className="boot">building world…</div>}
-        {status === "building" && <div className="boot">building world…</div>}
+        {status === "building" &&
+          (building === null ? (
+            <div className="boot">building world…</div>
+          ) : (
+            <div className="materialise-status" data-testid="materialise">
+              building… {building} {building === 1 ? "line" : "lines"}
+            </div>
+          ))}
         {status === "error" && (
           <div className="glass fatal" role="alert">
             <strong>Renderer failed to start</strong>
