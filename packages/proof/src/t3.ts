@@ -5,12 +5,14 @@ import { stream } from "@ghostrun/detmath";
 import { clampLaws, type Expect, type Laws, type Vec3, type WorldBundle } from "@ghostrun/ir";
 import { buildNav, lowHazards, type NavWorld } from "@ghostrun/nav";
 import { castBrain } from "@ghostrun/bots";
-import { verb } from "@ghostrun/kits";
+import { SHOOT, verb } from "@ghostrun/kits";
 import { BTN, SimWorld, type Rapier } from "@ghostrun/sim";
 import { carryables, causeSteps, playerWeapons, producers, type PlanStep, type Want, type WinChain } from "./t0";
 import { GhostRecorder, secretsOf, type Ghost } from "./ghost";
+import { clock } from "./labels";
+import { hands, SKILLS, type Skill } from "./skill";
 import { apex, gap, hopOk, hopRoute, reachAt, surfaceUnder as surfaceAt, surfaces, type Surface } from "./t1";
-import type { Chip, Trail } from "./types";
+import type { Chip, Fall, Level, Trail } from "./types";
 
 const RUN_TICKS = 120 * 60; // two minutes of play per run (a world's own timer still ends it sooner)
 const TOO_EASY_S = 3;
@@ -49,6 +51,9 @@ function leapFor(b: WorldBundle): Leap | null {
   return { boxes, nav: () => (built ??= buildNav(b, { leap: true })), free: () => built?.destroy() };
 }
 const leapPath = (from: Vec3, to: Vec3) => (leap ? leap.nav().path(from, to) : null);
+
+/** The skill of the run under way (null: an expert, one of the proof's own runners). Set for one run. */
+let slack: Skill | null = null;
 
 /**
  * Where a path runs through a low hazard, cut that stretch out: a run-up point 1 m before it
@@ -163,6 +168,12 @@ interface RunResult {
   trail: number[];
   /** The run sampled for racing, when it won. */
   ghost: Ghost | null;
+  /** The tick each chain step was first done (−1: never). */
+  at: number[];
+  /** Where it went wrong, and why. */
+  falls: Fall[];
+  /** Hits and knock-outs by place (x, z, kind triples). */
+  fights: number[];
 }
 
 type Target = Vec3 | (() => Vec3);
@@ -245,7 +256,7 @@ function walkTo(sim: SimWorld, nav: NavWorld, goal: Target, rng: () => number, s
   let pts = plan(aim);
   if (!pts) return false;
   let i = 0;
-  let replanAt = sim.tick + 20;
+  let replanAt = sim.tick + (slack?.replan ?? 20);
   let lastProgressTick = sim.tick;
   let best = Infinity;
   let leapNow = false;
@@ -260,7 +271,7 @@ function walkTo(sim: SimWorld, nav: NavWorld, goal: Target, rng: () => number, s
         i = 0;
         best = Infinity;
       }
-      replanAt = sim.tick + 20;
+      replanAt = sim.tick + (slack?.replan ?? 20);
     }
     const p = sim.pos("player");
     // a corner beside something deadly is turned on the spot, not cut (cutting it is half a metre in)
@@ -285,7 +296,7 @@ function walkTo(sim: SimWorld, nav: NavWorld, goal: Target, rng: () => number, s
     let wx = Math.round(ux * k);
     let wz = Math.round(uz * k);
     let btn = 0;
-    if (sim.tick - lastProgressTick > 45) {
+    if (sim.tick - lastProgressTick > (slack?.stuckAfter ?? 45)) {
       trace?.(`  stuck at ${v1(p)} heading for ${v1(wp)} (waypoint ${i} of ${pts.length}${moving ? ", moving target" : ""})`);
       // stuck against something: sidestep and hop, deterministically
       wx = Math.round((rng() - 0.5) * 254);
@@ -1093,7 +1104,7 @@ function perform(r: Run, st: PlanStep): "ok" | "lost" | "stuck" {
           const again = t > 6 && sim.player.vy <= 0.5 && sim.player.jumpsUsed > 0 && sim.player.jumpsUsed < sim.laws.jumpsMax;
           sim.step({ tick: sim.tick + 1, wx: 0, wz: 0, btn: t === 0 || again ? BTN.JUMP : 0 });
           if (again) sim.step({ tick: sim.tick + 1, wx: 0, wz: 0, btn: 0 });
-          if (t > 10 && sim.player.grounded) break;
+          if (t > 10 + (slack?.lag ?? 0) && sim.player.grounded) break; // (a slower hand's jump is still on its way)
         }
         return gone(id);
       };
@@ -1143,16 +1154,39 @@ function witnessRun(R: Rapier, b: WorldBundle, nav: NavWorld, chain: WinChain, o
   const brain = castBrain(nav, b);
   for (const [npc, option] of schedule) brain.choose(npc, option);
   const sim = new SimWorld(R, b, { playerTeam, brain });
-  // the route it takes, for play analytics (reading positions only: the run is unchanged)
+  // the route it takes, where it went wrong and where the fight was, for play analytics (reading
+  // positions and the log only: the run is unchanged)
   const trail: number[] = [];
+  const falls: Fall[] = [];
+  const fights: number[] = [];
   const ghost = new GhostRecorder(sim, secretsOf(b));
+  const { weapons, watched } = fightersOf(b);
+  // where they stood before each tick: a knock-out or a hazard sends them home within it
+  const was = new Map<string, Vec3>();
+  let fellAt = -1;
+  // a lower skill level plays through human hands (an expert's input goes in as it is)
+  const hand = slack ? hands(slack, stream(seed, "t3:hands")) : null;
   const step = sim.step.bind(sim);
   sim.step = (input) => {
-    const evs = step(input);
+    for (const id of watched) if (!sim.entity(id)?.destroyed) was.set(id, sim.pos(id));
+    const evs = step(hand ? hand(input, sim.tick + 1, { shooting: sim.usable()?.label === "shoot", grounded: sim.player.grounded }) : input);
     ghost.step(sim, input);
     if (sim.tick % 20 === 0) {
       const p = sim.pos("player");
-      trail.push(Math.round(p[0] * 10) / 10, Math.round((p[1] - 0.9) * 10) / 10, Math.round(p[2] * 10) / 10);
+      trail.push(r1(p[0]), r1(p[1] - 0.9), r1(p[2]));
+    }
+    for (const e of evs) {
+      if (e.k !== "knockout" && e.k !== "hit") continue;
+      const shot = e.k === "knockout" || weapons.has(e.b);
+      const p = was.get(e.a) ?? (sim.entity(e.a) ? sim.pos(e.a) : null);
+      if (!p) continue;
+      if (shot) fights.push(r1(p[0]), r1(p[2]), e.k === "knockout" ? 1 : 0);
+      if (e.a === "player" && (e.k === "knockout" || !shot)) {
+        // by whoever fired: the one holding the weapon, or the one it belongs to (claws, a spell)
+        const by = e.b && e.b !== "player" ? sim.entity(e.b)?.carrier || e.b : "";
+        falls.push({ x: r1(p[0]), z: r1(p[2]), why: e.k === "knockout" ? `knocked out${by ? ` by the ${nameOf(b, by)}` : ""}` : `hit the ${nameOf(b, e.b)}`, end: false });
+        fellAt = sim.tick;
+      }
     }
     return evs;
   };
@@ -1164,13 +1198,24 @@ function witnessRun(R: Rapier, b: WorldBundle, nav: NavWorld, chain: WinChain, o
   let stuck = 0;
   let stuckAt: Vec3 | null = null;
   let lastTop = -1;
+  const at = chain.steps.map(() => -1);
+  let doing = 0; // the step under way when the run ended
+  let tries = 0;
   outer: while (live(r)) {
     if (sim.tick === lastTop) break; // a whole pass without a tick: never spin
     lastTop = sim.tick;
-    for (const st of chain.steps) {
+    for (const [i, st] of chain.steps.entries()) {
+      doing = i;
       const res = perform(r, st);
       trace?.(`step ${st.do} ${"item" in st ? st.item : "at" in st ? st.at : "sensor" in st ? st.sensor : ""} → ${res} at ${v1(r.sim.pos("player"))} t=${r.sim.tick}${"item" in st && st.item !== "player" ? ` (${st.item} at ${v1(r.sim.pos(st.item))})` : ""}`);
+      if (res === "ok" && at[i]! < 0) at[i] = sim.tick;
       if (res === "lost") continue outer; // tagged on the way: go and win it back
+      if (res === "stuck" && slack && tries++ < 3 && live(r)) {
+        // a person has another go (launched off a pad mid-way, a missed jump): down first, then
+        // the plan from the top (an expert's plan is exact: stuck is stuck)
+        for (let k = 0; k < 120 && live(r) && !sim.player.grounded; k++, r.budget.ticks--) sim.step(null);
+        continue outer;
+      }
       if (res === "stuck") {
         if (live(r)) stuck++;
         stuckAt = sim.pos("player");
@@ -1184,22 +1229,90 @@ function witnessRun(R: Rapier, b: WorldBundle, nav: NavWorld, chain: WinChain, o
   const lostBy = sim.result === "lose" ? (sim.log.findLast((e) => e.k === "lose")?.rule ?? "") : null;
   trace?.(`end ${sim.result ?? "none"}${lostBy ? ` (${lostBy})` : ""} at ${v1(sim.pos("player"))} t=${sim.tick}`);
   const won = sim.result === "win";
-  const out = { won, ticks: sim.tick, stuck, lostBy, stuckAt: sim.result ? null : stuckAt, trail, ghost: won ? ghost.finish(sim) : null };
+  // a win is the last step done, whatever the step's own count says (one begun again after a
+  // retry counts from its new start)
+  if (won && at.length && at[at.length - 1]! < 0) at[at.length - 1] = sim.tick;
+  if (!won) {
+    // where it ended: a loss where the player stood as it happened (the same tick's hit is that
+    // loss, not a second fall), stuck where it stopped, else wherever the time ran out
+    const p = lostBy !== null ? (was.get("player") ?? sim.pos("player")) : (stuckAt ?? sim.pos("player"));
+    const step = chain.steps[doing];
+    const w = lostBy !== null ? b.rules.find((x) => x.id === lostBy)?.when : undefined;
+    const why =
+      lostBy === null ? (r.budget.ticks > 0 ? `got stuck${step ? ` on the way to the ${stepName(b, step)}` : ""}` : `no win by ${clock(sim.tick / 60)}`)
+      : w?.t === "enter" && w.a === "player" ? `into the ${nameOf(b, w.b)}`
+      : lossWords(b, lostBy);
+    // the same tick's knock-out or hazard is how it was lost, and says it better ("knocked out by the zombie")
+    if (lostBy !== null && fellAt === sim.tick && falls.length) falls.at(-1)!.end = true;
+    else falls.push({ x: r1(p[0]), z: r1(p[2]), why, end: true });
+  }
+  const out = { won, ticks: sim.tick, stuck, lostBy, stuckAt: sim.result ? null : stuckAt, trail, ghost: won ? ghost.finish(sim) : null, at, falls, fights };
   sim.free();
   return out;
+}
+
+const r1 = (x: number) => Math.round(x * 10) / 10;
+const nameOf = (b: WorldBundle, id: string) => b.entities.find((e) => e.id === id)?.noun || id.replace(/_/g, " ");
+
+const fighterCache = new WeakMap<WorldBundle, { weapons: Set<string>; watched: string[] }>();
+/** The weapons in a world (what a shot's hit names), and who to keep an eye on: the player, and in a fight everyone. */
+function fightersOf(b: WorldBundle) {
+  let f = fighterCache.get(b);
+  if (!f) {
+    const weapons = new Set(b.verbs.filter((v) => v.verb === SHOOT).map((v) => v.on));
+    const watched = ["player", ...(weapons.size ? b.entities.filter((e) => e.kind === "npc" || b.verbs.some((v) => v.verb === SHOOT && String(v.params.at ?? "").split(",").includes(e.id))).map((e) => e.id) : [])];
+    fighterCache.set(b, (f = { weapons, watched }));
+  }
+  return f;
+}
+
+/** A loss rule in a few words: "hit the lava", "the timer ran out", "knocked out". */
+function lossWords(b: WorldBundle, id: string): string {
+  const w = b.rules.find((x) => x.id === id)?.when;
+  const name = (x: string) => nameOf(b, x);
+  if (!w) return id || "a loss rule";
+  if (w.t === "health_lte") return w.a === "player" || w.a.startsWith("team:") ? "knocked out" : `${name(w.a)} down`;
+  return w.t === "hit" ? `hit the ${name(w.b)}` : w.t === "timer_end" ? "the timer ran out" : w.t === "score_gte" ? `${w.a.replace("team:", "")} reached ${w.n}` : w.t === "enter" ? `${name(w.a)} reached the ${name(w.b)}` : `${id}`;
+}
+
+/** A step of the win chain by what it reaches: "orb", "goal ring", "5 coins". */
+export function stepName(b: WorldBundle, st: PlanStep): string {
+  const name = (x: string) => nameOf(b, x);
+  switch (st.do) {
+    case "pickup":
+      return name(st.item);
+    case "deliver":
+      return name(st.sensor);
+    case "use":
+    case "touch":
+      return name(st.at);
+    case "collect":
+      return st.times > 1 ? `${st.times} ${name(st.items[0] ?? "thing")}s` : name(st.items[0] ?? "thing");
+    case "wait": {
+      const w = b.rules.find((x) => x.id === st.rule)?.when;
+      return w && "a" in w && w.a ? name(w.a) : "the wait";
+    }
+    case "throw":
+      return `${name(st.item)} throw`;
+    case "shove":
+      return `${name(st.at)} pushed out`;
+    case "shoot": {
+      // a team by what is on it ("zombies"), else by its colour
+      const team = st.at.startsWith("team:") ? st.at.slice(5) : "";
+      const nouns = [...new Set(b.entities.filter((e) => e.kind === "npc" && e.team === team).map((e) => e.noun))];
+      const who = team ? (nouns.length === 1 && nouns[0] ? `${nouns[0]}s` : `${team} team`) : st.at ? name(st.at) : "rivals";
+      const n = st.times ?? 1;
+      const hits = b.rules.find((x) => x.id === st.rule)?.when.t === "hit";
+      return hits ? (n > 1 ? `${n} hits on the ${who}` : `${who} hit`) : n > 1 ? `${n} ${who} down` : `${who} down`;
+    }
+  }
 }
 
 /** Why runs didn't win, counted: "8 lost (hit the lava ×6, the timer ran out ×2), 4 got stuck". */
 function endings(b: WorldBundle, results: readonly RunResult[]): string {
   const lost = new Map<string, number>();
   for (const r of results) if (r.lostBy !== null) lost.set(r.lostBy, (lost.get(r.lostBy) ?? 0) + 1);
-  const words = (id: string) => {
-    const w = b.rules.find((x) => x.id === id)?.when;
-    const name = (x: string) => b.entities.find((e) => e.id === x)?.noun || x.replace(/_/g, " ");
-    if (!w) return id || "a loss rule";
-    if (w.t === "health_lte") return w.a === "player" || w.a.startsWith("team:") ? "knocked out" : `${name(w.a)} down`;
-    return w.t === "hit" ? `hit the ${name(w.b)}` : w.t === "timer_end" ? "the timer ran out" : w.t === "score_gte" ? `${w.a.replace("team:", "")} reached ${w.n}` : w.t === "enter" ? `${name(w.a)} reached the ${name(w.b)}` : `${id}`;
-  };
+  const words = (id: string) => lossWords(b, id);
   const nLost = [...lost.values()].reduce((a, x) => a + x, 0);
   const stuckRuns = results.filter((r) => !r.won && r.lostBy === null);
   const ss = surfaces(b);
@@ -1312,7 +1425,7 @@ function t3Runs(R: Rapier, b: WorldBundle, nav: NavWorld, chain: WinChain | null
     const bots = b.entities.filter((e) => e.kind === "npc" && e.body !== "none" && e.body !== "sensor").length;
     const vs = bots ? ` vs ${bots} bot${bots > 1 ? "s" : ""}` : "";
     const won = results.filter((r) => r.won);
-    trails = results.map((r) => ({ won: r.won, xyz: r.trail }));
+    trails = results.map((r) => noteOf(r));
     const gold = won.length ? Math.min(...won.map((r) => r.ticks)) / 60 : 0;
     par = won.length ? { goldS: Math.round(gold * 10) / 10, runs, won: won.length } : null;
     // the par runner itself (the first of equals) is the one a player races
@@ -1382,6 +1495,29 @@ function t3Runs(R: Rapier, b: WorldBundle, nav: NavWorld, chain: WinChain | null
     });
   }
   return { chips, par, trails, ghost };
+}
+
+/** A run as the receipt keeps it: its route, and what the playtest report reads off it. */
+function noteOf(r: RunResult, level?: Level): Trail {
+  return { won: r.won, xyz: r.trail, ...(level ? { level } : {}), ticks: r.ticks, at: r.at, ...(r.falls.length ? { falls: r.falls } : {}), ...(r.fights.length ? { fights: r.fights } : {}) };
+}
+
+/**
+ * The playtest's runners: `n` at a lower skill level play the same win chain against the same
+ * cast, through human hands (see skill.ts). Seeded by the world and the run, as T3's own are.
+ */
+export function skillRuns(R: Rapier, b: WorldBundle, nav: NavWorld, chain: WinChain, level: Exclude<Level, "expert">, n: number, playerTeam: "red" | "blue" = "red", openers: ReadonlyMap<string, PlanStep[]> = new Map()): Trail[] {
+  leap = leapFor(b);
+  slack = SKILLS[level];
+  try {
+    const base = b.seed * 1000 + (level === "novice" ? 700 : 800);
+    return Array.from({ length: n }, (_, i) => noteOf(witnessRun(R, b, nav, chain, openers, base + i, playerTeam), level));
+  } finally {
+    slack = null;
+    leap?.free();
+    leap = null;
+    freeShut();
+  }
 }
 
 /**

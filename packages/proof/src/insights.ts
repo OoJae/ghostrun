@@ -31,11 +31,13 @@ export function insights(b: WorldBundle, trails: readonly Trail[]): Insights {
     const k = `${Math.floor(x / CELL)},${Math.floor(z / CELL)}`;
     cells.set(k, (cells.get(k) ?? 0) + 1);
   }
+  // (never by something nobody went near: "most time near the potion" beside "nobody went near the potion")
+  const missed = new Set(unused.map((u) => u.id));
   const nearest = (x: number, z: number) => {
     let best = "";
     let bestD = 64; // within 8 m
     for (const e of b.entities) {
-      if (e.kind === "spawn" || e.tags.includes("bonus") || e.tags.includes("area")) continue;
+      if (e.kind === "spawn" || e.tags.includes("bonus") || e.tags.includes("area") || missed.has(e.id)) continue;
       const d = (x - e.pos[0]) * (x - e.pos[0]) + (z - e.pos[2]) * (z - e.pos[2]);
       if (d < bestD) ((bestD = d), (best = e.noun || e.id.replace(/_/g, " ")));
     }

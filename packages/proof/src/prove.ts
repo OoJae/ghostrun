@@ -2,6 +2,7 @@
 import { clampLaws, specHash, type WorldBundle } from "@ghostrun/ir";
 import { buildNav } from "@ghostrun/nav";
 import type { Rapier } from "@ghostrun/sim";
+import { playtest } from "./playtest";
 import { t0 } from "./t0";
 import { t1, t1Range } from "./t1";
 import { t2 } from "./t2";
@@ -14,6 +15,13 @@ export interface ProveOptions {
   playerTeam?: "red" | "blue";
   host?: Receipt["host"];
   onChip?: (c: Chip) => void; // streamed as each chip lands
+  /**
+   * Then the playtest: novice and average runners (the difficulty band, what the runners
+   * revealed). The receipt goes to onReceipt first, exactly as it is without them, so it is
+   * out as soon as it is today; the one returned carries the playtest too.
+   */
+  playtest?: boolean;
+  onReceipt?: (r: Receipt) => void;
 }
 
 export async function prove(R: Rapier, b: WorldBundle, opts: ProveOptions): Promise<Receipt> {
@@ -56,7 +64,7 @@ export async function prove(R: Rapier, b: WorldBundle, opts: ProveOptions): Prom
             : "not_checkable";
       headline = { expect: headlineExpect.id, text: headlineExpect.text, status, method: mine.map((c) => c.method).join(" + ") || "none" };
     }
-    return {
+    const receipt: Receipt = {
       v: 1,
       spec: await specHash(opts.engine, b),
       engine: opts.engine,
@@ -68,6 +76,10 @@ export async function prove(R: Rapier, b: WorldBundle, opts: ProveOptions): Prom
       ...(s3.trails.length ? { trails: s3.trails } : {}),
       ...(s3.ghost ? { ghost: s3.ghost } : {}),
     };
+    if (!opts.playtest) return receipt;
+    opts.onReceipt?.(receipt);
+    const pt = playtest(R, b, nav, s0.chain, receipt, team, s0.openers);
+    return pt ? { ...receipt, playtest: pt } : receipt;
   } finally {
     nav.destroy();
   }

@@ -7,7 +7,7 @@ import { FillParser, layoutLaws, mergeFill, parseFill, pinLayout, splitObjects, 
 import { placeWorld } from "@ghostrun/layout";
 import { directorMessages, editMessages, fillMessages, hostJsonSchema, hostMessages, IntentOut, intentJsonSchema, intentMessages, jsonLanes, lanesFor, mindJsonSchema, mindMessages, repairMessages, settleIntent, streamLanes, type JobCall, type Keys } from "@ghostrun/llm";
 import { loadNavNode } from "@ghostrun/nav/node";
-import { badness, better, caught, chipLine, insights, issuesOf, plants, prove, provedWon, traceRunners, type Receipt } from "@ghostrun/proof";
+import { badness, better, caught, chipLine, insights, issuesOf, plants, prove, provedWon, reportLines, traceRunners, type Receipt } from "@ghostrun/proof";
 import { ALL_SUBS, PACKS, packFor } from "@ghostrun/registry";
 import { loadRapierNode } from "@ghostrun/sim/node";
 import * as v from "valibot";
@@ -180,7 +180,16 @@ async function main() {
     const R = await loadRapierNode();
     await loadNavNode();
     const { bundle } = placeFromFill(readFileSync(args[0]!, "utf8"), seed);
-    printReceipt(await prove(R, bundle, { engine: ENGINE }));
+    // --playtest: then novice and average runners too (the difficulty band, what the runners revealed)
+    const t0 = performance.now();
+    let out = 0;
+    const play = args.includes("--playtest");
+    const r = await prove(R, bundle, { engine: ENGINE, ...(play ? { playtest: true, onReceipt: () => void (out = performance.now() - t0) } : {}) });
+    printReceipt(r);
+    if (play) {
+      console.log(`  the receipt was out at ${Math.round(out)} ms; the playtest took ${r.playtest?.ms ?? 0} ms more`);
+      for (const l of reportLines(bundle, r)) console.log(`  ${l}`);
+    }
   } else if (cmd === "diagnose") {
     // one recorded world, taken apart: what the placer repaired, the receipt, and what one AI
     // runner did step by step (where it got stuck, and on what)
@@ -537,7 +546,7 @@ async function main() {
     mkdirSync(outDir, { recursive: true });
     writeFileSync(join(outDir, "bench.json"), JSON.stringify(rows, null, 2));
   } else {
-    console.log('usage: ghostrun verify <fill.jsonl> | build "<prompt>" [--out dir] | bench <prompts.txt> [--out dir]');
+    console.log('usage: ghostrun verify <fill.jsonl> [--seed n] [--playtest] | build "<prompt>" [--out dir] | bench <prompts.txt> [--out dir]');
   }
 }
 
