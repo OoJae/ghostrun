@@ -3,6 +3,7 @@
 // the tempo and how bright it sounds; tension (carrying the objective, the last ten seconds) speeds
 // it up a little and opens the filter. Notes are scheduled ahead on the audio clock, so the timing
 // holds however busy the main thread is.
+import type { LookId } from "../render/pick";
 import { hz } from "./voices";
 
 const MODES = {
@@ -32,7 +33,7 @@ export interface MoodIn {
   /** valence, arousal, tension, each −1…1 (the fill's meta line). */
   mood: readonly [number, number, number];
   timeOfDay: number;
-  look: "neon" | "grove" | "gallery";
+  look: LookId;
   night: boolean;
 }
 
@@ -60,13 +61,18 @@ const PROGRESSIONS = [
 
 const clamp01 = (x: number) => Math.max(0, Math.min(1, x));
 
+/** Each look's key centre (MIDI tonic): the grove's moves with the night. */
+const ROOT: Record<Exclude<LookId, "grove">, number> = { neon: 57, gallery: 51, desert: 52, snow: 55, space: 49, haunted: 48, medieval: 50, candy: 60, jungle: 54, home: 53 };
+/** How each look leans the mode: candy brighter, haunted darker. */
+const LIFT: Partial<Record<LookId, number>> = { candy: 0.15, haunted: -0.2, home: 0.05, space: -0.05 };
+
 /** What the world's mood sounds like. */
 export function scoreFor(m: MoodIn): Score {
   const [valence, arousal, tension] = m.mood;
   // neon nights lean cool, a sunny grove leans bright; tension darkens either
-  const v = valence - 0.25 * tension - (m.night ? 0.12 : 0) + (m.look === "grove" && !m.night ? 0.1 : 0) - (m.look === "neon" ? 0.1 : 0);
+  const v = valence - 0.25 * tension - (m.night ? 0.12 : 0) + (m.look === "grove" && !m.night ? 0.1 : 0) - (m.look === "neon" ? 0.1 : 0) + (LIFT[m.look] ?? 0);
   const mode: ModeName = v > 0.45 ? "lydian" : v > 0.25 ? "ionian" : v > 0.05 ? "mixolydian" : v > -0.2 ? "dorian" : tension > 0.7 ? "phrygian" : "aeolian";
-  const root = m.look === "neon" ? 57 : m.look === "gallery" ? 51 : m.night ? 50 : 53;
+  const root = m.look === "grove" ? (m.night ? 50 : 53) : ROOT[m.look];
   const day = 0.5 + 0.5 * Math.cos(((m.timeOfDay - 13) * Math.PI) / 12);
   return {
     key: { root, mode },

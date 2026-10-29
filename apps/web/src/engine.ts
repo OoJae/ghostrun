@@ -10,10 +10,9 @@ import type { WorldBundle } from "@ghostrun/ir";
 import type { World } from "./pipeline";
 import { probe } from "./probe";
 import { FollowCamera } from "./render/camera";
-import { makeRain } from "./render/rain";
 import { lookOf } from "./render/looks";
 import { beamMaterial, PALETTE } from "./render/materials";
-import { applySky, makeFog, neonEnvironment, skyNode } from "./render/sky";
+import { Atmosphere } from "./render/atmosphere";
 import { buildWorldView, type WorldView } from "./render/world";
 import { StubSim } from "./sim/stub";
 import type { RapierSim } from "./sim/rapier";
@@ -58,8 +57,8 @@ export class Engine {
   readonly #pipeline: RenderPipeline | null;
   readonly #follow: FollowCamera;
   readonly #input = new InputCollector();
-  readonly #rain = makeRain();
-  readonly #env: { dispose(): void };
+  /** Sky, fog, reflections and weather, restyled by each world's look. */
+  readonly #air: Atmosphere;
   readonly #canvas: HTMLCanvasElement;
 
   #view: WorldView | null = null;
@@ -111,15 +110,9 @@ export class Engine {
     renderer.setPixelRatio(opts.pixelRatio ?? Math.min(window.devicePixelRatio || 1, 2));
 
     const s = this.#scene;
-    s.backgroundNode = skyNode();
-    s.fog = makeFog();
     const tEnv = performance.now();
-    const env = neonEnvironment(renderer);
+    this.#air = new Atmosphere(renderer, s);
     this.initMs += performance.now() - tEnv;
-    s.environment = env.texture;
-    s.environmentIntensity = 0.8;
-    this.#env = env;
-    s.add(this.#rain.object);
     s.add(this.#beacon);
     this.#rig.add(this.#camera);
     s.add(this.#rig);
@@ -235,7 +228,7 @@ export class Engine {
   }
 
   #trails: Group | null = null;
-  #lookId = "";
+  #cutaway = false;
   #beforeOverview: { pitch: number; dist: number } | null = null;
 
   /**
@@ -253,7 +246,7 @@ export class Engine {
     if (this.#beforeOverview && !trails?.length) {
       this.#follow.pitch = this.#beforeOverview.pitch;
       this.#follow.dist = this.#beforeOverview.dist;
-      this.#follow.setColliders(this.#view && this.#lookId !== "gallery" ? this.#view.colliders : []);
+      this.#follow.setColliders(this.#view && !this.#cutaway ? this.#view.colliders : []);
       this.#beforeOverview = null;
     }
     if (!trails?.length) return;
@@ -348,19 +341,18 @@ export class Engine {
     this.#prev = this.#curr = null;
 
     let t = performance.now();
-    const look = lookOf(world.bundle);
-    applySky(look, this.#scene.fog as Fog);
-    this.#rain.object.visible = look.rain;
+    const look = lookOf(world.bundle, world.cue);
+    pr.look = look.variant ? `${look.id}/${look.variant}` : look.id;
     this.#renderer.toneMappingExposure = look.exposure;
-    this.#scene.environmentIntensity = look.env;
     if (this.#bloom) this.#bloom.strength.value = look.bloom;
     const view = buildWorldView(world.bundle, look);
+    this.#air.apply(look, view.shelter, view.groundY);
     this.showTrails(null); // another world's routes
     this.#scene.add(view.root);
     this.#view = view;
     // cutaway interiors: the camera looks down over the walls instead of bumping into them
-    this.#lookId = look.id;
-    this.#follow.setColliders(look.id === "gallery" ? [] : view.colliders);
+    this.#cutaway = look.cutaway;
+    this.#follow.setColliders(look.cutaway ? [] : view.colliders);
     const sim = this.simFactory ? this.simFactory(world.bundle) : new StubSim(world.bundle);
     this.rapierSim = this.simFactory ? (sim as RapierSim) : null;
     this.rapierSim?.subscribe((evs) => {
@@ -369,7 +361,7 @@ export class Engine {
         else if (ev.k === "destroy") view.gone(ev.a);
       }
     });
-    this.#follow.reset(sim.spawnYaw, look.id === "gallery" ? 1.0 : 0.36);
+    this.#follow.reset(sim.spawnYaw, look.cutaway ? 1.0 : 0.36);
     const player = view.actors.get(PLAYER_ID);
     if (player) this.#follow.update(0, player.position);
     splits.push({ label: "build", ms: performance.now() - t });
@@ -427,8 +419,7 @@ export class Engine {
     this.#unload();
     this.#follow.dispose();
     this.#input.dispose();
-    this.#rain.dispose();
-    this.#env.dispose();
+    this.#air.dispose();
     window.removeEventListener("resize", this.#onResize);
     this.#renderer.dispose();
     probe().ready = false;
@@ -493,10 +484,10 @@ export class Engine {
       player.visible = false;
       this.#rig.position.set(player.position.x, player.position.y - 0.9, player.position.z);
       this.#rig.rotation.y = this.#snapTurn;
-      this.#rain.follow(player.position);
+      this.#air.follow(player.position);
     } else if (player) {
       this.#follow.update(dt, player.position);
-      this.#rain.follow(this.#camera.position);
+      this.#air.follow(this.#camera.position);
     }
     view?.update(now / 1000);
     const focused = this.#focus ? view?.actors.get(this.#focus) : undefined;

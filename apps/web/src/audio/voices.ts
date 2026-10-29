@@ -107,11 +107,42 @@ const jitter = (x: number, by = 0.25) => x * (1 + (Math.random() - 0.5) * by);
 
 // ---- the player's own body ----------------------------------------------------------------------
 
-export type Floor = "street" | "wet" | "soft" | "hard";
+/** What the player's steps land on: each look has its own (render/looks.ts). */
+export type Floor = "street" | "wet" | "soft" | "hard" | "sand" | "snow" | "metal" | "wood" | "stone" | "candy" | "leaves";
 
 export function step(v: Voice, floor: Floor, loud: number): number {
   const k = jitter(loud * 1.3, 0.35);
-  if (floor === "hard") {
+  if (floor === "sand") {
+    // a soft shushing slide, no heel
+    hiss(v, { type: "bandpass", f: 1700 * v.p, q: 0.6, a: 0.01, d: 0.09, peak: 0.07 * k });
+    hiss(v, { type: "lowpass", f: 600, a: 0.006, d: 0.05, peak: 0.06 * k });
+  } else if (floor === "snow") {
+    // packed snow: a squeaky crunch in two grains
+    hiss(v, { type: "bandpass", f: 3100 * v.p, q: 1.3, a: 0.004, d: 0.05, peak: 0.05 * k });
+    hiss(v, { type: "bandpass", f: 2300 * v.p, q: 1.1, at: v.t + 0.025, a: 0.004, d: 0.06, peak: 0.045 * k });
+    hiss(v, { type: "lowpass", f: 900, a: 0.008, d: 0.08, peak: 0.09 * k });
+  } else if (floor === "metal") {
+    // a deck plate: a short clank that rings a little
+    blip(v, { type: "triangle", f: 410 * v.p, to: 370 * v.p, a: 0.002, d: 0.08, peak: 0.045 * k });
+    blip(v, { type: "sine", f: 1380 * v.p, a: 0.002, d: 0.14, peak: 0.016 * k });
+    hiss(v, { type: "bandpass", f: 3000, q: 1.2, a: 0.002, d: 0.03, peak: 0.05 * k });
+  } else if (floor === "wood") {
+    // floorboards: a hollow knock
+    blip(v, { type: "sine", f: 210 * v.p, to: 135, a: 0.002, d: 0.06, peak: 0.11 * k });
+    hiss(v, { type: "bandpass", f: 1500 * v.p, q: 1, a: 0.002, d: 0.035, peak: 0.055 * k });
+  } else if (floor === "stone") {
+    // flagstones and cobbles: a dull heel with grit
+    blip(v, { type: "sine", f: 140 * v.p, to: 80, a: 0.002, d: 0.05, peak: 0.1 * k });
+    hiss(v, { type: "bandpass", f: 2200 * v.p, q: 1.2, a: 0.002, d: 0.03, peak: 0.065 * k });
+  } else if (floor === "candy") {
+    // a squishy, springy squeak
+    blip(v, { type: "sine", f: 540 * v.p, to: 380 * v.p, a: 0.004, d: 0.07, peak: 0.045 * k });
+    hiss(v, { type: "lowpass", f: 700 * v.p, q: 0.7, a: 0.006, d: 0.06, peak: 0.1 * k });
+  } else if (floor === "leaves") {
+    // leaf litter and twigs: a dry rustle over the body of the step
+    hiss(v, { type: "highpass", f: 2600 * v.p, q: 0.6, a: 0.006, d: 0.08, peak: 0.045 * k });
+    hiss(v, { type: "lowpass", f: 700, q: 0.5, a: 0.008, d: 0.06, peak: 0.12 * k });
+  } else if (floor === "hard") {
     // a heel on polished stone
     hiss(v, { type: "bandpass", f: 2700 * v.p, q: 1.4, a: 0.002, d: 0.04, peak: 0.08 * k });
     blip(v, { type: "sine", f: 160 * v.p, to: 95, a: 0.002, d: 0.05, peak: 0.1 * k });

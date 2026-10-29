@@ -1,14 +1,20 @@
 // Rain: one LineSegments draw call. Drops are animated entirely in the vertex shader from a
 // per-drop seed and `time`, and wrap inside a box that follows the camera, so the CPU cost is a
-// single uniform update per frame.
-import { AdditiveBlending, BufferGeometry, Color, Float32BufferAttribute, LineBasicNodeMaterial, LineSegments, Vector3 } from "three/webgpu";
-import { attribute, fract, time, uniform, vec3 } from "three/tsl";
+// single uniform update per frame. In a cut-away interior the drops inside the walls are moved out
+// of sight: it rains on the yard, not on the furniture.
+import { AdditiveBlending, BufferGeometry, Color, Float32BufferAttribute, LineBasicNodeMaterial, LineSegments, Vector3, Vector4 } from "three/webgpu";
+import { attribute, float, fract, select, step, time, uniform, vec3 } from "three/tsl";
 
 const BOX = [44, 22, 44] as const;
 const SPEED = 15; // m/s
 const LEN = 0.55;
 
-export function makeRain(count = 1800): { object: LineSegments; follow(p: Vector3): void; dispose(): void } {
+export function makeRain(count = 1800): {
+  object: LineSegments;
+  follow(p: Vector3): void;
+  shelter(b: { minX: number; maxX: number; minZ: number; maxZ: number } | null): void;
+  dispose(): void;
+} {
   const seeds: number[] = [];
   const pos: number[] = [];
   // Simple LCG: cosmetic only, deterministic per load.
@@ -26,6 +32,8 @@ export function makeRain(count = 1800): { object: LineSegments; follow(p: Vector
   g.setAttribute("aSeed", new Float32BufferAttribute(seeds, 4));
 
   const centre = uniform(new Vector3());
+  const roof = uniform(new Vector4(0, 0, 0, 0)); // minX, minZ, maxX, maxZ
+  const roofOn = uniform(0);
   const seed = attribute("aSeed", "vec4");
   const m = new LineBasicNodeMaterial({ transparent: true, depthWrite: false, blending: AdditiveBlending });
   m.color = new Color(0.45, 0.62, 0.95);
@@ -34,7 +42,8 @@ export function makeRain(count = 1800): { object: LineSegments; follow(p: Vector
   const z = fract(seed.z.sub(centre.z.div(BOX[2]))).sub(0.5).mul(BOX[2]).add(centre.z);
   const y = fract(seed.y.sub(time.mul(SPEED / BOX[1]))).mul(BOX[1]).add(centre.y).sub(BOX[1] * 0.35);
   const t = seed.w;
-  m.positionNode = vec3(x.add(t.mul(0.06)), y.add(t.mul(LEN)), z.add(t.mul(0.02)));
+  const inside = roofOn.mul(step(roof.x, x)).mul(step(x, roof.z)).mul(step(roof.y, z)).mul(step(z, roof.w));
+  m.positionNode = vec3(x.add(t.mul(0.06)), select(inside.greaterThan(0.5), float(-1000), y.add(t.mul(LEN))), z.add(t.mul(0.02)));
   m.fog = true;
 
   const object = new LineSegments(g, m);
@@ -44,6 +53,10 @@ export function makeRain(count = 1800): { object: LineSegments; follow(p: Vector
     object,
     follow: (p) => {
       centre.value.copy(p);
+    },
+    shelter: (b) => {
+      roofOn.value = b ? 1 : 0;
+      if (b) roof.value.set(b.minX, b.minZ, b.maxX, b.maxZ);
     },
     dispose: () => {
       g.dispose();

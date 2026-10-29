@@ -6,6 +6,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { WorldBundle } from "@ghostrun/ir";
 import type { Engine } from "../engine";
 import { probe } from "../probe";
+import type { Cue } from "../render/pick";
 import type { RapierSim } from "../sim/rapier";
 import type { Sound } from "./sound";
 
@@ -38,7 +39,7 @@ export interface SoundControl {
   /** The engine: its frames (footsteps), its camera (panning), its VR buttons (mute). */
   attach(e: Engine): void;
   /** A world went live (or restarted): its place, its music, its events. */
-  world(b: WorldBundle, sim: RapierSim | null): void;
+  world(b: WorldBundle, sim: RapierSim | null, cue?: Cue): void;
 }
 
 export function useSound(): SoundControl {
@@ -47,7 +48,7 @@ export function useSound(): SoundControl {
   const ctx = useRef<AudioContext | null>(null);
   const sound = useRef<Sound | null>(null);
   const engine = useRef<Engine | null>(null);
-  const current = useRef<{ b: WorldBundle; sim: RapierSim | null } | null>(null);
+  const current = useRef<{ b: WorldBundle; sim: RapierSim | null; cue: Cue | undefined } | null>(null);
 
   /** Inside a user gesture: make the context (the first time) or wake it. */
   const wake = useCallback(() => {
@@ -71,7 +72,7 @@ export function useSound(): SoundControl {
         .then(({ Sound }) => {
           const s = new Sound(c, { muted: mutedRef.current, ear: () => engine.current?.ear() ?? null });
           sound.current = s;
-          if (current.current) s.world(current.current.b, current.current.sim);
+          if (current.current) s.world(current.current.b, current.current.sim, current.current.cue);
         })
         .catch((err: unknown) => console.warn("sound unavailable", err)); // the game plays on without it
     }
@@ -118,9 +119,9 @@ export function useSound(): SoundControl {
     [toggle],
   );
 
-  const world = useCallback((b: WorldBundle, sim: RapierSim | null) => {
-    current.current = { b, sim };
-    sound.current?.world(b, sim);
+  const world = useCallback((b: WorldBundle, sim: RapierSim | null, cue?: Cue) => {
+    current.current = { b, sim, cue };
+    sound.current?.world(b, sim, cue);
   }, []);
 
   return { enabled: !OFF, muted, toggle, attach, world };

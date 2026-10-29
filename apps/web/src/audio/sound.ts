@@ -5,7 +5,8 @@
 import type { Vec3, WorldBundle } from "@ghostrun/ir";
 import type { SimEvent } from "@ghostrun/sim";
 import { probe, type AudioProbe } from "../probe";
-import { lookOf } from "../render/looks";
+import { lookOf, type LookId } from "../render/looks";
+import type { Cue } from "../render/pick";
 import type { RapierSim } from "../sim/rapier";
 import { PLAYER_ID, type Pose, type SimFrame } from "../sim/types";
 import { Ambience } from "./ambience";
@@ -21,8 +22,10 @@ type Entity = WorldBundle["entities"][number];
 // measured offline through the master compressor: effects peak around −12 to −24 dBFS, the music
 // sits near −32 RMS under them, and the beds lower still (rain is broadband, so it is kept down)
 const LEVEL = { master: 0.9, sfx: 1.6, amb: 0.4, music: 0.55 };
-/** Room size per look: the gallery rings, the grove is open air. */
-const WET = { neon: 0.3, grove: 0.2, gallery: 0.55 } as const;
+/** Room size per look: the gallery and the haunted halls ring, the desert and the snow are open air. */
+const WET: Record<LookId, number> = { neon: 0.3, grove: 0.2, gallery: 0.55, desert: 0.12, snow: 0.15, space: 0.45, haunted: 0.5, medieval: 0.4, candy: 0.25, jungle: 0.2, home: 0.3 };
+/** Floors a step rings on (the rest are soft underfoot). */
+const HARD = new Set<fx.Floor>(["hard", "metal", "wood", "stone"]);
 
 interface Play {
   /** Where it happens (null: on the player, centred). */
@@ -136,7 +139,7 @@ export class Sound {
   }
 
   /** A new world (or the same one from the top): its place, its music, its events. */
-  world(b: WorldBundle, sim: RapierSim | null) {
+  world(b: WorldBundle, sim: RapierSim | null, cue?: Cue) {
     this.#unsub?.();
     this.#sim = sim;
     this.#unsub = sim?.subscribe((evs) => this.#events(evs)) ?? null;
@@ -154,11 +157,10 @@ export class Sound {
     this.#second = -1;
     this.#ended = false;
 
-    const look = lookOf(b);
-    const storm = look.rain && b.cosmetic.weather === "storm";
-    this.#floor = look.id === "gallery" ? "hard" : look.rain ? "wet" : look.id === "grove" ? "soft" : "street";
-    this.#revOut.gain.setTargetAtTime(WET[look.id], this.ctx.currentTime, 0.5);
-    this.#ambience.set({ look: look.id, night: look.night, rain: look.rain, storm, snow: b.cosmetic.weather === "snow" });
+    const look = lookOf(b, cue);
+    this.#floor = look.footing;
+    this.#revOut.gain.setTargetAtTime(look.variant === "underwater" ? 0.6 : WET[look.id], this.ctx.currentTime, 0.5);
+    this.#ambience.set({ look: look.id, variant: look.variant, night: look.night, rain: look.rain, storm: look.storm, snow: look.pick.snow, dust: look.pick.dust, indoor: look.indoor });
     const score = scoreFor({ mood: b.cosmetic.mood, timeOfDay: b.cosmetic.timeOfDay, look: look.id, night: look.night });
     this.#key = score.key;
     this.#music.start(score);
@@ -190,7 +192,7 @@ export class Sound {
     if (this.#stride < stride) return;
     this.#stride -= stride;
     this.#foot = -this.#foot;
-    this.#play("step", (v) => fx.step(v, this.#floor, Math.min(1, 0.45 + speed / 10)), { gap: 0.12, pan: this.#foot * 0.1, wet: this.#floor === "hard" ? 0.35 : 0.1 });
+    this.#play("step", (v) => fx.step(v, this.#floor, Math.min(1, 0.45 + speed / 10)), { gap: 0.12, pan: this.#foot * 0.1, wet: HARD.has(this.#floor) ? 0.35 : 0.1 });
   }
 
   // ---- the simulation's events ---------------------------------------------------------------

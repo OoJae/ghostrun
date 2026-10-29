@@ -20,6 +20,7 @@ import { Minds } from "./minds";
 import { propose, twistWorld } from "./director";
 import { BRIEF, buildWorld, ENGINE_HASH, FIXTURE_PROMPTS, FIXTURES, hashWorld, worldFromFill, type Intent, type World } from "./pipeline";
 import { probe } from "./probe";
+import { lookSamples } from "./render/pick";
 import { askHost, clock as mmss, facts, story } from "./host";
 import { useSound } from "./audio/useSound";
 import { MuteButton } from "./hud/Mute";
@@ -284,7 +285,7 @@ export function App() {
         };
         sim.onHint = setUseHint;
       }
-      sound.world(world.bundle, sim);
+      sound.world(world.bundle, sim, world.cue);
       startProof(world, id);
       const h = await hashWorld(world.bundle);
       if (id !== runId.current) return;
@@ -399,6 +400,7 @@ export function App() {
           const samples = Object.keys(FIXTURES).map((k) => buildWorld("", k).bundle);
           const day = structuredClone(samples.find((b) => b.pack.id === "outdoor"));
           if (day) samples.push({ ...day, cosmetic: { ...day.cosmetic, look: "forest", timeOfDay: 12 } });
+          samples.push(...lookSamples(samples)); // one of every newer look, so its shaders are ready too
           setTimeout(() => void e.prewarm(samples).then((ms) => (probe().prewarmMs = Math.round(ms))), 1500);
         }
       })
