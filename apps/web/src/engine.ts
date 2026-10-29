@@ -10,6 +10,7 @@ import type { WorldBundle } from "@ghostrun/ir";
 import type { World } from "./pipeline";
 import { probe } from "./probe";
 import { FollowCamera } from "./render/camera";
+import { combatView, type CombatView } from "./render/combat";
 import { makeRain } from "./render/rain";
 import { lookOf } from "./render/looks";
 import { beamMaterial, PALETTE } from "./render/materials";
@@ -60,6 +61,7 @@ export class Engine {
   readonly #canvas: HTMLCanvasElement;
 
   #view: WorldView | null = null;
+  #combat: CombatView | null = null;
   #sim: FrameSource | null = null;
   /** Set once Rapier has loaded; until then (or if it fails) the stub keeps the world walkable. */
   simFactory: SimFactory | null = null;
@@ -344,10 +346,14 @@ export class Engine {
     this.#follow.setColliders(look.id === "gallery" ? [] : view.colliders);
     const sim = this.simFactory ? this.simFactory(world.bundle) : new StubSim(world.bundle);
     this.rapierSim = this.simFactory ? (sim as RapierSim) : null;
+    // a fight: shots, flashes and hit-point bars (worlds without weapons or hit points get none)
+    this.#combat = this.rapierSim ? combatView(world.bundle, this.rapierSim.sim) : null;
+    if (this.#combat) this.#scene.add(this.#combat.root);
     this.rapierSim?.subscribe((evs) => {
       for (const ev of evs) {
         if (ev.k === "state") view.setState(ev.a, String(ev.v));
         else if (ev.k === "destroy") view.gone(ev.a);
+        else if (ev.k === "hit") this.#combat?.hit(ev.a);
       }
     });
     this.#follow.reset(sim.spawnYaw, look.id === "gallery" ? 1.0 : 0.36);
@@ -417,6 +423,8 @@ export class Engine {
   #unload() {
     this.#sim?.stop();
     this.#sim = null;
+    this.#combat?.dispose();
+    this.#combat = null;
     this.#view?.dispose();
     this.#view = null;
   }
@@ -479,6 +487,7 @@ export class Engine {
       this.#rain.follow(this.#camera.position);
     }
     view?.update(now / 1000);
+    if (view) this.#combat?.update(now / 1000, view.actors, this.#camera);
     const focused = this.#focus ? view?.actors.get(this.#focus) : undefined;
     this.#beacon.visible = Boolean(focused);
     if (focused) this.#beacon.position.set(focused.position.x, focused.position.y + 6, focused.position.z);
