@@ -14,24 +14,27 @@ export interface ProofState {
 
 const bad = (c: Chip) => c.status === "counterexample";
 
-/** At most one line, always with its method on hover; turns green only on evidence. */
-export function ProofBadge({ proof, onOpen }: { proof: ProofState; onOpen: () => void }) {
+/** The badge's words and tone (the headset's watch says the same). */
+export function proofBadge(proof: ProofState): { text: string; tone: "good" | "bad" | "pending" | "warn" } {
   const { status, chips, receipt } = proof;
   const fails = chips.filter(bad).length;
   const win = chips.find((c) => c.id === "T3:win");
-  let text = "proof: pending";
-  let tone = "pending";
-  if (status === "proving") text = `AI runners playing… ${chips.length} checks`;
-  if (status === "error") ((text = "proof unavailable"), (tone = "warn"));
-  if (status === "done" && receipt) {
-    const head = receipt.headline;
-    if (fails) ((text = `${fails} counterexample${fails > 1 ? "s" : ""} · tap for details`), (tone = "bad"));
-    else ((text = `${head ? `${head.text}: ${statusWord(head.status)}` : "no counterexamples"}${win ? ` · ${fraction(win.k, win.n)} AI runners won` : ""}`), (tone = head && head.status !== "verified" && head.status !== "played" ? "pending" : "good"));
-  }
+  if (status === "proving") return { text: `AI runners playing… ${chips.length} checks`, tone: "pending" };
+  if (status === "error") return { text: "proof unavailable", tone: "warn" };
+  if (status !== "done" || !receipt) return { text: "proof: pending", tone: "pending" };
+  const head = receipt.headline;
+  if (fails) return { text: `${fails} counterexample${fails > 1 ? "s" : ""}`, tone: "bad" };
+  return { text: `${head ? `${head.text}: ${statusWord(head.status)}` : "no counterexamples"}${win ? ` · ${fraction(win.k, win.n)} AI runners won` : ""}`, tone: head && head.status !== "verified" && head.status !== "played" ? "pending" : "good" };
+}
+
+/** At most one line, always with its method on hover; turns green only on evidence. */
+export function ProofBadge({ proof, onOpen }: { proof: ProofState; onOpen: () => void }) {
+  const { receipt } = proof;
+  const { text, tone } = proofBadge(proof);
   return (
     <button type="button" className={`glass proof ${tone}`} data-testid="proof-badge" onClick={onOpen} title={receipt ? `spec ${receipt.spec.slice(0, 8)} · ${receipt.ms} ms · press P` : "AI runners have not played this world yet"}>
       <span className="dot" aria-hidden="true" />
-      {text}
+      {tone === "bad" ? `${text} · tap for details` : text}
     </button>
   );
 }

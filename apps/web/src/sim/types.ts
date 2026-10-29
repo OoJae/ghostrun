@@ -8,6 +8,8 @@ export interface InputFrame {
   my: number;
   yaw: number;
   btn: number;
+  /** Where a shot goes, when that isn't where the camera looks (a VR controller's yaw). */
+  aim?: number;
 }
 
 export const BTN_JUMP = 1;
