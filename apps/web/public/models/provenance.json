@@ -1,0 +1,383 @@
+{
+  "about": "Third-party 3D models in this folder: what each file is, where it came from and under which licence. Rebuilt by tools/models/build.mjs.",
+  "author": "Kay Lousberg (www.kaylousberg.com)",
+  "licence": "CC0-1.0 (Creative Commons Zero 1.0 Universal, https://creativecommons.org/publicdomain/zero/1.0/), as each pack's bundled LICENSE.txt states",
+  "downloaded": "2026-10-29",
+  "optimised": "@gltf-transform/cli@4.5.1 optimize: prune, resample, quantise, meshopt compression, textures to WebP (256 px characters, 128 px props)",
+  "packs": [
+    {
+      "pack": "KayKit-Character-Pack-Adventures-1.0-main",
+      "title": "KayKit : Adventurers Character Pack (1.0)",
+      "created": "13/03/2023 09:00",
+      "licenceFile": "addons/kaykit_character_pack_adventures/LICENSE.txt",
+      "source": "https://github.com/KayKit-Game-Assets/KayKit-Character-Pack-Adventures-1.0",
+      "download": "https://codeload.github.com/KayKit-Game-Assets/KayKit-Character-Pack-Adventures-1.0/zip/refs/heads/main"
+    },
+    {
+      "pack": "KayKit-Character-Pack-Skeletons-1.0-main",
+      "title": "KayKit Character Pack : Skeletons (1.0)",
+      "created": "02/02/2024 09:00",
+      "licenceFile": "addons/kaykit_character_pack_skeletons/LICENSE.txt",
+      "source": "https://github.com/KayKit-Game-Assets/KayKit-Character-Pack-Skeletons-1.0",
+      "download": "https://codeload.github.com/KayKit-Game-Assets/KayKit-Character-Pack-Skeletons-1.0/zip/refs/heads/main"
+    },
+    {
+      "pack": "KayKit-Dungeon-Remastered-1.0-main",
+      "title": "KayKit : Dungeon Remastered (1.0)",
+      "created": "13/03/2023 09:00",
+      "licenceFile": "addons/kaykit_dungeon_remastered/Assets/LICENSE.txt",
+      "source": "https://github.com/KayKit-Game-Assets/KayKit-Dungeon-Remastered-1.0",
+      "download": "https://codeload.github.com/KayKit-Game-Assets/KayKit-Dungeon-Remastered-1.0/zip/refs/heads/main"
+    },
+    {
+      "pack": "KayKit-Medieval-Hexagon-Pack-1.0-main",
+      "title": "KayKit : Medieval Hexagon Pack (1.0)",
+      "created": "26/04/2024 12:00",
+      "licenceFile": "addons/kaykit_medieval_hexagon_pack/LICENSE.txt",
+      "source": "https://github.com/KayKit-Game-Assets/KayKit-Medieval-Hexagon-Pack-1.0",
+      "download": "https://codeload.github.com/KayKit-Game-Assets/KayKit-Medieval-Hexagon-Pack-1.0/zip/refs/heads/main"
+    },
+    {
+      "pack": "KayKit-Furniture-Bits-1.0-main",
+      "title": "KayKit : Furniture Bits (1.0)",
+      "created": "08/09/2023 09:00",
+      "licenceFile": "addons/kaykit_furniture_bits/Assets/LICENSE.txt",
+      "source": "https://github.com/KayKit-Game-Assets/KayKit-Furniture-Bits-1.0",
+      "download": "https://codeload.github.com/KayKit-Game-Assets/KayKit-Furniture-Bits-1.0/zip/refs/heads/main"
+    },
+    {
+      "pack": "KayKit-Halloween-Bits-1.0-main",
+      "title": "KayKit : Halloween Bits (1.0)",
+      "created": "06/10/2023 09:00",
+      "licenceFile": "addons/kaykit_halloween_bits/Assets/LICENSE.txt",
+      "source": "https://github.com/KayKit-Game-Assets/KayKit-Halloween-Bits-1.0",
+      "download": "https://codeload.github.com/KayKit-Game-Assets/KayKit-Halloween-Bits-1.0/zip/refs/heads/main"
+    },
+    {
+      "pack": "KayKit-Prototype-Bits-1.0-main",
+      "title": "KayKit : Prototype Bits (1.0)",
+      "created": "14/09/2023 09:00",
+      "licenceFile": "addons/kaykit_prototype_bits/Assets/LICENSE.txt",
+      "source": "https://github.com/KayKit-Game-Assets/KayKit-Prototype-Bits-1.0",
+      "download": "https://codeload.github.com/KayKit-Game-Assets/KayKit-Prototype-Bits-1.0/zip/refs/heads/main"
+    },
+    {
+      "pack": "KayKit-City-Builder-Bits-1.0-main",
+      "title": "KayKit : City Builder Bits (1.0)",
+      "created": "25/08/2023 12:00",
+      "licenceFile": "addons/kaykit_city_builder_bits/Assets/LICENSE.txt",
+      "source": "https://github.com/KayKit-Game-Assets/KayKit-City-Builder-Bits-1.0",
+      "download": "https://codeload.github.com/KayKit-Game-Assets/KayKit-City-Builder-Bits-1.0/zip/refs/heads/main"
+    }
+  ],
+  "files": [
+    {
+      "file": "models/anims.glb",
+      "bytes": 294776,
+      "pack": "KayKit-Character-Pack-Adventures-1.0-main",
+      "from": "addons/kaykit_character_pack_adventures/Characters/gltf/Knight.glb",
+      "cut": "clips only: Idle, Walking_A, Running_A, Jump_Start, Jump_Idle, Jump_Land, Interact, Hit_A, Death_A, Cheer, Spellcast_Shoot, 1H_Ranged_Shoot, Unarmed_Melee_Attack_Punch_A"
+    },
+    {
+      "file": "models/knight.glb",
+      "bytes": 72568,
+      "pack": "KayKit-Character-Pack-Adventures-1.0-main",
+      "from": "addons/kaykit_character_pack_adventures/Characters/gltf/Knight.glb",
+      "cut": "mesh and rig; held weapons removed; parts joined into one skinned draw"
+    },
+    {
+      "file": "models/rogue.glb",
+      "bytes": 59140,
+      "pack": "KayKit-Character-Pack-Adventures-1.0-main",
+      "from": "addons/kaykit_character_pack_adventures/Characters/gltf/Rogue_Hooded.glb",
+      "cut": "mesh and rig; held weapons removed; parts joined into one skinned draw"
+    },
+    {
+      "file": "models/mage.glb",
+      "bytes": 65544,
+      "pack": "KayKit-Character-Pack-Adventures-1.0-main",
+      "from": "addons/kaykit_character_pack_adventures/Characters/gltf/Mage.glb",
+      "cut": "mesh and rig; held weapons removed; parts joined into one skinned draw"
+    },
+    {
+      "file": "models/barbarian.glb",
+      "bytes": 68780,
+      "pack": "KayKit-Character-Pack-Adventures-1.0-main",
+      "from": "addons/kaykit_character_pack_adventures/Characters/gltf/Barbarian.glb",
+      "cut": "mesh and rig; held weapons removed; parts joined into one skinned draw"
+    },
+    {
+      "file": "models/skeleton.glb",
+      "bytes": 112808,
+      "pack": "KayKit-Character-Pack-Skeletons-1.0-main",
+      "from": "addons/kaykit_character_pack_skeletons/Characters/gltf/Skeleton_Minion.glb",
+      "cut": "mesh and rig, own clips Walking_D_Skeletons; held weapons removed; parts joined into one skinned draw"
+    },
+    {
+      "file": "models/props/key.glb",
+      "bytes": 5440,
+      "pack": "KayKit-Dungeon-Remastered-1.0-main",
+      "from": "addons/kaykit_dungeon_remastered/Assets/gltf/key.gltf.glb",
+      "cut": "as is"
+    },
+    {
+      "file": "models/props/coin.glb",
+      "bytes": 5000,
+      "pack": "KayKit-Dungeon-Remastered-1.0-main",
+      "from": "addons/kaykit_dungeon_remastered/Assets/gltf/coin.gltf.glb",
+      "cut": "as is"
+    },
+    {
+      "file": "models/props/coins.glb",
+      "bytes": 19032,
+      "pack": "KayKit-Dungeon-Remastered-1.0-main",
+      "from": "addons/kaykit_dungeon_remastered/Assets/gltf/coin_stack_medium.gltf.glb",
+      "cut": "as is"
+    },
+    {
+      "file": "models/props/chest.glb",
+      "bytes": 30760,
+      "pack": "KayKit-Dungeon-Remastered-1.0-main",
+      "from": "addons/kaykit_dungeon_remastered/Assets/gltf/chest_gold.glb",
+      "cut": "as is"
+    },
+    {
+      "file": "models/props/crate.glb",
+      "bytes": 5396,
+      "pack": "KayKit-Medieval-Hexagon-Pack-1.0-main",
+      "from": "addons/kaykit_medieval_hexagon_pack/Assets/gltf/decoration/props/crate_A_big.gltf",
+      "cut": "as is"
+    },
+    {
+      "file": "models/props/barrel.glb",
+      "bytes": 11160,
+      "pack": "KayKit-Dungeon-Remastered-1.0-main",
+      "from": "addons/kaykit_dungeon_remastered/Assets/gltf/barrel_large.gltf.glb",
+      "cut": "as is"
+    },
+    {
+      "file": "models/props/sack.glb",
+      "bytes": 4572,
+      "pack": "KayKit-Medieval-Hexagon-Pack-1.0-main",
+      "from": "addons/kaykit_medieval_hexagon_pack/Assets/gltf/decoration/props/sack.gltf",
+      "cut": "as is"
+    },
+    {
+      "file": "models/props/banner_red.glb",
+      "bytes": 5860,
+      "pack": "KayKit-Dungeon-Remastered-1.0-main",
+      "from": "addons/kaykit_dungeon_remastered/Assets/gltf/banner_patternA_red.gltf.glb",
+      "cut": "as is"
+    },
+    {
+      "file": "models/props/banner_blue.glb",
+      "bytes": 5860,
+      "pack": "KayKit-Dungeon-Remastered-1.0-main",
+      "from": "addons/kaykit_dungeon_remastered/Assets/gltf/banner_patternA_blue.gltf.glb",
+      "cut": "as is"
+    },
+    {
+      "file": "models/props/flag.glb",
+      "bytes": 4268,
+      "pack": "KayKit-Medieval-Hexagon-Pack-1.0-main",
+      "from": "addons/kaykit_medieval_hexagon_pack/Assets/gltf/decoration/props/flag_yellow.gltf",
+      "cut": "as is"
+    },
+    {
+      "file": "models/props/flag_red.glb",
+      "bytes": 4264,
+      "pack": "KayKit-Medieval-Hexagon-Pack-1.0-main",
+      "from": "addons/kaykit_medieval_hexagon_pack/Assets/gltf/decoration/props/flag_red.gltf",
+      "cut": "as is"
+    },
+    {
+      "file": "models/props/flag_blue.glb",
+      "bytes": 4264,
+      "pack": "KayKit-Medieval-Hexagon-Pack-1.0-main",
+      "from": "addons/kaykit_medieval_hexagon_pack/Assets/gltf/decoration/props/flag_blue.gltf",
+      "cut": "as is"
+    },
+    {
+      "file": "models/props/trophy.glb",
+      "bytes": 13056,
+      "pack": "KayKit-Dungeon-Remastered-1.0-main",
+      "from": "addons/kaykit_dungeon_remastered/Assets/gltf/sword_shield_gold.gltf.glb",
+      "cut": "as is"
+    },
+    {
+      "file": "models/props/potion.glb",
+      "bytes": 6368,
+      "pack": "KayKit-Dungeon-Remastered-1.0-main",
+      "from": "addons/kaykit_dungeon_remastered/Assets/gltf/bottle_A_labeled_green.gltf.glb",
+      "cut": "as is"
+    },
+    {
+      "file": "models/props/candle.glb",
+      "bytes": 6616,
+      "pack": "KayKit-Dungeon-Remastered-1.0-main",
+      "from": "addons/kaykit_dungeon_remastered/Assets/gltf/candle_triple.gltf.glb",
+      "cut": "as is"
+    },
+    {
+      "file": "models/props/torch.glb",
+      "bytes": 7332,
+      "pack": "KayKit-Dungeon-Remastered-1.0-main",
+      "from": "addons/kaykit_dungeon_remastered/Assets/gltf/torch_lit.gltf.glb",
+      "cut": "as is"
+    },
+    {
+      "file": "models/props/bookcase.glb",
+      "bytes": 10908,
+      "pack": "KayKit-Furniture-Bits-1.0-main",
+      "from": "addons/kaykit_furniture_bits/Assets/gltf/shelf_B_large_decorated.gltf",
+      "cut": "as is"
+    },
+    {
+      "file": "models/props/table.glb",
+      "bytes": 6064,
+      "pack": "KayKit-Furniture-Bits-1.0-main",
+      "from": "addons/kaykit_furniture_bits/Assets/gltf/table_medium.gltf",
+      "cut": "as is"
+    },
+    {
+      "file": "models/props/chair.glb",
+      "bytes": 8288,
+      "pack": "KayKit-Furniture-Bits-1.0-main",
+      "from": "addons/kaykit_furniture_bits/Assets/gltf/chair_A.gltf",
+      "cut": "as is"
+    },
+    {
+      "file": "models/props/lamp.glb",
+      "bytes": 6980,
+      "pack": "KayKit-Furniture-Bits-1.0-main",
+      "from": "addons/kaykit_furniture_bits/Assets/gltf/lamp_standing.gltf",
+      "cut": "as is"
+    },
+    {
+      "file": "models/props/lantern.glb",
+      "bytes": 7256,
+      "pack": "KayKit-Halloween-Bits-1.0-main",
+      "from": "addons/kaykit_halloween_bits/Assets/gltf/lantern_standing.gltf",
+      "cut": "as is"
+    },
+    {
+      "file": "models/props/pumpkin.glb",
+      "bytes": 7908,
+      "pack": "KayKit-Halloween-Bits-1.0-main",
+      "from": "addons/kaykit_halloween_bits/Assets/gltf/pumpkin_orange_jackolantern.gltf",
+      "cut": "as is"
+    },
+    {
+      "file": "models/props/gravestone.glb",
+      "bytes": 7016,
+      "pack": "KayKit-Halloween-Bits-1.0-main",
+      "from": "addons/kaykit_halloween_bits/Assets/gltf/gravestone.gltf",
+      "cut": "as is"
+    },
+    {
+      "file": "models/props/skull.glb",
+      "bytes": 7708,
+      "pack": "KayKit-Halloween-Bits-1.0-main",
+      "from": "addons/kaykit_halloween_bits/Assets/gltf/skull.gltf",
+      "cut": "as is"
+    },
+    {
+      "file": "models/props/gate.glb",
+      "bytes": 14196,
+      "pack": "KayKit-Halloween-Bits-1.0-main",
+      "from": "addons/kaykit_halloween_bits/Assets/gltf/fence_gate.gltf",
+      "cut": "as is"
+    },
+    {
+      "file": "models/props/door.glb",
+      "bytes": 7764,
+      "pack": "KayKit-Prototype-Bits-1.0-main",
+      "from": "addons/kaykit_prototype_bits/Assets/gltf/Door_A.gltf",
+      "cut": "as is"
+    },
+    {
+      "file": "models/props/target.glb",
+      "bytes": 5568,
+      "pack": "KayKit-Medieval-Hexagon-Pack-1.0-main",
+      "from": "addons/kaykit_medieval_hexagon_pack/Assets/gltf/decoration/props/target.gltf",
+      "cut": "as is"
+    },
+    {
+      "file": "models/props/tree.glb",
+      "bytes": 5724,
+      "pack": "KayKit-Medieval-Hexagon-Pack-1.0-main",
+      "from": "addons/kaykit_medieval_hexagon_pack/Assets/gltf/decoration/nature/tree_single_B.gltf",
+      "cut": "as is"
+    },
+    {
+      "file": "models/props/rock.glb",
+      "bytes": 4156,
+      "pack": "KayKit-Medieval-Hexagon-Pack-1.0-main",
+      "from": "addons/kaykit_medieval_hexagon_pack/Assets/gltf/decoration/nature/rock_single_C.gltf",
+      "cut": "as is"
+    },
+    {
+      "file": "models/props/bush.glb",
+      "bytes": 4684,
+      "pack": "KayKit-City-Builder-Bits-1.0-main",
+      "from": "addons/kaykit_city_builder_bits/Assets/gltf/bush.gltf",
+      "cut": "as is"
+    },
+    {
+      "file": "models/props/sword.glb",
+      "bytes": 7652,
+      "pack": "KayKit-Character-Pack-Adventures-1.0-main",
+      "from": "addons/kaykit_character_pack_adventures/Assets/gltf/sword_1handed.gltf",
+      "cut": "as is"
+    },
+    {
+      "file": "models/props/wand.glb",
+      "bytes": 5740,
+      "pack": "KayKit-Character-Pack-Adventures-1.0-main",
+      "from": "addons/kaykit_character_pack_adventures/Assets/gltf/wand.gltf",
+      "cut": "as is"
+    },
+    {
+      "file": "models/props/staff.glb",
+      "bytes": 9384,
+      "pack": "KayKit-Character-Pack-Adventures-1.0-main",
+      "from": "addons/kaykit_character_pack_adventures/Assets/gltf/staff.gltf",
+      "cut": "as is"
+    },
+    {
+      "file": "models/props/crossbow.glb",
+      "bytes": 11572,
+      "pack": "KayKit-Character-Pack-Adventures-1.0-main",
+      "from": "addons/kaykit_character_pack_adventures/Assets/gltf/crossbow_1handed.gltf",
+      "cut": "as is"
+    },
+    {
+      "file": "models/props/shield.glb",
+      "bytes": 7372,
+      "pack": "KayKit-Character-Pack-Adventures-1.0-main",
+      "from": "addons/kaykit_character_pack_adventures/Assets/gltf/shield_round_color.gltf",
+      "cut": "as is"
+    },
+    {
+      "file": "models/props/book.glb",
+      "bytes": 8008,
+      "pack": "KayKit-Character-Pack-Adventures-1.0-main",
+      "from": "addons/kaykit_character_pack_adventures/Assets/gltf/spellbook_closed.gltf",
+      "cut": "as is"
+    },
+    {
+      "file": "models/props/mug.glb",
+      "bytes": 8564,
+      "pack": "KayKit-Character-Pack-Adventures-1.0-main",
+      "from": "addons/kaykit_character_pack_adventures/Assets/gltf/mug_full.gltf",
+      "cut": "as is"
+    },
+    {
+      "file": "models/props/bomb.glb",
+      "bytes": 7596,
+      "pack": "KayKit-Character-Pack-Adventures-1.0-main",
+      "from": "addons/kaykit_character_pack_adventures/Assets/gltf/smokebomb.gltf",
+      "cut": "as is"
+    }
+  ]
+}
