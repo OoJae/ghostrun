@@ -247,19 +247,20 @@ const MOONSCAPE: Base = {
 
 const HAUNTED: Palettes = {
   night: {
-    sky: { zenith: "#05040c", horizon: "#2a2440", glow: "#8a7ab8", glowScale: 0.07, stars: 0.45, clouds: 0.3, cloudColor: "#24202e", sun: { color: "#eceaff", scale: 6, size: 0.07, halo: 1.4 } },
-    fog: { color: "#221f30", near: 7, far: 58 },
-    hemi: { sky: "#6a7aaa", ground: "#2a2028", intensity: 2.6 },
-    sun: { color: "#a8b8ff", intensity: 1.8, elevation: 0.42, azimuth: 2.3 },
-    bloom: 0.7, exposure: 1.1, env: 0.25, envLights: [["#9fb0ff", 1.5], ["#ff9a3a", 1]], drift: "ash",
+    // dark sky, but a bright moon and a pale mist: the floor, the walls and who's on them must read
+    sky: { zenith: "#05040c", horizon: "#3a3454", glow: "#8a7ab8", glowScale: 0.07, stars: 0.45, clouds: 0.3, cloudColor: "#24202e", sun: { color: "#eceaff", scale: 6, size: 0.07, halo: 1.4 } },
+    fog: { color: "#3a3550", near: 10, far: 72 },
+    hemi: { sky: "#93a0d4", ground: "#4a3e4c", intensity: 3.6 },
+    sun: { color: "#b8c4ff", intensity: 2.8, elevation: 0.5, azimuth: 2.3 },
+    bloom: 0.6, exposure: 1.3, env: 0.35, envLights: [["#9fb0ff", 1.5], ["#ff9a3a", 1]], drift: "ash",
   },
   dusk: {
     // a blood-red sunset going down behind the dead trees
     sky: { zenith: "#1a1030", horizon: "#8a3a3a", glow: "#ff5a3a", glowScale: 0.1, sun: { color: "#ff6a3a", scale: 6, size: 0.05, halo: 0.8 }, clouds: 0.35, cloudColor: "#3a2030" },
-    fog: { color: "#3a2028", near: 8, far: 60 },
-    hemi: { sky: "#a06a8a", ground: "#2a1418", intensity: 1.9 },
-    sun: { color: "#ff7a4a", intensity: 1.6, ...DUSK_SUN },
-    bloom: 0.6, exposure: 1.05, env: 0.25, envLights: [["#ff6a3a", 1.5]], drift: "ash",
+    fog: { color: "#4a2a32", near: 10, far: 72 },
+    hemi: { sky: "#b07a98", ground: "#3a2228", intensity: 2.6 },
+    sun: { color: "#ff7a4a", intensity: 2.2, ...DUSK_SUN },
+    bloom: 0.6, exposure: 1.2, env: 0.25, envLights: [["#ff6a3a", 1.5]], drift: "ash",
   },
   get day() {
     return HAUNTED.night;

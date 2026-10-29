@@ -77,7 +77,7 @@ export function dressHaunted(b: WorldBundle, look: LookStyle, c: Ctx): Dressed {
         {
           // inside the house, old boards; out in the grounds, dead grass
           const inside = cut && x > bounds.minX - 0.1 && x < bounds.maxX + 0.1 && z > bounds.minZ - 0.1 && z < bounds.maxZ + 0.1;
-          floors.add(s.pos, s.size, lin(inside ? "#6a5444" : p.kind === "path" ? "#4a443c" : "#3e4234"), style(p.kind === "path" ? CLS.path : CLS.ground, i, 0, inside ? 1 : 0));
+          floors.add(s.pos, s.size, lin(inside ? "#957458" : p.kind === "path" ? "#7a7262" : "#5e6248"), style(p.kind === "path" ? CLS.path : CLS.ground, i, 0, inside ? 1 : 0));
         }
         break;
       case "water":
@@ -85,8 +85,9 @@ export function dressHaunted(b: WorldBundle, look: LookStyle, c: Ctx): Dressed {
         pool.add([x, p.top - 0.01, z], [w, 0.04, d], [1, 1, 1]);
         break;
       case "wall":
-        if (cut) cutWall(solid, p, lin("#5a4a52"), library ? 2 : 1);
-        else solid.add(s.pos, s.size, library ? lin("#4a3426") : stone(i), style(CLS.wall, i, h, library ? 2 : 0));
+        // a library's shelves paint their own colour (books, a board on top), so theirs is white
+        if (cut) cutWall(solid, p, library ? [1, 1, 1] : lin("#463c4e"), library ? 2 : 1);
+        else solid.add(s.pos, s.size, library ? [1, 1, 1] : stone(i), style(CLS.wall, i, h, library ? 2 : 0));
         if (rnd(i) < (cut ? 0.25 : 0.12) && Math.max(w, d) > 2) {
           // candles along the wall tops and ledges
           const top = cut ? p.min[1] + Math.min(h, 1.25) : p.top;
@@ -173,7 +174,9 @@ export function dressHaunted(b: WorldBundle, look: LookStyle, c: Ctx): Dressed {
     const lid = smoothstep(0.03, 0.0, abs(a.p.y.sub(a.extra).add(0.12))).mul(is(a.cls, CLS.cover));
     const k = mix(mix(blocks, wallSide, isWall).mul(oneMinus(lid.mul(0.5))), blocks, a.top);
     const tint = mix(vec3(1, 1, 1), hex3("#6a8a4a").mul(1.4), moss.mul(oneMinus(is(alt, 1))));
-    const color = mix(vec3(k, k, k).mul(tint), bookTint.mul(shelves).mul(2), is(alt, 2).mul(isWall).mul(oneMinus(a.top)));
+    const stoneOrPanel = vec3(k, k, k).mul(tint);
+    const base = library ? mix(stoneOrPanel, hex3("#3a2a1e").mul(k), is(alt, 2)) : stoneOrPanel;
+    const color = mix(base, bookTint.mul(shelves).mul(2), is(alt, 2).mul(isWall).mul(oneMinus(a.top)));
     return { color, roughness: float(0.9), bump: m.mortar.mul(-0.03).mul(isWall).mul(oneMinus(is(alt, 2))) };
   }, { roughness: 0.9, bump: 1 });
   batchMesh(c, floors, yard, "floors");
@@ -190,7 +193,7 @@ export function dressHaunted(b: WorldBundle, look: LookStyle, c: Ctx): Dressed {
   instances(c, new ConeGeometry(1, 1, 6), flame, flames, "flames");
   const iron = new MeshStandardNodeMaterial({ color: "#1a1a20", roughness: 0.5, metalness: 0.7 });
   instances(c, merged([{ geo: new CylinderGeometry(0.02, 0.02, 0.6, 4), at: [0, -0.05, 0] }, { geo: new ConeGeometry(0.05, 0.16, 4), at: [0, 0.32, 0] }]), iron, spikes, "spikes");
-  const hillMat = new MeshStandardNodeMaterial({ color: "#14121c", roughness: 1 });
+  const hillMat = new MeshStandardNodeMaterial({ color: "#2a2838", roughness: 1 });
   instances(c, new SphereGeometry(1, 12, 6, 0, Math.PI * 2, 0, Math.PI / 2), hillMat, hills, "hills");
   lamps(c, lightAt, "#ff9a3a", 10, 8, 3, 0.35);
 
@@ -240,9 +243,9 @@ export function dressHaunted(b: WorldBundle, look: LookStyle, c: Ctx): Dressed {
     const n1 = noise01(p, 0.12);
     const patch = smoothstep(0.45, 0.65, noise01(p, 0.3, 4));
     const fine = grain(p.x, p.z, 3);
-    const color = mix(hex3("#4a4e3a"), hex3("#3a3228"), patch).mul(fine.mul(0.25).add(n1.mul(0.2)).add(0.7));
+    const color = mix(hex3("#626650"), hex3("#544a3c"), patch).mul(fine.mul(0.25).add(n1.mul(0.2)).add(0.7));
     return { color, roughness: float(0.95), bump: fine.mul(0.05) };
   }, { bump: 1 });
 
-  return { floorTops, groundY, bounds, groundHex: "#34362a", ground, shelter: look.indoor ? bounds : null };
+  return { floorTops, groundY, bounds, groundHex: "#4a4c3c", ground, shelter: look.indoor ? bounds : null };
 }

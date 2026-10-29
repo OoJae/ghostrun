@@ -237,7 +237,10 @@ export function buildWorldView(bundle: WorldBundle, look: LookStyle): WorldView 
   const visorGeo = keep(new CapsuleGeometry(0.07, 0.3, 4, 8));
   visorGeo.rotateZ(Math.PI / 2);
   const footRingGeo = keep(new RingGeometry(0.42, 0.5, 40));
-  const npcBody = keep(bodyMaterial("#1b1d2b", 0.4, 0.45));
+  // on a dark look without the city's own light, the moon picks out everyone's edge: a dark body alone
+  // would be a shape against the floor
+  const moonlit = look.night && !neonLook;
+  const npcBody = keep(moonlit ? rimBodyMaterial("#2c2e40", look.sun.color, 1.4) : bodyMaterial("#1b1d2b", 0.4, 0.45));
   const npcShadows: [Object3D, Mesh][] = [];
 
   const character = (e: Pick<Entity, "pos" | "team">, body: Material, visorHex: string, visorScale: number) => {
@@ -399,7 +402,7 @@ export function buildWorldView(bundle: WorldBundle, look: LookStyle): WorldView 
 
   // ---- Player ----------------------------------------------------------------------------------
   const spawn = bundle.entities.find((e) => e.id === "sp_red") ?? bundle.entities.find((e) => e.kind === "spawn");
-  const player = character({ pos: spawn ? [spawn.pos[0], spawn.pos[1] + 0.9, spawn.pos[2]] : [0, 0.9, 0], team: spawn?.team ?? "red" }, keep(rimBodyMaterial("#eef1ff", PALETTE.cyan, 1.8)), PALETTE.cyan, 6);
+  const player = character({ pos: spawn ? [spawn.pos[0], spawn.pos[1] + 0.9, spawn.pos[2]] : [0, 0.9, 0], team: spawn?.team ?? "red" }, keep(rimBodyMaterial("#eef1ff", PALETTE.cyan, moonlit ? 3 : 1.8)), PALETTE.cyan, 6);
   const waist = new Mesh(keep(new TorusGeometry(0.335, 0.03, 8, 40)), keep(glowMaterial(PALETTE.red, 3)));
   waist.rotation.x = Math.PI / 2;
   waist.position.y = -0.08;
