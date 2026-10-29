@@ -115,10 +115,10 @@ const GROVE: Palettes = {
   },
   night: {
     sky: { zenith: "#01070c", horizon: "#0a2a2c", glow: "#2dffc4", glowScale: 0.06, stars: 0.6, sun: { color: "#d8f0ff", scale: 3, size: 0.02, halo: 0.25 } },
-    fog: { color: "#0a2427", near: 9, far: 70 },
-    hemi: { sky: "#4a86a0", ground: "#12261d", intensity: 3.4 },
-    sun: { color: "#9fd6ff", intensity: 0.9, ...CLASSIC },
-    bloom: 0.75, exposure: 1.1, env: 0.35, envLights: [["#2dffc4", 1.5]],
+    fog: { color: "#123438", near: 12, far: 80 },
+    hemi: { sky: "#6aa8c0", ground: "#22442f", intensity: 4.2 },
+    sun: { color: "#a8dcff", intensity: 1.7, ...CLASSIC },
+    bloom: 0.7, exposure: 1.25, env: 0.35, envLights: [["#2dffc4", 1.5]],
   },
 };
 
@@ -172,10 +172,10 @@ const DESERT: Palettes = {
   },
   night: {
     sky: { zenith: "#050816", horizon: "#1c2442", glow: "#5a6aa0", glowScale: 0.05, stars: 1, sun: { color: "#e8eeff", scale: 3, size: 0.025, halo: 0.35 } },
-    fog: { color: "#141a30", near: 20, far: 120 },
-    hemi: { sky: "#6a7ab8", ground: "#2a2030", intensity: 1.8 },
-    sun: { color: "#9fb6ff", intensity: 0.9, ...MOON },
-    bloom: 0.6, exposure: 1.05, env: 0.3, envLights: [["#9fb6ff", 1.5]],
+    fog: { color: "#1c2440", near: 20, far: 120 },
+    hemi: { sky: "#7a8ac8", ground: "#3a2e38", intensity: 2.4 },
+    sun: { color: "#a8bcff", intensity: 1.5, ...MOON },
+    bloom: 0.6, exposure: 1.2, env: 0.3, envLights: [["#9fb6ff", 1.5]],
   },
 };
 
@@ -284,10 +284,10 @@ const MEDIEVAL: Palettes = {
   },
   night: {
     sky: { zenith: "#03050e", horizon: "#141c34", glow: "#ff9a4a", glowScale: 0.03, stars: 0.9, sun: { color: "#e8eeff", scale: 3, size: 0.025, halo: 0.35 } },
-    fog: { color: "#0e1424", near: 18, far: 110 },
-    hemi: { sky: "#5a6aa8", ground: "#2a1e18", intensity: 1.7 },
-    sun: { color: "#9fb0ff", intensity: 0.8, ...MOON },
-    bloom: 0.8, exposure: 1.1, env: 0.3, envLights: [["#ff9a4a", 2]], drift: "embers",
+    fog: { color: "#18203a", near: 18, far: 110 },
+    hemi: { sky: "#7a8ac4", ground: "#3a2c24", intensity: 2.6 },
+    sun: { color: "#a8b8ff", intensity: 1.5, ...MOON },
+    bloom: 0.8, exposure: 1.25, env: 0.3, envLights: [["#ff9a4a", 2]], drift: "embers",
   },
 };
 
@@ -349,10 +349,10 @@ const JUNGLE: Palettes = {
   },
   night: {
     sky: { zenith: "#02080a", horizon: "#0a2420", glow: "#7dff9a", glowScale: 0.04, stars: 0.5, sun: { color: "#e0ffe8", scale: 3, size: 0.022, halo: 0.3 } },
-    fog: { color: "#0a1e1a", near: 8, far: 60 },
-    hemi: { sky: "#4a8a7a", ground: "#0a1a10", intensity: 2.4 },
-    sun: { color: "#a0e0c0", intensity: 0.8, ...MOON },
-    bloom: 0.8, exposure: 1.1, env: 0.3, envLights: [["#7dff9a", 1.5]], drift: "fireflies",
+    fog: { color: "#123028", near: 10, far: 66 },
+    hemi: { sky: "#6aa894", ground: "#1a3020", intensity: 3.2 },
+    sun: { color: "#a8e8c8", intensity: 1.5, ...MOON },
+    bloom: 0.75, exposure: 1.25, env: 0.3, envLights: [["#7dff9a", 1.5]], drift: "fireflies",
   },
 };
 
@@ -432,10 +432,14 @@ function weathered(s: Base, p: Pick): Base {
     out.sky.aurora = 0;
     if (out.sky.sun) out.sky.sun = { ...out.sky.sun, scale: out.sky.sun.scale * 0.15, halo: out.sky.sun.halo * 0.5 };
     out.fog = { color: mixHex(s.fog.color || "#808080", g, grey * 0.7), near: s.fog.near * 0.6, far: s.fog.far * 0.62 };
-    out.sun = { ...s.sun, intensity: s.sun.intensity * 0.45 };
-    out.hemi = { ...s.hemi, sky: mixHex(s.hemi.sky, g, grey * 0.5) };
+    const night = p.phase === "night";
+    out.sun = { ...s.sun, intensity: s.sun.intensity * (night ? 0.7 : 0.45) };
+    out.hemi = { ...s.hemi, sky: mixHex(s.hemi.sky, g, grey * (night ? 0.25 : 0.5)), intensity: s.hemi.intensity * (night ? 1.2 : 1) };
   }
-  if (p.fog) out.fog = { ...out.fog, near: Math.max(4, out.fog.near * 0.35), far: Math.max(32, out.fog.far * 0.45) };
+  if (p.fog) {
+    const night = p.phase === "night";
+    out.fog = { color: night ? mixHex(out.fog.color, "#6a6884", 0.3) : out.fog.color, near: Math.max(night ? 8 : 4, out.fog.near * 0.35), far: Math.max(night ? 40 : 32, out.fog.far * 0.45) };
+  }
   if (p.snow) {
     out.fog = { color: mixHex(out.fog.color, p.phase === "night" ? "#1a2438" : "#c8d4e2", 0.5), near: out.fog.near * 0.5, far: out.fog.far * 0.55 };
     out.drift = "snow";
