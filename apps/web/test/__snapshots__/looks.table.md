@@ -6,6 +6,13 @@
 | A parkour time trial: double jump the opening wall, then race the gaps an… | neon | course | **neon** | night |
 | A museum heist: grab the key, unlock the vault, steal the gem and escape … | modern | floor_plan | **gallery** | day |
 | A museum at night: find the brass key, open the vault, steal the star sap… | museum night | floor_plan | **gallery** | night |
+| A wizard duel in a neon arena: fireballs against a frost mage, healing po… | neon | arena | **neon** | night |
+| Zombie survival: hold the yard with a blaster and knock out ten zombies b… | neon | arena | **neon** | night fog |
+| A laser tag game in a neon arena: red against blue, first team to ten tag… | neon | arena | **neon** | night |
+| A shooter in a space station: get past the security robots and shoot down… | space station | floor_plan | **space** | night |
+| A go-kart race in a neon arena: three laps through the gates against two … | neon | arena | **neon** | night |
+| A street race through the neon city: two laps against rival cars before t… | neon | city_block | **neon** | night rain |
+| A snowmobile race on a frozen lake: two laps through the ice gates, drift… | snowy | arena | **snow** | day snow |
 | A 3 versus 3 soccer match on a rooftop at sunset | rooftop arena at sunset | arena | **neon** | dusk |
 | a bioluminescent forest where you climb to an owl's lookout | bioluminescent | outdoor | **grove** | night |
 | A candy factory: sort the sweets into the right boxes | candy factory | floor_plan | **candy** | day |
