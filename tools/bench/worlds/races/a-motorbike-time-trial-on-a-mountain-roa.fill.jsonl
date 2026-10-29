@@ -1,0 +1,37 @@
+{"op":"meta","mode":"play","lang":"en","pack":"course","sub":[],"seed":14,"look":"mountain road","mood":[0.4,0.8,0.6],"timeOfDay":12,"weather":"clear"}
+{"op":"zone","id":"z_start","slot":"start","tag":"outside","name":"Mountain road start"}
+{"op":"zone","id":"z_seg1","slot":"seg_1","tag":"ledge","name":"Mountain ledge"}
+{"op":"zone","id":"z_seg2","slot":"seg_2","tag":"gaps","name":"Rocky gaps"}
+{"op":"zone","id":"z_seg3","slot":"seg_3","tag":"pit","name":"Deep pit"}
+{"op":"zone","id":"z_seg4","slot":"seg_4","tag":"steps","name":"Steep steps"}
+{"op":"zone","id":"z_seg5","slot":"seg_5","tag":"gaps","name":"Sharp turns"}
+{"op":"zone","id":"z_seg6","slot":"seg_6","tag":"beam","name":"Suspended beam"}
+{"op":"zone","id":"z_finish","slot":"finish","tag":"outside","name":"Finish line"}
+{"op":"spawn","id":"sp_red","zone":"z_start","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"finish_goal","zone":"z_finish","anchor":"goal","noun":"finish line","hyper":"goal","team":"red"}
+{"op":"ent","id":"bike","kind":"vehicle","noun":"motorbike","hyper":"vehicle","zone":"z_start","anchor":"spawn_alt","body":"dynamic","shape":"box","size":[1.2,0.8,2.0]}
+{"op":"ent","id":"cp_1","kind":"checkpoint","noun":"checkpoint 1","hyper":"checkpoint","zone":"z_seg1","anchor":"cp_1","body":"sensor","shape":"box","size":[0.5,0.5,0.5]}
+{"op":"ent","id":"cp_2","kind":"checkpoint","noun":"checkpoint 2","hyper":"checkpoint","zone":"z_seg2","anchor":"cp_2","body":"sensor","shape":"box","size":[0.5,0.5,0.5]}
+{"op":"ent","id":"cp_3","kind":"checkpoint","noun":"checkpoint 3","hyper":"checkpoint","zone":"z_seg3","anchor":"cp_3","body":"sensor","shape":"box","size":[0.5,0.5,0.5]}
+{"op":"ent","id":"cp_4","kind":"checkpoint","noun":"checkpoint 4","hyper":"checkpoint","zone":"z_seg4","anchor":"cp_4","body":"sensor","shape":"box","size":[0.5,0.5,0.5]}
+{"op":"ent","id":"cp_5","kind":"checkpoint","noun":"checkpoint 5","hyper":"checkpoint","zone":"z_seg5","anchor":"cp_5","body":"sensor","shape":"box","size":[0.5,0.5,0.5]}
+{"op":"ent","id":"cp_6","kind":"checkpoint","noun":"checkpoint 6","hyper":"checkpoint","zone":"z_seg6","anchor":"cp_6","body":"sensor","shape":"box","size":[0.5,0.5,0.5]}
+{"op":"ent","id":"spikes","kind":"hazard","noun":"spike traps","hyper":"spike","zone":"z_seg3","anchor":"pit_3","body":"sensor","shape":"box","size":[2,0.2,2]}
+{"op":"ent","id":"boost_1","kind":"pickup","noun":"speed boost","hyper":"boost","zone":"z_seg2","anchor":"pickup_2","body":"dynamic","shape":"box","size":[0.3,0.3,0.3]}
+{"op":"verb","id":"vb_drive","verb":"vehicle.drive","on":"bike","params":{"kind":"bike","speed":20,"driver":"player"}}
+{"op":"verb","id":"vb_cp_1","verb":"puzzle.checkpoint","on":"cp_1","params":{}}
+{"op":"verb","id":"vb_cp_2","verb":"puzzle.checkpoint","on":"cp_2","params":{}}
+{"op":"verb","id":"vb_cp_3","verb":"puzzle.checkpoint","on":"cp_3","params":{}}
+{"op":"verb","id":"vb_cp_4","verb":"puzzle.checkpoint","on":"cp_4","params":{}}
+{"op":"verb","id":"vb_cp_5","verb":"puzzle.checkpoint","on":"cp_5","params":{}}
+{"op":"verb","id":"vb_cp_6","verb":"puzzle.checkpoint","on":"cp_6","params":{}}
+{"op":"verb","id":"vb_spike","verb":"motion_hazards.hazard","on":"spikes","params":{"respawn":true}}
+{"op":"verb","id":"vb_boost","verb":"physics_props.carry","on":"boost_1","params":{}}
+{"op":"verb","id":"vb_finish","verb":"racing.track","on":"finish_goal","params":{"gates":"cp_1,cp_2,cp_3,cp_4,cp_5,cp_6","laps":1}}
+{"op":"rule","id":"r_win","when":{"t":"lap_done","a":"player","b":"finish_goal","n":1},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose","when":{"t":"health_lte","a":"player","n":0},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_spike_damage","when":{"t":"hit","a":"player","b":"spikes"},"then":[{"e":"damage","target":"player","n":30}],"once":false}
+{"op":"expect","id":"x_tt","prop":"win_reachable","a":"sp_red","b":"finish_goal","headline":true,"text":"Motorbike time trial on a winding mountain road"}
+{"op":"law","player":{"jumpsMax":0,"jumpH":0,"speed":6}}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

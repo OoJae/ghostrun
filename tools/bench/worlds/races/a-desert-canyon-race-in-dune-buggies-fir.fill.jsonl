@@ -1,0 +1,30 @@
+{"op":"meta","mode":"play","lang":"en","pack":"course","sub":[],"seed":8,"look":"desert canyon","mood":[0.6,0.8,0.5],"timeOfDay":14,"weather":"clear"}
+{"op":"zone","id":"z_start","slot":"start","tag":"outside","name":"Canyon entrance"}
+{"op":"zone","id":"z_seg_1","slot":"seg_1","tag":"ledge","name":"Rocky ledge"}
+{"op":"zone","id":"z_seg_2","slot":"seg_2","tag":"pit","name":"Dusty pit"}
+{"op":"zone","id":"z_seg_3","slot":"seg_3","tag":"beam","name":"Narrow beam"}
+{"op":"zone","id":"z_seg_4","slot":"seg_4","tag":"steps","name":"Stepped canyon floor"}
+{"op":"zone","id":"z_seg_5","slot":"seg_5","tag":"gaps","name":"Wide gaps"}
+{"op":"zone","id":"z_seg_6","slot":"seg_6","tag":"beam","name":"Final stretch"}
+{"op":"zone","id":"z_finish","slot":"finish","tag":"outside","name":"Finish line"}
+{"op":"spawn","id":"sp_red","zone":"z_start","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"finish_gate","zone":"z_finish","anchor":"goal","noun":"finish line","hyper":"goal","team":"red"}
+{"op":"ent","id":"buggy_player","kind":"vehicle","noun":"dune buggy","hyper":"buggy","zone":"z_start","anchor":"spawn_alt","body":"dynamic","shape":"hull","size":[2,1.5,2],"team":"red"}
+{"op":"ent","id":"buggy_rival_1","kind":"vehicle","noun":"dune buggy","hyper":"buggy","zone":"z_start","anchor":"spawn_alt","body":"dynamic","shape":"hull","size":[2,1.5,2],"team":"blue"}
+{"op":"ent","id":"buggy_rival_2","kind":"vehicle","noun":"dune buggy","hyper":"buggy","zone":"z_start","anchor":"spawn_alt","body":"dynamic","shape":"hull","size":[2,1.5,2],"team":"blue"}
+{"op":"ent","id":"cp_1","kind":"checkpoint","noun":"checkpoint 1","hyper":"checkpoint","zone":"z_seg_1","anchor":"cp_1","body":"sensor","shape":"box","size":[1,0.2,1]}
+{"op":"ent","id":"cp_2","kind":"checkpoint","noun":"checkpoint 2","hyper":"checkpoint","zone":"z_seg_2","anchor":"cp_2","body":"sensor","shape":"box","size":[1,0.2,1]}
+{"op":"ent","id":"cp_3","kind":"checkpoint","noun":"checkpoint 3","hyper":"checkpoint","zone":"z_seg_3","anchor":"cp_3","body":"sensor","shape":"box","size":[1,0.2,1]}
+{"op":"ent","id":"cp_4","kind":"checkpoint","noun":"checkpoint 4","hyper":"checkpoint","zone":"z_seg_4","anchor":"cp_4","body":"sensor","shape":"box","size":[1,0.2,1]}
+{"op":"ent","id":"cp_5","kind":"checkpoint","noun":"checkpoint 5","hyper":"checkpoint","zone":"z_seg_5","anchor":"cp_5","body":"sensor","shape":"box","size":[1,0.2,1]}
+{"op":"ent","id":"cp_6","kind":"checkpoint","noun":"checkpoint 6","hyper":"checkpoint","zone":"z_seg_6","anchor":"pickup_6","body":"sensor","shape":"box","size":[1,0.2,1]}
+{"op":"verb","id":"vb_drive_player","verb":"vehicle.drive","on":"buggy_player","params":{"kind":"buggy","speed":20,"driver":"player"}}
+{"op":"verb","id":"vb_drive_rival_1","verb":"vehicle.drive","on":"buggy_rival_1","params":{"kind":"buggy","speed":18,"driver":"npc"}}
+{"op":"verb","id":"vb_drive_rival_2","verb":"vehicle.drive","on":"buggy_rival_2","params":{"kind":"buggy","speed":18,"driver":"npc"}}
+{"op":"verb","id":"vb_track","verb":"racing.track","on":"finish_gate","params":{"gates":"cp_1,cp_2,cp_3,cp_4,cp_5,cp_6","laps":2}}
+{"op":"rule","id":"r_win","when":{"t":"lap_done","a":"player","b":"finish_gate","n":2},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose","when":{"t":"lap_done","a":"team:blue","b":"finish_gate","n":2},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"expect","id":"exp_victory","prop":"win_reachable","a":"sp_red","b":"finish_gate","headline":true,"text":"Victory requires completing two full laps around the canyon"}
+{"op":"law","player":{"jumpsMax":0,"jumpH":0,"speed":6}}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

@@ -1,0 +1,212 @@
+{
+  "prompt": "A street race through the city at night, beat the rival cars before the police arrive",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "racing",
+    "setting": "Neon-lit urban streets at night",
+    "role": "Street racer",
+    "goal": "Defeat rival drivers before the police siren chase ends the run",
+    "fail": "Caught by the police or a car crash",
+    "mood": "Adrenaline-fueled tension",
+    "pack": "city_block",
+    "sub": [
+      "rooftop"
+    ],
+    "safety": "arcade",
+    "headline": "Beat rivals before the police siren ends the night run",
+    "nouns": [
+      {
+        "noun": "street race",
+        "hyper": "event"
+      },
+      {
+        "noun": "city",
+        "hyper": "location"
+      },
+      {
+        "noun": "rival cars",
+        "hyper": "vehicles"
+      },
+      {
+        "noun": "police",
+        "hyper": "enforcement entity"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.2,
+      "arousal": 0.9,
+      "tension": 0.7
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "aa8aa931193090977955bf60b6e1cd5480657f7febbfc8f8aa66284308d827ee",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_race",
+      "text": "Beat rivals before the police siren ends the night run",
+      "status": "counterexample",
+      "method": "static goal regression over rules + physics, 12 AI runners vs 2 bots + physics, 2 menu schedules × 3 runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 3 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (lap 1 done) ← drive player_car through 3 gates and finish_line ×1",
+        "src": ""
+      },
+      {
+        "id": "T1:drive:finish_line",
+        "tier": "T1",
+        "subject": {
+          "kind": "world",
+          "id": "finish_line"
+        },
+        "method": "drivability model (ground a vehicle drives to, turning circle, top speed)",
+        "n": 0,
+        "k": 0,
+        "src": "template",
+        "ms": 31,
+        "status": "verified",
+        "text": "a car can drive the line and 3 gates on the ground (a lap ≥ 138.1 m, turning circle 2.73 m at corner speed)",
+        "cx": null
+      },
+      {
+        "id": "T1:laps:r_win",
+        "tier": "T1",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "race-time model (laps × the shortest lap ÷ top speed with boost)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 31,
+        "status": "verified",
+        "text": "1 lap fit the 45 s clock",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lose_crash",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_crash"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_lose_crash: nothing produces hit on police_timer",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lose_police",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_police"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_lose_police fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners vs 2 bots",
+        "n": 12,
+        "k": 5,
+        "text": "AI runners won by playing it vs 2 bots (AI par 16.2 s)",
+        "cx": null,
+        "src": "",
+        "ms": 13942
+      },
+      {
+        "id": "T3:envelope",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "counterexample",
+        "method": "physics, 2 menu schedules × 3 runners",
+        "n": 6,
+        "k": 3,
+        "text": "a choice the cast's minds can make stops every runner",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "wins",
+          "text": "if rival1 plays racer.race, rival2 plays racer.race, no runner wins"
+        },
+        "src": "",
+        "ms": 5844
+      }
+    ],
+    "par": {
+      "goldS": 16.2,
+      "runs": 12,
+      "won": 5
+    },
+    "ms": 20032
+  }
+}

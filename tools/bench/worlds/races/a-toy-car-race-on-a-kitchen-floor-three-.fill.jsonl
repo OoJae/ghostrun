@@ -1,0 +1,35 @@
+{"op":"meta","mode":"play","lang":"en","pack":"floor_plan","sub":[],"seed":16,"look":"toy car race on kitchen floor","mood":[0.7,0.4,0.2],"timeOfDay":12,"weather":"clear"}
+{"op":"zone","id":"z_yard","slot":"yard","tag":"outside","name":"Kitchen entrance"}
+{"op":"zone","id":"z_kitchen","slot":"main_room","tag":"hall","name":"Kitchen floor around table"}
+{"op":"zone","id":"z_cab_nw","slot":"room_sw","tag":"room","name":"Northwest cabinet leg"}
+{"op":"zone":"z_cab_ne","slot":"room_se","tag":"room","name":"Northeast cabinet leg"}
+{"op":"zone","id":"z_cab_sw","slot":"room_sw","tag":"room","name":"Southwest chair leg"}
+{"op":"zone","id":"z_cab_se","slot":"room_se","tag":"room","name":"Southeast chair leg"}
+{"op":"spawn","id":"sp_red","zone":"z_yard","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"finish_line","zone":"z_kitchen","anchor":"corner_se","noun":"finish line","hyper":"goal","team":"red"}
+{"op":"ent","id":"player_car","kind":"vehicle","noun":"toy car","hyper":"vehicle","zone":"z_kitchen","anchor":"center","body":"dynamic","shape":"box","size":[0.2,0.1,0.3]}
+{"op":"ent","id":"rival_car_1","kind":"vehicle","noun":"toy car","hyper":"vehicle","zone":"z_kitchen","anchor":"corner_ne","body":"dynamic","shape":"box","size":[0.2,0.1,0.3]}
+{"op":"ent","id":"rival_car_2","kind":"vehicle","noun":"toy car","hyper":"vehicle","zone":"z_kitchen","anchor":"corner_nw","body":"dynamic","shape":"box","size":[0.2,0.1,0.3]}
+{"op":"ent","id":"cab_leg_nw","kind":"hazard","noun":"cabinet leg","hyper":"hazard","zone":"z_cab_nw","anchor":"corner_nw","body":"sensor","shape":"box","size":[0.1,0.5,0.1]}
+{"op":"ent","id":"cab_leg_ne","kind":"hazard","noun":"cabinet leg","hyper":"hazard","zone":"z_cab_ne","anchor":"corner_ne","body":"sensor","shape":"box","size":[0.1,0.5,0.1]}
+{"op":"ent","id":"chair_leg_sw","kind":"hazard","noun":"chair leg","hyper":"hazard","zone":"z_cab_sw","anchor":"corner_sw","body":"sensor","shape":"box","size":[0.1,0.4,0.1]}
+{"op":"ent","id":"chair_leg_se","kind":"hazard","noun":"chair leg","hyper":"hazard","zone":"z_cab_se","anchor":"corner_se","body":"sensor","shape":"box","size":[0.1,0.4,0.1]}
+{"op":"ent","id":"cp_1","kind":"checkpoint","noun":"lap checkpoint 1","hyper":"checkpoint","zone":"z_kitchen","anchor":"corner_nw","body":"sensor","shape":"box","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"cp_2","kind":"checkpoint","noun":"lap checkpoint 2","hyper":"checkpoint","zone":"z_kitchen","anchor":"corner_ne","body":"sensor","shape":"box","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"cp_3","kind":"checkpoint","noun":"lap checkpoint 3","hyper":"checkpoint","zone":"z_kitchen","anchor":"corner_sw","body":"sensor","shape":"box","size":[0.2,0.2,0.2]}
+{"op":"verb","id":"vb_drive_player","verb":"vehicle.drive","on":"player_car","params":{"kind":"car","speed":8,"driver":"player"}}
+{"op":"verb","id":"vb_drive_rival1","verb":"vehicle.drive","on":"rival_car_1","params":{"kind":"car","speed":7,"driver":"npc"}}
+{"op":"verb","id":"vb_drive_rival2","verb":"vehicle.drive","on":"rival_car_2","params":{"kind":"car","speed":7,"driver":"npc"}}
+{"op":"verb","id":"vb_hazard_nw","verb":"motion_hazards.hazard","on":"cab_leg_nw","params":{"respawn":true}}
+{"op":"verb","id":"vb_hazard_ne","verb":"motion_hazards.hazard","on":"cab_leg_ne","params":{"respawn":true}}
+{"op":"verb","id":"vb_hazard_sw","verb":"motion_hazards.hazard","on":"chair_leg_sw","params":{"respawn":true}}
+{"op":"verb","id":"vb_hazard_se","verb":"motion_hazards.hazard","on":"chair_leg_se","params":{"respawn":true}}
+{"op":"verb","id":"vb_race_track","verb":"racing.track","on":"finish_line","params":{"gates":"cp_1,cp_2,cp_3","laps":3}}
+{"op":"rule","id":"r_win","when":{"t":"lap_done","a":"player","b":"finish_line","n":3},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose_hazard","when":{"t":"hit","a":"player","b":"cab_leg_nw"},"then":[{"e":"lose","target":"player"}]}
+{"op":"rule","id":"r_lose_hazard2","when":{"t":"hit","a":"player","b":"cab_leg_ne"},"then":[{"e":"lose","target":"player"}]}
+{"op":"rule","id":"r_lose_hazard3","when":{"t":"hit","a":"player","b":"chair_leg_sw"},"then":[{"e":"lose","target":"player"}]}
+{"op":"rule","id":"r_lose_hazard4","when":{"t":"hit","a":"player","b":"chair_leg_se"},"then":[{"e":"lose","target":"player"}]}
+{"op":"expect","id":"x_course","prop":"win_reachable","a":"sp_red","b":"finish_line","headline":true,"text":"The course is three tight laps hugging the kitchen table"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

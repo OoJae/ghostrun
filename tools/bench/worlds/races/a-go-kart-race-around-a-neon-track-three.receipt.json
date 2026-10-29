@@ -1,0 +1,198 @@
+{
+  "prompt": "A go-kart race around a neon track, three laps against two rivals",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "racing - arcade kart battle",
+    "setting": "A neon-lit circuit that weaves through an open space with glowing pylons, banked curves and a single wide straight. The track is closed and looped, marked with vivid light strips and checker-line start/finish gantries. Three racers are launched from the start gantry at the same time.",
+    "role": "You are a neon go-kart racer",
+    "goal": "Win the race by crossing the finish line first after completing three laps of the neon track, beating the two opposing karts.",
+    "fail": "Finish second or third after three laps, or crash / get knocked out of the track and unable to resume before the last lap ends.",
+    "mood": "Fast, electric, competitive arcade racing with synth-wave visuals and high arousal.",
+    "pack": "outdoor",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Three-lap neon circuit kart race against two rivals",
+    "nouns": [
+      {
+        "noun": "go-kart",
+        "hyper": "vehicle"
+      },
+      {
+        "noun": "neon track",
+        "hyper": "circuit course"
+      },
+      {
+        "noun": "rival",
+        "hyper": "opponent"
+      },
+      {
+        "noun": "lap",
+        "hyper": "race segment"
+      },
+      {
+        "noun": "finish line",
+        "hyper": "game end marker"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.6,
+      "arousal": 0.85,
+      "tension": 0.7
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "b66711cfc3030dabbc509f0c48b46d74378edd27c1bb76ad74c72e14dffc2e23",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_race",
+      "text": "Three-lap neon circuit kart race against two rivals",
+      "status": "counterexample",
+      "method": "static goal regression over rules + physics, 12 AI runners vs 2 bots + physics, 3 menu schedules × 3 runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 2,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 3 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 2,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (lap 3 done) ← drive kart_player through 0 gates and finish_line ×3",
+        "src": ""
+      },
+      {
+        "id": "T1:drive:finish_line",
+        "tier": "T1",
+        "subject": {
+          "kind": "world",
+          "id": "finish_line"
+        },
+        "method": "drivability model (ground a vehicle drives to, turning circle, top speed)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 112,
+        "status": "verified",
+        "text": "a kart can drive the line and 0 gates on the ground (a lap ≥ 0 m, turning circle 2.14 m at corner speed)",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lose_health",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_health"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 52,
+        "status": "verified",
+        "text": "r_lose_health fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lose_oil",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_oil"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 27,
+        "status": "verified",
+        "text": "r_lose_oil fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners vs 2 bots",
+        "n": 12,
+        "k": 3,
+        "text": "AI runners won by playing it vs 2 bots (AI par 5.8 s)",
+        "cx": null,
+        "src": "",
+        "ms": 13345
+      },
+      {
+        "id": "T3:envelope",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "counterexample",
+        "method": "physics, 3 menu schedules × 3 runners",
+        "n": 9,
+        "k": 3,
+        "text": "a choice the cast's minds can make stops every runner",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "wins",
+          "text": "if racer_1 plays racer.block, racer_2 plays racer.block, no runner wins"
+        },
+        "src": "",
+        "ms": 6685
+      }
+    ],
+    "par": {
+      "goldS": 5.8,
+      "runs": 12,
+      "won": 3
+    },
+    "ms": 21068
+  }
+}

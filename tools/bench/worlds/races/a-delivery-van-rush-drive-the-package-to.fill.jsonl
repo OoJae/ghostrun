@@ -1,0 +1,32 @@
+{"op":"meta","mode":"play","lang":"en","pack":"city_block","sub":[],"seed":13,"look":"urban street","mood":[0.3,0.8,0.7],"timeOfDay":14,"weather":"clear"}
+{"op":"zone","id":"z_center","slot":"center","tag":"plaza","name":"Central Plaza"}
+{"op":"zone","id":"z_west","slot":"west_block","tag":"base","name":"West Depot"}
+{"op":"zone","id":"z_east","slot":"east_block","tag":"base","name":"East Residence"}
+{"op":"zone","id":"z_st_w","slot":"street_w","tag":"street","name":"West Street"}
+{"op":"zone","id":"z_st_e","slot":"street_e","tag":"street","name":"East Street"}
+{"op":"spawn","id":"sp_red","zone":"z_west","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"house_goal","zone":"z_east","anchor":"goal_ring","noun":"house","hyper":"building","team":"red"}
+{"op":"ent","id":"van_vehicle","kind":"vehicle","noun":"delivery van","hyper":"vehicle","zone":"z_west","anchor":"spawn_pad","body":"dynamic","shape":"box","size":[2,1.5,4]}
+{"op":"ent","id":"package_pkg","kind":"pickup","noun":"delivery package","hyper":"object","zone":"z_west","anchor":"center","body":"dynamic","shape":"box","size":[0.4,0.4,0.4]}
+{"op":"ent","id":"traffic_sw","kind":"switch","noun":"traffic light","hyper":"switch","zone":"z_st_w","anchor":"none","body":"sensor","shape":"box","size":[0.2,1,0.2]}
+{"op":"ent","id":"spike_haz","kind":"hazard","noun":"spike strip","hyper":"hazard","zone":"z_st_e","anchor":"none","body":"sensor","shape":"box","size":[3,0.1,0.5]}
+{"op":"ent","id":"jump_pad","kind":"plate","noun":"launch pad","hyper":"jump_pad","zone":"z_center","anchor":"floor_ne","body":"sensor","shape":"box","size":[1,0.2,1]}
+{"op":"ent","id":"crate_prop","kind":"prop","noun":"crate","hyper":"crate","zone":"z_center","anchor":"floor_sw","body":"fixed","shape":"box","size":[0.8,0.8,0.8]}
+{"op":"ent","id":"coin1","kind":"pickup","noun":"coin","hyper":"coin","zone":"z_st_w","anchor":"none","body":"dynamic","shape":"sphere","size":[0.1,0.1,0.1]}
+{"op":"ent","id":"coin2","kind":"pickup","noun":"coin","hyper":"coin","zone":"z_st_e","anchor":"none","body":"dynamic","shape":"sphere","size":[0.1,0.1,0.1]}
+{"op":"verb","id":"vb_drive_van","verb":"vehicle.drive","on":"van_vehicle","params":{"kind":"van","speed":20,"driver":"player"}}
+{"op":"verb","id":"vb_carry_pkg","verb":"physics_props.carry","on":"package_pkg","params":{}}
+{"op":"verb","id":"vb_switch_traffic","verb":"puzzle.switch","on":"traffic_sw","params":{"once":false}}
+{"op":"verb","id":"vb_hazard_spike","verb":"motion_hazards.hazard","on":"spike_haz","params":{"respawn":true}}
+{"op":"verb","id":"vb_jump_pad","verb":"locomotion.jump_pad","on":"jump_pad","params":{"height":8}}
+{"op":"verb","id":"vb_collect_coin1","verb":"puzzle.collect","on":"coin1","params":{}}
+{"op":"verb","id":"vb_collect_coin2","verb":"puzzle.collect","on":"coin2","params":{}}
+{"op":"verb","id":"vb_timer","verb":"puzzle.timer","on":"player","params":{"seconds":120}}
+{"op":"rule","id":"r_deliver","when":{"t":"enter","a":"package_pkg","b":"house_goal"},"if":[{"l":"package_pkg.carrier.team","op":"eq","r":"red"}],"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_timer_end","when":{"t":"timer_end","a":"player"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_switch_traffic","when":{"t":"state_is","a":"traffic_sw","s":"on"},"then":[{"e":"set_state","target":"spike_haz","v":"open"}]}
+{"op":"rule","id":"r_switch_off","when":{"t":"state_is","a":"traffic_sw","s":"off"},"then":[{"e":"set_state","target":"spike_haz","v":"closed"}]}
+{"op":"expect","id":"x_delivery","prop":"win_reachable","a":"sp_red","b":"house_goal","headline":true,"text":"Timer-based delivery from van to house"}
+{"op":"end","layer":"gameplay"}
+{"op":"law","player":{"jumpsMax":1,"jumpH":1.6,"speed":6}}
+{"op":"end","layer":"cosmetic"}
