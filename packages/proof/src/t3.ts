@@ -159,6 +159,10 @@ interface RunResult {
   lostBy: string | null;
   /** Where a stuck run stopped (the player's position), or null. */
   stuckAt: Vec3 | null;
+  /** Whose shot or blow last hurt or hit the player in a lost run ("" if none did). */
+  lostTo: string;
+  /** The step a stuck run was on ("shoot drone_2"), or "". */
+  stuckOn: string;
   /** Its feet every 20 ticks (x, y, z triples at 0.1 m). */
   trail: number[];
   /** The run sampled for racing, when it won. */
@@ -1036,7 +1040,13 @@ function perform(r: Run, st: PlanStep): "ok" | "lost" | "stuck" {
             continue;
           }
           const before = sim.tick;
-          go(() => sim.pos(t), () => done() || standing().some(inShot));
+          // chased on foot while the navmesh reaches it; else (a drone across a course's pit) to where
+          // it stands now, by the hops and climbs a fixed spot gets
+          const p1 = sim.pos("player");
+          const q = sim.pos(t);
+          const foot: Vec3 = [q[0], q[1] - (b.entities.find((e) => e.id === t)?.size[1] ?? 1.8) / 2, q[2]];
+          const onFoot = Boolean(nav.path([p1[0], p1[1] - 0.9, p1[2]], foot) ?? leapPath([p1[0], p1[1] - 0.9, p1[2]], foot));
+          go(onFoot ? () => sim.pos(t) : foot, () => done() || standing().some(inShot));
           trace?.(`  shoot: closing in on ${t} from ${v1(sim.pos("player"))}`);
           if (!standing().some(inShot) && (sim.tick === before || ++misses > 6)) return done() ? "ok" : "stuck";
           continue;
@@ -1170,6 +1180,7 @@ function witnessRun(R: Rapier, b: WorldBundle, nav: NavWorld, chain: WinChain, o
   const r: Run = { sim, nav, b, rng, speed: 0.85 + rng() * 0.15, budget: { ticks }, openers, opened: new Set() };
   let stuck = 0;
   let stuckAt: Vec3 | null = null;
+  let stuckOn = "";
   let lastTop = -1;
   outer: while (live(r)) {
     if (sim.tick === lastTop) break; // a whole pass without a tick: never spin
@@ -1181,6 +1192,7 @@ function witnessRun(R: Rapier, b: WorldBundle, nav: NavWorld, chain: WinChain, o
       if (res === "stuck") {
         if (live(r)) stuck++;
         stuckAt = sim.pos("player");
+        stuckOn = `${st.do} ${st.do === "collect" ? st.items.join(",") : "at" in st ? st.at : "sensor" in st ? st.sensor : "item" in st ? st.item : st.rule}`;
         break outer;
       }
       if (sim.result) break outer;
@@ -1189,9 +1201,12 @@ function witnessRun(R: Rapier, b: WorldBundle, nav: NavWorld, chain: WinChain, o
   }
   // how a lost run ended: the rule that fired the loss
   const lostBy = sim.result === "lose" ? (sim.log.findLast((e) => e.k === "lose")?.rule ?? "") : null;
+  // (and whose shot it was: the weapon a hit names is its shooter's own, or one held)
+  const blow = lostBy !== null ? (sim.log.findLast((e) => (e.k === "hp" || e.k === "hit") && e.a === "player" && e.b !== "")?.b ?? "") : "";
+  const lostTo = sim.entity(blow)?.carrier || blow;
   trace?.(`end ${sim.result ?? "none"}${lostBy ? ` (${lostBy})` : ""} at ${v1(sim.pos("player"))} t=${sim.tick}`);
   const won = sim.result === "win";
-  const out = { won, ticks: sim.tick, stuck, lostBy, stuckAt: sim.result ? null : stuckAt, trail, ghost: won ? ghost.finish(sim) : null };
+  const out = { won, ticks: sim.tick, stuck, lostBy, stuckAt: sim.result ? null : stuckAt, lostTo, stuckOn: sim.result ? "" : stuckOn, trail, ghost: won ? ghost.finish(sim) : null };
   sim.free();
   return out;
 }
@@ -1199,15 +1214,24 @@ function witnessRun(R: Rapier, b: WorldBundle, nav: NavWorld, chain: WinChain, o
 /** Why runs didn't win, counted: "8 lost (hit the lava ×6, the timer ran out ×2), 4 got stuck". */
 function endings(b: WorldBundle, results: readonly RunResult[]): string {
   const lost = new Map<string, number>();
-  for (const r of results) if (r.lostBy !== null) lost.set(r.lostBy, (lost.get(r.lostBy) ?? 0) + 1);
-  const words = (id: string) => {
+  // (a fight lost is told by who: "knocked out by archer_west ×8")
+  const fight = (r: RunResult) => {
+    const w = b.rules.find((x) => x.id === r.lostBy)?.when;
+    return r.lostTo && w && (w.t === "health_lte" || (w.t === "hit" && b.entities.some((e) => e.id === w.b && e.kind === "npc"))) ? ` by ${r.lostTo}` : "";
+  };
+  for (const r of results) if (r.lostBy !== null) lost.set(`${r.lostBy}${fight(r)}`, (lost.get(`${r.lostBy}${fight(r)}`) ?? 0) + 1);
+  const words = (key: string) => {
+    const [id, by = ""] = key.split(" by ");
     const w = b.rules.find((x) => x.id === id)?.when;
     const name = (x: string) => b.entities.find((e) => e.id === x)?.noun || x.replace(/_/g, " ");
     if (!w) return id || "a loss rule";
+    if (by) return `${w.t === "hit" ? "shot" : "knocked out"} by ${by}`;
     if (w.t === "health_lte") return w.a === "player" || w.a.startsWith("team:") ? "knocked out" : `${name(w.a)} down`;
     return w.t === "hit" ? `hit the ${name(w.b)}` : w.t === "timer_end" ? "the timer ran out" : w.t === "score_gte" ? `${w.a.replace("team:", "")} reached ${w.n}` : w.t === "enter" ? `${name(w.a)} reached the ${name(w.b)}` : `${id}`;
   };
   const nLost = [...lost.values()].reduce((a, x) => a + x, 0);
+  // how soon the fights were lost (a fight lost in seconds is the rivals' numbers, not tactics)
+  const fast = results.filter((r) => r.lostBy !== null && fight(r)).map((r) => Math.round(r.ticks / 6) / 10).sort((x, y) => x - y);
   const stuckRuns = results.filter((r) => !r.won && r.lostBy === null);
   const ss = surfaces(b);
   const where = new Map<string, number>();
@@ -1216,9 +1240,15 @@ function endings(b: WorldBundle, results: readonly RunResult[]): string {
     const name = z ? b.zones.find((x) => x.id === z)?.name || z.replace(/^z_/, "").replace(/_/g, " ") : "";
     if (name) where.set(name, (where.get(name) ?? 0) + 1);
   }
+  // (and on what: the step most stuck runs were on)
+  const on = new Map<string, number>();
+  for (const r of stuckRuns) if (r.stuckOn) on.set(r.stuckOn, (on.get(r.stuckOn) ?? 0) + 1);
+  const most = [...on].sort((p, q) => q[1] - p[1] || (p[0] < q[0] ? -1 : 1))[0]?.[0];
+  const soon = fast.length ? `, after ${fast[0]}${fast.at(-1) !== fast[0] ? `–${fast.at(-1)}` : ""} s` : "";
+  const stuckWhere = [...(where.size ? [`in ${[...where].sort((p, q) => q[1] - p[1] || (p[0] < q[0] ? -1 : 1)).map(([n, k]) => `the ${n} ×${k}`).join(", ")}`] : []), ...(most ? [`at '${most}'`] : [])];
   const parts = [];
-  if (nLost) parts.push(`${nLost} lost (${[...lost].sort((p, q) => q[1] - p[1]).map(([id, n]) => `${words(id)} ×${n}`).join(", ")})`);
-  if (stuckRuns.length) parts.push(`${stuckRuns.length} got stuck${where.size ? ` (in ${[...where].sort((p, q) => q[1] - p[1] || (p[0] < q[0] ? -1 : 1)).map(([n, k]) => `the ${n} ×${k}`).join(", ")})` : ""}`);
+  if (nLost) parts.push(`${nLost} lost (${[...lost].sort((p, q) => q[1] - p[1] || (p[0] < q[0] ? -1 : 1)).map(([id, n]) => `${words(id)} ×${n}`).join(", ")}${soon})`);
+  if (stuckRuns.length) parts.push(`${stuckRuns.length} got stuck${stuckWhere.length ? ` (${stuckWhere.join(", ")})` : ""}`);
   return parts.join(", ") || "no run finished";
 }
 
