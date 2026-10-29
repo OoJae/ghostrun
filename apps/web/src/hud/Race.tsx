@@ -8,12 +8,13 @@ import type { RunResult } from "./Result";
 import "./race.css";
 
 export function RaceChip({ rival, getSim, secrets, result, hidden, onToggle, onBoard }: { rival: Rival; getSim: () => RapierSim | null; secrets: ReadonlySet<string>; result: RunResult | null; hidden: boolean; onToggle: () => void; onBoard?: (() => void) | undefined }) {
-  const [delta, setDelta] = useState<number | null>(null);
+  /** undefined: nothing to compare with yet (or the stub simulation plays); null: off the ghost's route. */
+  const [delta, setDelta] = useState<number | null | undefined>(undefined);
   const tracker = useRef<{ sim: RapierSim; ghost: Rival["ghost"]; t: RaceTracker } | null>(null);
   useEffect(() => {
     const read = () => {
       const s = getSim();
-      if (!s) return;
+      if (!s) return setDelta(undefined);
       // a new run (Play again) or a new rival starts the comparison over
       if (tracker.current?.sim !== s || tracker.current.ghost !== rival.ghost) tracker.current = { sim: s, ghost: rival.ghost, t: new RaceTracker(new GhostTrack(rival.ghost), secrets) };
       setDelta(tracker.current.t.delta(s.sim));
@@ -30,6 +31,8 @@ export function RaceChip({ rival, getSim, secrets, result, hidden, onToggle, onB
     you = <span className={d <= 0 ? "ahead" : "behind"} data-testid="race-final">you {raceClock(result.tick)} ({split(d)})</span>;
   } else if (result?.k === "lose") {
     you = <span className="behind">you didn't finish</span>;
+  } else if (delta === undefined) {
+    you = null;
   } else if (delta === null) {
     you = <span className="muted" title="Too far from where the ghost was at your stage of the win to compare">you: off its route</span>;
   } else {
@@ -41,7 +44,7 @@ export function RaceChip({ rival, getSim, secrets, result, hidden, onToggle, onB
       <span title={rival.how} data-testid="race-rival">
         {rival.name} {raceClock(theirs)}
       </span>
-      <span className="sep">·</span>
+      {you && <span className="sep">·</span>}
       {you}
       <button type="button" onClick={onToggle} aria-pressed={!hidden} title="Show or hide the ghost (H)" data-testid="ghost-toggle">
         {hidden ? "show ghost" : "hide ghost"}
