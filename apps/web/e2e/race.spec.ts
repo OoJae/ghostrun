@@ -62,10 +62,16 @@ test("race the AI: the par runner's ghost runs beside you by tick, with its time
   const a = snap.ghost!;
   expect(a.shown).toBe(true);
   expect(Math.abs(a.tick - snap.tick!)).toBeLessThan(40); // the ghost's probe updates per rendered frame (a few a second under software GL)
-  await page.waitForTimeout(1000);
-  const b = (await probe(page)).ghost!;
-  expect(b.tick).toBeGreaterThan(a.tick + 30);
-  expect(Math.hypot(b.p[0] - a.p[0], b.p[2] - a.p[2])).toBeGreaterThan(1);
+  // (waits on the run, not the wall clock: a busy machine renders few ticks a second, and the runner
+  // stands still for a moment at times)
+  await page.waitForFunction(
+    ([t, x, z]) => {
+      const g = window.__GHOSTRUN__.ghost;
+      return Boolean(g && g.tick > t + 30 && Math.hypot(g.p[0] - x, g.p[2] - z) > 1);
+    },
+    [a.tick, a.p[0], a.p[2]] as const,
+    { timeout: 30_000 },
+  );
   // H hides it (it keeps its place in the run) and brings it back
   await page.keyboard.press("KeyH");
   await expect(page.getByTestId("ghost-toggle")).toHaveText("show ghost");
