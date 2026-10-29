@@ -1,6 +1,6 @@
 export { prove, type ProveOptions } from "./prove";
 export { t0, type PlanStep, type WinChain } from "./t0";
-export { apex, reachAt, t1, t1Range } from "./t1";
+export { apex, reachAt, t1, t1Drive, t1Range } from "./t1";
 export { t2 } from "./t2";
 export { skillRuns, stepName, t3, traceRunners } from "./t3";
 export { bandLine, bandMethod, bandSaid, chipLine, clock, failLine, fightLine, fraction, paceLine, statusWord, timesLine } from "./labels";

@@ -190,13 +190,18 @@ const SYNONYMS: Record<string, string | readonly string[]> = {
   // kinds LLMs invent → the closest real kind (each only applies where it is a valid option)
   timer: ["prop", "timer_end"], clock: "prop", item: "pickup", collectible: "pickup", coin: "pickup", gem: "pickup", key: "pickup",
   flag: "pickup", treasure: "pickup", trap: "hazard", lava: "hazard", spikes: "hazard", laser: "hazard", fire: "hazard",
-  button: "switch", lever: "switch", pad: "plate", gate: "door", exit: "goal", finish: "goal", guard: "npc",
-  character: "npc", teleporter: "portal", car: "vehicle", exhibit: "prop", display: "prop", statue: "prop",
+  button: "switch", lever: "switch", pad: "plate", gate: "door", exit: "goal", finish: ["goal", "lap_done"], guard: "npc",
+  character: "npc", teleporter: "portal", car: "vehicle", kart: "vehicle", go_kart: "vehicle", gokart: "vehicle", buggy: "vehicle", truck: "vehicle", van: "vehicle",
+  boat: "vehicle", snowmobile: "vehicle", hovercraft: "vehicle", bike: "vehicle", motorbike: "vehicle", motorcycle: "vehicle", racecar: "vehicle",
+  race_car: "vehicle", jetski: "vehicle", horse: "vehicle", sled: "vehicle", exhibit: "prop", display: "prop", statue: "prop",
   // weapons are things to hold (a laser stays a hazard: the laser grid)
   wand: "pickup", staff: "pickup", blaster: "pickup", gun: "pickup", rifle: "pickup", pistol: "pickup", bow: "pickup",
   crossbow: "pickup", slingshot: "pickup", weapon: "pickup",
   // triggers: "touch" also covers using something (the sim emits touch a=agent b=thing on USE)
   collect: "touch", interact: "touch", timeout: "timer_end", state: "state_is", state_change: "state_is",
+  // a lap done (the finish line crossed after every gate)
+  lap: "lap_done", laps: "lap_done", lap_complete: "lap_done", lap_completed: "lap_done", lap_finished: "lap_done", finish_lap: "lap_done",
+  race_finished: "lap_done", finished_race: "lap_done", race_finish: "lap_done",
   // someone's hit points running out is health_lte (n 0: knocked out); being shot is a hit
   knockout: "health_lte", knocked_out: "health_lte", ko: "health_lte", defeated: "health_lte", defeat: "health_lte", killed: "health_lte",
   kill: "health_lte", dies: "health_lte", die: "health_lte", death: "health_lte", health_below: "health_lte", low_health: "health_lte",
@@ -220,12 +225,26 @@ const SHOOT_WORDS = new Set(["shoot", "shooter", "shooting", "shot", "fireball",
 const MELEE_WORDS = new Set(["sword", "claw", "claws", "bite", "punch", "melee", "strike", "slash", "stab", "axe", "club"]);
 const HEALTH_WORDS = new Set(["health", "hp", "hitpoints", "life", "lives", "vitality"]);
 
+/** Vehicle words, and the kind each one drives as ("go_kart", "jetski", "motorbike"). */
+const VEHICLE_WORDS: Record<string, string> = {
+  kart: "kart", gokart: "kart", car: "car", racecar: "car", buggy: "buggy", truck: "truck", van: "van", boat: "boat", jetski: "boat", speedboat: "boat",
+  snowmobile: "snowmobile", sled: "snowmobile", hovercraft: "hovercraft", bike: "bike", motorbike: "bike", motorcycle: "bike", horse: "horse", mount: "horse",
+};
+const DRIVE_WORDS = new Set(["drive", "driving", "ride", "riding", "steer", "pilot", "vehicle", "vehicles"]);
+const TRACK_WORDS = new Set(["lap", "laps", "track", "circuit", "race", "racing", "finish", "checkpoints"]);
+
 function canonVerb(verb: string, params: Record<string, string | number | boolean>): { verb: string; params: Record<string, string | number | boolean> } | null {
   const dot = verb.indexOf(".");
   const kit = dot < 0 ? "" : verb.slice(0, dot);
   const name = dot < 0 ? verb : verb.slice(dot + 1);
-  if (OWN_KITS.has(kit) || verb === "combat_sport.shoot" || verb === "combat_sport.health") return null;
   const words = norm(name).split("_");
+  // a vehicle to drive ("racing.kart", "vehicles.boat", "locomotion.ride"), and a track of laps
+  if (verb !== "vehicle.drive" && verb !== "racing.track" && kit !== "puzzle" && kit !== "motion_hazards" && kit !== "social") {
+    const kind = words.map((w) => VEHICLE_WORDS[w]).find(Boolean);
+    if (kind || words.some((w) => DRIVE_WORDS.has(w)) || ["vehicle", "vehicles", "driving"].includes(kit)) return { verb: "vehicle.drive", params: kind && params.kind === undefined ? { kind, ...params } : params };
+    if (words.some((w) => TRACK_WORDS.has(w))) return { verb: "racing.track", params };
+  }
+  if (OWN_KITS.has(kit) || verb === "combat_sport.shoot" || verb === "combat_sport.health") return null;
   if (words.some((w) => HEALTH_WORDS.has(w)) || name === "hit_points") return { verb: "combat_sport.health", params };
   // a blade or claws is a weapon that reaches about two metres
   if (words.some((w) => MELEE_WORDS.has(w))) return { verb: "combat_sport.shoot", params: { range: 2, ...params } };

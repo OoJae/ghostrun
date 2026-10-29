@@ -25,6 +25,9 @@ export class FollowCamera {
   #lastY = 0;
   #keys = new Set<string>();
   #pulled = DIST_MAX;
+  #chase: { yaw: number; k: number } | null = null;
+  #orbitAt = -Infinity;
+  #extra = 0;
   onUserOrbit: (() => void) | undefined;
 
   constructor(cam: PerspectiveCamera, el: HTMLElement) {
@@ -44,11 +47,23 @@ export class FollowCamera {
     this.#colliders = boxes;
   }
 
+  /**
+   * At the wheel: swing in behind the way the vehicle points (unless you orbited a moment ago) and
+   * pull back with its speed (k, 0 to 1 of top speed). null on foot.
+   */
+  chase(yaw: number | null, k = 0) {
+    // getting in: straight behind it at once (the stick steers the way the camera looks)
+    if (yaw !== null && !this.#chase) this.yaw = yaw;
+    this.#chase = yaw === null ? null : { yaw, k };
+  }
+
   /** Jump straight to the target next update (new world / respawn). */
   reset(yaw: number, pitch = 0.36) {
     this.yaw = yaw;
     this.pitch = pitch;
     this.dist = 7;
+    this.#extra = 0;
+    this.#chase = null;
     this.#snap = true;
   }
 
@@ -58,6 +73,11 @@ export class FollowCamera {
     const tilt = (k.has("ArrowUp") ? 1 : 0) - (k.has("ArrowDown") ? 1 : 0);
     this.yaw += rot * 2.4 * dt;
     this.pitch = MathUtils.clamp(this.pitch + tilt * 1.4 * dt, PITCH_MIN, PITCH_MAX);
+    const c = this.#chase;
+    if (c && !rot && this.#dragId === null && performance.now() - this.#orbitAt > 1500) {
+      const off = Math.atan2(Math.sin(c.yaw - this.yaw), Math.cos(c.yaw - this.yaw));
+      this.yaw += off * (1 - Math.exp(-dt * (1.8 + 2.4 * c.k)));
+    }
 
     const goal = new Vector3(target.x, target.y + LOOK_H, target.z);
     if (this.#snap) this.#target.copy(goal);
@@ -66,7 +86,9 @@ export class FollowCamera {
     // Orbit offset: behind the yaw-forward direction, raised by pitch.
     const cp = Math.cos(this.pitch);
     const dir = new Vector3(Math.sin(this.yaw) * cp, Math.sin(this.pitch), Math.cos(this.yaw) * cp);
-    let d = this.dist;
+    // (the chase's pull eases both ways: only a wall in the way pulls in at once)
+    this.#extra += ((c ? 1 + 3.5 * c.k : 0) - this.#extra) * (1 - Math.exp(-dt * 2.5));
+    let d = this.dist + this.#extra;
     for (const b of this.#colliders) {
       const t = rayBox([this.#target.x, this.#target.y, this.#target.z], [dir.x, dir.y, dir.z], b, d);
       if (t < d) d = Math.max(0.8, t - 0.25);
@@ -106,7 +128,7 @@ export class FollowCamera {
     const dy = e.clientY - this.#lastY;
     this.#lastX = e.clientX;
     this.#lastY = e.clientY;
-    if (dx || dy) this.onUserOrbit?.();
+    if (dx || dy) ((this.#orbitAt = performance.now()), this.onUserOrbit?.());
     this.yaw -= dx * 0.006;
     this.pitch = MathUtils.clamp(this.pitch + dy * 0.004, PITCH_MIN, PITCH_MAX);
   };
@@ -126,7 +148,7 @@ export class FollowCamera {
     }
     this.yaw -= e.deltaX * 0.004;
     this.dist = MathUtils.clamp(this.dist * Math.exp(e.deltaY * 0.0015), DIST_MIN, DIST_MAX);
-    if (e.deltaX) this.onUserOrbit?.();
+    if (e.deltaX) ((this.#orbitAt = performance.now()), this.onUserOrbit?.());
   };
 
   #key = (e: KeyboardEvent) => {

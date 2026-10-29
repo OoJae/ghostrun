@@ -14,6 +14,7 @@ import { ghostActor } from "./render/ghost";
 import type { GhostTrack, Rival } from "./race";
 import { combatView, type CombatView } from "./render/combat";
 import { heatView, type HeatCells } from "./render/heat";
+import { raceView, type RaceView } from "./render/vehicles";
 import { makeRain } from "./render/rain";
 import { lookOf, type LookStyle } from "./render/looks";
 import { Materialise, type MaterialiseSpec } from "./render/materialise";
@@ -73,6 +74,7 @@ export class Engine {
 
   #view: WorldView | null = null;
   #combat: CombatView | null = null;
+  #race: RaceView | null = null;
   #sim: FrameSource | null = null;
   /** Set once Rapier has loaded; until then (or if it fails) the stub keeps the world walkable. */
   simFactory: SimFactory | null = null;
@@ -509,6 +511,9 @@ export class Engine {
     // a fight: shots, flashes and hit-point bars (worlds without weapons or hit points get none)
     this.#combat = this.rapierSim ? combatView(world.bundle, this.rapierSim.sim) : null;
     if (this.#combat) this.#scene.add(this.#combat.root);
+    // a race (or anything to drive): vehicles that steer and roll, the chase camera, the next gate
+    this.#race = this.rapierSim ? raceView(world.bundle, this.rapierSim.sim) : null;
+    if (this.#race) this.#scene.add(this.#race.root);
     this.rapierSim?.subscribe((evs) => {
       for (const ev of evs) {
         if (ev.k === "state") view.setState(ev.a, String(ev.v));
@@ -589,6 +594,8 @@ export class Engine {
     this.#sim = null;
     this.#combat?.dispose();
     this.#combat = null;
+    this.#race?.dispose(this.#camera, this.#follow);
+    this.#race = null;
     this.#view?.dispose();
     this.#view = null;
   }
@@ -660,6 +667,7 @@ export class Engine {
     }
     view?.update(now / 1000);
     if (view) this.#combat?.update(now / 1000, view.actors, this.#camera);
+    if (view && !this.#vr) this.#race?.update(dt, now / 1000, view.actors, this.#camera, this.#follow);
     const focused = this.#focus ? view?.actors.get(this.#focus) : undefined;
     this.#beacon.visible = Boolean(focused);
     if (focused) this.#beacon.position.set(focused.position.x, focused.position.y + 6, focused.position.z);

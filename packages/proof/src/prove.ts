@@ -4,7 +4,7 @@ import { buildNav } from "@ghostrun/nav";
 import type { Rapier } from "@ghostrun/sim";
 import { playtest } from "./playtest";
 import { t0 } from "./t0";
-import { t1, t1Range } from "./t1";
+import { t1, t1Drive, t1Range } from "./t1";
 import { t2 } from "./t2";
 import { t3, tour } from "./t3";
 import type { Chip, ChipStatus, Receipt } from "./types";
@@ -42,6 +42,7 @@ export async function prove(R: Rapier, b: WorldBundle, opts: ProveOptions): Prom
   emit(s0.chips);
   emit(t1(b, laws));
   emit(t1Range(b, laws, team));
+  emit(t1Drive(b, laws, team));
   emit(t2(R, b, team));
   const nav = buildNav(b);
   try {

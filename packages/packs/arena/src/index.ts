@@ -77,6 +77,9 @@ export const arena: LayoutPack<ArenaParams> = {
       statics,
       cameraBounds: { min: [-L, -1, -Wd], max: [L, 16, Wd] },
       notes: [`arena ${params.length}×${params.width} m, point-symmetric cover, decks on ${ledge} m ledges`],
+      // a race loop: the line in the middle of the south side, round the far corners clear of the cover
+      // and inside the decks, the north side, and back
+      track: { points: [[0, 0, -(Wd - 8.5)], [L - 4, 0, -(Wd - 5)], [L - 4, 0, Wd - 5], [0, 0, Wd - 8.5], [-(L - 4), 0, Wd - 5], [-(L - 4), 0, -(Wd - 5)]], width: 6 },
     };
   },
 };

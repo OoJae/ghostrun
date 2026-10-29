@@ -78,6 +78,7 @@ export function plants(b: WorldBundle, parS: number | null, team: "red" | "blue"
     out.push({ id: "no_jump", text: "a jump only clears 0.3 m", at: null, bundle: w });
   }
   out.push(...fights(b, chain, team));
+  out.push(...races(b, chain));
   return out;
 }
 
@@ -86,6 +87,33 @@ export function plants(b: WorldBundle, parS: number | null, team: "red" | "blue"
  * stone, or they heal faster than anything can hurt them. Each only where it really breaks the
  * game (no rule could do the damage instead).
  */
+/**
+ * Bugs in a race the win is driven for: a gate hung 40 m above the track (no vehicle reaches it),
+ * and fifty laps against a 30-second clock (no lap is that short).
+ */
+function races(b: WorldBundle, chain: NonNullable<ReturnType<typeof t0>["chain"]>): Planted[] {
+  const step = chain.steps.find((s) => s.do === "drive");
+  const track = step?.do === "drive" ? b.verbs.find((v) => v.verb === "racing.track" && v.on === step.track) : undefined;
+  if (!step || step.do !== "drive" || !track) return [];
+  const out: Planted[] = [];
+  const first = String(track.params.gates ?? "").split(",").find((id) => b.entities.some((e) => e.id === id));
+  if (first) {
+    const w = structuredClone(b);
+    const g = w.entities.find((e) => e.id === first)!;
+    g.pos = [g.pos[0], g.pos[1] + 40, g.pos[2]];
+    out.push({ id: "gate_off_track", text: `the ${noun(b, first)} hangs 40 m above the track`, at: first, bundle: w });
+  }
+  const win = b.rules.find((r) => r.id === step.rule);
+  if (win?.when.t === "lap_done") {
+    const w = structuredClone(b);
+    w.rules.find((r) => r.id === win.id)!.when.n = 50;
+    w.verbs.push({ id: "vb_fool_clock", verb: "puzzle.timer", on: "player", params: { seconds: 30 }, signature: false, src: "ai", layer: "gameplay" });
+    w.rules.push({ id: "r_fool_clock", src: "ai", layer: "gameplay", when: { t: "timer_end", a: "player", b: "", s: "", n: 0, act: "" }, if: [], then: [{ e: "lose", target: "player", v: "", n: 0, fx: "" }], once: true, cooldownS: 0, prio: 0 });
+    out.push({ id: "laps_beyond_clock", text: "winning takes 50 laps, and you lose after 30 seconds", at: null, bundle: w });
+  }
+  return out;
+}
+
 function fights(b: WorldBundle, chain: NonNullable<ReturnType<typeof t0>["chain"]>, team: "red" | "blue"): Planted[] {
   const shots = chain.steps.filter((s) => s.do === "shoot");
   const weapons = playerWeapons(b);

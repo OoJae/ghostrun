@@ -3,11 +3,11 @@
 // id order, rules in (prio desc, id) order — so the same bundle + seed + inputs give bit-identical
 // event logs and state hashes everywhere.
 import { hex32, xxh32 } from "@ghostrun/detmath";
-import { HEALTH, MUZZLE_UP, SHOOT, SHOT_RADIUS, segBody, segBox, verb as kitVerb } from "@ghostrun/kits";
+import { DRIVE, feelOf, gatesOf, HEALTH, MUZZLE_UP, SHOOT, SHOT_RADIUS, segBody, segBox, TRACK, verb as kitVerb } from "@ghostrun/kits";
 import { clampParams, type Bound, type Shot, type VerbCtx, type VerbPlugin } from "@ghostrun/plugin-api";
 import type { Effect, Entity, Laws, Rule, Vec3, WorldBundle } from "@ghostrun/ir";
 import { clampLaws } from "@ghostrun/ir";
-import { launch, PLAYER_HALF_HEIGHT, PLAYER_RADIUS, PlayerController } from "./controller";
+import { launch, PLAYER_HALF_HEIGHT, PLAYER_RADIUS, PlayerController, type Ride } from "./controller";
 import type { Rapier } from "./rapier/load";
 import { BTN, DT, type InputFrame, type Pose, type Result, type SimEvent } from "./types";
 
@@ -61,6 +61,9 @@ export interface Flying extends Shot {
 /** Logs an event this tick; returns its index in the tick's events (what a later one's cause names). */
 type Push = (k: string, a: string, b?: string, v?: number | string, rule?: string, cause?: number) => number;
 
+/** USE held this many ticks (about two thirds of a second) puts down what you carry: a weapon too. */
+export const HOLD_TO_DROP = 40;
+
 const byId = <T extends { id: string }>(xs: readonly T[]) => [...xs].sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
 
 export class SimWorld {
@@ -93,10 +96,12 @@ export class SimWorld {
   #ctx!: VerbCtx;
   #emit: (k: string, a: string, b?: string, v?: number | string) => void = () => {};
   #checkpoint = new Map<string, Vec3>();
-  #useHeld = new Set<string>();
+  #useHeld = new Map<string, number>(); // agent → the tick its USE press began
   #facing = new Map<string, [number, number]>(); // agent → the way it last moved (unit), for USE
   /** Items thrown with combat_sport.throw (and weapons to hold): only the player picks them up. */
   readonly #thrown = new Set<string>();
+  /** Weapons to hold (a shoot verb on a pickup). */
+  readonly #arms = new Set<string>();
   #agents: string[] = [];
   /** Hit points of everything with combat_sport.health (the player, NPCs, a prop to break). */
   readonly #hp = new Map<string, { hp: number; max: number; respawn: boolean }>();
@@ -112,6 +117,12 @@ export class SimWorld {
   /** A world that fights: hit points and shots go into the state hash (others hash as they always did). */
   readonly #combat: boolean;
   #evs: SimEvent[] = [];
+  /** Who is at the wheel of what (vehicle.drive); a world with vehicles hashes their headings too. */
+  readonly #rides = new Map<string, Ride>();
+  readonly #riddenBy = new Map<string, string>();
+  readonly #wheels: boolean;
+  /** Each drive binding's own params as the fill wrote them (its kind's feel fills the rest). */
+  readonly #given = new Map<string, Readonly<Record<string, unknown>>>();
   #push: Push = () => -1;
 
   constructor(R: Rapier, bundle: WorldBundle, opts: SimOptions = {}) {
@@ -170,6 +181,7 @@ export class SimWorld {
       if (e && !e.init && plugin.initial) e.state = e.init = plugin.initial;
     }
     for (const v of bundle.verbs) if (v.verb === "combat_sport.throw" || (v.verb === SHOOT && this.ents.get(v.on)?.carryable)) this.#thrown.add(v.on);
+    for (const v of bundle.verbs) if (v.verb === SHOOT && this.ents.get(v.on)?.carryable) this.#arms.add(v.on);
     // hit points (clamped like any verb's params), and the weapons characters have of their own
     const hpSpec = kitVerb(HEALTH)!.params;
     for (const v of byId(bundle.verbs)) {
@@ -182,6 +194,13 @@ export class SimWorld {
     this.#walls = bundle.statics.map((s) => ({ pos: s.pos, size: s.size }));
     this.#ctx = this.#makeCtx();
     for (const { plugin, bound } of this.verbs) plugin.init?.(this.#ctx, bound);
+    // vehicles: whoever the world starts at the wheel ("driver") is in it from the first tick
+    this.#wheels = this.verbs.some((x) => x.plugin.id === DRIVE);
+    for (const v of bundle.verbs) if (v.verb === DRIVE) this.#given.set(v.id, v.params);
+    for (const { plugin, bound } of this.verbs) {
+      const who = String(bound.params.driver ?? "");
+      if (plugin.id === DRIVE && who && (who === "player" || this.npcs.has(who))) this.#mount(who, bound.on);
+    }
   }
 
   #makeCtx(): VerbCtx {
@@ -247,6 +266,11 @@ export class SimWorld {
         w.#emit("shoot", s.by, s.weapon);
       },
       hurt: (id, n, by) => w.#hurt(id, n, by, w.#push),
+      ride: (agent, vehicle) => (vehicle ? w.#mount(agent, vehicle) : w.#dismount(agent)),
+      riding: (agent) => {
+        const r = w.#rides.get(agent);
+        return r ? { vehicle: r.vehicle, speed: Math.abs(r.speed) } : { vehicle: "", speed: 0 };
+      },
     };
   }
 
@@ -288,6 +312,86 @@ export class SimWorld {
   muzzle(id: string): Vec3 {
     const p = this.pos(id);
     return [p[0], p[1] + MUZZLE_UP, p[2]];
+  }
+
+  /** What a character drives right now (its heading and speed), or undefined on foot. */
+  ride(id: string): Readonly<Ride> | undefined {
+    return this.#rides.get(id);
+  }
+
+  /** In a race (a racing.track): the gate a racer heads for next (the line after the last), laps done, gates passed this lap. */
+  raceOf(id: string): { next: string; laps: number; passed: number; gates: number } | null {
+    const t = this.verbs.find((x) => x.plugin.id === TRACK);
+    if (!t) return null;
+    const order = [...gatesOf(t.bound).filter((g) => this.ents.has(g)), t.bound.on];
+    const passed = Math.min(Number(t.bound.mem[`n:${id}`] ?? 0), order.length - 1);
+    return { next: order[passed]!, laps: Number(t.bound.mem[`l:${id}`] ?? 0), passed, gates: order.length };
+  }
+
+  /** The racers (the player and every character at a wheel) in race order: most laps, then gates, then nearest the next. */
+  standings(): string[] {
+    const racers = this.#agents.filter((id) => id === "player" || this.#rides.has(id));
+    const key = (id: string) => {
+      const r = this.raceOf(id);
+      if (!r) return 0;
+      const p = this.pos(id);
+      const q = this.pos(r.next);
+      return (r.laps * r.gates + r.passed) * 100000 - Math.sqrt((p[0] - q[0]) * (p[0] - q[0]) + (p[2] - q[2]) * (p[2] - q[2]));
+    };
+    return [...racers].sort((x, y) => key(y) - key(x) || (x < y ? -1 : 1));
+  }
+
+  /** Who drives a vehicle, or "". */
+  driverOf(vehicle: string): string {
+    return this.#riddenBy.get(vehicle) ?? "";
+  }
+
+  /** Into the driver's seat: the vehicle goes ghost (its collider off) and rides with its driver. */
+  #mount(agent: string, vehicle: string): boolean {
+    const v = this.ents.get(vehicle);
+    const b = this.verbs.find((x) => x.plugin.id === DRIVE && x.bound.on === vehicle);
+    if (!v || !b || v.destroyed || this.#rides.has(agent) || this.#riddenBy.has(vehicle) || !(agent === "player" || this.npcs.has(agent))) return false;
+    v.col?.setEnabled(false);
+    if (v.body && !v.body.isKinematic()) v.body.setBodyType(this.R.RigidBodyType.KinematicPositionBased, true);
+    const p = v.body ? this.pos(vehicle) : v.home;
+    this.teleport(agent, [p[0], p[1] - v.size[1] / 2 + PLAYER_HALF_HEIGHT + PLAYER_RADIUS + 0.05, p[2]]);
+    // facing the track's first gate when there is one, else the way the driver faced
+    const track = this.verbs.find((x) => x.plugin.id === TRACK);
+    const first = track ? [...gatesOf(track.bound), track.bound.on].find((id) => this.ents.has(id)) : undefined;
+    let [hx, hz] = this.facingOf(agent);
+    if (first) {
+      const q = this.pos(first);
+      const [dx, dz] = [q[0] - p[0], q[2] - p[2]];
+      const d = Math.sqrt(dx * dx + dz * dz);
+      if (d > 0.5) [hx, hz] = [dx / d, dz / d];
+    }
+    const ctrl = agent === "player" ? this.player : this.npcs.get(agent)!;
+    ctrl.vx = ctrl.vz = 0;
+    // at the wheel the driver's capsule is as wide as the vehicle (up to 1.7 m), its feet where they were
+    const wide = Math.min(0.85, Math.max(PLAYER_RADIUS, Math.min(v.size[0], v.size[2]) / 2));
+    ctrl.collider.setShape(new this.R.Capsule(PLAYER_HALF_HEIGHT + PLAYER_RADIUS - wide, wide));
+    this.#rides.set(agent, { vehicle, feel: feelOf(this.#given.get(b.bound.id) ?? {}, b.bound.params), hx, hz, speed: 0, boostLeft: 0, boostAt: 0 });
+    this.#riddenBy.set(vehicle, agent);
+    this.#facing.set(agent, [hx, hz]);
+    return true;
+  }
+
+  /** Out, beside it (the side that is clear), and the vehicle is solid again where it stopped. */
+  #dismount(agent: string): boolean {
+    const r = this.#rides.get(agent);
+    if (!r) return false;
+    const v = this.ents.get(r.vehicle)!;
+    const p = this.pos(agent);
+    const off = Math.max(v.size[0], v.size[2]) / 2 + 0.6;
+    const sides: [number, number][] = [[r.hz, -r.hx], [-r.hz, r.hx], [-r.hx, -r.hz]];
+    const free = ([ux, uz]: [number, number]) => !this.#walls.some((s) => Math.abs(p[0] + ux * off - s.pos[0]) < s.size[0] / 2 + 0.4 && Math.abs(p[2] + uz * off - s.pos[2]) < s.size[2] / 2 + 0.4 && s.pos[1] + s.size[1] / 2 > p[1] - 0.5);
+    const [ux, uz] = sides.find(free) ?? sides[0]!;
+    this.#rides.delete(agent);
+    this.#riddenBy.delete(r.vehicle);
+    (agent === "player" ? this.player : this.npcs.get(agent)!).collider.setShape(new this.R.Capsule(PLAYER_HALF_HEIGHT, PLAYER_RADIUS));
+    this.teleport(agent, [p[0] + ux * off, p[1], p[2] + uz * off]);
+    v.col?.setEnabled(true);
+    return true;
   }
 
   /** Hit points now, or null for something without them. */
@@ -570,6 +674,7 @@ export class SimWorld {
     };
     face("player", input);
     if (npcIn) for (const [id, f] of npcIn) face(id, f);
+    // (at the wheel, an agent faces where its vehicle points, below)
 
     // 1. characters move, the player first, then NPCs in id order
     const c = this.#move("player", this.player, input);
@@ -597,14 +702,25 @@ export class SimWorld {
     // 3. physics
     this.world.step();
 
+    // 3a. vehicles ride with their drivers, exactly where they are now (and face the way they point)
+    for (const [id, r] of this.#rides) {
+      const v = this.ents.get(r.vehicle)!;
+      const p = this.pos(id);
+      if (v.body) v.body.setTranslation({ x: p[0], y: p[1] - PLAYER_HALF_HEIGHT - PLAYER_RADIUS + v.size[1] / 2, z: p[2] }, true);
+      else v.home = [p[0], p[1] - PLAYER_HALF_HEIGHT - PLAYER_RADIUS + v.size[1] / 2, p[2]];
+      this.#facing.set(id, [r.hx, r.hz]);
+    }
+
     // 3b. anyone who fell out of the world comes back (a pit, or off the edge of a platform)
     for (const id of this.#agents) if (!this.ents.get(id)!.destroyed && this.pos(id)[1] < -20) this.#respawn(id);
 
-    // 3c. USE: a fresh press runs the nearest usable verb in reach
+    // 3c. USE: a fresh press runs the nearest usable verb in reach; held for HOLD_TO_DROP ticks, it
+    // puts down what you carry (a weapon in hand always has a use: firing it)
     for (const id of this.#agents) {
       const btn = id === "player" ? (input?.btn ?? 0) : (npcIn?.get(id)?.btn ?? 0);
       const down = (btn & BTN.USE) !== 0;
-      if (down && !this.#useHeld.has(id)) {
+      const since = this.#useHeld.get(id);
+      if (down && since === undefined) {
         const u = this.usable(id);
         const v = u && this.verbs.find((x) => x.bound.id === u.verb);
         if (v) {
@@ -612,19 +728,10 @@ export class SimWorld {
           const acted = v.plugin.use!.run(this.#ctx, v.bound, id) !== false;
           // "the player used X" is a touch, unless the verb already logged one (inspect, with its text)
           if (acted && !v.plugin.use!.quiet && !evs.slice(before).some((e) => e.k === "touch" && e.b === v.bound.on)) push("touch", id, v.bound.on);
-        } else if (this.ents.get(id)!.carrying) {
-          // nothing to use in reach: put down what you carry (or a wrong pickup would be yours for good)
-          const item = this.ents.get(id)!.carrying;
-          const p = this.pos(id);
-          this.#ctx.release(item, [p[0], p[1] - PLAYER_HALF_HEIGHT - PLAYER_RADIUS + Math.max(...this.ents.get(item)!.size) / 2 + 0.02, p[2]]);
-          // free hands at once for something else (that's why it went down); this one stays down
-          this.#noPickup.delete(id);
-          this.#putDown.set(item, id);
-          push("drop", item, id);
-        }
-      }
-      if (down) this.#useHeld.add(id);
-      else this.#useHeld.delete(id);
+        } else if (this.ents.get(id)!.carrying) this.#setDown(id, push); // nothing to use in reach: put down what you carry (or a wrong pickup would be yours for good)
+      } else if (down && t - since! === HOLD_TO_DROP && this.ents.get(id)!.carrying) this.#setDown(id, push);
+      if (!down) this.#useHeld.delete(id);
+      else if (since === undefined) this.#useHeld.set(id, t);
     }
 
     // 3d. shots in flight
@@ -656,13 +763,16 @@ export class SimWorld {
         // the player and the cast that moves; a guard standing as a sensor has no hands
         if (agentId !== "player" && (!ag.agent || !this.npcs.has(agentId))) continue;
         if (agentId !== "player" && this.#thrown.has(itemId)) continue; // bots don't throw: they'd only hoard the ball
-        if (ag.carrying || ag.destroyed || (this.#noPickup.get(agentId) ?? 0) > t) continue;
+        // a weapon in the player's hands is swapped for another one walked over (the first goes down)
+        const swap = agentId === "player" && ag.carrying !== "" && this.#arms.has(ag.carrying) && this.#arms.has(itemId);
+        if ((ag.carrying && !swap) || ag.destroyed || (this.#noPickup.get(agentId) ?? 0) > t) continue;
         const touching = this.#touching(agentId, itemId);
         if (this.#putDown.get(itemId) === agentId) {
           if (touching) continue; // put down to free the hands: it stays down while they stand on it
           this.#putDown.delete(itemId);
         }
         if (touching) {
+          if (swap) this.#setDown(agentId, push);
           this.attach(itemId, agentId);
           push("pickup", itemId, agentId);
           break;
@@ -710,7 +820,7 @@ export class SimWorld {
     for (let i = scoredFrom; i < evs.length && i < 512 && !this.result; i++) if (evs[i]!.k !== "score_gte") this.#fire(evs[i]!, i, push);
 
     // 6. state hash over everything that moves or counts
-    const buf = new Float64Array(this.order.length * 3 + 4 + (this.#combat ? this.#hp.size + this.shots.length * 3 : 0));
+    const buf = new Float64Array(this.order.length * 3 + 4 + (this.#combat ? this.#hp.size + this.shots.length * 3 : 0) + (this.#wheels ? this.#rides.size * 3 : 0));
     let o = 0;
     for (const id of this.order) {
       const p = this.pos(id);
@@ -729,6 +839,12 @@ export class SimWorld {
       }
       for (const s of this.shots) for (const x of s.p) buf[o++] = x === 0 ? 0 : x;
     }
+    if (this.#wheels) {
+      for (const id of this.#agents) {
+        const r = this.#rides.get(id);
+        if (r) for (const x of [r.hx, r.hz, r.speed]) buf[o++] = x === 0 ? 0 : x;
+      }
+    }
     this.hash = xxh32(new Uint8Array(buf.buffer), this.hash);
 
     this.log.push(...evs);
@@ -739,6 +855,9 @@ export class SimWorld {
   #move(id: string, ctrl: PlayerController, input: InputFrame | null) {
     const carry = this.ents.get(id)!.carrying;
     const carriedHandle = carry ? this.ents.get(carry)!.col?.handle : undefined;
+    // at the wheel: the arcade vehicle model drives the same capsule through the same KCC
+    const ride = this.#rides.get(id);
+    if (ride) return ctrl.drive(input, ride, this.tick, (col) => col.handle === carriedHandle);
     // Compare handles only: calling collider methods here would re-borrow Rapier's collider set
     // while the KCC holds it. Sensors have no physics colliders in this world.
     return ctrl.step(
@@ -758,6 +877,16 @@ export class SimWorld {
     const dx = p[0] - q[0];
     const dz = p[2] - q[2];
     return dx * dx + dz * dz <= r * r && Math.abs(p[1] - q[1]) <= 1.4 + up;
+  }
+
+  /** Put down what an agent carries, at its feet: its hands are free at once, and this one stays down while it stands there. */
+  #setDown(id: string, push: Push) {
+    const item = this.ents.get(id)!.carrying;
+    const p = this.pos(id);
+    this.#ctx.release(item, [p[0], p[1] - PLAYER_HALF_HEIGHT - PLAYER_RADIUS + Math.max(...this.ents.get(item)!.size) / 2 + 0.02, p[2]]);
+    this.#noPickup.delete(id);
+    this.#putDown.set(item, id);
+    push("drop", item, id);
   }
 
   #drop(itemId: string, carrierId: string, towardId: string) {
@@ -844,6 +973,7 @@ export class SimWorld {
       // "team:blue is hit": anyone on that team (a score_gte event names the team itself)
       if (w.t !== "every" && w.a && w.a !== ev.a && !(w.a.startsWith("team:") && this.ents.get(ev.a)?.team === w.a.slice(5))) continue;
       if (w.t === "every" && ev.a !== r.id) continue;
+      if (w.t === "lap_done" && w.n > 0 && Number(ev.v) !== w.n) continue; // "3 laps": the third lap, once
       if (w.b && w.b !== ev.b) continue;
       if (r.once && this.#fired.has(r.id)) continue;
       const last = this.#lastFire.get(r.id);

@@ -2,7 +2,8 @@
 // abstraction (k jumps lift the feet k × jumpH), with analytic counterexamples
 // ("apex 1.6 m < ledge 2.6 m").
 import type { Expect, Laws, Rule, Vec3, WorldBundle } from "@ghostrun/ir";
-import { MUZZLE_UP, segBox } from "@ghostrun/kits";
+import { DRIVE, feelOf, MUZZLE_UP, segBox, TRACK, verb } from "@ghostrun/kits";
+import { clampParams } from "@ghostrun/plugin-api";
 import { hitPoints, playerWeapons } from "./t0";
 import type { Chip } from "./types";
 
@@ -323,6 +324,76 @@ export function t1Range(b: WorldBundle, laws: Laws, playerTeam: "red" | "blue" =
     }
     chips[chips.length - 1]!.ms = Math.round((globalThis.performance?.now?.() ?? 0) - t0);
   }
+  return chips;
+}
+
+/**
+ * The drivability model, for a race at the wheel: a vehicle can't jump (jump boosts), so the line
+ * and every gate must stand on ground it drives to from the start (steps of 0.4 m at most, drops
+ * allowed); each gate's corner must fit the vehicle's turning circle at corner speed (30 % of top
+ * speed: the model slows itself for a bend); and when a clock ends the race, the laps the win
+ * needs must fit in it even at top speed with every boost (a lap is at least its straight legs).
+ */
+export function t1Drive(b: WorldBundle, laws: Laws, playerTeam: "red" | "blue" = "red"): Chip[] {
+  const track = b.verbs.find((v) => v.verb === TRACK);
+  const ents = new Map(b.entities.map((e) => [e.id, e]));
+  const line = track && ents.get(track.on);
+  const ride = b.verbs.find((v) => v.verb === DRIVE && v.params.driver === "player") ?? b.verbs.find((v) => v.verb === DRIVE);
+  if (!track || !line || !ride || b.mode !== "play") return [];
+  const t0 = globalThis.performance?.now?.() ?? 0;
+  const feel = feelOf(ride.params, clampParams(verb(DRIVE)!.params, ride.params));
+  const route = [...String(track.params.gates ?? "").split(",").map((id) => ents.get(id.trim())).filter((e): e is NonNullable<typeof e> => Boolean(e)), line];
+  const solid = [...b.statics, ...b.entities.filter((e) => (e.body === "fixed" || e.body === "kinematic") && e.kind !== "npc" && e.kind !== "door" && e.kind !== "vehicle")];
+  const ground = groundReached(b, { ...laws, jumpsMax: 0 }, playerTeam, solid);
+  const ss = surfaces(b);
+  const name = (e: (typeof route)[number]) => `the ${e.noun || e.id.replace(/_/g, " ")}`;
+  const base: Omit<Chip, "status" | "text" | "cx"> = { id: `T1:drive:${track.on}`, tier: "T1", subject: { kind: "world", id: track.on }, method: "drivability model (ground a vehicle drives to, turning circle, top speed)", n: 0, k: 0, src: track.src === "user" ? "user" : track.src, ms: 0 };
+  const chips: Chip[] = [];
+  // 1. on drivable ground
+  let why = "";
+  for (const g of route) {
+    const [lo, hi] = [g.pos[1] - g.size[1] / 2 - 0.5, g.pos[1] + g.size[1] / 2];
+    if (ground.some((c) => Math.abs(c[0] - g.pos[0]) <= g.size[0] / 2 && Math.abs(c[2] - g.pos[2]) <= g.size[2] / 2 && c[1] >= lo && c[1] <= hi)) continue;
+    const under = surfaceUnder(ss, [g.pos[0], g.pos[1] - g.size[1] / 2 + 0.1, g.pos[2]]);
+    const low = Math.min(...ground.filter((c) => Math.abs(c[0] - g.pos[0]) < 6 && Math.abs(c[2] - g.pos[2]) < 6).map((c) => c[1]), Infinity);
+    why = under && Number.isFinite(low) && under.top - low > 0.4 ? `${name(g)} stands on a ${round(under.top - low)} m rise: a ${feel.kind} climbs 0.4 m and can't jump` : `no ground a ${feel.kind} can drive reaches ${name(g)}`;
+    chips.push({ ...base, status: "counterexample", text: `a ${feel.kind} can drive every gate`, cx: { where: g.pos, have: 0, need: 1, unit: "route", text: why } });
+    break;
+  }
+  // 2. corners, and the length of a lap
+  const pts = route.map((e) => e.pos);
+  let lap = 0;
+  const radius = (0.3 * feel.speed) / feel.turn;
+  for (let i = 0; i < pts.length; i++) {
+    const [a, g, c] = [pts[(i + pts.length - 1) % pts.length]!, pts[i]!, pts[(i + 1) % pts.length]!];
+    const [ix, iz, ox, oz] = [g[0] - a[0], g[2] - a[2], c[0] - g[0], c[2] - g[2]];
+    const [li, lo] = [Math.sqrt(ix * ix + iz * iz), Math.sqrt(ox * ox + oz * oz)];
+    lap += lo;
+    if (why || li < 1e-6 || lo < 1e-6 || pts.length < 3) continue;
+    const cos = (ix * ox + iz * oz) / (li * lo);
+    const need = cos <= -0.999 ? Infinity : radius * Math.sqrt((1 - cos) / (1 + cos));
+    if (need <= Math.min(li, lo) / 2) continue;
+    why = `a ${cos < -0.7 ? "hairpin" : "sharp turn"} at ${name(route[i]!)} needs ${Number.isFinite(need) ? round(need) : "a"} m of road at ${round(0.3 * feel.speed)} m/s; the gates each side are ${round(Math.min(li, lo))} m away`;
+    chips.push({ ...base, status: "counterexample", text: `a ${feel.kind} can make every corner`, cx: { where: g, have: round(Math.min(li, lo) / 2), need: Number.isFinite(need) ? round(need) : 999, unit: "m", text: why } });
+  }
+  if (!why) chips.push({ ...base, status: "verified", text: `a ${feel.kind} can drive the line and ${route.length - 1} gate${route.length === 2 ? "" : "s"} on the ground (a lap ≥ ${round(lap)} m, turning circle ${round(radius)} m at corner speed)`, cx: null });
+  // 3. the laps the win needs against the clock that ends the race
+  // (the shortest clock that ends the race in a loss)
+  const clocks = b.rules.filter((r) => r.when.t === "timer_end" && r.then.some((e) => e.e === "lose")).flatMap((r) => b.verbs.filter((v) => v.verb === "puzzle.timer" && v.on === r.when.a)).map((v) => Math.min(600, Math.max(5, Number(v.params.seconds ?? 60) || 60)));
+  const seconds = clocks.length ? Math.min(...clocks) : 0;
+  for (const r of seconds && lap > 0 ? b.rules : []) {
+    if (r.when.t !== "lap_done" || !(r.when.a === "player" || r.when.a === `team:${playerTeam}` || !r.when.a) || !r.then.some((e) => e.e === "win")) continue;
+    const laps = Math.max(1, r.when.n);
+    const fastest = (laps * lap) / (feel.speed * feel.boost);
+    const ok = fastest <= seconds;
+    chips.push({
+      id: `T1:laps:${r.id}`, tier: "T1", subject: { kind: "rule", id: r.id }, method: "race-time model (laps × the shortest lap ÷ top speed with boost)", n: 0, k: 0, src: r.src === "user" ? "user" : r.src, ms: 0,
+      status: ok ? "verified" : "counterexample",
+      text: `${laps} lap${laps === 1 ? "" : "s"} fit the ${seconds} s clock`,
+      cx: ok ? null : { where: null, have: seconds, need: round(fastest), unit: "s", text: `${laps} laps of ≥ ${round(lap)} m take ≥ ${round(fastest)} s at ${round(feel.speed * feel.boost)} m/s; the clock gives ${seconds} s` },
+    });
+  }
+  for (const c of chips) c.ms = Math.round((globalThis.performance?.now?.() ?? 0) - t0);
   return chips;
 }
 

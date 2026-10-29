@@ -1,0 +1,20 @@
+{"op":"meta","mode":"play","lang":"en","pack":"arena","sub":[],"seed":63,"look":"snowy","mood":[0.4,0.8,0.4],"timeOfDay":15,"weather":"snow"}
+{"op":"zone","id":"z_lake","slot":"midfield","tag":"center","name":"Frozen lake"}
+{"op":"zone","id":"z_pines","slot":"west_half","tag":"base","name":"Pine bend"}
+{"op":"zone","id":"z_cabins","slot":"east_half","tag":"base","name":"Cabin bend"}
+{"op":"spawn","id":"sp_red","zone":"z_pines","anchor":"spawn_pad","team":"red"}
+{"op":"ent","id":"start_line","kind":"checkpoint","noun":"start banner","zone":"z_lake","anchor":"center_s"}
+{"op":"ent","id":"gate_a","kind":"checkpoint","noun":"ice gate","zone":"z_cabins","anchor":"flank_s"}
+{"op":"ent","id":"gate_b","kind":"checkpoint","noun":"ice gate","zone":"z_cabins","anchor":"flank_n"}
+{"op":"ent","id":"gate_c","kind":"checkpoint","noun":"ice gate","zone":"z_lake","anchor":"center_n"}
+{"op":"ent","id":"gate_d","kind":"checkpoint","noun":"ice gate","zone":"z_pines","anchor":"flank_n"}
+{"op":"ent","id":"sled","kind":"snowmobile","noun":"red snowmobile","zone":"z_pines","anchor":"spawn_pad"}
+{"op":"verb","id":"vb_sled","verb":"vehicles.snowmobile","on":"sled","params":{"driver":"player"}}
+{"op":"verb","id":"vb_circuit","verb":"racing.circuit","on":"start_line","params":{"gates":"gate_a,gate_b,gate_c,gate_d","laps":2}}
+{"op":"rule","id":"r_win","when":{"t":"lap","a":"player","n":2},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose","when":{"t":"lap","a":"team:blue","n":2},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_lap","when":{"t":"lap","a":"player"},"then":[{"e":"emit","target":"start_line","fx":"snow_burst"}]}
+{"op":"npc","id":"musher","role":"rival","zone":"z_cabins","anchor":"spawn_pad","team":"blue","noun":"blue rider","menu":["racer.race","racer.block"],"dflt":"racer.race"}
+{"op":"expect","id":"x_race","prop":"win_reachable","a":"sp_red","b":"start_line","headline":true,"text":"Two laps of the ice gates can be won on a drifting snowmobile"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

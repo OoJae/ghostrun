@@ -16,7 +16,8 @@ export type PlanStep =
   | { do: "wait"; rule: string; want?: Want } // let time run (a timer)
   | { do: "throw"; item: string; rule: string; times?: number; want?: Want } // carrying `item`, get a rival in range and press USE
   | { do: "shove"; at: string; from: string; into?: string; rule: string; times?: number; want?: Want } // knock `at` (out of `from`, or into `into`)
-  | { do: "shoot"; at: string; weapon?: string; rule: string; times?: number; want?: Want; hp?: number }; // shoot `at` (an id, a team, '' any rival) until the rule fires (with hp: until its hit points are that low)
+  | { do: "shoot"; at: string; weapon?: string; rule: string; times?: number; want?: Want; hp?: number } // shoot `at` (an id, a team, '' any rival) until the rule fires (with hp: until its hit points are that low)
+  | { do: "drive"; track: string; rule: string; laps: number; want?: Want }; // at a wheel (getting in first) or on foot, the track bound on `track`: its gates in order, lap after lap
 
 /** A precondition step is done when `id` is in state `s` (it has no rule of its own to watch). */
 export interface Want {
@@ -76,6 +77,8 @@ export function causeSteps(c: Cause, rule: string, want?: Want): PlanStep[] {
       return [{ do: "shove", at: c.at, from: "", rule, ...w }];
     case "shoot":
       return [...(c.weapon ? [{ do: "pickup" as const, item: c.weapon, rule: "" }] : []), { do: "shoot", at: c.at, ...(c.weapon ? { weapon: c.weapon } : {}), rule, ...w }];
+    case "drive":
+      return [{ do: "drive", track: c.track, rule, laps: 1, ...w }];
   }
 }
 
@@ -86,7 +89,7 @@ export function causeSteps(c: Cause, rule: string, want?: Want): PlanStep[] {
 const anyGun = (c: Extract<Cause, { do: "shoot" }>, w: Rule["when"]): Cause => (w.b ? { ...c, at: w.a } : { do: "shoot", at: w.a });
 
 /** A cause in a few words, for a chain's explanation. */
-const said = (c: Cause) => (c.do === "throw" ? `throw ${c.item}` : c.do === "shoot" ? `shoot ${c.at || "a rival"}` : `${c.do} ${c.at}`);
+const said = (c: Cause) => (c.do === "throw" ? `throw ${c.item}` : c.do === "shoot" ? `shoot ${c.at || "a rival"}` : c.do === "drive" ? `drive ${c.track}` : `${c.do} ${c.at}`);
 
 /** Hit points by id (combat_sport.health, clamped), for everything that has them. */
 export function hitPoints(b: WorldBundle): Map<string, number> {
@@ -357,6 +360,17 @@ export function t0(b: WorldBundle, playerTeam: "red" | "blue" = "red"): { chips:
       }
       case "timer_end":
         return made.some((x) => x.k === "timer_end" && x.a === w.a) ? { steps: [{ do: "wait", rule: r.id }], explain: `${r.id} (the timer runs out)` } : null;
+      case "lap_done": {
+        // laps the player drives (a rival's laps are theirs): a track whose gates are all in the world
+        if (w.a && w.a !== "player" && w.a !== `team:${playerTeam}`) return null;
+        const t = b.verbs.find((v) => v.verb === "racing.track" && (!w.b || v.on === w.b) && ents.get(v.on)?.body === "sensor");
+        if (!t) return null;
+        const gates = String(t.params.gates ?? "").split(",").filter(Boolean);
+        if (gates.some((g) => !ents.has(g))) return null;
+        const laps = Math.max(1, w.n);
+        const ride = b.verbs.find((v) => v.verb === "vehicle.drive" && v.params.driver === "player")?.on ?? b.verbs.find((v) => v.verb === "vehicle.drive")?.on;
+        return { steps: [{ do: "drive", track: t.on, rule: r.id, laps }], explain: `${r.id} (lap ${laps} done) ← ${ride ? `drive ${ride}` : "run"} through ${gates.length} gate${gates.length === 1 ? "" : "s"} and ${t.on} ×${laps}` };
+      }
       default:
         return null;
     }

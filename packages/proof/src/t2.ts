@@ -19,7 +19,7 @@ function clear(b: WorldBundle, p: Vec3): boolean {
 
 /** Put the player where the verb's cause happens; true when USE must be pressed on the first tick. */
 function force(sim: SimWorld, b: WorldBundle, c: Cause): string | boolean {
-  if (c.do === "throw" || c.do === "shove" || c.do === "shoot") return `${c.do} needs a target (handled by its trigger)`;
+  if (c.do === "throw" || c.do === "shove" || c.do === "shoot" || c.do === "drive") return `${c.do} needs a target (handled by its trigger)`;
   const e = b.entities.find((x) => x.id === c.at);
   if (!e) return `${c.at} not found`;
   const floor = e.pos[1] - e.size[1] / 2;
@@ -244,6 +244,21 @@ function plan(sim: SimWorld, b: WorldBundle, r: Rule, playerTeam: string, presse
       const v = sim.verbs.find((x) => x.bound.on === w.a && x.plugin.id === "puzzle.timer");
       if (!v) return `no timer on ${w.a}`;
       v.bound.mem.end = 2; // forced: the timer runs out on the next tick
+      return null;
+    }
+    case "lap_done": {
+      // on the lap before, every gate passed, at the line: the racer crosses it on the next tick
+      const t = sim.verbs.find((x) => x.plugin.id === "racing.track" && (!w.b || x.bound.on === w.b));
+      if (!t) return `no track for ${r.id}`;
+      const team = w.a.startsWith("team:") ? w.a.slice(5) : null;
+      const who = !w.a || w.a === "player" || team === playerTeam ? "player" : team ? sim.standings().find((id) => id !== "player" && sim.entity(id)?.team === team) ?? b.entities.find((e) => e.kind === "npc" && e.team === team && sim.npcs.has(e.id))?.id : sim.entity(w.a) ? w.a : undefined;
+      if (!who) return `nobody on ${w.a} races`;
+      const gates = String(t.bound.params.gates ?? "").split(",").filter((g) => g && sim.entity(g));
+      t.bound.mem[`l:${who}`] = Math.max(0, w.n - 1);
+      t.bound.mem[`n:${who}`] = gates.length;
+      t.bound.mem[`i:${who}`] = "";
+      const line = b.entities.find((e) => e.id === t.bound.on)!;
+      sim.teleport(who, [line.pos[0], line.pos[1] - line.size[1] / 2 + 0.95, line.pos[2]]);
       return null;
     }
     default:

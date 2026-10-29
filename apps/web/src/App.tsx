@@ -5,6 +5,7 @@ import { allRuns, better, insights, issuesOf, revealed, statusWord, type Chip, t
 import type { Engine, LoadResult } from "./engine";
 import { KeyHint } from "./hud/Corner";
 import { HealthBar } from "./hud/Health";
+import { LapBoard } from "./hud/Lap";
 import { TouchControls } from "./hud/Touch";
 import { XRay } from "./hud/XRay";
 import { ResultCard, type RunResult } from "./hud/Result";
@@ -863,6 +864,7 @@ export function App() {
           </div>
         )}
         <HealthBar engine={engine} active={status === "playing"} />
+        <LapBoard engine={engine} active={status === "playing"} />
         {useHint && status === "playing" && !touch && (
           <div className="glass usehint" data-testid="use-hint">
             <kbd>F</kbd> {useHint}

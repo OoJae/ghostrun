@@ -3,7 +3,7 @@ import { join } from "node:path";
 import { initRapier } from "./load";
 import { runFixture } from "./fixture";
 import { runNavQ } from "./fixture-navq";
-import { runCtf, runZombies } from "./fixture-ctf";
+import { runCtf, runRace, runZombies } from "./fixture-ctf";
 
 const wasmDir = process.argv[2]!;
 const ticks = Number(process.argv[3] ?? 2000);
@@ -13,4 +13,5 @@ const physics = runFixture(R, ticks, `node ${process.version}`, () => performanc
 const navq = await runNavQ(await compile("recast-navigation.wasm.wasm"), await compile("emscripten-module.wasm"), () => performance.now());
 const ctf = runCtf(R, ticks);
 const zombies = runZombies(R, ticks);
-console.log(JSON.stringify({ ...physics, navq, ctf, zombies }));
+const race = runRace(R, ticks);
+console.log(JSON.stringify({ ...physics, navq, ctf, zombies, race }));

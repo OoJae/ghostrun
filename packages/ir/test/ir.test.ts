@@ -208,6 +208,41 @@ describe("fill repairs from the fourth unseen set", () => {
   });
 });
 
+describe("fill repairs for races", () => {
+  it("go-karts, jetskis and sleds are vehicles that drive as their kind, a circuit is the track, and a lap is lap_done", () => {
+    const lines = [
+      '{"op":"meta","mode":"play","pack":"arena","seed":3}',
+      '{"op":"zone","id":"z_a","slot":"midfield","tag":"center"}',
+      '{"op":"spawn","id":"sp","zone":"z_a","team":"red"}',
+      '{"op":"ent","id":"kart","kind":"go_kart","zone":"z_a"}',
+      '{"op":"ent","id":"ski","kind":"jetski","zone":"z_a"}',
+      '{"op":"ent","id":"sled","kind":"snowmobile","zone":"z_a"}',
+      '{"op":"ent","id":"line","kind":"checkpoint","zone":"z_a"}',
+      '{"op":"verb","id":"vb_kart","verb":"racing.go_kart","on":"kart","params":{"driver":"player"}}',
+      '{"op":"verb","id":"vb_ski","verb":"vehicles.jetski","on":"ski"}',
+      '{"op":"verb","id":"vb_sled","verb":"locomotion.ride","on":"sled","params":{"kind":"snowmobile"}}',
+      '{"op":"verb","id":"vb_track","verb":"racing.circuit","on":"line","params":{"laps":2}}',
+      '{"op":"verb","id":"vb_clock","verb":"puzzle.timer","on":"line"}',
+      '{"op":"rule","id":"r_win","when":{"t":"laps","a":"player","n":2},"then":[{"e":"win","target":"player"}]}',
+      '{"op":"rule","id":"r_lose","when":{"t":"race_finished","a":"blue","n":2},"then":[{"e":"lose","target":"player"}]}',
+    ].join("\n");
+    const p = parseFill(lines, { seed: 3 });
+    expect(p.stats.invalid).toBe(0);
+    expect(["kart", "ski", "sled"].map((id) => p.draft.entities.find((e) => e.id === id)?.kind)).toEqual(["vehicle", "vehicle", "vehicle"]);
+    expect(p.draft.verbs.map((v) => [v.id, v.verb, v.params])).toEqual([
+      ["vb_kart", "vehicle.drive", { kind: "kart", driver: "player" }],
+      ["vb_ski", "vehicle.drive", { kind: "boat" }],
+      ["vb_sled", "vehicle.drive", { kind: "snowmobile" }],
+      ["vb_track", "racing.track", { laps: 2 }],
+      ["vb_clock", "puzzle.timer", {}], // a timer stays a timer
+    ]);
+    expect(p.draft.rules.map((r) => [r.when.t, r.when.a, r.when.n])).toEqual([
+      ["lap_done", "player", 2],
+      ["lap_done", "team:blue", 2],
+    ]);
+  });
+});
+
 describe("fill repairs for fights", () => {
   it("spells, fireballs, blasters and bows are the shoot verb, claws reach two metres, knock-outs are health_lte", () => {
     const lines = [

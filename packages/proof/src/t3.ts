@@ -805,6 +805,116 @@ function closeIn(r: Run, id: string): boolean {
   return sim.usable()?.on === id;
 }
 
+/**
+ * A race, driven: into a vehicle first (the nearest free one, unless it starts at the wheel), then
+ * the track's gates in order, lap after lap, until the rule fires. At the wheel the runner steers
+ * at a point a few metres along the navmesh path to its next gate (pure pursuit: a car can't stop
+ * on every waypoint), boosts down a long straight, and backs off a wall it is stuck on. With no
+ * vehicle it runs the gates.
+ */
+function drive(r: Run, st: Extract<PlanStep, { do: "drive" }>): "ok" | "stuck" {
+  const { sim, nav, b, budget } = r;
+  const fired = counter(sim, st.rule);
+  const done = () => (st.want ? sim.entity(st.want.id)?.state === st.want.s : fired() > 0);
+  if (!sim.ride("player")) {
+    const p = sim.pos("player");
+    const free = b.verbs.filter((v) => v.verb === "vehicle.drive" && !sim.driverOf(v.on) && sim.entity(v.on) && !sim.entity(v.on)!.destroyed).map((v) => v.on);
+    const car = free.sort((x, y) => d2h(sim.pos(x), p) - d2h(sim.pos(y), p) || (x < y ? -1 : 1))[0];
+    for (let k = 0; car && k < 3 && live(r) && !sim.ride("player"); k++) {
+      goTo(sim, nav, b, spotBy(r, car), r.rng, r.speed, budget, () => sim.usable()?.on === car);
+      if (sim.usable()?.on !== car) faceTo(r, car);
+      if (sim.usable()?.on !== car || !live(r)) continue;
+      sim.step({ tick: sim.tick + 1, wx: 0, wz: 0, btn: BTN.USE });
+      sim.step({ tick: sim.tick + 1, wx: 0, wz: 0, btn: 0 });
+      budget.ticks -= 2;
+    }
+  }
+  const floorOf = (id: string): Vec3 => {
+    const q = sim.pos(id);
+    const e = b.entities.find((x) => x.id === id)!;
+    const f: Vec3 = [q[0], q[1] - e.size[1] / 2, q[2]];
+    return nav.nearest(f, 1.5) ?? f;
+  };
+  const stage = () => {
+    const x = sim.raceOf("player");
+    return x ? x.laps * x.gates + x.passed : -1;
+  };
+  let path: Vec3[] = [];
+  let aim = "";
+  let replan = 0;
+  let movingAt = sim.tick;
+  let dodge = 0;
+  let side: [number, number] = [0, 0];
+  while (live(r) && !done()) {
+    const race = sim.raceOf("player");
+    if (!race) return "stuck";
+    const ride = sim.ride("player");
+    const p = sim.pos("player");
+    if (!ride) {
+      // on foot: run to the next gate
+      const [at, before] = [sim.tick, stage()];
+      goTo(sim, nav, b, floorOf(race.next), r.rng, r.speed, budget, () => done() || stage() !== before);
+      if (sim.tick === at || (stage() === before && !done())) return done() ? "ok" : "stuck";
+      continue;
+    }
+    if (race.next !== aim || sim.tick >= replan) {
+      const to = floorOf(race.next);
+      path = nav.path([p[0], p[1] - 0.9, p[2]], to) ?? [to];
+      aim = race.next;
+      replan = sim.tick + 30;
+    }
+    // pure pursuit: steer at the farthest point of the path up to ten metres ahead that is in plain
+    // view (a corner is driven round, not cut through the cover beside it)
+    // (a waypoint is passed once it is reached, or once one beyond it is in plain view: one round
+    // a corner is never skipped while the corner is still in the way)
+    while (path.length > 1 && d2h(path[0]!, p) < 2.25) path.shift();
+    // (in plain view a body's width wide: the line down the middle and one each side)
+    const wide = (q: Vec3) => {
+      const [ex, ez] = [q[0] - p[0], q[2] - p[2]];
+      const el = Math.sqrt(ex * ex + ez * ez) || 1;
+      const [sx, sz] = [(-ez / el) * 0.45, (ex / el) * 0.45];
+      const y = p[1] - 0.4;
+      return [0, 1, -1].every((k) => sim.clearShot([p[0] + sx * k, y, p[2] + sz * k], [q[0] + sx * k, q[1] + 0.5, q[2] + sz * k]));
+    };
+    let seen = -1;
+    for (let i = 0; i < path.length && d2h(path[i]!, p) <= 100; i++) if (wide(path[i]!)) seen = i;
+    if (seen > 0) path.splice(0, seen);
+    const look = path[0] ?? floorOf(race.next);
+    let [ux, uz] = [look[0] - p[0], look[2] - p[2]];
+    let l = Math.sqrt(ux * ux + uz * uz) || 1;
+    // pinned (barely moving for a second and a half): back off, turning away, a moment
+    if (Math.abs(ride.speed) > 1.5) movingAt = sim.tick;
+    if (sim.tick - movingAt > 45) {
+      const s = r.rng() < 0.5 ? 1 : -1;
+      side = [-ride.hx - ride.hz * 0.5 * s, -ride.hz + ride.hx * 0.5 * s];
+      dodge = sim.tick + 45;
+      movingAt = sim.tick;
+      replan = 0;
+      trace?.(`  drive: pinned at ${v1(p)}, backing off`);
+    }
+    if (sim.tick < dodge) [ux, uz, l] = [side[0], side[1], Math.sqrt(side[0] * side[0] + side[1] * side[1]) || 1];
+    const ahead = (ride.hx * ux + ride.hz * uz) / l;
+    const boost = ahead > 0.97 && sim.tick >= ride.boostAt && d2h(floorOf(race.next), p) > 400 && sim.tick >= dodge;
+    // sliding wide (a drifting snowmobile, a boat): ease off until it grips again
+    const slip = Math.abs(sim.player.vx * -ride.hz + sim.player.vz * ride.hx);
+    // and slow for a bend: the more the line ahead turns from the way it points, the less throttle,
+    // and less again coming into a gate the next one turns sharply away from
+    const bend = Math.max(0.35, ahead * ahead * ahead);
+    const gate = sim.pos(race.next);
+    const after = sim.raceOf("player")!;
+    const order = String(b.verbs.find((v) => v.verb === "racing.track")?.params.gates ?? "").split(",").filter((g) => sim.entity(g));
+    const nextId = [...order, b.verbs.find((v) => v.verb === "racing.track")!.on][(after.passed + 1) % (order.length + 1)]!;
+    const nq = sim.pos(nextId);
+    const [nx, nz] = [nq[0] - gate[0], nq[2] - gate[2]];
+    const nl = Math.sqrt(nx * nx + nz * nz) || 1;
+    const into = d2h(gate, p) < 100 && (ride.hx * nx + ride.hz * nz) / nl < 0.3 ? (ride.feel.grip < 0.25 ? 0.4 : 0.55) : 1; // (sooner and slower on a slippery one)
+    const k = 127 * r.speed * Math.min(bend, into) * (slip > 2.5 ? 0.55 : 1);
+    sim.step({ tick: sim.tick + 1, wx: Math.round((ux / l) * k), wz: Math.round((uz / l) * k), btn: boost ? BTN.JUMP : 0 });
+    budget.ticks--;
+  }
+  return done() ? "ok" : "stuck";
+}
+
 /** Execute one plan step in physics; "lost" means a carried item was taken (start over). */
 function perform(r: Run, st: PlanStep): "ok" | "lost" | "stuck" {
   const { sim, nav, b, rng, speed, budget } = r;
@@ -1088,6 +1198,8 @@ function perform(r: Run, st: PlanStep): "ok" | "lost" | "stuck" {
       }
       return done() ? "ok" : "stuck";
     }
+    case "drive":
+      return drive(r, st);
     case "touch": {
       const fired = counter(sim, st.rule);
       const done = () => (st.want ? met(st.want) : fired() > 0 || gone(st.at));
@@ -1312,6 +1424,8 @@ export function stepName(b: WorldBundle, st: PlanStep): string {
       const hits = b.rules.find((x) => x.id === st.rule)?.when.t === "hit";
       return hits ? (n > 1 ? `${n} hits on the ${who}` : `${who} hit`) : n > 1 ? `${n} ${who} down` : `${who} down`;
     }
+    case "drive":
+      return st.laps > 1 ? `lap ${st.laps}` : "lap 1";
   }
 }
 

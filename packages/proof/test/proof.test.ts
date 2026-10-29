@@ -275,6 +275,45 @@ describe("fights (a wizard duel; a zombie horde; laser tag and a space station, 
   }, 60_000);
 });
 
+describe("races (a go-kart circuit; a street race before the police come; snowmobiles on ice)", () => {
+  const race = async (name: string) => {
+    const { arena } = await import("@ghostrun/pack-arena");
+    const text = readFileSync(new URL(`../../ir/fixtures/${name}.jsonl`, import.meta.url), "utf8");
+    const seed = (JSON.parse(text.split("\n", 1)[0]!) as { seed: number }).seed;
+    const fill = parseFill(text, { seed });
+    expect(fill.notes.filter((n) => n.kind === "invalid" || n.kind === "unresolved")).toEqual([]);
+    const pack = fill.draft.pack.id === "city_block" ? cityBlock : arena;
+    const layout = pack.generate({ seed, params: pack.defaults as never, sub: [], laws: fill.draft.laws, harder: false });
+    return placeWorld({ ...fill.draft, engine: ENGINE }, layout).bundle;
+  };
+
+  it.each([
+    ["kart-race", "win ← r_win (lap 3 done) ← drive kart_red through 3 gates and finish ×3"],
+    ["street-race", "win ← r_win (lap 2 done) ← drive car_red through 2 gates and finish ×2"],
+    ["snowmobile-race", "win ← r_win (lap 2 done) ← drive sled through 4 gates and start_line ×2"],
+  ])("%s: the win regresses through laps, the drivability model passes, every lap rule is forced, and runners at the wheel beat the racer bots", async (name, explain) => {
+    const b = await race(name);
+    const r = await prove(R, b, { engine: ENGINE, runs: 12 });
+    console.log(["", `${name} · ${r.ms} ms`, ...r.chips.map(chipLine), `par: ${JSON.stringify(r.par)}`].join("\n"));
+    expect(r.chips.find((c) => c.id === "T0:win_chain")).toMatchObject({ status: "verified", text: explain });
+    expect(r.chips.filter((c) => c.id.startsWith("T1:drive:") || c.id.startsWith("T1:laps:")).every((c) => c.status === "verified")).toBe(true);
+    expect(r.chips.some((c) => c.id.startsWith("T1:drive:"))).toBe(true);
+    expect(r.chips.filter((c) => c.tier === "T2").map((c) => [c.subject.id, c.status])).toEqual(b.rules.map((x) => [x.id, "verified"]).sort());
+    expect(r.chips.find((c) => c.id === "T3:win")!.k).toBeGreaterThanOrEqual(10);
+    expect(r.headline?.status).toBe("verified");
+  }, 120_000);
+
+  it("a gate hung 40 m up, and fifty laps against a 30 s clock, are both caught by the drivability and race-time models", async () => {
+    const { plants, caught } = await import("../src");
+    const b = await race("kart-race");
+    const ps = plants(b, 21);
+    const off = ps.find((p) => p.id === "gate_off_track")!;
+    const laps = ps.find((p) => p.id === "laps_beyond_clock")!;
+    expect(caught(await prove(R, off.bundle, { engine: ENGINE, runs: 2 })).by).toMatchObject({ id: "T1:drive:finish", cx: { text: "no ground a kart can drive reaches the neon gate" } });
+    expect(caught(await prove(R, laps.bundle, { engine: ENGINE, runs: 2 })).by).toMatchObject({ id: "T1:laps:r_win" });
+  }, 120_000);
+});
+
 describe("where the runners went", () => {
   it("the receipt carries each runner's route; nothing the CTF asks for goes unvisited, and the time goes near the orb's path", async () => {
     const { insights } = await import("../src");
