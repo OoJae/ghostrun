@@ -10,6 +10,9 @@ import duelFill from "../../../packages/ir/fixtures/wizard-duel.jsonl?raw";
 import zombieFill from "../../../packages/ir/fixtures/zombie-survival.jsonl?raw";
 import laserFill from "../../../packages/ir/fixtures/laser-tag.jsonl?raw";
 import stationFill from "../../../packages/ir/fixtures/space-station.jsonl?raw";
+import kartFill from "../../../packages/ir/fixtures/kart-race.jsonl?raw";
+import streetFill from "../../../packages/ir/fixtures/street-race.jsonl?raw";
+import snowFill from "../../../packages/ir/fixtures/snowmobile-race.jsonl?raw";
 import { layoutLaws, parseFill, specHash, type FillNote, type FillStats, type WorldBundle } from "@ghostrun/ir";
 import { placeWorld } from "@ghostrun/layout";
 import { packFor, PACKS } from "@ghostrun/registry";
@@ -76,7 +79,7 @@ export function buildWorld(_prompt: string, fixture = "ctf"): World {
 }
 
 /** Recorded fills: the organizer's CTF brief, and a kit-verb world (?fixture=coin-rush). */
-export const FIXTURES: Record<string, string> = { ctf: fixtureFill, "coin-rush": coinRushFill, forest: forestFill, parkour: parkourFill, heist: heistFill, vault: vaultFill, duel: duelFill, zombies: zombieFill, "laser-tag": laserFill, station: stationFill };
+export const FIXTURES: Record<string, string> = { ctf: fixtureFill, "coin-rush": coinRushFill, forest: forestFill, parkour: parkourFill, heist: heistFill, vault: vaultFill, duel: duelFill, zombies: zombieFill, "laser-tag": laserFill, station: stationFill, kart: kartFill, "street-race": streetFill, snowmobile: snowFill };
 export const FIXTURE_PROMPTS: Record<string, string> = {
   ctf: BRIEF,
   "coin-rush": "Collect five gold coins in a neon arena before the clock runs out. Mind the lava.",
@@ -88,6 +91,9 @@ export const FIXTURE_PROMPTS: Record<string, string> = {
   zombies: "Zombie survival: hold the yard with a blaster and knock out ten zombies before they get you.",
   "laser-tag": "A laser tag game in a neon arena: red against blue, first team to ten tags wins.",
   station: "A shooter in a space station: get past the security robots and shoot down the reactor core.",
+  kart: "A go-kart race in a neon arena: three laps through the gates against two rival karts.",
+  "street-race": "A street race through the neon city: two laps against rival cars before the police arrive.",
+  snowmobile: "A snowmobile race on a frozen lake: two laps through the ice gates, drifting round the pines.",
 };
 
 /** Fill text (fixture or a live stream) → placed world, choosing the pack from the registry. */
