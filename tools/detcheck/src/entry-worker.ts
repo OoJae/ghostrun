@@ -6,7 +6,7 @@ import quickjsWasm from "./emscripten-module.wasm";
 import { initRapier } from "./load";
 import { runFixture } from "./fixture";
 import { runNavQ } from "./fixture-navq";
-import { runCtf, runZombies } from "./fixture-ctf";
+import { runCtf, runRace, runZombies } from "./fixture-ctf";
 
 export default {
   async fetch(request: Request): Promise<Response> {
@@ -17,6 +17,7 @@ export default {
     const navq = await runNavQ(recastWasm, quickjsWasm, () => Date.now());
     const ctf = runCtf(R, ticks);
     const zombies = runZombies(R, ticks);
-    return Response.json({ ...physics, navq, ctf, zombies });
+    const race = runRace(R, ticks);
+    return Response.json({ ...physics, navq, ctf, zombies, race });
   },
 };
