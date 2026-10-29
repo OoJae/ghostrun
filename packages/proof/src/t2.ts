@@ -66,6 +66,17 @@ function lineUp(sim: SimWorld, b: WorldBundle, shooter: string, target: string, 
   return `no clear spot near ${target} to shoot from`;
 }
 
+/** Holding `item`, stand 1.5 m from the target, on the side where it is the nearest thing to hit (pins stand close together). */
+function throwAt(sim: SimWorld, b: WorldBundle, item: string, target: WorldBundle["entities"][number]) {
+  sim.attach(item, "player");
+  const t = sim.pos(target.id);
+  const y = t[1] - (target.kind === "npc" ? 0 : target.size[1] / 2 - 0.95);
+  const others = String(b.verbs.find((v) => v.verb === "combat_sport.throw" && v.on === item)?.params.at ?? "").split(",").filter((id) => id && id !== target.id).map((id) => sim.pos(id));
+  const sides: Vec3[] = [[t[0] + 1.5, y, t[2]], [t[0] - 1.5, y, t[2]], [t[0], y, t[2] + 1.5], [t[0], y, t[2] - 1.5]];
+  const d2 = (u: Vec3, v: Vec3) => (u[0] - v[0]) * (u[0] - v[0]) + (u[2] - v[2]) * (u[2] - v[2]);
+  sim.teleport("player", sides.find((q) => others.every((o) => d2(q, o) > d2(q, t) + 0.3)) ?? sides[0]!);
+}
+
 /** The armed rival nearest to hurting the player (one that does damage first). */
 function armedRival(b: WorldBundle, playerTeam: string, by: string): { id: string; range: number; damage: number } | null {
   const best = b.entities
@@ -147,7 +158,16 @@ function plan(sim: SimWorld, b: WorldBundle, r: Rule, playerTeam: string, presse
       // the player's weapon (one that does damage first: a harmless one is the bug to show)
       const ws = playerWeapons(b).filter((x) => !w.b || x.on === w.b).sort((p, q) => Number(q.damage > 0) - Number(p.damage > 0));
       const wp = ws[0];
-      if (!wp) return hurts ? plan(sim, b, hurts, playerTeam, presses) : `nothing in the world wears ${who} down`;
+      if (!wp) {
+        // a thrown thing that hurts (a throwing star), at a rival or a thing in its "at"
+        const e = b.entities.find((x) => x.id === who);
+        const star = b.verbs.find((v) => v.verb === "combat_sport.throw" && !(Number(v.params.damage ?? 25) <= 0) && (String(v.params.at ?? "").split(",").includes(who) || (e?.kind === "npc" && e.team !== playerTeam)));
+        if (star && e) {
+          throwAt(sim, b, star.on, e);
+          return true;
+        }
+        return hurts ? plan(sim, b, hurts, playerTeam, presses) : `nothing in the world wears ${who} down`;
+      }
       if (wp.held) sim.attach(wp.on, "player");
       return lineUp(sim, b, "player", who, Math.min(3, wp.range * 0.6)) ?? true;
     }
@@ -155,7 +175,10 @@ function plan(sim: SimWorld, b: WorldBundle, r: Rule, playerTeam: string, presse
     case "hit": {
       // (the player is never hit by their own throw or shot: those are other recipes)
       const mine = w.t === "hit" && (w.a === "player" || w.a === `team:${playerTeam}`);
-      const p = producers(b).find((x) => x.k === w.t && (!w.b || x.b === w.b) && x.cause && !(mine && (x.cause.do === "shoot" || x.cause.do === "throw")));
+      const cands = producers(b).filter((x) => x.k === w.t && (!w.b || x.b === w.b) && x.cause && !(mine && (x.cause.do === "shoot" || x.cause.do === "throw")));
+      // (a rival hit, or one by name: by a shot or a throw, not by walking into a hazard)
+      const rival = w.t === "hit" && !mine && (w.a.startsWith("team:") || b.entities.some((e) => e.id === w.a && e.kind === "npc"));
+      const p = (rival ? cands.find((x) => x.cause!.do === "shoot" || x.cause!.do === "throw") : undefined) ?? cands[0];
       if (w.t === "hit" && p?.cause?.do === "shoot") {
         // shot by the player: at what the rule names, else the nearest rival (or thing to shoot at)
         const wp = playerWeapons(b).find((x) => x.on === p.b)!;
@@ -192,14 +215,7 @@ function plan(sim: SimWorld, b: WorldBundle, r: Rule, playerTeam: string, presse
         // holding the ball, a few metres from what the rule names (a rival, a pin) or any rival: throw
         const target = b.entities.find((e) => (w.a && !hitTeam ? e.id === w.a : e.kind === "npc" && e.team !== playerTeam && (!hitTeam || e.team === hitTeam)));
         if (!target) return `no rival to throw ${item} at`;
-        sim.attach(item, "player");
-        const t = sim.pos(target.id);
-        const y = t[1] - (target.kind === "npc" ? 0 : target.size[1] / 2 - 0.95);
-        // from the side where it is the nearest thing to hit (pins stand close together)
-        const others = String(b.verbs.find((v) => v.verb === "combat_sport.throw" && v.on === item)?.params.at ?? "").split(",").filter((id) => id && id !== target.id).map((id) => sim.pos(id));
-        const sides: Vec3[] = [[t[0] + 1.5, y, t[2]], [t[0] - 1.5, y, t[2]], [t[0], y, t[2] + 1.5], [t[0], y, t[2] - 1.5]];
-        const d2 = (u: Vec3, v: Vec3) => (u[0] - v[0]) * (u[0] - v[0]) + (u[2] - v[2]) * (u[2] - v[2]);
-        sim.teleport("player", sides.find((q) => others.every((o) => d2(q, o) > d2(q, t) + 0.3)) ?? sides[0]!);
+        throwAt(sim, b, item, target);
         return true;
       }
       return p ? force(sim, b, p.cause!) : `nothing produces ${w.t}${w.b ? ` on ${w.b}` : ""}`;
@@ -246,6 +262,14 @@ export function t2(R: Rapier, b: WorldBundle, playerTeam: "red" | "blue" = "red"
     for (const c of r.if) {
       const m = /^([a-z][a-z0-9_]*)\.state$/.exec(c.l);
       if (m && c.op === "eq") sim.forceState(m[1]!, String(c.r));
+      // hit-point conditions ("the archer is down": hp eq 0, lte or lt n): hit points that meet them
+      const hpc = /^([a-z][a-z0-9_]*)\.hp$/.exec(c.l)?.[1];
+      if (hpc && Number.isFinite(Number(c.r))) {
+        const k = Number(c.r);
+        if (c.op === "eq" || c.op === "lte") sim.forceHp(hpc, k);
+        else if (c.op === "lt") sim.forceHp(hpc, k - 1);
+        else if (c.op === "gt") sim.forceHp(hpc, k + 1);
+      }
       // score conditions ("red ahead of blue", "red has at least 2"): set the scores that meet them
       const t = /^(team:(?:red|blue))(?:\.score)?$/.exec(c.l)?.[1];
       if (t) {

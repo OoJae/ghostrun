@@ -16,7 +16,7 @@ export type PlanStep =
   | { do: "wait"; rule: string; want?: Want } // let time run (a timer)
   | { do: "throw"; item: string; rule: string; times?: number; want?: Want } // carrying `item`, get a rival in range and press USE
   | { do: "shove"; at: string; from: string; into?: string; rule: string; times?: number; want?: Want } // knock `at` (out of `from`, or into `into`)
-  | { do: "shoot"; at: string; weapon?: string; rule: string; times?: number; want?: Want }; // shoot `at` (an id, a team, '' any rival) until the rule fires
+  | { do: "shoot"; at: string; weapon?: string; rule: string; times?: number; want?: Want; hp?: number }; // shoot `at` (an id, a team, '' any rival) until the rule fires (with hp: until its hit points are that low)
 
 /** A precondition step is done when `id` is in state `s` (it has no rule of its own to watch). */
 export interface Want {
@@ -79,6 +79,12 @@ export function causeSteps(c: Cause, rule: string, want?: Want): PlanStep[] {
   }
 }
 
+/**
+ * A shot at `w.a`: with the weapon the rule names, or, when it names none, whichever the player has
+ * (its own, else one to hold that the runner picks up: models leave two guns lying about).
+ */
+const anyGun = (c: Extract<Cause, { do: "shoot" }>, w: Rule["when"]): Cause => (w.b ? { ...c, at: w.a } : { do: "shoot", at: w.a });
+
 /** A cause in a few words, for a chain's explanation. */
 const said = (c: Cause) => (c.do === "throw" ? `throw ${c.item}` : c.do === "shoot" ? `shoot ${c.at || "a rival"}` : `${c.do} ${c.at}`);
 
@@ -124,6 +130,12 @@ export function t0(b: WorldBundle, playerTeam: "red" | "blue" = "red"): { chips:
   const collectedSet = new Set(b.verbs.filter((v) => v.verb === "puzzle.collect").map((v) => v.on));
   const hp = hitPoints(b);
   const weapons = playerWeapons(b);
+  // things to throw: how much they hurt and what they can be thrown at besides rivals (clamped)
+  const throwSpec = verb("combat_sport.throw")!.params;
+  const throws = new Map(b.verbs.filter((v) => v.verb === "combat_sport.throw").map((v) => {
+    const p = clampParams(throwSpec, v.params);
+    return [v.on, { damage: Number(p.damage), at: String(p.at).split(",").filter(Boolean) }] as const;
+  }));
   // what has hit points: an id, a team (anyone on it), or '' (anyone at all)
   const healthy = (ref: string): string[] =>
     ref === "" ? [...hp.keys()] : ref.startsWith("team:") ? [...hp.keys()].filter((id) => (id === "player" ? playerTeam : ents.get(id)?.team) === ref.slice(5)) : hp.has(ref) ? [ref] : [];
@@ -186,6 +198,17 @@ export function t0(b: WorldBundle, playerTeam: "red" | "blue" = "red"): { chips:
         if (!sub) return null;
         pre.push(...sub.steps);
         preWhy.push(`${team} scores ${need}`);
+        continue;
+      }
+      // "<id>.hp eq 0" (or lte / lt n): worn down to it first, the way a health_lte rule would be;
+      // the step is done when its hit points get there (the rule it serves fires later)
+      const worn = /^([a-z][a-z0-9_]*)\.hp$/.exec(c.l)?.[1];
+      if (worn && (c.op === "eq" || c.op === "lte" || c.op === "lt") && Number.isFinite(Number(c.r))) {
+        const n = c.op === "lt" ? Number(c.r) - 1e-6 : Number(c.r);
+        const sub = satTrigger(r, { ...w, t: "health_lte", a: worn, b: "", n }, depth + 1, s2);
+        if (!sub || !sub.steps.some((st) => st.do === "shoot" && st.at === worn)) return null;
+        pre.push(...sub.steps.map((st) => (st.do === "shoot" && st.at === worn ? { ...st, rule: "", hp: n } : st)));
+        preWhy.push(`${worn} down to ${Math.max(0, Math.round(n))} HP`);
         continue;
       }
       const m = /^([a-z][a-z0-9_]*)\.state$/.exec(c.l);
@@ -292,7 +315,14 @@ export function t0(b: WorldBundle, playerTeam: "red" | "blue" = "red"): { chips:
         if (shot?.cause?.do === "shoot") {
           const dmg = weapons.find((wp) => wp.on === shot.b)!.damage;
           const hits = Math.max(1, Math.ceil((most - w.n) / dmg));
-          return { steps: causeSteps({ ...shot.cause, at: w.a }, r.id), explain: `${r.id} (${name} down to ${w.n} HP) ← shoot ${name} (${hits} hit${hits > 1 ? "s" : ""} of ${dmg})` };
+          return { steps: causeSteps(anyGun(shot.cause, w), r.id), explain: `${r.id} (${name} down to ${w.n} HP) ← shoot ${name} (${hits} hit${hits > 1 ? "s" : ""} of ${dmg})` };
+        }
+        // or something thrown that hurts (a throwing star) at whoever it can hit: a rival, or a thing in its "at"
+        const thrown = made.find((x) => x.k === "hit" && x.cause?.do === "throw" && (!w.b || x.b === w.b) && (throws.get(x.cause.item)?.damage ?? 0) > 0 && who.some((id) => throws.get((x.cause as { item: string }).item)!.at.includes(id) || (ents.get(id)?.kind === "npc" && ents.get(id)?.team !== playerTeam)));
+        if (thrown?.cause?.do === "throw") {
+          const dmg = throws.get(thrown.cause.item)!.damage;
+          const hits = Math.max(1, Math.ceil((most - w.n) / dmg));
+          return { steps: causeSteps(thrown.cause, r.id), explain: `${r.id} (${name} down to ${w.n} HP) ← throw ${thrown.cause.item} (${hits} hit${hits > 1 ? "s" : ""} of ${dmg})` };
         }
         for (const r2 of rules) {
           const fx = r2.id !== r.id && !w.b ? r2.then.find((e) => e.e === "damage" && (e.target === w.a || who.includes(e.target))) : undefined;
@@ -313,7 +343,7 @@ export function t0(b: WorldBundle, playerTeam: "red" | "blue" = "red"): { chips:
           const p = made.find((x) => x.k === "hit" && x.cause?.do === "throw" && (!w.b || x.b === w.b));
           if (p && p.cause?.do === "throw") return { steps: causeSteps(p.cause, r.id), explain: `${r.id} (${w.a || "a rival"} hit by ${p.cause.item})` };
           const s = w.a === `team:${playerTeam}` ? undefined : made.find((x) => x.k === "hit" && x.cause?.do === "shoot" && (!w.b || x.b === w.b));
-          if (s?.cause?.do === "shoot") return { steps: causeSteps({ ...s.cause, at: w.a }, r.id), explain: `${r.id} (${w.a || "a rival"} shot by ${s.b === "player" ? "you" : s.b})` };
+          if (s?.cause?.do === "shoot") return { steps: causeSteps(anyGun(s.cause, w), r.id), explain: `${r.id} (${w.a || "a rival"} shot by ${s.b === "player" || !w.b ? "you" : s.b})` };
         }
         if (w.a && w.a !== "player") return null;
         // the player is never hit by their own throw or shot

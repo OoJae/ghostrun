@@ -991,9 +991,14 @@ function perform(r: Run, st: PlanStep): "ok" | "lost" | "stuck" {
       // in range with a clear line: face it and fire (the sim's aim assist leads a moving one);
       // out of range or behind cover: close in. The weapon in hand first, if it is one to hold
       const fired = counter(sim, st.rule);
-      const done = () => (st.want ? met(st.want) : fired() >= (st.times ?? 1));
+      // (a precondition worn down to its hit points: done once they are that low, or it is gone)
+      const low = (id: string) => sim.entity(id)?.destroyed === true || (sim.hp(id) ?? Infinity) <= (st.hp ?? -1);
+      const done = () => (st.hp !== undefined ? low(st.at) : st.want ? met(st.want) : fired() >= (st.times ?? 1));
       const all = playerWeapons(b);
-      const wp = all.find((x) => x.on === (st.weapon ?? "player")) ?? all[0];
+      // the weapon the plan names; else your own; else the one in your hands; else the nearest lying about
+      const p0 = sim.pos("player");
+      const loose = all.filter((x) => x.held && !sim.entity(x.on)?.carrier && !sim.entity(x.on)?.destroyed).sort((x, y) => d2h(sim.pos(x.on), p0) - d2h(sim.pos(y.on), p0) || (x.on < y.on ? -1 : 1));
+      const wp = (st.weapon ? all.find((x) => x.on === st.weapon) : undefined) ?? all.find((x) => x.on === "player") ?? all.find((x) => x.held && sim.entity(x.on)?.carrier === "player") ?? loose[0] ?? all[0];
       if (!wp) return "stuck";
       const mine = sim.entity("player")?.team ?? "";
       const team = st.at.startsWith("team:") ? st.at.slice(5) : null;
@@ -1128,7 +1133,9 @@ function perform(r: Run, st: PlanStep): "ok" | "lost" | "stuck" {
       const fired = counter(sim, st.rule);
       const done = () => (st.want ? met(st.want) : fired() > 0);
       while (live(r) && !done()) {
-        sim.step({ tick: sim.tick + 1, wx: 0, wz: 0, btn: 0 });
+        // (standing by for the clock, a runner still fires back at an armed rival in range)
+        const back = fightBack(sim, b);
+        sim.step({ tick: sim.tick + 1, wx: back?.[0] ?? 0, wz: back?.[1] ?? 0, btn: back ? BTN.USE : 0 });
         budget.ticks--;
       }
       return done() ? "ok" : "stuck";
