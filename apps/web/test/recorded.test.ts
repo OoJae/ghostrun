@@ -74,11 +74,17 @@ describe("recorded unseen worlds", () => {
     ["fresh10", "a-water-temple", "two doors in one doorway are one door, opened by whichever lever is on this side"],
     ["fresh10", "a-lab-where", "a beaker with stages 0, 1, 2 and no starting state starts at 0"],
     ["fresh10", "a-snowy-mountain", "'if player.path is left', which nothing sets, is dropped"],
+    ["fights", "a-wizard-duel-on-a-floating-island", "the only fireball, lying in the fall zone you lose by entering, moves out of it"],
+    ["fights", "a-castle-siege-with-bows", "'IF each archer's hp is 0' is planned: shoot each one down, then take the banner"],
+    ["fights", "a-ninja-dojo", "throwing stars hurt what has hit points, and the sensei the win wears down is something to throw them at"],
+    ["fights", "paintball-in-a-forest", "'most hits when the clock runs out': your hits with either gun, theirs on you, and runners fire back while they wait"],
+    ["fights", "laser-tag-in-a-neon-warehouse", "'player_red' is you, 'player_blue' is blue, blue scoring when blue is hit means red hit, and a blue win is your loss"],
   ])("%s %s: %s", async (set, prefix) => {
     const w = recorded(set, prefix);
     const r = await prove(R, w.bundle, { engine: ENGINE_HASH, runs: 12 });
     // a game: AI runners win it; a place: the AI visitor reaches and uses everything in it
     if (w.bundle.mode === "wander") expect(r.chips.find((c) => c.id === "T3:tour")?.status).toBe("played");
     else expect(r.chips.find((c) => c.id === "T3:win")?.k ?? 0).toBeGreaterThanOrEqual(10);
+    if (set === "fights") expect(r.chips.find((c) => c.id === "T3:too_easy")).toBeUndefined(); // (laser tag was won in 0.2 s by walking into your own base)
   }, 180_000);
 });
