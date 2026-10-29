@@ -69,6 +69,8 @@ export function dressDesert(b: WorldBundle, look: LookStyle, c: Ctx): Dressed {
   const sand = lin(SAND[v]);
   const tone = (i: number) => lin(stones[Math.floor(rnd(i) * stones.length)]!);
   const cut = look.cutaway;
+  // a course at the beach (a pirate's run over ship decks) is laid over open sea
+  const overSea = beach && b.pack.id === "course";
 
   for (const p of pieces) {
     const { s, i } = p;
@@ -79,7 +81,8 @@ export function dressDesert(b: WorldBundle, look: LookStyle, c: Ctx): Dressed {
       case "floor":
       case "mound":
         floorTops.push(p.top);
-        solid.add(s.pos, s.size, p.kind === "mound" ? [sand[0] * 1.05, sand[1] * 1.03, sand[2]] : sand, style(CLS.ground, i));
+        if (overSea && p.kind === "ground") water.add([x, p.top - 0.01, z], [w, 0.02, d], [1, 1, 1]);
+        else solid.add(s.pos, s.size, p.kind === "mound" ? [sand[0] * 1.05, sand[1] * 1.03, sand[2]] : sand, style(CLS.ground, i));
         break;
       case "path":
         solid.add(s.pos, s.size, [sand[0] * 0.88, sand[1] * 0.84, sand[2] * 0.8], style(CLS.path, i));
@@ -185,7 +188,7 @@ export function dressDesert(b: WorldBundle, look: LookStyle, c: Ctx): Dressed {
     let emissive: N3 = vec3(0, 0, 0);
     let roughness: N = float(0.95);
     if (beach) {
-      const dist = max(abs(p.x.sub(cx)), abs(p.z.sub(cz))).sub(half + 9).add(n1.mul(5));
+      const dist = overSea ? float(40) : max(abs(p.x.sub(cx)), abs(p.z.sub(cz))).sub(half + 9).add(n1.mul(5));
       const sea = smoothstep(0, 4, dist);
       const wet = smoothstep(-3, 0, dist).mul(oneMinus(sea));
       const swell = noise01(vec3(p.x.mul(0.3).add(time.mul(0.15)), p.z.mul(0.3), time.mul(0.1)), 1);
