@@ -348,3 +348,31 @@ describe("fights", () => {
     expect(rule("r_theirs").when).toMatchObject({ t: "hit", a: "team:red", b: "" });
   });
 });
+
+describe("races", () => {
+  it("'win after 2 laps' with only a car gets a line, gates round the street loop, two rivals at the wheel, a way to lose, and the grid with the player on pole", () => {
+    const fill = parseFill([
+      '{"op":"meta","mode":"play","pack":"city_block","seed":7}',
+      '{"op":"zone","id":"z_plaza","slot":"center","tag":"plaza"}',
+      '{"op":"spawn","id":"sp_red","zone":"z_plaza","team":"red"}',
+      '{"op":"ent","id":"my_car","kind":"car","noun":"red sports car","zone":"z_plaza"}',
+      '{"op":"rule","id":"r_win","when":{"t":"lap_done","a":"player","n":2},"then":[{"e":"win","target":"player"}]}',
+    ].join("\n"), { seed: 7 });
+    const layout = cityBlock.generate({ seed: 7, params: cityBlock.defaults, sub: [], laws: fill.draft.laws, harder: false });
+    expect(layout.track?.points.length).toBeGreaterThanOrEqual(4);
+    const { bundle, notes } = placeWorld({ ...fill.draft, engine: "e".repeat(64) }, layout);
+    const track = bundle.verbs.find((v) => v.verb === "racing.track")!;
+    expect(track).toMatchObject({ on: "finish_line", params: { laps: 2 } });
+    expect(String(track.params.gates).split(",")).toHaveLength(Math.min(4, layout.track!.points.length - 1));
+    const drives = bundle.verbs.filter((v) => v.verb === "vehicle.drive").map((v) => [v.on, v.params.driver, v.params.kind]);
+    expect(drives).toEqual([["my_car", "player", "car"], ["racer_1_ride", "racer_1", "car"], ["racer_2_ride", "racer_2", "car"]]);
+    expect(bundle.rules.find((r) => r.id === "r_lose_laps")).toMatchObject({ when: { t: "lap_done", a: "team:blue", n: 2 }, then: [{ e: "lose" }] });
+    expect(notes).toContain("added racer_1 and racer_2: a race needs someone to race");
+    expect(notes).toContain("race: the grid behind finish_line: player in my_car, racer_1 in racer_1_ride, racer_2 in racer_2_ride");
+    // pole: the player's car nearest the line, the spawn under it
+    const at = (id: string) => bundle.entities.find((e) => e.id === id)!.pos;
+    const d = (id: string) => Math.hypot(at(id)[0] - at("finish_line")[0], at(id)[2] - at("finish_line")[2]);
+    expect(d("my_car")).toBeLessThan(Math.min(d("racer_1_ride"), d("racer_2_ride")));
+    expect([at("sp_red")[0], at("sp_red")[2]]).toEqual([at("my_car")[0], at("my_car")[2]]);
+  });
+});
