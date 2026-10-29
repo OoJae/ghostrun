@@ -185,14 +185,31 @@ try {
   check("60 parallel builds on one session: every one either built or was capped", okRuns + capped === 60, `${okRuns} built, ${capped} session_cap`);
   check("session spend is exactly builds × metered cost and within the $0.15 cap", settled !== null && okRuns * METERED <= 150_000 && capped > 0, `spent ${settled ? settled.spent - before : "?"} µ$`);
 
-  // 9. The fast lane is busy for this one: the fill fails over to Claude Haiku inside workerd. Last,
+  // 9. A build from a picture: Haiku reads it into a brief first, held with the build and committed
+  // with it at the metered price; the fast lane then writes the world.
+  const PIXEL = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==";
+  const judgeBefore = (await pool("judge")).spent;
+  const ib = await fetch(`${base}/v1/build`, { method: "POST", headers: { "x-judge-token": TOKEN, "cf-connecting-ip": "198.51.100.5" }, body: JSON.stringify({ prompt: "a heist here", seed: 11, image: PIXEL }) });
+  const ibody = await ib.text();
+  const iev = events(ibody);
+  check("a build from a picture streams inspired → intent → ops → done", iev.join(",") === "inspired,intent,op,op,op,done", iev.join(","));
+  check("the inspired event carries the brief and the prompt it made, never the picture", ibody.includes("Inspired by a picture of a rainy neon alley at night") && !ibody.includes(PIXEL.slice(22, 60)));
+  const LOOK = Math.ceil((1300 * 100 + 150 * 500) / 1000); // Haiku's look at the picture
+  const judge3 = await until(async () => ((await pool("judge")).spent === judgeBefore + LOOK + METERED ? pool("judge") : null));
+  check("the picture's build is committed at Haiku's look plus the fast lane's metered cost", judge3?.held === 0, `${JSON.stringify(await pool("judge"))} expected ${judgeBefore + LOOK + METERED}`);
+  const tooBig = await fetch(`${base}/v1/build`, { method: "POST", headers: { "x-judge-token": TOKEN, "cf-connecting-ip": "198.51.100.5" }, body: JSON.stringify({ prompt: "x", image: `data:image/png;base64,${"A".repeat(600_000)}` }) });
+  const afterBig = await pool("judge");
+  check("a picture over the cap is turned away before any hold", tooBig.status === 413 && afterBig.held === 0 && afterBig.spent === judgeBefore + LOOK + METERED, `${tooBig.status} ${JSON.stringify(afterBig)}`);
+
+  // 10. The fast lane is busy for this one: the fill fails over to Claude Haiku inside workerd. Last,
   // because the isolate then tries Cerebras second for 20 s, which would move the builds above to Haiku.
+  const judgeMid = (await pool("judge")).spent;
   const fb = await build({ "x-judge-token": TOKEN, "cf-connecting-ip": "198.51.100.3" }, "busy lane: a maze with a key");
   const fev = events(await fb.text());
   check("a busy fast lane fails over to Haiku: intent → fallback → ops → done", fev.join(",") === "intent,fallback,op,op,op,done", fev.join(","));
   const HAIKU = Math.ceil((1000 * 990 + 200 * 1490) / 1000) + Math.ceil((4000 * 100 + 1800 * 500) / 1000); // fast-lane intent + Haiku fill
-  const judge2 = await until(async () => ((await pool("judge")).spent === METERED + HAIKU ? pool("judge") : null));
-  check("the failed-over build is committed at Haiku's price", judge2?.held === 0, `${JSON.stringify(await pool("judge"))} expected ${METERED + HAIKU}`);
+  const judge2 = await until(async () => ((await pool("judge")).spent === judgeMid + HAIKU ? pool("judge") : null));
+  check("the failed-over build is committed at Haiku's price", judge2?.held === 0, `${JSON.stringify(await pool("judge"))} expected ${judgeMid + HAIKU}`);
 } catch (e) {
   failures++;
   console.error(e);

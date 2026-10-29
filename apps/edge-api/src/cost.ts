@@ -2,6 +2,7 @@
 // pre-flight estimate is an upper bound (input at ≤2 UTF-8 bytes per token, output at its max
 // token budget), so a commit almost never exceeds its hold. The estimate prices the fast lane;
 // the Haiku fallback costs less per token than either of its models, so a hold covers it too.
+// A build from a picture also holds its vision call, the image priced by its pixel area.
 import { ROUTES, type Job } from "@ghostrun/llm";
 
 export const INTENT_MODEL = ROUTES.intent[0]!.model;
@@ -36,11 +37,28 @@ export function inputBound(messages: { content: string }[]): number {
   return Math.ceil(bytes / 2);
 }
 
-export function buildEstimate(intentMessages: { content: string }[]): { intent: number; fill: number } {
+/**
+ * The hold for a build. A picture's brief joins the prompt only after the hold is taken, so its
+ * `briefChars` (at most BRIEF_MAX_CHARS) are counted into both calls' input at ≤4 UTF-8 bytes each.
+ */
+export function buildEstimate(intentMessages: { content: string }[], briefChars = 0): { intent: number; fill: number } {
   return {
-    intent: costMicroUsd(INTENT_MODEL, inputBound(intentMessages), INTENT_MAX_OUT),
-    fill: costMicroUsd(FILL_MODEL, FILL_MAX_IN, FILL_MAX_OUT),
+    intent: costMicroUsd(INTENT_MODEL, inputBound(intentMessages) + briefChars * 2, INTENT_MAX_OUT),
+    fill: costMicroUsd(FILL_MODEL, FILL_MAX_IN + briefChars * 2, FILL_MAX_OUT),
   };
+}
+
+/** The vision step's model and its output budget (a brief is about 150 tokens of JSON). */
+export const VISION_MODEL = ROUTES.vision[0]!.model;
+export const VISION_MAX_OUT = 500;
+
+/** Image input tokens by Anthropic's rule of thumb: about width × height / 750, rounded up. */
+export const imageTokens = (width: number, height: number) => Math.ceil((width * height) / 750);
+
+/** The hold for reading a picture: its dearest lane at the instruction's bound plus the image's tokens. */
+export function visionEstimate(messages: { content: string }[], width: number, height: number): number {
+  const inTok = inputBound(messages) + imageTokens(width, height);
+  return Math.max(...ROUTES.vision.map((r) => costMicroUsd(r.model, inTok, VISION_MAX_OUT)));
 }
 
 /** The hold for a job: its dearest lane at this call's input bound and output budget. */

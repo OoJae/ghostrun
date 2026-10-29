@@ -93,12 +93,13 @@ pnpm --filter @ghostrun/web e2e          # browser tests (Chromium, WebGL2, phon
 pnpm --filter @ghostrun/edge-api test:workerd   # the spend governor under real workerd
 ```
 
-Controls: WASD to move, Space to jump (press again in the air to double jump), F to use (throw, shove, flip, unlock), Q/E or drag to turn the camera, P for the receipt, X for the Logic X-ray, T to talk to a character, G for the gallery, M for sound (voices included). The mic in the prompt bar speaks a world; the one in the talk box speaks to a character while you hold it.
+Controls: WASD to move, Space to jump (press again in the air to double jump), F to use (throw, shove, flip, unlock), Q/E or drag to turn the camera, P for the receipt, X for the Logic X-ray, T to talk to a character, G for the gallery, M for sound (voices included). The mic in the prompt bar speaks a world, and the picture button beside it (or a pasted or dropped image) builds one inspired by a photo or sketch, with or without words; the mic in the talk box speaks to a character while you hold it.
 
 ## AI use
 
 - **At runtime:** an intent model (Qwen3.8-27B) and a fill/repair model (gpt-oss-120b), both open-weight Apache-2.0 models served by Cerebras. They write the world as typed data; they never write code that runs. Everything they produce is validated, repaired deterministically where possible, and proved before it is trusted.
 - **The rung below:** when that lane is busy, down or out of credit before it has written anything, the same request goes to Claude Haiku 5.5 (Anthropic), and the build says which model answered. Its worlds go through the same proof. NPC minds and the Host run on Haiku first.
+- **Inspired by a picture:** a photo or sketch in the prompt bar (the picture button, a paste, a drop, or the camera on a phone) is shrunk and stripped of its metadata in the browser, then read once by Claude Haiku 5.5 into a short scene brief: the place, its mood and colours, the things in it, the shape of the space. The brief joins your words and the fast lane writes the world from them, so it is inspired by the picture, not a reconstruction of it. The picture is never cached or stored; a shared world keeps only the brief's words.
 - **The Director's cut:** Claude Sonnet 5.5 reworks the first world you build (or any world, on "surprise me") into a fuller version of your prompt. It is re-proved while you play and offered only if it plays at least as well; Sonnet also takes a repair the fast lane couldn't finish.
 - **Building it:** the code was written with Claude Code (Anthropic), directed and reviewed by the author.
 

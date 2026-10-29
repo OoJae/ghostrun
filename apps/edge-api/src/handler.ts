@@ -1,13 +1,15 @@
 // Edge API handler (Web-standard Request/Response, so it runs in Workers and in dev servers).
 // POST /v1/build streams the fast lane as server-sent events:
 //   intent {intent, ms}  →  op {i, line} per complete JSONL fill line  →  done {timings}
+// A build may bring a photo or sketch (image.ts): Claude Haiku reads it into a scene brief first,
+// sent as `inspired {brief, prompt}`, and the brief joins the prompt the fast lane writes from.
 // Keys never leave the server. The client parses ops into the IR, places, simulates and proves.
 // An exact repeat of a clean build replays from the cache (cache.ts) behind a `cached` event, free.
 // Every route but health sits behind the gate (gate.ts). A build reserves its worst-case cost with
 // the governor before any model call and commits the metered cost when it ends (governor.ts).
 // Each model call runs on the fast lane with Claude Haiku as the rung below it (llm/lanes.ts).
 import { DEFAULT_LAWS, gameplayLines } from "@ghostrun/ir";
-import { directorMessages, editMessages, fillMessages, hostJsonSchema, hostMessages, IntentOut, intentJsonSchema, intentMessages, jsonLanes, lanesFor, LlmError, mindJsonSchema, mindMessages, repairMessages, settleIntent, streamLanes, type ChatMessage, type Job, type Keys, type Provider } from "@ghostrun/llm";
+import { BRIEF_MAX_CHARS, BriefOut, briefJsonSchema, directorMessages, editMessages, fillMessages, hostJsonSchema, hostMessages, inspiredPrompt, IntentOut, intentJsonSchema, intentMessages, jsonLanes, lanesFor, LlmError, mindJsonSchema, mindMessages, repairMessages, settleBrief, settleIntent, streamLanes, visionMessages, type ChatMessage, type Job, type Keys, type Provider } from "@ghostrun/llm";
 import { ALL_SUBS, PACKS, packFor } from "@ghostrun/registry";
 import * as v from "valibot";
 // the vault heist teaches goal-dependent wins, doorway doors, keys and inspectable exhibits (an A/B
@@ -16,10 +18,11 @@ import EXAMPLE from "../../../packages/ir/fixtures/vault-heist.jsonl?raw";
 import { Buckets, intVar, WINDOW_MS } from "./buckets";
 import { cacheKey, closesGameplay, ENGINE_RE, promptSeed, readCache, replayBody, templateHash, writeCache, type CachedEvent } from "./cache";
 import type { DoNamespace, KvNamespace, R2Bucket, WaitUntil } from "./cf";
-import { buildEstimate, costMicroUsd, FILL_MAX_OUT, FILL_MODEL, INTENT_MAX_OUT, INTENT_MODEL, jobEstimate, REPAIR_MAX_IN, REPAIR_MAX_OUT } from "./cost";
+import { buildEstimate, costMicroUsd, FILL_MAX_OUT, FILL_MODEL, INTENT_MAX_OUT, INTENT_MODEL, jobEstimate, REPAIR_MAX_IN, REPAIR_MAX_OUT, VISION_MAX_OUT, visionEstimate } from "./cost";
 import { capsFromEnv, doCall, Governor, governorClient, localCall, MemoryLedger, type GovernorApi, type GovernorEnv } from "./governor";
 import { devOpen, gateMode, identify, ipKey, ipOf, mintSession, verifyTurnstile, type Caller, type GateEnv } from "./gate";
 import { json, ntfy, readJson } from "./http";
+import { MAX_IMAGE_URL, readImage } from "./image";
 import { getBoard, postBoard } from "./board";
 import { getShare, memoryBlobs, postReport, postShare, postWrong, r2Blobs, type BlobStore, type ShareCtx } from "./share";
 
@@ -45,6 +48,10 @@ export interface Env extends GateEnv, GovernorEnv {
 }
 
 const MAX_PROMPT = 500;
+/** A build body: a few small fields, and a picture's data URL when it brings one. */
+const MAX_BUILD_BODY = 8192 + MAX_IMAGE_URL;
+const REFUSAL = "That one's outside what GHOSTRUN builds. Try a game, a place or a challenge.";
+const PICTURE_REFUSAL = "That picture is outside what GHOSTRUN builds from. Try a photo or sketch of a place.";
 /** KV key in FLAGS: any value pauses new builds (an instant, deploy-free kill switch). */
 export const PAUSE_FLAG = "builds:paused";
 /** KV key in FLAGS: "anthropic" (or "cerebras") puts that provider first for every job (the runbook's "Cerebras down"). */
@@ -105,7 +112,8 @@ export async function handle(req: Request, env: Env, ctx?: WaitUntil): Promise<R
   const url = new URL(req.url);
   const path = url.pathname;
   const later = (p: Promise<unknown>) => (ctx ? ctx.waitUntil(p) : void p.catch(() => undefined));
-  if (path === "/v1/health") return json({ ok: true, packs: PACKS.map((p) => p.id), llm: hasModel(env), fallback: Boolean(env.CEREBRAS_API_KEY && env.ANTHROPIC_API_KEY), gate: gateMode(env, url), sitekey: env.TURNSTILE_SITEKEY ?? null });
+  // `vision`: a build can bring a picture (the client offers one only then)
+  if (path === "/v1/health") return json({ ok: true, packs: PACKS.map((p) => p.id), llm: hasModel(env), fallback: Boolean(env.CEREBRAS_API_KEY && env.ANTHROPIC_API_KEY), vision: lanesFor("vision", keysOf(env), { messages: [] }).length > 0, gate: gateMode(env, url), sitekey: env.TURNSTILE_SITEKEY ?? null });
   if (path === "/v1/session" && req.method === "POST") return session(req, env, url);
   if (path === "/v1/build" && req.method === "POST") return build(req, env, url, later);
   if (path === "/v1/repair" && req.method === "POST") return patch("repair", req, env, url, later);
@@ -362,28 +370,36 @@ async function build(req: Request, env: Env, url: URL, later: (p: Promise<unknow
   // Judges may share one NAT; their tokens are bounded by session caps instead.
   if (caller.via !== "token" && !buildBuckets.allow(ip, intVar(env.BUILDS_PER_WINDOW, 30))) return json({ error: "rate limited", retryMs: WINDOW_MS }, 429);
 
-  const body = await readJson(req, 8192);
+  const body = await readJson(req, MAX_BUILD_BODY);
   if (!body.ok) return json({ error: body.error }, body.status);
-  const input = (body.value ?? {}) as { prompt?: unknown; seed?: unknown; engine?: unknown; fresh?: unknown };
-  const prompt = typeof input.prompt === "string" ? input.prompt.trim().slice(0, MAX_PROMPT) : "";
-  if (!prompt) return json({ error: "empty prompt" }, 400);
-  const seed = Number.isInteger(input.seed) ? (input.seed as number) : await promptSeed(prompt);
+  const input = (body.value ?? {}) as { prompt?: unknown; seed?: unknown; engine?: unknown; fresh?: unknown; image?: unknown };
+  const said = typeof input.prompt === "string" ? input.prompt.trim().slice(0, MAX_PROMPT) : "";
+  // A picture is checked (its type, its bytes, its size) before anything is spent; with one, the words are optional.
+  const pic = input.image == null ? undefined : readImage(input.image);
+  if (pic && !pic.ok) return json({ error: pic.error }, pic.status);
+  const image = pic?.image;
+  if (!said && !image) return json({ error: "empty prompt" }, 400);
+  const asked = Number.isInteger(input.seed) ? (input.seed as number) : undefined;
+  // a picture's build takes its seed from the prompt its brief makes (below), so the same picture and words lay out alike
+  let seed = asked ?? (image ? 0 : await promptSeed(said));
   const [sw, caching] = await Promise.all([switches(env), cacheOn(env)]);
   if (sw.paused) return json({ error: "builds paused", retryable: true }, 503);
   const keys = keysOf(env);
+  if (image && !lanesFor("vision", keys, { messages: [] }).length) return json({ error: "building from a picture needs the Claude lane", retryable: false }, 503);
 
   // The exact-repeat cache, for a caller that names the engine it builds with. A hit replays now,
   // before any hold or model call; `fresh` skips the lookup, and its build overwrites the entry.
-  const store = caching && typeof input.engine === "string" && ENGINE_RE.test(input.engine) ? blobsFor(env, url) : undefined;
-  const key = store ? await cacheKey(prompt, seed, await templateHash(EXAMPLE), input.engine as string) : undefined;
+  // A build from a picture is never looked up or kept: its key would be the picture, which is kept nowhere.
+  const store = !image && caching && typeof input.engine === "string" && ENGINE_RE.test(input.engine) ? blobsFor(env, url) : undefined;
+  const key = store ? await cacheKey(said, seed, await templateHash(EXAMPLE), input.engine as string) : undefined;
   if (store && key && input.fresh !== true) {
     const hit = await readCache(store, key);
     if (hit) return new Response(replayBody(hit), { headers: SSE_HEADERS });
   }
 
-  const intentMsgs = intentMessages(prompt, PACKS);
-  const est = buildEstimate(intentMsgs);
-  const held = await reserveFor(env, url, caller, ip, est.intent + est.fill);
+  const visionMsgs = image ? visionMessages(said, image) : [];
+  const est = { vision: image ? visionEstimate(visionMsgs, image.width, image.height) : 0, ...buildEstimate(intentMessages(said, PACKS), image ? BRIEF_MAX_CHARS : 0) };
+  const held = await reserveFor(env, url, caller, ip, est.vision + est.intent + est.fill);
   if (held instanceof Response) return held;
   const settle = held;
 
@@ -409,8 +425,9 @@ async function build(req: Request, env: Env, url: URL, later: (p: Promise<unknow
     (async () => {
       const t0 = Date.now();
       // A call is charged at its estimate until it reports usage (fail closed); an HTTP error is free.
-      let phase: "intent" | "fill" | "after" = "intent";
-      let intentCost = est.intent;
+      let phase: "vision" | "intent" | "fill" | "after" = image ? "vision" : "intent";
+      let visionCost = est.vision;
+      let intentCost = image ? 0 : est.intent;
       let fillCost = 0;
       // for the cache: a safe intent, the gameplay layer closed (the client plays from there), the end reached
       let safe = false;
@@ -420,7 +437,25 @@ async function build(req: Request, env: Env, url: URL, later: (p: Promise<unknow
       let firstMs = -1;
       let intentRes: { ms: number; model: string } | undefined;
       let writer = "";
+      let prompt = said;
       try {
+        if (image) {
+          // the picture is read once, into a scene brief; from here on the world is built from words
+          const seen = await jsonLanes<unknown>(lanesFor("vision", keys, { primary: sw.primary, messages: visionMsgs, jsonSchema: { name: "brief", schema: briefJsonSchema() }, maxTokens: VISION_MAX_OUT, signal: upstream.signal }));
+          if (seen.inTok > 0) visionCost = costMicroUsd(seen.model, seen.inTok, seen.outTok);
+          const out = v.parse(BriefOut, seen.value);
+          if (out.safety === "block") {
+            await send("refusal", { message: PICTURE_REFUSAL });
+            return;
+          }
+          const brief = settleBrief(out);
+          prompt = inspiredPrompt(said, brief);
+          if (asked === undefined) seed = await promptSeed(prompt);
+          await send("inspired", { brief, prompt, ms: seen.ms, model: seen.model });
+          phase = "intent";
+        }
+        const intentMsgs = intentMessages(prompt, PACKS);
+        if (image) intentCost = buildEstimate(intentMsgs).intent;
         const res = await jsonLanes<unknown>(
           lanesFor("intent", keys, { primary: sw.primary, messages: intentMsgs, jsonSchema: { name: "intent", schema: intentJsonSchema(PACKS.map((p) => p.id), ALL_SUBS) }, maxTokens: INTENT_MAX_OUT, signal: upstream.signal }),
         );
@@ -431,7 +466,7 @@ async function build(req: Request, env: Env, url: URL, later: (p: Promise<unknow
         safe = intent.safety !== "block"; // arcade games (shooters, monsters, heists) are ordinary worlds to keep
         await keep("intent", { intent, seed, ms: Date.now() - t0 });
         if (intent.safety === "block") {
-          await send("refusal", { message: "That one's outside what GHOSTRUN builds. Try a game, a place or a challenge." });
+          await send("refusal", { message: REFUSAL });
           return;
         }
         const pack = packFor(intent.pack);
@@ -469,14 +504,17 @@ async function build(req: Request, env: Env, url: URL, later: (p: Promise<unknow
         done = true;
       } catch (e) {
         if (e instanceof LlmError && e.status !== 200) {
+          if (phase === "vision") visionCost = 0;
           if (phase === "intent") intentCost = 0;
           if (phase === "fill") fillCost = 0;
         }
         const retryable = e instanceof LlmError ? e.retryable : true;
-        await send("error", { message: e instanceof Error ? e.message.slice(0, 200) : "build failed", retryable });
+        // Claude declining to look at the picture (a refusal stop, HTTP 200) is a refusal, said as one
+        if (phase === "vision" && e instanceof LlmError && e.status === 200 && !e.retryable) await send("refusal", { message: PICTURE_REFUSAL });
+        else await send("error", { message: e instanceof Error ? e.message.slice(0, 200) : "build failed", retryable });
       } finally {
         await w.close().catch(() => undefined);
-        await settle(intentCost + fillCost).catch(() => undefined);
+        await settle(visionCost + intentCost + fillCost).catch(() => undefined);
         // Kept only when clean: it reached done, or its client left once the gameplay layer was
         // complete (the client stops reading there, so the cosmetic tail is never part of a world).
         if (store && key && intentRes && safe && (done || (closed && gone))) {

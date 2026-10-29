@@ -1,7 +1,8 @@
 // Client for the live fast lane: POST /v1/build streams the intent, then one JSONL fill line per
 // SSE event. We parse lines as they land and hand over as soon as the gameplay layer is complete
 // (the cosmetic tail never blocks play). An exact repeat comes back from the edge's cache behind a
-// `cached` event (when and by which models it was built live); `fresh` asks for a new build.
+// `cached` event (when and by which models it was built live); `fresh` asks for a new build. A
+// build with a picture opens with `inspired`: the brief the edge read from it, and the prompt it made.
 import { FillParser, splitObjects, type WorldBundle } from "@ghostrun/ir";
 import { api } from "./api";
 import { ENGINE_HASH } from "./pipeline";
@@ -28,19 +29,42 @@ export interface LiveCached {
   fillModel: string;
 }
 
+/** What the edge's vision step made of a picture: ideas for the world, not a copy of the picture. */
+export interface LiveBrief {
+  setting: string;
+  mood: string;
+  palette: string[];
+  objects: string[];
+  layout: string;
+  genre: string;
+  goal: string;
+}
+
+/** A picture's brief and the prompt it made (the person's words, then the brief): the world is built from that prompt. */
+export interface LiveInspired {
+  brief: LiveBrief;
+  prompt: string;
+  ms: number;
+}
+
 export type LiveResult =
-  | { kind: "world"; fill: string; seed: number; intent: LiveIntent; intentMs: number; gameplayMs: number; lines: number; /** The model that took over when the fast lane was busy. */ fallback: string | null; cached: LiveCached | null }
+  | { kind: "world"; fill: string; seed: number; intent: LiveIntent; intentMs: number; gameplayMs: number; lines: number; /** The model that took over when the fast lane was busy. */ fallback: string | null; cached: LiveCached | null; inspired: LiveInspired | null }
   | { kind: "refused"; message: string }
   | { kind: "unavailable"; reason: string };
 
-export async function liveAvailable(): Promise<boolean> {
+/** Is the live lane up, and can it read a picture (the Claude lane is configured)? */
+export async function liveHealth(): Promise<{ llm: boolean; vision: boolean }> {
   try {
     const r = await fetch("/v1/health", { cache: "no-store" });
-    return r.ok && Boolean(((await r.json()) as { llm?: boolean }).llm);
+    if (!r.ok) return { llm: false, vision: false };
+    const h = (await r.json()) as { llm?: boolean; vision?: boolean };
+    return { llm: Boolean(h.llm), vision: Boolean(h.llm && h.vision) };
   } catch {
-    return false;
+    return { llm: false, vision: false };
   }
 }
+
+export const liveAvailable = async (): Promise<boolean> => (await liveHealth()).llm;
 
 export interface BuildHooks {
   /** The intent has landed (with the world's seed): the layout can be drawn before any fill line. */
@@ -49,20 +73,29 @@ export interface BuildHooks {
   onLine?(n: number, draft: WorldBundle): void;
   /** Skip the edge's cache: a new build, which then replaces the cached one. */
   fresh?: boolean;
+  /** A photo or sketch to build from (a data URL, already made small and clean: picture.ts). */
+  image?: string;
+  /** The edge has read the picture: its brief, and the prompt the world will be built from. */
+  onInspired?(i: LiveInspired): void;
 }
 
 export async function liveBuild(prompt: string, hooks: BuildHooks = {}): Promise<LiveResult> {
-  const { onIntent, onLine, fresh } = hooks;
+  const { onIntent, onLine, onInspired, fresh, image } = hooks;
   const t0 = performance.now();
   const ctl = new AbortController();
   let res: Response;
   try {
     // the engine hash keys the edge's cache: a world is only replayed to the engine it was built for
-    res = await api("/v1/build", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ prompt, engine: ENGINE_HASH, ...(fresh ? { fresh: true } : {}) }), signal: ctl.signal });
+    // (a build from a picture is never cached; the picture is read once and not kept)
+    res = await api("/v1/build", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ prompt, engine: ENGINE_HASH, ...(fresh ? { fresh: true } : {}), ...(image ? { image } : {}) }), signal: ctl.signal });
   } catch (e) {
     return { kind: "unavailable", reason: String(e) };
   }
-  if (!res.ok || !res.body) return { kind: "unavailable", reason: `HTTP ${res.status}` };
+  if (!res.ok || !res.body) {
+    // the edge says why when it can ("image too large", "builds paused")
+    const why = await res.json().then((b: { error?: unknown }) => (typeof b.error === "string" ? b.error : ""), () => "");
+    return { kind: "unavailable", reason: `HTTP ${res.status}${why ? `: ${why}` : ""}` };
+  }
 
   const reader = res.body.getReader();
   const dec = new TextDecoder();
@@ -74,6 +107,7 @@ export async function liveBuild(prompt: string, hooks: BuildHooks = {}): Promise
   let lines = 0;
   let fallback: string | null = null;
   let cached: LiveCached | null = null;
+  let inspired: LiveInspired | null = null;
   let parser: FillParser | null = null;
   try {
     for (;;) {
@@ -94,6 +128,9 @@ export async function liveBuild(prompt: string, hooks: BuildHooks = {}): Promise
           intentMs = Math.round(performance.now() - t0);
           parser = new FillParser({ seed });
           onIntent?.(intent, intentMs, seed);
+        } else if (event === "inspired") {
+          inspired = { brief: payload.brief as LiveBrief, prompt: String(payload.prompt), ms: Number(payload.ms) || 0 };
+          onInspired?.(inspired);
         } else if (event === "cached") {
           cached = { at: String(payload.at), intentModel: String(payload.intentModel), fillModel: String(payload.fillModel) };
         } else if (event === "fallback") {
@@ -109,7 +146,7 @@ export async function liveBuild(prompt: string, hooks: BuildHooks = {}): Promise
           onLine?.(++lines, parser.draft);
           if (parser.gameplayDone) {
             ctl.abort(); // the cosmetic tail is optional; play starts now
-            return { kind: "world", fill, seed, intent, intentMs, gameplayMs: Math.round(performance.now() - t0), lines, fallback, cached };
+            return { kind: "world", fill, seed, intent, intentMs, gameplayMs: Math.round(performance.now() - t0), lines, fallback, cached, inspired };
           }
         }
       }
@@ -117,7 +154,7 @@ export async function liveBuild(prompt: string, hooks: BuildHooks = {}): Promise
   } catch (e) {
     if (!(e instanceof DOMException && e.name === "AbortError")) return { kind: "unavailable", reason: String(e) };
   }
-  if (intent && fill) return { kind: "world", fill, seed, intent, intentMs, gameplayMs: Math.round(performance.now() - t0), lines, fallback, cached };
+  if (intent && fill) return { kind: "world", fill, seed, intent, intentMs, gameplayMs: Math.round(performance.now() - t0), lines, fallback, cached, inspired };
   return { kind: "unavailable", reason: "stream ended before the gameplay layer" };
 }
 

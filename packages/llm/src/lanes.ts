@@ -7,7 +7,7 @@ import { chatJson, streamChat } from "./cerebras";
 import { LlmError, type ChatMessage, type ChatOptions, type StreamEvent } from "./wire";
 
 export type Provider = "cerebras" | "anthropic";
-export type Job = "intent" | "fill" | "patch" | "mind" | "host" | "director" | "hard_repair";
+export type Job = "intent" | "fill" | "patch" | "mind" | "host" | "director" | "hard_repair" | "vision";
 export interface Route {
   provider: Provider;
   model: string;
@@ -30,7 +30,9 @@ const SONNET: Route = { provider: "anthropic", model: "claude-sonnet-5-5", reaso
  * The routing table, each job's lanes in the order to try them. Minds and the Host start on Haiku:
  * they are frequent and short, a Haiku mind costs about a ninth of a qwen one, and every fast-lane
  * token comes out of a small trial credit that world builds need. The Director's cut and hard
- * repairs are Sonnet's. The model ids are part of the template hash (a change re-proves the gallery).
+ * repairs are Sonnet's. Reading a photo or sketch into a scene brief is Haiku's alone: the fast
+ * lane reads no images, and the brief is text the fast lane then writes the world from. The intent
+ * and fill model ids are part of the template hash (a change re-proves the gallery).
  */
 export const ROUTES: Record<Job, Route[]> = {
   intent: [QWEN, HAIKU],
@@ -40,6 +42,7 @@ export const ROUTES: Record<Job, Route[]> = {
   host: [HAIKU, QWEN],
   director: [SONNET, HAIKU],
   hard_repair: [SONNET, HAIKU],
+  vision: [HAIKU],
 };
 
 export interface JobCall {

@@ -1,4 +1,5 @@
 import type { Intent } from "../pipeline";
+import "./picture.css";
 
 const plural = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? one : many}`;
 
@@ -8,13 +9,25 @@ function castLine(cast: Intent["cast"]): string {
   return [...counts].map(([role, n]) => plural(n, role)).join(" · ") || "none";
 }
 
-export function IntentCard({ intent, specHash, note }: { intent: Intent; specHash: string | undefined; note?: string | null }) {
+/** A world built from a picture says so plainly: inspired by it (its place and the things in it), never rebuilt from it. */
+export interface Inspired {
+  setting: string;
+  objects: string[];
+}
+
+export function IntentCard({ intent, specHash, note, inspired }: { intent: Intent; specHash: string | undefined; note?: string | null; inspired?: Inspired | null }) {
   return (
     <aside className="glass intent" data-testid="intent-card">
       <header>
         <span className="eyebrow">Intent</span>
         <span className="mode">{intent.mode}</span>
       </header>
+      {inspired && (
+        <p className="inspired" data-testid="inspired-note" title="Your image suggested the place, the mood, the colours and the things in it; the world was written from those words, so it is inspired by the image, not a copy of it">
+          Inspired by your image: {inspired.setting}
+          {inspired.objects.length > 0 && <span className="dim"> · {inspired.objects.join(", ")}</span>}
+        </p>
+      )}
       {note && (
         <p className="subst" data-testid="subst-note" title="The prompt asked for something no world can do yet; this is what you get instead">
           {note}

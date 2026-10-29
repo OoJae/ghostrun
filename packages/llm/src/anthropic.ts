@@ -42,7 +42,8 @@ function body(o: ChatOptions, stream: boolean) {
     max_tokens: o.maxTokens ?? 4096,
     stream,
     ...(system ? { system } : {}),
-    messages: o.messages.filter((m) => m.role !== "system").map((m) => ({ role: m.role, content: m.content })),
+    // a picture goes before the words about it, as its own block
+    messages: o.messages.filter((m) => m.role !== "system").map((m) => ({ role: m.role, content: m.image ? [{ type: "image", source: { type: "base64", media_type: m.image.mediaType, data: m.image.data } }, { type: "text", text: m.content }] : m.content })),
     ...(thinking ? { thinking } : {}),
     output_config: { effort: fast ? "low" : o.reasoningEffort, ...(o.jsonSchema ? { format: { type: "json_schema", schema: claudeSchema(o.jsonSchema.schema) } } : {}) },
   });
