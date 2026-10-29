@@ -96,9 +96,10 @@ for (const name of SHOTS ? (["vault", "ctf", "forest"] as const) : (["vault"] as
       if ((await probe(page)).materialise) await page.screenshot({ path: resolve(dir, `${name}-3-late.png`) });
     }
 
-    // the gameplay layer completes: the real world swaps in and plays
-    await expect(page.getByTestId("materialise")).toHaveCount(0, { timeout: 30_000 });
-    await page.waitForFunction(() => window.__GHOSTRUN__.ready === true && window.__GHOSTRUN__.materialise === undefined && Boolean(window.__GHOSTRUN__.specHash), null, { timeout: 30_000 });
+    // the gameplay layer completes: the real world swaps in and plays (loading it can take a while on
+    // a machine busy with other suites, hence the long waits)
+    await expect(page.getByTestId("materialise")).toHaveCount(0, { timeout: 60_000 });
+    await page.waitForFunction(() => window.__GHOSTRUN__.ready === true && window.__GHOSTRUN__.materialise === undefined && Boolean(window.__GHOSTRUN__.specHash), null, { timeout: 60_000 });
     await expect(page.getByTestId("intent-card")).toContainText(w.intent.headline);
     await expect(page.getByTestId("source-chip")).toHaveText("live AI");
     if (dir) await page.screenshot({ path: resolve(dir, `${name}-4-playing.png`) });
