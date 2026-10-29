@@ -11,6 +11,17 @@ type Kcc = ReturnType<InstanceType<Rapier["World"]>["createCharacterController"]
 export const PLAYER_RADIUS = 0.35;
 export const PLAYER_HALF_HEIGHT = 0.55; // capsule segment half-length; total height 1.8 m
 
+/** A character at the wheel: the vehicle it drives, the way it faces (unit x, z), its speed and boost. */
+export interface Ride {
+  vehicle: string;
+  feel: { speed: number; accel: number; turn: number; grip: number; boost: number; boostS: number; cooldown: number; kind: string };
+  hx: number;
+  hz: number;
+  speed: number;
+  boostLeft: number;
+  boostAt: number;
+}
+
 export interface ControllerEvents {
   jumped: boolean;
   airJumped: boolean;
@@ -124,6 +135,74 @@ export class PlayerController {
     const p = this.body.translation();
     this.body.setNextKinematicTranslation({ x: p.x + mv.x, y: p.y + mv.y, z: p.z + mv.z });
     return ev;
+  }
+
+  /**
+   * One tick at the wheel: the arcade model. The vehicle turns toward the stick (slower when
+   * nearly stopped, never stuck), speeds up toward its top speed scaled by how far the stick is
+   * pushed and how well it already points that way (it slows for a corner by itself), brakes when
+   * the stick points back (and reverses once stopped); its velocity slides toward where it faces by its grip (low grip
+   * drifts); a fresh jump press boosts when the boost is ready. Only + − × ÷ and sqrt.
+   */
+  drive(input: InputFrame | null, r: Ride, tick: number, exclude: (c: Collider) => boolean): ControllerEvents {
+    const btn = input?.btn ?? 0;
+    const pressed = (btn & BTN.JUMP) !== 0 && (this.#prevBtn & BTN.JUMP) === 0;
+    this.#prevBtn = btn;
+    const f = r.feel;
+    if (pressed && tick >= r.boostAt) {
+      r.boostLeft = Math.round(f.boostS * 60);
+      r.boostAt = tick + Math.round(f.cooldown * 60);
+    }
+    const boosting = r.boostLeft > 0;
+    if (boosting) r.boostLeft--;
+    const sx = (input?.wx ?? 0) / 127;
+    const sz = (input?.wz ?? 0) / 127;
+    const len = Math.sqrt(sx * sx + sz * sz);
+    let target = 0;
+    if (len > 0.15) {
+      const [dx, dz] = [sx / len, sz / len];
+      const align = r.hx * dx + r.hz * dz;
+      const cross = r.hx * dz - r.hz * dx;
+      const k = f.turn * DT * (0.4 + 0.6 * Math.min(1, Math.abs(r.speed) / (0.5 * f.speed)));
+      if (align > 0 && Math.abs(cross) <= k) [r.hx, r.hz] = [dx, dz];
+      else {
+        const side = cross > 0 || (cross === 0 && align < 0) ? 1 : -1;
+        const nx = r.hx - r.hz * k * side;
+        const nz = r.hz + r.hx * k * side;
+        const n = Math.sqrt(nx * nx + nz * nz);
+        [r.hx, r.hz] = [nx / n, nz / n];
+      }
+      const a2 = r.hx * dx + r.hz * dz;
+      // (pointing back: brakes, and once stopped backs up slowly while it turns, off a wall it drove into)
+      target = a2 > -0.5 ? f.speed * Math.min(1, len) * Math.min(1, Math.max(0.3, (a2 + 0.5) / 1.5)) * (boosting ? f.boost : 1) : r.speed <= 0.5 ? -0.3 * f.speed * Math.min(1, len) : 0;
+    }
+    const up = f.accel * (boosting ? 2 : 1) * DT;
+    r.speed += Math.max(-2 * f.accel * DT, Math.min(up, target - r.speed));
+    this.vx += (r.hx * r.speed - this.vx) * f.grip;
+    this.vz += (r.hz * r.speed - this.vz) * f.grip;
+    const g = this.#g;
+    if (!this.grounded || this.vy > 0) this.vy = Math.max(-50, this.vy - g * DT);
+    const want = { x: this.vx * DT, y: this.vy * DT, z: this.vz * DT };
+    if (this.shoveX !== 0 || this.shoveZ !== 0) {
+      want.x += this.shoveX * DT;
+      want.z += this.shoveZ * DT;
+      this.shoveX = 0;
+      this.shoveZ = 0;
+    }
+    this.kcc.computeColliderMovement(this.collider, want, undefined, undefined, (c) => !exclude(c));
+    const mv = this.kcc.computedMovement();
+    const wasGrounded = this.grounded;
+    this.grounded = this.kcc.computedGrounded() && this.vy <= 0;
+    if (this.grounded && this.vy < 0) this.vy = 0;
+    // a wall takes the speed it stopped (a head-on crash halts it; a scrape keeps most of it)
+    if (Math.abs(mv.x - want.x) + Math.abs(mv.z - want.z) > 1e-6) {
+      const got = Math.sqrt(mv.x * mv.x + mv.z * mv.z) / DT;
+      if (got < Math.abs(r.speed)) r.speed = r.speed < 0 ? -got : got;
+      [this.vx, this.vz] = [mv.x / DT, mv.z / DT];
+    }
+    const p = this.body.translation();
+    this.body.setNextKinematicTranslation({ x: p.x + mv.x, y: p.y + mv.y, z: p.z + mv.z });
+    return { jumped: false, airJumped: false, landed: this.grounded && !wasGrounded };
   }
 
   /** Feet height above the capsule centre's floor contact. */

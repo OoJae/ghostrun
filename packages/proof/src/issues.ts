@@ -15,6 +15,8 @@ export function issuesOf(r: Receipt, b: WorldBundle): string[] {
     else if (c.id === "T3:win") out.push(`AI runners could not win in 2 minutes of play (${cx || c.text}). Make the objective reachable on foot or within the allowed jumps, and make every door on the way openable.`);
     else if (c.tier === "T2") out.push(`Rule ${c.subject.id} ${cx || "fails"} when its trigger is forced: fix its trigger, conditions or the verb that should cause it.`);
     else if (c.id.startsWith("T1:range:")) out.push(`Rule ${c.subject.id} needs a shot that can't land (${cx || c.text}): put the target in the open, within the weapon's range of ground the player can reach, or give the combat_sport.shoot verb more range.`);
+    else if (c.id.startsWith("T1:drive:")) out.push(`The race can't be driven (${cx || c.text}): put the line and every gate (the racing.track gates) on open ground a vehicle can drive to, a few metres apart, with no jump on the way.`);
+    else if (c.id.startsWith("T1:laps:")) out.push(`Rule ${c.subject.id} asks for more laps than the clock allows (${cx}): fewer laps, or a longer timer.`);
     else if (c.tier === "T1" || c.id.startsWith("T3:x")) {
       const x = b.expects.find((e) => e.id === c.subject.id);
       const k = Number(/jumps>=(\d+)/.exec(x?.need.join(",") ?? "")?.[1] ?? 0);

@@ -372,3 +372,61 @@ describe("combat: hit points, shots and knock-outs", () => {
     sim.free();
   });
 });
+
+describe("vehicles and races", () => {
+  const kart = (id: string, pos: Vec3) => ent(id, "vehicle", pos, [1.4, 0.8, 2], "kinematic");
+  const gate = (id: string, pos: Vec3, size: Vec3 = [6, 3, 6]) => ent(id, "checkpoint", pos, size, "sensor");
+  /** Steer at the next point (a stick toward it, full), pressing jump on `boostAt`. */
+  const steer = (sim: SimWorld, to: Vec3, btn = 0): InputFrame => {
+    const p = sim.pos("player");
+    const [dx, dz] = [to[0] - p[0], to[2] - p[2]];
+    const d = Math.sqrt(dx * dx + dz * dz) || 1;
+    return { tick: sim.tick + 1, wx: Math.round((dx / d) * 127), wz: Math.round((dz / d) * 127), btn };
+  };
+
+  it("a kart started with the player at the wheel is faster than running, laps a square of gates in order, and lap_done fires on the second lap", () => {
+    const sim = world(
+      [kart("kart", [0, 0.4, 0]), gate("finish", [0, 1.5, 0]), gate("g1", [18, 1.5, 0]), gate("g2", [18, 1.5, 18]), gate("g3", [0, 1.5, 18])],
+      [vb("vb_kart", "vehicle.drive", "kart", { kind: "kart", driver: "player" }), vb("vb_race", "racing.track", "finish", { gates: "g1,g2,g3", laps: 2 })],
+      [{ ...rule("r_win", { t: "lap_done", a: "player", n: 2 }, [{ e: "win", target: "player" }]), once: true }],
+    );
+    expect(sim.ride("player")?.vehicle).toBe("kart");
+    const route: Vec3[] = [[18, 0, 0], [18, 0, 18], [0, 0, 18], [0, 0, 0]];
+    let leg = 0;
+    let top = 0;
+    const laps: number[] = [];
+    for (let t = 0; t < 60 * 60 && !sim.result; t++) {
+      const p = sim.pos("player");
+      const to = route[leg % 4]!;
+      if ((p[0] - to[0]) * (p[0] - to[0]) + (p[2] - to[2]) * (p[2] - to[2]) < 4) leg++;
+      for (const e of sim.step(steer(sim, route[leg % 4]!))) if (e.k === "lap_done") laps.push(Number(e.v));
+      top = Math.max(top, sim.ride("player")!.speed);
+    }
+    expect(laps).toEqual([1, 2]);
+    expect(sim.result).toBe("win");
+    expect(top).toBeGreaterThan(9); // a walker runs at 6 m/s
+    const k = sim.pos("kart");
+    const p = sim.pos("player");
+    expect(Math.abs(k[0] - p[0]) + Math.abs(k[2] - p[2])).toBeLessThan(0.01); // the kart rides with its driver
+    sim.free();
+  });
+
+  it("jump boosts past top speed; USE when stopped gets out beside it, and USE next to it gets back in", () => {
+    const sim = world([kart("kart", [0, 0.4, 0])], [vb("vb_kart", "vehicle.drive", "kart", { kind: "kart", driver: "player" })]);
+    run(sim, 120, (t) => ({ tick: t, wx: 127, wz: 0, btn: 0 }));
+    const cruise = sim.ride("player")!.speed;
+    expect(cruise).toBeCloseTo(14, 0);
+    run(sim, 30, (t) => ({ tick: t, wx: 127, wz: 0, btn: t % 30 === 1 ? BTN.JUMP : 0 }));
+    expect(sim.ride("player")!.speed).toBeGreaterThan(cruise + 2);
+    run(sim, 180); // coast to a stop
+    expect(sim.ride("player")!.speed).toBeLessThan(2);
+    run(sim, 1, press(BTN.USE));
+    expect(sim.ride("player")).toBeUndefined();
+    run(sim, 5);
+    expect(sim.usable()).toMatchObject({ on: "kart", label: "drive" });
+    const evs = run(sim, 1, press(BTN.USE));
+    expect(evs.some((e) => e.k === "touch" && e.b === "kart")).toBe(true);
+    expect(sim.ride("player")?.vehicle).toBe("kart");
+    sim.free();
+  });
+});

@@ -1,6 +1,6 @@
 export { prove, type ProveOptions } from "./prove";
 export { t0, type PlanStep, type WinChain } from "./t0";
-export { apex, reachAt, t1, t1Range } from "./t1";
+export { apex, reachAt, t1, t1Drive, t1Range } from "./t1";
 export { t2 } from "./t2";
 export { t3, traceRunners } from "./t3";
 export { chipLine, fraction, statusWord } from "./labels";

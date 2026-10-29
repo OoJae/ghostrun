@@ -7,14 +7,15 @@ import type { Cast, Vec3, WorldBundle } from "@ghostrun/ir";
 import type { NavWorld } from "@ghostrun/nav";
 import { BTN, type Brain, type InputFrame, type SimWorld } from "@ghostrun/sim";
 
-export type Behaviour = "attack" | "intercept" | "defend" | "follow" | "patrol" | "idle";
+export type Behaviour = "attack" | "intercept" | "defend" | "follow" | "patrol" | "race" | "idle";
 
 // Menu options are free-form `role.verb` strings from the fill; the verb picks the behaviour.
 const VERBS: readonly (readonly [RegExp, Behaviour])[] = [
+  [/race|racing|drive|lap|overtake/, "race"],
   [/attack|capture|steal|score|raid|chase|hunt|charge/, "attack"],
   [/intercept|mark|press|tackle|block/, "intercept"],
   [/defend|guard|protect|hold|keep/, "defend"],
-  [/follow|escort|assist|support|help|accompany/, "follow"],
+  [/follow|escort|assist|support|help|accompany|draft|slipstream/, "follow"],
   [/patrol|wander|roam|walk|sweep|circle/, "patrol"],
 ];
 
@@ -204,6 +205,14 @@ export class CastBrain implements Brain {
     const carrier = item ? w.entity(item)!.carrier : "";
     const enemyCarrier = carrier && w.entity(carrier)!.team !== b.team ? carrier : "";
     const within = (id: string, p: Vec3, r: number) => d2(w.pos(id), p) < r * r;
+    // a racer (at a wheel, or racing on foot): the next gate; blocking goes for the player when
+    // close, drafting tucks in behind the player when close
+    const race = w.raceOf(b.id);
+    if (race && b.beh !== "patrol" && b.beh !== "idle" && (w.ride(b.id) || b.beh === "race")) {
+      const near = within("player", w.pos(b.id), b.beh === "follow" ? 14 : 8);
+      if (near && (b.beh === "intercept" || b.beh === "follow")) return w.pos("player");
+      return w.pos(race.next);
+    }
     switch (b.beh) {
       case "attack":
         if (carrier) return w.pos(carrier); // chase an enemy carrier, escort a teammate
@@ -256,7 +265,9 @@ export class CastBrain implements Brain {
       b.best = Infinity;
       b.progressAt = tick;
     }
-    while (b.wp < b.path.length - 1 && d2(p, b.path[b.wp]!) < 0.2) {
+    // (at a wheel a waypoint is passed from a car length away: at speed it would overshoot and circle back)
+    const reach2 = w.ride(b.id) ? 6.25 : 0.2;
+    while (b.wp < b.path.length - 1 && d2(p, b.path[b.wp]!) < reach2) {
       b.wp++;
       b.best = Infinity;
     }

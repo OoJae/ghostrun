@@ -2,7 +2,7 @@
 // The LLM chooses relations (zone + anchor), never coordinates (Holodeck/LayoutVLM lesson).
 import { stream } from "@ghostrun/detmath";
 import { groupMembers, type Effect, type Entity, type Rule, type Static, type Vec3, type VerbBinding, type WorldBundle, type Zone } from "@ghostrun/ir";
-import { HEALTH, SHOOT, verb } from "@ghostrun/kits";
+import { DRIVE, HEALTH, SHOOT, TRACK, verb } from "@ghostrun/kits";
 import type { PackLayout, ZoneSpec } from "@ghostrun/plugin-api";
 
 /** Default physical sizes per entity kind, used when the fill gives none (all metres). */
@@ -244,8 +244,8 @@ export function placeWorld(input: WorldBundle, layout: PackLayout): PlaceResult 
     }
   }
   // wins first: a win rule the repairs add (reach the goal) gets the same trigger and verb repairs
-  notes.push(...repairDoubleDoors(b), ...repairSpawnRefs(b), ...repairGroups(b), ...repairRingOut(b, bound), ...repairAreas(b, bound), ...repairCombat(b), ...repairKits(b), ...repairConditions(b), ...repairWin(b), ...repairTriggers(b), ...repairVerbs(b), ...repairExpects(b));
-  notes.push(...addRivals(b), ...repairDeliveries(b, layout, bound), ...addSecrets(b, layout, bound));
+  notes.push(...repairDoubleDoors(b), ...repairSpawnRefs(b), ...repairGroups(b), ...repairRingOut(b, bound), ...repairAreas(b, bound), ...repairCombat(b), ...repairKits(b), ...repairConditions(b), ...repairRace(b, layout), ...repairWin(b), ...repairTriggers(b), ...repairVerbs(b), ...repairExpects(b));
+  notes.push(...addRivals(b), ...placeRace(b, layout, bound), ...repairDeliveries(b, layout, bound), ...addSecrets(b, layout, bound));
   return { bundle: b, notes };
 }
 
@@ -482,6 +482,189 @@ export function addRivals(b: WorldBundle): string[] {
     added.push(id);
   }
   return [`added ${added.join(" and ")} on the ${them} side: a ${guns.length ? "shooting" : "throwing"} game needs someone to ${guns.length ? "shoot" : "throw at"}`];
+}
+
+/** A vehicle's kind from what it is called, and how big it is parked. */
+const RIDE_WORDS: [RegExp, string][] = [
+  [/go-?kart|\bkart/, "kart"], [/snowmobile|\bsled|skidoo/, "snowmobile"], [/hovercraft/, "hovercraft"], [/boat|jet ?ski|canoe|kayak|raft/, "boat"],
+  [/\bhorse|pony|steed|camel/, "horse"], [/truck|lorry/, "truck"], [/\bvan\b|delivery/, "van"], [/buggy|dune/, "buggy"], [/\bbike|motorbike|motorcycle|scooter|moped/, "bike"],
+];
+const RIDE_SIZE: Record<string, Vec3> = {
+  kart: [1.3, 0.7, 1.9], car: [1.8, 1.2, 3.6], buggy: [1.7, 1.1, 2.8], truck: [2.2, 2, 5], van: [2, 2, 4.4], boat: [1.8, 1, 3.8],
+  snowmobile: [1.1, 1, 2.6], hovercraft: [2, 1, 3], bike: [0.6, 1.1, 1.9], horse: [0.8, 1.6, 2.2],
+};
+const rideKind = (e: Entity) => RIDE_WORDS.find(([re]) => re.test(`${e.id} ${e.noun} ${e.hyper}`.toLowerCase().replace(/_/g, " ")))?.[1] ?? "car";
+
+/**
+ * Races (a racing.track, or a rule waiting on lap_done), wired so they can be won and lost (each
+ * repair logged):
+ * - laps with no track get one: on the line (a checkpoint or goal named like a finish, else the
+ *   first checkpoint, else a new one on the pack's race loop), the other checkpoints its gates;
+ * - a track's gates are things in the world; with fewer than two and a race loop in the pack, the
+ *   loop gets gates of its own;
+ * - every vehicle can be driven (its kind from what it's called); the player starts at the wheel
+ *   of the first one, each rival racer at the wheel of its own (a copy of yours);
+ * - a race with no rivals gets two; with no win, finishing the laps wins; with rivals and no loss,
+ *   a rival finishing them first loses.
+ */
+export function repairRace(b: WorldBundle, layout: PackLayout): string[] {
+  if (b.mode !== "play" || !(b.verbs.some((v) => v.verb === TRACK) || b.rules.some((r) => r.when.t === "lap_done"))) return [];
+  const notes: string[] = [];
+  const spawnOf = (t: string) => b.entities.some((e) => e.kind === "spawn" && e.team === t);
+  const mine = !spawnOf("red") && spawnOf("blue") ? "blue" : "red";
+  const them = mine === "red" ? "blue" : "red";
+  const zone = b.zones[0]?.id ?? "";
+  const thing = (id: string, kind: Entity["kind"], noun: string, size: Vec3, body: Entity["body"], team: Entity["team"] = ""): Entity => ({
+    id, src: "template", layer: "gameplay", kind, zone, anchor: "", pos: [0, 0, 0], rotY: 0, size, noun, hyper: kind, asset: "", body, shape: kind === "npc" ? "capsule" : "box", team, tags: [], states: [], init: "", props: {},
+  });
+  const laps = b.rules.find((r) => r.when.t === "lap_done" && (r.when.a === "player" || r.when.a === `team:${mine}`) && r.then.some((e) => e.e === "win"))?.when.n || 3;
+  // the track: the line and its gates
+  let track = b.verbs.find((v) => v.verb === TRACK && b.entities.some((e) => e.id === v.on));
+  if (!track) {
+    const lines = b.entities.filter((e) => (e.kind === "checkpoint" || e.kind === "goal") && e.body === "sensor").sort((x, y) => (x.id < y.id ? -1 : 1));
+    let line = lines.find((e) => /finish|start|line/.test(`${e.id} ${e.noun}`)) ?? lines.find((e) => e.kind === "checkpoint");
+    if (!line && layout.track) {
+      line = thing(uniqueId(b, "finish_line"), "checkpoint", "finish line", [layout.track.width, 3, layout.track.width], "sensor");
+      b.entities.push(line);
+    }
+    if (!line) return notes;
+    const gates = b.entities.filter((e) => e.kind === "checkpoint" && e !== line).map((e) => e.id).sort();
+    track = vb(uniqueId(b, "vb_track"), TRACK, line.id, { gates: gates.join(","), laps });
+    b.verbs = b.verbs.filter((v) => !(v.on === line.id && v.verb === "puzzle.checkpoint"));
+    b.verbs.push(track);
+    notes.push(`${line.id}: the race's line, its gates ${gates.join(", ") || "none yet"} (rules wait on laps, and no track was bound)`);
+  }
+  const gates = String(track.params.gates ?? "").split(",").map((s) => s.trim()).filter((id) => id && id !== track.on && b.entities.some((e) => e.id === id));
+  if (gates.length < 2 && layout.track) {
+    for (let k = gates.length; k < Math.min(4, layout.track.points.length - 1); k++) {
+      const g = thing(uniqueId(b, `gate_${k + 1}`), "checkpoint", `gate ${k + 1}`, [layout.track.width, 3, layout.track.width], "sensor");
+      b.entities.push(g);
+      gates.push(g.id);
+    }
+    notes.push(`${track.on}: the race loop gets gates ${gates.join(", ")}`);
+  }
+  track.params = { ...track.params, gates: gates.join(","), laps: Number(track.params.laps ?? laps) || laps };
+  // vehicles: every one can be driven, the player's first
+  const rides = new Map(b.verbs.filter((v) => v.verb === DRIVE).map((v) => [v.on, v]));
+  for (const e of b.entities.filter((x) => x.kind === "vehicle" && !rides.has(x.id))) {
+    const v = vb(uniqueId(b, `vb_drive_${e.id}`), DRIVE, e.id, { kind: rideKind(e) });
+    b.verbs.push(v);
+    rides.set(e.id, v);
+    notes.push(`${e.id}: added ${DRIVE} (a ${String(v.params.kind)} in a race)`);
+  }
+  for (const [id, v] of rides) {
+    const e = b.entities.find((x) => x.id === id)!;
+    const kind = String(v.params.kind ?? rideKind(e));
+    if (e.size[0] === 2 && e.size[1] === 1.2 && e.size[2] === 4) e.size = RIDE_SIZE[kind] ?? e.size; // the default vehicle box: this kind's own
+  }
+  const driven = (who: string) => [...rides.values()].some((v) => v.params.driver === who);
+  const mineRide = [...rides.values()].find((v) => !v.params.driver);
+  if (!driven("player") && mineRide) {
+    mineRide.params = { ...mineRide.params, driver: "player" };
+    notes.push(`player: starts at the wheel of ${mineRide.on}`);
+  }
+  // rivals: the other side's characters, or two added; each at the wheel of a copy of yours
+  let racers = b.entities.filter((e) => e.kind === "npc" && e.team !== mine && e.body !== "none" && e.body !== "sensor");
+  if (!racers.length) {
+    for (const k of [1, 2]) {
+      const n = thing(uniqueId(b, `racer_${k}`), "npc", `racer ${k}`, [0.7, 1.8, 0.7], "kinematic", them);
+      b.entities.push(n);
+      b.cast.push({ id: uniqueId(b, `k_${n.id}`), src: "template", layer: "gameplay", npc: n.id, role: "rival", minded: false, persona: { identity: "", personality: "", knowledge: "", replyStyle: "", tools: [], safety: "" }, coneDeg: 70, rangeM: 12, hearM: 8, menu: ["racer.race", "racer.block", "racer.draft"], dflt: "racer.race", utility: {}, memory: 0 });
+    }
+    racers = b.entities.filter((e) => e.kind === "npc" && e.team === them);
+    notes.push(`added ${racers.map((r) => r.id).join(" and ")}: a race needs someone to race`);
+  }
+  const yours = mineRide ?? [...rides.values()].find((v) => v.params.driver === "player");
+  for (const r of racers) {
+    const c = b.cast.find((k) => k.npc === r.id);
+    if (c && !c.menu.length) ((c.menu = ["racer.race", "racer.block"]), (c.dflt = "racer.race"));
+    if (!yours || driven(r.id)) continue;
+    const mineE = b.entities.find((e) => e.id === yours.on)!;
+    const ride = { ...structuredClone(mineE), id: uniqueId(b, `${r.id}_ride`), src: "template" as const, noun: mineE.noun || String(yours.params.kind), team: r.team, anchor: "" };
+    b.entities.push(ride);
+    b.verbs.push(vb(uniqueId(b, `vb_drive_${ride.id}`), DRIVE, ride.id, { ...yours.params, driver: r.id }));
+    notes.push(`${r.id}: races at the wheel of ${ride.id}`);
+  }
+  // a way to win, and one to lose
+  if (!b.rules.some((r) => r.then.some((e) => e.e === "win"))) {
+    b.rules.push({ id: uniqueId(b, "r_win_laps"), src: "template", layer: "gameplay", when: { t: "lap_done", a: "player", b: "", s: "", n: laps, act: "" }, if: [], then: [fx("win", "player")], once: true, cooldownS: 0, prio: 0 });
+    notes.push(`added r_win_laps: no rule wins, so finishing ${laps} laps does`);
+  }
+  if (!b.rules.some((r) => r.then.some((e) => e.e === "lose"))) {
+    const rival = racers.every((r) => r.team === them) ? `team:${them}` : racers[0]!.id;
+    b.rules.push({ id: uniqueId(b, "r_lose_laps"), src: "template", layer: "gameplay", when: { t: "lap_done", a: rival, b: "", s: "", n: laps, act: "" }, if: [], then: [fx("lose", "player")], once: true, cooldownS: 0, prio: 0 });
+    notes.push(`added r_lose_laps: a rival finishing ${laps} laps first loses`);
+  }
+  return notes;
+}
+
+/**
+ * Where a race runs: on the pack's race loop when it has one (the line at its start, the gates
+ * spread round it, each nudged clear of anything standing there), else where the fill put them,
+ * each gate at least a lane wide; the grid behind the line, the player's vehicle first. Logged.
+ */
+export function placeRace(b: WorldBundle, layout: PackLayout, bound: Map<string, ZoneSpec>): string[] {
+  const track = b.verbs.find((v) => v.verb === TRACK);
+  const line = track && b.entities.find((e) => e.id === track.on);
+  if (!track || !line || b.mode !== "play") return [];
+  const notes: string[] = [];
+  const gates = String(track.params.gates ?? "").split(",").filter(Boolean).map((id) => b.entities.find((e) => e.id === id)).filter((e): e is Entity => Boolean(e));
+  const loop = layout.track;
+  const width = loop?.width ?? 6;
+  const solid = layout.statics.filter((s) => s.surf !== "floor" && s.surf !== "water");
+  const clear = (x: number, z: number, r: number) => !solid.some((s) => Math.abs(x - s.pos[0]) < s.size[0] / 2 + r && Math.abs(z - s.pos[2]) < s.size[2] / 2 + r && s.pos[1] - s.size[1] / 2 < 1.5);
+  const nudge = (p: Vec3): Vec3 => {
+    if (clear(p[0], p[2], 1.5)) return p;
+    for (let ring = 1; ring <= 12; ring++) for (const [dx, dz] of [[1, 0], [-1, 0], [0, 1], [0, -1], [0.7071, 0.7071], [-0.7071, 0.7071], [0.7071, -0.7071], [-0.7071, -0.7071]] as const) {
+      const q: Vec3 = [p[0] + dx * ring * 0.5, p[1], p[2] + dz * ring * 0.5];
+      if (clear(q[0], q[2], 1.5)) return q;
+    }
+    return p;
+  };
+  const zoneAt = (p: Vec3) => [...bound].find(([, s]) => p[0] >= s.bounds.min[0] && p[0] <= s.bounds.max[0] && p[2] >= s.bounds.min[2] && p[2] <= s.bounds.max[2])?.[0] ?? line.zone;
+  const put = (e: Entity, p: Vec3) => {
+    e.pos = [p[0], p[1] + e.size[1] / 2, p[2]];
+    e.zone = zoneAt(p);
+  };
+  let into: Vec3 | null = null; // where the race comes into the line from
+  if (loop && loop.points.length >= 3) {
+    // the line on the loop's first point, the gates spread evenly round it (midpoints too)
+    const spots: Vec3[] = loop.points.flatMap((p, i) => {
+      const q = loop.points[(i + 1) % loop.points.length]!;
+      return [p, [(p[0] + q[0]) / 2, (p[1] + q[1]) / 2, (p[2] + q[2]) / 2] as Vec3];
+    });
+    for (const e of [line, ...gates]) e.size = [Math.max(width, e.size[0]), Math.max(3, e.size[1]), Math.max(width, e.size[2])];
+    put(line, nudge(spots[0]!));
+    gates.forEach((g, i) => put(g, nudge(spots[Math.max(1, Math.round(((i + 1) * spots.length) / (gates.length + 1))) % spots.length]!)));
+    into = spots[spots.length - 1]!;
+    notes.push(`race: ${line.id} and ${gates.length} gates (${gates.map((g) => g.id).join(", ")}) round the ${layout.packId} race loop`);
+  } else {
+    for (const e of [line, ...gates]) {
+      if (e.size[0] >= 5 && e.size[2] >= 5) continue;
+      e.size = [Math.max(5, e.size[0]), Math.max(3, e.size[1]), Math.max(5, e.size[2])];
+      e.pos = [e.pos[0], e.pos[1] - e.size[1] / 2 + 1.5, e.pos[2]];
+      notes.push(`${e.id}: a gate a lane wide (5 m)`);
+    }
+  }
+  // the grid: behind the line, the way the race comes into it; the player on pole, the rivals in
+  // pairs behind
+  into ??= gates.length ? gates[gates.length - 1]!.pos : [line.pos[0] - 1, line.pos[1], line.pos[2]];
+  let [dx, dz] = [line.pos[0] - into[0], line.pos[2] - into[2]];
+  const dl = Math.sqrt(dx * dx + dz * dz) || 1;
+  [dx, dz] = [dx / dl, dz / dl];
+  const floor = line.pos[1] - line.size[1] / 2;
+  const rides = b.verbs.filter((v) => v.verb === DRIVE && v.params.driver).sort((x, y) => (x.params.driver === "player" ? -1 : y.params.driver === "player" ? 1 : x.id < y.id ? -1 : 1));
+  rides.forEach((v, i) => {
+    const e = b.entities.find((x) => x.id === v.on);
+    if (!e) return;
+    const back = line.size[0] / 2 + (i === 0 ? 2 : 5.5 + 3.5 * Math.floor((i - 1) / 2));
+    const side = i === 0 ? 0 : (i % 2 ? 1 : -1) * 1.8;
+    put(e, nudge([line.pos[0] - dx * back - dz * side, floor, line.pos[2] - dz * back + dx * side]));
+    const driver = v.params.driver === "player" ? b.entities.find((s) => s.kind === "spawn" && s.team === (b.entities.some((x) => x.kind === "spawn" && x.team === "red") ? "red" : s.team)) : b.entities.find((x) => x.id === v.params.driver);
+    if (driver) driver.pos = driver.kind === "spawn" ? [e.pos[0], floor, e.pos[2]] : [e.pos[0], floor + driver.size[1] / 2, e.pos[2]];
+  });
+  if (rides.length) notes.push(`race: the grid behind ${line.id}: ${rides.map((v) => `${String(v.params.driver)} in ${v.on}`).join(", ")}`);
+  return notes;
 }
 
 /** What a secret is called in each pack (cosmetic: the rule and the count are the same everywhere). */
