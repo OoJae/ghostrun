@@ -28,6 +28,8 @@ Type any world, and GHOSTRUN turns it into a playable 3D level in the browser in
 12. **Clips.** The last seconds of every run are recorded as you play (the picture and the game's sound), and the result card plays them back: **Save clip** downloads the last ~10 s ending at the win or the loss (`ghostrun-capture-the-flag-0-42.webm`), and **Clean replay** replays the run exactly with the HUD hidden and saves the replay. `?record=1` is the HUD for screen-recording a demo: the extras and the cursor step aside, and one caption strip says the prompt, "playable in 1.8 s", where the world came from and the receipt's headline. `?clip=0` turns clips off (phones record only with `?clip=1`).
 13. **Gallery** (press **G**): 62 worlds the live AI built from prompts during development, recorded unedited and re-proved on your device when opened: heists, sumo, bowling, archery, a bomb to defuse, a robot to assemble, a lighthouse in a crosswind, a Czech castle escape, a German ice cave, a pirate ship, mini golf, places to explore.
 
+Characters are animated models (CC0) that walk, run, jump, carry, flinch, fall and cheer as the simulation moves them, in their team's colours, and the things a world names (a rusty key, a treasure chest, a cursed book, a candle) are drawn as props; they load after the first frame, and `?models=0` keeps the primitives.
+
 Phones get on-screen controls. Browsers with WebXR get **Enter VR** (first person; tested on an emulated Quest 3, not yet on a real headset).
 
 ## What is in the box

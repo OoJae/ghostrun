@@ -35,6 +35,8 @@ export interface GhostrunProbe {
   materialise?: { statics: number; entities: number };
   /** The run's clip recorder: "disabled" with ?clip=0 (and on phones), "unsupported" where the browser can't record a canvas. */
   clip?: { state: "disabled" | "unsupported" | "failed" | "off" | "paused" | "rolling" | "held" | "take"; segments: number; bytes: number; type: string };
+  /** Models swapped in over the primitives so far (absent with ?models=0). */
+  models?: { tier: "full" | "lite"; characters: number; props: number; failed: number; player?: string };
 }
 
 export interface AudioProbe {

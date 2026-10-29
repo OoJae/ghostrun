@@ -19,6 +19,7 @@ import { lookOf, type LookStyle } from "./render/looks";
 import { Materialise, type MaterialiseSpec } from "./render/materialise";
 import { beamMaterial, PALETTE } from "./render/materials";
 import { Atmosphere } from "./render/atmosphere";
+import { ModelLayer, modelTier } from "./render/models";
 import { buildWorldView, type WorldView } from "./render/world";
 import { StubSim } from "./sim/stub";
 import type { RapierSim } from "./sim/rapier";
@@ -72,6 +73,9 @@ export class Engine {
   readonly #canvas: HTMLCanvasElement;
 
   #view: WorldView | null = null;
+  /** Characters and props drawn as models once the world plays (?models=0 keeps the primitives). */
+  #models: ModelLayer | null = null;
+  readonly #modelTier = modelTier(window.location.search, window.matchMedia?.("(pointer: coarse)").matches ?? false);
   #combat: CombatView | null = null;
   #race: RaceView | null = null;
   #sim: FrameSource | null = null;
@@ -572,6 +576,8 @@ export class Engine {
     this.#governAfter = performance.now() + 3000;
     this.#slowWindows = 0;
     pr.ready = true;
+    // the world is playable: now the models load, each replacing its primitive when it's ready
+    if (this.#modelTier !== "off") this.#models = new ModelLayer(world.bundle, view, this.rapierSim, { tier: this.#modelTier, night: look.night, ghost: this.#ghost.obj, role: world.intent.live?.role ?? "", compile: (o) => this.#renderer.compileAsync(o, this.#camera, this.#scene) });
     return { ttffMs, splits };
   }
 
@@ -596,6 +602,8 @@ export class Engine {
     this.#combat = null;
     this.#race?.dispose(this.#camera, this.#follow);
     this.#race = null;
+    this.#models?.dispose();
+    this.#models = null;
     this.#view?.dispose();
     this.#view = null;
   }
@@ -666,6 +674,7 @@ export class Engine {
       this.#air.follow(this.#camera.position);
     }
     view?.update(now / 1000);
+    this.#models?.update(dt, now / 1000, this.#camera);
     if (view) this.#combat?.update(now / 1000, view.actors, this.#camera);
     if (view && !this.#vr) this.#race?.update(dt, now / 1000, view.actors, this.#camera, this.#follow);
     const focused = this.#focus ? view?.actors.get(this.#focus) : undefined;
