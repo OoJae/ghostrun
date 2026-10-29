@@ -166,6 +166,42 @@ type Target = Vec3 | (() => Vec3);
 const at = (t: Target) => (typeof t === "function" ? t() : t);
 const d2h = (a: Vec3, b: Vec3) => (a[0] - b[0]) * (a[0] - b[0]) + (a[2] - b[2]) * (a[2] - b[2]); // never **: not bit-identical across engines
 
+const armedCache = new WeakMap<WorldBundle, ReturnType<typeof playerWeapons>>();
+/** The player's weapons in this world (none in most worlds: then runners never fire). */
+const armedOf = (b: WorldBundle) => {
+  let w = armedCache.get(b);
+  if (!w) armedCache.set(b, (w = playerWeapons(b)));
+  return w;
+};
+
+/** Armed rivals standing (anyone not on the player's team with a weapon of its own). */
+const threats = (sim: SimWorld) => [...sim.npcs.keys()].filter((id) => !sim.entity(id)!.destroyed && sim.entity(id)!.team !== sim.entity("player")!.team && sim.weaponOf(id) !== null);
+
+/**
+ * Fighting back on the way anywhere: when the weapon in hand is ready and an armed rival is in
+ * range with a clear line, the stick turns to it for one tick and USE fires (whatever the step was
+ * about: a runner crossing a robot's room shoots the robot). The stick toward it, or null.
+ */
+function fightBack(sim: SimWorld, b: WorldBundle): [number, number] | null {
+  const ws = armedOf(b);
+  if (!ws.length || sim.usable()?.label !== "shoot") return null;
+  const wp = ws.find((x) => x.on === "player" || sim.entity(x.on)?.carrier === "player");
+  if (!wp || Number(sim.verbs.find((x) => x.bound.id === wp.id)?.bound.mem.next ?? 0) > sim.tick + 1) return null;
+  const p = sim.pos("player");
+  const reach = wp.range * 0.8;
+  let best = "";
+  let bestD = reach * reach;
+  for (const id of threats(sim)) {
+    const q = sim.pos(id);
+    const d = d2h(p, q);
+    if (d < bestD && Math.abs(q[1] - p[1]) < reach && sim.clearShot([p[0], p[1] + 0.35, p[2]], q, id)) ((best = id), (bestD = d));
+  }
+  if (!best) return null;
+  const q = sim.pos(best);
+  const l = Math.sqrt(bestD) || 1;
+  return [Math.round(((q[0] - p[0]) / l) * 24), Math.round(((q[2] - p[2]) / l) * 24)];
+}
+
 /**
  * Walk the player to `goal` along the navmesh; a function goal is a moving target (an item in
  * someone's hands) and is re-planned as it moves. Returns false if it can't get there in time.
@@ -272,6 +308,11 @@ function walkTo(sim: SimWorld, nav: NavWorld, goal: Target, rng: () => number, s
         btn = BTN.JUMP;
         hopAt = sim.tick + 40;
       }
+    }
+    const back = b && !btn ? fightBack(sim, b) : null;
+    if (back) {
+      [wx, wz] = back;
+      btn = BTN.USE;
     }
     if (b) [wx, wz] = lean(b, sim.laws.speed, p, wx, wz);
     sim.step({ tick: sim.tick + 1, wx, wz, btn });
@@ -961,7 +1002,7 @@ function perform(r: Run, st: PlanStep): "ok" | "lost" | "stuck" {
       const inShot = (id: string) => {
         const p = sim.pos("player");
         const q = sim.pos(id);
-        return d2h(p, q) < reach * reach && Math.abs(q[1] - p[1]) < reach && sim.clearShot([p[0], p[1] + 0.35, p[2]], q);
+        return d2h(p, q) < reach * reach && Math.abs(q[1] - p[1]) < reach && sim.clearShot([p[0], p[1] + 0.35, p[2]], q, id);
       };
       const nearest = (ids: string[]) => {
         const p = sim.pos("player");
@@ -975,7 +1016,8 @@ function perform(r: Run, st: PlanStep): "ok" | "lost" | "stuck" {
           if (sim.entity(wp.on)?.carrier !== "player") return done() ? "ok" : "stuck";
         }
         const up = standing();
-        const ready = nearest(up.filter(inShot));
+        // the target when it is in the open; else an armed rival in range (it is shooting you)
+        const ready = nearest(up.filter(inShot)) ?? nearest(threats(sim).filter(inShot));
         if (!ready) {
           const t = nearest(up);
           if (!t) {

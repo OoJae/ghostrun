@@ -281,6 +281,7 @@ describe("fights", () => {
         .replace('{"op":"verb","id":"vb_jump"', [
           '{"op":"ent","id":"wand","kind":"pickup","noun":"oak wand","zone":"z_plaza","anchor":"wall_w"}',
           '{"op":"ent","id":"golem","kind":"npc","noun":"stone golem","zone":"z_plaza","anchor":"wall_n","team":"blue","props":{"hp":250}}',
+          '{"op":"ent","id":"core","kind":"prop","noun":"reactor core","zone":"z_plaza","anchor":"wall_e","body":"fixed","props":{"hp":150}}',
           '{"op":"verb","id":"vb_jump"',
         ].join("\n"))
         .replace('{"op":"law"', [
@@ -294,14 +295,17 @@ describe("fights", () => {
           '{"op":"rule","id":"r_zap","when":{"t":"hit","a":"player","b":"mate_1"},"then":[{"e":"emit","target":"mate_1","fx":"spark"}]}',
           '{"op":"rule","id":"r_ko","when":{"t":"health_lte","a":"rival_2","n":0},"then":[{"e":"score","target":"team:red","n":1}]}',
           '{"op":"rule","id":"r_quake","when":{"t":"every","n":30},"then":[{"e":"damage","target":"team:blue","n":5}]}',
+          '{"op":"rule","id":"r_boom","when":{"t":"health_lte","a":"core","n":0},"then":[{"e":"emit","target":"core","fx":"boom"}]}',
           '{"op":"rule","id":"r_pickup"',
         ].join("\n")),
     );
     // one weapon each for the blue team; the wand is held, never collected
     expect(bundle.verbs.filter((v) => v.verb === "combat_sport.shoot").map((v) => v.on).sort()).toEqual(["golem", "rival_1", "rival_2", "wand"]);
     expect(bundle.verbs.some((v) => v.on === "wand" && v.verb === "puzzle.collect")).toBe(false);
-    // the golem's own 250; the rest of blue 100 because a rule wears them down
-    expect(hpOf(bundle).sort()).toEqual([["golem", 250], ["player", 100], ["rival_1", 100], ["rival_2", 100]]);
+    // the golem's own 250, the core's own 150; the rest of blue 100 because a rule wears them down
+    expect(hpOf(bundle).sort()).toEqual([["core", 150], ["golem", 250], ["player", 100], ["rival_1", 100], ["rival_2", 100]]);
+    // a core the rules want worn down is something the wand aims at
+    expect(bundle.verbs.find((v) => v.id === "vb_wand")!.params.at).toBe("core");
     // mate_1 has no weapon of its own and you have a wand: it is hit by your shot
     expect(bundle.rules.find((r) => r.id === "r_zap")!.when).toMatchObject({ t: "hit", a: "mate_1", b: "" });
     expect(bundle.rules.find((r) => r.id === "r_knocked_out")).toMatchObject({ when: { t: "health_lte", a: "player", n: 0 }, then: [{ e: "lose" }] });

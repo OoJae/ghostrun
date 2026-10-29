@@ -203,7 +203,7 @@ export function aim(c: VerbCtx, actor: string, at: readonly string[], range: num
     if (d > range + BODY_RADIUS) continue;
     const cos = d < 0.05 ? 1 : (dx * fx + dz * fz) / d;
     if (cos < bestCos - 1e-9 || (cos < bestCos + 1e-9 && d >= bestD)) continue;
-    if (!c.los(from, q)) continue;
+    if (!c.los(from, q, id)) continue;
     best = id;
     bestCos = cos;
     bestD = d;

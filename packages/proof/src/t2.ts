@@ -53,14 +53,17 @@ function lineUp(sim: SimWorld, b: WorldBundle, shooter: string, target: string, 
   const e = b.entities.find((x) => x.id === target);
   const t = sim.pos(target);
   const floor = target === "player" || e?.kind === "npc" ? t[1] - 0.95 : t[1] - (e?.size[1] ?? 0) / 2;
-  for (const [dx, dz] of AROUND) {
-    const p: Vec3 = [t[0] + dx * d, floor + 0.95, t[2] + dz * d];
-    if (!clear(b, p) || !sim.clearShot([p[0] - dx * 0.3, p[1] + 0.35, p[2] - dz * 0.3], t)) continue;
-    sim.teleport(shooter, p);
-    sim.face(shooter, -dx, -dz);
-    return null;
+  // (nearer or a little further when a wall or a neighbour stands there)
+  for (const k of [d, d * 0.6, d * 1.5, 1.2]) {
+    for (const [dx, dz] of AROUND) {
+      const p: Vec3 = [t[0] + dx * k, floor + 0.95, t[2] + dz * k];
+      if (!clear(b, p) || !sim.clearShot([p[0] - dx * 0.3, p[1] + 0.35, p[2] - dz * 0.3], t, target)) continue;
+      sim.teleport(shooter, p);
+      sim.face(shooter, -dx, -dz);
+      return null;
+    }
   }
-  return `no clear spot ${d} m from ${target} to shoot from`;
+  return `no clear spot near ${target} to shoot from`;
 }
 
 /** The armed rival nearest to hurting the player (one that does damage first). */
@@ -150,7 +153,9 @@ function plan(sim: SimWorld, b: WorldBundle, r: Rule, playerTeam: string, presse
     }
     case "touch":
     case "hit": {
-      const p = producers(b).find((x) => x.k === w.t && (!w.b || x.b === w.b) && x.cause);
+      // (the player is never hit by their own throw or shot: those are other recipes)
+      const mine = w.t === "hit" && (w.a === "player" || w.a === `team:${playerTeam}`);
+      const p = producers(b).find((x) => x.k === w.t && (!w.b || x.b === w.b) && x.cause && !(mine && (x.cause.do === "shoot" || x.cause.do === "throw")));
       if (w.t === "hit" && p?.cause?.do === "shoot") {
         // shot by the player: at what the rule names, else the nearest rival (or thing to shoot at)
         const wp = playerWeapons(b).find((x) => x.on === p.b)!;

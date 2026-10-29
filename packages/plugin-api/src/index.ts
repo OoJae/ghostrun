@@ -87,8 +87,8 @@ export interface VerbCtx {
   facing(id: string): readonly [number, number];
   /** Characters: horizontal velocity this tick, m/s (0, 0 for anything else). */
   vel(id: string): readonly [number, number];
-  /** Nothing solid (a static, a closed door, a fixed prop) between the two points? */
-  los(from: Vec3, to: Vec3): boolean;
+  /** Nothing solid (a static, a closed door, a fixed prop) between the two points? `ignore`: the target itself. */
+  los(from: Vec3, to: Vec3, ignore?: string): boolean;
   /** Launch a projectile; the sim marches it every tick and resolves what it hits. */
   fire(s: Shot): void;
 }

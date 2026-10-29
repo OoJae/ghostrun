@@ -240,7 +240,7 @@ export class SimWorld {
         const c = ctrl(id);
         return c ? [c.vx, c.vz] : [0, 0];
       },
-      los: (a, b) => w.clearShot(a, b),
+      los: (a, b, ignore) => w.clearShot(a, b, ignore),
       fire: (s) => {
         w.shots.push({ ...s, at: [...s.at], id: ++w.#shotSeq, p: [s.from[0], s.from[1], s.from[2]], left: s.range, born: w.tick });
         w.#emit("shoot", s.by, s.weapon);
@@ -263,12 +263,15 @@ export class SimWorld {
     return !e.agent && e.kind !== "player" && !e.sensor && !e.carryable && !e.destroyed && e.col !== null && e.col.isEnabled();
   }
 
-  /** Nothing solid between two points (a static, a closed door, a fixed prop)? Characters don't count. */
-  clearShot(a: Vec3, b: Vec3): boolean {
+  /**
+   * Nothing solid between two points (a static, a closed door, a fixed prop)? Characters don't
+   * count, nor does `ignore` (the target itself: a reactor core is solid).
+   */
+  clearShot(a: Vec3, b: Vec3, ignore = ""): boolean {
     for (const s of this.#walls) if (segBox(a, b, s.pos, s.size) >= 0) return false;
     for (const id of this.order) {
       const e = this.ents.get(id)!;
-      if (this.#blocks(e) && segBox(a, b, this.pos(id), e.size) >= 0) return false;
+      if (id !== ignore && this.#blocks(e) && segBox(a, b, this.pos(id), e.size) >= 0) return false;
     }
     return true;
   }
@@ -361,7 +364,7 @@ export class SimWorld {
         if (id === "player" || this.npcs.has(id)) {
           if (team && e.team === team) continue; // no friendly fire
           u = segBody(a, b, this.pos(id));
-        } else if (s.at.includes(id)) u = segBox(a, b, this.pos(id), e.size, SHOT_RADIUS);
+        } else if (s.at.includes(id)) u = segBox(a, b, this.pos(id), e.size, SHOT_RADIUS); // (only what this weapon is meant for: to anyone else a reactor core is cover)
         else if (this.#blocks(e)) ((u = segBox(a, b, this.pos(id), e.size)), (wall = true));
         if (u >= 0 && u < t) ((t = u), (what = wall ? "" : id));
       }

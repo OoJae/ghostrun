@@ -93,7 +93,7 @@ function fights(b: WorldBundle, chain: NonNullable<ReturnType<typeof t0>["chain"
   const out: Planted[] = [];
   const hp = hitPoints(b);
   // who the win needs shot: the ones named, or everyone on the team meant
-  const targets = [...new Set(shots.flatMap((s) => (s.at.startsWith("team:") ? b.entities.filter((e) => e.kind === "npc" && e.team === s.at.slice(5)).map((e) => e.id) : s.at ? [s.at] : b.entities.filter((e) => e.kind === "npc" && e.team !== team).map((e) => e.id))))].filter((id) => b.entities.some((e) => e.id === id && e.kind === "npc"));
+  const targets = [...new Set(shots.flatMap((s) => (s.at.startsWith("team:") ? b.entities.filter((e) => e.kind === "npc" && e.team === s.at.slice(5)).map((e) => e.id) : s.at ? [s.at] : b.entities.filter((e) => e.kind === "npc" && e.team !== team).map((e) => e.id))))].filter((id) => b.entities.some((e) => e.id === id));
   if (!targets.length) return [];
   const worn = shots.some((s) => b.rules.find((r) => r.id === s.rule)?.when.t === "health_lte");
   // damage rules can do instead: any repeatable one, or a once-only one big enough alone
@@ -115,7 +115,7 @@ function fights(b: WorldBundle, chain: NonNullable<ReturnType<typeof t0>["chain"
       const e = w.entities.find((x) => x.id === id)!;
       const [x, z] = [e.pos[0], e.pos[2]];
       const floor = e.pos[1] - e.size[1] / 2;
-      const [r, h, t] = [1.4, 4, 0.4];
+      const [r, h, t] = [Math.max(1.4, Math.max(e.size[0], e.size[2]) / 2 + 0.8), Math.max(4, e.size[1] + 1.5), 0.4];
       const slabs: [number, number, number, number, number, number][] = [
         [x, floor + h / 2, z + r, 2 * r + t, h, t], [x, floor + h / 2, z - r, 2 * r + t, h, t],
         [x + r, floor + h / 2, z, t, h, 2 * r + t], [x - r, floor + h / 2, z, t, h, 2 * r + t],

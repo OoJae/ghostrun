@@ -196,7 +196,7 @@ export function t1(b: WorldBundle, laws: Laws): Chip[] {
   return chips;
 }
 
-const STEP = 0.5;
+const STEP = 0.25; // fine enough that a 0.9 m doorway (0.4 m of room for a body's centre) always has a cell in it
 
 /**
  * The ground the player can stand on, as a 0.5 m grid flooded from the spawn: across each surface
@@ -208,7 +208,7 @@ function groundReached(b: WorldBundle, laws: Laws, playerTeam: string, solid: re
   const spawn = b.entities.find((e) => e.kind === "spawn" && e.team === playerTeam) ?? b.entities.find((e) => e.kind === "spawn");
   const start = spawn ? surfaceUnder(ss, [spawn.pos[0], spawn.pos[1] + 0.2, spawn.pos[2]]) : undefined;
   if (!spawn || !start) return [];
-  const roomy = (x: number, top: number, z: number) => !solid.some((o) => Math.abs(x - o.pos[0]) < o.size[0] / 2 + 0.3 && Math.abs(z - o.pos[2]) < o.size[2] / 2 + 0.3 && o.pos[1] - o.size[1] / 2 < top + 1.7 && o.pos[1] + o.size[1] / 2 > top + 0.3);
+  const roomy = (x: number, top: number, z: number) => !solid.some((o) => Math.abs(x - o.pos[0]) < o.size[0] / 2 + 0.25 && Math.abs(z - o.pos[2]) < o.size[2] / 2 + 0.25 && o.pos[1] - o.size[1] / 2 < top + 1.7 && o.pos[1] + o.size[1] / 2 > top + 0.3);
   const grid = ss.map((s) => {
     const nx = Math.max(1, Math.floor((s.max[0] - s.min[0]) / STEP));
     const nz = Math.max(1, Math.floor((s.max[1] - s.min[1]) / STEP));
@@ -295,9 +295,13 @@ export function t1Range(b: WorldBundle, laws: Laws, playerTeam: "red" | "blue" =
     // per target: the farthest spot in range with a clear line (how much room there is), else why not
     const res = targets.map((id) => {
       const q = centre(id);
+      const e = ents.get(id)!;
+      // (never from on top of the target itself: a crate-sized core is no place to shoot it from)
+      const onIt = (m: Vec3) => e.kind !== "npc" && Math.abs(m[0] - e.pos[0]) <= e.size[0] / 2 && Math.abs(m[2] - e.pos[2]) <= e.size[2] / 2 && m[1] > e.pos[1];
       let near = Infinity;
       let clearAt = -1;
       for (const m of muzzles) {
+        if (onIt(m)) continue;
         const d = Math.sqrt((m[0] - q[0]) * (m[0] - q[0]) + (m[1] - q[1]) * (m[1] - q[1]) + (m[2] - q[2]) * (m[2] - q[2]));
         if (d < near) near = d;
         if (d > range || d <= clearAt) continue;

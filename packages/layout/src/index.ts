@@ -341,7 +341,7 @@ export function repairCombat(b: WorldBundle): string[] {
   const hasHp = (id: string) => b.verbs.some((v) => v.verb === HEALTH && v.on === id);
   for (const e of b.entities) {
     const n = Number(e.props.hp ?? e.props.health ?? Number.NaN);
-    if (e.kind !== "npc" || !(n > 0) || hasHp(e.id)) continue;
+    if (!["npc", "prop", "vehicle"].includes(e.kind) || !(n > 0) || hasHp(e.id)) continue;
     b.verbs.push(vb(uniqueId(b, `vb_hp_${e.id}`), HEALTH, e.id, { hp: n }));
     notes.push(`${e.id}: props.hp ${n} → combat_sport.health`);
   }
@@ -356,8 +356,21 @@ export function repairCombat(b: WorldBundle): string[] {
     for (const id of ms) b.verbs.push(vb(uniqueId(b, `vb_hp_${id}`), HEALTH, id));
     if (ms.length) notes.push(`${ms.join(", ")}: a rule wears ${ref} down, so ${ms.length > 1 ? "they have" : "it has"} 100 hit points`);
   }
+  // something a rule wants shot (a reactor core, a training dummy) is something to aim at
+  const held = heldWeapons(b);
+  const guns = b.verbs.filter((v) => v.verb === SHOOT && (v.on === "player" || held.has(v.on)));
+  for (const r of b.rules) {
+    const e = (r.when.t === "hit" || r.when.t === "health_lte") && (!r.when.b || guns.some((g) => g.on === r.when.b)) ? b.entities.find((x) => x.id === r.when.a && x.kind !== "npc") : undefined;
+    if (!e) continue;
+    for (const g of guns) {
+      const at = String(g.params.at ?? "").split(",").filter(Boolean);
+      if (at.includes(e.id)) continue;
+      g.params = { ...g.params, at: [...at, e.id].join(",") };
+      notes.push(`${e.id}: something to shoot at with ${g.on === "player" ? "your weapon" : g.on} (rule ${r.id} waits for it to be ${r.when.t === "hit" ? "hit" : "worn down"})`);
+    }
+  }
   // "the player hits rival_1": rival_1 shot by the player
-  const armed = b.verbs.some((v) => v.verb === SHOOT && v.on === "player") || heldWeapons(b).size > 0;
+  const armed = guns.length > 0;
   for (const r of b.rules) {
     const w = r.when;
     const npc = armed && w.t === "hit" && w.a === "player" ? b.entities.find((e) => e.id === w.b && e.kind === "npc") : undefined;
