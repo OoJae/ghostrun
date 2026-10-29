@@ -213,7 +213,10 @@ export class RapierSim implements FrameSource {
       this.onEvents?.(evs);
       for (const f of this.#subs) f(evs);
     }
-    const label = this.sim.usable()?.label ?? (this.sim.entity(PLAYER_ID)?.carrying ? "drop" : null);
+    const use = this.sim.usable()?.label;
+    const carrying = Boolean(this.sim.entity(PLAYER_ID)?.carrying);
+    // a weapon in hand always has a use (firing it): holding the key puts it down
+    const label = use ? (carrying && use === "shoot" ? "shoot · hold to drop" : use) : carrying ? "drop" : null;
     if (label !== this.#hint) {
       this.#hint = label;
       this.onHint?.(label);

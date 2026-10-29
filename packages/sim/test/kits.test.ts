@@ -209,6 +209,36 @@ describe("putting things down", () => {
     for (let t = 0; t < 30; t++) sim.step(null);
     expect(sim.entity("orb")?.carrier).toBe(""); // a second before it can be picked up again
   });
+
+  it("a weapon in hand (USE fires it) goes down when USE is held, and is swapped for another one walked over", () => {
+    const gun = (id: string, x: number) => ent(id, "pickup", [x, 0.3, 0], [0.4, 0.4, 0.4], "dynamic");
+    const sim = world([gun("blaster", 0), gun("bow", 3)], [vb("vb_blaster", "combat_sport.shoot", "blaster", { cooldown: 0.5 }), vb("vb_bow", "combat_sport.shoot", "bow")]);
+    run(sim, 20);
+    expect(sim.entity("blaster")?.carrier).toBe("player");
+    expect(sim.usable()).toMatchObject({ on: "blaster", label: "shoot" });
+    // a tap fires; held, the first press fires and two thirds of a second on it goes down
+    const from = sim.tick + 1;
+    const tap = run(sim, 31, (t) => ({ tick: t, wx: 0, wz: 0, btn: t === from ? BTN.USE : 0 })); // (and the cooldown runs out)
+    expect(tap.filter((e) => e.k === "shoot")).toHaveLength(1);
+    expect(sim.entity("blaster")?.carrier).toBe("player");
+    const held = run(sim, 45, press(BTN.USE));
+    expect(held.filter((e) => e.k === "shoot")).toHaveLength(1);
+    expect(held.some((e) => e.k === "drop" && e.a === "blaster" && e.b === "player")).toBe(true);
+    expect(sim.entity("blaster")?.carrier).toBe("");
+    // pick it back up (after stepping away), then walk over the bow: the blaster goes down, the bow is yours
+    at(sim, [-1.5, 1, 0]);
+    run(sim, 10);
+    at(sim, [0, 1, 0]);
+    run(sim, 10);
+    expect(sim.entity("blaster")?.carrier).toBe("player");
+    at(sim, [3, 1, 0]);
+    const swap = run(sim, 10);
+    expect(swap.filter((e) => e.k === "drop" || e.k === "pickup").map((e) => [e.k, e.a])).toEqual([["drop", "blaster"], ["pickup", "bow"]]);
+    expect(sim.entity("bow")?.carrier).toBe("player");
+    run(sim, 30);
+    expect(sim.entity("blaster")?.carrier).toBe(""); // the one put down stays down while you stand on it
+    sim.free();
+  });
 });
 
 describe("what USE picks", () => {

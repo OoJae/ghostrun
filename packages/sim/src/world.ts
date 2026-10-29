@@ -61,6 +61,9 @@ export interface Flying extends Shot {
 /** Logs an event this tick; returns its index in the tick's events (what a later one's cause names). */
 type Push = (k: string, a: string, b?: string, v?: number | string, rule?: string, cause?: number) => number;
 
+/** USE held this many ticks (about two thirds of a second) puts down what you carry: a weapon too. */
+export const HOLD_TO_DROP = 40;
+
 const byId = <T extends { id: string }>(xs: readonly T[]) => [...xs].sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
 
 export class SimWorld {
@@ -93,10 +96,12 @@ export class SimWorld {
   #ctx!: VerbCtx;
   #emit: (k: string, a: string, b?: string, v?: number | string) => void = () => {};
   #checkpoint = new Map<string, Vec3>();
-  #useHeld = new Set<string>();
+  #useHeld = new Map<string, number>(); // agent → the tick its USE press began
   #facing = new Map<string, [number, number]>(); // agent → the way it last moved (unit), for USE
   /** Items thrown with combat_sport.throw (and weapons to hold): only the player picks them up. */
   readonly #thrown = new Set<string>();
+  /** Weapons to hold (a shoot verb on a pickup). */
+  readonly #arms = new Set<string>();
   #agents: string[] = [];
   /** Hit points of everything with combat_sport.health (the player, NPCs, a prop to break). */
   readonly #hp = new Map<string, { hp: number; max: number; respawn: boolean }>();
@@ -176,6 +181,7 @@ export class SimWorld {
       if (e && !e.init && plugin.initial) e.state = e.init = plugin.initial;
     }
     for (const v of bundle.verbs) if (v.verb === "combat_sport.throw" || (v.verb === SHOOT && this.ents.get(v.on)?.carryable)) this.#thrown.add(v.on);
+    for (const v of bundle.verbs) if (v.verb === SHOOT && this.ents.get(v.on)?.carryable) this.#arms.add(v.on);
     // hit points (clamped like any verb's params), and the weapons characters have of their own
     const hpSpec = kitVerb(HEALTH)!.params;
     for (const v of byId(bundle.verbs)) {
@@ -704,11 +710,13 @@ export class SimWorld {
     // 3b. anyone who fell out of the world comes back (a pit, or off the edge of a platform)
     for (const id of this.#agents) if (!this.ents.get(id)!.destroyed && this.pos(id)[1] < -20) this.#respawn(id);
 
-    // 3c. USE: a fresh press runs the nearest usable verb in reach
+    // 3c. USE: a fresh press runs the nearest usable verb in reach; held for HOLD_TO_DROP ticks, it
+    // puts down what you carry (a weapon in hand always has a use: firing it)
     for (const id of this.#agents) {
       const btn = id === "player" ? (input?.btn ?? 0) : (npcIn?.get(id)?.btn ?? 0);
       const down = (btn & BTN.USE) !== 0;
-      if (down && !this.#useHeld.has(id)) {
+      const since = this.#useHeld.get(id);
+      if (down && since === undefined) {
         const u = this.usable(id);
         const v = u && this.verbs.find((x) => x.bound.id === u.verb);
         if (v) {
@@ -716,19 +724,10 @@ export class SimWorld {
           const acted = v.plugin.use!.run(this.#ctx, v.bound, id) !== false;
           // "the player used X" is a touch, unless the verb already logged one (inspect, with its text)
           if (acted && !v.plugin.use!.quiet && !evs.slice(before).some((e) => e.k === "touch" && e.b === v.bound.on)) push("touch", id, v.bound.on);
-        } else if (this.ents.get(id)!.carrying) {
-          // nothing to use in reach: put down what you carry (or a wrong pickup would be yours for good)
-          const item = this.ents.get(id)!.carrying;
-          const p = this.pos(id);
-          this.#ctx.release(item, [p[0], p[1] - PLAYER_HALF_HEIGHT - PLAYER_RADIUS + Math.max(...this.ents.get(item)!.size) / 2 + 0.02, p[2]]);
-          // free hands at once for something else (that's why it went down); this one stays down
-          this.#noPickup.delete(id);
-          this.#putDown.set(item, id);
-          push("drop", item, id);
-        }
-      }
-      if (down) this.#useHeld.add(id);
-      else this.#useHeld.delete(id);
+        } else if (this.ents.get(id)!.carrying) this.#setDown(id, push); // nothing to use in reach: put down what you carry (or a wrong pickup would be yours for good)
+      } else if (down && t - since! === HOLD_TO_DROP && this.ents.get(id)!.carrying) this.#setDown(id, push);
+      if (!down) this.#useHeld.delete(id);
+      else if (since === undefined) this.#useHeld.set(id, t);
     }
 
     // 3d. shots in flight
@@ -760,13 +759,16 @@ export class SimWorld {
         // the player and the cast that moves; a guard standing as a sensor has no hands
         if (agentId !== "player" && (!ag.agent || !this.npcs.has(agentId))) continue;
         if (agentId !== "player" && this.#thrown.has(itemId)) continue; // bots don't throw: they'd only hoard the ball
-        if (ag.carrying || ag.destroyed || (this.#noPickup.get(agentId) ?? 0) > t) continue;
+        // a weapon in the player's hands is swapped for another one walked over (the first goes down)
+        const swap = agentId === "player" && ag.carrying !== "" && this.#arms.has(ag.carrying) && this.#arms.has(itemId);
+        if ((ag.carrying && !swap) || ag.destroyed || (this.#noPickup.get(agentId) ?? 0) > t) continue;
         const touching = this.#touching(agentId, itemId);
         if (this.#putDown.get(itemId) === agentId) {
           if (touching) continue; // put down to free the hands: it stays down while they stand on it
           this.#putDown.delete(itemId);
         }
         if (touching) {
+          if (swap) this.#setDown(agentId, push);
           this.attach(itemId, agentId);
           push("pickup", itemId, agentId);
           break;
@@ -871,6 +873,16 @@ export class SimWorld {
     const dx = p[0] - q[0];
     const dz = p[2] - q[2];
     return dx * dx + dz * dz <= r * r && Math.abs(p[1] - q[1]) <= 1.4 + up;
+  }
+
+  /** Put down what an agent carries, at its feet: its hands are free at once, and this one stays down while it stands there. */
+  #setDown(id: string, push: Push) {
+    const item = this.ents.get(id)!.carrying;
+    const p = this.pos(id);
+    this.#ctx.release(item, [p[0], p[1] - PLAYER_HALF_HEIGHT - PLAYER_RADIUS + Math.max(...this.ents.get(item)!.size) / 2 + 0.02, p[2]]);
+    this.#noPickup.delete(id);
+    this.#putDown.set(item, id);
+    push("drop", item, id);
   }
 
   #drop(itemId: string, carrierId: string, towardId: string) {
