@@ -1,7 +1,7 @@
 // The air around a world: its sky and fog, the reflection map its glossy surfaces pick up, and what
 // falls or drifts through it (rain, snow, dust, embers, bubbles…). One per engine; each world's look
 // restyles it. Rain and snow follow the camera and stay outside a cut-away building's walls.
-import type { Fog, Scene, Texture, Vector3, WebGPURenderer } from "three/webgpu";
+import { BackSide, Mesh, MeshBasicNodeMaterial, SphereGeometry, type Fog, type Scene, type Texture, type Vector3, type WebGPURenderer } from "three/webgpu";
 import type { Drift, LookStyle } from "./looks";
 import { makeParticles, type Particles } from "./particles";
 import { makeRain } from "./rain";
@@ -16,12 +16,25 @@ export class Atmosphere {
   readonly #drift = new Map<Exclude<Drift, "">, Particles>();
   /** Reflection maps by look, made the first time a look is seen (the neon one at boot). */
   readonly #envs = new Map<string, { texture: Texture; dispose(): void }>();
+  /**
+   * The sky as a dome around the camera drawn after everything opaque, so its stars, clouds and
+   * aurora are shaded only where sky shows (a scene background is shaded under every pixel).
+   */
+  readonly #sky: Mesh;
   #floorY = 0;
 
   constructor(renderer: WebGPURenderer, scene: Scene) {
     this.#renderer = renderer;
     this.#scene = scene;
-    scene.backgroundNode = skyNode();
+    const dome = new MeshBasicNodeMaterial({ side: BackSide, depthWrite: false });
+    dome.fog = false;
+    dome.colorNode = skyNode();
+    this.#sky = new Mesh(new SphereGeometry(1, 32, 16), dome);
+    this.#sky.scale.setScalar(300); // inside the camera's far plane, beyond anything a world places
+    this.#sky.renderOrder = 1e6;
+    this.#sky.frustumCulled = false;
+    this.#sky.name = "sky";
+    scene.add(this.#sky);
     scene.fog = makeFog();
     const env = environment(renderer);
     this.#envs.set("neon", env);
@@ -59,11 +72,14 @@ export class Atmosphere {
 
   /** Where the camera (or headset) is: the weather's box follows it. */
   follow(p: Vector3) {
+    this.#sky.position.copy(p);
     this.#rain.follow(p);
     for (const d of this.#drift.values()) if (d.object.visible) d.follow(p, this.#floorY);
   }
 
   dispose() {
+    this.#sky.geometry.dispose();
+    (this.#sky.material as MeshBasicNodeMaterial).dispose();
     this.#rain.dispose();
     for (const d of this.#drift.values()) d.dispose();
     for (const e of this.#envs.values()) e.dispose();

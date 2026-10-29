@@ -74,7 +74,7 @@ export function skyNode() {
     If(sky.clouds.greaterThan(0), () => {
       // a layer of soft clouds overhead, thinning to the horizon
       const q = d.xz.div(max(y, 0.02).add(0.12)).mul(0.55);
-      const n = mx_fractal_noise_float(vec3(q.x.add(time.mul(0.008)), q.y, 3.7), 3, 2, 0.5).mul(0.5).add(0.5);
+      const n = mx_fractal_noise_float(vec3(q.x.add(time.mul(0.008)), q.y, 3.7), 2, 2, 0.5).mul(0.5).add(0.5);
       const cover = smoothstep(float(0.62).sub(sky.clouds.mul(0.42)), float(0.92).sub(sky.clouds.mul(0.3)), n);
       const fade = smoothstep(0.01, 0.2, y);
       col.assign(mix(col, sky.cloudColor.mul(n.mul(0.25).add(0.8)), cover.mul(fade).mul(sky.clouds.mul(1.3).min(0.95))));

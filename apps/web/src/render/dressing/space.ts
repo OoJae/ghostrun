@@ -4,7 +4,7 @@
 // pocked with craters, with the Earth in a black sky.
 import type { WorldBundle } from "@ghostrun/ir";
 import { CylinderGeometry, DodecahedronGeometry, Mesh, MeshBasicNodeMaterial, MeshStandardNodeMaterial, RingGeometry, SphereGeometry, TorusGeometry, DoubleSide } from "three/webgpu";
-import { abs, float, floor, fract, hash, max, mix, mx_worley_noise_float, normalView, oneMinus, positionViewDirection, positionWorld, sin, smoothstep, step, time, vec3 } from "three/tsl";
+import { abs, float, floor, fract, hash, max, mix, mx_worley_noise_float, normalView, oneMinus, positionViewDirection, positionWorld, sin, smoothstep, step, time, vec2, vec3 } from "three/tsl";
 import { BoxBatch } from "../boxes";
 import type { LookStyle } from "../looks";
 import { lin } from "../materials";
@@ -103,7 +103,7 @@ export function dressSpace(b: WorldBundle, look: LookStyle, c: Ctx): Dressed {
     const flat = max(is(a.cls, CLS.ground), is(a.cls, CLS.path));
     const top = mix(d.tone, float(0.25), isCover); // a screen is dark glass
     // the moon's cliffs: plain grey rock
-    const rock = noise01(a.p, 0.6).mul(0.3).add(noise01(a.p, 3, 4).mul(0.15)).add(0.6);
+    const rock = moon ? noise01(a.p, 0.6).mul(0.3).add(noise01(a.p, 3, 4).mul(0.15)).add(0.6) : float(1);
     const sideTone = mix(mix(wall, d.tone, isLedge), rock, is(a.cls, CLS.trim));
     const k = mix(sideTone, top, max(a.top, flat));
     let emissive: N3 = hex3("#4fd8ff", 2.2).mul(strip.mul(is(a.cls, CLS.wall)).mul(oneMinus(a.top)));
@@ -160,7 +160,7 @@ export function dressSpace(b: WorldBundle, look: LookStyle, c: Ctx): Dressed {
   // the ground: hull plating to the horizon with running lights, or the moon's cratered dust
   const ground = groundMaterial((p) => {
     if (moon) {
-      const w = mx_worley_noise_float(p.mul(0.09));
+      const w = mx_worley_noise_float(vec2(p.x.mul(0.09), p.z.mul(0.09)));
       const crater = smoothstep(0.12, 0.3, w).mul(0.4).add(smoothstep(0.32, 0.26, w).mul(0.25)).add(0.6);
       const dust = noise01(p, 0.6).mul(0.15).add(noise01(p, 4, 2).mul(0.08)).add(0.8);
       return { color: hex3("#8e8e8a").mul(crater.mul(dust)), roughness: float(0.95), bump: crater.mul(0.6) };

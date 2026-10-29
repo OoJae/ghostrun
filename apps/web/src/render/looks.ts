@@ -126,7 +126,7 @@ const GALLERY: Palettes = {
     fog: { color: "#ece8e0", near: 45, far: 200 },
     hemi: { sky: "#f4f6ff", ground: "#7d766b", intensity: 2.4 },
     sun: { color: "#fff3e0", intensity: 2.0, ...CLASSIC },
-    bloom: 0.1, exposure: 0.85, env: 0.7, envLights: [["#ffffff", 2.5], ["#ffe2b8", 1.5]],
+    bloom: 0.1, exposure: 0.85, env: 0.7, envLights: [["#ffffff", 1.4], ["#ffd9a8", 1.0]],
   },
   dusk: {
     sky: { zenith: "#2e3a66", horizon: "#f0a27a", glow: "#ffb48a", glowScale: 0.1, sun: { color: "#ffa070", scale: 8, size: 0.035, halo: 0.6 } },

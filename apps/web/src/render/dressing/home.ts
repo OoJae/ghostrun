@@ -9,7 +9,7 @@ import { abs, float, fract, length, max, mix, oneMinus, sin, smoothstep, step, u
 import { BoxBatch } from "../boxes";
 import type { LookStyle } from "../looks";
 import { lin } from "../materials";
-import { books, CLS, groundMaterial, hex3, is, liquidMaterial, noise01, planks, staticsMaterial, type N } from "../surfaces";
+import { books, CLS, groundMaterial, hex3, is, liquidMaterial, noise01, planks, staticsMaterial, type N, type N3 } from "../surfaces";
 import { batchMesh, classify, clear, cutWall, instances, lamps, ring, rnd, style, type Ctx, type Dressed, type Item, type Piece, type V3 } from "./common";
 
 const WOODS = ["#8a5a36", "#6a4428", "#a87a4e"];
@@ -166,31 +166,45 @@ export function dressHome(b: WorldBundle, look: LookStyle, c: Ctx): Dressed {
   const mat = staticsMaterial((a) => {
     const fine = noise01(a.p, 3, 2);
     const up = a.p.y.sub(groundY);
-    // floors: boards, tatami, the lawn, raked gravel
+    // floors: boards, tatami, the lawn, raked gravel (only what this variant can show is built)
     const pl = planks(a.p.x, a.p.z, 0.24, 2.4);
-    const grain = noise01(a.p.mul(vec3(1, 1, 8)), 3).mul(0.12).add(0.94);
-    const boards = mix(pl.id.mul(0.22).add(0.84).mul(grain), float(0.5), pl.seam);
-    // tatami: 1.8 × 0.9 m mats, every other row offset by half a mat, dark cloth edges
-    const mu = fract(a.p.x.div(1.8).add(step(0.5, fract(a.p.z.div(1.8))).mul(0.5)));
-    const mv = fract(a.p.z.div(0.9));
-    const matEdge = max(smoothstep(0.035, 0.0, mu.min(oneMinus(mu))), smoothstep(0.07, 0.0, mv.min(oneMinus(mv))));
-    const tatami = mix(fine.mul(0.1).add(0.92).mul(sin(a.p.x.mul(60)).mul(0.03).add(1)), float(0.35), matEdge);
-    const lawn = fine.mul(0.25).add(noise01(a.p, 0.3).mul(0.15)).add(0.7);
-    const gravel = sin(a.p.z.mul(9).add(noise01(a.p, 0.4).mul(2))).mul(0.12).add(fine.mul(0.06)).add(0.88);
-    const floorK = mix(mix(lawn, boards, is(a.alt, 1)), mix(tatami, gravel, is(a.alt, 3)), max(is(a.alt, 2), is(a.alt, 3)));
+    let floorK: N;
+    if (jp) {
+      // tatami: 1.8 × 0.9 m mats, every other row offset by half a mat, dark cloth edges
+      const mu = fract(a.p.x.div(1.8).add(step(0.5, fract(a.p.z.div(1.8))).mul(0.5)));
+      const mv = fract(a.p.z.div(0.9));
+      const matEdge = max(smoothstep(0.035, 0.0, mu.min(oneMinus(mu))), smoothstep(0.07, 0.0, mv.min(oneMinus(mv))));
+      const tatami = mix(fine.mul(0.1).add(0.92).mul(sin(a.p.x.mul(60)).mul(0.03).add(1)), float(0.35), matEdge);
+      const gravel = sin(a.p.z.mul(9).add(noise01(a.p, 0.4).mul(2))).mul(0.12).add(fine.mul(0.06)).add(0.88);
+      floorK = mix(tatami, gravel, is(a.alt, 3));
+    } else {
+      const grain = noise01(a.p.mul(vec3(1, 1, 8)), 3).mul(0.12).add(0.94);
+      const boards = mix(pl.id.mul(0.22).add(0.84).mul(grain), float(0.5), pl.seam);
+      const lawn = fine.mul(0.25).add(noise01(a.p, 0.3).mul(0.15)).add(0.7);
+      floorK = mix(lawn, boards, is(a.alt, 1));
+    }
     // walls: wallpaper over wainscot, shoji (paper in a dark wooden grid), or books
-    const stripes = step(0.5, fract(a.along.mul(3))).mul(0.06).add(0.94);
-    const wainscot = step(up, 0.8);
-    const rail = smoothstep(0.03, 0.0, abs(up.sub(0.8)));
-    const paper = mix(stripes, mix(float(1.06), float(0.8), rail), wainscot);
-    const grid = max(smoothstep(0.03, 0.0, abs(fract(a.along.div(0.45)).sub(0.5)).sub(0.47).abs()), smoothstep(0.03, 0.0, abs(fract(up.div(0.4)).sub(0.5)).sub(0.47).abs()));
-    const post = smoothstep(0.08, 0.0, abs(fract(a.along.div(1.8)).sub(0.5)).sub(0.45).abs());
-    const shoji = mix(float(1.05), float(0.28), max(grid, post));
-    const bk = books(a.along, up);
+    let wallK: N;
+    let wallTint: N3;
+    let shojiWood: N3 = vec3(1, 1, 1);
+    if (jp) {
+      const grid = max(smoothstep(0.03, 0.0, abs(fract(a.along.div(0.45)).sub(0.5)).sub(0.47).abs()), smoothstep(0.03, 0.0, abs(fract(up.div(0.4)).sub(0.5)).sub(0.47).abs()));
+      const post = smoothstep(0.08, 0.0, abs(fract(a.along.div(1.8)).sub(0.5)).sub(0.45).abs());
+      wallK = mix(float(1.05), float(0.28), max(grid, post));
+      wallTint = vec3(1, 1, 1);
+      shojiWood = mix(vec3(1, 1, 1), hex3("#5a3a22").mul(3), max(grid, post));
+    } else if (library) {
+      const bk = books(a.along, up);
+      wallK = bk.tone;
+      wallTint = bk.tint.mul(1.8);
+    } else {
+      const stripes = step(0.5, fract(a.along.mul(3))).mul(0.06).add(0.94);
+      const wainscot = step(up, 0.8);
+      const rail = smoothstep(0.03, 0.0, abs(up.sub(0.8)));
+      wallK = mix(stripes, mix(float(1.06), float(0.8), rail), wainscot);
+      wallTint = mix(hex3("#ffffff"), hex3("#f0dccc"), oneMinus(wainscot));
+    }
     const isWall = is(a.cls, CLS.wall);
-    const wallK = mix(mix(paper, shoji, is(a.alt, 1)), bk.tone, is(a.alt, 2));
-    const wallTint = mix(mix(mix(hex3("#ffffff"), hex3("#f0dccc"), oneMinus(wainscot)), hex3("#ffffff"), is(a.alt, 1)), bk.tint.mul(1.8), is(a.alt, 2));
-    const shojiWood = mix(vec3(1, 1, 1), hex3("#5a3a22").mul(3), max(grid, post).mul(is(a.alt, 1)));
     // furniture boxes: wood with a lighter top
     const woodK = noise01(a.p.mul(vec3(1, 4, 1)), 2).mul(0.15).add(0.88);
     const flat = is(a.cls, CLS.ground);

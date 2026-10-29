@@ -3,7 +3,7 @@
 // underwater variant is a sandy seabed under shifting caustics, with coral and kelp.
 import type { WorldBundle } from "@ghostrun/ir";
 import { ConeGeometry, CylinderGeometry, DodecahedronGeometry, IcosahedronGeometry, MeshStandardNodeMaterial, SphereGeometry } from "three/webgpu";
-import { abs, float, fract, max, mix, mx_worley_noise_float, oneMinus, positionWorld, sin, smoothstep, time, vec3 } from "three/tsl";
+import { abs, float, fract, max, mix, mx_worley_noise_float, oneMinus, positionWorld, sin, smoothstep, time, vec2, vec3 } from "three/tsl";
 import { BoxBatch } from "../boxes";
 import type { LookStyle } from "../looks";
 import { lin } from "../materials";
@@ -204,7 +204,8 @@ export function dressDesert(b: WorldBundle, look: LookStyle, c: Ctx): Dressed {
 
 /** Caustics: bright, shifting cells of light thrown down through the waves. */
 function caustics(p: N3): N3 {
-  const w = mx_worley_noise_float(vec3(p.x.mul(0.7), p.z.mul(0.7), time.mul(0.35)));
+  // one layer of 2D cells drifting and swaying: far cheaper than a 3D Voronoi, and it still shimmers
+  const w = mx_worley_noise_float(vec2(p.x.mul(0.7).add(time.mul(0.25)), p.z.mul(0.7).add(sin(time.mul(0.4).add(p.x.mul(0.3))).mul(0.4))));
   return hex3("#9ff4ff", 0.5).mul(smoothstep(0.25, 0.0, w).add(smoothstep(0.55, 0.15, w).mul(0.25)));
 }
 

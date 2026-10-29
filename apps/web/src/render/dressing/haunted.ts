@@ -151,11 +151,11 @@ export function dressHaunted(b: WorldBundle, look: LookStyle, c: Ctx): Dressed {
     // indoors: dark wainscot below, faded damask above
     const wainscot = step(a.p.y.sub(groundY), float(0.75));
     const damask = sin(a.along.mul(9)).mul(sin(a.p.y.mul(9))).abs().pow(3).mul(0.25).add(0.75);
-    const panel = mix(damask, planks(a.p.y, a.along, 0.2, 2.2).id.mul(0.2).add(0.6), wainscot);
+    const panel = cut ? mix(damask, planks(a.p.y, a.along, 0.2, 2.2).id.mul(0.2).add(0.6), wainscot) : float(1);
     // a library's shelves: rows of book spines, dusty
-    const bk = books(a.along, a.p.y.sub(groundY));
-    const shelves = bk.tone.mul(0.8);
-    const bookTint = bk.tint.mul(0.85);
+    const bk = library ? books(a.along, a.p.y.sub(groundY)) : null;
+    const shelves = bk ? bk.tone.mul(0.8) : float(1);
+    const bookTint = bk ? bk.tint.mul(0.85) : vec3(1, 1, 1);
     const alt = a.alt;
     const isWall = is(a.cls, CLS.wall);
     const wallSide = mix(mix(blocks, panel, is(alt, 1)), shelves, is(alt, 2));

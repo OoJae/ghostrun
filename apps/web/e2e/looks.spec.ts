@@ -103,7 +103,7 @@ for (const fx of FIXTURES) {
 }
 
 test("looks: gallery worlds", async ({ page }) => {
-  test.setTimeout(600_000);
+  test.setTimeout(1_200_000); // 22 worlds; headless Chromium's software rasteriser is slow
   const errors = collectErrors(page);
   await page.goto(`/?gl=${GL}&prewarm=0${DPR}`);
   await page.waitForFunction(() => window.__GHOSTRUN__?.ready === true, null, { timeout: 90_000 });
