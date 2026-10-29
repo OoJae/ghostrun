@@ -19,6 +19,8 @@ export interface GhostrunProbe {
   prewarmMs?: number;
   /** In an immersive VR session. */
   vr?: boolean;
+  /** The ghost being raced (absent when there is none): where it is drawn this frame, by tick. */
+  ghost?: { shown: boolean; tick: number; p: [number, number, number]; finished: boolean };
 }
 
 declare global {
