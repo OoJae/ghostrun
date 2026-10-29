@@ -51,6 +51,8 @@ export class Sound {
   readonly #duck: GainNode;
   /** Music and ambience together, lowered while someone speaks. */
   readonly #talk: GainNode;
+  /** Their reverb send, lowered with them: a voice over a ducked bed shouldn't still hear its echo. */
+  readonly #talkRev: GainNode;
   readonly #revIn: GainNode;
   readonly #revOut: GainNode;
   readonly #noise: AudioBuffer;
@@ -109,8 +111,9 @@ export class Sound {
     this.#revIn = ctx.createGain();
     this.#revOut = gain(ctx, WET.neon, this.#master);
     this.#revIn.connect(rev).connect(this.#revOut);
-    this.#music = new Music(ctx, music, this.#revIn, this.#noise);
-    this.#ambience = new Ambience(ctx, amb, this.#revIn, this.#noise);
+    this.#talkRev = gain(ctx, 1, this.#revIn);
+    this.#music = new Music(ctx, music, this.#talkRev, this.#noise);
+    this.#ambience = new Ambience(ctx, amb, this.#talkRev, this.#noise);
 
     this.#probe = { state: ctx.state, muted: o.muted, played: 0, counts: {} };
     probe().audio = this.#probe;
@@ -143,11 +146,12 @@ export class Sound {
 
   /** Someone is speaking (an NPC, the Host): the music and the beds step back under the voice. */
   voice(on: boolean) {
-    const g = this.#talk.gain;
     const now = this.ctx.currentTime;
-    g.cancelScheduledValues(now);
-    g.setValueAtTime(g.value, now);
-    g.setTargetAtTime(on ? 0.35 : 1, now, on ? 0.08 : 0.45);
+    for (const g of [this.#talk.gain, this.#talkRev.gain]) {
+      g.cancelScheduledValues(now);
+      g.setValueAtTime(g.value, now);
+      g.setTargetAtTime(on ? 0.35 : 1, now, on ? 0.08 : 0.45);
+    }
     this.#probe.ducked = on;
   }
 
