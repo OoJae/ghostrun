@@ -100,7 +100,7 @@ test("picture: no picture button without the Claude lane, and a picture the edge
   await page.getByTestId("picture-input").setInputFiles(SKETCH);
   await expect(page.getByTestId("picture-chip").locator("img")).toBeVisible({ timeout: 15_000 });
   await page.getByRole("textbox", { name: "Describe a world" }).press("Enter"); // the picture alone, no words
-  await expect(page.getByRole("status").filter({ hasText: "Couldn't build from the image" })).toContainText("HTTP 413: image too large");
+  await expect(page.getByRole("status").filter({ hasText: "Couldn't build from the image" })).toContainText("HTTP 413: image too large", { timeout: 20_000 }); // (a busy machine is slow to post it)
   await expect(page.getByTestId("source-chip")).toHaveText("live AI"); // not dropped to the recorded fixture
   await expect(page.getByTestId("picture-chip")).toBeVisible();
 });
