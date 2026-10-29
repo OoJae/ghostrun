@@ -9,7 +9,7 @@ import { abs, float, fract, length, max, mix, oneMinus, sin, smoothstep, step, u
 import { BoxBatch } from "../boxes";
 import type { LookStyle } from "../looks";
 import { lin } from "../materials";
-import { books, CLS, groundMaterial, hex3, is, liquidMaterial, noise01, planks, staticsMaterial, type N, type N3 } from "../surfaces";
+import { books, CLS, grain, groundMaterial, hex3, is, liquidMaterial, noise01, planks, staticsMaterial, type N, type N3 } from "../surfaces";
 import { batchMesh, classify, clear, cutWall, instances, lamps, ring, rnd, style, type Ctx, type Dressed, type Item, type Piece, type V3 } from "./common";
 
 const WOODS = ["#8a5a36", "#6a4428", "#a87a4e"];
@@ -166,7 +166,7 @@ export function dressHome(b: WorldBundle, look: LookStyle, c: Ctx): Dressed {
   // ---- materials ----------------------------------------------------------------------------
   // floors and the rest are separate draws, so each pixel runs only the pattern it shows
   const floorMat = staticsMaterial((a) => {
-    const fine = noise01(a.p, 3, 2);
+    const fine = grain(a.along, a.up, 3);
     if (jp) {
       // tatami: 1.8 × 0.9 m mats, every other row offset by half a mat, dark cloth edges; raked gravel outside
       const mu = fract(a.p.x.div(1.8).add(step(0.5, fract(a.p.z.div(1.8))).mul(0.5)));
@@ -179,8 +179,9 @@ export function dressHome(b: WorldBundle, look: LookStyle, c: Ctx): Dressed {
     }
     // oak boards inside, the lawn outside
     const pl = planks(a.p.x, a.p.z, 0.24, 2.4);
-    const grain = noise01(a.p.mul(vec3(1, 1, 8)), 3).mul(0.12).add(0.94);
-    const boards = mix(pl.id.mul(0.22).add(0.84).mul(grain), float(0.5), pl.seam);
+    // wood grain: streaks stretched along the boards
+    const streaks = grain(a.p.x.mul(0.4), a.p.z.mul(8), 3).mul(0.12).add(0.94);
+    const boards = mix(pl.id.mul(0.22).add(0.84).mul(streaks), float(0.5), pl.seam);
     const lawn = fine.mul(0.25).add(0.75);
     const k = mix(lawn, boards, is(a.alt, 1));
     return { color: vec3(k, k, k), roughness: mix(float(0.75), float(0.4), is(a.alt, 1)), bump: pl.seam.mul(-0.02).mul(is(a.alt, 1)) };
@@ -239,7 +240,7 @@ export function dressHome(b: WorldBundle, look: LookStyle, c: Ctx): Dressed {
 
   const ground = groundMaterial((p) => {
     const n1 = noise01(p, 0.2);
-    const fine = noise01(p, 3, 4);
+    const fine = grain(p.x, p.z, 3);
     // a tea house sits in raked gravel; a house in a lawn
     const rake = sin(p.z.mul(9).add(n1.mul(2))).mul(0.12).add(0.9);
     return { color: hex3(jp ? "#a8a89a" : "#5e8e44").mul(jp ? rake.mul(fine.mul(0.06).add(0.95)) : fine.mul(0.2).add(n1.mul(0.15)).add(0.75)), roughness: float(0.95) };

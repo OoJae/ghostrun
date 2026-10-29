@@ -8,7 +8,7 @@ import { abs, float, hash, instanceIndex, length, mix, oneMinus, positionWorld, 
 import { BoxBatch } from "../boxes";
 import type { LookStyle } from "../looks";
 import { lin } from "../materials";
-import { books, CLS, groundMaterial, hex3, is, liquidMaterial, masonry, noise01, planks, staticsMaterial } from "../surfaces";
+import { books, CLS, grain, groundMaterial, hex3, is, liquidMaterial, masonry, noise01, planks, staticsMaterial } from "../surfaces";
 import { batchMesh, classify, clear, cutWall, instances, lamps, merged, ring, rnd, style, type Ctx, type Dressed, type Item, type V3 } from "./common";
 
 /** A bare dead tree, 6 m at scale 1: a leaning trunk, crooked limbs. */
@@ -146,7 +146,7 @@ export function dressHaunted(b: WorldBundle, look: LookStyle, c: Ctx): Dressed {
   const yard = staticsMaterial((a) => {
     // dead grass outside, worn boards inside
     const n1 = noise01(a.p, 0.5);
-    const fine = noise01(a.p, 3.7, 2);
+    const fine = grain(a.along, a.up, 3.7);
     const grass = mix(n1.mul(0.3).add(0.75), fine.mul(0.3).add(0.6), smoothstep(0.55, 0.7, n1));
     const boards = cut ? planks(a.p.x, a.p.z, 0.22, 2.4) : null;
     const k = boards ? mix(grass, mix(boards.id.mul(0.25).add(0.7), float(0.35), boards.seam), is(a.alt, 1)) : grass;
@@ -154,7 +154,7 @@ export function dressHaunted(b: WorldBundle, look: LookStyle, c: Ctx): Dressed {
   }, { roughness: 0.9 });
   const mat = staticsMaterial((a) => {
     const n1 = noise01(a.p, 0.5);
-    const fine = noise01(a.p, 3.7, 2);
+    const fine = grain(a.along, a.up, 3.7);
     // old stone: blocks, mortar gone dark, grime and moss rising from the ground
     const m = masonry(a.along, a.up, 0.9, 0.42, 0.06);
     const blocks = mix(m.id.mul(0.25).add(0.82), float(0.45), m.mortar).mul(fine.mul(0.25).add(0.85));
@@ -239,7 +239,7 @@ export function dressHaunted(b: WorldBundle, look: LookStyle, c: Ctx): Dressed {
   const ground = groundMaterial((p) => {
     const n1 = noise01(p, 0.12);
     const patch = smoothstep(0.45, 0.65, noise01(p, 0.3, 4));
-    const fine = noise01(p, 3, 6);
+    const fine = grain(p.x, p.z, 3);
     const color = mix(hex3("#4a4e3a"), hex3("#3a3228"), patch).mul(fine.mul(0.25).add(n1.mul(0.2)).add(0.7));
     return { color, roughness: float(0.95), bump: fine.mul(0.05) };
   }, { bump: 1 });

@@ -166,3 +166,20 @@ export function books(along: N, up: N) {
   const tint = mix(hex3("#9a3a2a"), mix(hex3("#2a5a3a"), hex3("#2a3a7a"), step(0.5, hash(spine.mul(3)))), step(0.4, hb));
   return { tone, tint: mix(tint, hex3("#c8a060"), step(0.85, hash(spine.mul(5)))) };
 }
+
+/**
+ * Fine grain, 0..1: a smooth 2D value noise on a face's own coordinates, a few hashes a pixel
+ * (a 3D gradient noise for every speck of sand cost a millisecond of a big screen on its own).
+ */
+export function grain(u: N, v: N, scale: number): N {
+  const x = u.mul(scale).add(20000);
+  const y = v.mul(scale).add(20000);
+  const ix = floor(x);
+  const iy = floor(y);
+  const fx = fract(x);
+  const fy = fract(y);
+  const sx = fx.mul(fx).mul(float(3).sub(fx.mul(2)));
+  const sy = fy.mul(fy).mul(float(3).sub(fy.mul(2)));
+  const h = (a: number, b: number) => hash(ix.add(a).add(iy.add(b).mul(157)).mod(16777216));
+  return mix(mix(h(0, 0), h(1, 0), sx), mix(h(0, 1), h(1, 1), sx), sy);
+}

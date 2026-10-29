@@ -7,7 +7,7 @@ import { abs, float, hash, max, mix, normalWorld, oneMinus, positionViewDirectio
 import { BoxBatch } from "../boxes";
 import type { LookStyle } from "../looks";
 import { lin } from "../materials";
-import { CLS, groundMaterial, hex3, is, liquidMaterial, masonry, noise01, staticsMaterial, type N3 } from "../surfaces";
+import { CLS, grain, groundMaterial, hex3, is, liquidMaterial, masonry, noise01, staticsMaterial, type N3 } from "../surfaces";
 import { batchMesh, classify, clear, cutWall, instances, lamps, merged, ring, rnd, style, type Ctx, type Dressed, type Item, type V3 } from "./common";
 
 /** A snow-laden pine, 6 m tall at scale 1: dark tiers, each with a white cap. */
@@ -122,12 +122,12 @@ export function dressSnow(b: WorldBundle, look: LookStyle, c: Ctx): Dressed {
   // floors and the rest are separate draws, so each pixel runs only the pattern it shows
   const drifts = staticsMaterial((a) => {
     // drifts: soft undulation, glitter where the light lines up
-    const k = noise01(a.p, 0.4).mul(0.12).add(noise01(a.p, 4, 3).mul(0.05)).add(0.88);
+    const k = noise01(a.p, 0.4).mul(0.12).add(grain(a.along, a.up, 4).mul(0.05)).add(0.88);
     return { color: vec3(k, k, k), emissive: hex3(cave ? "#7fe8ff" : "#ffffff").mul(glitter(a.p, 40).mul(cave ? 0.4 : 2.2)) };
   }, { roughness: 0.75 });
   const blocks = staticsMaterial((a) => {
     const n1 = noise01(a.p, 0.4);
-    const fine = noise01(a.p, 4, 3);
+    const fine = grain(a.along, a.up, 4);
     // sides: blocks of packed ice with blue depth, or stone; tops always carry a snow cap
     const m = masonry(a.along, a.up, 1.4, 0.7, 0.03);
     const iceSide = mix(m.id.mul(0.12).add(0.92), float(0.7), m.mortar).mul(fine.mul(0.1).add(0.95));
@@ -165,7 +165,7 @@ export function dressSnow(b: WorldBundle, look: LookStyle, c: Ctx): Dressed {
 
   const ground = groundMaterial((p) => {
     const n1 = noise01(p, 0.18);
-    const fine = noise01(p, 3, 5);
+    const fine = grain(p.x, p.z, 3);
     const color = hex3(cave ? "#4a6a8a" : "#eef3f9").mul(n1.mul(0.12).add(fine.mul(0.04)).add(0.86));
     return { color, roughness: float(cave ? 0.3 : 0.8), emissive: hex3(cave ? "#7fe8ff" : "#ffffff").mul(glitter(p, 36).mul(cave ? 0.3 : 1.8)), bump: n1.mul(0.4) };
   }, { bump: 1 });

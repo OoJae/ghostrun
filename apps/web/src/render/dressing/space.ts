@@ -9,7 +9,7 @@ import { BoxBatch } from "../boxes";
 import type { LookStyle } from "../looks";
 import { lin } from "../materials";
 import { sunDirection } from "../sky";
-import { CLS, groundMaterial, hex3, is, liquidMaterial, noise01, seams, staticsMaterial, type N, type N3 } from "../surfaces";
+import { CLS, grain, groundMaterial, hex3, is, liquidMaterial, noise01, seams, staticsMaterial, type N, type N3 } from "../surfaces";
 import { batchMesh, classify, CUT_H, cutWall, instances, lamps, ring, rnd, style, type Ctx, type Dressed, type Item, type V3 } from "./common";
 
 /** Deck plates: 2 m panels, a tint per panel, seams and corner rivets. */
@@ -22,7 +22,7 @@ function deck(p: N3, size: number) {
   const fv = fract(v);
   const corner = smoothstep(0.03, 0.0, abs(fu.sub(0.06)).max(abs(fv.sub(0.06))))
     .add(smoothstep(0.03, 0.0, abs(fu.sub(0.94)).max(abs(fv.sub(0.94)))));
-  const brushed = noise01(p.mul(vec3(1, 1, 18)), 2.2).mul(0.08).add(0.96);
+  const brushed = grain(p.x.mul(2.2), p.z.mul(40), 1).mul(0.08).add(0.96);
   return { tone: mix(id.mul(0.16).add(0.86).mul(brushed), float(0.45), max(seam, corner.mul(0.8))), seam, id };
 }
 
@@ -110,7 +110,7 @@ export function dressSpace(b: WorldBundle, look: LookStyle, c: Ctx): Dressed {
     const isLedge = is(a.cls, CLS.ledge);
     const top = mix(d.tone, float(0.25), isCover); // a screen is dark glass
     // the moon's cliffs: plain grey rock
-    const rock = moon ? noise01(a.p, 0.6).mul(0.3).add(noise01(a.p, 3, 4).mul(0.15)).add(0.6) : float(1);
+    const rock = moon ? noise01(a.p, 0.6).mul(0.3).add(grain(a.along, a.up, 3).mul(0.15)).add(0.6) : float(1);
     const sideTone = mix(mix(wall, d.tone, isLedge), rock, is(a.cls, CLS.trim));
     const k = mix(sideTone, top, a.top);
     let emissive: N3 = hex3("#4fd8ff", 2.2).mul(strip.mul(is(a.cls, CLS.wall)).mul(oneMinus(a.top)));
@@ -168,7 +168,7 @@ export function dressSpace(b: WorldBundle, look: LookStyle, c: Ctx): Dressed {
     if (moon) {
       const w = mx_worley_noise_float(vec2(p.x.mul(0.09), p.z.mul(0.09)));
       const crater = smoothstep(0.12, 0.3, w).mul(0.4).add(smoothstep(0.32, 0.26, w).mul(0.25)).add(0.6);
-      const dust = noise01(p, 0.6).mul(0.15).add(noise01(p, 4, 2).mul(0.08)).add(0.8);
+      const dust = noise01(p, 0.6).mul(0.15).add(grain(p.x, p.z, 4).mul(0.08)).add(0.8);
       return { color: hex3("#8e8e8a").mul(crater.mul(dust)), roughness: float(0.95), bump: crater.mul(0.6) };
     }
     const d = deck(p, 4);

@@ -7,7 +7,7 @@ import { abs, float, floor, fract, hash, max, mix, oneMinus, positionLocal, posi
 import { BoxBatch } from "../boxes";
 import type { LookStyle } from "../looks";
 import { lin } from "../materials";
-import { CLS, groundMaterial, hex3, is, liquidMaterial, masonry, noise01, staticsMaterial } from "../surfaces";
+import { CLS, grain, groundMaterial, hex3, is, liquidMaterial, masonry, noise01, staticsMaterial } from "../surfaces";
 import { batchMesh, classify, clear, cutWall, instances, merged, ring, rnd, style, type Ctx, type Dressed, type Item, type Part, type V3 } from "./common";
 
 /** A giant tree, 9 m at scale 1: a buttressed trunk and a layered canopy. */
@@ -119,7 +119,7 @@ export function dressJungle(b: WorldBundle, look: LookStyle, c: Ctx): Dressed {
   const flagged = cut || b.pack.id === "maze";
   const soilMat = staticsMaterial((a) => {
     // wet soil outside; inside a temple, flagstones with moss in the joints
-    const fine = noise01(a.p, 3.4, 6);
+    const fine = grain(a.along, a.up, 3.4);
     const soil = mix(fine.mul(0.3).add(0.75), float(0.55), step(0.82, fine));
     if (!flagged) return { color: vec3(soil, soil, soil), roughness: float(0.9) };
     const m = masonry(a.p.x, a.p.z, 1.2, 0.6, 0.05);
@@ -129,7 +129,7 @@ export function dressJungle(b: WorldBundle, look: LookStyle, c: Ctx): Dressed {
   }, { roughness: 0.9, bump: 1 });
   const mat = staticsMaterial((a) => {
     const n1 = noise01(a.p, 0.45);
-    const fine = noise01(a.p, 3.4, 6);
+    const fine = grain(a.along, a.up, 3.4);
     const m = masonry(a.along, a.up, 1.2, 0.6, 0.05);
     const blocks = mix(m.id.mul(0.2).add(0.86), float(0.5), m.mortar).mul(fine.mul(0.2).add(0.88));
     // a band of carved glyphs: square spirals in a row of panels
@@ -143,7 +143,7 @@ export function dressJungle(b: WorldBundle, look: LookStyle, c: Ctx): Dressed {
     const moss = max(a.top.mul(smoothstep(0.3, 0.55, n1.add(0.2))), creep.mul(0.85));
     const mossCol = hex3("#4a7a2a").mul(fine.mul(0.4).add(0.7)).div(0.5);
     // the green wall: leaves, light and dark
-    const leaves = mix(float(0.6), float(1.2), step(0.5, noise01(a.p, 2.2)));
+    const leaves = mix(float(0.6), float(1.2), step(0.5, grain(a.along, a.up, 2.2)));
     const isFoliage = is(a.cls, CLS.cover);
     const k = blocks.mul(oneMinus(glyph.mul(0.35)));
     const stoneCol = mix(vec3(k, k, k), mossCol, moss.min(1));
@@ -169,9 +169,9 @@ export function dressJungle(b: WorldBundle, look: LookStyle, c: Ctx): Dressed {
 
   const ground = groundMaterial((p) => {
     const n1 = noise01(p, 0.14);
-    const fine = noise01(p, 3.2, 2);
+    const fine = grain(p.x, p.z, 3.2);
     const moss = smoothstep(0.45, 0.62, noise01(p, 0.35, 5));
-    const litter = step(0.86, noise01(p, 5.5, 9)); // fallen leaves, orange and brown
+    const litter = step(0.86, grain(p.x, p.z, 5.5)); // fallen leaves, orange and brown
     const base = mix(hex3("#3a3020"), hex3("#3e6a2a"), moss).mul(fine.mul(0.25).add(n1.mul(0.15)).add(0.75));
     return { color: mix(base, hex3("#9a6a2a"), litter.mul(0.7)), roughness: float(0.95), bump: fine.mul(0.04) };
   }, { bump: 1 });

@@ -8,7 +8,7 @@ import { abs, float, fract, hash, instanceIndex, length, max, mix, mx_worley_noi
 import { BoxBatch } from "../boxes";
 import type { LookStyle } from "../looks";
 import { glowMaterial, lin } from "../materials";
-import { CLS, groundMaterial, hex3, is, liquidMaterial, masonry, noise01, planks, staticsMaterial } from "../surfaces";
+import { CLS, grain, groundMaterial, hex3, is, liquidMaterial, masonry, noise01, planks, staticsMaterial } from "../surfaces";
 import { batchMesh, classify, cutWall, instances, lamps, merged, ring, rnd, style, type Ctx, type Dressed, type Item, type V3 } from "./common";
 
 /** A round tower with a conical roof, 10 m to the eaves at scale 1. */
@@ -144,7 +144,7 @@ export function dressMedieval(b: WorldBundle, look: LookStyle, c: Ctx): Dressed 
   const paving = staticsMaterial((a) => {
     // grass outside, cobbles in a courtyard (round stones: cells of a Voronoi pattern), flagstones in a hall
     const n1 = noise01(a.p, 0.4);
-    const fine = noise01(a.p, 3.3, 4);
+    const fine = grain(a.along, a.up, 3.3);
     const grass = mix(n1.mul(0.25).add(0.8), fine.mul(0.2).add(0.7), smoothstep(0.6, 0.75, n1));
     if (cut) {
       const flags = masonry(a.p.x, a.p.z, 1.4, 1.1, 0.03);
@@ -155,11 +155,11 @@ export function dressMedieval(b: WorldBundle, look: LookStyle, c: Ctx): Dressed 
     }
     const cell = mx_worley_noise_vec2(vec2(a.p.x.mul(2.2), a.p.z.mul(2.2)));
     const cob = smoothstep(0.02, 0.14, cell.y.sub(cell.x));
-    const k = mix(grass, mix(float(0.42), noise01(a.p, 1.7, 3).mul(0.3).add(0.75), cob), is(a.alt, 1));
+    const k = mix(grass, mix(float(0.42), grain(a.along, a.up, 1.7).mul(0.3).add(0.75), cob), is(a.alt, 1));
     return { color: vec3(k, k, k), roughness: float(0.88), bump: cob.mul(0.035).mul(is(a.alt, 1)) };
   }, { roughness: 0.88, bump: 1 });
   const mat = staticsMaterial((a) => {
-    const fine = noise01(a.p, 3.3, 4);
+    const fine = grain(a.along, a.up, 3.3);
     const m = masonry(a.along, a.up, 1.0, 0.5, 0.05);
     const blocks = mix(m.id.mul(0.22).add(0.86), float(0.55), m.mortar).mul(fine.mul(0.18).add(0.9));
     // crates: planks inside a dark frame
@@ -231,7 +231,7 @@ export function dressMedieval(b: WorldBundle, look: LookStyle, c: Ctx): Dressed 
 
   const ground = groundMaterial((p) => {
     const n1 = noise01(p, 0.15);
-    const fine = noise01(p, 2.8, 3);
+    const fine = grain(p.x, p.z, 2.8);
     const dirt = smoothstep(0.55, 0.72, noise01(p, 0.07, 8));
     return { color: mix(hex3("#5a7a3e"), hex3("#7a6a4a"), dirt).mul(n1.mul(0.25).add(fine.mul(0.15)).add(0.72)), roughness: float(0.95) };
   });

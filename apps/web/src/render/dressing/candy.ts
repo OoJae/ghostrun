@@ -7,7 +7,7 @@ import { abs, atan, float, floor, fract, fwidth, hash, max, mix, normalView, one
 import { BoxBatch } from "../boxes";
 import type { LookStyle } from "../looks";
 import { lin } from "../materials";
-import { CLS, groundMaterial, hex3, is, liquidMaterial, noise01, staticsMaterial, type N, type N3 } from "../surfaces";
+import { CLS, grain, groundMaterial, hex3, is, liquidMaterial, noise01, staticsMaterial, type N, type N3 } from "../surfaces";
 import { batchMesh, classify, clear, cutWall, instances, ring, rnd, style, type Ctx, type Dressed, type Item } from "./common";
 
 const SWEETS = ["#ff5a9a", "#5ad8ff", "#ffd84a", "#8aff8a", "#c08aff", "#ff8a4a"];
@@ -122,7 +122,7 @@ export function dressCandy(b: WorldBundle, look: LookStyle, c: Ctx): Dressed {
     const tiles = step(0.5, fract(floor(a.p.x.div(1.2)).add(floor(a.p.z.div(1.2))).mul(0.5)));
     const frosting = mix(vec3(1, 1, 1), sp.color.div(0.9), sp.mask);
     const floorCol = mix(frosting, mix(hex3("#ff8abc"), hex3("#fff0f6"), tiles), is(a.alt, 1));
-    const choc = hex3("#ffffff").mul(noise01(a.p, 2).mul(0.15).add(0.9));
+    const choc = hex3("#ffffff").mul(grain(a.along, a.up, 2).mul(0.15).add(0.9));
     const flat = is(a.cls, CLS.ground);
     const topCol = mix(mix(hex3("#ff9ac8"), frosting.mul(hex3("#ff9ac8")), sp.mask), floorCol, flat);
     const color = mix(mix(side, topCol, a.top), choc, is(a.cls, CLS.path));

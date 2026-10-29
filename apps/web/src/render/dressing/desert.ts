@@ -7,7 +7,7 @@ import { abs, float, fract, max, mix, oneMinus, positionWorld, sin, smoothstep, 
 import { BoxBatch } from "../boxes";
 import type { LookStyle } from "../looks";
 import { lin } from "../materials";
-import { CLS, groundMaterial, hex3, is, liquidMaterial, masonry, noise01, staticsMaterial, type N, type N3 } from "../surfaces";
+import { CLS, grain, groundMaterial, hex3, is, liquidMaterial, masonry, noise01, staticsMaterial, type N, type N3 } from "../surfaces";
 import { batchMesh, classify, clear, cutWall, instances, merged, ring, rnd, style, type Ctx, type Dressed, type Item } from "./common";
 
 const SAND = { desert: "#dcb47c", beach: "#e6cf9c", underwater: "#b8b08c" } as const;
@@ -143,7 +143,7 @@ export function dressDesert(b: WorldBundle, look: LookStyle, c: Ctx): Dressed {
   // floors and rock are separate draws, so each pixel runs only the pattern it shows
   const sandFloor = staticsMaterial((a) => {
     const n1 = noise01(a.p, 0.32);
-    const fine = noise01(a.p, 3.1, 7);
+    const fine = grain(a.along, a.up, 3.1);
     const ripple = sin(a.p.x.mul(0.9).add(a.p.z.mul(2.4)).add(n1.mul(5))).mul(0.5).add(0.5);
     const k = mix(float(0.9), float(1.06), ripple.mul(0.45).add(fine.mul(0.55)));
     // under the sea, the same caustics play over every floor as over the seabed
@@ -152,7 +152,7 @@ export function dressDesert(b: WorldBundle, look: LookStyle, c: Ctx): Dressed {
   const masonryWalls = pieces.some((p) => p.kind === "wall");
   const rock = staticsMaterial((a) => {
     const n1 = noise01(a.p, 0.32);
-    const fine = noise01(a.p, 3.1, 7);
+    const fine = grain(a.along, a.up, 3.1);
     // cliffs in layered strata, wavering, with vertical streaks where water once ran
     const layer = fract(a.p.y.mul(0.85).add(n1.mul(0.9)));
     const streak = noise01(vec3(a.along.mul(1.4), a.p.y.mul(0.12), a.seed), 1).mul(0.22).add(0.88);
@@ -189,7 +189,7 @@ export function dressDesert(b: WorldBundle, look: LookStyle, c: Ctx): Dressed {
   const ground = groundMaterial((p) => {
     const n1 = noise01(p, 0.25);
     const ripple = sin(p.x.mul(0.8).add(p.z.mul(2.2)).add(n1.mul(5))).mul(0.5).add(0.5);
-    const fine = noise01(p, 2.7, 3);
+    const fine = grain(p.x, p.z, 2.7);
     let color: N3 = hex3(SAND[v]).mul(mix(float(0.88), float(1.04), ripple.mul(0.5).add(fine.mul(0.5))));
     let emissive: N3 = vec3(0, 0, 0);
     let roughness: N = float(0.95);
