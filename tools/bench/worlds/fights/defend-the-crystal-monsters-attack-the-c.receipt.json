@@ -1,0 +1,236 @@
+{
+  "prompt": "Defend the crystal: monsters attack the crystal, survive for 60 seconds",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "Survival Defense",
+    "setting": "Open mystical field with a central crystal",
+    "role": "Protector",
+    "goal": "Survive 60 seconds of monster attacks around the crystal",
+    "fail": "Crystal destroyed or player dies",
+    "mood": "Intense, protective, urgent",
+    "pack": "outdoor",
+    "sub": [],
+    "safety": "arcade",
+    "headline": "Player must survive 60 seconds of monster attacks to keep the crystal intact",
+    "nouns": [
+      {
+        "noun": "player",
+        "hyper": "character"
+      },
+      {
+        "noun": "crystal",
+        "hyper": "object"
+      },
+      {
+        "noun": "monster",
+        "hyper": "enemy"
+      },
+      {
+        "noun": "field",
+        "hyper": "location"
+      }
+    ],
+    "moodVec": {
+      "valence": -0.3,
+      "arousal": 0.7,
+      "tension": 0.6
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "9a70d42089b55c20b80cb00e944f173c53470dfa02a665c370393f7f0e5308f6",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "exp_defend",
+      "text": "Player must survive 60 seconds of monster attacks to keep the crystal intact",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners vs 2 bots"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 8 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (the timer runs out)",
+        "src": ""
+      },
+      {
+        "id": "T2:r_lose_crystal",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_crystal"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_lose_crystal: nothing in the world wears crystal_goal down",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lose_player",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_player"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_lose_player: nothing in the world hurts the player",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_center_e",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_center_e"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 20,
+        "status": "verified",
+        "text": "r_secret_center_e fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_center_s",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_center_s"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 15,
+        "status": "verified",
+        "text": "r_secret_center_s fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_center_w",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_center_w"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 13,
+        "status": "verified",
+        "text": "r_secret_center_w fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_n",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_n"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 16,
+        "status": "verified",
+        "text": "r_secret_flank_n fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_s",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_s"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 14,
+        "status": "verified",
+        "text": "r_secret_flank_s fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners vs 2 bots",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it vs 2 bots (AI par 60 s)",
+        "cx": null,
+        "src": "",
+        "ms": 3234
+      }
+    ],
+    "par": {
+      "goldS": 60,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 3935
+  }
+}

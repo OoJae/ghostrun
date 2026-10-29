@@ -3,11 +3,11 @@
 // comparisons).
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
-import { FillParser, layoutLaws, mergeFill, parseFill, pinLayout, splitObjects, type WorldBundle } from "@ghostrun/ir";
+import { FillParser, layoutLaws, mergeFill, parseFill, pinLayout, splitObjects, type FillNote, type WorldBundle } from "@ghostrun/ir";
 import { placeWorld } from "@ghostrun/layout";
 import { directorMessages, editMessages, fillMessages, hostJsonSchema, hostMessages, IntentOut, intentJsonSchema, intentMessages, jsonLanes, lanesFor, mindJsonSchema, mindMessages, repairMessages, settleIntent, streamLanes, type JobCall, type Keys } from "@ghostrun/llm";
 import { loadNavNode } from "@ghostrun/nav/node";
-import { badness, better, caught, chipLine, insights, issuesOf, plants, prove, provedWon, traceRunners, type Receipt } from "@ghostrun/proof";
+import { badness, better, caught, chipLine, insights, issuesOf, plants, prove, provedWon, reportLines, traceRunners, type Receipt } from "@ghostrun/proof";
 import { ALL_SUBS, PACKS, packFor } from "@ghostrun/registry";
 import { loadRapierNode } from "@ghostrun/sim/node";
 import * as v from "valibot";
@@ -37,7 +37,7 @@ function cliKeys(): Keys {
   return keys;
 }
 
-function placeFromFill(text: string, seed: number, packId?: string, mode?: WorldBundle["mode"]): { bundle: WorldBundle; invalid: number; lines: number; notes: string[] } {
+function placeFromFill(text: string, seed: number, packId?: string, mode?: WorldBundle["mode"]): { bundle: WorldBundle; invalid: number; lines: number; notes: string[]; fillNotes: FillNote[] } {
   const fill = parseFill(text, { seed });
   if (packId) fill.draft.pack = { ...fill.draft.pack, id: packId };
   if (mode) fill.draft.mode = mode;
@@ -45,7 +45,7 @@ function placeFromFill(text: string, seed: number, packId?: string, mode?: World
   const layout = pack.generate({ seed, params: pack.defaults, sub: fill.draft.pack.sub, laws: layoutLaws(text, fill.draft.laws), harder: false });
   const placed = placeWorld({ ...fill.draft, engine: ENGINE }, layout);
   for (const n of fill.notes) console.log(`  · fill line ${n.line}: ${n.kind} — ${n.text}`);
-  return { bundle: placed.bundle, invalid: fill.stats.invalid, lines: fill.stats.lines, notes: placed.notes };
+  return { bundle: placed.bundle, invalid: fill.stats.invalid, lines: fill.stats.lines, notes: placed.notes, fillNotes: fill.notes };
 }
 
 function printReceipt(r: Receipt) {
@@ -82,9 +82,9 @@ const gameplayOf = (fill: string) => {
  * One counterexample-guided repair round: the receipt's failures go back to the fill model as a
  * patch request; the patched fill is re-placed and re-proved, and kept only if it is better.
  */
-async function repairRound(R: Awaited<ReturnType<typeof loadRapierNode>>, prompt: string, intent: IntentOut, fill: string, seed: number, packId: string, receipt: Receipt, bundle: WorldBundle, notes: string[]) {
+async function repairRound(R: Awaited<ReturnType<typeof loadRapierNode>>, prompt: string, intent: IntentOut, fill: string, seed: number, packId: string, receipt: Receipt, bundle: WorldBundle, notes: string[], lines: FillNote[]) {
   const keys = cliKeys();
-  const issues = issuesOf(receipt, bundle);
+  const issues = issuesOf(receipt, bundle, lines);
   if (!issues.length) return null;
   const t0 = performance.now();
   const pack = packFor(packId);
@@ -97,7 +97,7 @@ async function repairRound(R: Awaited<ReturnType<typeof loadRapierNode>>, prompt
   const merged = mergeFill(fill, patch);
   const placed = placeFromFill(merged.text, seed, packId, intent.mode);
   const r2 = await prove(R, placed.bundle, { engine: ENGINE, runs: 12 });
-  return { fill: merged.text, receipt: r2, bundle: placed.bundle, kept: better(r2, receipt), issues, stats: merged.stats, ms: Math.round(performance.now() - t0) };
+  return { fill: merged.text, receipt: r2, bundle: placed.bundle, lines: placed.fillNotes, kept: better(r2, receipt), issues, stats: merged.stats, ms: Math.round(performance.now() - t0) };
 }
 
 /** Things a player can interact with: kit verbs, carryables, moving platforms and minded NPCs. */
@@ -161,8 +161,8 @@ async function build(prompt: string, seed: number, outDir: string | null): Promi
   await loadNavNode();
   const receipt = await prove(R, bundle, { engine: ENGINE, runs: 12 });
   const proofMs = receipt.ms;
-  // (the runners' routes stay out of the recorded receipt: they're for the app, and large)
-  if (outDir) writeFileSync(join(outDir, `${slug}.receipt.json`), JSON.stringify({ prompt, intent, receipt: { ...receipt, trails: undefined } }, null, 2));
+  // (the runners' routes and the par runner's ghost stay out of the recorded receipt: they're for the app, and large)
+  if (outDir) writeFileSync(join(outDir, `${slug}.receipt.json`), JSON.stringify({ prompt, intent, receipt: { ...receipt, trails: undefined, ghost: undefined } }, null, 2));
   return {
     timings: { intentMs, fillFirstTokenMs, firstEntityMs, gameplayEndMs, fillDoneMs, playableMs, proofMs, outTok, invalid, lines, intentModel: intentRes.model, fillModel },
     receipt,
@@ -180,7 +180,16 @@ async function main() {
     const R = await loadRapierNode();
     await loadNavNode();
     const { bundle } = placeFromFill(readFileSync(args[0]!, "utf8"), seed);
-    printReceipt(await prove(R, bundle, { engine: ENGINE }));
+    // --playtest: then novice and average runners too (the difficulty band, what the runners revealed)
+    const t0 = performance.now();
+    let out = 0;
+    const play = args.includes("--playtest");
+    const r = await prove(R, bundle, { engine: ENGINE, ...(play ? { playtest: true, onReceipt: () => void (out = performance.now() - t0) } : {}) });
+    printReceipt(r);
+    if (play) {
+      console.log(`  the receipt was out at ${Math.round(out)} ms; the playtest took ${r.playtest?.ms ?? 0} ms more`);
+      for (const l of reportLines(bundle, r)) console.log(`  ${l}`);
+    }
   } else if (cmd === "diagnose") {
     // one recorded world, taken apart: what the placer repaired, the receipt, and what one AI
     // runner did step by step (where it got stuck, and on what)
@@ -234,19 +243,21 @@ async function main() {
       };
       console.log(`${f.slice(0, 40).padEnd(40)} ${row(r, placed.bundle)}`);
       if (!args.includes("--repair")) for (const n of placed.notes.filter((x) => !x.startsWith("interior") && !x.startsWith("arena") && !x.startsWith("outdoor") && !x.startsWith("course"))) console.log(`    · ${n}`);
+      // what the repair loop would send for it (offline: no model is asked)
+      if (args.includes("--issues")) for (const i of issuesOf(r, placed.bundle, fill.notes)) console.log(`    ? ${i}`);
       if (args.includes("--repair") && existsSync(rp)) {
         const saved = JSON.parse(readFileSync(rp, "utf8")) as { prompt: string; intent: IntentOut };
         // up to three rounds, as the app does: each accepted patch is the base for the next
-        let [curFill, curReceipt, curBundle, curNotes] = [text, r, placed.bundle, placed.notes];
+        let [curFill, curReceipt, curBundle, curNotes, curLines] = [text, r, placed.bundle, placed.notes, fill.notes];
         for (let round = 1; round <= 3; round++) {
-          const fix = await repairRound(R, saved.prompt, saved.intent, curFill, meta.seed ?? 7, fill.draft.pack.id, curReceipt, curBundle, curNotes);
+          const fix = await repairRound(R, saved.prompt, saved.intent, curFill, meta.seed ?? 7, fill.draft.pack.id, curReceipt, curBundle, curNotes, curLines);
           if (!fix) break;
           console.log(`  round ${round}: ${fix.kept ? "REPAIRED" : "rejected"} in ${fix.ms} ms (${JSON.stringify(fix.stats)}) → ${row(fix.receipt, fix.bundle)}`);
           for (const i of fix.issues) console.log(`    ? ${i.slice(0, 160)}`);
           await new Promise((res) => setTimeout(res, 2500));
           if (!fix.kept) break;
           writeFileSync(join(dir, f.replace(".fill.jsonl", ".repaired.jsonl")), fix.fill);
-          [curFill, curReceipt, curBundle, curNotes] = [fix.fill, fix.receipt, fix.bundle, []];
+          [curFill, curReceipt, curBundle, curNotes, curLines] = [fix.fill, fix.receipt, fix.bundle, [], fix.lines];
         }
       }
     }
@@ -537,7 +548,7 @@ async function main() {
     mkdirSync(outDir, { recursive: true });
     writeFileSync(join(outDir, "bench.json"), JSON.stringify(rows, null, 2));
   } else {
-    console.log('usage: ghostrun verify <fill.jsonl> | build "<prompt>" [--out dir] | bench <prompts.txt> [--out dir]');
+    console.log('usage: ghostrun verify <fill.jsonl> [--seed n] [--playtest] | build "<prompt>" [--out dir] | bench <prompts.txt> [--out dir]');
   }
 }
 

@@ -1,0 +1,232 @@
+{
+  "prompt": "A pirate ship battle: fire the cannons at the enemy ship until it sinks",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": " naval combat",
+    "setting": "Open sea with two large wooden pirate ships facing each other",
+    "role": "Cannon crew member on enemy ship",
+    "goal": "Sink the enemy pirate ship by firing your cannons until its health is depleted",
+    "fail": "Enemy ship fires its cannons and sinks your ship",
+    "mood": "Exciting, action-packed, destructive",
+    "pack": "arena",
+    "sub": [],
+    "safety": "arcade",
+    "headline": "Cannon fire must persist until enemy ship is fully sunk",
+    "nouns": [
+      {
+        "noun": "pirate ship",
+        "hyper": "vessel"
+      },
+      {
+        "noun": "cannon",
+        "hyper": "weapon"
+      },
+      {
+        "noun": "enemy ship",
+        "hyper": "vessel"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.4,
+      "arousal": 0.9,
+      "tension": 0.8
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "2d9b30ae0d7830fea02dbfe0acc9f0803adb665b5f1b8b9c785d8d7f1e71a5ea",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_sink",
+      "text": "Cannon fire must persist until enemy ship is fully sunk",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 6 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_sink_enemy (enemy_ship down to 0 HP) ← shoot enemy_ship (5 hits of 40)",
+        "src": ""
+      },
+      {
+        "id": "T1:range:r_sink_enemy",
+        "tier": "T1",
+        "subject": {
+          "kind": "rule",
+          "id": "r_sink_enemy"
+        },
+        "method": "line-of-sight range model (from ground the jump model reaches)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 19,
+        "status": "verified",
+        "text": "a shot reaches the enemy pirate ship: clear lines from as far as 25 m (range 25 m)",
+        "cx": null
+      },
+      {
+        "id": "T1:range:r_sink_player",
+        "tier": "T1",
+        "subject": {
+          "kind": "rule",
+          "id": "r_sink_player"
+        },
+        "method": "line-of-sight range model (from ground the jump model reaches)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 21,
+        "status": "verified",
+        "text": "a shot reaches the pirate ship: clear lines from as far as 25 m (range 25 m)",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_n",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_n"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_flank_n fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_n_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_n_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_secret_flank_n_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_s",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_s"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_secret_flank_s fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_s_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_s_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_secret_flank_s_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_sink_enemy",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_sink_enemy"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_sink_enemy fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_sink_player",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_sink_player"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_sink_player fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it (AI par 7.6 s)",
+        "cx": null,
+        "src": "",
+        "ms": 220
+      }
+    ],
+    "par": {
+      "goldS": 7.6,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 486
+  }
+}

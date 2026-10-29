@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import type { LoadResult } from "../engine";
+import { firstVoiceNote, speechApi, transcript, voiceError, type Recognition } from "./listen";
 
 interface Props {
   prompt: string;
@@ -10,8 +11,8 @@ interface Props {
   onCollapse(): void;
   timing: LoadResult | null;
   busy: boolean;
-  /** Where the world came from: the live LLM lane or the recorded fixture. */
-  source: { label: string; title: string };
+  /** Where the world came from: the live LLM lane, the edge's cache (with a way to build it fresh) or the recorded fixture. */
+  source: { label: string; title: string; action?: { label: string; run(): void } };
   /** One-click prompts shown while the bar is focused. */
   suggestions?: readonly { label: string; prompt: string }[];
   /** The bar gained or lost focus (the side cards step aside while a new world is typed). */
@@ -77,24 +78,6 @@ function Stopwatch({ timing, busy }: { timing: LoadResult | null; busy: boolean 
   );
 }
 
-// The browser's own speech recognition (Chrome and Safari ship one); no audio passes through us.
-interface Recognition {
-  lang: string;
-  interimResults: boolean;
-  continuous: boolean;
-  onresult: ((e: { results: ArrayLike<ArrayLike<{ transcript: string }> & { isFinal: boolean }> }) => void) | null;
-  onend: (() => void) | null;
-  onerror: ((e: { error: string }) => void) | null;
-  start(): void;
-  stop(): void;
-}
-type RecognitionCtor = new () => Recognition;
-const speechApi = (): RecognitionCtor | undefined => {
-  const w = window as unknown as { SpeechRecognition?: RecognitionCtor; webkitSpeechRecognition?: RecognitionCtor };
-  return w.SpeechRecognition ?? w.webkitSpeechRecognition;
-};
-const VOICE_NOTE = "gr_voice_note";
-
 function Mic({ onText, onDone }: { onText: (t: string) => void; onDone: (t: string) => void }) {
   const [on, setOn] = useState(false);
   const [note, setNote] = useState<string | null>(null);
@@ -103,24 +86,18 @@ function Mic({ onText, onDone }: { onText: (t: string) => void; onDone: (t: stri
   if (!Api) return null;
   const toggle = () => {
     if (on) return rec.current?.stop();
-    try {
-      if (!localStorage.getItem(VOICE_NOTE)) {
-        setNote("Voice uses your browser's speech service (Google in Chrome, Apple in Safari); GHOSTRUN only receives the text.");
-        localStorage.setItem(VOICE_NOTE, "1");
-      }
-    } catch {
-      // storage blocked: the note shows each time, which is fine
-    }
+    const first = firstVoiceNote();
+    if (first) setNote(first);
     const r = new Api();
     r.lang = navigator.language || "en-US";
     r.interimResults = true;
     r.continuous = false;
     let text = "";
     r.onresult = (e) => {
-      text = Array.from(e.results, (x) => x[0]?.transcript ?? "").join(" ").trim();
+      text = transcript(e);
       onText(text);
     };
-    r.onerror = (e) => setNote(e.error === "not-allowed" ? "Microphone blocked: allow it in the address bar to speak a world." : `Voice stopped (${e.error}).`);
+    r.onerror = (e) => setNote(voiceError(e.error, "speak a world"));
     r.onend = () => {
       setOn(false);
       if (text) onDone(text);
@@ -198,9 +175,14 @@ export function PromptBar({ prompt, onPrompt, onSubmit, collapsed, onExpand, onC
         placeholder={example.full ? `Try: ${example.shown}` : "Describe a world…"}
       />
       <Mic onText={onPrompt} onDone={onSubmit} />
-      <span className="chip" title={source.title}>
+      <span className={`chip${source.action ? " cached" : ""}`} title={source.title} data-testid="source-chip">
         {source.label}
       </span>
+      {source.action && (
+        <button type="button" className="chip-action" onClick={source.action.run} title={source.title} data-testid="build-fresh">
+          {source.action.label}
+        </button>
+      )}
       <Stopwatch timing={timing} busy={busy} />
       {focused && suggestions.length > 0 && (
         <div className="glass suggest" data-testid="suggest">

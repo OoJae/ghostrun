@@ -10,7 +10,7 @@
 //   CEREBRAS_API_KEY    Cerebras inference key; never leaves the server.
 //   ANTHROPIC_API_KEY   Optional Claude key (a capped workspace): Haiku answers when Cerebras is busy or down.
 //   TURNSTILE_SECRET    Turnstile widget secret key. Its presence closes the gate: /v1/build, /v1/share,
-//                       /v1/report and /v1/wrong then need the session cookie or a judge token.
+//                       /v1/board, /v1/report and /v1/wrong then need the session cookie or a judge token.
 //   SESSION_SECRET      ≥32 random bytes. Signs the 30-minute session cookie; keys the IP hashes.
 //   JUDGE_TOKEN_KEY     ≥32 random bytes. HMAC key for judge tokens (`pnpm --filter @ghostrun/edge-api judge-token`).
 //   JUDGE_TOKEN_HASHES  Comma list of `[judge:|dev:|canary:]hex(HMAC-SHA256(JUDGE_TOKEN_KEY, token))`.
@@ -23,6 +23,8 @@
 // BUILDS_PER_WINDOW 30 (tokenless), RATE_PER_WINDOW 60, JUDGE_FALLBACK_PER_WINDOW 10 (per isolate per 10 min),
 // GOVERNOR_TIMEOUT_MS 300, TURNSTILE_SITEKEY (echoed by /v1/health), TURNSTILE_HOSTNAMES (comma list).
 // Kill switch: any value at key "builds:paused" in FLAGS pauses new builds within ~60 s, no deploy.
+// Build cache: an exact repeat of a clean build replays from SHARES (keys under cache/), free; the
+// value "off" at key "ff.public_cache" in FLAGS turns it off. Warm it: `pnpm --filter @ghostrun/edge-api warm-cache`.
 {
   "name": "ghostrun-edge",
   "main": "dist/worker/index.js",

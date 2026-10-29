@@ -10,7 +10,13 @@ import type { WorldBundle } from "@ghostrun/ir";
 import type { World } from "./pipeline";
 import { probe } from "./probe";
 import { FollowCamera } from "./render/camera";
-import { lookOf } from "./render/looks";
+import { ghostActor } from "./render/ghost";
+import type { GhostTrack, Rival } from "./race";
+import { combatView, type CombatView } from "./render/combat";
+import { heatView, type HeatCells } from "./render/heat";
+import { raceView, type RaceView } from "./render/vehicles";
+import { lookOf, type LookStyle } from "./render/looks";
+import { Materialise, type MaterialiseSpec } from "./render/materialise";
 import { beamMaterial, PALETTE } from "./render/materials";
 import { Atmosphere } from "./render/atmosphere";
 import { buildWorldView, type WorldView } from "./render/world";
@@ -35,6 +41,10 @@ export interface LoadResult {
 }
 
 const TICK_MS = 1000 / TICK_HZ;
+/** A build preview waits this long before drawing: a world that is already complete never pays for one. */
+const PREVIEW_AFTER_MS = 120;
+/** Where the ghost waits while there is nothing to race (far under the world, past the far plane). */
+const PARKED_Y = -1e4;
 const _q0 = new Quaternion();
 const _q1 = new Quaternion();
 const _ear = new Vector3();
@@ -62,6 +72,8 @@ export class Engine {
   readonly #canvas: HTMLCanvasElement;
 
   #view: WorldView | null = null;
+  #combat: CombatView | null = null;
+  #race: RaceView | null = null;
   #sim: FrameSource | null = null;
   /** Set once Rapier has loaded; until then (or if it fails) the stub keeps the world walkable. */
   simFactory: SimFactory | null = null;
@@ -97,6 +109,21 @@ export class Engine {
     m.renderOrder = 2;
     return m;
   })();
+  /** The ghost you race: parked out of sight when there is none (still drawn, so its shader is compiled with the world). */
+  readonly #ghost = ghostActor();
+  #ghostTrack: GhostTrack | null = null;
+  #ghostShown = true;
+  /** The world being built, shown in place of the current one until load() swaps the real one in. */
+  #preview: Materialise | null = null;
+  #previewAsk: { spec: MaterialiseSpec; at: number } | null = null;
+  #previewDraft: WorldBundle | null = null;
+  /** Bumped whenever a preview ends, so one still compiling is dropped. */
+  #previewGen = 0;
+  /** The shown world's look, put back when a preview ends without a new world. */
+  #look: LookStyle | null = null;
+  /** And where its weather stays out (a cut-away building) and its floor is. */
+  #lookPlace: { shelter: WorldView["shelter"]; groundY: number } | null = null;
+  #warmPreview: Materialise | null = null;
 
   private constructor(canvas: HTMLCanvasElement, renderer: WebGPURenderer, opts: EngineOptions, initMs: number) {
     this.#canvas = canvas;
@@ -114,6 +141,8 @@ export class Engine {
     this.#air = new Atmosphere(renderer, s);
     this.initMs += performance.now() - tEnv;
     s.add(this.#beacon);
+    this.#ghost.obj.position.set(0, PARKED_Y, 0);
+    s.add(this.#ghost.obj);
     this.#rig.add(this.#camera);
     s.add(this.#rig);
 
@@ -233,9 +262,10 @@ export class Engine {
 
   /**
    * Where the AI runners went, as ribbons just above the ground they walked on (winning runs cyan,
-   * the rest magenta), with the camera raised to look down over them. null puts them away.
+   * the rest magenta), over the playtest's heat map when there is one, with the camera raised to
+   * look down over them. null puts them away.
    */
-  showTrails(trails: readonly { won: boolean; xyz: readonly number[] }[] | null) {
+  showTrails(trails: readonly { won: boolean; xyz: readonly number[] }[] | null, heat: HeatCells | null = null) {
     if (this.#trails) {
       this.#scene.remove(this.#trails);
       this.#trails.traverse((o) => {
@@ -249,9 +279,12 @@ export class Engine {
       this.#follow.setColliders(this.#view && !this.#cutaway ? this.#view.colliders : []);
       this.#beforeOverview = null;
     }
+    delete probe().overview;
     if (!trails?.length) return;
     const g = new Group();
     g.name = "trails";
+    const hot = heat && heatView(heat);
+    if (hot) g.add(hot);
     const W = 0.18; // half the ribbon's width (wide enough to read from the overview)
     for (const t of trails) {
       const p = t.xyz;
@@ -273,6 +306,7 @@ export class Engine {
     }
     this.#scene.add(g);
     this.#trails = g;
+    probe().overview = { routes: g.children.length - (hot ? 1 : 0), heat: hot ? hot.geometry.getAttribute("position").count / 6 : 0 };
     // look down over the routes (and back as you were when they go)
     if (!this.#beforeOverview) this.#beforeOverview = { pitch: this.#follow.pitch, dist: this.#follow.dist };
     this.#follow.pitch = 1.05;
@@ -286,6 +320,44 @@ export class Engine {
     cam.getWorldPosition(_ear);
     cam.getWorldDirection(_look);
     return { p: [_ear.x, _ear.y, _ear.z], yaw: Math.atan2(-_look.x, -_look.z) };
+  }
+
+  /**
+   * Race a ghost: it runs beside the player by simulation tick from the start of the run (so its
+   * clock is the result card's clock), translucent and outside the simulation. null puts it away.
+   */
+  setGhost(track: GhostTrack | null, kind: Rival["kind"] = "ai") {
+    this.#ghostTrack = track;
+    this.#ghost.setKind(kind);
+    if (!track) this.#ghost.obj.position.set(0, PARKED_Y, 0);
+  }
+
+  /** Hide or show the ghost (it keeps its place in the run either way). */
+  set ghostShown(on: boolean) {
+    this.#ghostShown = on;
+  }
+
+  #placeGhost(now: number) {
+    const track = this.#ghostTrack;
+    const curr = this.#curr;
+    const pr = probe();
+    if (!track || !curr) {
+      if (pr.ghost) delete pr.ghost;
+      return;
+    }
+    const prev = this.#prev ?? curr;
+    const a = Math.min(1, Math.max(0, (now - this.#currAt) / TICK_MS));
+    const tick = prev.tick + (curr.tick - prev.tick) * a;
+    const { p, yaw } = track.pose(tick);
+    const g = this.#ghost.obj;
+    // first person in VR: the ghost would stand in your eyes at the start, so it shows once it's a step away
+    const player = this.#view?.actors.get(PLAYER_ID);
+    const near = this.#vr && player ? Math.hypot(player.position.x - p[0], player.position.z - p[2]) < 1 : false;
+    if (this.#ghostShown && !near) g.position.set(p[0], p[1], p[2]);
+    else g.position.set(0, PARKED_Y, 0);
+    g.rotation.set(0, yaw, 0);
+    this.#ghost.setFade(tick >= track.ticks ? 0.4 : 1);
+    pr.ghost = { shown: this.#ghostShown, tick: Math.round(tick), p: [round2(p[0]), round2(p[1]), round2(p[2])], finished: tick >= track.ticks };
   }
 
   /** Light up one thing (Logic X-ray hover); null puts the beam away. */
@@ -325,7 +397,82 @@ export class Engine {
       }
       this.#warm.push(view);
     }
+    // and the build preview's few programs, so the first reveal never waits on a compile
+    if (!this.#warmPreview) {
+      const p = (this.#warmPreview = Materialise.sample());
+      const s = new Scene();
+      s.fog = this.#scene.fog;
+      s.add(p.root);
+      await this.#renderer.compileAsync(s, this.#camera).catch((e: unknown) => console.warn("prewarm skipped the preview", e));
+    }
     return performance.now() - t0;
+  }
+
+  /**
+   * Show the world being built (render/materialise.ts) from its intent: ground and walls rise,
+   * then entities pop in as materialiseLine() feeds the fill. load() swaps the real world in.
+   */
+  materialise(spec: MaterialiseSpec) {
+    this.#stopPreview();
+    if (this.#vr) return;
+    this.#previewAsk = { spec, at: performance.now() };
+  }
+
+  /** The fill so far (the parser's growing draft). */
+  materialiseLine(draft: WorldBundle) {
+    this.#previewDraft = draft;
+    const p = this.#preview;
+    if (!p) return;
+    const look = p.feed(draft);
+    if (look) this.#applyLook(look);
+    probe().materialise = p.counts;
+  }
+
+  /** Back to the world that was showing (the build was refused). */
+  endPreview() {
+    const shown = this.#preview !== null;
+    this.#stopPreview();
+    if (shown && this.#look) this.#applyLook(this.#look, this.#lookPlace);
+  }
+
+  async #startPreview(spec: MaterialiseSpec) {
+    this.#previewAsk = null;
+    const gen = this.#previewGen;
+    const p = new Materialise(spec);
+    // its programs compile off to the side (once a session, then shared), never on a frame
+    const s = new Scene();
+    s.fog = this.#scene.fog;
+    s.add(p.root);
+    await this.#renderer.compileAsync(s, this.#camera).catch(() => undefined);
+    if (gen !== this.#previewGen) return p.dispose();
+    if (this.#previewDraft) p.feed(this.#previewDraft);
+    this.showTrails(null);
+    for (const o of [this.#view?.root, this.#combat?.root, this.#ghost.obj]) if (o) o.visible = false;
+    this.#beacon.visible = false;
+    this.#scene.add(p.root);
+    this.#applyLook(p.look);
+    p.start(performance.now());
+    this.#preview = p;
+    probe().materialise = p.counts;
+  }
+
+  #stopPreview() {
+    this.#previewGen++;
+    this.#previewAsk = null;
+    this.#previewDraft = null;
+    const p = this.#preview;
+    if (!p) return;
+    this.#preview = null;
+    p.dispose();
+    for (const o of [this.#view?.root, this.#combat?.root, this.#ghost.obj]) if (o) o.visible = true;
+    delete probe().materialise;
+  }
+
+  /** Sky, fog, reflections, weather (kept out of a building's footprint) and the grade, from a look. */
+  #applyLook(look: LookStyle, place: { shelter: WorldView["shelter"]; groundY: number } | null = null) {
+    this.#air.apply(look, place?.shelter ?? null, place?.groundY ?? 0);
+    this.#renderer.toneMappingExposure = look.exposure;
+    if (this.#bloom) this.#bloom.strength.value = look.bloom;
   }
 
   /** Swap in a new world. Resolves after its first frame has been rendered. */
@@ -336,6 +483,7 @@ export class Engine {
     ];
     const pr = probe();
     pr.ready = false;
+    this.#stopPreview(); // the real world is here: the preview of it goes, whatever it had got to
     this.#unload();
     // Frames rendered while the new world compiles must not apply the old world's poses.
     this.#prev = this.#curr = null;
@@ -343,11 +491,12 @@ export class Engine {
     let t = performance.now();
     const look = lookOf(world.bundle, world.cue);
     pr.look = look.variant ? `${look.id}/${look.variant}` : look.id;
-    this.#renderer.toneMappingExposure = look.exposure;
-    if (this.#bloom) this.#bloom.strength.value = look.bloom;
     const view = buildWorldView(world.bundle, look);
-    this.#air.apply(look, view.shelter, view.groundY);
+    this.#look = look;
+    this.#lookPlace = { shelter: view.shelter, groundY: view.groundY };
+    this.#applyLook(look, this.#lookPlace);
     this.showTrails(null); // another world's routes
+    this.setGhost(null); // and its ghost: the caller hands this world's rival in once it's loaded
     this.#scene.add(view.root);
     this.#view = view;
     // cutaway interiors: the camera looks down over the walls instead of bumping into them
@@ -355,10 +504,17 @@ export class Engine {
     this.#follow.setColliders(look.cutaway ? [] : view.colliders);
     const sim = this.simFactory ? this.simFactory(world.bundle) : new StubSim(world.bundle);
     this.rapierSim = this.simFactory ? (sim as RapierSim) : null;
+    // a fight: shots, flashes and hit-point bars (worlds without weapons or hit points get none)
+    this.#combat = this.rapierSim ? combatView(world.bundle, this.rapierSim.sim) : null;
+    if (this.#combat) this.#scene.add(this.#combat.root);
+    // a race (or anything to drive): vehicles that steer and roll, the chase camera, the next gate
+    this.#race = this.rapierSim ? raceView(world.bundle, this.rapierSim.sim) : null;
+    if (this.#race) this.#scene.add(this.#race.root);
     this.rapierSim?.subscribe((evs) => {
       for (const ev of evs) {
         if (ev.k === "state") view.setState(ev.a, String(ev.v));
         else if (ev.k === "destroy") view.gone(ev.a);
+        else if (ev.k === "hit") this.#combat?.hit(ev.a);
       }
     });
     this.#follow.reset(sim.spawnYaw, look.cutaway ? 1.0 : 0.36);
@@ -416,10 +572,13 @@ export class Engine {
 
   dispose() {
     void this.#renderer.setAnimationLoop(null);
+    this.#stopPreview();
+    this.#warmPreview?.dispose();
     this.#unload();
     this.#follow.dispose();
     this.#input.dispose();
     this.#air.dispose();
+    this.#ghost.dispose();
     window.removeEventListener("resize", this.#onResize);
     this.#renderer.dispose();
     probe().ready = false;
@@ -428,6 +587,10 @@ export class Engine {
   #unload() {
     this.#sim?.stop();
     this.#sim = null;
+    this.#combat?.dispose();
+    this.#combat = null;
+    this.#race?.dispose(this.#camera, this.#follow);
+    this.#race = null;
     this.#view?.dispose();
     this.#view = null;
   }
@@ -477,9 +640,17 @@ export class Engine {
     if (this.#vr) this.#vrInput();
     this.#pushInput();
     this.#applyPoses(now);
+    this.#placeGhost(now);
 
+    const ask = this.#previewAsk;
+    if (ask && now - ask.at > PREVIEW_AFTER_MS) void this.#startPreview(ask.spec);
+    const preview = this.#preview;
     const player = view?.actors.get(PLAYER_ID);
-    if (player && this.#vr) {
+    if (preview) {
+      // building: the camera circles the layout instead of following the player
+      preview.update(now, this.#camera);
+      this.#air.follow(this.#camera.position);
+    } else if (player && this.#vr) {
       // first person: the rig stands on the player's feet; the headset adds the eye height
       player.visible = false;
       this.#rig.position.set(player.position.x, player.position.y - 0.9, player.position.z);
@@ -490,6 +661,8 @@ export class Engine {
       this.#air.follow(this.#camera.position);
     }
     view?.update(now / 1000);
+    if (view) this.#combat?.update(now / 1000, view.actors, this.#camera);
+    if (view && !this.#vr) this.#race?.update(dt, now / 1000, view.actors, this.#camera, this.#follow);
     const focused = this.#focus ? view?.actors.get(this.#focus) : undefined;
     this.#beacon.visible = Boolean(focused);
     if (focused) this.#beacon.position.set(focused.position.x, focused.position.y + 6, focused.position.z);

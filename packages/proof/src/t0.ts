@@ -2,7 +2,7 @@
 // by goal regression (win ← score_gte ← score effect ← enter with carrier ← pickup …).
 import type { Rule, WorldBundle } from "@ghostrun/ir";
 import { SPECIAL_REFS } from "@ghostrun/ir";
-import { verb } from "@ghostrun/kits";
+import { HEALTH, SHOOT, verb } from "@ghostrun/kits";
 import { clampParams, type Cause, type Produces } from "@ghostrun/plugin-api";
 import type { Chip } from "./types";
 
@@ -15,7 +15,9 @@ export type PlanStep =
   | { do: "collect"; items: string[]; rule: string; times: number; rules?: string[] } // touch `items` until the rule(s) fired `times` in all
   | { do: "wait"; rule: string; want?: Want } // let time run (a timer)
   | { do: "throw"; item: string; rule: string; times?: number; want?: Want } // carrying `item`, get a rival in range and press USE
-  | { do: "shove"; at: string; from: string; into?: string; rule: string; times?: number; want?: Want }; // knock `at` (out of `from`, or into `into`)
+  | { do: "shove"; at: string; from: string; into?: string; rule: string; times?: number; want?: Want } // knock `at` (out of `from`, or into `into`)
+  | { do: "shoot"; at: string; weapon?: string; rule: string; times?: number; want?: Want; hp?: number } // shoot `at` (an id, a team, '' any rival) until the rule fires (with hp: until its hit points are that low)
+  | { do: "drive"; track: string; rule: string; laps: number; want?: Want }; // at a wheel (getting in first) or on foot, the track bound on `track`: its gates in order, lap after lap
 
 /** A precondition step is done when `id` is in state `s` (it has no rule of its own to watch). */
 export interface Want {
@@ -26,10 +28,16 @@ export interface Want {
 /** What each kit verb in the world can produce, and how an agent causes it. */
 export function producers(b: WorldBundle): Produces[] {
   const out: Produces[] = [];
+  const npcs = new Set(b.entities.filter((e) => e.kind === "npc").map((e) => e.id));
   for (const vb of [...b.verbs].sort((x, y) => (x.id < y.id ? -1 : 1))) {
     const p = verb(vb.verb);
     if (!p) continue;
-    const made = p.produces?.({ id: vb.id, on: vb.on, params: clampParams(p.params, vb.params), mem: {} }) ?? [];
+    let made = p.produces?.({ id: vb.id, on: vb.on, params: clampParams(p.params, vb.params), mem: {} }) ?? [];
+    // an NPC's own weapon (claws, its spell) fires when it chooses: nothing the player does
+    if (p.id === SHOOT && npcs.has(vb.on)) {
+      out.push(...made.map((x) => ({ ...x, cause: null })));
+      continue;
+    }
     out.push(...made);
     // every usable verb also logs touch a=agent b=it when used, with the same preconditions
     if (p.use && !made.some((x) => x.k === "touch" && x.b === vb.on)) {
@@ -43,9 +51,11 @@ export function producers(b: WorldBundle): Produces[] {
 /** Entities the world's verbs make carryable (carry, and a lock's key). */
 export function carryables(b: WorldBundle): Set<string> {
   const out = new Set(b.verbs.filter((v) => v.verb.endsWith(".carry")).map((v) => v.on));
+  const npcs = new Set(b.entities.filter((e) => e.kind === "npc").map((e) => e.id));
   for (const vb of b.verbs) {
     const p = verb(vb.verb);
-    for (const id of p?.carries?.({ id: vb.id, on: vb.on, params: clampParams(p.params, vb.params), mem: {} }) ?? []) out.add(id);
+    // (nobody carries a character: a weapon bound on one is its own)
+    for (const id of p?.carries?.({ id: vb.id, on: vb.on, params: clampParams(p.params, vb.params), mem: {} }) ?? []) if (p!.id !== SHOOT || !npcs.has(id)) out.add(id);
   }
   const real = new Set(b.entities.map((e) => e.id));
   for (const id of out) if (!real.has(id)) out.delete(id); // a key named in a verb but never placed
@@ -65,11 +75,43 @@ export function causeSteps(c: Cause, rule: string, want?: Want): PlanStep[] {
       return [{ do: "pickup", item: c.item, rule: "" }, { do: "throw", item: c.item, rule, ...w }];
     case "shove":
       return [{ do: "shove", at: c.at, from: "", rule, ...w }];
+    case "shoot":
+      return [...(c.weapon ? [{ do: "pickup" as const, item: c.weapon, rule: "" }] : []), { do: "shoot", at: c.at, ...(c.weapon ? { weapon: c.weapon } : {}), rule, ...w }];
+    case "drive":
+      return [{ do: "drive", track: c.track, rule, laps: 1, ...w }];
   }
 }
 
+/**
+ * A shot at `w.a`: with the weapon the rule names, or, when it names none, whichever the player has
+ * (its own, else one to hold that the runner picks up: models leave two guns lying about).
+ */
+const anyGun = (c: Extract<Cause, { do: "shoot" }>, w: Rule["when"]): Cause => (w.b ? { ...c, at: w.a } : { do: "shoot", at: w.a });
+
 /** A cause in a few words, for a chain's explanation. */
-const said = (c: Cause) => (c.do === "throw" ? `throw ${c.item}` : `${c.do} ${c.at}`);
+const said = (c: Cause) => (c.do === "throw" ? `throw ${c.item}` : c.do === "shoot" ? `shoot ${c.at || "a rival"}` : c.do === "drive" ? `drive ${c.track}` : `${c.do} ${c.at}`);
+
+/** Hit points by id (combat_sport.health, clamped), for everything that has them. */
+export function hitPoints(b: WorldBundle): Map<string, number> {
+  const spec = verb(HEALTH)!.params;
+  const out = new Map<string, number>();
+  for (const v of [...b.verbs].sort((x, y) => (x.id < y.id ? -1 : 1))) if (v.verb === HEALTH && !out.has(v.on)) out.set(v.on, Number(clampParams(spec, v.params).hp));
+  return out;
+}
+
+/** The weapons the player can fire: its own (on "player") and ones it can pick up, clamped. */
+export function playerWeapons(b: WorldBundle): { id: string; on: string; held: boolean; range: number; speed: number; damage: number; cooldown: number; at: string[] }[] {
+  const spec = verb(SHOOT)!.params;
+  const npcs = new Set(b.entities.filter((e) => e.kind === "npc").map((e) => e.id));
+  const real = new Set(b.entities.map((e) => e.id));
+  return [...b.verbs]
+    .sort((x, y) => (x.id < y.id ? -1 : 1))
+    .filter((v) => v.verb === SHOOT && (v.on === "player" || (real.has(v.on) && !npcs.has(v.on))))
+    .map((v) => {
+      const p = clampParams(spec, v.params);
+      return { id: v.id, on: v.on, held: v.on !== "player", range: Number(p.range), speed: Number(p.speed), damage: Number(p.damage), cooldown: Number(p.cooldown), at: String(p.at).split(",").filter(Boolean) };
+    });
+}
 
 export interface WinChain {
   winRule: string;
@@ -89,15 +131,32 @@ export function t0(b: WorldBundle, playerTeam: "red" | "blue" = "red"): { chips:
   const carryable = carryables(b);
   const made = producers(b);
   const collectedSet = new Set(b.verbs.filter((v) => v.verb === "puzzle.collect").map((v) => v.on));
+  const hp = hitPoints(b);
+  const weapons = playerWeapons(b);
+  // things to throw: how much they hurt and what they can be thrown at besides rivals (clamped)
+  const throwSpec = verb("combat_sport.throw")!.params;
+  const throws = new Map(b.verbs.filter((v) => v.verb === "combat_sport.throw").map((v) => {
+    const p = clampParams(throwSpec, v.params);
+    return [v.on, { damage: Number(p.damage), at: String(p.at).split(",").filter(Boolean) }] as const;
+  }));
+  // what has hit points: an id, a team (anyone on it), or '' (anyone at all)
+  const healthy = (ref: string): string[] =>
+    ref === "" ? [...hp.keys()] : ref.startsWith("team:") ? [...hp.keys()].filter((id) => (id === "player" ? playerTeam : ents.get(id)?.team) === ref.slice(5)) : hp.has(ref) ? [ref] : [];
 
-  // 1. references
+  // 1. references (hit points included: a knock-out rule on something with none can never fire)
   let bad = 0;
   for (const r of b.rules) {
     const refs = [r.when.a, r.when.b, ...r.if.map((c) => c.l), ...r.then.map((e) => e.target)];
     const missing = refs.filter((x) => !ok(x));
-    if (missing.length) {
+    const noHp = [
+      ...(r.when.t === "health_lte" && ok(r.when.a) && !healthy(r.when.a).length ? [`${r.when.a || "anyone"} (health_lte)`] : []),
+      ...r.then.filter((e) => (e.e === "damage" || e.e === "heal") && ok(e.target) && !healthy(e.target).length).map((e) => `${e.target} (${e.e})`),
+      ...r.if.filter((c) => /^[a-z][a-z0-9_]*\.hp$/.test(c.l) && ok(c.l) && !hp.has(c.l.split(".")[0]!)).map((c) => `${c.l}`),
+    ];
+    if (missing.length || noHp.length) {
       bad++;
-      chips.push(chip({ id: `T0:refs:${r.id}`, subject: { kind: "rule", id: r.id }, status: "counterexample", method: "static def-use", text: `rule ${r.id} references unknown ${missing.join(", ")}`, src: r.src }));
+      const text = [missing.length ? `references unknown ${missing.join(", ")}` : "", noHp.length ? `needs hit points nothing has: ${noHp.join(", ")}` : ""].filter(Boolean).join("; ");
+      chips.push(chip({ id: `T0:refs:${r.id}`, subject: { kind: "rule", id: r.id }, status: "counterexample", method: "static def-use", text: `rule ${r.id} ${text}`, src: r.src }));
     }
   }
   if (!bad) chips.push(chip({ id: "T0:refs", subject: { kind: "world", id: "refs" }, status: "verified", method: "static def-use", text: `all ${b.rules.length} rules reference existing things`, src: "" }));
@@ -142,6 +201,17 @@ export function t0(b: WorldBundle, playerTeam: "red" | "blue" = "red"): { chips:
         if (!sub) return null;
         pre.push(...sub.steps);
         preWhy.push(`${team} scores ${need}`);
+        continue;
+      }
+      // "<id>.hp eq 0" (or lte / lt n): worn down to it first, the way a health_lte rule would be;
+      // the step is done when its hit points get there (the rule it serves fires later)
+      const worn = /^([a-z][a-z0-9_]*)\.hp$/.exec(c.l)?.[1];
+      if (worn && (c.op === "eq" || c.op === "lte" || c.op === "lt") && Number.isFinite(Number(c.r))) {
+        const n = c.op === "lt" ? Number(c.r) - 1e-6 : Number(c.r);
+        const sub = satTrigger(r, { ...w, t: "health_lte", a: worn, b: "", n }, depth + 1, s2);
+        if (!sub || !sub.steps.some((st) => st.do === "shoot" && st.at === worn)) return null;
+        pre.push(...sub.steps.map((st) => (st.do === "shoot" && st.at === worn ? { ...st, rule: "", hp: n } : st)));
+        preWhy.push(`${worn} down to ${Math.max(0, Math.round(n))} HP`);
         continue;
       }
       const m = /^([a-z][a-z0-9_]*)\.state$/.exec(c.l);
@@ -201,7 +271,7 @@ export function t0(b: WorldBundle, playerTeam: "red" | "blue" = "red"): { chips:
           pts += more * ways[again]!.per;
         }
         if (pts < w.n) return null;
-        const steps = ways.flatMap((x, i) => (times[i] ? x.sub.steps.map((st) => (st.do === "deliver" || st.do === "collect" || st.do === "throw" || st.do === "shove" ? { ...st, times: times[i]! } : st)) : []));
+        const steps = ways.flatMap((x, i) => (times[i] ? x.sub.steps.map((st) => (st.do === "deliver" || st.do === "collect" || st.do === "throw" || st.do === "shove" || st.do === "shoot" ? { ...st, times: times[i]! } : st)) : []));
         return { steps, explain: `${r.id} (${w.a} reaches ${w.n}) ← ${ways.filter((_, i) => times[i]).map((x) => x.sub.explain).join(" + ")}` };
       }
       case "enter": {
@@ -236,16 +306,51 @@ export function t0(b: WorldBundle, playerTeam: "red" | "blue" = "red"): { chips:
         if (!p || p.cause?.do !== "shove") return null;
         return { steps: [{ do: "shove", at: p.cause.at, from: w.b, rule: r.id }], explain: `${r.id} (${p.cause.at} knocked out of ${w.b || "the area"})` };
       }
+      case "health_lte": {
+        // someone worn down by the player: shot (or a rule that hurts them, repeated) until their hit
+        // points get there; the player's own falling is the rivals' doing, nothing to plan
+        if (w.a === "player" || w.a === `team:${playerTeam}`) return null;
+        const who = healthy(w.a).filter((id) => id !== "player");
+        if (!who.length) return null;
+        const most = Math.max(...who.map((id) => hp.get(id)!));
+        const name = w.a || "a rival";
+        const shot = made.find((x) => x.k === "hit" && x.cause?.do === "shoot" && (!w.b || x.b === w.b) && (weapons.find((wp) => wp.on === x.b)?.damage ?? 0) > 0);
+        if (shot?.cause?.do === "shoot") {
+          const dmg = weapons.find((wp) => wp.on === shot.b)!.damage;
+          const hits = Math.max(1, Math.ceil((most - w.n) / dmg));
+          return { steps: causeSteps(anyGun(shot.cause, w), r.id), explain: `${r.id} (${name} down to ${w.n} HP) ← shoot ${name} (${hits} hit${hits > 1 ? "s" : ""} of ${dmg})` };
+        }
+        // or something thrown that hurts (a throwing star) at whoever it can hit: a rival, or a thing in its "at"
+        const thrown = made.find((x) => x.k === "hit" && x.cause?.do === "throw" && (!w.b || x.b === w.b) && (throws.get(x.cause.item)?.damage ?? 0) > 0 && who.some((id) => throws.get((x.cause as { item: string }).item)!.at.includes(id) || (ents.get(id)?.kind === "npc" && ents.get(id)?.team !== playerTeam)));
+        if (thrown?.cause?.do === "throw") {
+          const dmg = throws.get(thrown.cause.item)!.damage;
+          const hits = Math.max(1, Math.ceil((most - w.n) / dmg));
+          return { steps: causeSteps(thrown.cause, r.id), explain: `${r.id} (${name} down to ${w.n} HP) ← throw ${thrown.cause.item} (${hits} hit${hits > 1 ? "s" : ""} of ${dmg})` };
+        }
+        for (const r2 of rules) {
+          const fx = r2.id !== r.id && !w.b ? r2.then.find((e) => e.e === "damage" && (e.target === w.a || who.includes(e.target))) : undefined;
+          const n = fx ? fx.n || Number(fx.v) || 25 : 0;
+          // (a once-only one that can't do it alone isn't a way: nothing else wears them down)
+          const sub = fx && n > 0 && !(r2.once && n < most - w.n) ? sat(r2, depth + 1, s2) : null;
+          if (!sub) continue;
+          const times = Math.max(1, Math.ceil((most - w.n) / n));
+          const steps = sub.steps.map((st) => (st.do === "deliver" || st.do === "collect" || st.do === "throw" || st.do === "shove" || st.do === "shoot" ? { ...st, times: (st.times ?? 1) * times } : st));
+          return { steps, explain: `${r.id} (${name} down to ${w.n} HP) ← ${sub.explain} ×${times}` };
+        }
+        return null;
+      }
       case "touch":
       case "hit": {
-        // a rival hit by something thrown
+        // a rival hit by something thrown, or shot
         if (w.t === "hit" && w.a !== "player") {
           const p = made.find((x) => x.k === "hit" && x.cause?.do === "throw" && (!w.b || x.b === w.b));
           if (p && p.cause?.do === "throw") return { steps: causeSteps(p.cause, r.id), explain: `${r.id} (${w.a || "a rival"} hit by ${p.cause.item})` };
+          const s = w.a === `team:${playerTeam}` ? undefined : made.find((x) => x.k === "hit" && x.cause?.do === "shoot" && (!w.b || x.b === w.b));
+          if (s?.cause?.do === "shoot") return { steps: causeSteps(anyGun(s.cause, w), r.id), explain: `${r.id} (${w.a || "a rival"} shot by ${s.b === "player" || !w.b ? "you" : s.b})` };
         }
         if (w.a && w.a !== "player") return null;
-        // the player is never hit by their own throw
-        const ps = made.filter((x) => x.k === w.t && (!w.b || x.b === w.b) && x.cause && !(w.t === "hit" && x.cause.do === "throw"));
+        // the player is never hit by their own throw or shot
+        const ps = made.filter((x) => x.k === w.t && (!w.b || x.b === w.b) && x.cause && !(w.t === "hit" && (x.cause.do === "throw" || x.cause.do === "shoot")));
         if (!ps.length) return null;
         if (w.b || ps.length === 1) return { steps: causeSteps(ps[0]!.cause!, r.id), explain: `${r.id} (${w.t} ${ps[0]!.b})` };
         // "any of": collect the things you touch; if none are collectible, use the first one
@@ -255,6 +360,17 @@ export function t0(b: WorldBundle, playerTeam: "red" | "blue" = "red"): { chips:
       }
       case "timer_end":
         return made.some((x) => x.k === "timer_end" && x.a === w.a) ? { steps: [{ do: "wait", rule: r.id }], explain: `${r.id} (the timer runs out)` } : null;
+      case "lap_done": {
+        // laps the player drives (a rival's laps are theirs): a track whose gates are all in the world
+        if (w.a && w.a !== "player" && w.a !== `team:${playerTeam}`) return null;
+        const t = b.verbs.find((v) => v.verb === "racing.track" && (!w.b || v.on === w.b) && ents.get(v.on)?.body === "sensor");
+        if (!t) return null;
+        const gates = String(t.params.gates ?? "").split(",").filter(Boolean);
+        if (gates.some((g) => !ents.has(g))) return null;
+        const laps = Math.max(1, w.n);
+        const ride = b.verbs.find((v) => v.verb === "vehicle.drive" && v.params.driver === "player")?.on ?? b.verbs.find((v) => v.verb === "vehicle.drive")?.on;
+        return { steps: [{ do: "drive", track: t.on, rule: r.id, laps }], explain: `${r.id} (lap ${laps} done) ← ${ride ? `drive ${ride}` : "run"} through ${gates.length} gate${gates.length === 1 ? "" : "s"} and ${t.on} ×${laps}` };
+      }
       default:
         return null;
     }

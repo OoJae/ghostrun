@@ -1,0 +1,28 @@
+{"op":"meta","mode":"play","lang":"en","pack":"city_block","sub":[],"seed":12,"look":"dusty main street","mood":[-0.2,0.85,0.8],"timeOfDay":14,"weather":"clear"}
+{"op":"zone","id":"z_center","slot":"center","tag":"plaza","name":"Town Plaza"}
+{"op":"zone","id":"z_west","slot":"west_block","tag":"base","name":"West Standoff"}
+{"op":"zone","id":"z_east","slot":"east_block","tag":"base","name":"East Standoff"}
+{"op":"zone","id":"z_street_w","slot":"street_w","tag":"street","name":"West Street"}
+{"op":"zone","id":"z_street_e","slot":"street_e","tag":"street","name":"East Street"}
+{"op":"spawn","id":"sp_player","zone":"z_west","anchor":"spawn_pad","team":"red"}
+{"op":"ent","id":"bandit1","kind":"npc","noun":"bandit","hyper":"character","zone":"z_east","anchor":"spawn_pad","body":"dynamic","shape":"capsule","size":[0.5,1.8,0.5],"team":"blue"}
+{"op":"ent","id":"bandit2","kind":"npc","noun":"bandit","hyper":"character","zone":"z_east","anchor":"goal_ring","body":"dynamic","shape":"capsule","size":[0.5,1.8,0.5],"team":"blue"}
+{"op":"ent","id":"bandit3","kind":"npc","noun":"bandit","hyper":"character","zone":"z_east","anchor":"goal_ring","body":"dynamic","shape":"capsule","size":[0.5,1.8,0.5],"team":"blue"}
+{"op":"ent","id":"barrel","kind":"prop","noun":"oil barrel","hyper":"prop","zone":"z_center","anchor":"wall_n","body":"fixed","shape":"box","size":[0.8,1.2,0.8]}
+{"op":"verb","id":"vb_shoot_player","verb":"combat_sport.shoot","on":"player","params":{"range":8,"speed":20,"damage":100,"cooldown":1,"at":"bandit1,bandit2,bandit3"}}
+{"op":"verb","id":"vb_shoot_b1","verb":"combat_sport.shoot","on":"bandit1","params":{"range":8,"speed":20,"damage":100,"cooldown":1,"at":"player"}}
+{"op":"verb","id":"vb_shoot_b2","verb":"combat_sport.shoot","on":"bandit2","params":{"range":8,"speed":20,"damage":100,"cooldown":1,"at":"player"}}
+{"op":"verb","id":"vb_shoot_b3","verb":"combat_sport.shoot","on":"bandit3","params":{"range":8,"speed":20,"damage":100,"cooldown":1,"at":"player"}}
+{"op":"verb","id":"vb_health_player","verb":"combat_sport.health","on":"player","params":{"hp":100,"respawn":false}}
+{"op":"verb","id":"vb_health_b1","verb":"combat_sport.health","on":"bandit1","params":{"hp":100,"respawn":false}}
+{"op":"verb","id":"vb_health_b2","verb":"combat_sport.health","on":"bandit2","params":{"hp":100,"respawn":false}}
+{"op":"verb","id":"vb_health_b3","verb":"combat_sport.health","on":"bandit3","params":{"hp":100,"respawn":false}}
+{"op":"rule","id":"r_dead_b1","when":{"t":"health_lte","a":"bandit1","n":0},"then":[{"e":"destroy","target":"bandit1"}],"once":true}
+{"op":"rule","id":"r_dead_b2","when":{"t":"health_lte","a":"bandit2","n":0},"then":[{"e":"destroy","target":"bandit2"}],"once":true}
+{"op":"rule","id":"r_dead_b3","when":{"t":"health_lte","a":"bandit3","n":0},"then":[{"e":"destroy","target":"bandit3"}],"once":true}
+{"op":"rule","id":"r_win","when":{"t":"health_lte","a":"bandit3","n":0},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose","when":{"t":"health_lte","a":"player","n":0},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"expect","id":"x_showdown","prop":"win_reachable","a":"sp_player","b":"bandit3","headline":true,"text":"Three bandits must be outdrawn in the quick-draw showdown"}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":6}}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

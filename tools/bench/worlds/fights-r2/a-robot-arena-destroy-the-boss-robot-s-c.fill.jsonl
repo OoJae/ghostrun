@@ -1,0 +1,26 @@
+{"op":"meta","mode":"play","lang":"en","pack":"arena","sub":[],"seed":14,"look":"robot combat arena","mood":[0.8,0.85,0.8],"timeOfDay":12,"weather":"clear"}
+{"op":"zone","id":"z_center","slot":"midfield","tag":"arena","name":"Central Arena"}
+{"op":"zone","id":"z_west","slot":"west_half","tag":"base","name":"West Base"}
+{"op":"zone","id":"z_east","slot":"east_half","tag":"base","name":"East Base"}
+{"op":"zone","id":"z_north","slot":"north_deck","tag":"platform","name":"North Platform"}
+{"op":"zone","id":"z_south","slot":"south_deck","tag":"platform","name":"South Platform"}
+{"op":"spawn","id":"sp_red","zone":"z_west","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"core_goal","zone":"z_east","anchor":"center","noun":"boss core","hyper":"part","team":"red"}
+{"op":"ent","id":"boss_robot","kind":"npc","noun":"boss robot","hyper":"machine","zone":"z_center","anchor":"center","body":"dynamic","shape":"hull","team":"","hp":300,"respawn":false}
+{"op":"ent","id":"core","kind":"prop","noun":"core","hyper":"part","zone":"z_east","anchor":"center","body":"dynamic","shape":"sphere","size":[0.5,0.5,0.5]}
+{"op":"ent","id":"laser_left","kind":"hazard","noun":"laser beam","hyper":"beams","zone":"z_center","anchor":"flank_n","body":"sensor","shape":"box","size":[0.2,2,0.2]}
+{"op":"ent","id":"laser_right","kind":"hazard","noun":"laser beam","hyper":"beams","zone":"z_center","anchor":"flank_s","body":"sensor","shape":"box","size":[0.2,2,0.2]}
+{"op":"ent","id":"plasma_gun","kind":"pickup","noun":"plasma gun","hyper":"weapon","zone":"z_north","anchor":"deck_center","body":"dynamic","shape":"box","size":[0.3,0.2,0.5]}
+{"op":"verb","id":"vb_carry_gun","verb":"physics_props.carry","on":"plasma_gun","params":{}}
+{"op":"verb","id":"vb_shoot","verb":"combat_sport.shoot","on":"plasma_gun","params":{"range":15,"speed":25,"damage":100,"cooldown":0.5,"at":""}}
+{"op":"verb","id":"vb_laser_left","verb":"motion_hazards.hazard","on":"laser_left","params":{"respawn":true}}
+{"op":"verb","id":"vb_laser_right","verb":"motion_hazards.hazard","on":"laser_right","params":{"respawn":true}}
+{"op":"rule","id":"r_core_destroy","when":{"t":"health_lte","a":"core","n":0},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_laser_hit","when":{"t":"hit","a":"player","b":"laser_left"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_laser_hit2","when":{"t":"hit","a":"player","b":"laser_right"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"expect","id":"exp_core","prop":"win_reachable","a":"sp_red","b":"core","headline":true,"text":"Boss core is the single point of failure"}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":6}}
+{"op":"end","layer":"gameplay"}
+{"op":"dress","id":"d_arena_theme","kind":"sign","noun":"Welcome to the Battle Arena","hyper":"sign","zone":"z_center","anchor":"scoreboard","body":"fixed","shape":"box","size":[3,0.5,0.2]}
+{"op":"poster","id":"p_boss","zone":"z_center","anchor":"center","text":"Danger: Boss Robot","size":[2,2,0.1]}
+{"op":"end","layer":"cosmetic"}

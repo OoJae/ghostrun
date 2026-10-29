@@ -1,8 +1,10 @@
 // Client for the live fast lane: POST /v1/build streams the intent, then one JSONL fill line per
 // SSE event. We parse lines as they land and hand over as soon as the gameplay layer is complete
-// (the cosmetic tail never blocks play).
-import { FillParser, splitObjects } from "@ghostrun/ir";
+// (the cosmetic tail never blocks play). An exact repeat comes back from the edge's cache behind a
+// `cached` event (when and by which models it was built live); `fresh` asks for a new build.
+import { FillParser, splitObjects, type WorldBundle } from "@ghostrun/ir";
 import { api } from "./api";
+import { ENGINE_HASH } from "./pipeline";
 
 export interface LiveIntent {
   lang: string;
@@ -19,8 +21,15 @@ export interface LiveIntent {
   headline: string;
 }
 
+/** A build the edge replayed from its cache: when it was built live, and by which models. */
+export interface LiveCached {
+  at: string;
+  intentModel: string;
+  fillModel: string;
+}
+
 export type LiveResult =
-  | { kind: "world"; fill: string; seed: number; intent: LiveIntent; intentMs: number; gameplayMs: number; lines: number; /** The model that took over when the fast lane was busy. */ fallback: string | null }
+  | { kind: "world"; fill: string; seed: number; intent: LiveIntent; intentMs: number; gameplayMs: number; lines: number; /** The model that took over when the fast lane was busy. */ fallback: string | null; cached: LiveCached | null }
   | { kind: "refused"; message: string }
   | { kind: "unavailable"; reason: string };
 
@@ -33,12 +42,23 @@ export async function liveAvailable(): Promise<boolean> {
   }
 }
 
-export async function liveBuild(prompt: string, onIntent?: (i: LiveIntent, ms: number) => void, onLine?: (n: number) => void): Promise<LiveResult> {
+export interface BuildHooks {
+  /** The intent has landed (with the world's seed): the layout can be drawn before any fill line. */
+  onIntent?(i: LiveIntent, ms: number, seed: number): void;
+  /** Another fill line parsed: the draft so far (shared and growing; read it, don't keep it). */
+  onLine?(n: number, draft: WorldBundle): void;
+  /** Skip the edge's cache: a new build, which then replaces the cached one. */
+  fresh?: boolean;
+}
+
+export async function liveBuild(prompt: string, hooks: BuildHooks = {}): Promise<LiveResult> {
+  const { onIntent, onLine, fresh } = hooks;
   const t0 = performance.now();
   const ctl = new AbortController();
   let res: Response;
   try {
-    res = await api("/v1/build", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ prompt }), signal: ctl.signal });
+    // the engine hash keys the edge's cache: a world is only replayed to the engine it was built for
+    res = await api("/v1/build", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ prompt, engine: ENGINE_HASH, ...(fresh ? { fresh: true } : {}) }), signal: ctl.signal });
   } catch (e) {
     return { kind: "unavailable", reason: String(e) };
   }
@@ -53,6 +73,7 @@ export async function liveBuild(prompt: string, onIntent?: (i: LiveIntent, ms: n
   let intentMs = 0;
   let lines = 0;
   let fallback: string | null = null;
+  let cached: LiveCached | null = null;
   let parser: FillParser | null = null;
   try {
     for (;;) {
@@ -72,7 +93,9 @@ export async function liveBuild(prompt: string, onIntent?: (i: LiveIntent, ms: n
           seed = payload.seed as number;
           intentMs = Math.round(performance.now() - t0);
           parser = new FillParser({ seed });
-          onIntent?.(intent, intentMs);
+          onIntent?.(intent, intentMs, seed);
+        } else if (event === "cached") {
+          cached = { at: String(payload.at), intentModel: String(payload.intentModel), fillModel: String(payload.fillModel) };
         } else if (event === "fallback") {
           fallback = String(payload.to);
         } else if (event === "refusal") {
@@ -83,10 +106,10 @@ export async function liveBuild(prompt: string, onIntent?: (i: LiveIntent, ms: n
           const line = String(payload.line);
           fill += splitObjects(line).map((one) => `${one}\n`).join(""); // one object per line, even when glued
           parser.push(`${line}\n`);
-          onLine?.(++lines);
+          onLine?.(++lines, parser.draft);
           if (parser.gameplayDone) {
             ctl.abort(); // the cosmetic tail is optional; play starts now
-            return { kind: "world", fill, seed, intent, intentMs, gameplayMs: Math.round(performance.now() - t0), lines, fallback };
+            return { kind: "world", fill, seed, intent, intentMs, gameplayMs: Math.round(performance.now() - t0), lines, fallback, cached };
           }
         }
       }
@@ -94,7 +117,7 @@ export async function liveBuild(prompt: string, onIntent?: (i: LiveIntent, ms: n
   } catch (e) {
     if (!(e instanceof DOMException && e.name === "AbortError")) return { kind: "unavailable", reason: String(e) };
   }
-  if (intent && fill) return { kind: "world", fill, seed, intent, intentMs, gameplayMs: Math.round(performance.now() - t0), lines, fallback };
+  if (intent && fill) return { kind: "world", fill, seed, intent, intentMs, gameplayMs: Math.round(performance.now() - t0), lines, fallback, cached };
   return { kind: "unavailable", reason: "stream ended before the gameplay layer" };
 }
 

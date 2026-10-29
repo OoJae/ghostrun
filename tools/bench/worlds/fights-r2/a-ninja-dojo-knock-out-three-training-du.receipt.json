@@ -1,0 +1,274 @@
+{
+  "prompt": "A ninja dojo: knock out three training dummies with throwing stars, then beat the sensei",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "martial arts action",
+    "setting": "A traditional wooden ninja dojo with raised tatami floors and straw training dummies lining the walls",
+    "role": "a student ninja",
+    "goal": "Defeat three training dummies with throwing stars and then win a duel against the sensei",
+    "fail": "Running out of stars before knocking out all dummies, or losing the final duel to the sensei",
+    "mood": "focused and intense",
+    "pack": "arena",
+    "sub": [],
+    "safety": "arcade",
+    "headline": "Dojo duel requires clearing three straw dummies with stars before facing the sensei",
+    "nouns": [
+      {
+        "noun": "ninja dojo",
+        "hyper": "training hall"
+      },
+      {
+        "noun": "training dummy",
+        "hyper": "practice target"
+      },
+      {
+        "noun": "throwing star",
+        "hyper": "shuriken"
+      },
+      {
+        "noun": "sensei",
+        "hyper": "master instructor"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.2,
+      "arousal": 0.6,
+      "tension": 0.5
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "3dd1e734ae9989c3b0dcbb64f9a8fcd5c61dffc66e9042c2ab62d8947c298d2e",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_dojo",
+      "text": "Dojo duel requires clearing three straw dummies with stars before facing the sensei",
+      "status": "counterexample",
+      "method": "static goal regression over rules + physics, 12 AI runners vs 4 bots + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 5 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_sensei_win (sensei down to 0 HP) ← shoot sensei (2 hits of 80)",
+        "src": ""
+      },
+      {
+        "id": "T1:range:r_dummy1_down",
+        "tier": "T1",
+        "subject": {
+          "kind": "rule",
+          "id": "r_dummy1_down"
+        },
+        "method": "line-of-sight range model (from ground the jump model reaches)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 29,
+        "status": "verified",
+        "text": "a shot reaches the straw dummy: clear lines from as far as 15 m (range 15 m)",
+        "cx": null
+      },
+      {
+        "id": "T1:range:r_dummy2_down",
+        "tier": "T1",
+        "subject": {
+          "kind": "rule",
+          "id": "r_dummy2_down"
+        },
+        "method": "line-of-sight range model (from ground the jump model reaches)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 30,
+        "status": "verified",
+        "text": "a shot reaches the straw dummy: clear lines from as far as 15 m (range 15 m)",
+        "cx": null
+      },
+      {
+        "id": "T1:range:r_dummy3_down",
+        "tier": "T1",
+        "subject": {
+          "kind": "rule",
+          "id": "r_dummy3_down"
+        },
+        "method": "line-of-sight range model (from ground the jump model reaches)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 30,
+        "status": "verified",
+        "text": "a shot reaches the straw dummy: clear lines from as far as 15 m (range 15 m)",
+        "cx": null
+      },
+      {
+        "id": "T1:range:r_sensei_win",
+        "tier": "T1",
+        "subject": {
+          "kind": "rule",
+          "id": "r_sensei_win"
+        },
+        "method": "line-of-sight range model (from ground the jump model reaches)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 30,
+        "status": "verified",
+        "text": "a shot reaches the sensei: clear lines from as far as 15 m (range 15 m)",
+        "cx": null
+      },
+      {
+        "id": "T2:r_dummy1_down",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_dummy1_down"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_dummy1_down fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_dummy2_down",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_dummy2_down"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_dummy2_down fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_dummy3_down",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_dummy3_down"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_dummy3_down fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_player_lose",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_player_lose"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_player_lose: nothing in the world hurts the player",
+        "cx": null
+      },
+      {
+        "id": "T2:r_sensei_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_sensei_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_sensei_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners vs 4 bots",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it vs 4 bots (AI par 1.2 s)",
+        "cx": null,
+        "src": "",
+        "ms": 46
+      },
+      {
+        "id": "T3:too_easy",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "counterexample",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 12,
+        "text": "won in 1.2 s: over almost before it starts",
+        "cx": {
+          "where": null,
+          "have": 1.2,
+          "need": 3,
+          "unit": "s",
+          "text": "AI par 1.2 s < 3 s"
+        },
+        "src": "",
+        "ms": 0
+      }
+    ],
+    "par": {
+      "goldS": 1.2,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 285
+  }
+}

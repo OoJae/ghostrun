@@ -1,0 +1,30 @@
+{"op":"meta","mode":"play","lang":"en","pack":"city_block","sub":["rooftop"],"seed":9,"look":"Neon city night","mood":[0.2,0.9,0.7],"timeOfDay":22,"weather":"clear"}
+{"op":"zone","id":"z_center","slot":"center","tag":"plaza","name":"Central plaza"}
+{"op":"zone","id":"z_west","slot":"west_block","tag":"base","name":"West garage"}
+{"op":"zone","id":"z_east","slot":"east_block","tag":"base","name":"East garage"}
+{"op":"zone","id":"z_street_w","slot":"street_w","tag":"street","name":"West avenue"}
+{"op":"zone","id":"z_street_e","slot":"street_e","tag":"street","name":"East avenue"}
+{"op":"zone","id":"z_roof","slot":"roof_lane_a","tag":"rooftop","name":"Rooftop sprint lane"}
+{"op":"spawn","id":"sp_red","zone":"z_west","anchor":"spawn_pad","team":"red"}
+{"op":"spawn","id":"sp_blue1","zone":"z_east","anchor":"spawn_pad","team":"blue"}
+{"op":"spawn","id":"sp_blue2","zone":"z_east","anchor":"spawn_pad","team":"blue"}
+{"op":"goal","id":"police_timer","zone":"z_center","anchor":"lane_end","noun":"police siren","hyper":"enforcement","team":"","body":"sensor","shape":"box"}
+{"op":"ent","id":"player_car","kind":"vehicle","noun":"racing car","hyper":"car","zone":"z_west","anchor":"spawn_pad","body":"dynamic","shape":"box","size":[2,1,4]}
+{"op":"ent","id":"rival_car1","kind":"vehicle","noun":"rival car","hyper":"car","zone":"z_east","anchor":"spawn_pad","body":"dynamic","shape":"box","size":[2,1,4]}
+{"op":"ent","id":"rival_car2","kind":"vehicle","noun":"rival car","hyper":"car","zone":"z_east","anchor":"spawn_pad","body":"dynamic","shape":"box","size":[2,1,4]}
+{"op":"ent","id":"cp1","kind":"checkpoint","noun":"checkpoint 1","hyper":"checkpoint","zone":"z_street_w","anchor":"","body":"sensor","shape":"box","size":[0.5,0.5,0.5]}
+{"op":"ent","id":"cp2","kind":"checkpoint","noun":"checkpoint 2","hyper":"checkpoint","zone":"z_street_e","anchor":"","body":"sensor","shape":"box","size":[0.5,0.5,0.5]}
+{"op":"ent","id":"cp3","kind":"checkpoint","noun":"checkpoint 3","hyper":"checkpoint","zone":"z_roof","anchor":"lane_start","body":"sensor","shape":"box","size":[0.5,0.5,0.5]}
+{"op":"ent","id":"finish_line","kind":"goal","noun":"finish line","hyper":"finish","zone":"z_roof","anchor":"lane_end","body":"sensor","shape":"box","size":[1,0.2,2]}
+{"op":"verb","id":"vb_drive_player","verb":"vehicle.drive","on":"player_car","params":{"kind":"car","speed":20,"driver":"player"}}
+{"op":"verb","id":"vb_drive_rival1","verb":"vehicle.drive","on":"rival_car1","params":{"kind":"car","speed":18,"driver":"team:blue"}}
+{"op":"verb","id":"vb_drive_rival2","verb":"vehicle.drive","on":"rival_car2","params":{"kind":"car","speed":18,"driver":"team:blue"}}
+{"op":"verb","id":"vb_timer_police","verb":"puzzle.timer","on":"player","params":{"seconds":45}}
+{"op":"rule","id":"r_win","when":{"t":"lap_done","a":"player","b":"finish_line","n":1},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose_police","when":{"t":"timer_end","a":"player"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose_crash","when":{"t":"hit","a":"player","b":"police_timer"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"npc","id":"rival1","role":"rival","zone":"z_east","anchor":"spawn_pad","team":"blue","menu":["racer.race","racer.block"],"dflt":"racer.race"}
+{"op":"npc","id":"rival2","role":"rival","zone":"z_east","anchor":"spawn_pad","team":"blue","menu":["racer.race","racer.block"],"dflt":"racer.race"}
+{"op":"expect","id":"x_race","prop":"win_reachable","a":"sp_red","b":"finish_line","headline":true,"text":"Beat rivals before the police siren ends the night run"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

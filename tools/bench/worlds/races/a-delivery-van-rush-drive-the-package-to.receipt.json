@@ -1,0 +1,200 @@
+{
+  "prompt": "A delivery van rush: drive the package to the house before the timer runs out",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "delivery chase",
+    "setting": "urban street layout with a destination home",
+    "role": "delivery driver",
+    "goal": "Deliver the package to the house before the timer runs out",
+    "fail": "The timer expires before the van reaches the house",
+    "mood": "urgent and time-pressured",
+    "pack": "city_block",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Timer-based delivery from van to house",
+    "nouns": [
+      {
+        "noun": "van",
+        "hyper": "vehicle"
+      },
+      {
+        "noun": "package",
+        "hyper": "object"
+      },
+      {
+        "noun": "house",
+        "hyper": "building"
+      },
+      {
+        "noun": "timer",
+        "hyper": "clock"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.3,
+      "arousal": 0.8,
+      "tension": 0.7
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "2d0f8de086d629570f88a9bcead40dff300ee3318ce929639e9f620865aec745",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_delivery",
+      "text": "Timer-based delivery from van to house",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 5 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_deliver (package_pkg into house_goal, carried by red) ← pick up package_pkg",
+        "src": ""
+      },
+      {
+        "id": "T2:r_deliver",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_deliver"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_deliver fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_plinth",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_plinth"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 8,
+        "status": "verified",
+        "text": "r_secret_plinth fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_switch_off",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_switch_off"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 0,
+        "src": "ai",
+        "ms": 8,
+        "status": "counterexample",
+        "text": "r_switch_off fires exactly once",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "firings",
+          "text": "never fired when forced"
+        }
+      },
+      {
+        "id": "T2:r_switch_traffic",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_switch_traffic"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 0,
+        "src": "ai",
+        "ms": 6,
+        "status": "counterexample",
+        "text": "r_switch_traffic fires exactly once",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "firings",
+          "text": "never fired when forced"
+        }
+      },
+      {
+        "id": "T2:r_timer_end",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_timer_end"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_timer_end fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 5,
+        "text": "AI runners won by playing it (AI par 17.9 s)",
+        "cx": null,
+        "src": "",
+        "ms": 4803
+      }
+    ],
+    "par": {
+      "goldS": 17.9,
+      "runs": 12,
+      "won": 5
+    },
+    "ms": 5032
+  }
+}

@@ -1,0 +1,284 @@
+{
+  "prompt": "Paintball in a forest, two teams, most hits in 90 seconds wins",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "sports",
+    "setting": "A dense forest clearing with scattered tree trunks for cover and two marked team bases on either side.",
+    "role": "team player",
+    "goal": "Land more paintball hits on the opposing team than they land on yours within 90 seconds.",
+    "fail": "The opposing team scores more hits than your team before the 90-second timer expires.",
+    "mood": "Competitive and fast-paced with a natural, tactical feel.",
+    "pack": "outdoor",
+    "sub": [],
+    "safety": "arcade",
+    "headline": "90-second timer decides the paintball match",
+    "nouns": [
+      {
+        "noun": "paintball",
+        "hyper": "projectile"
+      },
+      {
+        "noun": "forest",
+        "hyper": "terrain"
+      },
+      {
+        "noun": "team",
+        "hyper": "group"
+      },
+      {
+        "noun": "hit",
+        "hyper": "marker"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.6,
+      "arousal": 0.8,
+      "tension": 0.6
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "5c96a8be11db4be0d65e8a2bbef0154690dbb470946de68865bf354181ed032e",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_match",
+      "text": "90-second timer decides the paintball match",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners vs 2 bots + physics, 3 menu schedules × 3 runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 9 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_end_win (the timer runs out) [after red scores 2]",
+        "src": ""
+      },
+      {
+        "id": "T1:range:r_score_red",
+        "tier": "T1",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score_red"
+        },
+        "method": "line-of-sight range model (from ground the jump model reaches)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 116,
+        "status": "verified",
+        "text": "a shot reaches 2 of 2 blue rivals: clear lines from as far as 20 m (range 20 m)",
+        "cx": null
+      },
+      {
+        "id": "T2:r_end_lose",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_end_lose"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_end_lose fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_end_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_end_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_end_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_score_blue",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score_blue"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 6,
+        "status": "verified",
+        "text": "r_score_blue fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_score_red",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score_red"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_score_red fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_n",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_n"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 7,
+        "status": "verified",
+        "text": "r_secret_flank_n fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_s",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_s"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 7,
+        "status": "verified",
+        "text": "r_secret_flank_s fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_gate",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_gate"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 6,
+        "status": "verified",
+        "text": "r_secret_gate fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_guide",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_guide"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 8,
+        "status": "verified",
+        "text": "r_secret_guide fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_sign",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_sign"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_sign fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners vs 2 bots",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it vs 2 bots (AI par 90 s)",
+        "cx": null,
+        "src": "",
+        "ms": 4109
+      },
+      {
+        "id": "T3:envelope",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 3 menu schedules × 3 runners",
+        "n": 9,
+        "k": 9,
+        "text": "runners still win whatever the cast's minds choose (3 schedules)",
+        "cx": null,
+        "src": "",
+        "ms": 2795
+      }
+    ],
+    "par": {
+      "goldS": 90,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 7698
+  }
+}

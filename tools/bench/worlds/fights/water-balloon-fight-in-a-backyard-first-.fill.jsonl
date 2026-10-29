@@ -1,0 +1,42 @@
+{"op":"meta","mode":"play","lang":"en","pack":"arena","sub":[],"seed":17,"look":"sunny suburban backyard","mood":[0.7,0.6,0.25],"timeOfDay":14,"weather":"clear"}
+{"op":"zone","id":"z_lawn","slot":"midfield","tag":"outside","name":"Lawn"}
+{"op":"zone","id":"z_west","slot":"west_half","tag":"outside","name":"West side"}
+{"op":"zone","id":"z_east","slot":"east_half","tag":"outside","name":"East side"}
+{"op":"zone","id":"z_trampoline","slot":"north_deck","tag":"platform","name":"Trampoline area"}
+{"op":"zone","id":"z_pond","slot":"south_deck","tag":"hazard","name":"Pond area"}
+{"op":"spawn","id":"sp_red","zone":"z_lawn","anchor":"spawn_pad","team":"red"}
+{"op":"ent","id":"water_gun","kind":"pickup","noun":"water gun","hyper":"ammunition","zone":"z_lawn","anchor":"center","body":"dynamic","shape":"box","size":[0.4,0.2,0.2]}
+{"op":"ent","id":"bucket","kind":"pickup","noun":"water bucket","hyper":"resupply","zone":"z_west","anchor":"spawn_pad","body":"dynamic","shape":"box","size":[0.5,0.5,0.5]}
+{"op":"ent","id":"balloon_pack","kind":"pickup","noun":"water balloons","hyper":"ammunition","zone":"z_east","anchor":"spawn_pad","body":"dynamic","shape":"box","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"trampoline","kind":"prop","noun":"trampoline","hyper":"cover","zone":"z_trampoline","anchor":"deck_center","body":"fixed","shape":"box","size":[2,0.3,2]}
+{"op":"ent","id":"rose_bed","kind":"prop","noun":"rose bed","hyper":"cover","zone":"z_west","anchor":"flank_n","body":"fixed","shape":"box","size":[1,0.4,1]}
+{"op":"ent","id":"pond","kind":"hazard","noun":"pond","hyper":"hazard","zone":"z_pond","anchor":"deck_center","body":"sensor","shape":"box","size":[3,0.2,3]}
+{"op":"verb","id":"vb_carry_gun","verb":"physics_props.carry","on":"water_gun","params":{}}
+{"op":"verb","id":"vb_shoot","verb":"combat_sport.shoot","on":"water_gun","params":{"range":15,"speed":20,"damage":1,"cooldown":0.5,"at":""}}
+{"op":"verb","id":"vb_jump","verb":"locomotion.jump","on":"player","params":{"jumpsMax":2}}
+{"op":"verb","id":"vb_inspect_tramp","verb":"social.inspect","on":"trampoline","params":{"text":"A bouncy trampoline, great for dodging water streams."}}
+{"op":"verb","id":"vb_inspect_rose","verb":"social.inspect","on":"rose_bed","params":{"text":"Thick rose bushes provide cover from incoming water."}}
+{"op":"verb","id":"vb_hazard_pond","verb":"motion_hazards.hazard","on":"pond","params":{"respawn":true}}
+{"op":"ent","id":"npc_blue_1","kind":"npc","noun":"kid","hyper":"opponent","zone":"z_west","anchor":"flank_n","body":"dynamic","shape":"capsule","team":"blue","menu":["npc.patrol"],"dflt":"npc.patrol"}
+{"op":"ent","id":"npc_blue_2","kind":"npc","noun":"kid","hyper":"opponent","zone":"z_east","anchor":"flank_s","body":"dynamic","shape":"capsule","team":"blue","menu":["npc.patrol"],"dflt":"npc.patrol"}
+{"op":"ent","id":"npc_blue_3","kind":"npc","noun":"kid","hyper":"opponent","zone":"z_trampoline","anchor":"deck_w","body":"dynamic","shape":"capsule","team":"blue","menu":["npc.patrol"],"dflt":"npc.patrol"}
+{"op":"ent","id":"npc_blue_4","id":"npc_blue_4","kind":"npc","noun":"kid","hyper":"opponent","zone":"z_pond","anchor":"deck_e","body":"dynamic","shape":"capsule","team":"blue","menu":["npc.patrol"],"dflt":"npc.patrol"}
+{"op":"ent","id":"health_player","kind":"health","noun":"health","hyper":"health","zone":"z_lawn","anchor":"center","body":"none","shape":"none","team":"","hp":5,"respawn":false}
+{"op":"ent","id":"health_blue_1","kind":"health","noun":"health","hyper":"health","zone":"z_west","anchor":"flank_n","body":"none","shape":"none","team":"","hp":5,"respawn":false}
+{"op":"ent","id":"health_blue_2","kind":"health","noun":"health","hyper":"health","zone":"z_east","anchor":"flank_s","body":"none","shape":"none","team":"","hp":5,"respawn":false}
+{"op":"ent","id":"health_blue_3","kind":"health","noun":"health","hyper":"health","zone":"z_trampoline","anchor":"deck_w","body":"none","shape":"none","team":"","hp":5,"respawn":false}
+{"op":"ent","id":"health_blue_4","kind":"health","noun":"health","hyper":"health","zone":"z_pond","anchor":"deck_e","body":"none","shape":"none","team":"","hp":5,"respawn":false}
+{"op":"rule","id":"r_score_red","when":{"t":"hit","a":"npc_blue_1","b":"water_gun"},"if":[{"l":"water_gun.carrier.team","op":"eq","r":"red"}],"then":[{"e":"score","target":"team:red","n":1}],"once":false}
+{"op":"rule","id":"r_score_red_2","when":{"t":"hit","a":"npc_blue_2","b":"water_gun"},"if":[{"l":"water_gun.carrier.team","op":"eq","r":"red"}],"then":[{"e":"score","target":"team:red","n":1}],"once":false}
+{"op":"rule","id":"r_score_red_3","when":{"t":"hit","a":"npc_blue_3","b":"water_gun"},"if":[{"l":"water_gun.carrier.team","op":"eq","r":"red"}],"then":[{"e":"score","target":"team:red","n":1}],"once":false}
+{"op":"rule","id":"r_score_red_4","when":{"t":"hit","a":"npc_blue_4","b":"water_gun"},"if":[{"l":"water_gun.carrier.team","op":"eq","r":"red"}],"then":[{"e":"score","target":"team:red","n":1}],"once":false}
+{"op":"rule","id":"r_score_blue","when":{"t":"hit","a":"player","b":"water_gun"},"if":[{"l":"water_gun.carrier.team","op":"eq","r":"blue"}],"then":[{"e":"score","target":"team:blue","n":1}],"once":false}
+{"op":"rule","id":"r_win","when":{"t":"score_gte","a":"team:red","n":5},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose","when":{"t":"health_lte","a":"player","n":5},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":6}}
+{"op":"expect","id":"x_cover","prop":"win_reachable","a":"sp_red","b":"z_trampoline","headline":true,"text":"Backyard cover (trampoline + rose beds) decides which five-hit line wins"}
+{"op":"end","layer":"gameplay"}
+{"op":"dress","id":"spr_player","zone":"z_lawn","anchor":"center","noun":"swimsuit","hyper":"attire"}
+{"op":"poster","id":"poster_0","zone":"z_lawn","anchor":"center","text":"Water Balloon Fight!"}
+{"op":"poster","id":"poster_2","zone":"z_west","anchor":"flank_s","text":"Watch out for the pond!"}
+{"op":"end","layer":"cosmetic"}

@@ -1,0 +1,428 @@
+{
+  "prompt": "Zombie survival in an abandoned mall: knock out 8 zombies before they get you",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "horror-survival",
+    "setting": "An abandoned shopping mall interior, single-storey with an entrance, a main central hall and side department rooms, cluttered with mannequins and toppled shelves.",
+    "role": "Survivor armed with melee weapon",
+    "goal": "Knock out 8 zombies before they reach you",
+    "fail": "If any zombie makes contact, the player dies",
+    "mood": "Tense and gory",
+    "pack": "floor_plan",
+    "sub": [],
+    "safety": "arcade",
+    "headline": "Mall main hall gives space for melee swings while side rooms spawn zombies into the aisle",
+    "nouns": [
+      {
+        "noun": "mall",
+        "hyper": "interior"
+      },
+      {
+        "noun": "zombie",
+        "hyper": "walker"
+      },
+      {
+        "noun": "mannequin",
+        "hyper": "debris"
+      },
+      {
+        "noun": "department room",
+        "hyper": "room"
+      }
+    ],
+    "moodVec": {
+      "valence": -0.7,
+      "arousal": 0.7,
+      "tension": 0.8
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "bf2e1fe07a560de110298409f77af215ea082509128466e5c7723ea6190a6bff",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_survival",
+      "text": "Mall main hall gives space for melee swings while side rooms spawn zombies into the aisle",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners vs 8 bots"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 1,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 12 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 1,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (team:red reaches 8) ← r_score_z1 (zombie_1 down to 0 HP) ← shoot zombie_1 (1 hit of 100) + r_score_z2 (zombie_2 down to 0 HP) ← shoot zombie_2 (1 hit of 100) + r_score_z3 (zombie_3 down to 0 HP) ← shoot zombie_3 (1 hit of 100) + r_score_z4 (zombie_4 down to 0 HP) ← shoot zombie_4 (1 hit of 100) + r_score_z5 (zombie_5 down to 0 HP) ← shoot zombie_5 (1 hit of 100) + r_score_z6 (zombie_6 down to 0 HP) ← shoot zombie_6 (1 hit of 100) + r_score_z7 (zombie_7 down to 0 HP) ← shoot zombie_7 (1 hit of 100) + r_score_z8 (zombie_8 down to 0 HP) ← shoot zombie_8 (1 hit of 100)",
+        "src": ""
+      },
+      {
+        "id": "T1:range:r_score_z1",
+        "tier": "T1",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score_z1"
+        },
+        "method": "line-of-sight range model (from ground the jump model reaches)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 14,
+        "status": "verified",
+        "text": "a shot reaches the zombie: clear lines from as far as 1.97 m (range 2 m)",
+        "cx": null
+      },
+      {
+        "id": "T1:range:r_score_z2",
+        "tier": "T1",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score_z2"
+        },
+        "method": "line-of-sight range model (from ground the jump model reaches)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 14,
+        "status": "verified",
+        "text": "a shot reaches the zombie: clear lines from as far as 1.97 m (range 2 m)",
+        "cx": null
+      },
+      {
+        "id": "T1:range:r_score_z3",
+        "tier": "T1",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score_z3"
+        },
+        "method": "line-of-sight range model (from ground the jump model reaches)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 15,
+        "status": "verified",
+        "text": "a shot reaches the zombie: clear lines from as far as 1.96 m (range 2 m)",
+        "cx": null
+      },
+      {
+        "id": "T1:range:r_score_z4",
+        "tier": "T1",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score_z4"
+        },
+        "method": "line-of-sight range model (from ground the jump model reaches)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 15,
+        "status": "verified",
+        "text": "a shot reaches the zombie: clear lines from as far as 1.94 m (range 2 m)",
+        "cx": null
+      },
+      {
+        "id": "T1:range:r_score_z5",
+        "tier": "T1",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score_z5"
+        },
+        "method": "line-of-sight range model (from ground the jump model reaches)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 16,
+        "status": "verified",
+        "text": "a shot reaches the zombie: clear lines from as far as 1.97 m (range 2 m)",
+        "cx": null
+      },
+      {
+        "id": "T1:range:r_score_z6",
+        "tier": "T1",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score_z6"
+        },
+        "method": "line-of-sight range model (from ground the jump model reaches)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 16,
+        "status": "verified",
+        "text": "a shot reaches the zombie: clear lines from as far as 1.97 m (range 2 m)",
+        "cx": null
+      },
+      {
+        "id": "T1:range:r_score_z7",
+        "tier": "T1",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score_z7"
+        },
+        "method": "line-of-sight range model (from ground the jump model reaches)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 16,
+        "status": "verified",
+        "text": "a shot reaches the zombie: clear lines from as far as 1.96 m (range 2 m)",
+        "cx": null
+      },
+      {
+        "id": "T1:range:r_score_z8",
+        "tier": "T1",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score_z8"
+        },
+        "method": "line-of-sight range model (from ground the jump model reaches)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 17,
+        "status": "verified",
+        "text": "a shot reaches the zombie: clear lines from as far as 1.95 m (range 2 m)",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lose",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_lose: nothing in the world hurts the player",
+        "cx": null
+      },
+      {
+        "id": "T2:r_score_z1",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score_z1"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 14,
+        "status": "verified",
+        "text": "r_score_z1 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_score_z2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score_z2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 12,
+        "status": "verified",
+        "text": "r_score_z2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_score_z3",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score_z3"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 11,
+        "status": "verified",
+        "text": "r_score_z3 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_score_z4",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score_z4"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 7,
+        "status": "verified",
+        "text": "r_score_z4 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_score_z5",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score_z5"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 10,
+        "status": "verified",
+        "text": "r_score_z5 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_score_z6",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score_z6"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 6,
+        "status": "verified",
+        "text": "r_score_z6 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_score_z7",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score_z7"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 7,
+        "status": "verified",
+        "text": "r_score_z7 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_score_z8",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score_z8"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 11,
+        "status": "verified",
+        "text": "r_score_z8 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_nw",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_nw"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 12,
+        "status": "verified",
+        "text": "r_secret_corner_nw fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_nw_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_nw_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 7,
+        "status": "verified",
+        "text": "r_secret_corner_nw_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners vs 8 bots",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it vs 8 bots (AI par 17.1 s)",
+        "cx": null,
+        "src": "",
+        "ms": 1062
+      }
+    ],
+    "par": {
+      "goldS": 17.1,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 1211
+  }
+}

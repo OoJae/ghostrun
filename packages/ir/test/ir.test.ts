@@ -208,6 +208,143 @@ describe("fill repairs from the fourth unseen set", () => {
   });
 });
 
+describe("fill repairs for races", () => {
+  it("go-karts, jetskis and sleds are vehicles that drive as their kind, a circuit is the track, and a lap is lap_done", () => {
+    const lines = [
+      '{"op":"meta","mode":"play","pack":"arena","seed":3}',
+      '{"op":"zone","id":"z_a","slot":"midfield","tag":"center"}',
+      '{"op":"spawn","id":"sp","zone":"z_a","team":"red"}',
+      '{"op":"ent","id":"kart","kind":"go_kart","zone":"z_a"}',
+      '{"op":"ent","id":"ski","kind":"jetski","zone":"z_a"}',
+      '{"op":"ent","id":"sled","kind":"snowmobile","zone":"z_a"}',
+      '{"op":"ent","id":"line","kind":"checkpoint","zone":"z_a"}',
+      '{"op":"verb","id":"vb_kart","verb":"racing.go_kart","on":"kart","params":{"driver":"player"}}',
+      '{"op":"verb","id":"vb_ski","verb":"vehicles.jetski","on":"ski"}',
+      '{"op":"verb","id":"vb_sled","verb":"locomotion.ride","on":"sled","params":{"kind":"snowmobile"}}',
+      '{"op":"verb","id":"vb_track","verb":"racing.circuit","on":"line","params":{"laps":2}}',
+      '{"op":"verb","id":"vb_clock","verb":"puzzle.timer","on":"line"}',
+      '{"op":"rule","id":"r_win","when":{"t":"laps","a":"player","n":2},"then":[{"e":"win","target":"player"}]}',
+      '{"op":"rule","id":"r_lose","when":{"t":"race_finished","a":"blue","n":2},"then":[{"e":"lose","target":"player"}]}',
+    ].join("\n");
+    const p = parseFill(lines, { seed: 3 });
+    expect(p.stats.invalid).toBe(0);
+    expect(["kart", "ski", "sled"].map((id) => p.draft.entities.find((e) => e.id === id)?.kind)).toEqual(["vehicle", "vehicle", "vehicle"]);
+    expect(p.draft.verbs.map((v) => [v.id, v.verb, v.params])).toEqual([
+      ["vb_kart", "vehicle.drive", { kind: "kart", driver: "player" }],
+      ["vb_ski", "vehicle.drive", { kind: "boat" }],
+      ["vb_sled", "vehicle.drive", { kind: "snowmobile" }],
+      ["vb_track", "racing.track", { laps: 2 }],
+      ["vb_clock", "puzzle.timer", {}], // a timer stays a timer
+    ]);
+    expect(p.draft.rules.map((r) => [r.when.t, r.when.a, r.when.n])).toEqual([
+      ["lap_done", "player", 2],
+      ["lap_done", "team:blue", 2],
+    ]);
+  });
+});
+
+describe("fill repairs for fights", () => {
+  it("spells, fireballs, blasters and bows are the shoot verb, claws reach two metres, knock-outs are health_lte", () => {
+    const lines = [
+      '{"op":"meta","mode":"play","pack":"arena","seed":3}',
+      '{"op":"zone","id":"z_a","slot":"midfield","tag":"center"}',
+      '{"op":"spawn","id":"sp","zone":"z_a","team":"red"}',
+      '{"op":"ent","id":"wand","kind":"wand","noun":"oak wand","zone":"z_a"}',
+      '{"op":"npc","id":"rival","role":"rival","zone":"z_a","team":"blue","menu":["rival.attack"]}',
+      '{"op":"verb","id":"vb_fire","verb":"magic.fireball","on":"player","params":{"damage":20}}',
+      '{"op":"verb","id":"vb_wand","verb":"wand","on":"wand"}',
+      '{"op":"verb","id":"vb_bow","verb":"combat_sport.bow","on":"player"}',
+      '{"op":"verb","id":"vb_claws","verb":"zombie.claws","on":"rival","params":{"damage":10}}',
+      '{"op":"verb","id":"vb_hp","verb":"stats.hit_points","on":"rival","params":{"hp":80}}',
+      '{"op":"verb","id":"vb_grid","verb":"motion_hazards.laser","on":"wand"}',
+      '{"op":"rule","id":"r_ko","when":{"t":"knockout","a":"rival"},"then":[{"e":"win","target":"player"}]}',
+      '{"op":"rule","id":"r_burn","when":{"t":"shot","a":"player","b":"rival"},"then":[{"e":"hurt","target":"player","n":5},{"e":"restore","target":"rival","n":5}]}',
+    ].join("\n");
+    const p = parseFill(lines, { seed: 3 });
+    expect(p.stats.invalid).toBe(0);
+    expect(p.draft.entities.find((e) => e.id === "wand")!.kind).toBe("pickup");
+    expect(p.draft.verbs.map((v) => [v.id, v.verb, v.params])).toEqual([
+      ["vb_fire", "combat_sport.shoot", { damage: 20 }],
+      ["vb_wand", "combat_sport.shoot", {}],
+      ["vb_bow", "combat_sport.shoot", {}],
+      ["vb_claws", "combat_sport.shoot", { range: 2, damage: 10 }],
+      ["vb_hp", "combat_sport.health", { hp: 80 }],
+      ["vb_grid", "motion_hazards.laser", {}], // the laser grid hazard keeps its own kit
+    ]);
+    expect(p.draft.rules.map((r) => [r.when.t, r.when.n, r.then.map((e) => e.e)])).toEqual([
+      ["health_lte", 0, ["win"]],
+      ["hit", 0, ["damage", "heal"]],
+    ]);
+  });
+
+  it("'player_red' in a rule is the player (on red), 'player_blue' anyone on blue; 'player_blue.team is blue' goes", () => {
+    const lines = [
+      '{"op":"meta","mode":"play","pack":"arena","seed":3}',
+      '{"op":"zone","id":"z_a","slot":"midfield","tag":"center"}',
+      '{"op":"spawn","id":"sp_red","zone":"z_a","team":"red"}',
+      '{"op":"ent","id":"tagger","kind":"pickup","zone":"z_a"}',
+      '{"op":"rule","id":"r_red","when":{"t":"hit","a":"player_blue","b":"tagger"},"if":[{"l":"player_blue.team","op":"eq","r":"blue"}],"then":[{"e":"score","target":"team:red","n":1}]}',
+      '{"op":"rule","id":"r_win","when":{"t":"score_gte","a":"team:red","n":10},"then":[{"e":"win","target":"player_red"}]}',
+      '{"op":"rule","id":"r_theirs","when":{"t":"score_gte","a":"team:blue","n":10},"then":[{"e":"win","target":"blue_players"}]}',
+    ].join("\n");
+    const p = parseFill(lines, { seed: 3 });
+    expect(p.notes.filter((n) => n.kind === "unresolved")).toEqual([]);
+    const r = (id: string) => p.draft.rules.find((x) => x.id === id)!;
+    expect([r("r_red").when.a, r("r_red").if]).toEqual(["team:blue", []]);
+    expect(r("r_win").then[0]!.target).toBe("player");
+    expect(r("r_theirs").then[0]!.target).toBe("team:blue"); // (the placer makes a win for blue your loss)
+  });
+});
+
+describe("fill repairs from the second fights bench", () => {
+  it("an ent with no kind takes the one its words or body say; 'opponent' with its team given is that team; hit points compared to \"0\" compare numbers; dress and poster lines in the shapes models write are kept", () => {
+    const lines = [
+      '{"op":"meta","mode":"play","pack":"arena","seed":3}',
+      '{"op":"zone","id":"z_a","slot":"midfield","tag":"center"}',
+      '{"op":"spawn","id":"sp","zone":"z_a","team":"red"}',
+      '{"op":"ent","id":"guard_1","zone":"z_a"}',
+      '{"op":"ent","id":"banner","noun":"banner","zone":"z_a","body":"sensor"}',
+      '{"op":"ent","id":"crate","noun":"wooden box","zone":"z_a"}',
+      '{"op":"verb","id":"vb_hp","verb":"combat_sport.health","on":"guard_1"}',
+      '{"op":"rule","id":"r_tag","when":{"t":"hit","a":"player","b":"opponent"},"if":[{"l":"opponent.team","op":"eq","r":"blue"}],"then":[{"e":"score","target":"team:red","n":1}]}',
+      '{"op":"rule","id":"r_win","when":{"t":"enter","a":"player","b":"banner"},"if":[{"l":"guard_1.hp","op":"eq","r":"0"},{"l":"team:red.score","op":"gte","r":"3"}],"then":[{"e":"win","target":"player"}]}',
+      '{"op":"rule","id":"r_ghost","when":{"t":"hit","a":"player","b":"phantom"},"then":[{"e":"lose","target":"player"}]}',
+      '{"op":"end","layer":"gameplay"}',
+      '{"op":"dress","id":"d_neon","type":"lighting","params":{"color":"#ff00ff"}}',
+      '{"op":"poster","id":"p_rules","slot":0,"text":"First to 10 tags wins"}',
+      '{"op":"end","layer":"cosmetic"}',
+    ].join("\n");
+    const p = parseFill(lines, { seed: 3 });
+    expect(p.stats.invalid).toBe(0);
+    expect(p.draft.entities.map((e) => [e.id, e.kind])).toEqual([["sp", "spawn"], ["guard_1", "npc"], ["banner", "goal"], ["crate", "prop"]]);
+    const r = (id: string) => p.draft.rules.find((x) => x.id === id)!;
+    expect([r("r_tag").when.b, r("r_tag").if]).toEqual(["team:blue", []]); // (the placer reads who was hit)
+    expect(r("r_win").if.map((c) => c.r)).toEqual([0, 3]);
+    // what never arrived is named, on a note that says which line it was
+    expect(p.notes.filter((n) => n.kind === "unresolved")).toEqual([{ line: 10, kind: "unresolved", text: "'rule' references 'phantom', which never arrived", op: "rule", id: "r_ghost" }]);
+    expect(p.draft.cosmetic.dress).toMatchObject([{ id: "d_neon", noun: "lighting", zone: "z_a" }]);
+    expect(p.draft.cosmetic.posters).toMatchObject([{ id: "p_rules", prompt: "First to 10 tags wins", zone: "z_a" }]);
+  });
+
+  it("hit points written as an ent of their own ('crystal_hp', kind health) are a health verb on whose they are, and rules about them are about it", () => {
+    const lines = [
+      '{"op":"meta","mode":"play","pack":"arena","seed":3}',
+      '{"op":"zone","id":"z_a","slot":"midfield","tag":"center"}',
+      '{"op":"spawn","id":"sp","zone":"z_a","team":"red"}',
+      '{"op":"goal","id":"crystal","zone":"z_a","noun":"sacred crystal"}',
+      '{"op":"ent","id":"crystal_hp","kind":"health","noun":"crystal durability","zone":"z_a","hp":200}',
+      '{"op":"ent","id":"player_hp","kind":"health","zone":"z_a","hp":150}',
+      '{"op":"ent","id":"mana","kind":"health","zone":"z_a","hp":50}',
+      '{"op":"rule","id":"r_lose_crystal","when":{"t":"health_lte","a":"crystal_hp","n":0},"then":[{"e":"lose","target":"player"}]}',
+      '{"op":"rule","id":"r_lose_player","when":{"t":"health_lte","a":"player_hp","n":0},"then":[{"e":"lose","target":"player"}]}',
+    ].join("\n");
+    const p = parseFill(lines, { seed: 3 });
+    expect(p.draft.verbs.map((x) => [x.id, x.verb, x.on, x.params])).toEqual([["crystal_hp", "combat_sport.health", "crystal", { hp: 200 }], ["player_hp", "combat_sport.health", "player", { hp: 150 }]]);
+    expect(p.draft.rules.map((r) => r.when.a)).toEqual(["crystal", "player"]);
+    expect(p.notes.filter((n) => n.kind === "invalid").map((n) => n.id)).toEqual(["mana"]); // (whose? nobody says)
+  });
+});
+
 describe("glued objects", () => {
   it("a whole world on one line (no newlines) parses like one object per line; strings with braces stay whole", async () => {
     const { parseFill, splitObjects } = await import("../src");
@@ -266,6 +403,13 @@ describe("mergeFill (repair patches)", () => {
     const ops = text.trim().split("\n").map((l) => JSON.parse(l) as { op: string; id?: string });
     expect(ops.map((o) => o.id ?? o.op)).toEqual(["meta", "z_a", "gem", "vb_carry", "r_win", "end"]);
     expect(text).toContain('"a":"gem"');
+  });
+  it("a goal a patch rewrites as an ent line with no kind (or zone) keeps them", async () => {
+    const { mergeFill } = await import("../src");
+    const goal = base.replace('{"op":"rule"', '{"op":"goal","id":"exit","zone":"z_a","anchor":"center"}\n{"op":"rule"');
+    const { text } = mergeFill(goal, '{"op":"ent","id":"exit","anchor":"deck_center","noun":"banner","body":"sensor","size":[2,3,0.2]}');
+    const exit = text.trim().split("\n").map((l) => JSON.parse(l) as Record<string, unknown>).find((o) => o.id === "exit")!;
+    expect(exit).toMatchObject({ op: "ent", kind: "goal", zone: "z_a", anchor: "deck_center" });
   });
   it("edits restyle through meta but never change the world's promises", async () => {
     const { mergeFill } = await import("../src");

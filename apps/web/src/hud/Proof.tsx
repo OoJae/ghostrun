@@ -1,12 +1,15 @@
-import type { Chip, Insights, Receipt } from "@ghostrun/proof/light";
+import type { Chip, Insights, Receipt, Revealed as Report } from "@ghostrun/proof/light";
 import { useState } from "react";
 import { chipLine, fraction, statusWord } from "@ghostrun/proof/light";
+import { Revealed } from "./Revealed";
 
 export interface ProofState {
   status: "idle" | "proving" | "done" | "error";
   chips: Chip[];
   receipt: Receipt | null;
   error?: string;
+  /** The playtest's novice and average runners are still playing (the receipt is out already). */
+  playing?: boolean;
 }
 
 const bad = (c: Chip) => c.status === "counterexample";
@@ -62,7 +65,7 @@ function Routes({ routes, runs, on, onToggle }: { routes: Insights; runs: number
   );
 }
 
-export function ReceiptPanel({ proof, onClose, onShare, onWrong, onExport, onTrust, onFool, fooled, reported, routes, routesOn, onRoutes }: { proof: ProofState; onClose: () => void; onShare?: () => void; onWrong?: (note: string) => void; onExport?: () => void; onTrust?: () => void; onFool?: (() => void) | undefined; fooled?: Fooled | null; reported?: string | undefined; routes?: Insights | null; routesOn?: boolean; onRoutes?: () => void }) {
+export function ReceiptPanel({ proof, onClose, onShare, onWrong, onExport, onTrust, onFool, fooled, reported, routes, routesOn, onRoutes, report, version }: { proof: ProofState; onClose: () => void; onShare?: () => void; onWrong?: (note: string) => void; onExport?: () => void; onTrust?: () => void; onFool?: (() => void) | undefined; fooled?: Fooled | null; reported?: string | undefined; routes?: Insights | null; routesOn?: boolean; onRoutes?: () => void; report?: Report | null; /** A remix: which version this receipt is for, and that the original's is its own. */ version?: string | null }) {
   const r = proof.receipt;
   const [writing, setWriting] = useState(false);
   const [note, setNote] = useState("");
@@ -73,6 +76,11 @@ export function ReceiptPanel({ proof, onClose, onShare, onWrong, onExport, onTru
         {r && <span className="mono">spec {r.spec.slice(0, 8)} · {r.ms} ms · {r.host}</span>}
         <button type="button" onClick={onClose} aria-label="close">×</button>
       </div>
+      {version && (
+        <p className="receipt-version" data-testid="receipt-version">
+          {version}
+        </p>
+      )}
       {r?.headline && (
         <p className={`headline ${r.headline.status}`}>
           {r.headline.text}: <b>{r.headline.status.replace("_", " ")}</b>
@@ -85,7 +93,11 @@ export function ReceiptPanel({ proof, onClose, onShare, onWrong, onExport, onTru
         ))}
       </ul>
       {r?.par && <p className="par">AI par {r.par.goldS} s · {r.par.won} of {r.par.runs} runners won</p>}
-      {routes && r?.trails && onRoutes && <Routes routes={routes} runs={r.trails.length} on={Boolean(routesOn)} onToggle={onRoutes} />}
+      {routes && r?.trails && onRoutes && (
+        <Revealed receipt={r} report={report ?? null} playing={proof.playing}>
+          <Routes routes={routes} runs={report?.runs ?? r.trails.length} on={Boolean(routesOn)} onToggle={onRoutes} />
+        </Revealed>
+      )}
       {fooled && (
         <p className={`fooled ${fooled.status === "done" ? (fooled.caught ? "caught" : "missed") : ""}`} data-testid="fooled">
           {fooled.status === "planting" && "Planting a bug in a copy of this world; AI runners are playing it…"}

@@ -1,0 +1,262 @@
+{
+  "prompt": "A horse race across the countryside, jump the fences and win",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "Sports / Racing",
+    "setting": "Open countryside with a linear path, grass fields, and wooden jump fences.",
+    "role": "Jockey on a racehorse.",
+    "goal": "Cross the finish line first by successfully jumping the fences.",
+    "fail": "Missing fences (slipping up) or crossing the finish line last.",
+    "mood": "Competitive and energetic",
+    "pack": "course",
+    "sub": [],
+    "safety": "arcade",
+    "headline": "Horseback jumps require timing to avoid slipping",
+    "nouns": [
+      {
+        "noun": "horse",
+        "hyper": "animal"
+      },
+      {
+        "noun": "fence",
+        "hyper": "obstacle"
+      },
+      {
+        "noun": "countryside",
+        "hyper": "terrain"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.6,
+      "arousal": 0.8,
+      "tension": 0.4
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "21b47080607c8bcd38d50a19407c79ada4160d4f94fec230dee9c6ec1a9aea59",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_jump",
+      "text": "Horseback jumps require timing to avoid slipping",
+      "status": "counterexample",
+      "method": "kinematic reachability (jump apex model) + physics jump witness, 4 attempts per jump count"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 7 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (player enters finish_line)",
+        "src": ""
+      },
+      {
+        "id": "T1:x_jump",
+        "tier": "T1",
+        "subject": {
+          "kind": "property",
+          "id": "x_jump"
+        },
+        "method": "kinematic reachability (jump apex model)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "counterexample",
+        "text": "Horseback jumps require timing to avoid slipping",
+        "cx": {
+          "where": null,
+          "have": 1.5,
+          "need": 5.34,
+          "unit": "m",
+          "text": "reachable with 1 jump: step 5.34 m ≤ apex 1.5 m"
+        }
+      },
+      {
+        "id": "T2:r_fence1_hit",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_fence1_hit"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_fence1_hit fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_fence2_hit",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_fence2_hit"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_fence2_hit fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_fence3_hit",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_fence3_hit"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_fence3_hit fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_fence4_hit",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_fence4_hit"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_fence4_hit fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_host",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_host"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 6,
+        "status": "verified",
+        "text": "r_secret_host fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_trophy",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_trophy"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_trophy fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "counterexample",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 0,
+        "text": "no AI runner could win",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "wins",
+          "text": "12 got stuck (in the Start meadow ×12, at 'deliver finish_line')"
+        },
+        "src": "",
+        "ms": 4516
+      },
+      {
+        "id": "T3:x_jump",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "x_jump"
+        },
+        "status": "counterexample",
+        "method": "physics jump witness, 4 attempts per jump count",
+        "n": 4,
+        "k": 0,
+        "text": "Horseback jumps require timing to avoid slipping: reached with 2 jumps 0 of 4, with 1 0 of 4",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 0,
+          "unit": "attempts",
+          "text": "never reached with 2 jumps"
+        },
+        "src": "ai",
+        "ms": 4
+      }
+    ],
+    "par": null,
+    "ms": 5325
+  }
+}

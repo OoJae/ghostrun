@@ -1,0 +1,32 @@
+{"op":"meta","mode":"play","lang":"en","pack":"course","sub":[],"seed":10,"look":"frozen forest","mood":[0.4,0.7,0.6],"timeOfDay":12,"weather":"snow"}
+{"op":"zone","id":"z_start","slot":"start","tag":"outside","name":"Frozen forest start"}
+{"op":"zone","id":"z_seg1","slot":"seg_1","tag":"ledge","name":"Ice ledge"}
+{"op":"zone","id":"z_seg2","slot":"seg_2","tag":"steps","name":"Snowy steps"}
+{"op":"zone","id":"z_seg3","slot":"seg_3","tag":"pit","name":"Deep pit"}
+{"op":"zone","id":"z_seg4","slot":"seg_4","tag":"beam","name":"Icy beam"}
+{"op":"zone","id":"z_seg5","slot":"seg_5","tag":"pit","name":"Frozen pond"}
+{"op":"zone","id":"z_seg6","slot":"seg_6","tag":"gaps","name":"Gapped ridge"}
+{"op":"zone","id":"z_finish","slot":"finish","tag":"outside","name":"Forest finish"}
+{"op":"spawn","id":"sp_red","zone":"z_start","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"goal_finish","zone":"z_finish","anchor":"goal","noun":"finish line","hyper":"goal","team":"red"}
+{"op":"ent","id":"snowmobile","kind":"vehicle","noun":"snowmobile","hyper":"vehicle","zone":"z_start","anchor":"host","body":"dynamic","shape":"box","size":[2,1.5,1.5]}
+{"op":"ent","id":"gate_1","kind":"checkpoint","noun":"ice gate","hyper":"gate","zone":"z_seg1","anchor":"cp_1","body":"sensor","shape":"box"}
+{"op":"ent","id":"gate_2","kind":"checkpoint","noun":"ice gate","hyper":"gate","zone":"z_seg2","anchor":"cp_2","body":"sensor","shape":"box"}
+{"op":"ent","id":"gate_3","kind":"checkpoint","noun":"ice gate","hyper":"gate","zone":"z_seg3","anchor":"cp_3","body":"sensor","shape":"box"}
+{"op":"ent","id":"gate_4","kind":"checkpoint","noun":"ice gate","hyper":"gate","zone":"z_seg4","anchor":"cp_4","body":"sensor","shape":"box"}
+{"op":"ent","id":"gate_5","kind":"checkpoint","noun":"ice gate","hyper":"gate","zone":"z_seg5","anchor":"cp_5","body":"sensor","shape":"box"}
+{"op":"ent","id":"tree_hazard","kind":"hazard","noun":"fallen tree","hyper":"tree","zone":"z_seg3","anchor":"pit_3","body":"sensor","shape":"box","size":[1,3,0.5]}
+{"op":"verb","id":"vb_drive","verb":"vehicle.drive","on":"snowmobile","params":{"kind":"snowmobile","speed":12,"driver":"player"}}
+{"op":"verb","id":"vb_checkpoint_1","verb":"puzzle.checkpoint","on":"gate_1","params":{}}
+{"op":"verb","id":"vb_checkpoint_2","verb":"puzzle.checkpoint","on":"gate_2","params":{}}
+{"op":"verb","id":"vb_checkpoint_3","verb":"puzzle.checkpoint","on":"gate_3","params":{}}
+{"op":"verb","id":"vb_checkpoint_4","verb":"puzzle.checkpoint","on":"gate_4","params":{}}
+{"op":"verb","id":"vb_checkpoint_5","verb":"puzzle.checkpoint","on":"gate_5","params":{}}
+{"op":"verb","id":"vb_tree_hazard","verb":"motion_hazards.hazard","on":"tree_hazard","params":{"respawn":true}}
+{"op":"verb","id":"vb_track","verb":"racing.track","on":"goal_finish","params":{"gates":"gate_1,gate_2,gate_3,gate_4,gate_5","laps":1}}
+{"op":"rule","id":"r_win","when":{"t":"lap_done","a":"player","b":"goal_finish","n":1},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose_tree","when":{"t":"hit","a":"player","b":"tree_hazard"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"expect","id":"x_race","prop":"win_reachable","a":"sp_red","b":"goal_finish","headline":true,"text":"Snowmobile must pass through every ice gate in the frozen forest"}
+{"op":"law","player":{"jumpsMax":0,"jumpH":0,"speed":6}}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

@@ -46,6 +46,7 @@ export class RapierSim implements FrameSource {
   #lastBtn = 0;
   #activeTick = 0;
   #pressQueued = false;
+  #useWas = false;
   #facing = 0;
   readonly #npcFacing = new Map<string, number>();
   readonly #nav: NavWorld | null;
@@ -193,6 +194,15 @@ export class RapierSim implements FrameSource {
     if (this.#pressQueued || i.btn & BTN_JUMP) btn |= BTN.JUMP;
     this.#pressQueued = false;
     if (i.btn & BTN_USE) btn |= BTN.USE;
+    // firing aims where the camera looks: on the press, a short push that way (the sim faces the way
+    // the stick last pushed; the push is in the recorded frame, so replays stay exact)
+    const using = (i.btn & BTN_USE) !== 0;
+    if (using && !this.#useWas && this.sim.usable()?.label === "shoot") {
+      x = -s * 0.2;
+      z = -c * 0.2;
+      this.#facing = i.yaw;
+    }
+    this.#useWas = using;
     // a held jump must release for one tick before it counts again (fresh-press semantics)
     const frame: SimInput = { tick: this.sim.tick + 1, wx: q8(x), wz: q8(z), btn };
     if (frame.tick % 30 === 0) this.trail.push(this.sim.pos(PLAYER_ID));
@@ -203,7 +213,12 @@ export class RapierSim implements FrameSource {
       this.onEvents?.(evs);
       for (const f of this.#subs) f(evs);
     }
-    const label = this.sim.usable()?.label ?? (this.sim.entity(PLAYER_ID)?.carrying ? "drop" : null);
+    // (at the wheel, USE gets you out once you've nearly stopped)
+    const ride = this.sim.ride(PLAYER_ID);
+    const use = ride ? (Math.abs(ride.speed) < 2 ? "get out" : undefined) : this.sim.usable()?.label;
+    const carrying = Boolean(this.sim.entity(PLAYER_ID)?.carrying);
+    // a weapon in hand always has a use (firing it): holding the key puts it down
+    const label = use ? (carrying && use === "shoot" ? "shoot · hold to drop" : use) : carrying ? "drop" : null;
     if (label !== this.#hint) {
       this.#hint = label;
       this.onHint?.(label);

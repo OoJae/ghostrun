@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { mergeFill, pinLayout, splitObjects } from "@ghostrun/ir";
-import { better, insights, issuesOf, statusWord, type Chip, type Receipt } from "@ghostrun/proof/light";
+import { allRuns, better, insights, issuesOf, revealed, statusWord, type Chip, type Playtest, type Receipt } from "@ghostrun/proof/light";
 // the engine stack (three, physics, navmesh, bots) is a second chunk, fetched as the shell paints
 import type { Engine, LoadResult } from "./engine";
 import { KeyHint } from "./hud/Corner";
+import { HealthBar } from "./hud/Health";
+import { LapBoard } from "./hud/Lap";
 import { TouchControls } from "./hud/Touch";
 import { XRay } from "./hud/XRay";
 import { ResultCard, type RunResult } from "./hud/Result";
@@ -13,7 +15,7 @@ import { EditBox, type EditState } from "./hud/Edit";
 import { Gallery, GALLERY, type GalleryEntry } from "./hud/Gallery";
 import { TrustPanel } from "./hud/Trust";
 import { CutChip, ProofBadge, ReceiptPanel, RepairChip, type CutState, type Fooled, type ProofState, type RepairState } from "./hud/Proof";
-import { liveAvailable, liveBuild, liveDirector, liveEdit, liveRepair, type LiveIntent } from "./live";
+import { liveAvailable, liveBuild, liveDirector, liveEdit, liveRepair, type LiveCached, type LiveIntent } from "./live";
 import { ANGLES, changeSummary, cutHolds, cutNotes, editedPrompt, HARDER, intentFor, newFailures, pickHarder, receiptDelta, suggestionsFor, SURPRISE } from "./edits";
 import { createShare, loadShare, reportWrong } from "./share";
 import { Minds } from "./minds";
@@ -23,9 +25,16 @@ import { probe } from "./probe";
 import { lookSamples } from "./render/pick";
 import { askHost, clock as mmss, facts, story } from "./host";
 import { useSound } from "./audio/useSound";
+import { useSpeech } from "./audio/useSpeech";
+import { TalkBox } from "./hud/Talk";
+import { LineagePanel } from "./hud/Lineage";
+import { contextPrompt, galleryRef, lineageOf, receiptVersion, shareSource, yourChanges, type RemixSource } from "./remix";
 import { MuteButton } from "./hud/Mute";
 import { EXAMPLES, Landing, type Starter } from "./hud/Landing";
 import { substitution } from "./substitutions";
+import { RaceChip } from "./hud/Race";
+import { BoardPanel } from "./hud/Board";
+import { loadRace, RACE_PROMPT, useRace } from "./useRace";
 
 const HINT_MS = 6000;
 const FIXTURE = new URLSearchParams(window.location.search).get("fixture") ?? "ctf";
@@ -67,6 +76,19 @@ const SOURCE: Record<Mode, { label: string; title: string }> = {
 };
 /** A live world the fallback rung wrote: same proof, said plainly. */
 const FELL_BACK = { label: "live AI · Haiku", title: "The fast lane was busy, so Claude Haiku (Anthropic) wrote this world. It is proved the same way." };
+const MODEL_NAME: Record<string, string> = { "claude-haiku-5-5": "Claude Haiku", "claude-sonnet-5-5": "Claude Sonnet", "qwen-3.8-27b": "Qwen 3.8" };
+const model = (id: string) => MODEL_NAME[id] ?? (id || "the live AI");
+/** A world the edge replayed from its cache: never passed off as live, and one click from a fresh build. */
+const fromCache = (c: LiveCached, fresh: () => void) => {
+  const at = new Date(c.at);
+  const day = at.toLocaleDateString("en-GB", { day: "numeric", month: "short", timeZone: "UTC" });
+  const when = `${at.toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short", timeZone: "UTC" })} UTC`;
+  return {
+    label: `cached · built live ${day} by ${model(c.fillModel)}`,
+    title: `Replayed from the cache, not built now: this prompt was built live on ${when} (intent by ${model(c.intentModel)}, world by ${model(c.fillModel)}), and it is proved again on your device. Build it fresh asks the AI for a new one.`,
+    action: { label: "Build it fresh", run: fresh },
+  };
+};
 
 export function App() {
   const canvas = useRef<HTMLCanvasElement>(null);
@@ -78,15 +100,24 @@ export function App() {
   const [prompt, setPrompt] = useState("");
   const [intent, setIntent] = useState<Intent | null>(null);
   /** First load, until the person builds, moves or opens the gallery: the landing line and starters. */
-  const [fresh, setFresh] = useState(!params0.get("s"));
+  const [fresh, setFresh] = useState(!params0.get("s") && !params0.get("g"));
   /** What the world does instead of a mechanic the prompt asked for (no vehicles yet, …). */
   const [note, setNote] = useState<string | null>(null);
   const sound = useSound();
+  const speech = useSpeech(sound);
+  /** A shared or gallery world on screen: where it came from (its line, if a remix), and whether Remix made it your copy. */
+  const [remixSrc, setRemixSrc] = useState<RemixSource | null>(null);
+  const [copied, setCopied] = useState(false);
+  const [editFocus, setEditFocus] = useState(0);
   const [specHash, setSpecHash] = useState<string>();
   const [timing, setTiming] = useState<LoadResult | null>(null);
   const [status, setStatus] = useState<Status>("booting");
   const [mode, setMode] = useState<Mode>("checking");
   const [fellBack, setFellBack] = useState(false);
+  /** The live world came from the edge's cache: when and by whom it was built. */
+  const [cachedFrom, setCachedFrom] = useState<LiveCached | null>(null);
+  /** Fill lines streamed so far while the world is built (its preview is on screen). */
+  const [building, setBuilding] = useState<number | null>(null);
   const [error, setError] = useState<string>();
   const [notice, setNotice] = useState<string>();
   const [collapsed, setCollapsed] = useState(false);
@@ -137,30 +168,49 @@ export function App() {
   const minds = useRef<Minds | null>(null);
   const [bark, setBark] = useState<{ name: string; line: string; at: number } | null>(null);
   const [talking, setTalking] = useState<{ npc: string; name: string } | null>(null);
+  /** An NPC's line: the subtitle, and said out loud in its own voice. */
+  const barked = (npc: string, name: string, line: string, reply: boolean) => {
+    setBark({ name, line, at: Date.now() });
+    speech.npc(npc, line, reply);
+  };
   const [result, setResult] = useState<RunResult | null>(null);
   const [director, setDirector] = useState<{ line: string; label: string; status: "proving" | "ready"; world?: World } | null>(null);
-  const [said, setSaid] = useState("");
   const [reported, setReported] = useState<string>();
-  const pending = useRef(new Map<number, { onChip?: (c: Chip) => void; resolve: (r: Receipt) => void; reject: (e: Error) => void }>());
+  const pending = useRef(new Map<number, { onChip?: (c: Chip) => void; onPlaytest?: (p: Playtest | null) => void; resolve: (r: Receipt) => void; reject: (e: Error) => void }>());
   const modeRef = useRef<Mode>("checking");
   modeRef.current = mode;
+  // racing: the proof's par runner (or a run someone sent) as a ghost beside the player
+  const race = useRace({ engine, world: current.current, loaded: timing, result, receipt: proof.receipt, specHash, prompt, urls: wasmUrls, toast: setToast, again: () => againRef.current() });
+  // the playtest landed while the runners' overview is up: draw its heat map in too
+  const playtest = proof.receipt?.playtest;
+  useEffect(() => {
+    const w = current.current;
+    if (routesOn && playtest && w && receiptRef.current) engine.current?.showTrails(receiptRef.current.trails ?? null, revealed(w.bundle, receiptRef.current)?.heat ?? null);
+  }, [playtest]); // (only when it lands: the toggle draws the overview itself)
 
-  /** One proof on the device worker; several can be in flight (the world, and a repair of it). */
-  const proveOnDevice = useCallback((world: World, id: number, onChip?: (c: Chip) => void): Promise<Receipt> => {
+  /**
+   * One proof on the device worker; several can be in flight (the world, and a repair of it).
+   * With onPlaytest the worker goes on to the playtest once the receipt is out, and sends it after.
+   */
+  const proveOnDevice = useCallback((world: World, id: number, onChip?: (c: Chip) => void, onPlaytest?: (p: Playtest | null) => void): Promise<Receipt> => {
     if (!worker.current) {
       worker.current = new Worker(new URL("./proof.worker.ts", import.meta.url), { type: "module" });
-      worker.current.onmessage = (e: MessageEvent<{ id: number; chip?: Chip; receipt?: Receipt; error?: string }>) => {
+      worker.current.onmessage = (e: MessageEvent<{ id: number; chip?: Chip; receipt?: Receipt; playtest?: Playtest | null; error?: string }>) => {
         const p = pending.current.get(e.data.id);
         if (!p) return;
         if (e.data.chip) p.onChip?.(e.data.chip);
-        if (e.data.receipt) (pending.current.delete(e.data.id), p.resolve(e.data.receipt));
+        if (e.data.receipt) {
+          if (!p.onPlaytest) pending.current.delete(e.data.id); // (else the playtest follows)
+          p.resolve(e.data.receipt);
+        }
+        if (e.data.playtest !== undefined) (pending.current.delete(e.data.id), p.onPlaytest?.(e.data.playtest));
         if (e.data.error) (pending.current.delete(e.data.id), p.reject(new Error(e.data.error)));
       };
     }
     const w = worker.current;
     return new Promise((resolve, reject) => {
-      pending.current.set(id, { ...(onChip ? { onChip } : {}), resolve, reject });
-      w.postMessage({ id, bundle: world.bundle, engine: ENGINE_HASH, urls: wasmUrls.current });
+      pending.current.set(id, { ...(onChip ? { onChip } : {}), ...(onPlaytest ? { onPlaytest } : {}), resolve, reject });
+      w.postMessage({ id, bundle: world.bundle, engine: ENGINE_HASH, urls: wasmUrls.current, ...(onPlaytest ? { playtest: true } : {}) });
     });
   }, []);
 
@@ -171,7 +221,7 @@ export function App() {
    */
   const maybeRepair = useCallback(async (world: World, receipt: Receipt, id: number) => {
     if (!world.source || modeRef.current !== "live") return;
-    const first = issuesOf(receipt, world.bundle);
+    const first = issuesOf(receipt, world.bundle, world.fillNotes);
     if (!first.length) return;
     // up to three rounds: each accepted patch is the base for the next, while it keeps getting better
     let base = world;
@@ -179,7 +229,7 @@ export function App() {
     for (let round = 1; round <= 3; round++) {
       const src = base.source!;
       const now = best?.receipt ?? receipt;
-      const issues = issuesOf(now, base.bundle);
+      const issues = issuesOf(now, base.bundle, base.fillNotes);
       if (!issues.length) break;
       setRepair({ status: "working", issues: issues.length, round });
       const patch = await liveRepair(src.prompt, src.intent as LiveIntent, src.fill, issues, src.seed);
@@ -202,7 +252,7 @@ export function App() {
     }
     // the fast lane couldn't fix it all: one round on the stronger model before giving up
     let hard = false;
-    const still = best ? issuesOf(best.receipt, best.world.bundle) : first;
+    const still = best ? issuesOf(best.receipt, best.world.bundle, best.world.fillNotes) : first;
     if (still.length) {
       const src = base.source!;
       setRepair({ status: "working", issues: still.length, hard: true });
@@ -229,10 +279,14 @@ export function App() {
     setRepair({ status: "idle", issues: 0 });
     setFooled(null);
     setRoutesOn(false);
-    proveOnDevice(world, id, (chip) => id === runId.current && setProof((p) => ({ ...p, chips: [...p.chips, chip] })))
+    // the receipt turns green as soon as it is out; the playtest (the difficulty band, what the
+    // runners revealed) lands on it after
+    const played = (pt: Playtest | null) => id === runId.current && setProof((p) => ({ ...p, playing: false, ...(pt && p.receipt ? { receipt: { ...p.receipt, playtest: pt } } : {}) }));
+    proveOnDevice(world, id, (chip) => id === runId.current && setProof((p) => ({ ...p, chips: [...p.chips, chip] })), played)
       .then((receipt) => {
         if (id !== runId.current) return;
-        setProof((p) => ({ ...p, status: "done", receipt }));
+        setProof((p) => ({ ...p, status: "done", receipt, playing: true }));
+        race.proved(world, receipt);
         probe().proof = { headline: receipt.headline?.status ?? "none", chips: receipt.chips.length };
         afterProof.current.get(id)?.(receipt);
         afterProof.current.delete(id);
@@ -261,14 +315,15 @@ export function App() {
       if (id !== runId.current) return;
       setTiming({ ttffMs: result.ttffMs, splits: [...extra, ...result.splits] });
       setStatus("playing");
+      setBuilding(null);
       setHint(true);
       const sim = e.rapierSim;
-      setTeams(world.bundle.rules.some((r) => r.then.some((fx) => fx.target === "team:blue")));
+      setTeams(world.bundle.rules.some((r) => r.then.some((fx) => fx.target === "team:blue" && fx.e !== "damage" && fx.e !== "heal")));
       setUseHint(null);
       setToast(null);
       if (sim) {
         minds.current?.stop();
-        minds.current = modeRef.current === "live" ? new Minds(world, sim, (_npc, name, line) => setBark({ name, line, at: Date.now() })) : null;
+        minds.current = modeRef.current === "live" ? new Minds(world, sim, barked) : null;
         sim.onEvents = (evs) => {
           minds.current?.observe(evs);
           for (const ev of evs) {
@@ -286,6 +341,7 @@ export function App() {
         sim.onHint = setUseHint;
       }
       sound.world(world.bundle, sim, world.cue);
+      speech.world(world.bundle);
       startProof(world, id);
       const h = await hashWorld(world.bundle);
       if (id !== runId.current) return;
@@ -296,21 +352,35 @@ export function App() {
   );
 
   const run = useCallback(
-    async (text: string, startedAt: number, extraSplits: LoadResult["splits"] = [], useLive = false) => {
+    async (text: string, startedAt: number, extraSplits: LoadResult["splits"] = [], useLive = false, rebuild = false) => {
       const id = ++runId.current;
       setStatus("building");
       setNotice(undefined);
       history.current = [];
       setEdit({ status: "idle" });
+      setRemixSrc(null);
       builtPrompt.current = text;
       setSpecHash(undefined);
       setFellBack(false);
+      setCachedFrom(null);
+      setBuilding(null);
       setProof({ status: "idle", chips: [], receipt: null });
       delete probe().specHash;
       if (useLive) {
-        const r = await liveBuild(text, (i, ms) => {
-          if (id !== runId.current) return;
-          setNotice(`${i.genre} · ${i.setting.slice(0, 80)} (${ms} ms)`);
+        const r = await liveBuild(text, {
+          fresh: rebuild,
+          onIntent: (i, ms, seed) => {
+            if (id !== runId.current) return;
+            setNotice(`${i.genre} · ${i.setting.slice(0, 80)} (${ms} ms)`);
+            // the layout follows from the intent alone: it rises while the fill streams in
+            engine.current?.materialise({ pack: i.pack, sub: i.sub, seed, look: `${i.setting} ${i.mood}` });
+            setBuilding(0);
+          },
+          onLine: (n, draft) => {
+            if (id !== runId.current) return;
+            engine.current?.materialiseLine(draft);
+            setBuilding(n);
+          },
         });
         if (id !== runId.current) return;
         if (r.kind === "world") {
@@ -318,10 +388,13 @@ export function App() {
           world.source = { prompt: text, intent: r.intent, fill: r.fill, seed: r.seed, pack: r.intent.pack };
           setNotice(undefined);
           setFellBack(r.fallback !== null);
-          await show(world, id, startedAt, [...extraSplits, { label: "intent", ms: r.intentMs }, { label: r.fallback ? `fill (${r.fallback})` : "fill", ms: r.gameplayMs - r.intentMs }]);
+          setCachedFrom(r.cached);
+          await show(world, id, startedAt, [...extraSplits, { label: r.cached ? "intent (cached)" : "intent", ms: r.intentMs }, { label: r.cached ? "fill (cached)" : r.fallback ? `fill (${r.fallback})` : "fill", ms: r.gameplayMs - r.intentMs }]);
           return;
         }
+        setBuilding(null);
         if (r.kind === "refused") {
+          engine.current?.endPreview();
           setNotice(r.message);
           setStatus("playing");
           return;
@@ -378,12 +451,24 @@ export function App() {
             probe().sim = "stub";
           }
         }
-        // A share link opens that run (rebuilt from its fill, replayed frame for frame); otherwise
-        // the recorded world appears instantly and Enter builds live.
-        const shared = params.get("s") ? await loadShare(params.get("s")!) : null;
-        if (shared && !disposed) {
+        // A race link opens that run's world with the run as the ghost to beat (replayed here first,
+        // so it starts with you); a share link opens that run (rebuilt from its fill, replayed frame
+        // for frame); otherwise the recorded world appears instantly and Enter builds live.
+        const raced = params.get("race") ? await loadRace(params.get("race")!, params.get("by"), boot.WASM_URLS) : null;
+        const shared = !raced && params.get("s") ? await loadShare(params.get("s")!) : null;
+        if (raced && !disposed) {
+          setPrompt(RACE_PROMPT);
+          setFellBack(false);
+          await show(raced.world, ++runId.current, 0, [{ label: "gpu init", ms: e.initMs }]);
+          if (raced.rival) race.setFriend(raced.world, raced.rival);
+          setToast(raced.message);
+        } else if (shared && !disposed) {
           setPrompt("Shared run");
           setFellBack(false);
+          // an edit of it is told what was asked for (the original prompt and the changes since)
+          const src = shareSource(params.get("s")!, shared.record);
+          builtPrompt.current = contextPrompt(src) || builtPrompt.current;
+          setRemixSrc(src);
           await show(shared.world, ++runId.current, 0, [{ label: "gpu init", ms: e.initMs }]);
           const sim = e.rapierSim;
           if (sim) {
@@ -391,8 +476,10 @@ export function App() {
             sim.onReplayEnd = () => setNotice(undefined);
           }
           setNotice(shared.exact ? "Shared run: replaying exactly as played. Press any key to take over." : "Shared run from another version: the world rebuilt, but the replay may drift.");
+        } else if (GALLERY.some((g) => g.slug === params.get("g")) && !disposed) {
+          await openGallery(GALLERY.find((g) => g.slug === params.get("g"))!); // a remix's link to its original
         } else {
-          if (params.get("s")) setNotice("That share link wasn't found.");
+          if (params.get("s") || params.get("race")) setNotice(`That ${params.get("race") ? "race" : "share"} link wasn't found.`);
           await run(FIRST_PROMPT, 0, [{ label: "gpu init", ms: e.initMs }]);
         }
         // While the player reads and types: compile every look's and kit's shaders in the background.
@@ -438,7 +525,7 @@ export function App() {
     if (mode !== "live" || minds.current) return;
     const sim = engine.current?.rapierSim;
     const w = current.current;
-    if (sim && w) minds.current = new Minds(w, sim, (_npc, name, line) => setBark({ name, line, at: Date.now() }));
+    if (sim && w) minds.current = new Minds(w, sim, barked);
   }, [mode, status]);
 
   useEffect(() => {
@@ -473,10 +560,29 @@ export function App() {
     const w = current.current;
     const sim = engine.current?.rapierSim;
     if (!w || !sim || !specHash) return setToast("Nothing to share yet.");
-    const url = await createShare(w, specHash, sim.inputs, sim.minds);
+    // a remix carries its line; any share says the prompt it was built from
+    const line = lineageOf(remixSrc, w);
+    const url = await createShare(w, specHash, sim.inputs, sim.minds, { prompt: line?.origin.prompt || w.source?.base || w.source?.prompt || builtPrompt.current, line });
     if (!url) return setToast("Sharing needs the live service, which isn't reachable.");
     await navigator.clipboard?.writeText(url).catch(() => undefined);
     setToast(`Link copied: ${url}`);
+  };
+
+  /**
+   * Remix: the shared or gallery world on screen as your own copy (a shared run stops replaying and
+   * starts from the top), with the cursor in the edit box; your first accepted edit makes it a remix.
+   */
+  const remix = () => {
+    const w = current.current;
+    if (!w || !remixSrc) return;
+    setCopied(true);
+    setResult(null);
+    setNotice(undefined);
+    setCollapsed(false);
+    history.current = [];
+    setEdit({ status: "idle" });
+    if (remixSrc.kind === "share") void show(w, ++runId.current, performance.now(), []).then(() => setEditFocus((n) => n + 1));
+    else setEditFocus((n) => n + 1);
   };
 
   /** Between attempts: one observation, one twist, re-proved on the device before it is offered. */
@@ -554,17 +660,24 @@ export function App() {
     wk.postMessage({ id: 1, bundle: w.bundle, engine: ENGINE_HASH, urls: wasmUrls.current, fool: { k, parS: proof.receipt.par?.goldS ?? null } });
   };
 
-  /** A one-off proof in its own worker (candidate races run several at once, then free them). */
-  const proveOnce = (world: World, runs: number) =>
+  /**
+   * A one-off proof in its own worker (candidate races run several at once, then free them). With
+   * `skill` runners per lower level it waits for the playtest too, and the receipt carries its band.
+   */
+  const proveOnce = (world: World, runs: number, skill = 0) =>
     new Promise<Receipt>((resolve, reject) => {
       const wk = new Worker(new URL("./proof.worker.ts", import.meta.url), { type: "module" });
       const done = (f: () => void) => (wk.terminate(), f());
-      wk.onmessage = (e: MessageEvent<{ receipt?: Receipt; error?: string }>) => {
-        if (e.data.receipt) done(() => resolve(e.data.receipt!));
+      let first: Receipt | null = null;
+      wk.onmessage = (e: MessageEvent<{ receipt?: Receipt; playtest?: Playtest | null; error?: string }>) => {
+        if (e.data.receipt && !skill) done(() => resolve(e.data.receipt!));
+        else if (e.data.receipt) first = e.data.receipt;
+        const r = first;
+        if (e.data.playtest !== undefined && r) done(() => resolve(e.data.playtest ? { ...r, playtest: e.data.playtest } : r));
         if (e.data.error) done(() => reject(new Error(e.data.error)));
       };
       wk.onerror = (e) => done(() => reject(new Error(e.message)));
-      wk.postMessage({ id: 1, bundle: world.bundle, engine: ENGINE_HASH, urls: wasmUrls.current, runs });
+      wk.postMessage({ id: 1, bundle: world.bundle, engine: ENGINE_HASH, urls: wasmUrls.current, runs, ...(skill ? { playtest: true, skillRuns: skill } : {}) });
     });
 
   /**
@@ -592,7 +705,8 @@ export function App() {
     await Promise.all(
       Array.from({ length: lanes }, async () => {
         for (let job = queue.shift(); job; job = queue.shift()) {
-          receipts[job[1]] = await proveOnce(job[0]!, 6).catch(() => null);
+          // 6 experts, then 3 novices and 3 average players: enough to say whether it's a band harder
+          receipts[job[1]] = await proveOnce(job[0]!, 6, before.playtest ? 3 : 0).catch(() => null);
           if (runId.current === base) setEdit({ status: "racing", change, total: ANGLES.length, proved: ++proved });
         }
       }),
@@ -694,7 +808,7 @@ export function App() {
   };
 
   /** A gallery world: the live AI's recorded fill, rebuilt and re-proved here (and editable, like any live world). */
-  const openGallery = async (entry: GalleryEntry) => {
+  const openGallery = async (entry: GalleryEntry, asRemix = false) => {
     setGallery(false);
     const load = GALLERY_WORLDS[`./gallery/worlds/${entry.slug}.json`];
     if (!load) return;
@@ -710,8 +824,13 @@ export function App() {
     setEdit({ status: "idle" });
     setStatus("building");
     setFellBack(false);
+    setCachedFrom(null);
+    setRemixSrc(null);
     await show(world, ++runId.current, t0, [{ label: "gallery", ms: performance.now() - t0 }]);
     setToast("A recorded live AI world (unedited), re-proved on your device now.");
+    setRemixSrc({ ref: galleryRef(entry.slug), kind: "gallery", prompt: g.prompt, spec: await hashWorld(world.bundle), line: null });
+    setCopied(asRemix);
+    if (asRemix) (setCollapsed(false), setEditFocus((n) => n + 1));
   };
 
   /** The same world from the top: a fresh run (and a fresh proof of the same spec). */
@@ -724,13 +843,14 @@ export function App() {
   const againRef = useRef(again);
   againRef.current = again;
 
-  const submit = (text: string) => {
+  /** Build a prompt; `rebuild` skips the edge's cache ("Build it fresh"). */
+  const submit = (text: string, rebuild = false) => {
     setCollapsed(false);
     setFresh(false);
     // offline, a gallery prompt (the bar's examples) opens its recorded world rather than the fixture
     const recorded = mode === "live" ? undefined : GALLERY.find((g) => g.prompt === text);
     if (recorded) return void openGallery(recorded);
-    run(text, performance.now(), [], mode === "live").catch((err: unknown) => {
+    run(text, performance.now(), [], mode === "live", rebuild).catch((err: unknown) => {
       console.error(err);
       setError(err instanceof Error ? err.message : String(err));
       setStatus("error");
@@ -760,7 +880,7 @@ export function App() {
             onCollapse={() => setCollapsed(true)}
             timing={timing}
             busy={status === "building" || status === "booting"}
-            source={mode === "live" && fellBack ? FELL_BACK : SOURCE[mode]}
+            source={mode === "live" && cachedFrom ? fromCache(cachedFrom, () => submit(builtPrompt.current, true)) : mode === "live" && fellBack ? FELL_BACK : SOURCE[mode]}
             suggestions={SUGGESTIONS.filter((x) => mode === "live" || !x.live)}
             onFocusChange={setTyping}
             onGallery={() => setGallery(true)}
@@ -771,9 +891,11 @@ export function App() {
           {landing && <Landing starters={STARTERS} ready={status === "playing"} onPick={pickStarter} />}
         </div>
         {notice && <div className="glass notice" role="status">{notice}</div>}
-        {!collapsed && !typing && intent && <IntentCard intent={intent} specHash={specHash} note={note} />}
+        {!collapsed && !typing && intent && building === null && <IntentCard intent={intent} specHash={specHash} note={note} />}
         {current.current && status !== "booting" && !typing && (!collapsed || edit.status === "editing" || edit.status === "racing" || edit.status === "proving") && (
-          <EditBox state={edit} enabled={mode === "live"} suggestions={[...suggestionsFor(current.current.bundle), "surprise me"]} canUndo={history.current.length > 0} onEdit={(c) => void editWorld(c)} onUndo={undo} />
+          <EditBox state={edit} enabled={mode === "live"} suggestions={[...suggestionsFor(current.current.bundle), "surprise me"]} canUndo={history.current.length > 0} onEdit={(c) => void editWorld(c)} onUndo={undo} focusKey={editFocus} placeholder={copied ? "Change it: make it yours…" : undefined}>
+            {remixSrc && <LineagePanel source={remixSrc} line={lineageOf(remixSrc, current.current)} mine={yourChanges(current.current).length} copied={copied} spec={specHash} onRemix={remix} onShare={() => void shareRun()} />}
+          </EditBox>
         )}
         {(score.red > 0 || score.blue > 0 || score.result || clock !== null || secrets.found > 0) && (
           <div className={`glass scoreline ${score.result ?? ""}`} data-testid="score">
@@ -789,6 +911,8 @@ export function App() {
             {score.result && <strong>{score.result === "win" ? " · You win!" : " · You lose"}</strong>}
           </div>
         )}
+        <HealthBar engine={engine} active={status === "playing"} />
+        <LapBoard engine={engine} active={status === "playing"} />
         {useHint && status === "playing" && !touch && (
           <div className="glass usehint" data-testid="use-hint">
             <kbd>F</kbd> {useHint}
@@ -811,26 +935,18 @@ export function App() {
               setResult(null);
               void show(w, ++runId.current, performance.now(), []);
             }}
+            race={race.card}
+            voice={speech.enabled ? { say: speech.host, again: speech.again } : undefined}
           />
         )}
+        {race.chip && status === "playing" && (collapsed || typing || !intent) && <RaceChip {...race.chip} />}
+        {race.board && <BoardPanel {...race.board} />}
         {bark && (
           <div className="glass bark" data-testid="bark">
             <b>{bark.name}:</b> {bark.line}
           </div>
         )}
-        {talking && (
-          <form
-            className="glass talk"
-            onSubmit={(e) => {
-              e.preventDefault();
-              if (said.trim()) minds.current?.talk(talking.npc, said.trim());
-              setTalking(null);
-              setSaid("");
-            }}
-          >
-            <input autoFocus value={said} maxLength={200} placeholder={`Say something to the ${talking.name}…`} onChange={(e) => setSaid(e.target.value)} onKeyDown={(e) => e.key === "Escape" && setTalking(null)} />
-          </form>
-        )}
+        {talking && <TalkBox name={talking.name} lang={speech.listenLang()} onSay={(t) => minds.current?.talk(talking.npc, t)} onClose={() => setTalking(null)} onListen={speech.hush} />}
         <ProofBadge proof={proof} onOpen={() => setReceiptOpen((o) => !o)} />
         <CutChip cut={cut} onApply={applyCut} />
         <RepairChip
@@ -881,7 +997,7 @@ export function App() {
             }}
           />
         )}
-        {gallery && <Gallery onOpen={(e) => void openGallery(e)} onClose={() => setGallery(false)} />}
+        {gallery && <Gallery onOpen={(e) => void openGallery(e)} onRemix={(e) => void openGallery(e, true)} onClose={() => setGallery(false)} />}
         {trusting && <TrustPanel onClose={() => setTrusting(false)} />}
         {receiptOpen && (
           <ReceiptPanel
@@ -893,14 +1009,18 @@ export function App() {
             onTrust={() => (setReceiptOpen(false), setTrusting(true))}
             onFool={proof.status === "done" && proof.receipt ? tryFool : undefined}
             fooled={fooled}
-            routes={proof.receipt?.trails && current.current ? insights(current.current.bundle, proof.receipt.trails) : null}
+            routes={proof.receipt?.trails && current.current ? insights(current.current.bundle, allRuns(proof.receipt)) : null}
+            report={proof.receipt && current.current ? revealed(current.current.bundle, proof.receipt) : null}
             routesOn={routesOn}
             onRoutes={() => {
               const on = !routesOn;
               setRoutesOn(on);
-              engine.current?.showTrails(on ? (proof.receipt?.trails ?? null) : null);
+              // the experts' routes, over the heat map of every run at every level
+              const heat = on && proof.receipt && current.current ? (revealed(current.current.bundle, proof.receipt)?.heat ?? null) : null;
+              engine.current?.showTrails(on ? (proof.receipt?.trails ?? null) : null, heat);
             }}
             reported={reported}
+            version={receiptVersion(lineageOf(remixSrc, current.current), specHash)}
             onShare={shareRun}
             onExport={async () => {
               const w = current.current;
@@ -928,7 +1048,14 @@ export function App() {
           />
         )}
         {status === "booting" && <div className="boot">building world…</div>}
-        {status === "building" && <div className="boot">building world…</div>}
+        {status === "building" &&
+          (building === null ? (
+            <div className="boot">building world…</div>
+          ) : (
+            <div className="materialise-status" data-testid="materialise">
+              building… {building} {building === 1 ? "line" : "lines"}
+            </div>
+          ))}
         {status === "error" && (
           <div className="glass fatal" role="alert">
             <strong>Renderer failed to start</strong>

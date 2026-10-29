@@ -1,0 +1,48 @@
+{"op":"meta","mode":"play","lang":"en","pack":"course","sub":[],"seed":15,"look":"sci-fi tunnel","mood":[0.75,0.9,0.7],"timeOfDay":12,"weather":"clear"}
+{"op":"zone","id":"z_start","slot":"start","tag":"outside","name":"Tunnel entrance"}
+{"op":"zone","id":"z_seg_1","slot":"seg_1","tag":"ledge","name":"Section 1"}
+{"op":"zone","id":"z_seg_2","slot":"seg_2","tag":"beam","name":"Section 2"}
+{"op":"zone","id":"z_seg_3","slot":"seg_3","tag":"gaps","name":"Section 3"}
+{"op":"zone","id":"z_seg_4","slot":"seg_4","tag":"beam","name":"Section 4"}
+{"op":"zone","id":"z_seg_5","slot":"seg_5","tag":"steps","name":"Section 5"}
+{"op":"zone","id":"z_seg_6","slot":"seg_6","tag":"pit","name":"Section 6"}
+{"op":"zone","id":"z_finish","slot":"finish","tag":"outside","name":"Tunnel exit"}
+{"op":"spawn","id":"sp_red","zone":"z_start","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"finish","zone":"z_finish","anchor":"goal","noun":"exit","hyper":"goal","team":"red"}
+{"op":"ent","id":"hovercraft","kind":"vehicle","noun":"hovercraft","hyper":"vehicle","zone":"z_start","anchor":"center","body":"dynamic","shape":"hull","size":[2,1,1]}
+{"op":"ent","id":"cp_1","kind":"checkpoint","noun":"checkpoint 1","hyper":"checkpoint","zone":"z_seg_1","anchor":"cp_1","body":"sensor","shape":"box","size":[1,1,0.2]}
+{"op":"ent","id":"cp_2","kind":"checkpoint","noun":"checkpoint 2","hyper":"checkpoint","zone":"z_seg_2","anchor":"cp_2","body":"sensor","shape":"box","size":[1,1,0.2]}
+{"op":"ent","id":"cp_3","kind":"checkpoint","noun":"checkpoint 3","hyper":"checkpoint","zone":"z_seg_3","anchor":"cp_3","body":"sensor","shape":"box","size":[1,1,0.2]}
+{"op":"ent","id":"cp_4","kind":"checkpoint","noun":"checkpoint 4","hyper":"checkpoint","zone":"z_seg_4","anchor":"cp_4","body":"sensor","shape":"box","size":[1,1,0.2]}
+{"op":"ent","id":"cp_5","kind":"checkpoint","noun":"checkpoint 5","hyper":"checkpoint","zone":"z_seg_5","anchor":"cp_5","body":"sensor","shape":"box","size":[1,1,0.2]}
+{"op":"ent","id":"drone_1","kind":"hazard","noun":"drone","hyper":"drone","zone":"z_seg_1","anchor":"drone_1","body":"sensor","shape":"box","size":[1,1,1]}
+{"op":"ent","id":"drone_2","kind":"hazard","noun":"drone","hyper":"drone","zone":"z_seg_2","anchor":"drone_2","body":"sensor","shape":"box","size":[1,1,1]}
+{"op":"ent","id":"drone_3","kind":"hazard","noun":"drone","hyper":"drone","zone":"z_seg_3","anchor":"drone_3","body":"sensor","shape":"box","size":[1,1,1]}
+{"op":"ent","id":"drone_4","kind":"hazard","noun":"drone","hyper":"drone","zone":"z_seg_4","anchor":"drone_4","body":"sensor","shape":"box","size":[1,1,1]}
+{"op":"ent","id":"drone_5","kind":"hazard","noun":"drone","hyper":"drone","zone":"z_seg_5","anchor":"drone_5","body":"sensor","shape":"box","size":[1,1,1]}
+{"op":"ent","id":"boost_pack","kind":"pickup","noun":"boost module","hyper":"boost","zone":"z_seg_4","anchor":"pickup_4","body":"dynamic","shape":"sphere","size":[0.3,0.3,0.3]}
+{"op":"verb","id":"vb_drive","verb":"vehicle.drive","on":"hovercraft","params":{"kind":"hovercraft","speed":20,"driver":"player"}}
+{"op":"verb","id":"vb_check_cp1","verb":"puzzle.checkpoint","on":"cp_1","params":{}}
+{"op":"verb","id":"vb_check_cp2","verb":"puzzle.checkpoint","on":"cp_2","params":{}}
+{"op":"verb","id":"vb_check_cp3","verb":"puzzle.checkpoint","on":"cp_3","params":{}}
+{"op":"verb","id":"vb_check_cp4","verb":"puzzle.checkpoint","on":"cp_4","params":{}}
+{"op":"verb","id":"vb_check_cp5","verb":"puzzle.checkpoint","on":"cp_5","params":{}}
+{"op":"verb","id":"vb_hazard_1","verb":"motion_hazards.hazard","on":"drone_1","params":{"respawn":true}}
+{"op":"verb","id":"vb_hazard_2","verb":"motion_hazards.hazard","on":"drone_2","params":{"respawn":true}}
+{"op":"verb","id":"vb_hazard_3","verb":"motion_hazards.hazard","on":"drone_3","params":{"respawn":true}}
+{"op":"verb","id":"vb_hazard_4","verb":"motion_hazards.hazard","on":"drone_4","params":{"respawn":true}}
+{"op":"verb","id":"vb_hazard_5","verb":"motion_hazards.hazard","on":"drone_5","params":{"respawn":true}}
+{"op":"verb","id":"vb_carry_boost","verb":"physics_props.carry","on":"boost_pack","params":{}}
+{"op":"verb","id":"vb_race_track","verb":"racing.track","on":"finish","params":{"gates":"cp_1,cp_2,cp_3,cp_4,cp_5","laps":1}}
+{"op":"verb","id":"vb_timer","verb":"puzzle.timer","on":"player","params":{"seconds":120}}
+{"op":"law","player":{"jumpsMax":0,"jumpH":0,"speed":22}}
+{"op":"rule","id":"r_win","when":{"t":"lap_done","a":"player","b":"finish"},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose_time","when":{"t":"timer_end","a":"player"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose_hit_1","when":{"t":"hit","a":"player","b":"drone_1"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose_hit_2","when":{"t":"hit","a":"player","b":"drone_2"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose_hit_3","when":{"t":"hit","a":"player","b":"drone_3"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose_hit_4","when":{"t":"hit","a":"player","b":"drone_4"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose_hit_5","when":{"t":"hit","a":"player","b":"drone_5"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"expect","id":"x_race","prop":"win_reachable","a":"sp_red","b":"finish","headline":true,"text":"Hovercraft must boost to pass timed drone gates"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

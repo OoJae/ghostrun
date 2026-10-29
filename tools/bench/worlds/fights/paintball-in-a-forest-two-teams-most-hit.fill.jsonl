@@ -1,0 +1,26 @@
+{"op":"meta","mode":"play","lang":"en","pack":"outdoor","sub":[],"seed":13,"look":"forest clearing","mood":[0.8,0.9,0.75],"timeOfDay":12,"weather":"clear"}
+{"op":"zone","id":"z_entrance_red","slot":"entrance","tag":"entrance","name":"Red Base"}
+{"op":"zone","id":"z_entrance_blue","slot":"entrance","tag":"entrance","name":"Blue Base"}
+{"op":"zone","id":"z_clearing","slot":"clearing","tag":"outside","name":"Forest Clearing"}
+{"op":"zone","id":"z_base_red","slot":"clearing_w","tag":"base","name":"Red Team Base"}
+{"op":"zone","id":"z_base_blue","slot":"clearing_e","tag":"base","name":"Blue Team Base"}
+{"op":"spawn","id":"sp_red","zone":"z_entrance_red","anchor":"spawn_pad","team":"red"}
+{"op":"spawn","id":"sp_blue","zone":"z_entrance_blue","anchor":"spawn_pad","team":"blue"}
+{"op":"ent","id":"gun_red","kind":"pickup","noun":"paintball gun","hyper":"weapon","zone":"z_clearing","anchor":"center","body":"dynamic","shape":"box","size":[0.3,0.2,0.6]}
+{"op":"ent","id":"gun_blue","kind":"pickup","noun":"paintball gun","hyper":"weapon","zone":"z_clearing","anchor":"center_n","body":"dynamic","shape":"box","size":[0.3,0.2,0.6]}
+{"op":"ent","id":"paintball","kind":"pickup","noun":"paintball","hyper":"ammunition","zone":"z_clearing","anchor":"center_s","body":"dynamic","shape":"sphere","size":[0.05,0.05,0.05]}
+{"op":"ent","id":"cover_tree_1","kind":"prop","noun":"tree","hyper":"terrain","zone":"z_clearing","anchor":"center_e","body":"fixed","shape":"box","size":[0.5,3,0.5]}
+{"op":"ent","id":"cover_tree_2","kind":"prop","noun":"tree","hyper":"terrain","zone":"z_clearing","anchor":"center_w","body":"fixed","shape":"box","size":[0.5,2.8,0.5]}
+{"op":"ent","id":"timer","kind":"prop","noun":"timer","hyper":"time_limiter","zone":"z_clearing","anchor":"center_n","body":"sensor","shape":"box","size":[0.2,0.2,0.2]}
+{"op":"verb","id":"vb_carry_gun_red","verb":"physics_props.carry","on":"gun_red","params":{}}
+{"op":"verb","id":"vb_carry_gun_blue","verb":"physics_props.carry","on":"gun_blue","params":{}}
+{"op":"verb","id":"vb_shoot_red","verb":"combat_sport.shoot","on":"gun_red","params":{"range":30,"speed":20,"damage":10,"cooldown":0.5,"at":""}}
+{"op":"verb","id":"vb_shoot_blue","verb":"combat_sport.shoot","on":"gun_blue","params":{"range":30,"speed":20,"damage":10,"cooldown":0.5,"at":""}}
+{"op":"verb","id":"vb_timer","verb":"puzzle.timer","on":"timer","params":{"seconds":90}}
+{"op":"rule","id":"r_score_red","when":{"t":"hit","a":"player","b":"gun_blue"},"then":[{"e":"score","target":"team:red","n":1}],"once":false}
+{"op":"rule","id":"r_score_blue","when":{"t":"hit","a":"player","b":"gun_red"},"then":[{"e":"score","target":"team:blue","n":1}],"once":false}
+{"op":"rule","id":"r_end_red_win","when":{"t":"timer_end","a":"timer"},"if":[{"l":"team:red.score","op":"gt","r":"team:blue.score"}],"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_end_blue_win","when":{"t":"timer_end","a":"timer"},"if":[{"l":"team:blue.score","op":"gt","r":"team:red.score"}],"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"expect","id":"x_paintball_match","prop":"win_reachable","a":"sp_red","b":"timer","headline":true,"text":"90-second score limit with two opposing paintball teams"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

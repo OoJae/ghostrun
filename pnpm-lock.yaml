@@ -521,6 +521,9 @@ importers:
       '@ghostrun/nav':
         specifier: workspace:*
         version: link:../../packages/nav
+      '@ghostrun/pack-arena':
+        specifier: workspace:*
+        version: link:../../packages/packs/arena
       '@ghostrun/pack-city-block':
         specifier: workspace:*
         version: link:../../packages/packs/city-block

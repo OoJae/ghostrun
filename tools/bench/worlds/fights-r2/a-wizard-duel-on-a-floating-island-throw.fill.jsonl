@@ -1,0 +1,25 @@
+{"op":"meta","mode":"play","lang":"en","pack":"arena","sub":[],"seed":7,"look":"floating island","mood":[0.2,0.8,0.9],"timeOfDay":12,"weather":"clear"}
+{"op":"zone","id":"z_mid","slot":"midfield","tag":"center","name":"Island core"}
+{"op":"zone","id":"z_west","slot":"west_half","tag":"base","name":"West platform"}
+{"op":"zone","id":"z_east","slot":"east_half","tag":"base","name":"East platform"}
+{"op":"zone","id":"z_north","slot":"north_deck","tag":"platform","name":"North deck"}
+{"op":"zone","id":"z_south","slot":"south_deck","tag":"platform","name":"South deck"}
+{"op":"spawn","id":"sp_red","zone":"z_west","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"dummy_goal","zone":"z_mid","anchor":"center","noun":"duel arena","hyper":"arena","team":""}
+{"op":"ent","id":"mana_orb","kind":"pickup","noun":"mana orb","hyper":"orb","zone":"z_mid","anchor":"center","body":"dynamic","shape":"sphere","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"rune_hazard","kind":"hazard","noun":"magical rune","hyper":"rune","zone":"z_north","anchor":"deck_center","body":"sensor","shape":"box","size":[2,0.5,2]}
+{"op":"ent","id":"moving_plat","kind":"platform","noun":"floating slab","hyper":"platform","zone":"z_south","anchor":"deck_center","body":"kinematic","shape":"box","size":[3,0.5,3]}
+{"op":"ent","id":"rival_mage","kind":"npc","noun":"rival mage","hyper":"mage","zone":"z_east","anchor":"center","body":"dynamic","shape":"capsule","size":[0.5,1.8,0.5]}
+{"op":"ent","id":"player_health","kind":"prop","noun":"player health","hyper":"health","zone":"z_west","anchor":"spawn_pad","body":"sensor","shape":"none"}
+{"op":"ent","id":"rival_health","kind":"prop","noun":"rival health","hyper":"health","zone":"z_east","anchor":"center","body":"sensor","shape":"none"}
+{"op":"verb","id":"vb_jump","verb":"locomotion.jump","on":"player","params":{"jumpsMax":2}}
+{"op":"verb","id":"vb_carry_mana","verb":"physics_props.carry","on":"mana_orb","params":{}}
+{"op":"verb","id":"vb_shoot_fire","verb":"combat_sport.shoot","on":"player","params":{"range":15,"speed":20,"damage":30,"cooldown":0.5,"at":""}}
+{"op":"verb","id":"vb_oscillate_plat","verb":"motion_hazards.oscillate","on":"moving_plat","params":{"axis":"x","travel":4,"period":6}}
+{"op":"verb","id":"vb_hazard_rune","verb":"motion_hazards.hazard","on":"rune_hazard","params":{"respawn":true}}
+{"op":"rule","id":"r_win","when":{"t":"health_lte","a":"rival_mage","n":0},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose","when":{"t":"health_lte","a":"player","n":0},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_osc_plat","when":{"t":"enter","a":"player","b":"moving_plat"},"then":[{"e":"set_state","target":"moving_plat","v":"moving"}]}
+{"op":"expect","id":"x_duel","prop":"win_reachable","a":"sp_red","b":"rival_mage","headline":true,"text":"Fireball casts must interrupt enemy projectiles to win"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

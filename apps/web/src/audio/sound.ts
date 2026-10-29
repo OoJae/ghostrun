@@ -49,6 +49,8 @@ export class Sound {
   readonly #master: GainNode;
   readonly #sfx: GainNode;
   readonly #duck: GainNode;
+  /** Music and ambience together, lowered while someone speaks. */
+  readonly #talk: GainNode;
   readonly #revIn: GainNode;
   readonly #revOut: GainNode;
   readonly #noise: AudioBuffer;
@@ -98,8 +100,9 @@ export class Sound {
     this.#master.gain.value = o.muted ? 0 : LEVEL.master;
     this.#master.connect(comp);
     this.#sfx = gain(ctx, LEVEL.sfx, this.#master);
-    const amb = gain(ctx, LEVEL.amb, this.#master);
-    this.#duck = gain(ctx, 1, this.#master);
+    this.#talk = gain(ctx, 1, this.#master);
+    const amb = gain(ctx, LEVEL.amb, this.#talk);
+    this.#duck = gain(ctx, 1, this.#talk);
     const music = gain(ctx, LEVEL.music, this.#duck);
     const rev = ctx.createConvolver();
     rev.buffer = impulse(ctx, 2.6, 3.2);
@@ -136,6 +139,16 @@ export class Sound {
     // after the fade, stop the clock altogether: no CPU spent on sound nobody hears
     if (m) setTimeout(() => this.#muted && void this.ctx.suspend(), 250);
     else void this.ctx.resume().catch(() => undefined);
+  }
+
+  /** Someone is speaking (an NPC, the Host): the music and the beds step back under the voice. */
+  voice(on: boolean) {
+    const g = this.#talk.gain;
+    const now = this.ctx.currentTime;
+    g.cancelScheduledValues(now);
+    g.setValueAtTime(g.value, now);
+    g.setTargetAtTime(on ? 0.35 : 1, now, on ? 0.08 : 0.45);
+    this.#probe.ducked = on;
   }
 
   /** A new world (or the same one from the top): its place, its music, its events. */

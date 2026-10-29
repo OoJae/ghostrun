@@ -1,0 +1,330 @@
+{
+  "prompt": "A space station shooter: blast the security drones and reach the escape pod",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "shooter",
+    "setting": "space station",
+    "role": "pilot",
+    "goal": "blast security drones and reach the escape pod",
+    "fail": "shot or run out of shots before reaching the pod",
+    "mood": "tense action",
+    "pack": "course",
+    "sub": [],
+    "safety": "arcade",
+    "headline": "Reaching the escape pod requires blasting security drones on the way",
+    "nouns": [
+      {
+        "noun": "drone",
+        "hyper": "security robot"
+      },
+      {
+        "noun": "station",
+        "hyper": "spacedock"
+      },
+      {
+        "noun": "pod",
+        "hyper": "escape vessel"
+      }
+    ],
+    "moodVec": {
+      "valence": -0.1,
+      "arousal": 0.85,
+      "tension": 0.7
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "955622e6b09d8e3387a8356a79976197c55891f3e2d4c852b271637f36e0ffef",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_escape",
+      "text": "Reaching the escape pod requires blasting security drones on the way",
+      "status": "counterexample",
+      "method": "static goal regression over rules + physics, 12 AI runners vs 4 bots"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 10 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (player enters pod_exit) [after red scores 4]",
+        "src": ""
+      },
+      {
+        "id": "T1:range:r_drone1_dead",
+        "tier": "T1",
+        "subject": {
+          "kind": "rule",
+          "id": "r_drone1_dead"
+        },
+        "method": "line-of-sight range model (from ground the jump model reaches)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 18,
+        "status": "verified",
+        "text": "a shot reaches the security drone: clear lines from as far as 19.99 m (range 20 m)",
+        "cx": null
+      },
+      {
+        "id": "T1:range:r_drone2_dead",
+        "tier": "T1",
+        "subject": {
+          "kind": "rule",
+          "id": "r_drone2_dead"
+        },
+        "method": "line-of-sight range model (from ground the jump model reaches)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 19,
+        "status": "verified",
+        "text": "a shot reaches the security drone: clear lines from as far as 19.97 m (range 20 m)",
+        "cx": null
+      },
+      {
+        "id": "T1:range:r_drone3_dead",
+        "tier": "T1",
+        "subject": {
+          "kind": "rule",
+          "id": "r_drone3_dead"
+        },
+        "method": "line-of-sight range model (from ground the jump model reaches)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 20,
+        "status": "verified",
+        "text": "a shot reaches the security drone: clear lines from as far as 19.99 m (range 20 m)",
+        "cx": null
+      },
+      {
+        "id": "T1:range:r_drone4_dead",
+        "tier": "T1",
+        "subject": {
+          "kind": "rule",
+          "id": "r_drone4_dead"
+        },
+        "method": "line-of-sight range model (from ground the jump model reaches)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 20,
+        "status": "verified",
+        "text": "a shot reaches the security drone: clear lines from as far as 19.99 m (range 20 m)",
+        "cx": null
+      },
+      {
+        "id": "T2:r_drone1_dead",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_drone1_dead"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 10,
+        "status": "verified",
+        "text": "r_drone1_dead fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_drone2_dead",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_drone2_dead"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 7,
+        "status": "verified",
+        "text": "r_drone2_dead fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_drone3_dead",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_drone3_dead"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 8,
+        "status": "verified",
+        "text": "r_drone3_dead fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_drone4_dead",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_drone4_dead"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 8,
+        "status": "verified",
+        "text": "r_drone4_dead fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lose_shot",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_shot"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_lose_shot: nothing in the world hurts the player",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_host",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_host"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 7,
+        "status": "verified",
+        "text": "r_secret_host fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_pickup_5",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_pickup_5"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 9,
+        "status": "verified",
+        "text": "r_secret_pickup_5 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_pickup_6",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_pickup_6"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 16,
+        "status": "verified",
+        "text": "r_secret_pickup_6 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_trophy",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_trophy"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 10,
+        "status": "verified",
+        "text": "r_secret_trophy fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "counterexample",
+        "method": "physics, 12 AI runners vs 4 bots",
+        "n": 12,
+        "k": 0,
+        "text": "no AI runner could win vs 4 bots",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "wins",
+          "text": "12 got stuck (in the Docking bay ×12)"
+        },
+        "src": "",
+        "ms": 6203
+      }
+    ],
+    "par": null,
+    "ms": 7196
+  }
+}

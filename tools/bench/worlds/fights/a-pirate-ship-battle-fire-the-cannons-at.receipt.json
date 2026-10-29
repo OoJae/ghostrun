@@ -1,0 +1,216 @@
+{
+  "prompt": "A pirate ship battle: fire the cannons at the enemy ship until it sinks",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "action simulation",
+    "setting": "Open ocean, broad daylight, two wooden frigates facing each other",
+    "role": "Piratic gunner on the deck of a galleon",
+    "goal": "Fire the broadside cannons accurately to reduce the enemy ship's hull integrity to zero before your ship goes down",
+    "fail": "Your ship's hull is destroyed or you run out of powder/ammo before sinking the enemy",
+    "mood": "Adrenaline-fueled naval combat with a sense of impending doom",
+    "pack": "arena",
+    "sub": [],
+    "safety": "arcade",
+    "headline": "Each cannon shot must be aimed against a moving target with a wind drift mechanic",
+    "nouns": [
+      {
+        "noun": "cannon",
+        "hyper": "naval weapon"
+      },
+      {
+        "noun": "pirate ship",
+        "hyper": "vessel"
+      },
+      {
+        "noun": "hull",
+        "hyper": "structural component"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.4,
+      "arousal": 0.9,
+      "tension": 0.8
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "8cdb383ca1db99b61068a7f5cf01c2e033997d94d2b035d87d3e39115ce9dde0",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_cannon",
+      "text": "Each cannon shot must be aimed against a moving target with a wind drift mechanic",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners vs 1 bot"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 5 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (enemy_ship down to 0 HP) ← shoot enemy_ship (4 hits of 25)",
+        "src": ""
+      },
+      {
+        "id": "T1:range:r_lose",
+        "tier": "T1",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose"
+        },
+        "method": "line-of-sight range model (from ground the jump model reaches)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 29,
+        "status": "verified",
+        "text": "a shot reaches the your hull integrity: clear lines from as far as 29.99 m (range 30 m)",
+        "cx": null
+      },
+      {
+        "id": "T1:range:r_win",
+        "tier": "T1",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "line-of-sight range model (from ground the jump model reaches)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 30,
+        "status": "verified",
+        "text": "a shot reaches the enemy frigate: clear lines from as far as 30 m (range 30 m)",
+        "cx": null
+      },
+      {
+        "id": "T2:r_ammo_limit",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_ammo_limit"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_ammo_limit fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lose",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_lose fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_n",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_n"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_secret_flank_n fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_s",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_s"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_flank_s fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners vs 1 bot",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it vs 1 bot (AI par 8.8 s)",
+        "cx": null,
+        "src": "",
+        "ms": 298
+      }
+    ],
+    "par": {
+      "goldS": 8.8,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 575
+  }
+}

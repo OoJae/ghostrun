@@ -2,6 +2,7 @@
 // POST /v1/build streams the fast lane as server-sent events:
 //   intent {intent, ms}  →  op {i, line} per complete JSONL fill line  →  done {timings}
 // Keys never leave the server. The client parses ops into the IR, places, simulates and proves.
+// An exact repeat of a clean build replays from the cache (cache.ts) behind a `cached` event, free.
 // Every route but health sits behind the gate (gate.ts). A build reserves its worst-case cost with
 // the governor before any model call and commits the metered cost when it ends (governor.ts).
 // Each model call runs on the fast lane with Claude Haiku as the rung below it (llm/lanes.ts).
@@ -13,11 +14,13 @@ import * as v from "valibot";
 // on six live prompts: 5 of 5 headlines verified vs 1 of 6 with the CTF example, which got copied)
 import EXAMPLE from "../../../packages/ir/fixtures/vault-heist.jsonl?raw";
 import { Buckets, intVar, WINDOW_MS } from "./buckets";
+import { cacheKey, closesGameplay, ENGINE_RE, promptSeed, readCache, replayBody, templateHash, writeCache, type CachedEvent } from "./cache";
 import type { DoNamespace, KvNamespace, R2Bucket, WaitUntil } from "./cf";
 import { buildEstimate, costMicroUsd, FILL_MAX_OUT, FILL_MODEL, INTENT_MAX_OUT, INTENT_MODEL, jobEstimate, REPAIR_MAX_IN, REPAIR_MAX_OUT } from "./cost";
 import { capsFromEnv, doCall, Governor, governorClient, localCall, MemoryLedger, type GovernorApi, type GovernorEnv } from "./governor";
 import { devOpen, gateMode, identify, ipKey, ipOf, mintSession, verifyTurnstile, type Caller, type GateEnv } from "./gate";
 import { json, ntfy, readJson } from "./http";
+import { getBoard, postBoard } from "./board";
 import { getShare, memoryBlobs, postReport, postShare, postWrong, r2Blobs, type BlobStore, type ShareCtx } from "./share";
 
 export interface Env extends GateEnv, GovernorEnv {
@@ -28,7 +31,7 @@ export interface Env extends GateEnv, GovernorEnv {
   TURNSTILE_SITEKEY?: string;
   /** Tokenless builds per IP per isolate per 10 min (default 30). */
   BUILDS_PER_WINDOW?: string;
-  /** Session/share/report/wrong requests per IP per isolate per 10 min (default 60). */
+  /** Session/share/board/report/wrong requests per IP per isolate per 10 min (default 60). */
   RATE_PER_WINDOW?: string;
   /** Builds per judge token per isolate per 10 min while the governor is unreachable (default 10). */
   JUDGE_FALLBACK_PER_WINDOW?: string;
@@ -48,6 +51,10 @@ export const PAUSE_FLAG = "builds:paused";
 export const PRIMARY_FLAG = "route:primary";
 /** KV key in FLAGS: "off" turns the Sonnet jobs (the Director's cut, hard repairs) off, deploy-free. */
 export const SONNET_FLAG = "ff.sonnet_lane";
+/** KV key in FLAGS: "off" turns the exact-repeat build cache off (no lookups, no writes), deploy-free. */
+export const CACHE_FLAG = "ff.public_cache";
+
+const SSE_HEADERS = { "content-type": "text/event-stream", "cache-control": "no-store", "x-accel-buffering": "no" };
 
 const buildBuckets = new Buckets();
 const apiBuckets = new Buckets();
@@ -89,6 +96,11 @@ async function switches(env: Env): Promise<{ paused: boolean; primary: Provider 
   return { paused: stop, primary: primary === "anthropic" || primary === "cerebras" ? primary : undefined };
 }
 
+/** Is the exact-repeat cache on? Unless FLAGS says "off" (read at the edge once a minute). */
+async function cacheOn(env: Env): Promise<boolean> {
+  return (await env.FLAGS?.get(CACHE_FLAG, { cacheTtl: 60 }).catch(() => null)) !== "off";
+}
+
 export async function handle(req: Request, env: Env, ctx?: WaitUntil): Promise<Response> {
   const url = new URL(req.url);
   const path = url.pathname;
@@ -102,12 +114,15 @@ export async function handle(req: Request, env: Env, ctx?: WaitUntil): Promise<R
   if (path === "/v1/mind" && req.method === "POST") return mind(req, env, url);
   if (path === "/v1/host" && req.method === "POST") return host(req, env, url);
   const shareId = /^\/v1\/share\/([a-z2-7]{16})$/.exec(path)?.[1];
+  const boardOf = /^\/v1\/board\/([0-9a-f]{64})$/.exec(path)?.[1];
   const post = req.method === "POST";
   const route =
     path === "/v1/share" && post ? postShare
     : path === "/v1/report" && post ? postReport
     : path === "/v1/wrong" && post ? postWrong
+    : path === "/v1/board" && post ? postBoard
     : shareId && req.method === "GET" ? (_: Request, c: ShareCtx) => getShare(shareId, c)
+    : boardOf && req.method === "GET" ? (_: Request, c: ShareCtx) => getBoard(boardOf, c)
     : undefined;
   if (!route) return json({ error: "not found" }, 404);
 
@@ -170,7 +185,7 @@ function sseStream() {
       upstream.abort();
     }
   };
-  const response = new Response(readable, { headers: { "content-type": "text/event-stream", "cache-control": "no-store", "x-accel-buffering": "no" } });
+  const response = new Response(readable, { headers: SSE_HEADERS });
   return { send, close: () => w.close().catch(() => undefined), signal: upstream.signal, response };
 }
 
@@ -349,13 +364,22 @@ async function build(req: Request, env: Env, url: URL, later: (p: Promise<unknow
 
   const body = await readJson(req, 8192);
   if (!body.ok) return json({ error: body.error }, body.status);
-  const input = (body.value ?? {}) as { prompt?: unknown; seed?: unknown };
+  const input = (body.value ?? {}) as { prompt?: unknown; seed?: unknown; engine?: unknown; fresh?: unknown };
   const prompt = typeof input.prompt === "string" ? input.prompt.trim().slice(0, MAX_PROMPT) : "";
   if (!prompt) return json({ error: "empty prompt" }, 400);
-  const seed = Number.isInteger(input.seed) ? (input.seed as number) : 1 + Math.floor(Date.now() % 100000);
-  const sw = await switches(env);
+  const seed = Number.isInteger(input.seed) ? (input.seed as number) : await promptSeed(prompt);
+  const [sw, caching] = await Promise.all([switches(env), cacheOn(env)]);
   if (sw.paused) return json({ error: "builds paused", retryable: true }, 503);
   const keys = keysOf(env);
+
+  // The exact-repeat cache, for a caller that names the engine it builds with. A hit replays now,
+  // before any hold or model call; `fresh` skips the lookup, and its build overwrites the entry.
+  const store = caching && typeof input.engine === "string" && ENGINE_RE.test(input.engine) ? blobsFor(env, url) : undefined;
+  const key = store ? await cacheKey(prompt, seed, await templateHash(EXAMPLE), input.engine as string) : undefined;
+  if (store && key && input.fresh !== true) {
+    const hit = await readCache(store, key);
+    if (hit) return new Response(replayBody(hit), { headers: SSE_HEADERS });
+  }
 
   const intentMsgs = intentMessages(prompt, PACKS);
   const est = buildEstimate(intentMsgs);
@@ -377,6 +401,9 @@ async function build(req: Request, env: Env, url: URL, later: (p: Promise<unknow
       upstream.abort();
     }
   };
+  // what the cache keeps: everything sent but a fallback
+  const tape: CachedEvent[] = [];
+  const keep = (event: CachedEvent["event"], data: unknown) => (tape.push({ event, data }), send(event, data));
 
   later(
     (async () => {
@@ -385,14 +412,24 @@ async function build(req: Request, env: Env, url: URL, later: (p: Promise<unknow
       let phase: "intent" | "fill" | "after" = "intent";
       let intentCost = est.intent;
       let fillCost = 0;
+      // for the cache: a safe intent, the gameplay layer closed (the client plays from there), the end reached
+      let safe = false;
+      let closed = false;
+      let done = false;
+      let lines = 0;
+      let firstMs = -1;
+      let intentRes: { ms: number; model: string } | undefined;
+      let writer = "";
       try {
-        const intentRes = await jsonLanes<unknown>(
+        const res = await jsonLanes<unknown>(
           lanesFor("intent", keys, { primary: sw.primary, messages: intentMsgs, jsonSchema: { name: "intent", schema: intentJsonSchema(PACKS.map((p) => p.id), ALL_SUBS) }, maxTokens: INTENT_MAX_OUT, signal: upstream.signal }),
         );
-        if (intentRes.inTok > 0) intentCost = costMicroUsd(intentRes.model, intentRes.inTok, intentRes.outTok);
-        if (intentRes.fellBack) await send("fallback", { job: "intent", to: intentRes.model });
-        const intent = settleIntent(prompt, v.parse(IntentOut, intentRes.value));
-        await send("intent", { intent, seed, ms: Date.now() - t0 });
+        intentRes = res;
+        if (res.inTok > 0) intentCost = costMicroUsd(res.model, res.inTok, res.outTok);
+        if (res.fellBack) await send("fallback", { job: "intent", to: res.model });
+        const intent = settleIntent(prompt, v.parse(IntentOut, res.value));
+        safe = intent.safety === "ok";
+        await keep("intent", { intent, seed, ms: Date.now() - t0 });
         if (intent.safety === "block") {
           await send("refusal", { message: "That one's outside what GHOSTRUN builds. Try a game, a place or a challenge." });
           return;
@@ -402,26 +439,34 @@ async function build(req: Request, env: Env, url: URL, later: (p: Promise<unknow
         phase = "fill";
         fillCost = est.fill;
         let buf = "";
-        let i = 0;
-        let firstMs = -1;
         let fillModel = "";
-        const stream = streamLanes(lanesFor("fill", keys, { primary: sw.primary, maxTokens: FILL_MAX_OUT, messages: fillMessages(prompt, intent, layout, EXAMPLE, seed), signal: upstream.signal }));
-        for await (const ev of stream) {
+        const fillLanes = lanesFor("fill", keys, { primary: sw.primary, maxTokens: FILL_MAX_OUT, messages: fillMessages(prompt, intent, layout, EXAMPLE, seed), signal: upstream.signal });
+        writer = fillLanes[0]?.model ?? "";
+        const line = async (text: string) => {
+          await keep("op", { i: lines++, line: text });
+          closed ||= closesGameplay(text);
+        };
+        for await (const ev of streamLanes(fillLanes)) {
           if (ev.type === "usage") [fillCost, fillModel] = [costMicroUsd(ev.model, ev.inTok, ev.outTok), ev.model];
-          if (ev.type === "fallback") await send("fallback", { job: "fill", ...ev });
+          if (ev.type === "fallback") {
+            writer = ev.to;
+            await send("fallback", { job: "fill", ...ev });
+          }
           if (ev.type === "first_token") firstMs = Date.now() - t0;
           if (ev.type !== "text") continue;
           buf += ev.delta;
           let nl: number;
           while ((nl = buf.indexOf("\n")) >= 0) {
-            const line = buf.slice(0, nl).trim();
+            const text = buf.slice(0, nl).trim();
             buf = buf.slice(nl + 1);
-            if (line) await send("op", { i: i++, line });
+            if (text) await line(text);
           }
         }
         phase = "after";
-        if (buf.trim()) await send("op", { i: i++, line: buf.trim() });
-        await send("done", { intentMs: intentRes.ms, fillFirstTokenMs: firstMs, totalMs: Date.now() - t0, lines: i, intentModel: intentRes.model, fillModel });
+        if (buf.trim()) await line(buf.trim());
+        writer = fillModel || writer;
+        await keep("done", { intentMs: res.ms, fillFirstTokenMs: firstMs, totalMs: Date.now() - t0, lines, intentModel: res.model, fillModel });
+        done = true;
       } catch (e) {
         if (e instanceof LlmError && e.status !== 200) {
           if (phase === "intent") intentCost = 0;
@@ -432,11 +477,15 @@ async function build(req: Request, env: Env, url: URL, later: (p: Promise<unknow
       } finally {
         await w.close().catch(() => undefined);
         await settle(intentCost + fillCost).catch(() => undefined);
+        // Kept only when clean: it reached done, or its client left once the gameplay layer was
+        // complete (the client stops reading there, so the cosmetic tail is never part of a world).
+        if (store && key && intentRes && safe && (done || (closed && gone))) {
+          if (!done) tape.push({ event: "done", data: { intentMs: intentRes.ms, fillFirstTokenMs: firstMs, totalMs: Date.now() - t0, lines, intentModel: intentRes.model, fillModel: writer } });
+          await writeCache(store, key, { v: 1, at: new Date(t0).toISOString(), intentModel: intentRes.model, fillModel: writer, events: tape }).catch(() => false);
+        }
       }
     })(),
   );
 
-  return new Response(readable, {
-    headers: { "content-type": "text/event-stream", "cache-control": "no-store", "x-accel-buffering": "no" },
-  });
+  return new Response(readable, { headers: SSE_HEADERS });
 }

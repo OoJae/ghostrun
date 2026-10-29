@@ -1,0 +1,286 @@
+{
+  "prompt": "A castle siege with bows: knock out the archers on the walls, then grab the banner",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "historical action (siege)",
+    "setting": "Medieval fortress walls with battlements and flagpoles",
+    "role": "Sieging archer",
+    "goal": "Knock out the enemy archers on the walls, then grab the banner",
+    "fail": "Get hit by a shot or fall from the walls before taking the banner",
+    "mood": "Gritty, tense, triumphant victory",
+    "pack": "arena",
+    "sub": [
+      "rooftop"
+    ],
+    "safety": "arcade",
+    "headline": "Walls need line-of-sight to knock out archers before climbing for the banner",
+    "nouns": [
+      {
+        "noun": "castle",
+        "hyper": "fortification"
+      },
+      {
+        "noun": "siege",
+        "hyper": "military assault"
+      },
+      {
+        "noun": "bows",
+        "hyper": "bow-and-arrow"
+      },
+      {
+        "noun": "archers",
+        "hyper": "ranged combatants"
+      },
+      {
+        "noun": "walls",
+        "hyper": "fortification barrier"
+      },
+      {
+        "noun": "banner",
+        "hyper": "flag"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.3,
+      "arousal": 0.7,
+      "tension": 0.8
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "6be559dbb932727ba2b06a7f1ad0d0a15bbcf4fe8575ffdb56ce4a46edde2363",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_siege",
+      "text": "Walls need line-of-sight to knock out archers before climbing for the banner",
+      "status": "counterexample",
+      "method": "static goal regression over rules + physics, 12 AI runners vs 2 bots"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 10 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (player enters banner) [after archer_west down to 0 HP, archer_east down to 0 HP]",
+        "src": ""
+      },
+      {
+        "id": "T2:r_knocked_out",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_knocked_out"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_knocked_out fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lose",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_lose: nothing produces touch on archer_west",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lose2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_lose2: nothing produces touch on archer_east",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_deck_center",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_deck_center"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 6,
+        "status": "verified",
+        "text": "r_secret_deck_center fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_deck_e",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_deck_e"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 10,
+        "status": "verified",
+        "text": "r_secret_deck_e fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_deck_w",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_deck_w"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_secret_deck_w fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_n",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_n"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 6,
+        "status": "verified",
+        "text": "r_secret_flank_n fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_s",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_s"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 6,
+        "status": "verified",
+        "text": "r_secret_flank_s fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_s_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_s_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_flank_s_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 0,
+        "src": "ai",
+        "ms": 4,
+        "status": "counterexample",
+        "text": "r_win fires exactly once",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "firings",
+          "text": "never fired when forced"
+        }
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "counterexample",
+        "method": "physics, 12 AI runners vs 2 bots",
+        "n": 12,
+        "k": 0,
+        "text": "no AI runner could win vs 2 bots",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "wins",
+          "text": "12 got stuck (in the North Tower ×12)"
+        },
+        "src": "",
+        "ms": 339
+      }
+    ],
+    "par": null,
+    "ms": 635
+  }
+}

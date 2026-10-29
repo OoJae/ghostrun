@@ -1,0 +1,398 @@
+{
+  "prompt": "Water balloon fight in a backyard, first to five hits",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "backyard water sport",
+    "setting": "A sunny suburban backyard with a lawn deck, a trampoline, rose beds and a small pond to block bullets",
+    "role": "A soaked kid in a swimsuit wielding a bucket and a water gun",
+    "goal": "Soak five opponents before they soak you back",
+    "fail": "You get hit five times before landing five throws",
+    "mood": "cheeky summer chaos",
+    "pack": "arena",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Backyard cover (trampoline + rose beds) decides which five-hit line wins",
+    "nouns": [
+      {
+        "noun": "water_balloon",
+        "hyper": "ammunition"
+      },
+      {
+        "noun": "backyard",
+        "hyper": "arena"
+      },
+      {
+        "noun": "trampoline",
+        "hyper": "cover"
+      },
+      {
+        "noun": "rose_bed",
+        "hyper": "cover"
+      },
+      {
+        "noun": "pond",
+        "hyper": "hazard"
+      },
+      {
+        "noun": "swimsuit",
+        "hyper": "attire"
+      },
+      {
+        "noun": "bucket",
+        "hyper": "resupply"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.7,
+      "arousal": 0.6,
+      "tension": 0.25
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "27f961df28f659ea00b716d8e9d31773d72a411ad9a9e41a113cf0d460654022",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_cover",
+      "text": "Backyard cover (trampoline + rose beds) decides which five-hit line wins",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners vs 4 bots"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 1,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 13 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 1,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (team:red reaches 5) ← r_score_red (npc_blue_1 shot by water_gun) [after holding water_gun] + r_score_red_2 (npc_blue_2 shot by water_gun) [after holding water_gun] + r_score_red_3 (npc_blue_3 shot by water_gun) [after holding water_gun] + r_score_red_4 (npc_blue_4 shot by water_gun) [after holding water_gun]",
+        "src": ""
+      },
+      {
+        "id": "T1:range:r_score_red",
+        "tier": "T1",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score_red"
+        },
+        "method": "line-of-sight range model (from ground the jump model reaches)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 41,
+        "status": "verified",
+        "text": "a shot reaches the kid: clear lines from as far as 15 m (range 15 m)",
+        "cx": null
+      },
+      {
+        "id": "T1:range:r_score_red_2",
+        "tier": "T1",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score_red_2"
+        },
+        "method": "line-of-sight range model (from ground the jump model reaches)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 43,
+        "status": "verified",
+        "text": "a shot reaches the kid: clear lines from as far as 15 m (range 15 m)",
+        "cx": null
+      },
+      {
+        "id": "T1:range:r_score_red_3",
+        "tier": "T1",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score_red_3"
+        },
+        "method": "line-of-sight range model (from ground the jump model reaches)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 44,
+        "status": "verified",
+        "text": "a shot reaches the kid: clear lines from as far as 14.99 m (range 15 m)",
+        "cx": null
+      },
+      {
+        "id": "T1:range:r_score_red_4",
+        "tier": "T1",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score_red_4"
+        },
+        "method": "line-of-sight range model (from ground the jump model reaches)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 45,
+        "status": "verified",
+        "text": "a shot reaches the kid: clear lines from as far as 14.99 m (range 15 m)",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lose",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_lose: nothing in the world hurts the player",
+        "cx": null
+      },
+      {
+        "id": "T2:r_score_blue",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score_blue"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_score_blue: nothing produces hit on water_gun",
+        "cx": null
+      },
+      {
+        "id": "T2:r_score_red",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score_red"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 28,
+        "status": "verified",
+        "text": "r_score_red fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_score_red_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score_red_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 23,
+        "status": "verified",
+        "text": "r_score_red_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_score_red_3",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score_red_3"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 21,
+        "status": "verified",
+        "text": "r_score_red_3 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_score_red_4",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score_red_4"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 0,
+        "src": "ai",
+        "ms": 26,
+        "status": "counterexample",
+        "text": "r_score_red_4 fires exactly once",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "firings",
+          "text": "never fired when forced"
+        }
+      },
+      {
+        "id": "T2:r_secret_center_n",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_center_n"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 17,
+        "status": "verified",
+        "text": "r_secret_center_n fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_center_s",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_center_s"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 18,
+        "status": "verified",
+        "text": "r_secret_center_s fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_deck_e",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_deck_e"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 19,
+        "status": "verified",
+        "text": "r_secret_deck_e fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_deck_w",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_deck_w"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 18,
+        "status": "verified",
+        "text": "r_secret_deck_w fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_n",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_n"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 16,
+        "status": "verified",
+        "text": "r_secret_flank_n fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_s",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_s"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 15,
+        "status": "verified",
+        "text": "r_secret_flank_s fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners vs 4 bots",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it vs 4 bots (AI par 7.1 s)",
+        "cx": null,
+        "src": "",
+        "ms": 1053
+      }
+    ],
+    "par": {
+      "goldS": 7.1,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 1659
+  }
+}

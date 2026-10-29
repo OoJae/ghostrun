@@ -39,6 +39,8 @@ function Sentence({ r, b, chip, onFocus }: { r: Rule; b: WorldBundle; chip: Chip
         <>{T(w.a)}{W("becomes")}{V(w.s)}</>
       ) : w.t === "timer_end" ? (
         <>{W("the timer")}{W("runs out")}</>
+      ) : w.t === "health_lte" ? (
+        <>{T(w.a || "anyone")}{w.n > 0 ? <>{W("drops to")}{V(`${w.n} HP`)}</> : W("is knocked out")}{w.b ? <>{W("by")}{T(w.b)}</> : null}</>
       ) : (
         <>{T(w.a || "anything")}{W(WHEN[w.t] ?? w.t)}{w.b ? T(w.b) : W("anything")}</>
       )}
@@ -67,6 +69,8 @@ function Sentence({ r, b, chip, onFocus }: { r: Rule; b: WorldBundle; chip: Chip
             <>{W("✨")}{V(e.fx)}</>
           ) : e.e === "teleport" ? (
             <>{W("send")}{T(e.target)}{W("to")}{T(String(e.v))}</>
+          ) : e.e === "damage" || e.e === "heal" ? (
+            <>{W(`${e.e === "damage" ? "−" : "+"}${e.n || Number(e.v) || 25} HP`)}{T(e.target)}</>
           ) : (
             <>{W(e.e === "destroy" ? "remove" : e.e)}{T(e.target)}</>
           )}

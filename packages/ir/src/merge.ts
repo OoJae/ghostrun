@@ -57,6 +57,25 @@ function restyle(lines: Line[], patch: Line, stats: MergeStats) {
   stats.replaced++;
 }
 
+const PLACED = new Set(["spawn", "goal", "ent", "npc"]);
+
+/**
+ * A thing a patch rewrites keeps what makes it that thing when the patch leaves it out: its kind (a
+ * goal rewritten as an ent line is still a goal) and its zone.
+ */
+function keepKind(old: Line, p: Line): Line {
+  if (!PLACED.has(old.op) || !PLACED.has(p.op)) return p;
+  try {
+    const o = JSON.parse(old.raw) as Record<string, unknown>;
+    const n = JSON.parse(p.raw) as Record<string, unknown>;
+    const kind = old.op === "ent" ? o.kind : old.op;
+    const add = { ...(p.op === "ent" && n.kind === undefined && typeof kind === "string" ? { kind } : {}), ...(n.zone === undefined && o.zone !== undefined ? { zone: o.zone } : {}) };
+    return Object.keys(add).length ? { ...p, raw: JSON.stringify({ ...n, ...add }) } : p;
+  } catch {
+    return p;
+  }
+}
+
 export function mergeFill(base: string, patch: string, opts: { edit?: boolean } = {}): { text: string; stats: MergeStats } {
   const lines = parse(base);
   const stats: MergeStats = { replaced: 0, added: 0, deleted: 0, ignored: 0, locked: 0 };
@@ -82,7 +101,7 @@ export function mergeFill(base: string, patch: string, opts: { edit?: boolean } 
     }
     const at = p.id ? lines.findIndex((l) => l.id === p.id && l.op !== "end") : -1;
     if (at >= 0) {
-      lines[at] = p;
+      lines[at] = keepKind(lines[at]!, p);
       stats.replaced++;
       continue;
     }

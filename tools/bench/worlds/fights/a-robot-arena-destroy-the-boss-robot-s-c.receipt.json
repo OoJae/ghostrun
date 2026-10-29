@@ -1,0 +1,252 @@
+{
+  "prompt": "A robot arena: destroy the boss robot's core while dodging its lasers",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "action shooter",
+    "setting": "metal industrial arena with cover obstacles and raised side decks",
+    "role": "combat drone operator",
+    "goal": "Survive the boss robot's laser barrage and destroy its core",
+    "fail": "Your drone is destroyed by the lasers",
+    "mood": "tense futuristic combat",
+    "pack": "arena",
+    "sub": [],
+    "safety": "arcade",
+    "headline": "Boss fight requires dodging laser sweeps to reach and destroy the core",
+    "nouns": [
+      {
+        "noun": "arena",
+        "hyper": "industrial combat zone"
+      },
+      {
+        "noun": "boss robot",
+        "hyper": "heavy defense construct"
+      },
+      {
+        "noun": "core",
+        "hyper": "central power node"
+      },
+      {
+        "noun": "lasers",
+        "hyper": "energy beams"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.3,
+      "arousal": 0.8,
+      "tension": 0.7
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "a20c85df66dc03688f30da966877334f6bd82343c301ed9ee8fa9be86399dcdd",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_boss_fight",
+      "text": "Boss fight requires dodging laser sweeps to reach and destroy the core",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners vs 2 bots"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 9 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win_core (player_drone knocked into core_goal)",
+        "src": ""
+      },
+      {
+        "id": "T2:r_boss_dead",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_boss_dead"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_boss_dead: nothing in the world wears boss_robot down",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lose_player",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_player"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_lose_player: nothing in the world wears player_drone down",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_deck_center",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_deck_center"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 8,
+        "status": "verified",
+        "text": "r_secret_deck_center fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_deck_center_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_deck_center_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 6,
+        "status": "verified",
+        "text": "r_secret_deck_center_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_deck_e",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_deck_e"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 8,
+        "status": "verified",
+        "text": "r_secret_deck_e fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_deck_e_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_deck_e_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_secret_deck_e_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_n",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_n"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 8,
+        "status": "verified",
+        "text": "r_secret_flank_n fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_s",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_s"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 8,
+        "status": "verified",
+        "text": "r_secret_flank_s fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win_core",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win_core"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_win_core fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners vs 2 bots",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it vs 2 bots (AI par 11.4 s)",
+        "cx": null,
+        "src": "",
+        "ms": 641
+      }
+    ],
+    "par": {
+      "goldS": 11.4,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 943
+  }
+}

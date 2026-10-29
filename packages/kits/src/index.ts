@@ -6,6 +6,7 @@ import { COMBAT } from "./combat";
 import { HAZARDS } from "./hazards";
 import { MOVEMENT } from "./movement";
 import { PUZZLE } from "./puzzle";
+import { VEHICLES } from "./vehicles";
 
 const CORE: VerbPlugin[] = [
   { id: "locomotion.jump", line: 'player jump; params {"jumpsMax":1-3}; also set the law line', on: ["player"], params: { jumpsMax: { def: 1, min: 1, max: 3 } } },
@@ -14,7 +15,7 @@ const CORE: VerbPlugin[] = [
   { id: "combat_sport.tag_drop", line: 'on "player": touching an enemy carrier knocks the item loose; params {"radius":0.5-3}', on: ["player"], params: { radius: { def: 1.2, min: 0.5, max: 3 } } },
 ];
 
-export const VERBS: readonly VerbPlugin[] = [...CORE, ...PUZZLE, ...HAZARDS, ...MOVEMENT, ...COMBAT];
+export const VERBS: readonly VerbPlugin[] = [...CORE, ...PUZZLE, ...HAZARDS, ...MOVEMENT, ...COMBAT, ...VEHICLES];
 
 const byId = new Map(VERBS.map((v) => [v.id, v]));
 
@@ -22,4 +23,6 @@ export function verb(id: string): VerbPlugin | undefined {
   return byId.get(id);
 }
 
-export { COMBAT, HAZARDS, MOVEMENT, PUZZLE };
+export { COMBAT, HAZARDS, MOVEMENT, PUZZLE, VEHICLES };
+export { DRIVE, FEEL, feelOf, gatesOf, progress, TRACK, VEHICLE_KINDS, type Feel, type VehicleKind } from "./vehicles";
+export { aim, BODY_HALF, BODY_RADIUS, HEALTH, MUZZLE_UP, segBody, segBox, SHOOT, SHOT_RADIUS } from "./combat";

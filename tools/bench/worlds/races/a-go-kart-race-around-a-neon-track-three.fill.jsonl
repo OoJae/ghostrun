@@ -1,0 +1,27 @@
+{"op":"meta","mode":"play","lang":"en","pack":"outdoor","sub":[],"seed":7,"look":"neon circuit","mood":[0.6,0.85,0.7],"timeOfDay":14,"weather":"clear"}
+{"op":"zone","id":"z_circuit","slot":"entrance","tag":"entrance","name":"Neon Track Start"}
+{"op":"spawn","id":"sp_player","zone":"z_circuit","anchor":"spawn_pad","team":"red"}
+{"op":"spawn","id":"sp_rival1","zone":"z_circuit","anchor":"guide","team":"blue"}
+{"op":"spawn","id":"sp_rival2","zone":"z_circuit","anchor":"sign","team":"blue"}
+{"op":"goal","id":"finish_line","zone":"z_circuit","anchor":"gate","noun":"finish line","hyper":"game end marker","team":"red"}
+{"op":"ent","id":"kart_player","kind":"vehicle","noun":"go-kart","hyper":"vehicle","zone":"z_circuit","anchor":"spawn_pad","body":"dynamic","shape":"box","size":[1.2,1.0,0.8]}
+{"op":"ent","id":"kart_rival1","kind":"vehicle","noun":"rival kart","hyper":"vehicle","zone":"z_circuit","anchor":"guide","body":"dynamic","shape":"box","size":[1.2,1.0,0.8]}
+{"op":"ent","id":"kart_rival2","kind":"vehicle","noun":"rival kart","hyper":"vehicle","zone":"z_circuit","anchor":"sign","body":"dynamic","shape":"box","size":[1.2,1.0,0.8]}
+{"op":"ent","id":"boost_pad","kind":"prop","noun":"boost pad","hyper":"boost","zone":"z_circuit","anchor":"corner_e","body":"fixed","shape":"box","size":[0.5,0.2,0.5]}
+{"op":"ent","id":"oil_spill","kind":"hazard","noun":"oil spill","hyper":"hazard","zone":"z_circuit","anchor":"corner_w","body":"sensor","shape":"box","size":[1.0,0.1,1.0]}
+{"op":"verb","id":"vb_drive_player","verb":"vehicle.drive","on":"kart_player","params":{"kind":"kart","speed":20,"driver":"player"}}
+{"op":"verb","id":"vb_drive_rival1","verb":"vehicle.drive","on":"kart_rival1","params":{"kind":"kart","speed":18,"driver":"npc"}}
+{"op":"verb","id":"vb_drive_rival2","verb":"vehicle.drive","on":"kart_rival2","params":{"kind":"kart","speed":18,"driver":"npc"}}
+{"op":"verb","id":"vb_track","verb":"racing.track","on":"finish_line","params":{"gates":"","laps":3}}
+{"op":"verb","id":"vb_boost","verb":"motion_hazards.oscillate","on":"boost_pad","params":{"axis":"z","travel":2,"period":4}}
+{"op":"verb","id":"vb_oil_hazard","verb":"motion_hazards.hazard","on":"oil_spill","params":{"respawn":true}}
+{"op":"verb","id":"vb_health_player","verb":"combat_sport.health","on":"player","params":{"hp":100,"respawn":false}}
+{"op":"rule","id":"r_win","when":{"t":"lap_done","a":"player","b":"finish_line","n":3},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose_health","when":{"t":"health_lte","a":"player","n":0},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose_oil","when":{"t":"hit","a":"player","b":"oil_spill"},"then":[{"e":"damage","target":"player","n":20}],"once":false}
+{"op":"expect","id":"x_race","prop":"win_reachable","a":"sp_player","b":"finish_line","headline":true,"text":"Three-lap neon circuit kart race against two rivals"}
+{"op":"law","player":{"jumpsMax":0,"jumpH":0,"speed":6}}
+{"op":"end","layer":"gameplay"}
+{"op":"npc","id":"rival_1","role":"rival","zone":"z_circuit","anchor":"guide","team":"blue","menu":["racer.race"],"dflt":"racer.race"}
+{"op":"npc","id":"rival_2","role":"rival","zone":"z_circuit","anchor":"sign","team":"blue","menu":["racer.race"],"dflt":"racer.race"}
+{"op":"end","layer":"cosmetic"}

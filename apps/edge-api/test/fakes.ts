@@ -32,7 +32,8 @@ export const INTENT = {
 
 export interface Upstream {
   intent?: { inTok: number; outTok: number; status?: number; body?: unknown };
-  fill?: { inTok: number; outTok: number; lines?: string[]; status?: number; usage?: boolean };
+  /** `paceMs`: stream the lines that far apart, stopping when the call is aborted (as a real stream does). */
+  fill?: { inTok: number; outTok: number; lines?: string[]; status?: number; usage?: boolean; paceMs?: number };
   /** Delay before Cerebras answers (to let a test cancel mid-flight). */
   delayMs?: number;
   /** The Claude fallback: the same intent and fill lines, over the Messages API. */
@@ -67,6 +68,7 @@ export function fakeFetch(up: Upstream = {}) {
       const chunks = lines.map((l) => `data: ${JSON.stringify({ choices: [{ delta: { content: `${l}\n` } }] })}\n\n`);
       if (f.usage !== false) chunks.push(`data: ${JSON.stringify({ choices: [], usage: { prompt_tokens: f.inTok, completion_tokens: f.outTok } })}\n\n`);
       chunks.push("data: [DONE]\n\n");
+      if (f.paceMs) return new Response(paced(chunks, f.paceMs, init?.signal), { headers: { "content-type": "text/event-stream" } });
       return new Response(chunks.join(""), { headers: { "content-type": "text/event-stream" } });
     }
     if (url.hostname === "api.anthropic.com") {
@@ -98,6 +100,21 @@ export function fakeFetch(up: Upstream = {}) {
   return { fn: fn as typeof fetch, hits, to: (host: string) => hits.filter((h) => new URL(h.url).hostname === host) };
 }
 
+/** SSE chunks one at a time, `ms` apart; an aborted call errors the body like a real fetch's. */
+function paced(chunks: string[], ms: number, signal?: AbortSignal | null): ReadableStream<Uint8Array> {
+  const enc = new TextEncoder();
+  return new ReadableStream({
+    async start(c) {
+      for (const ch of chunks) {
+        await new Promise((r) => setTimeout(r, ms));
+        if (signal?.aborted) return c.error(new DOMException("The operation was aborted.", "AbortError"));
+        c.enqueue(enc.encode(ch));
+      }
+      c.close();
+    },
+  });
+}
+
 /** A DO namespace whose only object runs the given governor in-process, behind the real wire protocol. */
 export function governorNs(gov: Governor, opts: { delayMs?: number } = {}): DoNamespace & { calls: string[] } {
   const call = localCall(gov);
@@ -119,13 +136,23 @@ export function governorNs(gov: Governor, opts: { delayMs?: number } = {}): DoNa
 /** A governor that never answers. */
 export const silentNs = (): DoNamespace => ({ idFromName: (n: string) => n, get: () => ({ fetch: () => new Promise<Response>(() => {}) }) });
 
-export function memR2(): R2Bucket & { objects: Map<string, string> } {
+export function memR2(): R2Bucket & { objects: Map<string, string>; meta: Map<string, Record<string, string>> } {
   const objects = new Map<string, string>();
+  const meta = new Map<string, Record<string, string>>();
   return {
     objects,
+    meta,
     get: async (k) => (objects.has(k) ? { text: async () => objects.get(k)! } : null),
     head: async (k) => (objects.has(k) ? {} : null),
-    put: async (k, value) => void objects.set(k, value),
+    put: async (k, value, o) => void (objects.set(k, value), o?.customMetadata && meta.set(k, o.customMetadata)),
+    // like R2: ascending key order, metadata only when asked for
+    list: async ({ prefix = "", limit = 1000, include = [] }) => ({
+      objects: [...objects.keys()]
+        .filter((k) => k.startsWith(prefix))
+        .sort()
+        .slice(0, limit)
+        .map((key) => ({ key, ...(include.includes("customMetadata") ? { customMetadata: meta.get(key) ?? {} } : {}) })),
+    }),
   };
 }
 

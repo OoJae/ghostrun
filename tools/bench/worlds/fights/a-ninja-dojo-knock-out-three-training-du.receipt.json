@@ -1,0 +1,206 @@
+{
+  "prompt": "A ninja dojo: knock out three training dummies with throwing stars, then beat the sensei",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "fighting",
+    "setting": "Ninja dojo",
+    "role": "ninja",
+    "goal": "Knock out three training dummies with throwing stars, then defeat the sensei",
+    "fail": "Falling unconscious before completing the trials",
+    "mood": "Disciplined and challenging",
+    "pack": "arena",
+    "sub": [],
+    "safety": "arcade",
+    "headline": "Clearing three dummies is the key to unlocking the final sensei fight",
+    "nouns": [
+      {
+        "noun": "ninja dojo",
+        "hyper": "martial arts training facility"
+      },
+      {
+        "noun": "throwing star",
+        "hyper": "shuriken"
+      },
+      {
+        "noun": "training dummy",
+        "hyper": "mugendo doll"
+      },
+      {
+        "noun": "sensei",
+        "hyper": "master"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.4,
+      "arousal": 0.6,
+      "tension": 0.6
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "a7d185794968a9c03d84e538b3dea87122f5a6579f369ead1cf03509151d9292",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_dojo",
+      "text": "Clearing three dummies is the key to unlocking the final sensei fight",
+      "status": "counterexample",
+      "method": "static goal regression over rules"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 1,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 7 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "chain",
+          "text": "win unreachable in the rule graph"
+        },
+        "ms": 1,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "counterexample",
+        "method": "static goal regression over rules",
+        "text": "no rule chain lets the player trigger the win",
+        "src": ""
+      },
+      {
+        "id": "T2:r_all_dummies_down",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_all_dummies_down"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_all_dummies_down: nothing in the world makes dummy1 'down'",
+        "cx": null
+      },
+      {
+        "id": "T2:r_dummy1_down",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_dummy1_down"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_dummy1_down: nothing in the world wears dummy1 down",
+        "cx": null
+      },
+      {
+        "id": "T2:r_dummy2_down",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_dummy2_down"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_dummy2_down: nothing in the world wears dummy2 down",
+        "cx": null
+      },
+      {
+        "id": "T2:r_dummy3_down",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_dummy3_down"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_dummy3_down: nothing in the world wears dummy3 down",
+        "cx": null
+      },
+      {
+        "id": "T2:r_player_fall",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_player_fall"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_player_fall: nothing in the world hurts the player",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_s",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_s"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 11,
+        "status": "verified",
+        "text": "r_secret_flank_s fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_sensei_defeat",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_sensei_defeat"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_sensei_defeat: nothing in the world wears sensei down",
+        "cx": null
+      }
+    ],
+    "par": null,
+    "ms": 281
+  }
+}

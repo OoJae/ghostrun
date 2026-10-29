@@ -16,6 +16,7 @@ import type { LookStyle } from "./looks";
 import { buildScenery, type Scenery } from "./scenery";
 import { SIGN_STYLE, signMaterial, signText } from "./sign";
 import { sunDirection } from "./sky";
+import { vehicleActor } from "./vehicles";
 import { verb } from "@ghostrun/kits";
 
 export interface WorldView {
@@ -264,6 +265,7 @@ export function buildWorldView(bundle: WorldBundle, look: LookStyle): WorldView 
     if (first && !initial.has(v.on)) initial.set(v.on, first);
   }
   const kits = new Map<string, KitActor>();
+  const spawnTeam = (bundle.entities.find((e) => e.kind === "spawn" && e.team === "red") ?? bundle.entities.find((e) => e.kind === "spawn"))?.team || "red";
 
   for (const e of bundle.entities) {
     if (e.tags.includes("area")) continue; // an invisible sensor covering a zone ("when you enter the vault")
@@ -373,6 +375,14 @@ export function buildWorldView(bundle: WorldBundle, look: LookStyle): WorldView 
         const g = character(e, npcBody, TEAM_HEX[e.team] ?? PALETTE.cyan, 4);
         npcShadows.push([g, blob(e.pos[0], e.pos[1] - e.size[1] / 2, e.pos[2])]);
         obj = g;
+        break;
+      }
+      case "vehicle": {
+        // a kart, a car, a boat…: the kind its drive verb names
+        // (painted in the team of whoever starts at its wheel: yours, when it has none)
+        const drive = bundle.verbs.find((v) => v.verb === "vehicle.drive" && v.on === e.id);
+        const team = e.team || (drive?.params.driver === "player" ? (spawnTeam as Entity["team"]) : "");
+        obj = vehicleActor({ ...e, team }, String(drive?.params.kind ?? "car"), { keep });
         break;
       }
       default: {

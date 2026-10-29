@@ -1,0 +1,34 @@
+a-castle-siege-with-bows-knock-out-the-a play   ctrl 10  headline counterexample T3 0/12  par -  ✗ T2:r_win T3:win
+  · fill line 8: invalid — kind: Invalid key: Expected "kind" but received undefined
+  · fill line 24: unresolved — 'rule' references an id that never arrived
+  round 1: REPAIRED in 1406 ms ({"replaced":1,"added":1,"deleted":0,"ignored":0,"locked":0}) → play   ctrl 10  headline counterexample T3 -  par -  ✗ T0:win_chain
+    ? Rule r_win never fired when forced when its trigger is forced: fix its trigger, conditions or the verb that should cause it.
+    ? AI runners could not win in 2 minutes of play (12 got stuck (in the North Tower ×12)). Make the objective reachable on foot or within the allowed jumps, and mak
+  · fill line 8: invalid — kind: Invalid key: Expected "kind" but received undefined
+  · fill line 24: unresolved — 'rule' references an id that never arrived
+  round 2: rejected in 1046 ms ({"replaced":0,"added":2,"deleted":0,"ignored":0,"locked":0}) → play   ctrl 10  headline counterexample T3 -  par -  ✗ T0:win_chain
+    ? No chain of rules lets the player win (no rule ever wins the game). Add or fix a win rule that depends on the objective.
+    ? The world has no winnable objective the AI runners could play.
+a-cowboy-showdown-in-a-desert-town-outdr play   ctrl  6  headline verified       T3 12/12  par 9.7  
+a-ninja-dojo-knock-out-three-training-du play   ctrl  7  headline counterexample T3 12/12  par 1.2  ✗ T3:too_easy
+  round 1: rejected in 1577 ms ({"replaced":8,"added":2,"deleted":0,"ignored":0,"locked":0}) → play   ctrl  7  headline counterexample T3 12/12  par 1.1  ✗ T2:r_dummy2_down T3:too_easy
+    ? AI runners win in 1.2 s without engaging the world: the win does not depend on the objective. sensei_duel is in z_dojo (slot midfield), 11 m from the spawn; doo
+a-pirate-ship-battle-fire-the-cannons-at play   ctrl  9  headline verified       T3 12/12  par 7.6  
+a-robot-arena-destroy-the-boss-robot-s-c play   ctrl 10  headline verified       T3 12/12  par 8.1  
+a-space-station-shooter-blast-the-securi play   ctrl 10  headline counterexample T3 0/12  par -  ✗ T3:win
+  round 1: rejected in 5207 ms ({"replaced":0,"added":7,"deleted":0,"ignored":0,"locked":0}) → play   ctrl 10  headline counterexample T3 0/12  par -  ✗ T3:win
+    ? AI runners could not win in 2 minutes of play (12 got stuck (in the Docking bay ×12)). Make the objective reachable on foot or within the allowed jumps, and mak
+a-wizard-duel-on-a-floating-island-throw play   ctrl 10  headline verified       T3 12/12  par 6.5  
+defend-the-crystal-monsters-attack-the-c play   ctrl  7  headline verified       T3 12/12  par 60  
+laser-tag-in-a-neon-warehouse-red-team-a play   ctrl 10  headline counterexample T3 -  par -  ✗ T0:win_chain
+  · fill line 24: unresolved — 'rule' references an id that never arrived
+  · fill line 25: unresolved — 'rule' references an id that never arrived
+  · fill line 32: invalid — noun: Invalid key: Expected "noun" but received undefined
+  · fill line 33: invalid — prompt: Invalid key: Expected "prompt" but received undefined
+  · fill line 34: invalid — prompt: Invalid key: Expected "prompt" but received undefined
+  round 1: rejected in 949 ms ({"replaced":2,"added":3,"deleted":0,"ignored":0,"locked":0}) → play   ctrl 10  headline counterexample T3 -  par -  ✗ T0:win_chain
+    ? No chain of rules lets the player win (no rule chain lets the player trigger the win). Add or fix a win rule that depends on the objective.
+    ? The world has no winnable objective the AI runners could play.
+paintball-in-a-forest-two-teams-most-hit play   ctrl 10  headline verified       T3 12/12  par 90  
+water-balloon-fight-in-a-backyard-first- play   ctrl  9  headline verified       T3 12/12  par 22  
+zombie-survival-in-an-abandoned-mall-kno play   ctrl 10  headline verified       T3 12/12  par 17.1  

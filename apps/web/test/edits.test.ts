@@ -4,7 +4,7 @@ import { loadNavNode } from "@ghostrun/nav/node";
 import { prove } from "@ghostrun/proof";
 import type { Rapier } from "@ghostrun/sim";
 import { loadRapierNode } from "@ghostrun/sim/node";
-import type { Chip, Receipt } from "@ghostrun/proof";
+import type { Band, Chip, Receipt } from "@ghostrun/proof";
 import { changeSummary, editedPrompt, HARDER, intentFor, pickHarder, receiptDelta } from "../src/edits";
 import { buildWorld, ENGINE_HASH, worldFromFill } from "../src/pipeline";
 
@@ -84,5 +84,23 @@ describe("harder but fair: the race's judge", () => {
     expect(pickHarder(before, [envelope]).verdicts).toEqual(["A: too hard or broken (par 20 → 30 s, 12 of 12 runners won, fails T3:envelope)"]);
     expect(HARDER.test("make it harder but fair")).toBe(true);
     expect(HARDER.test("make it night")).toBe(false);
+  });
+
+  it("with the playtest's bands, prefers the one a band harder that the experts still win 10 of 12", () => {
+    const banded = (k: number, par: number, band: Band): Receipt => ({ ...receipt(k, par), playtest: { levels: [], band, trails: [], steps: [], ms: 0 } });
+    const before = banded(12, 20, "Normal");
+    // B is slower but two bands up; C is one band up with 11 of 12 experts; D one band up with 9 of 12
+    const { best, verdicts } = pickHarder(before, [banded(12, 20.4, "Normal"), banded(12, 32, "Expert only"), banded(11, 24, "Hard"), banded(9, 30, "Hard")]);
+    expect(best).toBe(2);
+    expect(verdicts).toEqual([
+      "A: not harder (par 20 → 20.4 s, 12 of 12 runners won, Normal → Normal)",
+      "B: harder and fair (par 20 → 32 s, 12 of 12 runners won, Normal → Expert only)",
+      "C: harder and fair (par 20 → 24 s, 11 of 12 runners won, Normal → Hard)",
+      "D: harder and fair (par 20 → 30 s, 9 of 12 runners won, Normal → Hard)",
+    ]);
+    // the same par and win rate, only the band moved: that is harder too
+    expect(pickHarder(before, [banded(12, 20.4, "Hard")]).best).toBe(0);
+    // no band for the world itself (its playtest hadn't landed): the numbers decide, as before
+    expect(pickHarder(receipt(12, 20), [banded(12, 32, "Expert only"), banded(11, 24, "Hard")]).best).toBe(0);
   });
 });

@@ -30,6 +30,8 @@ export interface PackLayout {
   /** Largest footprint (m) a solid prop may have here, so a placed prop never seals a corridor. */
   maxProp?: number;
   notes: string[]; // e.g. "orrery: distances scaled"
+  /** A race loop: points on open ground, in order (the placer puts a race's line and gates there; drivers find their way between them), and how wide a gate is. */
+  track?: { points: Vec3[]; width: number };
 }
 
 export interface GenerateInput<P extends Params = Params> {
@@ -83,6 +85,36 @@ export interface VerbCtx {
   /** Its carrier lets go of `item`; it lands at `p`, and the carrier can't grab it back for a second. */
   release(item: string, p: Vec3): void;
   setCheckpoint(id: string, p: Vec3): void;
+  /** Characters: the way it faces on the ground (unit x, z): the way it last pushed the stick. */
+  facing(id: string): readonly [number, number];
+  /** Characters: horizontal velocity this tick, m/s (0, 0 for anything else). */
+  vel(id: string): readonly [number, number];
+  /** Nothing solid (a static, a closed door, a fixed prop) between the two points? `ignore`: the target itself. */
+  los(from: Vec3, to: Vec3, ignore?: string): boolean;
+  /** Launch a projectile; the sim marches it every tick and resolves what it hits. */
+  fire(s: Shot): void;
+  /** Takes n hit points from something that has them (a thrown star landing); nothing for anything else. */
+  hurt(id: string, n: number, by: string): void;
+  /** Characters: get in `vehicle` and drive it (null: get out, beside it). False when it can't be done. */
+  ride(agent: string, vehicle: string | null): boolean;
+  /** The vehicle a character is driving, or "" (and how fast it goes, m/s). */
+  riding(agent: string): { vehicle: string; speed: number };
+}
+
+/** A projectile in flight (fixed-step, deterministic): it hits the first character or target on its line. */
+export interface Shot {
+  /** Who fired it (never hit by it, nor are its teammates). */
+  by: string;
+  /** What hit says it was hit by: the weapon's entity, or the shooter for an innate one (a spell). */
+  weapon: string;
+  from: Vec3;
+  /** Unit direction. */
+  dir: Vec3;
+  speed: number;
+  range: number;
+  damage: number;
+  /** Things besides characters it can hit (dummies, cans, crystals). */
+  at: readonly string[];
 }
 
 export interface VerbEnt {
@@ -111,11 +143,13 @@ export type Cause =
   | { do: "enter"; at: string } // move into `at`
   | { do: "touch"; at: string } // touch `at` (it is collected or inspected)
   | { do: "throw"; item: string } // carry `item` within range of a rival and press USE
-  | { do: "shove"; at: string }; // get beside `at` (a character) and press USE
+  | { do: "shove"; at: string } // get beside `at` (a character) and press USE
+  | { do: "drive"; track: string; vehicle?: string } // in `vehicle` (got into first), drive the gates of the track bound on `track` in order, lap after lap
+  | { do: "shoot"; at: string; weapon?: string }; // in range of `at` ('' any rival) with a clear line, face it and press USE (holding `weapon`)
 
 /** An event a bound verb can produce. `cause` null: no agent causes it (a timer running out). */
 export interface Produces {
-  k: "state" | "touch" | "hit" | "timer_end" | "enter" | "exit";
+  k: "state" | "touch" | "hit" | "timer_end" | "enter" | "exit" | "lap_done";
   a: string;
   b?: string;
   s?: string;
@@ -145,7 +179,13 @@ export interface VerbPlugin {
    * USE within `radius` of the bound entity runs this; the HUD shows `label` ("flip switch").
    * Return false when it refused (a lock without its key); otherwise the sim logs touch a=actor b=it.
    */
-  use?: { radius: number; label: string; run(c: VerbCtx, b: Bound, actor: string): boolean | void };
+  use?: {
+    radius: number;
+    label: string;
+    run(c: VerbCtx, b: Bound, actor: string): boolean | void;
+    /** Using it touches nothing (firing a weapon): the sim logs no touch for it. */
+    quiet?: boolean;
+  };
   init?(c: VerbCtx, b: Bound): void;
   /** Once per tick after physics, in binding-id order. */
   tick?(c: VerbCtx, b: Bound): void;

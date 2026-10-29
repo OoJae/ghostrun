@@ -1,0 +1,23 @@
+{"op":"meta","mode":"play","lang":"en","pack":"outdoor","sub":[],"seed":7,"look":"floating island duel","mood":[0.4,0.9,0.6],"timeOfDay":14,"weather":"windy"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"outside","name":"Island dock"}
+{"op":"zone","id":"z_center","slot":"clearing","tag":"outside","name":"Central arena"}
+{"op":"zone","id":"z_west","slot":"clearing_w","tag":"outside","name":"West platform"}
+{"op":"zone","id":"z_east","slot":"clearing_e","tag":"outside","name":"East platform"}
+{"op":"spawn","id":"sp_red","zone":"z_entrance","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"win_goal","zone":"z_center","anchor":"center","noun":"rival mage defeat","hyper":"goal","team":"red"}
+{"op":"ent","id":"fireball","kind":"pickup","noun":"fireball","hyper":"fireball","zone":"z_center","anchor":"center_n","body":"dynamic","shape":"sphere","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"rival_mage","kind":"npc","noun":"Rival Mage","hyper":"mage","zone":"z_center","anchor":"center_s","body":"kinematic","shape":"capsule","team":"blue","hp":200}
+{"op":"ent","id":"wind_gust","kind":"hazard","noun":"strong wind","hyper":"wind","zone":"z_center","anchor":"center","body":"sensor","shape":"box","size":[5,2,5]}
+{"op":"ent","id":"platform_w","kind":"prop","noun":"rock platform","hyper":"platform","zone":"z_west","anchor":"spawn_pad","body":"fixed","shape":"box","size":[3,0.5,3]}
+{"op":"ent","id":"platform_e","kind":"prop","noun":"rock platform","hyper":"platform","zone":"z_east","anchor":"spawn_pad","body":"fixed","shape":"box","size":[3,0.5,3]}
+{"op":"verb","id":"vb_carry_fireball","verb":"physics_props.carry","on":"fireball","params":{}}
+{"op":"verb","id":"vb_shoot_fireball","verb":"combat_sport.shoot","on":"fireball","params":{"range":15,"speed":30,"damage":50,"cooldown":1,"at":"rival_mage"}}
+{"op":"verb","id":"vb_wind","verb":"motion_hazards.wind","on":"wind_gust","params":{"x":8,"z":0}}
+{"op":"verb","id":"vb_player_jump","verb":"locomotion.jump","on":"player","params":{"jumpsMax":2}}
+{"op":"rule","id":"r_win","when":{"t":"health_lte","a":"rival_mage","n":0},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose_player","when":{"t":"health_lte","a":"player","n":0},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_fall","when":{"t":"enter","a":"player","b":"wind_gust"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"expect","id":"x_arena","prop":"win_reachable","a":"sp_red","b":"win_goal","headline":true,"text":"Floating arena requires precise aerial positioning"}
+{"op":"end","layer":"gameplay"}
+{"op":"npc","id":"rival_npc","role":"rival","zone":"z_center","anchor":"center_s","team":"blue","menu":["combat_sport.shoot"],"dflt":"combat_sport.shoot"}
+{"op":"end","layer":"cosmetic"}

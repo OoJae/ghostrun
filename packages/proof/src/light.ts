@@ -1,6 +1,10 @@
 // The proof's light half: labels and repair issues, without the simulation. The web shell imports
 // this so its first chunk stays small; the ladder itself (T0–T3) runs in the proof worker.
-export { chipLine, fraction, statusWord } from "./labels";
+export { bandLine, bandMethod, bandSaid, chipLine, clock, failLine, fightLine, fraction, paceLine, statusWord, timesLine } from "./labels";
 export { badness, better, issuesOf } from "./issues";
-export type { Chip, ChipStatus, Counterexample, Receipt, Tier, Trail } from "./types";
+export type { Band, Chip, ChipStatus, Counterexample, Fall, Level, Playtest, Receipt, Tier, Trail } from "./types";
 export { insights, type Insights } from "./insights";
+// the playtest report reads the receipt it already has (the runs themselves played in the worker)
+export { allRuns, BANDS, bandOf, reportLines, revealed, type FailSpot, type FightSpot, type Heat, type Revealed } from "./revealed";
+// racing a ghost reads the player's progress on the main thread (no simulation imports in there)
+export { GHOST_EVERY, Progress, secretsOf, type Ghost, type ProgressSim } from "./ghost";

@@ -97,6 +97,8 @@ export const cityBlock: LayoutPack<CityBlockParams> = {
       zones,
       statics,
       cameraBounds: { min: [-L, -1, -D], max: [L, 20, D] },
+      // a street race loop: the line in the plaza, out past the kiosks at either end and back the other side
+      track: { points: [[0, 0, -6], [L - 6, 0, -8], [L - 6, 0, 8], [0, 0, 6], [-(L - 6), 0, 8], [-(L - 6), 0, -8]], width: 7 },
       notes,
     };
   },

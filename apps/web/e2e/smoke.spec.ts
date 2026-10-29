@@ -635,7 +635,7 @@ test("where the runners went: the receipt shows the AI runners' routes and what 
   await expect(page.getByTestId("proof-badge")).toContainText("Rooftop lane needs double jump: verified", { timeout: 60_000 });
   await page.keyboard.press("KeyP");
   const routes = page.getByTestId("routes");
-  await expect(routes).toContainText("12 AI runs");
+  await expect(routes).toContainText(/\b(12|24) AI runs/); // the experts', then with the playtest's novice and average runs
   await expect(routes).toContainText("Most time: near the");
   await page.getByTestId("routes-toggle").click();
   await expect(page.getByTestId("routes-toggle")).toHaveText("Hide the runners' routes");

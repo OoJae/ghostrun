@@ -1,0 +1,32 @@
+{"op":"meta","mode":"play","lang":"en","pack":"arena","sub":[],"seed":9,"look":"neon warehouse","mood":[0.8,0.9,0.6],"timeOfDay":22,"weather":"clear"}
+{"op":"zone","id":"z_midfield","slot":"midfield","tag":"arena","name":"Central arena"}
+{"op":"zone","id":"z_west","slot":"west_half","tag":"base","name":"Red base"}
+{"op":"zone","id":"z_east","slot":"east_half","tag":"base","name":"Blue base"}
+{"op":"zone","id":"z_north","slot":"north_deck","tag":"platform","name":"Upper platform"}
+{"op":"zone","id":"z_south","slot":"south_deck","tag":"platform","name":"Lower platform"}
+{"op":"spawn","id":"sp_red","zone":"z_west","anchor":"spawn_pad","team":"red"}
+{"op":"spawn","id":"sp_blue","zone":"z_east","anchor":"spawn_pad","team":"blue"}
+{"op":"goal","id":"goal_red","zone":"z_west","anchor":"goal_ring","noun":"red score","hyper":"score","team":"red"}
+{"op":"goal","id":"goal_blue","zone":"z_east","anchor":"goal_ring","noun":"blue score","hyper":"score","team":"blue"}
+{"op":"ent","id":"crate_1","kind":"prop","noun":"glowing crate","hyper":"crate","zone":"z_midfield","anchor":"center","body":"fixed","shape":"box","size":[1,1,1]}
+{"op":"ent","id":"crate_2","kind":"prop","noun":"glowing crate","hyper":"crate","zone":"z_midfield","anchor":"flank_n","body":"fixed","shape":"box","size":[1,1,1]}
+{"op":"ent","id":"crate_3","kind":"prop","noun":"glowing crate","hyper":"crate","zone":"z_midfield","anchor":"flank_s","body":"fixed","shape":"box","size":[1,1,1]}
+{"op":"ent","id":"laser_grid","kind":"hazard","noun":"laser grid","hyper":"laser","zone":"z_midfield","anchor":"center_n","body":"sensor","shape":"box","size":[5,0.2,5]}
+{"op":"ent","id":"jump_pad","kind":"plate","noun":"jump pad","hyper":"pad","zone":"z_north","anchor":"deck_center","body":"sensor","shape":"box","size":[1,0.2,1]}
+{"op":"verb","id":"vb_shoot","verb":"combat_sport.shoot","on":"player","params":{"range":25,"speed":30,"damage":10,"cooldown":0.5,"at":""}}
+{"op":"verb","id":"vb_jump","verb":"locomotion.jump","on":"player","params":{"jumpsMax":2}}
+{"op":"verb","id":"vb_jump_pad","verb":"locomotion.jump_pad","on":"jump_pad","params":{"height":5}}
+{"op":"verb","id":"vb_inspect_crate1","verb":"social.inspect","on":"crate_1","params":{"text":"A crate humming with hidden power."}}
+{"op":"verb","id":"vb_inspect_crate2","verb":"social.inspect","on":"crate_2","params":{"text":"A crate buzzing with electric charge."}}
+{"op":"verb","id":"vb_inspect_crate3","verb":"social.inspect","on":"crate_3","params":{"text":"A crate flashing neon lights."}}
+{"op":"verb","id":"vb_laser_hazard","verb":"motion_hazards.hazard","on":"laser_grid","params":{"respawn":true}}
+{"op":"rule","id":"r_tag_red","when":{"t":"hit","a":"player","b":"opponent"},"if":[{"l":"opponent.team","op":"eq","r":"blue"}],"then":[{"e":"score","target":"team:red","n":1}],"once":false}
+{"op":"rule","id":"r_tag_blue","when":{"t":"hit","a":"player","b":"opponent"},"if":[{"l":"opponent.team","op":"eq","r":"red"}],"then":[{"e":"score","target":"team:blue","n":1}],"once":false}
+{"op":"rule","id":"r_win_red","when":{"t":"score_gte","a":"team:red","n":10},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose_red","when":{"t":"score_gte","a":"team:blue","n":10},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"expect","id":"x_tag","prop":"win_reachable","a":"sp_red","b":"goal_red","headline":true,"text":"Neon warehouse arena requires line-of-sight tactical play for first to 10 tags"}
+{"op":"end","layer":"gameplay"}
+{"op":"dress","id":"d_neon","type":"lighting","params":{"color":"#ff00ff","intensity":1.2}}
+{"op":"poster","id":"p_tag_rules","slot":0,"text":"First to 10 tags wins. Stay in line of sight!"}
+{"op":"poster","id":"p_tag_rules","slot":2,"text":"Red vs Blue – Tag your opponents!"}
+{"op":"end","layer":"cosmetic"}

@@ -1,0 +1,290 @@
+{
+  "prompt": "A hovercraft race through a sci-fi tunnel, boost past the drones",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "racing",
+    "setting": "Sci-fi tunnel with hovering drones",
+    "role": "Pilot a hovercraft",
+    "goal": "Race through the tunnel and boost past the drones before the timer runs out",
+    "fail": "Collide with a drone or run out of time",
+    "mood": "Fast, neon-lit, high-tension sci-fi action",
+    "pack": "course",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Hovercraft must boost to pass timed drone gates",
+    "nouns": [
+      {
+        "noun": "hovercraft",
+        "hyper": "vehicle"
+      },
+      {
+        "noun": "tunnel",
+        "hyper": "environment"
+      },
+      {
+        "noun": "drone",
+        "hyper": "obstacle"
+      },
+      {
+        "noun": "boost",
+        "hyper": "mechanic"
+      },
+      {
+        "noun": "race",
+        "hyper": "gameplay"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.75,
+      "arousal": 0.9,
+      "tension": 0.7
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "b0a523495d2f7cce189981e9bff0f8b7b397a9e5eb63fc5296ba63550f27c5cf",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_race",
+      "text": "Hovercraft must boost to pass timed drone gates",
+      "status": "counterexample",
+      "method": "static goal regression over rules + physics, 12 AI runners vs 2 bots + physics, 3 menu schedules × 3 runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 7 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (lap 1 done) ← drive hovercraft through 5 gates and finish ×1",
+        "src": ""
+      },
+      {
+        "id": "T1:drive:finish",
+        "tier": "T1",
+        "subject": {
+          "kind": "world",
+          "id": "finish"
+        },
+        "method": "drivability model (ground a vehicle drives to, turning circle, top speed)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 19,
+        "status": "counterexample",
+        "text": "a hovercraft can drive every gate",
+        "cx": {
+          "where": [
+            0,
+            0.8,
+            2
+          ],
+          "have": 0,
+          "need": 1,
+          "unit": "route",
+          "text": "no ground a hovercraft can drive reaches the checkpoint 1"
+        }
+      },
+      {
+        "id": "T1:laps:r_win",
+        "tier": "T1",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "race-time model (laps × the shortest lap ÷ top speed with boost)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 19,
+        "status": "verified",
+        "text": "1 lap fit the 120 s clock",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lose_hit_1",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_hit_1"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_lose_hit_1 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lose_hit_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_hit_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_lose_hit_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lose_hit_3",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_hit_3"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_lose_hit_3 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lose_hit_4",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_hit_4"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_lose_hit_4 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lose_hit_5",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_hit_5"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_lose_hit_5 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lose_time",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_time"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_lose_time fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "counterexample",
+        "method": "physics, 12 AI runners vs 2 bots",
+        "n": 12,
+        "k": 0,
+        "text": "no AI runner could win vs 2 bots",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "wins",
+          "text": "12 lost (the timer ran out ×12)"
+        },
+        "src": "",
+        "ms": 11432
+      },
+      {
+        "id": "T3:envelope",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "counterexample",
+        "method": "physics, 3 menu schedules × 3 runners",
+        "n": 9,
+        "k": 0,
+        "text": "a choice the cast's minds can make stops every runner",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "wins",
+          "text": "if racer_1 plays racer.race, racer_2 plays racer.race, no runner wins"
+        },
+        "src": "",
+        "ms": 14186
+      }
+    ],
+    "par": null,
+    "ms": 26144
+  }
+}

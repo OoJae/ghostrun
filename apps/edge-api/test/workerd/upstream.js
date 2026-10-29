@@ -1,6 +1,6 @@
 // The Worker's globalOutbound in the workerd test: every fetch() the edge makes lands here.
-// Fakes Cerebras (JSON intent + SSE fill, both with usage; busy for a "busy lane" prompt), the Claude
-// fallback's SSE fill, Turnstile siteverify (the documented
+// Fakes Cerebras (JSON intent + SSE fill, both with usage; busy for a "busy lane" prompt), Claude (JSON
+// or the fallback's SSE fill), Turnstile siteverify (the documented
 // test-secret behaviour) and ntfy, and logs what it saw at GET /__log on its own socket.
 const log = [];
 
@@ -25,6 +25,7 @@ export default {
       return new Response(`${sse}data: ${JSON.stringify({ choices: [], usage: { prompt_tokens: 3000, completion_tokens: 1500 } })}\n\ndata: [DONE]\n\n`, { headers: { "content-type": "text/event-stream" } });
     }
     if (url.hostname === "api.anthropic.com") {
+      if (!JSON.parse(body).stream) return Response.json({ content: [{ type: "text", text: JSON.stringify(INTENT) }], stop_reason: "end_turn", usage: { input_tokens: 1000, output_tokens: 200 } });
       const events = [
         { type: "message_start", message: { usage: { input_tokens: 4000 } } },
         ...LINES.map((l) => ({ type: "content_block_delta", index: 0, delta: { type: "text_delta", text: `${l}\n` } })),

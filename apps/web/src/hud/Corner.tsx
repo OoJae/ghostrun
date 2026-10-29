@@ -36,6 +36,9 @@ export function KeyHint({ visible, sound = false }: { visible: boolean; sound?: 
           <span className="sep">·</span>
         </>
       )}
+      <kbd>H</kbd>
+      <span>ghost</span>
+      <span className="sep">·</span>
       <span>drag to orbit</span>
     </div>
   );

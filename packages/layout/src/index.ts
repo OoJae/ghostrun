@@ -2,7 +2,7 @@
 // The LLM chooses relations (zone + anchor), never coordinates (Holodeck/LayoutVLM lesson).
 import { stream } from "@ghostrun/detmath";
 import { groupMembers, type Effect, type Entity, type Rule, type Static, type Vec3, type VerbBinding, type WorldBundle, type Zone } from "@ghostrun/ir";
-import { verb } from "@ghostrun/kits";
+import { DRIVE, HEALTH, SHOOT, TRACK, verb } from "@ghostrun/kits";
 import type { PackLayout, ZoneSpec } from "@ghostrun/plugin-api";
 
 /** Default physical sizes per entity kind, used when the fill gives none (all metres). */
@@ -244,8 +244,8 @@ export function placeWorld(input: WorldBundle, layout: PackLayout): PlaceResult 
     }
   }
   // wins first: a win rule the repairs add (reach the goal) gets the same trigger and verb repairs
-  notes.push(...repairDoubleDoors(b), ...repairSpawnRefs(b), ...repairGroups(b), ...repairRingOut(b, bound), ...repairAreas(b, bound), ...repairKits(b), ...repairConditions(b), ...repairWin(b), ...repairTriggers(b), ...repairVerbs(b), ...repairExpects(b));
-  notes.push(...addRivals(b), ...repairDeliveries(b, layout, bound), ...addSecrets(b, layout, bound));
+  notes.push(...repairDoubleDoors(b), ...repairSpawnRefs(b), ...repairGroups(b), ...repairRingOut(b, bound), ...repairAreas(b, bound), ...repairCombat(b), ...repairKits(b), ...repairConditions(b), ...repairRace(b, layout), ...repairWin(b), ...repairTriggers(b), ...repairVerbs(b), ...repairExpects(b));
+  notes.push(...addRivals(b), ...placeRace(b, layout, bound), ...repairDeliveries(b, layout, bound), ...addSecrets(b, layout, bound));
   return { bundle: b, notes };
 }
 
@@ -287,34 +287,218 @@ export function repairDeliveries(b: WorldBundle, layout: PackLayout, bound: Map<
     const item = b.entities.find((e) => e.id === r.when.a);
     const place = b.entities.find((e) => e.id === r.when.b);
     if (!item || !place || item.kind === "npc" || !inside(item.pos, place)) continue;
+    const best = freeAnchor(item, (p) => inside(p, place));
+    if (!best) continue;
+    notes.push(`${item.id}: started inside ${place.id}, where it must be carried: moved to ${best.zone}:${best.anchor}`);
+    moveTo(item, best);
+  }
+  // something you need (a pickup, something to use) never starts inside a place you lose by entering
+  // (the only wand in the middle of the fall zone): it moves to the nearest free anchor outside them all
+  const losing = b.entities.filter((s) => s.body === "sensor" && b.rules.some((r) => r.when.t === "enter" && r.when.a === "player" && r.when.b === s.id && r.then.some((e) => e.e === "lose")));
+  for (const item of losing.length ? b.entities : []) {
+    const needed = item.kind === "pickup" || b.verbs.some((v) => v.on === item.id && verb(v.verb)?.use);
+    const zone = needed && item.kind !== "npc" && !losing.includes(item) ? losing.find((s) => inside(item.pos, s)) : undefined;
+    if (!zone) continue;
+    const best = freeAnchor(item, (p) => losing.some((s) => inside(p, s)));
+    if (!best) continue;
+    notes.push(`${item.id}: started inside ${zone.id}, where you lose: moved to ${best.zone}:${best.anchor}`);
+    moveTo(item, best);
+  }
+  return notes;
+
+  /** The free standable anchor nearest the item (never a doorway, spawn or goal) that isn't to be avoided. */
+  function freeAnchor(item: Entity, avoid: (p: Vec3) => boolean): { zone: string; anchor: string; pos: Vec3 } | null {
     const used = new Set(b.entities.map((e) => `${e.zone}/${e.anchor}`));
     let best: { zone: string; anchor: string; pos: Vec3; d: number } | null = null;
     for (const z of b.zones) {
       const spec = bound.get(z.id);
       if (!spec) continue;
       for (const [anchor, pos] of Object.entries(spec.anchors)) {
-        if (used.has(`${z.id}/${anchor}`) || /^(doorway|spawn|goal)/.test(anchor) || !standable(pos) || inside(pos, place)) continue;
+        if (used.has(`${z.id}/${anchor}`) || /^(doorway|spawn|goal)/.test(anchor) || !standable(pos) || avoid(pos)) continue;
         const d = (pos[0] - item.pos[0]) * (pos[0] - item.pos[0]) + (pos[2] - item.pos[2]) * (pos[2] - item.pos[2]);
         if (!best || d < best.d || (d === best.d && z.id + anchor < best.zone + best.anchor)) best = { zone: z.id, anchor, pos, d };
       }
     }
-    if (!best) continue;
-    notes.push(`${item.id}: started inside ${place.id}, where it must be carried: moved to ${best.zone}:${best.anchor}`);
-    item.zone = best.zone;
-    item.anchor = best.anchor;
-    item.pos = [best.pos[0], best.pos[1] + item.size[1] / 2, best.pos[2]];
+    return best;
+  }
+  function moveTo(item: Entity, at: { zone: string; anchor: string; pos: Vec3 }) {
+    item.zone = at.zone;
+    item.anchor = at.anchor;
+    item.pos = [at.pos[0], at.pos[1] + item.size[1] / 2, at.pos[2]];
+  }
+}
+
+/** Weapons someone holds (on a thing to pick up, not "player" or a character's own). */
+const heldWeapons = (b: WorldBundle) => new Set(b.verbs.filter((v) => v.verb === SHOOT && b.entities.some((e) => e.id === v.on && e.kind !== "npc")).map((v) => v.on));
+
+/**
+ * Fights, wired so they can be won and lost (each repair logged):
+ * - a weapon or hit points bound on a team or a group ("team:blue", "zombies") is one per member;
+ * - a character with props.hp has those hit points; anything a rule wears down, damages or heals
+ *   gets 100 if it has none;
+ * - "the player hits rival_1" (no hazard, no weapon of its own) with the player armed means
+ *   rival_1 is hit by the player's shot (before the kits read it as tagging them); with a weapon of
+ *   its own, a loss is its shot hitting you;
+ * - a hit "by" a team is someone hit, on the side the rule's effect says;
+ * - knock-outs that lead nowhere beside a win for one more knock-out: the win needs them all;
+ * - a player who can be knocked out for good, with no rule for it, loses then (unless any hit
+ *   already loses).
+ */
+export function repairCombat(b: WorldBundle): string[] {
+  const notes: string[] = [];
+  const spawnOf = (t: string) => b.entities.some((e) => e.kind === "spawn" && e.team === t);
+  const mine = !spawnOf("red") && spawnOf("blue") ? "blue" : "red";
+  const npcsOn = (team: string) => b.entities.filter((e) => e.kind === "npc" && e.team === team).map((e) => e.id);
+  const members = (ref: string): string[] => {
+    if (ref.startsWith("team:")) return [...(ref === `team:${mine}` ? ["player"] : []), ...npcsOn(ref.slice(5))];
+    if (ref === "player" || b.entities.some((e) => e.id === ref)) return [ref];
+    return groupMembers(ref, b.entities);
+  };
+  // one per member
+  for (const v of [...b.verbs]) {
+    if ((v.verb !== SHOOT && v.verb !== HEALTH) || v.on === "player" || b.entities.some((e) => e.id === v.on)) continue;
+    const ms = members(v.on);
+    if (!ms.length) continue;
+    b.verbs.splice(b.verbs.indexOf(v), 1);
+    for (const m of ms) if (!b.verbs.some((x) => x.verb === v.verb && x.on === m)) b.verbs.push({ ...structuredClone(v), id: uniqueId(b, `${v.id}_${m}`), on: m });
+    notes.push(`${v.id}: ${v.verb} on '${v.on}' means each of ${ms.join(", ")}`);
+  }
+  const hasHp = (id: string) => b.verbs.some((v) => v.verb === HEALTH && v.on === id);
+  for (const e of b.entities) {
+    const n = Number(e.props.hp ?? e.props.health ?? Number.NaN);
+    if (!["npc", "prop", "vehicle"].includes(e.kind) || !(n > 0) || hasHp(e.id)) continue;
+    b.verbs.push(vb(uniqueId(b, `vb_hp_${e.id}`), HEALTH, e.id, { hp: n }));
+    notes.push(`${e.id}: props.hp ${n} → combat_sport.health`);
+  }
+  const need = new Set<string>();
+  for (const r of b.rules) {
+    if (r.when.t === "health_lte" && r.when.a) need.add(r.when.a);
+    for (const e of r.then) if (e.e === "damage" || e.e === "heal") need.add(e.target);
+    for (const c of r.if) if (/^[a-z][a-z0-9_]*\.hp$/.test(c.l)) need.add(c.l.split(".")[0]!);
+  }
+  for (const ref of [...need].sort()) {
+    const ms = members(ref).filter((id) => !hasHp(id));
+    for (const id of ms) b.verbs.push(vb(uniqueId(b, `vb_hp_${id}`), HEALTH, id));
+    if (ms.length) notes.push(`${ms.join(", ")}: a rule wears ${ref} down, so ${ms.length > 1 ? "they have" : "it has"} 100 hit points`);
+  }
+  // something a rule wants shot (a reactor core, a training dummy) is something to aim at
+  const held = heldWeapons(b);
+  const guns = b.verbs.filter((v) => v.verb === SHOOT && (v.on === "player" || held.has(v.on)));
+  // (and one a rule wants worn down is something to throw the stars at)
+  const stars = b.verbs.filter((v) => v.verb === "combat_sport.throw");
+  // (never one a rule you lose by wears down: your own ship, the crystal you defend)
+  for (const r of b.rules) {
+    const e = (r.when.t === "hit" || r.when.t === "health_lte") && (!r.when.b || guns.some((g) => g.on === r.when.b)) && !r.then.some((x) => x.e === "lose") ? b.entities.find((x) => x.id === r.when.a && x.kind !== "npc") : undefined;
+    if (!e) continue;
+    for (const g of [...guns, ...(r.when.t === "health_lte" ? stars : [])]) {
+      const at = String(g.params.at ?? "").split(",").filter(Boolean);
+      if (at.includes(e.id)) continue;
+      g.params = { ...g.params, at: [...at, e.id].join(",") };
+      notes.push(`${e.id}: something to ${g.verb === SHOOT ? "shoot" : "throw"} at with ${g.on === "player" ? "your weapon" : g.on} (rule ${r.id} waits for it to be ${r.when.t === "hit" ? "hit" : "worn down"})`);
+    }
+  }
+  const them = mine === "red" ? "blue" : "red";
+  // "red scores when the player hits team:blue" (a team where the weapon goes): models name the shooter
+  // and the side shot either way round, so the rule's effect says who was hit: a point or a win for
+  // your side is a rival hit, anything else is your side hit (you, for a loss)
+  for (const r of b.rules) {
+    const w = r.when;
+    if (w.t !== "hit" || !/^team:(red|blue)$/.test(w.b)) continue;
+    const ours = r.then.some((e) => (e.e === "score" && e.target === `team:${mine}`) || e.e === "win");
+    const hit = ours ? `team:${them}` : r.then.some((e) => e.e === "lose") ? "player" : `team:${mine}`;
+    notes.push(`rule ${r.id}: '${w.a || "anyone"} hits ${w.b}' names a team where the weapon goes; it means ${hit === "player" ? "you" : hit} hit (hit a=${hit})`);
+    [w.a, w.b] = [hit, ""];
+  }
+  // "red scores when the player hits with gun_blue" (hit a=player b=a weapon you fire): your own shot
+  // never hits you, so a point (or a win) for your side means a rival hit (by whichever weapon you
+  // have: models mix up whose gun is whose), and one for the other side means you were hit
+  const own = new Set(guns.map((g) => g.on));
+  // (rivals on the other team, or none yet: the ones added for a shooting game are; else teamless ones)
+  const rivals = b.entities.some((e) => e.kind === "npc" && e.team === them) || !b.entities.some((e) => e.kind === "npc" && e.team !== mine) ? `team:${them}` : "";
+  for (const r of b.rules) {
+    const w = r.when;
+    if (w.t !== "hit" || w.a !== "player" || !own.has(w.b)) continue;
+    const ours = r.then.some((e) => (e.e === "score" && e.target === `team:${mine}`) || e.e === "win");
+    notes.push(`rule ${r.id}: the player 'hit' by ${w.b}, a weapon you fire, means ${ours ? `a rival hit by your shot (hit a=${rivals || "anyone"})` : "you hit by a rival's shot (hit a=player)"}`);
+    [w.a, w.b] = ours ? [rivals, ""] : ["player", ""];
+  }
+  // "blue scores when blue is hit" (in a shooting game, a team scoring for its own people being hit):
+  // the model swapped who hit whom; it means the other side hit, by anything
+  for (const r of guns.length ? b.rules : []) {
+    const w = r.when;
+    const side = w.t !== "hit" || (w.b && !own.has(w.b)) ? "" : w.a.startsWith("team:") ? w.a.slice(5) : (b.entities.find((e) => e.id === w.a && e.kind === "npc")?.team ?? "");
+    const pts = r.then.filter((e) => e.e === "score");
+    if (!side || !pts.length || !pts.every((e) => e.target === `team:${side}`)) continue;
+    const other = side === "red" ? "blue" : "red";
+    notes.push(`rule ${r.id}: ${side} scoring when its own are hit means ${other} hit (hit a=team:${other})`);
+    [w.a, w.b] = [`team:${other}`, ""];
+  }
+  // "knock out three dummies, then beat the sensei", "outdraw three bandits", written as knock-outs
+  // that lead nowhere (they only mark or remove who went down, and nothing reads that) beside a
+  // win for knocking out one more: the win is for knocking them all out, whoever goes down last
+  // (one copy of the win per member, each needing the others down: no order to get wrong)
+  const someone = (id: string) => id !== "player" && b.entities.some((e) => e.id === id);
+  const reads = (id: string) => b.rules.some((r) => (r.when.t === "state_is" && r.when.a === id) || r.if.some((c) => c.l.startsWith(`${id}.`)));
+  const win = b.rules.find((r) => r.when.t === "health_lte" && r.when.n <= 0 && someone(r.when.a) && !r.if.length && r.then.some((e) => e.e === "win"));
+  const nowhere = win ? b.rules.filter((r) => r !== win && r.when.t === "health_lte" && r.when.n <= 0 && someone(r.when.a) && r.when.a !== win.when.a && hasHp(r.when.a) && !reads(r.when.a) && r.then.every((e) => e.e === "emit" || ((e.e === "set_state" || e.e === "destroy") && e.target === r.when.a))) : [];
+  const downs = [...new Set(nowhere.map((r) => r.when.a))].sort();
+  if (win && downs.length && downs.length <= 4) {
+    const all = [win.when.a, ...downs];
+    const others = (id: string) => all.filter((x) => x !== id).map((x) => ({ l: `${x}.hp`, op: "lte" as const, r: 0, forS: 0 }));
+    for (const id of downs) b.rules.push({ ...structuredClone(win), id: uniqueId(b, `${win.id}_${id}`), when: { ...win.when, a: id }, if: others(id) });
+    win.if = others(win.when.a);
+    notes.push(`rule ${win.id}: knocking out ${downs.join(", ")} leads nowhere, so the win is for knocking out all of ${all.join(", ")}, whoever goes down last (${all.length} rules)`);
+  }
+  // "IF the archer's hp is 0": it stays down (a knock-out it comes back from never meets that)
+  for (const r of b.rules) {
+    for (const c of r.if) {
+      const id = /^([a-z][a-z0-9_]*)\.hp$/.exec(c.l)?.[1];
+      const v = id && (c.op === "eq" || c.op === "lte") && Number(c.r) <= 0 ? b.verbs.find((x) => x.verb === HEALTH && x.on === id) : undefined;
+      if (!v || v.params.respawn === false || v.params.respawn === "false") continue;
+      v.params = { ...v.params, respawn: false };
+      notes.push(`${id}: rule ${r.id} needs it down (hp ${c.op} ${String(c.r)}), so it doesn't come back`);
+    }
+  }
+  // "the player hits rival_1": rival_1 shot by the player (when rival_1 shoots back, only a rule
+  // that is good for you: otherwise it is rival_1's shot hitting you, as written)
+  const armed = guns.length > 0;
+  for (const r of b.rules) {
+    const w = r.when;
+    const npc = armed && w.t === "hit" && w.a === "player" ? b.entities.find((e) => e.id === w.b && e.kind === "npc") : undefined;
+    const good = r.then.some((e) => e.e === "win" || (e.e === "score" && e.target === `team:${mine}`) || (e.e === "damage" && e.target === npc?.id));
+    if (!npc || b.verbs.some((v) => v.on === npc.id && v.verb === "motion_hazards.hazard") || (b.verbs.some((v) => v.on === npc.id && v.verb === SHOOT) && !good)) continue;
+    [w.a, w.b] = [npc.id, ""];
+    notes.push(`rule ${r.id}: the player hitting ${npc.id} means shooting them (hit a=${npc.id})`);
+  }
+  // knocked out for good with nothing said about it: that's the end of the run
+  const hp = b.verbs.find((v) => v.verb === HEALTH && v.on === "player");
+  const forGood = hp && (hp.params.respawn === false || hp.params.respawn === "false");
+  const said = b.rules.some((r) => r.when.t === "health_lte" && (r.when.a === "player" || r.when.a === `team:${mine}`) && r.then.some((e) => e.e === "lose" || e.e === "reset" || e.e === "heal"));
+  // (nor when any hit from anyone who can hurt you already loses: a knock-out never comes first)
+  const losesOnHit = (id: string) => b.rules.some((r) => r.when.t === "hit" && (r.when.a === "player" || r.when.a === `team:${mine}`) && (!r.when.b || r.when.b === id) && !r.if.length && r.then.some((e) => e.e === "lose"));
+  const hurters = b.entities.filter((e) => e.kind === "npc" && e.team !== mine && b.verbs.some((v) => v.on === e.id && v.verb === SHOOT)).map((e) => e.id);
+  const hurt = b.rules.some((r) => r.then.some((e) => e.e === "damage" && (e.target === "player" || e.target === `team:${mine}`)));
+  const first = hurters.length > 0 && !hurt && hurters.every(losesOnHit);
+  if (b.mode === "play" && forGood && !said && !first) {
+    b.rules.push({ id: uniqueId(b, "r_knocked_out"), src: "template", layer: "gameplay", when: { t: "health_lte", a: "player", b: "", s: "", n: 0, act: "" }, if: [], then: [fx("lose", "player")], once: true, cooldownS: 0, prio: 0 });
+    notes.push("added r_knocked_out: you can be knocked out for good, so that loses");
   }
   return notes;
 }
 
 /**
- * A throwing game with no one to throw at (a snowball fight whose fill forgot the other team)
- * gets two rivals at the rival spawn, playing the usual rival options. Logged.
+ * A throwing or shooting game with no one to throw at or shoot (a snowball fight whose fill forgot
+ * the other team) gets two rivals at the rival spawn, playing the usual rival options; in a
+ * shooting game they are armed (half the player's damage, a third as often: the two together fire less than you) and have hit points.
+ * Logged.
  */
 export function addRivals(b: WorldBundle): string[] {
   // a throwing game with nothing to throw at needs rivals; one with pins or cans to hit doesn't
-  const throws = b.verbs.filter((v) => v.verb === "combat_sport.throw");
-  if (b.mode !== "play" || !throws.length || throws.every((v) => String(v.params.at ?? ""))) return [];
+  const held = heldWeapons(b);
+  const guns = b.verbs.filter((v) => v.verb === SHOOT && (v.on === "player" || held.has(v.on)));
+  const throws = [...b.verbs.filter((v) => v.verb === "combat_sport.throw"), ...guns];
+  // (a "things to hit" list counts only for things in the world: "at":"player_blue" names nobody)
+  if (b.mode !== "play" || !throws.length || throws.every((v) => String(v.params.at ?? "").split(",").some((id) => b.entities.some((e) => e.id === id)))) return [];
   const spawnOf = (t: string) => b.entities.find((e) => e.kind === "spawn" && e.team === t);
   const mine = !spawnOf("red") && spawnOf("blue") ? "blue" : "red";
   const them = mine === "red" ? "blue" : "red";
@@ -327,9 +511,224 @@ export function addRivals(b: WorldBundle): string[] {
     const id = uniqueId(b, `rival_${k}`);
     b.entities.push({ id, src: "template", layer: "gameplay", kind: "npc", zone: at?.zone ?? b.zones[0]?.id ?? "", anchor: at?.anchor ?? "", pos: [home[0], home[1] + 0.9, home[2] + dz], rotY: 0, size: [0.7, 1.8, 0.7], noun: `rival ${k}`, hyper: "person", asset: "", body: "kinematic", shape: "capsule", team: them, tags: [], states: [], init: "", props: {} });
     b.cast.push({ id: uniqueId(b, `k_${id}`), src: "template", layer: "gameplay", npc: id, role: "rival", minded: false, persona: { identity: "", personality: "", knowledge: "", replyStyle: "", tools: [], safety: "" }, coneDeg: 70, rangeM: 12, hearM: 8, menu, dflt: k === 1 ? "rival.attack" : "rival.defend", utility: {}, memory: 0 });
+    const g = guns[0];
+    if (g) {
+      const spec = verb(SHOOT)!.params;
+      const num = (key: string) => Number(g.params[key] ?? spec[key]!.def);
+      b.verbs.push(vb(uniqueId(b, `vb_shoot_${id}`), SHOOT, id, { range: num("range"), speed: num("speed"), damage: Math.round(num("damage") / 2), cooldown: Math.round(num("cooldown") * 3 * 100) / 100 }));
+      b.verbs.push(vb(uniqueId(b, `vb_hp_${id}`), HEALTH, id));
+    }
     added.push(id);
   }
-  return [`added ${added.join(" and ")} on the ${them} side: a throwing game needs someone to throw at`];
+  return [`added ${added.join(" and ")} on the ${them} side: a ${guns.length ? "shooting" : "throwing"} game needs someone to ${guns.length ? "shoot" : "throw at"}`];
+}
+
+/** A vehicle's kind from what it is called, and how big it is parked. */
+const RIDE_WORDS: [RegExp, string][] = [
+  [/go-?kart|\bkart/, "kart"], [/snowmobile|\bsled|skidoo/, "snowmobile"], [/hovercraft/, "hovercraft"], [/boat|jet ?ski|canoe|kayak|raft/, "boat"],
+  [/\bhorse|pony|steed|camel/, "horse"], [/truck|lorry/, "truck"], [/\bvan\b|delivery/, "van"], [/buggy|dune/, "buggy"], [/\bbike|motorbike|motorcycle|scooter|moped/, "bike"],
+];
+const RIDE_SIZE: Record<string, Vec3> = {
+  kart: [1.3, 0.7, 1.9], car: [1.8, 1.2, 3.6], buggy: [1.7, 1.1, 2.8], truck: [2.2, 2, 5], van: [2, 2, 4.4], boat: [1.8, 1, 3.8],
+  snowmobile: [1.1, 1, 2.6], hovercraft: [2, 1, 3], bike: [0.6, 1.1, 1.9], horse: [0.8, 1.6, 2.2],
+};
+const rideKind = (e: Entity) => RIDE_WORDS.find(([re]) => re.test(`${e.id} ${e.noun} ${e.hyper}`.toLowerCase().replace(/_/g, " ")))?.[1] ?? "car";
+
+/**
+ * Races (a racing.track, or a rule waiting on lap_done), wired so they can be won and lost (each
+ * repair logged):
+ * - laps with no track get one: on the line (a checkpoint or goal named like a finish, else the
+ *   first checkpoint, else a new one on the pack's race loop), the other checkpoints its gates;
+ * - a track's gates are things in the world; with fewer than two and a race loop in the pack, the
+ *   loop gets gates of its own;
+ * - every vehicle can be driven (its kind from what it's called); the player starts at the wheel
+ *   of the first one, each rival racer at the wheel of its own (a copy of yours);
+ * - a race with no rivals gets two; with no win, finishing the laps wins; with rivals and no loss,
+ *   a rival finishing them first loses.
+ */
+export function repairRace(b: WorldBundle, layout: PackLayout): string[] {
+  if (b.mode !== "play" || !(b.verbs.some((v) => v.verb === TRACK) || b.rules.some((r) => r.when.t === "lap_done"))) return [];
+  const notes: string[] = [];
+  const spawnOf = (t: string) => b.entities.some((e) => e.kind === "spawn" && e.team === t);
+  const mine = !spawnOf("red") && spawnOf("blue") ? "blue" : "red";
+  const them = mine === "red" ? "blue" : "red";
+  const zone = b.zones[0]?.id ?? "";
+  const thing = (id: string, kind: Entity["kind"], noun: string, size: Vec3, body: Entity["body"], team: Entity["team"] = ""): Entity => ({
+    id, src: "template", layer: "gameplay", kind, zone, anchor: "", pos: [0, 0, 0], rotY: 0, size, noun, hyper: kind, asset: "", body, shape: kind === "npc" ? "capsule" : "box", team, tags: [], states: [], init: "", props: {},
+  });
+  const laps = b.rules.find((r) => r.when.t === "lap_done" && (r.when.a === "player" || r.when.a === `team:${mine}`) && r.then.some((e) => e.e === "win"))?.when.n || 3;
+  // the track: the line and its gates
+  let track = b.verbs.find((v) => v.verb === TRACK && b.entities.some((e) => e.id === v.on));
+  if (!track) {
+    const lines = b.entities.filter((e) => (e.kind === "checkpoint" || e.kind === "goal") && e.body === "sensor").sort((x, y) => (x.id < y.id ? -1 : 1));
+    let line = lines.find((e) => /finish|start|line/.test(`${e.id} ${e.noun}`)) ?? lines.find((e) => e.kind === "checkpoint");
+    if (!line && layout.track) {
+      line = thing(uniqueId(b, "finish_line"), "checkpoint", "finish line", [layout.track.width, 3, layout.track.width], "sensor");
+      b.entities.push(line);
+    }
+    if (!line) return notes;
+    const gates = b.entities.filter((e) => e.kind === "checkpoint" && e !== line).map((e) => e.id).sort();
+    track = vb(uniqueId(b, "vb_track"), TRACK, line.id, { gates: gates.join(","), laps });
+    b.verbs = b.verbs.filter((v) => !(v.on === line.id && v.verb === "puzzle.checkpoint"));
+    b.verbs.push(track);
+    notes.push(`${line.id}: the race's line, its gates ${gates.join(", ") || "none yet"} (rules wait on laps, and no track was bound)`);
+  }
+  const gates = String(track.params.gates ?? "").split(",").map((s) => s.trim()).filter((id) => id && id !== track.on && b.entities.some((e) => e.id === id));
+  if (gates.length < 2 && layout.track) {
+    for (let k = gates.length; k < Math.min(4, layout.track.points.length - 1); k++) {
+      const g = thing(uniqueId(b, `gate_${k + 1}`), "checkpoint", `gate ${k + 1}`, [layout.track.width, 3, layout.track.width], "sensor");
+      b.entities.push(g);
+      gates.push(g.id);
+    }
+    notes.push(`${track.on}: the race loop gets gates ${gates.join(", ")}`);
+  }
+  track.params = { ...track.params, gates: gates.join(","), laps: Number(track.params.laps ?? laps) || laps };
+  // vehicles: every one can be driven, the player's first
+  const rides = new Map(b.verbs.filter((v) => v.verb === DRIVE).map((v) => [v.on, v]));
+  for (const e of b.entities.filter((x) => x.kind === "vehicle" && !rides.has(x.id))) {
+    const v = vb(uniqueId(b, `vb_drive_${e.id}`), DRIVE, e.id, { kind: rideKind(e) });
+    b.verbs.push(v);
+    rides.set(e.id, v);
+    notes.push(`${e.id}: added ${DRIVE} (a ${String(v.params.kind)} in a race)`);
+  }
+  for (const [id, v] of rides) {
+    const e = b.entities.find((x) => x.id === id)!;
+    const kind = String(v.params.kind ?? rideKind(e));
+    if (e.size[0] === 2 && e.size[1] === 1.2 && e.size[2] === 4) e.size = RIDE_SIZE[kind] ?? e.size; // the default vehicle box: this kind's own
+  }
+  const driven = (who: string) => [...rides.values()].some((v) => v.params.driver === who);
+  const mineRide = [...rides.values()].find((v) => !v.params.driver);
+  if (!driven("player") && mineRide) {
+    mineRide.params = { ...mineRide.params, driver: "player" };
+    notes.push(`player: starts at the wheel of ${mineRide.on}`);
+  }
+  // rivals: the other side's characters, or two added; each at the wheel of a copy of yours
+  let racers = b.entities.filter((e) => e.kind === "npc" && e.team !== mine && e.body !== "none" && e.body !== "sensor");
+  if (!racers.length) {
+    for (const k of [1, 2]) {
+      const n = thing(uniqueId(b, `racer_${k}`), "npc", `racer ${k}`, [0.7, 1.8, 0.7], "kinematic", them);
+      b.entities.push(n);
+      b.cast.push({ id: uniqueId(b, `k_${n.id}`), src: "template", layer: "gameplay", npc: n.id, role: "rival", minded: false, persona: { identity: "", personality: "", knowledge: "", replyStyle: "", tools: [], safety: "" }, coneDeg: 70, rangeM: 12, hearM: 8, menu: ["racer.race", "racer.block", "racer.draft"], dflt: "racer.race", utility: {}, memory: 0 });
+    }
+    racers = b.entities.filter((e) => e.kind === "npc" && e.team === them);
+    notes.push(`added ${racers.map((r) => r.id).join(" and ")}: a race needs someone to race`);
+  }
+  const yours = mineRide ?? [...rides.values()].find((v) => v.params.driver === "player");
+  for (const r of racers) {
+    const c = b.cast.find((k) => k.npc === r.id);
+    if (c && !c.menu.length) ((c.menu = ["racer.race", "racer.block"]), (c.dflt = "racer.race"));
+    if (!yours || driven(r.id)) continue;
+    const mineE = b.entities.find((e) => e.id === yours.on)!;
+    const ride = { ...structuredClone(mineE), id: uniqueId(b, `${r.id}_ride`), src: "template" as const, noun: mineE.noun || String(yours.params.kind), team: r.team, anchor: "" };
+    b.entities.push(ride);
+    b.verbs.push(vb(uniqueId(b, `vb_drive_${ride.id}`), DRIVE, ride.id, { ...yours.params, driver: r.id }));
+    notes.push(`${r.id}: races at the wheel of ${ride.id}`);
+  }
+  // a way to win, and one to lose
+  if (!b.rules.some((r) => r.then.some((e) => e.e === "win"))) {
+    b.rules.push({ id: uniqueId(b, "r_win_laps"), src: "template", layer: "gameplay", when: { t: "lap_done", a: "player", b: "", s: "", n: laps, act: "" }, if: [], then: [fx("win", "player")], once: true, cooldownS: 0, prio: 0 });
+    notes.push(`added r_win_laps: no rule wins, so finishing ${laps} laps does`);
+  }
+  if (!b.rules.some((r) => r.then.some((e) => e.e === "lose"))) {
+    const rival = racers.every((r) => r.team === them) ? `team:${them}` : racers[0]!.id;
+    b.rules.push({ id: uniqueId(b, "r_lose_laps"), src: "template", layer: "gameplay", when: { t: "lap_done", a: rival, b: "", s: "", n: laps, act: "" }, if: [], then: [fx("lose", "player")], once: true, cooldownS: 0, prio: 0 });
+    notes.push(`added r_lose_laps: a rival finishing ${laps} laps first loses`);
+  }
+  return notes;
+}
+
+/**
+ * Where a race runs: on the pack's race loop when it has one (the line at its start, the gates
+ * spread round it, each nudged clear of anything standing there), else where the fill put them,
+ * each gate at least a lane wide; the grid behind the line, the player's vehicle first. Logged.
+ */
+export function placeRace(b: WorldBundle, layout: PackLayout, bound: Map<string, ZoneSpec>): string[] {
+  const track = b.verbs.find((v) => v.verb === TRACK);
+  const line = track && b.entities.find((e) => e.id === track.on);
+  if (!track || !line || b.mode !== "play") return [];
+  const notes: string[] = [];
+  const gates = String(track.params.gates ?? "").split(",").filter(Boolean).map((id) => b.entities.find((e) => e.id === id)).filter((e): e is Entity => Boolean(e));
+  const loop = layout.track;
+  const width = loop?.width ?? 6;
+  const solid = layout.statics.filter((s) => s.surf !== "floor" && s.surf !== "water");
+  const clear = (x: number, z: number, r: number) => !solid.some((s) => Math.abs(x - s.pos[0]) < s.size[0] / 2 + r && Math.abs(z - s.pos[2]) < s.size[2] / 2 + r && s.pos[1] - s.size[1] / 2 < 1.5);
+  const nudge = (p: Vec3): Vec3 => {
+    if (clear(p[0], p[2], 1.5)) return p;
+    for (let ring = 1; ring <= 12; ring++) for (const [dx, dz] of [[1, 0], [-1, 0], [0, 1], [0, -1], [0.7071, 0.7071], [-0.7071, 0.7071], [0.7071, -0.7071], [-0.7071, -0.7071]] as const) {
+      const q: Vec3 = [p[0] + dx * ring * 0.5, p[1], p[2] + dz * ring * 0.5];
+      if (clear(q[0], q[2], 1.5)) return q;
+    }
+    return p;
+  };
+  const zoneAt = (p: Vec3) => [...bound].find(([, s]) => p[0] >= s.bounds.min[0] && p[0] <= s.bounds.max[0] && p[2] >= s.bounds.min[2] && p[2] <= s.bounds.max[2])?.[0] ?? line.zone;
+  const put = (e: Entity, p: Vec3) => {
+    e.pos = [p[0], p[1] + e.size[1] / 2, p[2]];
+    e.zone = zoneAt(p);
+  };
+  let into: Vec3 | null = null; // where the race comes into the line from
+  if (loop && loop.points.length >= 3) {
+    // the line on the loop's first point, the gates spread evenly round it (midpoints too)
+    const spots: Vec3[] = loop.points.flatMap((p, i) => {
+      const q = loop.points[(i + 1) % loop.points.length]!;
+      return [p, [(p[0] + q[0]) / 2, (p[1] + q[1]) / 2, (p[2] + q[2]) / 2] as Vec3];
+    });
+    // the loop is a road: low cover standing on it (a kiosk, a crate stack) is cleared away
+    const half = width / 2 + 0.6;
+    const onRoad = (s: (typeof b.statics)[number]) => {
+      for (let i = 0; i < spots.length; i++) {
+        const [a, c] = [spots[i]!, spots[(i + 1) % spots.length]!];
+        const n = Math.max(1, Math.ceil(Math.sqrt((c[0] - a[0]) * (c[0] - a[0]) + (c[2] - a[2]) * (c[2] - a[2])) / 0.5));
+        for (let k = 0; k <= n; k++) {
+          const [x, z] = [a[0] + ((c[0] - a[0]) * k) / n, a[2] + ((c[2] - a[2]) * k) / n];
+          if (Math.abs(x - s.pos[0]) < s.size[0] / 2 + half && Math.abs(z - s.pos[2]) < s.size[2] / 2 + half) return true;
+        }
+      }
+      return false;
+    };
+    const cleared = b.statics.filter((s) => s.surf === "wall" && s.size[1] <= 2.5 && onRoad(s));
+    if (cleared.length) {
+      b.statics = b.statics.filter((s) => !cleared.includes(s));
+      for (const s of cleared) solid.splice(solid.findIndex((x) => x.pos[0] === s.pos[0] && x.pos[1] === s.pos[1] && x.pos[2] === s.pos[2] && x.size[0] === s.size[0]), 1);
+      notes.push(`race: ${cleared.length} low block${cleared.length > 1 ? "s" : ""} of cover cleared off the ${layout.packId} race loop`);
+    }
+    for (const e of [line, ...gates]) e.size = [Math.max(width, e.size[0]), Math.max(3, e.size[1]), Math.max(width, e.size[2])];
+    put(line, nudge(spots[0]!));
+    gates.forEach((g, i) => put(g, nudge(spots[Math.max(1, Math.round(((i + 1) * spots.length) / (gates.length + 1))) % spots.length]!)));
+    into = spots[spots.length - 1]!;
+    notes.push(`race: ${line.id} and ${gates.length} gates (${gates.map((g) => g.id).join(", ")}) round the ${layout.packId} race loop`);
+  } else {
+    for (const e of [line, ...gates]) {
+      if (e.size[0] >= 5 && e.size[2] >= 5) continue;
+      e.size = [Math.max(5, e.size[0]), Math.max(3, e.size[1]), Math.max(5, e.size[2])];
+      e.pos = [e.pos[0], e.pos[1] - e.size[1] / 2 + 1.5, e.pos[2]];
+      notes.push(`${e.id}: a gate a lane wide (5 m)`);
+    }
+  }
+  // the grid: behind the line, the way the race comes into it; the player on pole, the rivals in
+  // pairs behind
+  into ??= gates.length ? gates[gates.length - 1]!.pos : [line.pos[0] - 1, line.pos[1], line.pos[2]];
+  let [dx, dz] = [line.pos[0] - into[0], line.pos[2] - into[2]];
+  const dl = Math.sqrt(dx * dx + dz * dz) || 1;
+  [dx, dz] = [dx / dl, dz / dl];
+  const floor = line.pos[1] - line.size[1] / 2;
+  const rides = b.verbs.filter((v) => v.verb === DRIVE && v.params.driver).sort((x, y) => (x.params.driver === "player" ? -1 : y.params.driver === "player" ? 1 : x.id < y.id ? -1 : 1));
+  // (spaced by the biggest vehicle on it, room to spare: each starts turned toward the first gate)
+  let [wide, long] = [0, 0];
+  for (const v of rides) {
+    const e = b.entities.find((x) => x.id === v.on);
+    if (e) [wide, long] = [Math.max(wide, e.size[0]), Math.max(long, e.size[2])];
+  }
+  rides.forEach((v, i) => {
+    const e = b.entities.find((x) => x.id === v.on);
+    if (!e) return;
+    const back = line.size[0] / 2 + 2 + (i === 0 ? 0 : (long + 1.4) * (1 + Math.floor((i - 1) / 2)));
+    const side = i === 0 ? 0 : (i % 2 ? 1 : -1) * (wide + 0.6);
+    put(e, nudge([line.pos[0] - dx * back - dz * side, floor, line.pos[2] - dz * back + dx * side]));
+    const driver = v.params.driver === "player" ? b.entities.find((s) => s.kind === "spawn" && s.team === (b.entities.some((x) => x.kind === "spawn" && x.team === "red") ? "red" : s.team)) : b.entities.find((x) => x.id === v.params.driver);
+    if (driver) driver.pos = driver.kind === "spawn" ? [e.pos[0], floor, e.pos[2]] : [e.pos[0], floor + driver.size[1] / 2, e.pos[2]];
+  });
+  if (rides.length) notes.push(`race: the grid behind ${line.id}: ${rides.map((v) => `${String(v.params.driver)} in ${v.on}`).join(", ")}`);
+  return notes;
 }
 
 /** What a secret is called in each pack (cosmetic: the rule and the count are the same everywhere). */
@@ -756,8 +1155,9 @@ export function repairKits(b: WorldBundle): string[] {
       notes.push(`rule ${r.id}: '${w.b} enters ${w.b}' means the player reaching it`);
     }
     // "the player hits blue_1" (not a hazard, not a thrown ball): tagging them, USE next to them
+    // (one with a weapon of its own is its shot hitting you: hit a=player b=it, as written)
     const npc = w.t === "hit" && w.a === "player" ? b.entities.find((e) => e.id === w.b && e.kind === "npc") : undefined;
-    if (npc && !b.verbs.some((v) => v.on === npc.id && v.verb === "motion_hazards.hazard")) {
+    if (npc && !b.verbs.some((v) => v.on === npc.id && (v.verb === "motion_hazards.hazard" || v.verb === SHOOT))) {
       w.t = "touch";
       notes.push(`rule ${r.id}: the player hitting ${npc.id} means tagging them (USE next to them)`);
     }
@@ -929,8 +1329,9 @@ export function repairKits(b: WorldBundle): string[] {
       }
     }
   }
-  // a thrown ball is carried, never collected (collecting it would destroy it)
-  for (const id of new Set(b.verbs.filter((v) => v.verb === "combat_sport.throw").map((v) => v.on))) {
+  // a thrown ball (or a weapon to hold) is carried, never collected (collecting it would destroy it)
+  const held = heldWeapons(b);
+  for (const id of new Set([...b.verbs.filter((v) => v.verb === "combat_sport.throw").map((v) => v.on), ...held])) {
     const n = b.verbs.length;
     b.verbs = b.verbs.filter((v) => !(v.on === id && v.verb === "puzzle.collect"));
     if (b.verbs.length < n) notes.push(`${id}: dropped puzzle.collect (it is thrown, so it is carried)`);
@@ -943,7 +1344,7 @@ export function repairKits(b: WorldBundle): string[] {
     notes.push(`${id}: both carried and collected → ${keep === ".carry" ? "carried (it is delivered somewhere)" : "collected (nothing delivers it)"}`);
   }
   const groups = new Map<string, string[]>();
-  const thrown = new Set(b.verbs.filter((v) => v.verb === "combat_sport.throw").map((v) => v.on));
+  const thrown = new Set([...b.verbs.filter((v) => v.verb === "combat_sport.throw").map((v) => v.on), ...held]);
   for (const v of b.verbs) {
     if (!v.verb.endsWith(".carry") || delivered.has(v.on) || thrown.has(v.on)) continue; // a ball you throw is carried, not collected
     const e = b.entities.find((x) => x.id === v.on);
@@ -963,7 +1364,7 @@ export function repairKits(b: WorldBundle): string[] {
     notes.push(`${ids.length} × ${noun}: carried but never delivered → collected (touch to collect)`);
   }
   // 3. nothing that must be carried is also collected
-  const carried = new Set(b.verbs.filter((v) => v.verb.endsWith(".carry")).map((v) => v.on));
+  const carried = new Set([...b.verbs.filter((v) => v.verb.endsWith(".carry")).map((v) => v.on), ...held]);
   for (const v of b.verbs) if (v.verb === "puzzle.lock" && v.params.key) carried.add(String(v.params.key));
   const before = b.verbs.length;
   b.verbs = b.verbs.filter((v) => !(v.verb === "puzzle.collect" && carried.has(v.on)));
@@ -1071,6 +1472,16 @@ export function repairWin(b: WorldBundle): string[] {
     win.e = "lose";
     notes.push(`rule ${r.id}: ${w.a.slice(5)} reaching ${w.n} made you win → you lose (you play ${mine})`);
   }
+  // "blue wins" (a win for the other team or one of its people) is your loss
+  for (const r of b.rules) {
+    for (const e of r.then) {
+      const side = e.e !== "win" ? undefined : e.target.startsWith("team:") ? e.target.slice(5) : b.entities.find((x) => x.id === e.target && x.kind === "npc")?.team;
+      if (!side || side === mine) continue;
+      notes.push(`rule ${r.id}: a win for ${e.target} is your loss (you play ${mine})`);
+      e.e = "lose";
+      e.target = "player";
+    }
+  }
   // "when time runs out: win if all three zones are red; lose" (the same moment, one with
   // conditions): the one with conditions is the exception, so it goes first (the first win or
   // loss of a tick is the one that counts)
@@ -1135,7 +1546,17 @@ export function repairWin(b: WorldBundle): string[] {
     notes.push(`${place}: ${items.length} rules each won when a different thing was brought in (${items.join(", ")}); it takes all of them, so each one goes in and the last one wins`);
   }
   if (b.rules.some((r) => r.then.some((e) => e.e === "win"))) return notes;
-  const goal = b.entities.find((e) => e.kind === "goal" && (e.team === "red" || !e.team));
+  // a world that scores for your team is a race on points: first to the rivals' target (else 10)
+  if (b.rules.some((r) => r.then.some((e) => e.e === "score" && e.target === `team:${mine}`))) {
+    const n = b.rules.find((r) => r.when.t === "score_gte" && r.when.a !== `team:${mine}` && r.then.some((e) => e.e === "lose"))?.when.n || 10;
+    b.rules.push({ id: uniqueId(b, "r_win_score"), src: "template", layer: "gameplay", when: { t: "score_gte", a: `team:${mine}`, b: "", s: "", n, act: "" }, if: [], then: [fx("win", "player")], once: true, cooldownS: 0, prio: 0 });
+    return [...notes, `added r_win_score: no rule wins and the world scores for ${mine}, so ${mine} reaching ${n} does`];
+  }
+  // else reaching a goal, never one right by the spawn (your own base: that wins in a step)
+  const sp = b.entities.find((e) => e.kind === "spawn" && e.team === mine) ?? b.entities.find((e) => e.kind === "spawn");
+  const far = (e: Entity) => !sp || (e.pos[0] - sp.pos[0]) * (e.pos[0] - sp.pos[0]) + (e.pos[2] - sp.pos[2]) * (e.pos[2] - sp.pos[2]) > 8 * 8;
+  const goals = b.entities.filter((e) => e.kind === "goal" && (e.team === mine || !e.team));
+  const goal = goals.find(far);
   if (!goal) return notes;
   b.rules.push({ id: uniqueId(b, "r_win_goal"), src: "template", layer: "gameplay", when: { t: "enter", a: "player", b: goal.id, s: "", n: 0, act: "" }, if: [], then: [fx("win", "player")], once: true, cooldownS: 0, prio: 0 });
   return [...notes, `added r_win_goal: no rule wins, so reaching ${goal.id} does`];

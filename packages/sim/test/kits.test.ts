@@ -209,6 +209,36 @@ describe("putting things down", () => {
     for (let t = 0; t < 30; t++) sim.step(null);
     expect(sim.entity("orb")?.carrier).toBe(""); // a second before it can be picked up again
   });
+
+  it("a weapon in hand (USE fires it) goes down when USE is held, and is swapped for another one walked over", () => {
+    const gun = (id: string, x: number) => ent(id, "pickup", [x, 0.3, 0], [0.4, 0.4, 0.4], "dynamic");
+    const sim = world([gun("blaster", 0), gun("bow", 3)], [vb("vb_blaster", "combat_sport.shoot", "blaster", { cooldown: 0.5 }), vb("vb_bow", "combat_sport.shoot", "bow")]);
+    run(sim, 20);
+    expect(sim.entity("blaster")?.carrier).toBe("player");
+    expect(sim.usable()).toMatchObject({ on: "blaster", label: "shoot" });
+    // a tap fires; held, the first press fires and two thirds of a second on it goes down
+    const from = sim.tick + 1;
+    const tap = run(sim, 31, (t) => ({ tick: t, wx: 0, wz: 0, btn: t === from ? BTN.USE : 0 })); // (and the cooldown runs out)
+    expect(tap.filter((e) => e.k === "shoot")).toHaveLength(1);
+    expect(sim.entity("blaster")?.carrier).toBe("player");
+    const held = run(sim, 45, press(BTN.USE));
+    expect(held.filter((e) => e.k === "shoot")).toHaveLength(1);
+    expect(held.some((e) => e.k === "drop" && e.a === "blaster" && e.b === "player")).toBe(true);
+    expect(sim.entity("blaster")?.carrier).toBe("");
+    // pick it back up (after stepping away), then walk over the bow: the blaster goes down, the bow is yours
+    at(sim, [-1.5, 1, 0]);
+    run(sim, 10);
+    at(sim, [0, 1, 0]);
+    run(sim, 10);
+    expect(sim.entity("blaster")?.carrier).toBe("player");
+    at(sim, [3, 1, 0]);
+    const swap = run(sim, 10);
+    expect(swap.filter((e) => e.k === "drop" || e.k === "pickup").map((e) => [e.k, e.a])).toEqual([["drop", "blaster"], ["pickup", "bow"]]);
+    expect(sim.entity("bow")?.carrier).toBe("player");
+    run(sim, 30);
+    expect(sim.entity("blaster")?.carrier).toBe(""); // the one put down stays down while you stand on it
+    sim.free();
+  });
 });
 
 describe("what USE picks", () => {
@@ -247,5 +277,186 @@ describe("rule cascades", () => {
     const evs = sim.step(null);
     expect(evs.map((e) => e.k)).toEqual(expect.arrayContaining(["score_gte", "state", "win"]));
     expect(sim.result).toBe("win");
+  });
+});
+
+describe("combat: hit points, shots and knock-outs", () => {
+  /** world() with a brain that plays the NPC presses queued for the next tick. */
+  function fight(entities: Entity[], verbs: VerbBinding[], rules: Rule[] = [], presses: Map<string, InputFrame> = new Map()): SimWorld {
+    const b: WorldBundle = {
+      ...template,
+      statics: [{ id: "floor", src: "template", layer: "gameplay", zone: template.zones[0]!.id, shape: "box", pos: [0, -0.5, 0], rotY: 0, size: [60, 1, 60], surf: "floor" }],
+      entities: [ent("sp_red", "spawn", [0, 0, 0], [1.2, 0.1, 1.2], "none", { team: "red" }), ...entities],
+      verbs, rules, cast: [], expects: [], states: [],
+    };
+    const think = () => {
+      const now = new Map(presses);
+      presses.clear();
+      return now;
+    };
+    return new SimWorld(R, b, { brain: { think } });
+  }
+  const someone = (id: string, pos: Vec3, team: Entity["team"] = "blue") => ent(id, "npc", pos, [0.7, 1.8, 0.7], "kinematic", { team, shape: "capsule" });
+  const shoot = (on: string, params: VerbBinding["params"] = {}) => vb(`vb_shoot_${on}`, "combat_sport.shoot", on, params);
+  const health = (on: string, params: VerbBinding["params"] = {}) => vb(`vb_hp_${on}`, "combat_sport.health", on, params);
+  /** Press USE on every tick that is a multiple of `gap` (a fresh press each time). */
+  const volley = (gap: number) => (t: number): InputFrame => ({ tick: t, wx: 0, wz: 0, btn: t % gap === 0 ? BTN.USE : 0 });
+
+  it("a spell fired the way you face hits the rival for its damage, and the fourth knocks it out (the rule fires once)", () => {
+    const sim = fight(
+      [someone("wizard", [0, 0.9, 8])],
+      [shoot("player", { damage: 25, cooldown: 0.5, speed: 20, range: 14 }), health("wizard", { hp: 100, respawn: false })],
+      [{ ...rule("r_ko", { t: "health_lte", a: "wizard", n: 0 }, [{ e: "win", target: "player" }]), once: true }],
+    );
+    sim.face("player", 0, 1);
+    expect(sim.usable()).toMatchObject({ on: "player", label: "shoot" });
+    const evs = run(sim, 400, volley(40));
+    const hits = evs.filter((e) => e.k === "hit");
+    expect(hits).toHaveLength(4);
+    expect(hits[0]).toMatchObject({ a: "wizard", b: "player" });
+    expect(evs.filter((e) => e.k === "touch")).toEqual([]); // firing touches nothing
+    expect(evs.filter((e) => e.k === "hp").map((e) => e.v)).toEqual([75, 50, 25, 0]);
+    expect(evs.some((e) => e.k === "knockout" && e.a === "wizard")).toBe(true);
+    expect(sim.fires.get("r_ko")).toBe(1);
+    expect(sim.result).toBe("win");
+    expect(sim.entity("wizard")!.destroyed).toBe(true);
+    sim.free();
+  });
+
+  it("cover stops a shot; the cooldown holds fire; a rival knocked out with respawn is back at its start, healed", () => {
+    const sim = fight(
+      [someone("zombie", [0, 0.9, 8]), ent("crate", "prop", [0, 1, 4], [2, 2, 1], "fixed")],
+      [shoot("player", { damage: 50, cooldown: 1, range: 20 }), health("zombie", { hp: 50 })],
+    );
+    sim.face("player", 0, 1);
+    const blocked = run(sim, 60, volley(2));
+    expect(blocked.filter((e) => e.k === "shoot")).toHaveLength(1); // 30 presses in a second, one shot
+    expect(blocked.some((e) => e.k === "hit")).toBe(false);
+    sim.teleport("player", [3, 0.95, 4]);
+    sim.face("player", -3, 4);
+    const open = run(sim, 60, volley(3));
+    expect(open.find((e) => e.k === "hit")).toMatchObject({ a: "zombie", b: "player" });
+    expect(open.some((e) => e.k === "knockout" && e.a === "zombie")).toBe(true);
+    expect(open.some((e) => e.k === "respawn" && e.a === "zombie")).toBe(true);
+    expect(sim.hp("zombie")).toBe(50);
+    expect(sim.entity("zombie")!.destroyed).toBe(false);
+    sim.free();
+  });
+
+  it("aim assist: a rival 30° off the way you face is still the one hit", () => {
+    const sim = fight([someone("blue_1", [5, 0.9, 9])], [shoot("player", { range: 20, speed: 30 }), health("blue_1")]);
+    sim.face("player", 0, 1);
+    const evs = run(sim, 40, volley(1));
+    expect(evs.find((e) => e.k === "hit")?.a).toBe("blue_1");
+    sim.free();
+  });
+
+  it("an NPC's claws hurt the player; health_lte fires crossing its line; heal moves hit points; a held blaster hits as 'blaster'", () => {
+    const presses = new Map<string, InputFrame>();
+    const sim = fight(
+      [someone("ghoul", [0, 0.9, 1.4]), ent("blaster", "pickup", [6, 0.25, 0], [0.4, 0.4, 0.4], "dynamic", { shape: "sphere" })],
+      [shoot("ghoul", { range: 1.8, damage: 10 }), shoot("blaster", { damage: 30 }), health("player", { hp: 100, respawn: false }), health("ghoul", { hp: 60 })],
+      [rule("r_low", { t: "health_lte", a: "player", n: 50 }, [{ e: "emit", target: "player" }]), rule("r_potion", { t: "every", n: 1 }, [{ e: "heal", target: "player" }])],
+      presses,
+    );
+    presses.set("ghoul", { tick: 1, wx: 0, wz: -60, btn: BTN.USE });
+    const bite = run(sim, 3);
+    expect(bite.find((e) => e.k === "hit")).toMatchObject({ a: "player", b: "ghoul" });
+    expect(sim.hp("player")).toBe(90);
+    expect(bite.some((e) => e.rule === "r_low")).toBe(false);
+    run(sim, 30); // the claws cool down
+    sim.forceHp("player", 55);
+    presses.set("ghoul", { tick: sim.tick + 1, wx: 0, wz: -60, btn: BTN.USE });
+    const low = run(sim, 3);
+    expect(low.some((e) => e.rule === "r_low")).toBe(true); // 55 → 45 crosses 50
+    run(sim, 60 - sim.tick); // at one second the potion rule heals 25
+    expect(sim.hp("player")).toBe(70);
+    sim.attach("blaster", "player");
+    sim.teleport("player", [0, 0.95, -6]);
+    sim.teleport("ghoul", [0, 0.95, 2]);
+    sim.face("player", 0, 1);
+    const shot = run(sim, 60, volley(45));
+    expect(shot.find((e) => e.k === "hit")).toMatchObject({ a: "ghoul", b: "blaster" });
+    expect(sim.hp("ghoul")).toBe(30);
+    expect(sim.entity("blaster")!.carrier).toBe("player");
+    sim.free();
+  });
+
+  it("a thrown star hurts what has hit points, by its damage", () => {
+    const sim = fight(
+      [someone("sensei", [0, 0.9, 3]), ent("star", "pickup", [0, 0.1, 0.5], [0.2, 0.2, 0.2], "dynamic", { shape: "sphere" })],
+      [vb("vb_star", "combat_sport.throw", "star", { damage: 20 }), health("sensei", { hp: 60, respawn: false })],
+    );
+    sim.attach("star", "player");
+    const evs = run(sim, 2, press(BTN.USE));
+    expect(evs.find((e) => e.k === "hit")).toMatchObject({ a: "sensei", b: "star" });
+    expect(sim.hp("sensei")).toBe(40);
+    sim.free();
+  });
+
+  it("a shot passes through teammates to the rival behind them", () => {
+    const sim = fight([someone("mate", [0, 0.9, 4], "red"), someone("foe", [0, 0.9, 9])], [shoot("player", { range: 20 }), health("foe")]);
+    sim.face("player", 0, 1);
+    const evs = run(sim, 80, volley(40));
+    expect(evs.find((e) => e.k === "hit")?.a).toBe("foe");
+    sim.free();
+  });
+});
+
+describe("vehicles and races", () => {
+  const kart = (id: string, pos: Vec3) => ent(id, "vehicle", pos, [1.4, 0.8, 2], "kinematic");
+  const gate = (id: string, pos: Vec3, size: Vec3 = [6, 3, 6]) => ent(id, "checkpoint", pos, size, "sensor");
+  /** Steer at the next point (a stick toward it, full), pressing jump on `boostAt`. */
+  const steer = (sim: SimWorld, to: Vec3, btn = 0): InputFrame => {
+    const p = sim.pos("player");
+    const [dx, dz] = [to[0] - p[0], to[2] - p[2]];
+    const d = Math.sqrt(dx * dx + dz * dz) || 1;
+    return { tick: sim.tick + 1, wx: Math.round((dx / d) * 127), wz: Math.round((dz / d) * 127), btn };
+  };
+
+  it("a kart started with the player at the wheel is faster than running, laps a square of gates in order, and lap_done fires on the second lap", () => {
+    const sim = world(
+      [kart("kart", [0, 0.4, 0]), gate("finish", [0, 1.5, 0]), gate("g1", [18, 1.5, 0]), gate("g2", [18, 1.5, 18]), gate("g3", [0, 1.5, 18])],
+      [vb("vb_kart", "vehicle.drive", "kart", { kind: "kart", driver: "player" }), vb("vb_race", "racing.track", "finish", { gates: "g1,g2,g3", laps: 2 })],
+      [{ ...rule("r_win", { t: "lap_done", a: "player", n: 2 }, [{ e: "win", target: "player" }]), once: true }],
+    );
+    expect(sim.ride("player")?.vehicle).toBe("kart");
+    const route: Vec3[] = [[18, 0, 0], [18, 0, 18], [0, 0, 18], [0, 0, 0]];
+    let leg = 0;
+    let top = 0;
+    const laps: number[] = [];
+    for (let t = 0; t < 60 * 60 && !sim.result; t++) {
+      const p = sim.pos("player");
+      const to = route[leg % 4]!;
+      if ((p[0] - to[0]) * (p[0] - to[0]) + (p[2] - to[2]) * (p[2] - to[2]) < 4) leg++;
+      for (const e of sim.step(steer(sim, route[leg % 4]!))) if (e.k === "lap_done") laps.push(Number(e.v));
+      top = Math.max(top, sim.ride("player")!.speed);
+    }
+    expect(laps).toEqual([1, 2]);
+    expect(sim.result).toBe("win");
+    expect(top).toBeGreaterThan(9); // a walker runs at 6 m/s
+    const k = sim.pos("kart");
+    const p = sim.pos("player");
+    expect(Math.abs(k[0] - p[0]) + Math.abs(k[2] - p[2])).toBeLessThan(0.01); // the kart rides with its driver
+    sim.free();
+  });
+
+  it("jump boosts past top speed; USE when stopped gets out beside it, and USE next to it gets back in", () => {
+    const sim = world([kart("kart", [0, 0.4, 0])], [vb("vb_kart", "vehicle.drive", "kart", { kind: "kart", driver: "player" })]);
+    run(sim, 120, (t) => ({ tick: t, wx: 127, wz: 0, btn: 0 }));
+    const cruise = sim.ride("player")!.speed;
+    expect(cruise).toBeCloseTo(14, 0);
+    run(sim, 30, (t) => ({ tick: t, wx: 127, wz: 0, btn: t % 30 === 1 ? BTN.JUMP : 0 }));
+    expect(sim.ride("player")!.speed).toBeGreaterThan(cruise + 2);
+    run(sim, 180); // coast to a stop
+    expect(sim.ride("player")!.speed).toBeLessThan(2);
+    run(sim, 1, press(BTN.USE));
+    expect(sim.ride("player")).toBeUndefined();
+    run(sim, 5);
+    expect(sim.usable()).toMatchObject({ on: "kart", label: "drive" });
+    const evs = run(sim, 1, press(BTN.USE));
+    expect(evs.some((e) => e.k === "touch" && e.b === "kart")).toBe(true);
+    expect(sim.ride("player")?.vehicle).toBe("kart");
+    sim.free();
   });
 });

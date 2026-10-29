@@ -1,0 +1,27 @@
+{"op":"meta","mode":"play","lang":"en","pack":"arena","sub":[],"seed":16,"look":"ninja dojo","mood":[0.2,0.6,0.5],"timeOfDay":12,"weather":"clear"}
+{"op":"zone","id":"z_dojo","slot":"midfield","tag":"indoor","name":"Dojo training hall"}
+{"op":"spawn","id":"sp_red","zone":"z_dojo","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"sensei_duel","zone":"z_dojo","anchor":"goal_ring","noun":"sensei duel","hyper":"master instructor","team":"red"}
+{"op":"ent","id":"dummy_1","kind":"npc","noun":"straw dummy","hyper":"practice target","zone":"z_dojo","anchor":"flank_n","body":"dynamic","shape":"capsule","size":[0.4,1.5,0.4]}
+{"op":"ent","id":"dummy_2","kind":"npc","noun":"straw dummy","hyper":"practice target","zone":"z_dojo","anchor":"flank_s","body":"dynamic","shape":"capsule","size":[0.4,1.5,0.4]}
+{"op":"ent","id":"dummy_3","kind":"npc","noun":"straw dummy","hyper":"practice target","zone":"z_dojo","anchor":"center_n","body":"dynamic","shape":"capsule","size":[0.4,1.5,0.4]}
+{"op":"ent","id":"sensei","kind":"npc","noun":"sensei","hyper":"master instructor","zone":"z_dojo","anchor":"center_s","body":"dynamic","shape":"capsule","size":[0.5,1.8,0.5]}
+{"op":"ent","id":"star_a","kind":"pickup","noun":"throwing star","hyper":"shuriken","zone":"z_dojo","anchor":"center","body":"dynamic","shape":"box","size":[0.1,0.1,0.02]}
+{"op":"ent","id":"star_b","kind":"pickup","noun":"throwing star","hyper":"shuriken","zone":"z_dojo","anchor":"deck_center","body":"dynamic","shape":"box","size":[0.1,0.1,0.02]}
+{"op":"ent","id":"star_c","kind":"pickup","noun":"throwing star","hyper":"shuriken","zone":"z_dojo","anchor":"deck_w","body":"dynamic","shape":"box","size":[0.1,0.1,0.02]}
+{"op":"verb","id":"vb_carry_star_a","verb":"physics_props.carry","on":"star_a","params":{}}
+{"op":"verb","id":"vb_carry_star_b","verb":"physics_props.carry","on":"star_b","params":{}}
+{"op":"verb","id":"vb_carry_star_c","verb":"physics_props.carry","on":"star_c","params":{}}
+{"op":"verb","id":"vb_shoot_star_a","verb":"combat_sport.shoot","on":"star_a","params":{"range":15,"speed":30,"damage":50,"cooldown":0.5,"at":"dummy_1,dummy_2,dummy_3"}}
+{"op":"verb","id":"vb_shoot_star_b","verb":"combat_sport.shoot","on":"star_b","params":{"range":15,"speed":30,"damage":50,"cooldown":0.5,"at":"dummy_1,dummy_2,dummy_3"}}
+{"op":"verb","id":"vb_shoot_star_c","verb":"combat_sport.shoot","on":"star_c","params":{"range":15,"speed":30,"damage":50,"cooldown":0.5,"at":"dummy_1,dummy_2,dummy_3"}}
+{"op":"verb","id":"vb_shoot_sensei","verb":"combat_sport.shoot","on":"player","params":{"range":12,"speed":30,"damage":80,"cooldown":1,"at":"sensei"}}
+{"op":"rule","id":"r_dummy1_down","when":{"t":"health_lte","a":"dummy_1","n":0},"then":[{"e":"set_state","target":"dummy_1","v":"down"}],"once":true}
+{"op":"rule","id":"r_dummy2_down","when":{"t":"health_lte","a":"dummy_2","n":0},"then":[{"e":"set_state","target":"dummy_2","v":"down"}],"once":true}
+{"op":"rule","id":"r_dummy3_down","when":{"t":"health_lte","a":"dummy_3","n":0},"then":[{"e":"set_state","target":"dummy_3","v":"down"}],"once":true}
+{"op":"rule","id":"r_sensei_win","when":{"t":"health_lte","a":"sensei","n":0},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_player_lose","when":{"t":"health_lte","a":"player","n":0},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"expect","id":"x_dojo","prop":"win_reachable","a":"sp_red","b":"sensei_duel","headline":true,"text":"Dojo duel requires clearing three straw dummies with stars before facing the sensei"}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":6}}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

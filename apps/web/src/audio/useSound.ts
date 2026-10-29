@@ -40,6 +40,8 @@ export interface SoundControl {
   attach(e: Engine): void;
   /** A world went live (or restarted): its place, its music, its events. */
   world(b: WorldBundle, sim: RapierSim | null, cue?: Cue): void;
+  /** Someone started or stopped speaking: the music and ambience duck under the voice. */
+  voice(on: boolean): void;
 }
 
 export function useSound(): SoundControl {
@@ -124,5 +126,7 @@ export function useSound(): SoundControl {
     sound.current?.world(b, sim, cue);
   }, []);
 
-  return { enabled: !OFF, muted, toggle, attach, world };
+  const voice = useCallback((on: boolean) => sound.current?.voice(on), []);
+
+  return { enabled: !OFF, muted, toggle, attach, world, voice };
 }

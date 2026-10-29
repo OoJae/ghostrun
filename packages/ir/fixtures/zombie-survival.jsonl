@@ -1,0 +1,27 @@
+{"op":"meta","mode":"play","lang":"en","pack":"arena","sub":[],"seed":33,"look":"neon","mood":[-0.3,0.9,0.9],"timeOfDay":23,"weather":"fog"}
+{"op":"zone","id":"z_yard","slot":"midfield","tag":"center","name":"The yard"}
+{"op":"zone","id":"z_camp","slot":"west_half","tag":"base","name":"Your camp"}
+{"op":"zone","id":"z_graves","slot":"east_half","tag":"base","name":"The graveyard"}
+{"op":"spawn","id":"sp_red","zone":"z_camp","anchor":"spawn_pad","team":"red"}
+{"op":"spawn","id":"sp_blue","zone":"z_graves","anchor":"spawn_pad","team":"blue"}
+{"op":"ent","id":"medkit","kind":"pickup","noun":"first-aid kit","hyper":"medkit","zone":"z_camp","anchor":"flank_n","body":"sensor","shape":"box","size":[0.6,0.4,0.6]}
+{"op":"ent","id":"flare","kind":"switch","noun":"signal flare","hyper":"lever","zone":"z_camp","anchor":"flank_s","body":"fixed"}
+{"op":"verb","id":"vb_blaster","verb":"combat_sport.shoot","on":"player","params":{"range":14,"speed":30,"damage":20,"cooldown":0.35}}
+{"op":"verb","id":"vb_hp_you","verb":"combat_sport.health","on":"player","params":{"hp":100,"respawn":false}}
+{"op":"verb","id":"vb_claws","verb":"combat_sport.shoot","on":"team:blue","params":{"range":1.6,"speed":12,"damage":12,"cooldown":0.8}}
+{"op":"verb","id":"vb_hp_zombies","verb":"combat_sport.health","on":"team:blue","params":{"hp":60,"respawn":true}}
+{"op":"verb","id":"vb_medkit","verb":"puzzle.collect","on":"medkit"}
+{"op":"verb","id":"vb_flare","verb":"puzzle.switch","on":"flare","params":{"once":true}}
+{"op":"rule","id":"r_down","when":{"t":"health_lte","a":"team:blue","n":0},"then":[{"e":"score","target":"team:red","n":1},{"e":"emit","target":"player","fx":"splat"}]}
+{"op":"rule","id":"r_win","when":{"t":"score_gte","a":"team:red","n":10},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose","when":{"t":"health_lte","a":"player","n":0},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_medkit","when":{"t":"touch","a":"player","b":"medkit"},"then":[{"e":"heal","target":"player","n":40}],"once":true}
+{"op":"rule","id":"r_flare","when":{"t":"state_is","a":"flare","s":"on"},"then":[{"e":"damage","target":"team:blue","n":20},{"e":"emit","target":"flare","fx":"flash"}],"once":true}
+{"op":"npc","id":"zombie_1","role":"creature","zone":"z_graves","anchor":"flank_n","team":"blue","noun":"shambling zombie","hyper":"zombie","menu":["creature.attack","creature.patrol"],"dflt":"creature.attack"}
+{"op":"npc","id":"zombie_2","role":"creature","zone":"z_graves","anchor":"flank_s","team":"blue","noun":"shambling zombie","hyper":"zombie","menu":["creature.attack","creature.patrol"],"dflt":"creature.attack"}
+{"op":"npc","id":"zombie_3","role":"creature","zone":"z_graves","anchor":"goal_ring","team":"blue","noun":"shambling zombie","hyper":"zombie","menu":["creature.attack","creature.patrol"],"dflt":"creature.attack"}
+{"op":"npc","id":"zombie_4","role":"creature","zone":"z_graves","anchor":"spawn_pad","team":"blue","noun":"shambling zombie","hyper":"zombie","menu":["creature.attack","creature.patrol"],"dflt":"creature.patrol"}
+{"op":"npc","id":"zombie_5","role":"creature","zone":"z_graves","anchor":"goal_ring","team":"blue","noun":"shambling zombie","hyper":"zombie","menu":["creature.attack","creature.patrol"],"dflt":"creature.attack"}
+{"op":"expect","id":"x_survive","prop":"win_reachable","a":"sp_red","b":"z_yard","headline":true,"text":"Ten zombies can be knocked out before they get you"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

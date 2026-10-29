@@ -1,0 +1,274 @@
+{
+  "prompt": "A wizard duel on a floating island: throw fireballs, knock out the rival mage to win",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "Fantasy Combat",
+    "setting": "Mystical floating island with high wind currents and falling rocks",
+    "role": "Archmage",
+    "goal": "Accumulate the necessary hit points to incapacitate the rival wizard",
+    "fail": "Being knocked into the abyss or being targeted and defeated by the rival's spells",
+    "mood": "Cinematic and perilous",
+    "pack": "outdoor",
+    "sub": [],
+    "safety": "arcade",
+    "headline": "Floating arena requires precise aerial positioning",
+    "nouns": [
+      {
+        "noun": "wizard",
+        "hyper": "individual"
+      },
+      {
+        "noun": "duel",
+        "hyper": "event"
+      },
+      {
+        "noun": "floating island",
+        "hyper": "object"
+      },
+      {
+        "noun": "fireballs",
+        "hyper": "objects"
+      },
+      {
+        "noun": "rival mage",
+        "hyper": "individual"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.4,
+      "arousal": 0.9,
+      "tension": 0.6
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "11d446725afafdce9e82d27b790cc8d38c44cc780b7b50b5dbb880c2a0281a50",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_arena",
+      "text": "Floating arena requires precise aerial positioning",
+      "status": "counterexample",
+      "method": "static goal regression over rules + physics, 12 AI runners vs 1 bot"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 1,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 9 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 1,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (rival_mage down to 0 HP) ← shoot rival_mage (2 hits of 50)",
+        "src": ""
+      },
+      {
+        "id": "T1:range:r_win",
+        "tier": "T1",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "line-of-sight range model (from ground the jump model reaches)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 103,
+        "status": "verified",
+        "text": "a shot reaches the Rival Mage: clear lines from as far as 15 m (range 15 m)",
+        "cx": null
+      },
+      {
+        "id": "T2:r_fall",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_fall"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 61,
+        "status": "verified",
+        "text": "r_fall fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lose_player",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_player"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_lose_player: nothing in the world hurts the player",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_center_e",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_center_e"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 26,
+        "status": "verified",
+        "text": "r_secret_center_e fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_center_w",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_center_w"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 17,
+        "status": "verified",
+        "text": "r_secret_center_w fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_n",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_n"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 17,
+        "status": "verified",
+        "text": "r_secret_flank_n fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_n_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_n_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 17,
+        "status": "verified",
+        "text": "r_secret_flank_n_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_s",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_s"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 18,
+        "status": "verified",
+        "text": "r_secret_flank_s fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_s_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_s_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 12,
+        "status": "verified",
+        "text": "r_secret_flank_s_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "counterexample",
+        "method": "physics, 12 AI runners vs 1 bot",
+        "n": 12,
+        "k": 0,
+        "text": "no AI runner could win vs 1 bot",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "wins",
+          "text": "12 lost (player reached the strong wind ×12)"
+        },
+        "src": "",
+        "ms": 355
+      }
+    ],
+    "par": null,
+    "ms": 1472
+  }
+}

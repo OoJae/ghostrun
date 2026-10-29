@@ -1,0 +1,22 @@
+{"op":"meta","mode":"play","lang":"en","pack":"arena","sub":[],"seed":15,"look":"ancient sanctuary","mood":[-0.7,0.85,0.9],"timeOfDay":12,"weather":"clear"}
+{"op":"zone","id":"z_midfield","slot":"midfield","tag":"center","name":"Sanctuary Core"}
+{"op":"zone","id":"z_west_half","slot":"west_half","tag":"base","name":"West Wing"}
+{"op":"zone","id":"z_east_half","slot":"east_half","tag":"base","name":"East Wing"}
+{"op":"spawn","id":"sp_red","zone":"z_midfield","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"crystal","zone":"z_midfield","anchor":"center","noun":"sacred crystal","hyper":"artifact","team":"","body":"sensor","shape":"none"}
+{"op":"ent","id":"crystal_hp","kind":"health","noun":"crystal durability","hyper":"health","zone":"z_midfield","anchor":"center","body":"dynamic","shape":"none","hp":200}
+{"op":"ent","id":"player_hp","kind":"health","noun":"guardian stamina","hyper":"health","zone":"z_midfield","anchor":"center","body":"dynamic","shape":"none","hp":150}
+{"op":"ent","id":"mon_spawn_w","kind":"spawn","noun":"monster spawn west","hyper":"spawn","zone":"z_west_half","anchor":"spawn_pad","body":"fixed","shape":"none"}
+{"op":"ent","id":"mon_spawn_e","kind":"spawn","noun":"monster spawn east","hyper":"spawn","zone":"z_east_half","anchor":"spawn_pad","body":"fixed","shape":"none"}
+{"op":"ent","id":"monster_template","kind":"npc","noun":"shadow monster","hyper":"enemy","zone":"z_west_half","anchor":"spawn_pad","body":"dynamic","shape":"capsule","hp":50,"team":"blue"}
+{"op":"verb","id":"vb_jump","verb":"locomotion.jump","on":"player","params":{"jumpsMax":2}}
+{"op":"verb","id":"vb_timer","verb":"puzzle.timer","on":"player","params":{"seconds":60}}
+{"op":"verb","id":"vb_shoot","verb":"combat_sport.shoot","on":"player","params":{"range":20,"speed":25,"damage":30,"cooldown":0.5,"at":""}}
+{"op":"verb","id":"vb_mon_shoot","verb":"combat_sport.shoot","on":"monster_template","params":{"range":15,"speed":20,"damage":20,"cooldown":1,"at":""}}
+{"op":"rule","id":"r_win_timer","when":{"t":"timer_end","a":"player"},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose_crystal","when":{"t":"health_lte","a":"crystal_hp","n":0},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose_player","when":{"t":"health_lte","a":"player_hp","n":0},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_monsters_spawn","when":{"t":"every","n":5},"then":[{"e":"spawn","target":"monster_template"}]}
+{"op":"expect","id":"x_defend","prop":"win_reachable","a":"sp_red","b":"crystal","headline":true,"text":"Crystal must survive 60 seconds of monster assaults"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}
