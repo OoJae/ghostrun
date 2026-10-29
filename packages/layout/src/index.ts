@@ -1214,31 +1214,70 @@ export function winNeeds(b: WorldBundle): Set<string> {
 /**
  * Something the win needs that stands up where the laws' jumps can't reach (a spray can on an
  * arena deck, two jumps up, with one jump allowed): the laws allow the jumps it takes (up to
- * three). Logged.
+ * three). Reach is a climb over the layout's surfaces from the spawn (a course's platforms step up
+ * a jump at a time, so its finish is in reach however high it stands). Logged.
  */
 export function repairReach(b: WorldBundle): string[] {
   if (b.mode !== "play" || b.laws.gravityScale < 0.05 || b.laws.jumpH <= 0) return [];
   const sp = b.entities.find((e) => e.kind === "spawn" && e.team === "red") ?? b.entities.find((e) => e.kind === "spawn");
   if (!sp) return [];
   const apex = (n: number) => n * b.laws.jumpH * 0.94;
+  // (walls are no footing: the proof's runners don't climb on cover)
+  const tops = b.statics.filter((s) => s.surf !== "wall").map((s) => ({ s, top: s.pos[1] + s.size[1] / 2 }));
+  const under = (x: number, z: number, y: number) => {
+    let best = -1;
+    tops.forEach((t, i) => {
+      if (Math.abs(x - t.s.pos[0]) <= t.s.size[0] / 2 && Math.abs(z - t.s.pos[2]) <= t.s.size[2] / 2 && t.top <= y + 0.3 && (best < 0 || t.top > tops[best]!.top)) best = i;
+    });
+    return best;
+  };
+  const gap = (i: number, j: number) => {
+    const [p, q] = [tops[i]!.s, tops[j]!.s];
+    const dx = Math.max(0, Math.abs(p.pos[0] - q.pos[0]) - (p.size[0] + q.size[0]) / 2);
+    const dz = Math.max(0, Math.abs(p.pos[2] - q.pos[2]) - (p.size[2] + q.size[2]) / 2);
+    return Math.sqrt(dx * dx + dz * dz);
+  };
+  // how far across a hop of n jumps carries you while ending `rise` higher (the course's own model)
+  const across = (n: number, rise: number) => {
+    if (n <= 0) return 0.05;
+    const gr = 9.81 * Math.max(0.05, b.laws.gravityScale);
+    const H = b.laws.jumpH * 0.94;
+    const v = Math.sqrt(2 * gr * H);
+    const disc = v * v + 2 * gr * ((n - 1) * H - Math.max(rise, -3));
+    return disc < 0 ? -1 : b.laws.speed * ((((n - 1) * v) / gr + (v + Math.sqrt(disc)) / gr) * 0.85);
+  };
+  // every surface you can climb to from the spawn's with n jumps (a hop as far across as the jump
+  // carries, up to the apex; down a drop)
+  const reach = (n: number) => {
+    const from = under(sp.pos[0], sp.pos[2], sp.pos[1] + 0.1);
+    const seen = new Set<number>(from >= 0 ? [from] : []);
+    const todo = [...seen];
+    while (todo.length) {
+      const i = todo.pop()!;
+      for (let j = 0; j < tops.length; j++) {
+        if (seen.has(j)) continue;
+        const [rise, g] = [tops[j]!.top - tops[i]!.top, gap(i, j)];
+        if ((rise <= 0.41 && g <= 0.05) || (rise <= (n > 0 ? apex(n) - 0.1 : 0.41) && g <= across(n, rise) + 0.3)) ((seen.add(j)), todo.push(j));
+      }
+    }
+    return seen;
+  };
   const wanted = winNeeds(b);
-  let need = b.laws.jumpsMax;
-  let why = "";
-  for (const e of b.entities) {
-    if (!wanted.has(e.id) || e.kind === "npc" || e.kind === "spawn") continue;
-    const bottom = e.pos[1] - e.size[1] / 2;
-    const under = b.statics.filter((s) => s.surf !== "wall" && Math.abs(e.pos[0] - s.pos[0]) <= s.size[0] / 2 && Math.abs(e.pos[2] - s.pos[2]) <= s.size[2] / 2 && s.pos[1] + s.size[1] / 2 <= bottom + 0.3);
-    if (!under.length) continue;
-    const rise = Math.max(...under.map((s) => s.pos[1] + s.size[1] / 2)) - sp.pos[1];
-    if (rise <= 0.41 || rise <= apex(need) - 0.1) continue;
-    let n = need;
-    while (n < 3 && rise > apex(n) - 0.1) n++;
-    if (n > need) ((need = n), (why = `${e.id} stands ${Math.round(rise * 10) / 10} m up`));
+  const spots = b.entities.filter((e) => wanted.has(e.id) && e.kind !== "npc" && e.kind !== "spawn").map((e) => ({ e, at: under(e.pos[0], e.pos[2], e.pos[1] - e.size[1] / 2) })).filter((x) => x.at >= 0);
+  const missing = (n: number) => {
+    const r = reach(n);
+    return spots.filter((x) => !r.has(x.at));
+  };
+  const now = missing(b.laws.jumpsMax);
+  if (!now.length) return [];
+  for (let n = b.laws.jumpsMax + 1; n <= 3; n++) {
+    if (missing(n).length) continue;
+    const was = b.laws.jumpsMax;
+    b.laws = { ...b.laws, jumpsMax: n };
+    const x = now[0]!;
+    return [`laws: ${x.e.id} stands ${Math.round((tops[x.at]!.top - sp.pos[1]) * 10) / 10} m up where ${was} jump${was === 1 ? "" : "s"} can't climb, and the win needs it, so ${n} jumps`];
   }
-  if (need <= b.laws.jumpsMax) return [];
-  const was = b.laws.jumpsMax;
-  b.laws = { ...b.laws, jumpsMax: need };
-  return [`laws: ${why}, which the win needs, so ${need} jumps (was ${was})`];
+  return [];
 }
 
 /**
