@@ -386,8 +386,9 @@ export function repairCombat(b: WorldBundle): string[] {
   const guns = b.verbs.filter((v) => v.verb === SHOOT && (v.on === "player" || held.has(v.on)));
   // (and one a rule wants worn down is something to throw the stars at)
   const stars = b.verbs.filter((v) => v.verb === "combat_sport.throw");
+  // (never one a rule you lose by wears down: your own ship, the crystal you defend)
   for (const r of b.rules) {
-    const e = (r.when.t === "hit" || r.when.t === "health_lte") && (!r.when.b || guns.some((g) => g.on === r.when.b)) ? b.entities.find((x) => x.id === r.when.a && x.kind !== "npc") : undefined;
+    const e = (r.when.t === "hit" || r.when.t === "health_lte") && (!r.when.b || guns.some((g) => g.on === r.when.b)) && !r.then.some((x) => x.e === "lose") ? b.entities.find((x) => x.id === r.when.a && x.kind !== "npc") : undefined;
     if (!e) continue;
     for (const g of [...guns, ...(r.when.t === "health_lte" ? stars : [])]) {
       const at = String(g.params.at ?? "").split(",").filter(Boolean);

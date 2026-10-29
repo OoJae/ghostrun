@@ -155,6 +155,18 @@ function plan(sim: SimWorld, b: WorldBundle, r: Rule, playerTeam: string, presse
         if (rival) return rivalFires(sim, b, rival, presses);
         return hurts ? plan(sim, b, hurts, playerTeam, presses) : "nothing in the world hurts the player";
       }
+      // something you lose by losing (your ship, the crystal you defend): a rival's weapon meant for
+      // it, or a rule's damage (never your own shot)
+      if (r.then.some((e) => e.e === "lose")) {
+        const gun = b.verbs.find((v) => v.verb === "combat_sport.shoot" && b.entities.some((e) => e.id === v.on && e.kind === "npc" && e.team !== playerTeam) && String(v.params.at ?? "").split(",").includes(who));
+        if (gun) {
+          const why = lineUp(sim, b, gun.on, who, 2.5);
+          if (why) return why;
+          presses.set(gun.on, { tick: sim.tick + 1, wx: 0, wz: 0, btn: BTN.USE });
+          return null;
+        }
+        return hurts ? plan(sim, b, hurts, playerTeam, presses) : `nothing in the world wears ${who} down`;
+      }
       // the player's weapon (one that does damage first: a harmless one is the bug to show)
       const ws = playerWeapons(b).filter((x) => !w.b || x.on === w.b).sort((p, q) => Number(q.damage > 0) - Number(p.damage > 0));
       const wp = ws[0];

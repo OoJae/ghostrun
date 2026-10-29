@@ -348,9 +348,10 @@ describe("fights", () => {
     expect(rule("r_theirs").when).toMatchObject({ t: "hit", a: "team:red", b: "" });
   });
 
-  it("an archer 'hitting the player' is its shot, a loss as written (and then no knock-out rule); a team where the weapon goes is who was hit; knock-outs that lead nowhere make the win need them all", () => {
+  it("an archer 'hitting the player' is its shot, a loss as written (and then no knock-out rule); a team where the weapon goes is who was hit; knock-outs that lead nowhere make the win need them all; your gun never aims at what you lose by", () => {
     const { bundle, notes } = place(
       ctf
+        .replace('{"op":"verb","id":"vb_jump"', '{"op":"ent","id":"my_ship","kind":"prop","noun":"your ship","zone":"z_plaza","anchor":"wall_w","props":{"hp":100}}\n{"op":"verb","id":"vb_jump"')
         .replace('{"op":"law"', [
           '{"op":"verb","id":"vb_gun","verb":"combat_sport.shoot","on":"player"}',
           '{"op":"verb","id":"vb_bow","verb":"combat_sport.shoot","on":"rival_1","params":{"range":20}}',
@@ -362,10 +363,12 @@ describe("fights", () => {
           '{"op":"rule","id":"r_tag","when":{"t":"hit","a":"player","b":"team:red"},"then":[{"e":"score","target":"team:blue","n":1}]}',
           '{"op":"rule","id":"r_down","when":{"t":"health_lte","a":"rival_1","n":0},"then":[{"e":"destroy","target":"rival_1"}],"once":true}',
           '{"op":"rule","id":"r_boss","when":{"t":"health_lte","a":"rival_2","n":0},"then":[{"e":"win","target":"player"}],"once":true}',
+          '{"op":"rule","id":"r_sunk","when":{"t":"health_lte","a":"my_ship","n":0},"then":[{"e":"lose","target":"player"}],"once":true}',
           '{"op":"rule","id":"r_pickup"',
         ].join("\n")),
     );
     const rule = (id: string) => bundle.rules.find((r) => r.id === id)!;
+    expect(bundle.verbs.find((v) => v.id === "vb_gun")!.params.at ?? "").not.toContain("my_ship");
     expect(rule("r_shot").when).toMatchObject({ t: "hit", a: "player", b: "rival_1" });
     expect(bundle.rules.some((r) => r.id === "r_knocked_out")).toBe(false); // (the first hit already loses)
     expect(rule("r_tag").when).toMatchObject({ t: "hit", a: "team:red", b: "" }); // blue scores: one of yours was hit
