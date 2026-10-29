@@ -5,6 +5,7 @@ import type { WorldBundle } from "@ghostrun/ir";
 import { firstSentences, recap } from "../audio/lines";
 import { clock, why, type Fact, type Story } from "../host";
 import { raceClock, split } from "../race";
+import { ClipPanel, type ClipCard } from "./Clip";
 import "./race.css";
 import "./voice.css";
 
@@ -78,7 +79,7 @@ function AskHost({ onAsk, onReplay, voice }: { onAsk: (q: string) => Promise<{ a
   );
 }
 
-export function ResultCard({ result, bundle, par, onAgain, onShare, director, onTwist, onReplay, onAsk, race, voice }: { result: RunResult; bundle: WorldBundle; par: number | null; onAgain: () => void; onShare: () => void; director?: { line: string; label: string; status: "proving" | "ready" } | null; onTwist?: () => void; onReplay?: (tick: number) => void; onAsk?: ((q: string) => Promise<{ answer: string; cites: Fact[] } | null>) | undefined; race?: RaceCard | undefined; voice?: HostVoice | undefined }) {
+export function ResultCard({ result, bundle, par, onAgain, onShare, director, onTwist, onReplay, onAsk, race, voice, clip }: { result: RunResult; bundle: WorldBundle; par: number | null; onAgain: () => void; onShare: () => void; director?: { line: string; label: string; status: "proving" | "ready" } | null; onTwist?: () => void; onReplay?: (tick: number) => void; onAsk?: ((q: string) => Promise<{ answer: string; cites: Fact[] } | null>) | undefined; race?: RaceCard | undefined; voice?: HostVoice | undefined; clip?: ClipCard | undefined }) {
   const t = Math.round((result.tick / 60) * 10) / 10;
   const reason = why(bundle, result.rule);
   const said = recap(result, bundle);
@@ -152,6 +153,7 @@ export function ResultCard({ result, bundle, par, onAgain, onShare, director, on
         )}
         <button type="button" onClick={onShare}>Share this run</button>
       </div>
+      {clip && <ClipPanel clip={clip} />}
       {race && (
         <div className="result-card">
           <output data-testid="result-card" aria-label="Your result, to paste anywhere">{race.text}</output>

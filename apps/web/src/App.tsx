@@ -34,6 +34,9 @@ import { substitution } from "./substitutions";
 import { RaceChip } from "./hud/Race";
 import { BoardPanel } from "./hud/Board";
 import { loadRace, RACE_PROMPT, useRace } from "./useRace";
+import { useClip } from "./useClip";
+import { clipName } from "./clip";
+import { worldTitle } from "./race";
 
 const HINT_MS = 6000;
 const FIXTURE = new URLSearchParams(window.location.search).get("fixture") ?? "ctf";
@@ -180,6 +183,17 @@ export function App() {
   modeRef.current = mode;
   // racing: the proof's par runner (or a run someone sent) as a ghost beside the player
   const race = useRace({ engine, world: current.current, loaded: timing, result, receipt: proof.receipt, specHash, prompt, urls: wasmUrls, toast: setToast, again: () => againRef.current() });
+  // the run's clip: the last seconds of it, cut where it ended, or a clean replay of it for a demo
+  const clip = useClip({
+    canvas,
+    tap: sound.tap,
+    active: status === "playing" && !inVr,
+    loaded: timing,
+    result,
+    name: (r, ext, take) => clipName(current.current ? worldTitle(current.current, prompt === RACE_PROMPT ? "" : prompt) : "world", r.tick, ext, take ? "replay" : ""),
+    replay: engine.current?.rapierSim ? (r, back) => replayMoment(r.tick, back) : null,
+    toast: setToast,
+  });
   // the playtest landed while the runners' overview is up: draw its heat map in too
   const playtest = proof.receipt?.playtest;
   useEffect(() => {
@@ -786,15 +800,16 @@ export function App() {
 
   /**
    * The Host's "show me": the same world rebuilt and this run replayed exactly (inputs and minds
-   * as logged), from four seconds before the moment; any key takes over.
+   * as logged), from four seconds before the moment (a clean take: up to half a minute); any key
+   * takes over.
    */
-  const replayMoment = (tick: number) => {
+  const replayMoment = (tick: number, back = 240) => {
     const w = current.current;
     const sim = engine.current?.rapierSim;
     if (!w || !sim) return;
     const inputs = [...sim.inputs];
     const chosen = [...sim.minds];
-    const from = Math.max(0, tick - 240);
+    const from = Math.max(0, tick - back);
     setResult(null);
     void show(w, ++runId.current, performance.now(), []).then(() => {
       const s2 = engine.current?.rapierSim;
@@ -935,6 +950,7 @@ export function App() {
             }}
             race={race.card}
             voice={speech.enabled ? { say: speech.host, again: speech.again } : undefined}
+            clip={clip.card}
           />
         )}
         {race.chip && status === "playing" && (collapsed || typing || !intent) && <RaceChip {...race.chip} />}
