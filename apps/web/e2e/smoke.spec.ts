@@ -138,7 +138,9 @@ test("automatic backend selection boots cleanly and Enter re-runs the pipeline",
   if (p.backend === "webgpu") await page.screenshot({ path: resolve(here, "__screenshots__/ctf-webgpu.png") });
   console.log(`[ghostrun] auto ${JSON.stringify({ fps: p.fps, backend: p.backend, ttffMs: p.ttffMs, drawCalls: p.drawCalls })}`);
 
-  // Enter in the prompt bar rebuilds the world: the sim restarts from tick 0 and the hash is stable.
+  // Enter in the prompt bar rebuilds the world: the sim restarts from tick 0 and the hash is stable
+  // (offline, any prompt that isn't a recorded one builds the CTF fixture again).
+  await page.getByLabel("Describe a world").fill("A rooftop chase in the rain");
   await page.getByLabel("Describe a world").press("Enter");
   await page.waitForFunction((t) => window.__GHOSTRUN__.ready && (window.__GHOSTRUN__.tick ?? t) < t, p.tick!, { timeout: 30_000 });
   await page.waitForFunction((h) => window.__GHOSTRUN__.specHash === h, p.specHash!, { timeout: 10_000 });
@@ -429,16 +431,59 @@ test("first ten seconds: try-one suggestions open a world in one click; a spoken
   expect(errors).toEqual([]);
 });
 
+test("landing: the bar starts empty and cycles examples (Enter builds the one shown), starters build in one click, and a car gets an honest note", async ({ page }) => {
+  const errors = collectErrors(page);
+  await page.goto("/?gl=webgl2&fx=0&dpr=0.5&prewarm=0");
+  await page.waitForFunction(() => window.__GHOSTRUN__?.ready === true, null, { timeout: 90_000 });
+  const bar = page.getByRole("textbox", { name: "Describe a world" });
+  await expect(bar).toHaveValue(""); // nothing to clear before typing
+  const landing = page.getByTestId("landing");
+  await expect(landing).toContainText("Type any world. It's playable in seconds, and AI runners prove it's beatable.");
+  await expect(landing.getByRole("button")).toHaveText(["The organizer's brief", "Surprise me", "Museum heist", "Forest climb", "Coin rush"]);
+  await expect(page.getByTestId("subst-note")).toHaveCount(0); // the brief asks for nothing missing
+
+  // the placeholder types out an example, then moves on to another
+  const typed = async () => {
+    await page.waitForFunction(() => (document.querySelector<HTMLInputElement>("[aria-label='Describe a world']")?.placeholder.length ?? 0) > 24, null, { timeout: 8_000 });
+    return (await bar.getAttribute("placeholder"))!.slice(0, 24);
+  };
+  const first = await typed();
+  expect(first).toMatch(/^Try: /);
+  await expect.poll(typed, { timeout: 10_000 }).not.toBe(first);
+
+  // one click on a starter builds that world, and the landing steps aside
+  await landing.getByRole("button", { name: "Coin rush" }).click();
+  await expect(page.getByTestId("intent-card")).toContainText("arena", { timeout: 30_000 });
+  await expect(landing).toHaveCount(0);
+  await expect(bar).toHaveValue(/Collect five gold coins/);
+
+  // Enter on an empty bar builds the example it shows (offline: that prompt's recorded world)
+  await bar.fill("");
+  const example = (await bar.getAttribute("placeholder"))!.replace(/^Try: /, "");
+  await bar.press("Enter");
+  await expect(bar).toHaveValue(example);
+  await expect(page.getByRole("status").filter({ hasText: "recorded live AI world" })).toBeVisible({ timeout: 30_000 });
+
+  // a mechanic no kit has yet: the Intent card says what you get instead
+  await expect(page.getByText("building world…")).toHaveCount(0, { timeout: 30_000 });
+  await bar.fill("Drive a race car round a neon city");
+  await bar.press("Enter");
+  await expect(page.getByTestId("subst-note")).toHaveText("No vehicles yet: you race on foot", { timeout: 30_000 });
+  expect(errors).toEqual([]);
+});
+
 test("sound: the first key press starts it, a coin chimes, M mutes it (remembered), ?audio=0 turns it off", async ({ page }) => {
   const errors = collectErrors(page);
   const audio = () => page.evaluate(() => window.__GHOSTRUN__.audio!);
   await page.goto("/?gl=webgl2&fx=0&dpr=0.5&prewarm=0&fixture=coin-rush");
   await page.waitForFunction(() => window.__GHOSTRUN__?.ready === true, null, { timeout: 90_000 });
   expect((await audio()).state).toBe("off"); // browsers allow no sound before a gesture, and none is made
+  await expect(page.getByTestId("landing")).toBeVisible();
 
   // coin_1 sits on the midfield line ahead of the spawn
   await page.keyboard.down("KeyW");
   await page.waitForFunction(() => window.__GHOSTRUN__.audio?.state === "running", null, { timeout: 10_000 });
+  await expect(page.getByTestId("landing")).toHaveCount(0); // the first move puts the landing away
   await expect(page.getByTestId("score")).toContainText("SCORE 1", { timeout: 15_000 });
   await page.keyboard.up("KeyW");
   await expect.poll(async () => (await audio()).counts.coin ?? 0).toBeGreaterThan(0);

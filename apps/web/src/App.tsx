@@ -23,6 +23,8 @@ import { probe } from "./probe";
 import { askHost, clock as mmss, facts, story } from "./host";
 import { useSound } from "./audio/useSound";
 import { MuteButton } from "./hud/Mute";
+import { EXAMPLES, Landing, type Starter } from "./hud/Landing";
+import { substitution } from "./substitutions";
 
 const HINT_MS = 6000;
 const FIXTURE = new URLSearchParams(window.location.search).get("fixture") ?? "ctf";
@@ -40,6 +42,15 @@ const SUGGESTIONS: readonly { label: string; prompt: string; live?: true }[] = [
   { label: "Minimalist museum tour", prompt: "A minimalist white museum with five sculptures and a guide who explains each one.", live: true },
   { label: "Wizard duel", prompt: "A wizard duel on floating islands: knock your rival off the edge before they knock you off.", live: true },
   { label: "Bludiště s duchy (Czech)", prompt: "Bludiště s duchy: najdi klíč a uteč východem, než tě chytí.", live: true },
+];
+
+/** The landing's one-click starts: the brief, a surprise, and three recorded worlds (three looks, three packs). */
+const STARTERS: readonly Starter[] = [
+  { label: "The organizer's brief", prompt: BRIEF, kind: "brief" },
+  { label: "Surprise me", prompt: null, kind: "surprise" },
+  { label: "Museum heist", prompt: FIXTURE_PROMPTS.vault! },
+  { label: "Forest climb", prompt: FIXTURE_PROMPTS.forest! },
+  { label: "Coin rush", prompt: FIXTURE_PROMPTS["coin-rush"]! },
 ];
 
 /** The gallery's worlds, fetched one at a time when opened. */
@@ -62,8 +73,13 @@ export function App() {
   const wasmUrls = useRef<{ rapier: string; recast: string } | null>(null);
   const worker = useRef<Worker | null>(null);
   const runId = useRef(0);
-  const [prompt, setPrompt] = useState(FIRST_PROMPT);
+  // empty: the bar shows rotating examples instead of a prompt to clear first
+  const [prompt, setPrompt] = useState("");
   const [intent, setIntent] = useState<Intent | null>(null);
+  /** First load, until the person builds, moves or opens the gallery: the landing line and starters. */
+  const [fresh, setFresh] = useState(!params0.get("s"));
+  /** What the world does instead of a mechanic the prompt asked for (no vehicles yet, …). */
+  const [note, setNote] = useState<string | null>(null);
   const sound = useSound();
   const [specHash, setSpecHash] = useState<string>();
   const [timing, setTiming] = useState<LoadResult | null>(null);
@@ -230,6 +246,7 @@ export function App() {
       const e = engine.current;
       if (!e) return;
       setIntent(world.intent);
+      setNote(substitution(world.source?.base ?? world.source?.prompt ?? builtPrompt.current, world.bundle));
       setScore({ red: 0, blue: 0, result: null });
       const bonus = new Set(world.bundle.entities.filter((e) => e.tags.includes("bonus")).map((e) => e.id));
       setSecrets({ found: 0, of: bonus.size });
@@ -342,7 +359,7 @@ export function App() {
           return;
         }
         engine.current = e;
-        e.onInput = () => setCollapsed(true);
+        e.onInput = () => (setCollapsed(true), setFresh(false));
         sound.attach(e);
         void e.vrSupported().then((ok) => !disposed && setVrOk(ok));
         probe().sim = "stub";
@@ -421,6 +438,10 @@ export function App() {
     const w = current.current;
     if (sim && w) minds.current = new Minds(w, sim, (_npc, name, line) => setBark({ name, line, at: Date.now() }));
   }, [mode, status]);
+
+  useEffect(() => {
+    if (gallery) setFresh(false);
+  }, [gallery]);
 
   useEffect(() => {
     if (!bark) return;
@@ -703,6 +724,10 @@ export function App() {
 
   const submit = (text: string) => {
     setCollapsed(false);
+    setFresh(false);
+    // offline, a gallery prompt (the bar's examples) opens its recorded world rather than the fixture
+    const recorded = mode === "live" ? undefined : GALLERY.find((g) => g.prompt === text);
+    if (recorded) return void openGallery(recorded);
     run(text, performance.now(), [], mode === "live").catch((err: unknown) => {
       console.error(err);
       setError(err instanceof Error ? err.message : String(err));
@@ -710,10 +735,19 @@ export function App() {
     });
   };
 
+  /** A landing starter: its prompt, or for "Surprise me" any suggestion this lane can build. */
+  const pickStarter = (s: Starter) => {
+    const pool = SUGGESTIONS.filter((x) => (mode === "live" || !x.live) && x.prompt !== BRIEF);
+    const text = s.prompt ?? pool[Math.floor(Math.random() * pool.length)]!.prompt;
+    setPrompt(text);
+    submit(text);
+  };
+  const landing = fresh && !collapsed && !typing;
+
   return (
     <>
       <canvas ref={canvas} className="stage" data-testid="stage" />
-      <div className={`hud${touch ? " touch-mode" : ""}`}>
+      <div className={`hud${touch ? " touch-mode" : ""}${landing ? " fresh" : ""}`}>
         <div className="top">
           <PromptBar
             prompt={prompt}
@@ -729,10 +763,13 @@ export function App() {
             onFocusChange={setTyping}
             onGallery={() => setGallery(true)}
             galleryCount={GALLERY.length}
+            examples={EXAMPLES}
+            playing={builtPrompt.current}
           />
+          {landing && <Landing starters={STARTERS} ready={status === "playing"} onPick={pickStarter} />}
         </div>
         {notice && <div className="glass notice" role="status">{notice}</div>}
-        {!collapsed && !typing && intent && <IntentCard intent={intent} specHash={specHash} />}
+        {!collapsed && !typing && intent && <IntentCard intent={intent} specHash={specHash} note={note} />}
         {current.current && status !== "booting" && !typing && (!collapsed || edit.status === "editing" || edit.status === "racing" || edit.status === "proving") && (
           <EditBox state={edit} enabled={mode === "live"} suggestions={[...suggestionsFor(current.current.bundle), "surprise me"]} canUndo={history.current.length > 0} onEdit={(c) => void editWorld(c)} onUndo={undo} />
         )}

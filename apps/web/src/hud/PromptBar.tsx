@@ -19,6 +19,41 @@ interface Props {
   /** Opens the gallery of recorded worlds (shown in the suggestions). */
   onGallery?(): void;
   galleryCount?: number;
+  /** Example prompts the empty bar cycles through as its placeholder; Enter on an empty bar builds the one shown. */
+  examples?: readonly string[];
+  /** The prompt of the world being played (the pill shows it when the bar is empty). */
+  playing?: string;
+}
+
+const EXAMPLE_MS = 3000;
+const reducedMotion = () => window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
+
+/**
+ * The empty bar's placeholder: an example that types itself out, a new one every few seconds,
+ * holding still once the bar is focused or typed into.
+ */
+function useExample(examples: readonly string[], idle: boolean): { full: string; shown: string } {
+  const [i, setI] = useState(0);
+  const [chars, setChars] = useState(0);
+  useEffect(() => {
+    if (!idle || examples.length < 2) return;
+    const t = setInterval(() => setI((x) => (x + 1) % examples.length), EXAMPLE_MS);
+    return () => clearInterval(t);
+  }, [idle, examples.length]);
+  const full = examples[i] ?? "";
+  useEffect(() => {
+    if (reducedMotion()) return setChars(full.length);
+    // by the clock, not by ticks: late timers on a busy frame still finish the line on time
+    const t0 = performance.now();
+    setChars(0);
+    const t = setInterval(() => {
+      const n = Math.min(full.length, Math.ceil((performance.now() - t0) / 14));
+      setChars(n);
+      if (n >= full.length) clearInterval(t);
+    }, 28);
+    return () => clearInterval(t);
+  }, [full]);
+  return { full, shown: idle ? full.slice(0, chars) : full };
 }
 
 function Stopwatch({ timing, busy }: { timing: LoadResult | null; busy: boolean }) {
@@ -111,9 +146,10 @@ function Mic({ onText, onDone }: { onText: (t: string) => void; onDone: (t: stri
   );
 }
 
-export function PromptBar({ prompt, onPrompt, onSubmit, collapsed, onExpand, onCollapse, timing, busy, source, suggestions = [], onFocusChange, onGallery, galleryCount }: Props) {
+export function PromptBar({ prompt, onPrompt, onSubmit, collapsed, onExpand, onCollapse, timing, busy, source, suggestions = [], onFocusChange, onGallery, galleryCount, examples = [], playing }: Props) {
   const input = useRef<HTMLInputElement>(null);
   const [focused, setFocusedState] = useState(false);
+  const example = useExample(examples, !focused && !prompt);
   const setFocused = (f: boolean) => {
     setFocusedState(f);
     onFocusChange?.(f);
@@ -126,15 +162,19 @@ export function PromptBar({ prompt, onPrompt, onSubmit, collapsed, onExpand, onC
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
+    // an empty bar builds the example it shows
+    const text = prompt.trim() ? prompt : example.full;
+    if (!text) return;
     input.current?.blur();
-    onSubmit(prompt);
+    if (text !== prompt) onPrompt(text);
+    onSubmit(text);
   };
 
   if (collapsed) {
     return (
       <button className="glass pill" onClick={onExpand} title="Edit prompt" data-testid="prompt-pill">
         <span className="mark" aria-hidden="true" />
-        <span className="pill-text">{prompt}</span>
+        <span className="pill-text">{prompt || playing}</span>
         <Stopwatch timing={timing} busy={busy} />
       </button>
     );
@@ -155,7 +195,7 @@ export function PromptBar({ prompt, onPrompt, onSubmit, collapsed, onExpand, onC
         }}
         spellCheck={false}
         aria-label="Describe a world"
-        placeholder="Describe a world…"
+        placeholder={example.full ? `Try: ${example.shown}` : "Describe a world…"}
       />
       <Mic onText={onPrompt} onDone={onSubmit} />
       <span className="chip" title={source.title}>

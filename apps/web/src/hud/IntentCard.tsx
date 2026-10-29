@@ -8,13 +8,18 @@ function castLine(cast: Intent["cast"]): string {
   return [...counts].map(([role, n]) => plural(n, role)).join(" · ") || "none";
 }
 
-export function IntentCard({ intent, specHash }: { intent: Intent; specHash: string | undefined }) {
+export function IntentCard({ intent, specHash, note }: { intent: Intent; specHash: string | undefined; note?: string | null }) {
   return (
     <aside className="glass intent" data-testid="intent-card">
       <header>
         <span className="eyebrow">Intent</span>
         <span className="mode">{intent.mode}</span>
       </header>
+      {note && (
+        <p className="subst" data-testid="subst-note" title="The prompt asked for something no world can do yet; this is what you get instead">
+          {note}
+        </p>
+      )}
       {intent.live && (
         <dl className="card10">
           <dt>You are</dt>
