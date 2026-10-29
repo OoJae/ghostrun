@@ -121,16 +121,17 @@ test("voices: a bark is spoken in its character's voice, a reply by voice, M mut
   await expect(page.getByTestId("prompt-bar")).toContainText("live AI");
   expect((await speech(page)).state).toBe("on");
 
-  // walk up to your teammate (it takes up its post in front of the red base), then T: hold the mic,
-  // ask, let go; the question goes, and the answer is said
-  const gap = () => page.evaluate(() => {
-    const g = window.__GHOSTRUN__;
-    const [mx, mz] = g.cast?.mate_1 ?? [99, 99];
-    return Math.hypot((g.player?.[0] ?? 0) - mx, (g.player?.[2] ?? 0) - mz);
-  });
+  // your teammate takes up its post in front of the red base (x −22, z 3); walk up beside it and
+  // stop (the probe's positions can lag a frame or two, so it stops well short of passing), then T:
+  // hold the mic, ask, let go; the question goes, and the answer is said
+  const at = () => page.evaluate(() => ({ p: window.__GHOSTRUN__.player ?? [-99, 0, 0], m: window.__GHOSTRUN__.cast?.mate_1 ?? [99, 99] }));
+  await expect.poll(async () => (await at()).m[0], { timeout: 20_000 }).toBeGreaterThan(-23.5);
   await page.keyboard.down("KeyW");
-  await expect.poll(gap, { timeout: 15_000, intervals: [100] }).toBeLessThan(4);
+  await expect.poll(async () => (await at()).p[0], { timeout: 15_000, intervals: [50] }).toBeGreaterThan(-26);
   await page.keyboard.up("KeyW");
+  await page.waitForTimeout(700);
+  const { p, m } = await at();
+  expect(Math.hypot(p[0] - m[0], p[2] - m[1])).toBeLessThan(6); // within talking distance
   await page.keyboard.press("KeyT");
   const talk = page.getByTestId("talk");
   await expect(talk).toBeVisible();
@@ -180,8 +181,10 @@ test("voices: a bark is spoken in its character's voice, a reply by voice, M mut
   expect(host.voice).toBe("Samantha"); // the default voice, the same in every world
   const recap = host.text;
   // say it again
+  const times = async () => (await spoken(page)).filter((t) => t === recap).length;
+  const said0 = await times(); // (the first run may have ended out loud too: the same words)
   await page.getByTestId("host-voice").click();
-  await expect.poll(async () => (await spoken(page)).filter((t) => t === recap).length).toBe(2);
+  await expect.poll(times).toBe(said0 + 1);
   // an answer: its first two sentences out loud, all of it on the card
   await page.getByTestId("host-input").fill("why did I lose?");
   await page.getByTestId("host-input").press("Enter");
