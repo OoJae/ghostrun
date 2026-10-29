@@ -1,0 +1,24 @@
+{"op":"meta","mode":"play","lang":"en","pack":"city_block","sub":[],"seed":52,"look":"neon","mood":[0.5,0.9,0.6],"timeOfDay":23,"weather":"rain"}
+{"op":"zone","id":"z_plaza","slot":"center","tag":"plaza","name":"Neon plaza"}
+{"op":"zone","id":"z_west","slot":"west_block","tag":"base","name":"West end"}
+{"op":"zone","id":"z_east","slot":"east_block","tag":"base","name":"East end"}
+{"op":"zone","id":"z_main_w","slot":"street_w","tag":"street","name":"Main street west"}
+{"op":"zone","id":"z_main_e","slot":"street_e","tag":"street","name":"Main street east"}
+{"op":"spawn","id":"sp_red","zone":"z_west","anchor":"spawn_pad","team":"red"}
+{"op":"ent","id":"finish","kind":"checkpoint","noun":"chequered line","zone":"z_plaza","anchor":"plinth"}
+{"op":"ent","id":"cp_east","kind":"checkpoint","noun":"east turn","zone":"z_east","anchor":"goal_ring"}
+{"op":"ent","id":"cp_west","kind":"checkpoint","noun":"west turn","zone":"z_west","anchor":"goal_ring"}
+{"op":"ent","id":"car_red","kind":"vehicle","noun":"red street racer","zone":"z_west","anchor":"spawn_pad","team":"red"}
+{"op":"ent","id":"siren","kind":"prop","noun":"police siren","zone":"z_plaza","anchor":"wall_n","body":"none"}
+{"op":"verb","id":"vb_car","verb":"vehicle.drive","on":"car_red","params":{"kind":"car","driver":"player"}}
+{"op":"verb","id":"vb_track","verb":"racing.track","on":"finish","params":{"gates":"cp_east,cp_west","laps":2}}
+{"op":"verb","id":"vb_police","verb":"puzzle.timer","on":"siren","params":{"seconds":150}}
+{"op":"rule","id":"r_win","when":{"t":"lap_done","a":"player","n":2},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_beaten","when":{"t":"lap_done","a":"team:blue","n":2},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_police","when":{"t":"timer_end","a":"siren"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_first_lap","when":{"t":"lap_done","a":"player","n":1},"then":[{"e":"emit","target":"finish","fx":"crowd_cheer"}],"once":true}
+{"op":"npc","id":"rival_a","role":"rival","zone":"z_east","anchor":"spawn_pad","team":"blue","noun":"blue coupe driver","menu":["racer.race","racer.block"],"dflt":"racer.race"}
+{"op":"npc","id":"rival_b","role":"rival","zone":"z_east","anchor":"goal_ring","team":"blue","noun":"yellow taxi driver","menu":["racer.race","racer.draft"],"dflt":"racer.race"}
+{"op":"expect","id":"x_race","prop":"win_reachable","a":"sp_red","b":"finish","headline":true,"text":"Two laps of the neon streets can be won before the police arrive"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

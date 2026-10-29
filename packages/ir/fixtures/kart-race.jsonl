@@ -1,0 +1,20 @@
+{"op":"meta","mode":"play","lang":"en","pack":"arena","sub":[],"seed":41,"look":"neon","mood":[0.6,0.9,0.5],"timeOfDay":21,"weather":"clear"}
+{"op":"zone","id":"z_infield","slot":"midfield","tag":"center","name":"Infield"}
+{"op":"zone","id":"z_west","slot":"west_half","tag":"base","name":"West hairpin"}
+{"op":"zone","id":"z_east","slot":"east_half","tag":"base","name":"East hairpin"}
+{"op":"spawn","id":"sp_red","zone":"z_west","anchor":"spawn_pad","team":"red"}
+{"op":"ent","id":"finish","kind":"checkpoint","noun":"start/finish line","zone":"z_infield","anchor":"center_s"}
+{"op":"ent","id":"cp_1","kind":"checkpoint","noun":"neon gate","zone":"z_east","anchor":"flank_s"}
+{"op":"ent","id":"cp_2","kind":"checkpoint","noun":"neon gate","zone":"z_east","anchor":"flank_n"}
+{"op":"ent","id":"cp_3","kind":"checkpoint","noun":"neon gate","zone":"z_west","anchor":"flank_n"}
+{"op":"ent","id":"kart_red","kind":"vehicle","noun":"red go-kart","zone":"z_west","anchor":"spawn_pad","team":"red"}
+{"op":"verb","id":"vb_kart","verb":"vehicle.drive","on":"kart_red","params":{"kind":"kart","driver":"player"}}
+{"op":"verb","id":"vb_track","verb":"racing.track","on":"finish","params":{"gates":"cp_1,cp_2,cp_3","laps":3}}
+{"op":"rule","id":"r_win","when":{"t":"lap_done","a":"player","n":3},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose","when":{"t":"lap_done","a":"team:blue","n":3},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_lap","when":{"t":"lap_done","a":"player"},"then":[{"e":"emit","target":"finish","fx":"lap_flash"}]}
+{"op":"npc","id":"rival_1","role":"rival","zone":"z_east","anchor":"spawn_pad","team":"blue","noun":"blue racer","menu":["racer.race","racer.block"],"dflt":"racer.race"}
+{"op":"npc","id":"rival_2","role":"rival","zone":"z_east","anchor":"goal_ring","team":"blue","noun":"blue racer","menu":["racer.race","racer.draft"],"dflt":"racer.race"}
+{"op":"expect","id":"x_race","prop":"win_reachable","a":"sp_red","b":"finish","headline":true,"text":"Three laps can be won against two rival karts"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}
