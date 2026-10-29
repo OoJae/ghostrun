@@ -147,7 +147,7 @@ export function dressHaunted(b: WorldBundle, look: LookStyle, c: Ctx): Dressed {
     // dead grass outside, worn boards inside
     const n1 = noise01(a.p, 0.5);
     const fine = noise01(a.p, 3.7, 2);
-    const grass = mix(n1.mul(0.3).add(0.75), fine.mul(0.3).add(0.6), smoothstep(0.55, 0.7, noise01(a.p, 0.15, 5)));
+    const grass = mix(n1.mul(0.3).add(0.75), fine.mul(0.3).add(0.6), smoothstep(0.55, 0.7, n1));
     const boards = cut ? planks(a.p.x, a.p.z, 0.22, 2.4) : null;
     const k = boards ? mix(grass, mix(boards.id.mul(0.25).add(0.7), float(0.35), boards.seam), is(a.alt, 1)) : grass;
     return { color: vec3(k, k, k), roughness: float(0.9) };
@@ -201,9 +201,11 @@ export function dressHaunted(b: WorldBundle, look: LookStyle, c: Ctx): Dressed {
   mist.colorNode = hex3("#9a96b8");
   mist.opacityNode = oneMinus(smoothstep(0.2, 1, r)).mul(drift).mul(0.22);
   const sheets: Item[] = [];
+  // round a house the mist lies in its grounds: drawn over its rooms it would cost every pixel of a top-down view
+  const around = cut ? ring(bounds, 16, 2, 12, 1900) : [];
   for (let k = 0; k < 16; k++) {
-    const x = bounds.minX + rnd(k * 9 + 1) * (bounds.maxX - bounds.minX);
-    const z = bounds.minZ + rnd(k * 9 + 2) * (bounds.maxZ - bounds.minZ);
+    const x = cut ? around[k]!.x : bounds.minX + rnd(k * 9 + 1) * (bounds.maxX - bounds.minX);
+    const z = cut ? around[k]!.z : bounds.minZ + rnd(k * 9 + 2) * (bounds.maxZ - bounds.minZ);
     const s = 7 + rnd(k * 9 + 3) * 8;
     sheets.push({ p: [x, groundY + 0.25 + rnd(k * 9 + 4) * 0.5, z], s: [s, s, s], tilt: [-Math.PI / 2, 0], r: rnd(k) * 6 });
   }

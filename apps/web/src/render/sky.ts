@@ -83,7 +83,6 @@ export function skyNode() {
   })();
 }
 
-
 const _dir = new Vector3();
 
 /** Where a look's sun (or moon) is: the directional light comes from here too. */

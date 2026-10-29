@@ -3,7 +3,7 @@
 // underwater variant is a sandy seabed under shifting caustics, with coral and kelp.
 import type { WorldBundle } from "@ghostrun/ir";
 import { ConeGeometry, CylinderGeometry, DodecahedronGeometry, IcosahedronGeometry, MeshStandardNodeMaterial, SphereGeometry } from "three/webgpu";
-import { abs, float, fract, max, mix, mx_worley_noise_float, oneMinus, positionWorld, sin, smoothstep, time, vec2, vec3 } from "three/tsl";
+import { abs, float, fract, max, mix, oneMinus, positionWorld, sin, smoothstep, time, vec3 } from "three/tsl";
 import { BoxBatch } from "../boxes";
 import type { LookStyle } from "../looks";
 import { lin } from "../materials";
@@ -208,11 +208,14 @@ export function dressDesert(b: WorldBundle, look: LookStyle, c: Ctx): Dressed {
   return { floorTops, groundY, bounds, groundHex: SAND[v], ground, shelter: look.indoor ? bounds : null };
 }
 
-/** Caustics: bright, shifting cells of light thrown down through the waves. */
+/**
+ * Caustics: bright, wavering lines of light thrown down through the waves, where two warped wave
+ * trains cancel. A handful of sines (a Voronoi pattern under every pixel cost twice the frame).
+ */
 function caustics(p: N3): N3 {
-  // one layer of 2D cells drifting and swaying: far cheaper than a 3D Voronoi, and it still shimmers
-  const w = mx_worley_noise_float(vec2(p.x.mul(0.7).add(time.mul(0.25)), p.z.mul(0.7).add(sin(time.mul(0.4).add(p.x.mul(0.3))).mul(0.4))));
-  return hex3("#9ff4ff", 0.5).mul(smoothstep(0.25, 0.0, w).add(smoothstep(0.55, 0.15, w).mul(0.25)));
+  const a = sin(p.x.mul(1.3).add(sin(p.z.mul(0.7).add(time)).mul(1.6)).add(time.mul(0.8)));
+  const b = sin(p.z.mul(1.1).add(sin(p.x.mul(0.9).sub(time.mul(0.7))).mul(1.6)).sub(time.mul(0.6)));
+  return hex3("#9ff4ff", 0.6).mul(oneMinus(abs(a.add(b)).mul(0.5)).pow(6));
 }
 
 /** Kelp: a tall, thin, swaying ribbon of fronds (4 m at scale 1). */

@@ -145,7 +145,7 @@ export function dressMedieval(b: WorldBundle, look: LookStyle, c: Ctx): Dressed 
     // grass outside, cobbles in a courtyard (round stones: cells of a Voronoi pattern), flagstones in a hall
     const n1 = noise01(a.p, 0.4);
     const fine = noise01(a.p, 3.3, 4);
-    const grass = mix(n1.mul(0.25).add(0.8), fine.mul(0.2).add(0.7), smoothstep(0.6, 0.75, noise01(a.p, 0.12, 9)));
+    const grass = mix(n1.mul(0.25).add(0.8), fine.mul(0.2).add(0.7), smoothstep(0.6, 0.75, n1));
     if (cut) {
       const flags = masonry(a.p.x, a.p.z, 1.4, 1.1, 0.03);
       const k = mix(grass, mix(flags.id.mul(0.2).add(0.85), float(0.5), flags.mortar), is(a.alt, 1));
