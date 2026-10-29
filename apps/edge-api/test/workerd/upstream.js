@@ -1,6 +1,6 @@
 // The Worker's globalOutbound in the workerd test: every fetch() the edge makes lands here.
-// Fakes Cerebras (JSON intent + SSE fill, both with usage; busy for a "busy lane" prompt), Claude (JSON
-// or the fallback's SSE fill), Turnstile siteverify (the documented
+// Fakes Cerebras (JSON intent + SSE fill, both with usage; busy for a "busy lane" prompt), Claude (JSON,
+// the fallback's SSE fill, or a picture's scene brief), Turnstile siteverify (the documented
 // test-secret behaviour) and ntfy, and logs what it saw at GET /__log on its own socket.
 const log = [];
 
@@ -10,6 +10,7 @@ const INTENT = {
   moodVec: { valence: 0.2, arousal: 0.6, tension: 0.5 },
 };
 const LINES = ['{"op":"meta","v":1}', '{"op":"zone","id":"z_a"}', '{"op":"end","layer":"gameplay"}'];
+const BRIEF = { setting: "a rainy neon alley at night", mood: "tense", palette: ["teal", "magenta"], objects: ["fire escape", "dumpster", "neon sign"], layout: "a long corridor", genre: "", goal: "", safety: "ok" };
 
 export default {
   async fetch(req) {
@@ -25,7 +26,10 @@ export default {
       return new Response(`${sse}data: ${JSON.stringify({ choices: [], usage: { prompt_tokens: 3000, completion_tokens: 1500 } })}\n\ndata: [DONE]\n\n`, { headers: { "content-type": "text/event-stream" } });
     }
     if (url.hostname === "api.anthropic.com") {
-      if (!JSON.parse(body).stream) return Response.json({ content: [{ type: "text", text: JSON.stringify(INTENT) }], stop_reason: "end_turn", usage: { input_tokens: 1000, output_tokens: 200 } });
+      const o = JSON.parse(body);
+      // a request with a picture in it is the vision step: answer with the scene brief
+      if (o.messages.some((m) => Array.isArray(m.content) && m.content.some((b) => b.type === "image"))) return Response.json({ content: [{ type: "text", text: JSON.stringify(BRIEF) }], stop_reason: "end_turn", usage: { input_tokens: 1300, output_tokens: 150 } });
+      if (!o.stream) return Response.json({ content: [{ type: "text", text: JSON.stringify(INTENT) }], stop_reason: "end_turn", usage: { input_tokens: 1000, output_tokens: 200 } });
       const events = [
         { type: "message_start", message: { usage: { input_tokens: 4000 } } },
         ...LINES.map((l) => ({ type: "content_block_delta", index: 0, delta: { type: "text_delta", text: `${l}\n` } })),

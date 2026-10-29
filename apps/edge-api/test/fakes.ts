@@ -1,5 +1,5 @@
-// Offline stand-ins for everything the edge API talks to: Cerebras (JSON + SSE with usage),
-// Turnstile siteverify (behaving as Cloudflare documents its test secrets), ntfy, R2 and the
+// Offline stand-ins for everything the edge API talks to: Cerebras (JSON + SSE with usage), Claude
+// (the fallback rung, and the scene brief for a request with a picture), Turnstile siteverify (behaving as Cloudflare documents its test secrets), ntfy, R2 and the
 // governor DO namespace. Tests never touch the network or real keys.
 import type { DoNamespace, R2Bucket, WaitUntil } from "../src/cf";
 import { localCall, type Governor } from "../src/governor";
@@ -30,6 +30,18 @@ export const INTENT = {
   moodVec: { valence: 0.2, arousal: 0.6, tension: 0.5 },
 };
 
+/** What Haiku makes of the test picture. */
+export const BRIEF = {
+  setting: "a rainy neon alley at night",
+  mood: "tense",
+  palette: ["teal", "magenta", "wet black"],
+  objects: ["fire escape", "dumpster", "neon sign", "puddle", "crate"],
+  layout: "a long corridor",
+  genre: "",
+  goal: "",
+  safety: "ok",
+};
+
 export interface Upstream {
   intent?: { inTok: number; outTok: number; status?: number; body?: unknown };
   /** `paceMs`: stream the lines that far apart, stopping when the call is aborted (as a real stream does). */
@@ -38,6 +50,8 @@ export interface Upstream {
   delayMs?: number;
   /** The Claude fallback: the same intent and fill lines, over the Messages API. */
   claude?: { inTok: number; outTok: number; status?: number };
+  /** Claude's answer to a request with a picture in it (the scene brief); `refuse` ends it with a refusal stop. */
+  vision?: { inTok: number; outTok: number; status?: number; body?: unknown; refuse?: boolean };
 }
 
 export interface Hit {
@@ -72,7 +86,12 @@ export function fakeFetch(up: Upstream = {}) {
       return new Response(chunks.join(""), { headers: { "content-type": "text/event-stream" } });
     }
     if (url.hostname === "api.anthropic.com") {
-      const o = JSON.parse(body) as { stream: boolean };
+      const o = JSON.parse(body) as { stream: boolean; messages: { content: unknown }[] };
+      if (o.messages.some((m) => Array.isArray(m.content) && m.content.some((b: { type?: string }) => b.type === "image"))) {
+        const s = up.vision ?? { inTok: 1300, outTok: 160 };
+        if (s.status && s.status !== 200) return new Response("upstream says no", { status: s.status });
+        return Response.json({ content: s.refuse ? [] : [{ type: "text", text: JSON.stringify(s.body ?? BRIEF) }], stop_reason: s.refuse ? "refusal" : "end_turn", usage: { input_tokens: s.inTok, output_tokens: s.outTok } });
+      }
       const c = up.claude ?? { inTok: 900, outTok: 300 };
       if (c.status && c.status !== 200) return new Response("upstream says no", { status: c.status });
       if (!o.stream) return Response.json({ content: [{ type: "text", text: JSON.stringify(up.intent?.body ?? INTENT) }], stop_reason: "end_turn", usage: { input_tokens: c.inTok, output_tokens: c.outTok } });

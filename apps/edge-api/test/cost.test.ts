@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { DEFAULT_LAWS } from "@ghostrun/ir";
-import { fillMessages, intentMessages, type IntentOut } from "@ghostrun/llm";
+import { BRIEF_MAX_CHARS, fillMessages, intentMessages, visionMessages, type IntentOut } from "@ghostrun/llm";
 import { PACKS } from "@ghostrun/registry";
 import EXAMPLE from "../../../packages/ir/fixtures/vault-heist.jsonl?raw";
-import { buildEstimate, costMicroUsd, FILL_MAX_IN, FILL_MAX_OUT, FILL_MODEL, inputBound, INTENT_MAX_OUT, INTENT_MODEL } from "../src/cost";
+import { buildEstimate, costMicroUsd, FILL_MAX_IN, FILL_MAX_OUT, FILL_MODEL, imageTokens, inputBound, INTENT_MAX_OUT, INTENT_MODEL, VISION_MAX_OUT, VISION_MODEL, visionEstimate } from "../src/cost";
 import { INTENT } from "./fakes";
 
 describe("cost", () => {
@@ -31,5 +31,27 @@ describe("cost", () => {
     expect(est.fill).toBe(costMicroUsd(FILL_MODEL, FILL_MAX_IN, FILL_MAX_OUT));
     expect(est.intent + est.fill).toBeGreaterThan(5_000);
     expect(est.intent + est.fill).toBeLessThan(15_000);
+  });
+
+  it("a picture's brief fits the hold it was given: the longest prompt plus the longest brief, at 3 bytes a character", () => {
+    const prompt = "ű".repeat(500) + "語".repeat(BRIEF_MAX_CHARS);
+    const intent = { ...INTENT, headline: "x".repeat(INTENT_MAX_OUT * 6), sub: ["rooftop"] } as IntentOut;
+    const est = buildEstimate(intentMessages("ű".repeat(500), PACKS), BRIEF_MAX_CHARS);
+    expect(est.intent).toBeGreaterThanOrEqual(costMicroUsd(INTENT_MODEL, inputBound(intentMessages(prompt, PACKS)), INTENT_MAX_OUT));
+    for (const p of PACKS) {
+      const layout = p.impl.generate({ seed: 7, params: p.impl.defaults, sub: intent.sub, laws: DEFAULT_LAWS, harder: false });
+      expect(costMicroUsd(FILL_MODEL, inputBound(fillMessages(prompt, intent, layout, EXAMPLE, 7)), FILL_MAX_OUT), p.id).toBeLessThanOrEqual(est.fill);
+    }
+  });
+
+  it("reading a picture is priced by its area on Haiku, a fraction of the build", () => {
+    expect(VISION_MODEL).toBe("claude-haiku-5-5");
+    expect(imageTokens(768, 576)).toBe(590); // 442,368 px / 750, rounded up
+    expect(imageTokens(1, 1)).toBe(1);
+    const msgs = visionMessages("a heist here", { mediaType: "image/webp", data: "" });
+    const est = visionEstimate(msgs, 768, 576);
+    expect(est).toBe(costMicroUsd("claude-haiku-5-5", inputBound(msgs) + 590, VISION_MAX_OUT));
+    expect(visionEstimate(msgs, 1024, 1024)).toBeGreaterThan(est);
+    expect(est).toBeLessThan(1_000); // under a tenth of a cent
   });
 });
