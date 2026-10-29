@@ -189,8 +189,10 @@ export class CastBrain implements Brain {
     const len = Math.sqrt(dx * dx + dz * dz) || 1;
     const fire = tick >= bot.fireAt;
     if (fire) bot.fireAt = tick + arms.every;
-    // face it: full chase for claws, a small step for a ranged weapon (it holds its ground)
-    const k = arms.range < 4 ? 127 * bot.speed : 26;
+    // face it: full chase for claws; a ranged weapon turns to fire and otherwise holds its ground
+    // (a small step closer while it is far, standing still once it is near: it keeps facing the way
+    // it fired)
+    const k = arms.range < 4 ? 127 * bot.speed : fire || bestD > arms.range * 0.6 * (arms.range * 0.6) ? 26 : 0;
     return { tick, wx: Math.round((dx / len) * k), wz: Math.round((dz / len) * k), btn: (frame.btn & ~BTN.USE) | (fire ? BTN.USE : 0) };
   }
 
