@@ -1,8 +1,8 @@
 // Models over the primitives, once a world is playing: KayKit characters (CC0, one rig) that walk,
 // run, jump, carry, use, flinch, fall and cheer in place of the capsules, and CC0 props in place of
 // boxes and orbs where a noun names one (render/nouns.ts). Files load after the first frame and
-// each model swaps in when it is ready (the primitive stays until then, and stays for good if a
-// file fails). Cosmetic only: it reads poses, sim state and events, and never writes any of them.
+// models swap in once they are ready and you stand still (the primitive stays until then, and for
+// good if a file fails). Cosmetic only: it reads poses, sim state and events, and never writes them.
 import type { Entity, WorldBundle } from "@ghostrun/ir";
 import type { SimEvent } from "@ghostrun/sim";
 import type { GLTF, GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
@@ -17,15 +17,17 @@ import { Animator, CLIPS, type ClipNames, type Motion } from "./animate";
 import { characterFor, HELD_PROPS, propFor, TEAM_PROPS, type CharacterId, type PropId } from "./nouns";
 import type { WorldView } from "./world";
 
-/** full: every character and prop; lite (phones, ?models=lite): a few characters near you, at half rate; off: ?models=0. */
+/** full: every character and prop; lite (phones, VR, ?models=lite): a few characters near you, at half rate; off: ?models=0. */
 export type ModelTier = "full" | "lite" | "off";
 
 export function modelTier(search: string, coarse: boolean): ModelTier {
-  const p = new URLSearchParams(search).get("models");
+  const q = new URLSearchParams(search);
+  const p = q.get("models");
   if (p === "0" || p === "off") return "off";
   if (p === "lite") return "lite";
   if (p === "1" || p === "full") return "full";
-  return coarse ? "lite" : "full";
+  // a headset draws every frame twice at 72–90 Hz: the page reloads into VR with vr=1
+  return coarse || q.get("vr") === "1" ? "lite" : "full";
 }
 
 const BASE = `${import.meta.env.BASE_URL}models/`;
@@ -232,7 +234,6 @@ interface Cast {
   id: string;
   actor: Object3D;
   team: string;
-  body: CharacterId;
   holder: Group;
   model: Object3D;
   animator: Animator | null;
@@ -276,6 +277,8 @@ export interface ModelOptions {
 }
 
 const GHOST_ID = "\u0000ghost";
+/** Ticks without touching the controls that count as standing still (a third of a second). */
+const QUIET_TICKS = 20;
 /** A weapon a character carries in its hand from the start: what its shoot verb reads as. */
 function innateProp(body: CharacterId, range: number): PropId | null {
   if (body === "skeleton") return null; // claws
@@ -296,6 +299,8 @@ export class ModelLayer {
   /** Item actors hidden while their stand-in rides a hand. */
   readonly #hidden = new Set<string>();
   readonly #compiled = new Set<string>();
+  /** Models loaded and compiled, waiting for a quiet moment to swap in (see update). */
+  readonly #ready: (() => void)[] = [];
   readonly #unsub: (() => void) | null;
   #lastShot = -1;
   #frame = 0;
@@ -366,18 +371,20 @@ export class ModelLayer {
       if (innate && hand) hand.add(innate);
       await this.#compileOnce(ghost ? "ghost" : `${body}:${team}`, holder);
       if (this.#disposed) return;
-      // the capsule's body, visor and waist go; the team ring at the feet and the marker stay
-      for (const c of actor.children) {
-        const g = (c as Mesh).geometry as BufferGeometry | undefined;
-        if (g && (g instanceof CapsuleGeometry || g instanceof TorusGeometry)) c.visible = false;
-      }
-      actor.add(holder);
-      const animator = new Animator(model, tpl.clips, tpl.names);
-      this.#cast.set(id, {
-        id, actor, team, body, holder, model, animator, hand, innate, holding: null,
-        last: actor.position.clone(), speed: 0, vy: 0, airTime: 0, ko: false, koAt: 0, hp: Infinity, skip: 0, fallen: -1,
+      this.#ready.push(() => {
+        // the capsule's body, visor and waist go; the team ring at the feet and the marker stay
+        for (const c of actor.children) {
+          const g = (c as Mesh).geometry as BufferGeometry | undefined;
+          if (g && (g instanceof CapsuleGeometry || g instanceof TorusGeometry)) c.visible = false;
+        }
+        actor.add(holder);
+        const animator = new Animator(model, tpl.clips, tpl.names);
+        this.#cast.set(id, {
+          id, actor, team, holder, model, animator, hand, innate, holding: null,
+          last: actor.position.clone(), speed: 0, vy: 0, airTime: 0, ko: false, koAt: 0, hp: Infinity, skip: 0, fallen: -1,
+        });
+        if (!ghost) this.stats.characters++;
       });
-      if (!ghost) this.stats.characters++;
     } catch (e) {
       this.stats.failed++;
       console.warn(`model for ${id} unavailable, keeping the capsule`, e);
@@ -424,11 +431,13 @@ export class ModelLayer {
       });
       await this.#compileOnce(`prop:${id}`, holder);
       if (this.#disposed) return;
-      anchor.visible = false;
-      parent.add(holder);
-      // a loose pickup turns slowly where it waits (kit pickups already spin their own group)
-      if (e.kind === "pickup" && parent === actor) this.#spin.push(holder);
-      this.stats.props++;
+      this.#ready.push(() => {
+        anchor.visible = false;
+        parent.add(holder);
+        // a loose pickup turns slowly where it waits (kit pickups already spin their own group)
+        if (e.kind === "pickup" && parent === actor) this.#spin.push(holder);
+        this.stats.props++;
+      });
     } catch (err) {
       this.stats.failed++;
       console.warn(`prop ${id} for ${e.id} unavailable, keeping its shape`, err);
@@ -503,6 +512,12 @@ export class ModelLayer {
     this.#t = t;
     this.#frame++;
     const sim = this.#sim;
+    // A model's first frame can stall while the GPU finishes its shaders (a tenth of a second on a
+    // laptop, seconds under software GL), so models swap in while you stand still, never mid-jump.
+    if (this.#ready.length && (!sim || sim.idleTicks > QUIET_TICKS || sim.sim.result)) {
+      for (const swap of this.#ready.splice(0)) swap();
+      this.#publish();
+    }
     // shots fired since last frame: the shooter's arms (a swipe for claws and blades, a shot for the rest)
     if (sim) {
       for (const s of sim.sim.shots) {
@@ -565,6 +580,7 @@ export class ModelLayer {
 
   dispose() {
     this.#disposed = true;
+    this.#ready.length = 0;
     this.#unsub?.();
     for (const id of [...this.#hidden]) this.#show(id);
     for (const c of this.#cast.values()) {
