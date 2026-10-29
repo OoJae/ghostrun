@@ -220,7 +220,7 @@ export function aim(c: VerbCtx, actor: string, at: readonly string[], range: num
 
 export const shootVerb: VerbPlugin = {
   id: SHOOT,
-  line: 'a weapon: on "player"/an npc (a spell, claws: its own) or on a pickup to hold (wand, blaster, bow); USE fires along your facing at the first character or "at" thing (hit a=the one hit b=the weapon; "player" for your own) for damage HP; params {"range":1.5-30,"speed":8-60,"damage":0-100,"cooldown":0.15-5,"at":"dummy_1"}',
+  line: 'a weapon, on "player"/an npc (its own: spell, claws) or a pickup to hold (wand, blaster, bow); USE fires where you face, hitting the first one or "at" thing (hit a=it b=the weapon) for damage HP; params {"range":1.5-30,"speed":8-60,"damage":0-100,"cooldown":0.15-5,"at":"id,id"}',
   on: ["player", "npc", "pickup"],
   params: { range: { def: 12, min: 1.5, max: 30 }, speed: { def: 24, min: 8, max: 60 }, damage: { def: 25, min: 0, max: 100 }, cooldown: { def: 0.5, min: 0.15, max: 5 }, at: { def: "" } },
   // a held weapon is carried (the sim never lets anyone carry a character, so a spell stays innate)
@@ -247,7 +247,7 @@ export const shootVerb: VerbPlugin = {
 
 export const healthVerb: VerbPlugin = {
   id: HEALTH,
-  line: 'on "player" or an npc (or a prop to break): hit points; damage takes them, at 0 it is knocked out (health_lte a=it n=0) and back at its start if "respawn" (else gone); params {"hp":1-1000,"respawn":bool}',
+  line: 'hit points, on "player" or an npc (or a prop to break): at 0 it is knocked out (health_lte a=it n=0), back at its start if "respawn", else gone; params {"hp":1-1000,"respawn":bool}',
   on: ["player", "npc", "prop", "vehicle"],
   params: { hp: { def: 100, min: 1, max: 1000 }, respawn: { def: true } },
 };
