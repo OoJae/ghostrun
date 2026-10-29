@@ -140,6 +140,20 @@ export const floorPlan: LayoutPack<FloorPlanParams> = {
       statics,
       maxProp: 2.4,
       cameraBounds: { min: [x0 - 4, -1, zFront - YARD], max: [x3 + 4, 12, zBack] },
+      // a race loop round the house: across the front yard, then a drive (laid only for a race)
+      // down each side and behind, as wide as the yard reaches past the walls
+      track: {
+        points: [[0, 0, zFront - YARD / 2], [x3 + 2, 0, zFront - YARD / 2], [x3 + 2, 0, zBack + 2], [x0 - 2, 0, zBack + 2], [x0 - 2, 0, zFront - YARD / 2]],
+        width: 3.4,
+        ground: [
+          box("room_sw", [x0 - 2, -0.1, (zFront + zBack + 4) / 2], [4, 0.2, zBack + 4 - zFront], "floor"),
+          box("room_se", [x3 + 2, -0.1, (zFront + zBack + 4) / 2], [4, 0.2, zBack + 4 - zFront], "floor"),
+          box("main_room", [0, -0.1, zBack + 2], [W, 0.2, 4], "floor"),
+          box("room_sw", [x0 - 4 - T / 2, 1, (zFront + zBack + 4) / 2], [T, 2, zBack + 4 - zFront], "wall"),
+          box("room_se", [x3 + 4 + T / 2, 1, (zFront + zBack + 4) / 2], [T, 2, zBack + 4 - zFront], "wall"),
+          box("main_room", [0, 1, zBack + 4 + T / 2], [W + 8 + 2 * T, 2, T], "wall"),
+        ],
+      },
       notes: [`interior ${W}×${D} m, ${WALL_H} m walls, ${DOOR_W}×${DOOR_H} m doorways, cutaway (no ceilings)`],
     };
   },

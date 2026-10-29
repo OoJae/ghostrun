@@ -109,6 +109,22 @@ export const maze: LayoutPack<MazeParams> = {
       statics,
       maxProp: 1.0,
       cameraBounds: { min: [ox - 2, -1, oz - 8], max: [ox + W + 2, 24, oz + D + 2] },
+      // a race loop round the outside of the maze: through the start area, then a ring road (laid
+      // only for a race) up each side and across the far end
+      track: {
+        points: [[0, 0, oz - 3], [ox + W + 3.5, 0, oz - 3], [ox + W + 3.5, 0, oz + D + 3.5], [ox - 3.5, 0, oz + D + 3.5], [ox - 3.5, 0, oz - 3]],
+        width: 5,
+        ground: [
+          box("maze", [ox + W + 4.5, -0.5, (oz - 6 + oz + D + 7) / 2], [5, 1, D + 13], "floor"),
+          box("maze", [ox - 4.5, -0.5, (oz - 6 + oz + D + 7) / 2], [5, 1, D + 13], "floor"),
+          box("maze", [0, -0.5, oz + D + 4.5], [W + 4, 1, 5], "floor"),
+          box("maze", [ox + W + 7, H / 2, (oz - 6 + oz + D + 7) / 2], [T, H, D + 13], "wall"),
+          box("maze", [ox - 7, H / 2, (oz - 6 + oz + D + 7) / 2], [T, H, D + 13], "wall"),
+          box("maze", [0, H / 2, oz + D + 7], [W + 14, H, T], "wall"),
+          box("start", [ox + W + 4.5, 0.5, oz - 6], [5, 1, T], "wall"),
+          box("start", [ox - 4.5, 0.5, oz - 6], [5, 1, T], "wall"),
+        ],
+      },
       notes: [`maze ${C}×${R} cells of ${CELL} m, exit ${dist[far[0]]![far[1]]} cells from the entrance`],
     };
   },

@@ -2,7 +2,7 @@
 // The LLM chooses relations (zone + anchor), never coordinates (Holodeck/LayoutVLM lesson).
 import { stream } from "@ghostrun/detmath";
 import { groupMembers, type Effect, type Entity, type Rule, type Static, type Vec3, type VerbBinding, type WorldBundle, type Zone } from "@ghostrun/ir";
-import { DRIVE, HEALTH, SHOOT, TRACK, verb } from "@ghostrun/kits";
+import { DRIVE, feelOf, HEALTH, SHOOT, TRACK, verb } from "@ghostrun/kits";
 import type { PackLayout, ZoneSpec } from "@ghostrun/plugin-api";
 
 /** Default physical sizes per entity kind, used when the fill gives none (all metres). */
@@ -244,7 +244,7 @@ export function placeWorld(input: WorldBundle, layout: PackLayout): PlaceResult 
     }
   }
   // wins first: a win rule the repairs add (reach the goal) gets the same trigger and verb repairs
-  notes.push(...repairDoubleDoors(b), ...repairSpawnRefs(b), ...repairGroups(b), ...repairRingOut(b, bound), ...repairAreas(b, bound), ...repairCombat(b), ...repairKits(b), ...repairConditions(b), ...repairRace(b, layout), ...repairWin(b), ...repairTriggers(b), ...repairVerbs(b), ...repairExpects(b));
+  notes.push(...repairDoubleDoors(b), ...repairSpawnRefs(b), ...repairGroups(b), ...repairRingOut(b, bound), ...repairAreas(b, bound), ...repairCombat(b), ...repairKits(b), ...repairConditions(b), ...repairRace(b, layout), ...repairRiders(b), ...repairWin(b), ...repairTriggers(b), ...repairVerbs(b), ...repairExpects(b));
   notes.push(...addRivals(b), ...placeRace(b, layout, bound), ...repairDeliveries(b, layout, bound), ...addSecrets(b, layout, bound));
   return { bundle: b, notes };
 }
@@ -291,6 +291,19 @@ export function repairDeliveries(b: WorldBundle, layout: PackLayout, bound: Map<
     if (!best) continue;
     notes.push(`${item.id}: started inside ${place.id}, where it must be carried: moved to ${best.zone}:${best.anchor}`);
     moveTo(item, best);
+  }
+  // a hazard you lose by touching (a lake bank, a spike strip) that covers a place the win needs you
+  // to reach (the finish, a gate, a buoy to pass) shrinks round its centre until it no longer does
+  // (something to pick up or use is moved instead, below)
+  const needs = b.entities.filter((e) => e.kind === "goal" || e.kind === "checkpoint");
+  for (const h of b.entities.filter((e) => e.kind === "hazard" && e.body === "sensor")) {
+    if (!b.rules.some((r) => (r.when.t === "hit" || r.when.t === "enter") && r.when.b === h.id && (r.when.a === "player" || !r.when.a) && r.then.some((e) => e.e === "lose"))) continue;
+    const covers = () => needs.filter((n) => n !== h && Math.abs(n.pos[0] - h.pos[0]) < (n.size[0] + h.size[0]) / 2 && Math.abs(n.pos[2] - h.pos[2]) < (n.size[2] + h.size[2]) / 2);
+    const under = covers();
+    if (!under.length) continue;
+    const was = h.size;
+    for (let k = 0; k < 6 && covers().length && Math.max(h.size[0], h.size[2]) > 0.6; k++) h.size = [Math.max(0.6, h.size[0] / 2), h.size[1], Math.max(0.6, h.size[2] / 2)];
+    notes.push(`${h.id}: shrunk from ${was[0]}×${was[2]} m to ${h.size[0]}×${h.size[2]} m (it covered ${under.map((n) => n.id).join(", ")}, which the win needs)`);
   }
   // something you need (a pickup, something to use) never starts inside a place you lose by entering
   // (the only wand in the middle of the fall zone): it moves to the nearest free anchor outside them all
@@ -523,6 +536,44 @@ export function addRivals(b: WorldBundle): string[] {
   return [`added ${added.join(" and ")} on the ${them} side: a ${guns.length ? "shooting" : "throwing"} game needs someone to ${guns.length ? "shoot" : "throw at"}`];
 }
 
+/** What a race clears off its road: low cover and small things (a kiosk, a crate stack, a tree, a rock), never a wall or a ledge. */
+export function clearedByRace(s: { surf: string; size: Vec3 }): boolean {
+  const foot = Math.max(s.size[0], s.size[2]);
+  return s.surf === "wall" && ((s.size[1] <= 2.5 && foot <= 6) || foot <= 1.6);
+}
+
+/**
+ * Where a pack's race loop can't be driven (empty when it can): every half metre along it there is
+ * ground within a 0.4 m climb, and nothing a race leaves standing comes within `clear` metres of the
+ * line (a car's capsule is 0.85 m in radius).
+ */
+export function raceLoopProblems(layout: PackLayout, clear = 1.2): string[] {
+  const loop = layout.track;
+  if (!loop || loop.points.length < 3) return ["no race loop"];
+  const statics = [...layout.statics, ...(loop.ground ?? [])];
+  const out: string[] = [];
+  const pts = loop.points;
+  for (let i = 0; i < pts.length && out.length < 3; i++) {
+    const [a, c] = [pts[i]!, pts[(i + 1) % pts.length]!];
+    const n = Math.max(1, Math.ceil(Math.sqrt((c[0] - a[0]) * (c[0] - a[0]) + (c[2] - a[2]) * (c[2] - a[2])) / 0.5));
+    for (let k = 0; k <= n; k++) {
+      const [x, y, z] = [a[0] + ((c[0] - a[0]) * k) / n, a[1] + ((c[1] - a[1]) * k) / n, a[2] + ((c[2] - a[2]) * k) / n];
+      const at = `(${x.toFixed(1)}, ${z.toFixed(1)})`;
+      const ground = statics.some((s) => s.surf !== "wall" && Math.abs(x - s.pos[0]) <= s.size[0] / 2 && Math.abs(z - s.pos[2]) <= s.size[2] / 2 && Math.abs(s.pos[1] + s.size[1] / 2 - y) <= 0.45);
+      if (!ground) {
+        out.push(`no ground at ${at}`);
+        break;
+      }
+      const block = statics.find((s) => s.surf !== "floor" && s.surf !== "water" && !clearedByRace(s) && s.pos[1] - s.size[1] / 2 < y + 1.8 && s.pos[1] + s.size[1] / 2 > y + 0.41 && Math.abs(x - s.pos[0]) < s.size[0] / 2 + clear && Math.abs(z - s.pos[2]) < s.size[2] / 2 + clear);
+      if (block) {
+        out.push(`a ${block.surf} ${block.size.map((v) => v.toFixed(1)).join("×")} at (${block.pos[0].toFixed(1)}, ${block.pos[2].toFixed(1)}) stands within ${clear} m of the line at ${at}`);
+        break;
+      }
+    }
+  }
+  return out;
+}
+
 /** A vehicle's kind from what it is called, and how big it is parked. */
 const RIDE_WORDS: [RegExp, string][] = [
   [/go-?kart|\bkart/, "kart"], [/snowmobile|\bsled|skidoo/, "snowmobile"], [/hovercraft/, "hovercraft"], [/boat|jet ?ski|canoe|kayak|raft/, "boat"],
@@ -596,16 +647,32 @@ export function repairRace(b: WorldBundle, layout: PackLayout): string[] {
     const kind = String(v.params.kind ?? rideKind(e));
     if (e.size[0] === 2 && e.size[1] === 1.2 && e.size[2] === 4) e.size = RIDE_SIZE[kind] ?? e.size; // the default vehicle box: this kind's own
   }
+  // a driver that names nobody ("npc", "team:blue", "rival") marks a rival's ride: kept for a rival
+  // racer below; one player at one wheel
+  const agents = new Set(b.entities.filter((e) => e.kind === "npc").map((e) => e.id));
+  const spare: VerbBinding[] = [];
+  let mineSeen = false;
+  for (const v of rides.values()) {
+    const who = v.params.driver === undefined ? "" : String(v.params.driver);
+    if (who === "player" && !mineSeen) mineSeen = true;
+    else if (who && !agents.has(who)) {
+      const { driver: _gone, ...rest } = v.params;
+      v.params = rest;
+      if (who !== "player") spare.push(v);
+      notes.push(`${v.on}: '${who}' is nobody in this world, so a rival racer drives it`);
+    }
+  }
   const driven = (who: string) => [...rides.values()].some((v) => v.params.driver === who);
-  const mineRide = [...rides.values()].find((v) => !v.params.driver);
+  const mineRide = [...rides.values()].find((v) => !v.params.driver && !spare.includes(v));
   if (!driven("player") && mineRide) {
     mineRide.params = { ...mineRide.params, driver: "player" };
     notes.push(`player: starts at the wheel of ${mineRide.on}`);
   }
-  // rivals: the other side's characters, or two added; each at the wheel of a copy of yours
+  // rivals: the other side's characters, or added ones (two, or one for each rival's ride); each at
+  // the wheel of a rival's ride, else of a copy of yours
   let racers = b.entities.filter((e) => e.kind === "npc" && e.team !== mine && e.body !== "none" && e.body !== "sensor");
   if (!racers.length) {
-    for (const k of [1, 2]) {
+    for (let k = 1; k <= Math.max(2, Math.min(3, spare.length)); k++) {
       const n = thing(uniqueId(b, `racer_${k}`), "npc", `racer ${k}`, [0.7, 1.8, 0.7], "kinematic", them);
       b.entities.push(n);
       b.cast.push({ id: uniqueId(b, `k_${n.id}`), src: "template", layer: "gameplay", npc: n.id, role: "rival", minded: false, persona: { identity: "", personality: "", knowledge: "", replyStyle: "", tools: [], safety: "" }, coneDeg: 70, rangeM: 12, hearM: 8, menu: ["racer.race", "racer.block", "racer.draft"], dflt: "racer.race", utility: {}, memory: 0 });
@@ -613,15 +680,27 @@ export function repairRace(b: WorldBundle, layout: PackLayout): string[] {
     racers = b.entities.filter((e) => e.kind === "npc" && e.team === them);
     notes.push(`added ${racers.map((r) => r.id).join(" and ")}: a race needs someone to race`);
   }
-  const yours = mineRide ?? [...rides.values()].find((v) => v.params.driver === "player");
+  const yours = [...rides.values()].find((v) => v.params.driver === "player");
+  // (a copy of yours tops out a tenth slower: rivals that drive the line well still leave a
+  // player who drives it well the race)
+  const yourTop = yours ? Math.min(30, Math.max(4, Number(yours.params.speed ?? feelOf({}, yours.params).speed) || 4)) : 0;
   for (const r of racers) {
     const c = b.cast.find((k) => k.npc === r.id);
     if (c && !c.menu.length) ((c.menu = ["racer.race", "racer.block"]), (c.dflt = "racer.race"));
-    if (!yours || driven(r.id)) continue;
+    if (driven(r.id)) continue;
+    const theirs = spare.shift();
+    if (theirs) {
+      theirs.params = { ...theirs.params, driver: r.id };
+      const e = b.entities.find((x) => x.id === theirs.on);
+      if (e && !e.team) e.team = r.team;
+      notes.push(`${r.id}: races at the wheel of ${theirs.on}`);
+      continue;
+    }
+    if (!yours) continue;
     const mineE = b.entities.find((e) => e.id === yours.on)!;
     const ride = { ...structuredClone(mineE), id: uniqueId(b, `${r.id}_ride`), src: "template" as const, noun: mineE.noun || String(yours.params.kind), team: r.team, anchor: "" };
     b.entities.push(ride);
-    b.verbs.push(vb(uniqueId(b, `vb_drive_${ride.id}`), DRIVE, ride.id, { ...yours.params, driver: r.id }));
+    b.verbs.push(vb(uniqueId(b, `vb_drive_${ride.id}`), DRIVE, ride.id, { ...yours.params, speed: Math.round(yourTop * 0.9 * 10) / 10, driver: r.id }));
     notes.push(`${r.id}: races at the wheel of ${ride.id}`);
   }
   // a way to win, and one to lose
@@ -651,12 +730,16 @@ export function placeRace(b: WorldBundle, layout: PackLayout, bound: Map<string,
   const loop = layout.track;
   const width = loop?.width ?? 6;
   const solid = layout.statics.filter((s) => s.surf !== "floor" && s.surf !== "water");
-  const clear = (x: number, z: number, r: number) => !solid.some((s) => Math.abs(x - s.pos[0]) < s.size[0] / 2 + r && Math.abs(z - s.pos[2]) < s.size[2] / 2 + r && s.pos[1] - s.size[1] / 2 < 1.5);
-  const nudge = (p: Vec3): Vec3 => {
-    if (clear(p[0], p[2], 1.5)) return p;
+  const floors = [...layout.statics, ...(loop?.ground ?? [])].filter((s) => s.surf !== "wall");
+  // clear: nothing standing within r of (x, z) between a climb and head height above y
+  const clear = (x: number, z: number, r: number, y: number) => !solid.some((s) => Math.abs(x - s.pos[0]) < s.size[0] / 2 + r && Math.abs(z - s.pos[2]) < s.size[2] / 2 + r && s.pos[1] - s.size[1] / 2 < y + 1.5 && s.pos[1] + s.size[1] / 2 > y + 0.41);
+  const grounded = (x: number, z: number, y: number) => floors.some((s) => Math.abs(x - s.pos[0]) <= s.size[0] / 2 && Math.abs(z - s.pos[2]) <= s.size[2] / 2 && Math.abs(s.pos[1] + s.size[1] / 2 - y) <= 0.45);
+  // (never onto no ground: past a wall, off the world)
+  const nudge = (p: Vec3, r = 1.5): Vec3 => {
+    if (clear(p[0], p[2], r, p[1])) return p;
     for (let ring = 1; ring <= 12; ring++) for (const [dx, dz] of [[1, 0], [-1, 0], [0, 1], [0, -1], [0.7071, 0.7071], [-0.7071, 0.7071], [0.7071, -0.7071], [-0.7071, -0.7071]] as const) {
       const q: Vec3 = [p[0] + dx * ring * 0.5, p[1], p[2] + dz * ring * 0.5];
-      if (clear(q[0], q[2], 1.5)) return q;
+      if (clear(q[0], q[2], r, q[1]) && grounded(q[0], q[2], q[1])) return q;
     }
     return p;
   };
@@ -666,13 +749,27 @@ export function placeRace(b: WorldBundle, layout: PackLayout, bound: Map<string,
     e.zone = zoneAt(p);
   };
   let into: Vec3 | null = null; // where the race comes into the line from
+  let road: Vec3[] = [];
   if (loop && loop.points.length >= 3) {
+    // ground the race needs that the layout doesn't have (a drive round the house, a ring road
+    // round the maze), laid only for a race
+    if (loop.ground?.length) {
+      const zoneOf = new Map([...bound].map(([id, s]) => [s.slot, id]));
+      loop.ground.forEach((s, i) => {
+        const st = { id: `st_race_${String(i).padStart(2, "0")}`, src: "template" as const, layer: "gameplay" as const, zone: zoneOf.get(s.zoneSlot) ?? b.zones[0]?.id ?? "z_root", shape: s.shape, pos: s.pos, rotY: s.rotY, size: s.size, surf: s.surf };
+        b.statics.push(st);
+        if (s.surf !== "floor" && s.surf !== "water") solid.push(s);
+      });
+      notes.push(`race: ${loop.ground.length} pieces of ground laid for the ${layout.packId} race loop`);
+    }
     // the line on the loop's first point, the gates spread evenly round it (midpoints too)
     const spots: Vec3[] = loop.points.flatMap((p, i) => {
       const q = loop.points[(i + 1) % loop.points.length]!;
       return [p, [(p[0] + q[0]) / 2, (p[1] + q[1]) / 2, (p[2] + q[2]) / 2] as Vec3];
     });
-    // the loop is a road: low cover standing on it (a kiosk, a crate stack) is cleared away
+    road = spots;
+    // the loop is a road: low cover standing on it (a kiosk, a crate stack, a tree, a rock) is
+    // cleared away; walls and ledges (anything long or high and wide) stay
     const half = width / 2 + 0.6;
     const onRoad = (s: (typeof b.statics)[number]) => {
       for (let i = 0; i < spots.length; i++) {
@@ -685,15 +782,16 @@ export function placeRace(b: WorldBundle, layout: PackLayout, bound: Map<string,
       }
       return false;
     };
-    const cleared = b.statics.filter((s) => s.surf === "wall" && s.size[1] <= 2.5 && onRoad(s));
+    const cleared = b.statics.filter((s) => clearedByRace(s) && onRoad(s));
     if (cleared.length) {
       b.statics = b.statics.filter((s) => !cleared.includes(s));
       for (const s of cleared) solid.splice(solid.findIndex((x) => x.pos[0] === s.pos[0] && x.pos[1] === s.pos[1] && x.pos[2] === s.pos[2] && x.size[0] === s.size[0]), 1);
       notes.push(`race: ${cleared.length} low block${cleared.length > 1 ? "s" : ""} of cover cleared off the ${layout.packId} race loop`);
     }
     for (const e of [line, ...gates]) e.size = [Math.max(width, e.size[0]), Math.max(3, e.size[1]), Math.max(width, e.size[2])];
-    put(line, nudge(spots[0]!));
-    gates.forEach((g, i) => put(g, nudge(spots[Math.max(1, Math.round(((i + 1) * spots.length) / (gates.length + 1))) % spots.length]!)));
+    // (as clear as the loop is tested to be: a car fits through anything 1.2 m off the line)
+    put(line, nudge(spots[0]!, 1.2));
+    gates.forEach((g, i) => put(g, nudge(spots[Math.max(1, Math.round(((i + 1) * spots.length) / (gates.length + 1))) % spots.length]!, 1.2)));
     into = spots[spots.length - 1]!;
     notes.push(`race: ${line.id} and ${gates.length} gates (${gates.map((g) => g.id).join(", ")}) round the ${layout.packId} race loop`);
   } else {
@@ -728,6 +826,38 @@ export function placeRace(b: WorldBundle, layout: PackLayout, bound: Map<string,
     if (driver) driver.pos = driver.kind === "spawn" ? [e.pos[0], floor, e.pos[2]] : [e.pos[0], floor + driver.size[1] / 2, e.pos[2]];
   });
   if (rides.length) notes.push(`race: the grid behind ${line.id}: ${rides.map((v) => `${String(v.params.driver)} in ${v.on}`).join(", ")}`);
+  // off the road: a vehicle nobody drives, and a hazard standing on it (the race goes round them,
+  // not through them)
+  if (road.length) {
+    const nearest = (x: number, z: number) => {
+      let best = { d: Infinity, nx: 0, nz: 0 };
+      for (let i = 0; i < road.length; i++) {
+        const [a, c] = [road[i]!, road[(i + 1) % road.length]!];
+        const [ux, uz] = [c[0] - a[0], c[2] - a[2]];
+        const l2 = ux * ux + uz * uz || 1;
+        const t = Math.max(0, Math.min(1, ((x - a[0]) * ux + (z - a[2]) * uz) / l2));
+        const [px, pz] = [x - (a[0] + ux * t), z - (a[2] + uz * t)];
+        const d = Math.sqrt(px * px + pz * pz);
+        if (d < best.d) best = d > 1e-6 ? { d, nx: px / d, nz: pz / d } : { d, nx: -uz / Math.sqrt(l2), nz: ux / Math.sqrt(l2) };
+      }
+      return best;
+    };
+    const parked = b.verbs.filter((v) => v.verb === DRIVE && !v.params.driver).map((v) => b.entities.find((e) => e.id === v.on));
+    const hazards = b.entities.filter((e) => e.kind === "hazard" && Math.max(e.size[0], e.size[2]) <= width);
+    const moved: string[] = [];
+    for (const e of [...parked, ...hazards]) {
+      if (!e) continue;
+      const r = Math.max(e.size[0], e.size[2]) / 2;
+      const n = nearest(e.pos[0], e.pos[2]);
+      const need = width / 2 + r + 0.6;
+      if (n.d >= need) continue;
+      const [x, z] = [e.pos[0] + n.nx * (need - n.d + 0.4), e.pos[2] + n.nz * (need - n.d + 0.4)];
+      const q = nudge([x, e.pos[1] - e.size[1] / 2, z]);
+      put(e, nearest(q[0], q[2]).d >= need ? q : [x, e.pos[1] - e.size[1] / 2, z]);
+      moved.push(e.id);
+    }
+    if (moved.length) notes.push(`race: ${moved.join(", ")} moved off the road`);
+  }
   return notes;
 }
 
@@ -1449,6 +1579,23 @@ export function repairKits(b: WorldBundle): string[] {
         notes.push(`${v.on}: plate latches (rule ${r.id} needs ${plates.length} plates down at once)`);
       }
     }
+  }
+  return notes;
+}
+
+/**
+ * A rule about your vehicle is about you: "the boat enters the buoy" or "the kart hits the oil" is
+ * the player at its wheel doing it (the vehicle rides where its driver is; a hazard hits whoever
+ * drives into it). Logged.
+ */
+export function repairRiders(b: WorldBundle): string[] {
+  const mine = new Set(b.verbs.filter((v) => v.verb === DRIVE && v.params.driver === "player").map((v) => v.on));
+  if (!mine.size) return [];
+  const notes: string[] = [];
+  for (const r of b.rules) {
+    if (!["enter", "exit", "hit", "touch"].includes(r.when.t) || !mine.has(r.when.a)) continue;
+    notes.push(`${r.id}: '${r.when.a}' in the trigger is the player at its wheel`);
+    r.when = { ...r.when, a: "player" };
   }
   return notes;
 }

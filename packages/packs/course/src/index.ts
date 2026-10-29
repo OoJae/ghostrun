@@ -291,6 +291,13 @@ export const course: LayoutPack<CourseParams> = {
       statics,
       maxProp: 1.2,
       cameraBounds: { min: [-HALF, fallY, zBack], max: [HALF, maxTop + 6, zEnd + 3] },
+      // a race loop on the canyon floor: up the east side of the platforms (every pillar stands
+      // within 4 m of the centre line, the canyon walls 9 m out), round behind the finish, back
+      // down the west side and round behind the stairs
+      track: {
+        points: [[6.5, fallY, r2((zEnd - START_D) / 2)], [6.5, fallY, r2(zEnd + 1.5)], [-6.5, fallY, r2(zEnd + 1.5)], [-6.5, fallY, r2((zEnd - START_D) / 2)], [-6.5, fallY, r2(zBack + 1.5)], [6.5, fallY, r2(zBack + 1.5)]],
+        width: 4,
+      },
       notes: [
         `course: ${kinds.join(" → ")}, ${Math.round(zEnd)} m to the finish; opening wall ${gateRise} m (${jumping ? `needs ${k} jump${k === 1 ? "" : "s"}` : "a step: these laws barely jump"})`,
         `fall floor ${fallDepth} m down with stairs back to the start${harder ? "; harder: gaps up to 0.95 × reach" : ""}`,

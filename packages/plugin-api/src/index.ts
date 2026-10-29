@@ -30,8 +30,12 @@ export interface PackLayout {
   /** Largest footprint (m) a solid prop may have here, so a placed prop never seals a corridor. */
   maxProp?: number;
   notes: string[]; // e.g. "orrery: distances scaled"
-  /** A race loop: points on open ground, in order (the placer puts a race's line and gates there; drivers find their way between them), and how wide a gate is. */
-  track?: { points: Vec3[]; width: number };
+  /**
+   * A race loop: points on open ground, in order (the placer puts a race's line and gates there;
+   * drivers find their way between them), how wide a gate is, and any ground the loop needs that the
+   * layout doesn't have (laid only in a race).
+   */
+  track?: { points: Vec3[]; width: number; ground?: PackStatic[] };
 }
 
 export interface GenerateInput<P extends Params = Params> {
