@@ -225,11 +225,11 @@ export function weatherWord(w: string): WorldBundle["cosmetic"]["weather"] {
 }
 
 /** A look word per look (and sub-style) that draws its own materials, for the shader prewarm. */
+// One per look and the commonest sub-styles: every warm sample stays in memory, so not all of them.
 const SAMPLES: readonly (readonly [string, string])[] = [
-  ["sandstone desert canyon", "outdoor"], ["sunny beach", "outdoor"], ["underwater reef", "outdoor"], ["snowy mountain", "outdoor"], ["ice cave", "maze"],
-  ["space station", "floor_plan"], ["moon base", "outdoor"], ["haunted mansion", "floor_plan"], ["haunted graveyard", "outdoor"], ["medieval castle", "arena"],
-  ["wizard school", "floor_plan"], ["candy land", "outdoor"], ["jungle temple", "outdoor"], ["cozy cottage", "floor_plan"], ["japanese tea house", "floor_plan"],
-  ["old library", "maze"],
+  ["sandstone desert canyon", "outdoor"], ["sunny beach", "outdoor"], ["snowy mountain", "outdoor"], ["space station", "floor_plan"],
+  ["haunted mansion", "floor_plan"], ["medieval castle", "arena"], ["wizard school", "floor_plan"], ["candy land", "outdoor"],
+  ["jungle temple", "outdoor"], ["cozy cottage", "floor_plan"],
 ];
 
 /** Copies of sample worlds wearing every newer look, so the background prewarm compiles their shaders too. */

@@ -6,6 +6,7 @@ import { describe, expect, it } from "vitest";
 import { splitObjects } from "@ghostrun/ir";
 import { buildWorld, FIXTURE_PROMPTS, FIXTURES, hashWorld, worldFromFill, type World } from "../src/pipeline";
 import { pickLook, type Pick } from "../src/render/pick";
+import { signText } from "../src/render/sign";
 
 interface Recorded {
   prompt: string;
@@ -104,6 +105,21 @@ describe("looks match the prompt", () => {
     expect(byPrompt(/last train/).phase).toBe("dusk");
     expect(byPrompt(/medieval castle siege/).overcast).toBe(true);
     expect(byPrompt(/floating islands/).phase).toBe("day"); // "glowing islands" in the setting is not night
+  });
+
+  it("signs say what the world is: its own words or its zones, the noodle bar only in the organizer's CTF city", () => {
+    const say = (w: World) => w.bundle.entities.filter((e) => e.kind === "sign").map((e) => signText(w.bundle, e, pickOf(w).id));
+    expect(say(fixtures.find((f) => f.slug === "fixture:ctf")!.world)).toEqual([["NOODLES", "OPEN 24H  ·  CTF FINALS"]]);
+    const lines = gallery.flatMap((g) => say(g.world));
+    expect(lines.length).toBeGreaterThan(4);
+    for (const [title, sub] of lines) {
+      expect(title).not.toBe("NOODLES");
+      expect(title.length).toBeGreaterThan(2);
+      expect(sub).not.toContain("CTF");
+    }
+    const aquarium = say(gallery.find((g) => /aquarium/.test(g.prompt))!.world);
+    expect(aquarium.map(([t]) => t)).toContain("OBSERVATION BAY"); // "observation bay sign": the sign's own words
+    expect(aquarium[0]![1]).toMatch(/^→ /); // and the way to the other zones
   });
 
   it("a share link (the fill alone) rebuilds the same look as the live world", () => {
