@@ -120,7 +120,7 @@ function worldRules(layout: PackLayout): string[] {
         "Goals are sensors; pickups are carried with the carry verb.",
         "The win must depend on the objective, never on just walking somewhere: e.g. bring the gem to the exit (when enter a=gem b=exit), collect N coins (touch + score_gte), or flip all switches (state_is). Doors that guard the objective go on doorway anchors when the pack has them.",
         "Make it interactive: 10-20 things the player can use, collect, step on or dodge (switches, plates, locked doors and keys, coins, hazards, jump pads, portals, exhibits to inspect), each bound to its verb and wired with rules so it matters.",
-        "Fights (duels, shooters, zombies, laser tag): combat_sport.shoot on the player and on each npc that fights back (claws or a sword: range 2), combat_sport.health on whoever can be knocked out; win or score on health_lte of the rivals (n 0), lose on health_lte of the player.",
+        "Fights (duels, shooters, zombies, laser tag): combat_sport.shoot on the player and on each npc that fights back (claws or a sword: range 2), combat_sport.health on whoever can be knocked out; win or score on health_lte of the rivals (n 0), lose on health_lte of the player. The player is always 'player' (never player_red); red scoring a tag is {\"t\":\"hit\",\"a\":\"team:blue\",\"b\":\"\"}.",
         `Verbs:\n${SUPPORTED.verbs.map((x) => `- ${x.id}: ${x.line}`).join("\n")}`,
         `Rule triggers: ${SUPPORTED.triggers.join("; ")}.`,
         `Rule effects: ${SUPPORTED.effects.join("; ")}.`,
