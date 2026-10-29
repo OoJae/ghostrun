@@ -432,11 +432,13 @@ function weathered(s: Base, p: Pick): Base {
     out.sky.aurora = 0;
     if (out.sky.sun) out.sky.sun = { ...out.sky.sun, scale: out.sky.sun.scale * 0.15, halo: out.sky.sun.halo * 0.5 };
     out.fog = { color: mixHex(s.fog.color || "#808080", g, grey * 0.7), near: s.fog.near * 0.6, far: s.fog.far * 0.62 };
+    // a storm at night greys the sky, not the ground you run on: there's little light to lose
     const night = p.phase === "night";
     out.sun = { ...s.sun, intensity: s.sun.intensity * (night ? 0.7 : 0.45) };
     out.hemi = { ...s.hemi, sky: mixHex(s.hemi.sky, g, grey * (night ? 0.25 : 0.5)), intensity: s.hemi.intensity * (night ? 1.2 : 1) };
   }
   if (p.fog) {
+    // night fog is a pale mist that keeps clear of the few metres round you, not a dark wall at 4 m
     const night = p.phase === "night";
     out.fog = { color: night ? mixHex(out.fog.color, "#6a6884", 0.3) : out.fog.color, near: Math.max(night ? 8 : 4, out.fog.near * 0.35), far: Math.max(night ? 40 : 32, out.fog.far * 0.45) };
   }
