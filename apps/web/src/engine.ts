@@ -573,7 +573,9 @@ export class Engine {
     this.#slowWindows = 0;
     pr.ready = true;
     // the world is playable: now the models load, each replacing its primitive when it's ready
-    if (this.#modelTier !== "off") this.#models = new ModelLayer(world.bundle, view, this.rapierSim, { tier: this.#modelTier, night: look.night, ghost: this.#ghost.obj, role: world.intent.live?.role ?? "", compile: (o) => this.#renderer.compileAsync(o, this.#camera, this.#scene) });
+    // (a world loaded in a headset gets the lighter layer, as a page that reloads into VR does)
+    const tier = this.#vr && this.#modelTier === "full" ? "lite" : this.#modelTier;
+    if (tier !== "off") this.#models = new ModelLayer(world.bundle, view, this.rapierSim, { tier, night: look.night, ghost: this.#ghost.obj, role: world.intent.live?.role ?? "", compile: (o) => this.#renderer.compileAsync(o, this.#camera, this.#scene) });
     return { ttffMs, splits };
   }
 
