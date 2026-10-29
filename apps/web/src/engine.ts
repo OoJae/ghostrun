@@ -472,7 +472,12 @@ export class Engine {
   #applyLook(look: LookStyle, place: { shelter: WorldView["shelter"]; groundY: number } | null = null) {
     this.#air.apply(look, place?.shelter ?? null, place?.groundY ?? 0);
     this.#renderer.toneMappingExposure = look.exposure;
-    if (this.#bloom) this.#bloom.strength.value = look.bloom;
+    if (this.#bloom) {
+      this.#bloom.strength.value = look.bloom;
+      // by day a sunlit wall is already past the night's threshold and the whole frame hazes over:
+      // only what truly glows (gates, bolts, flames) should bloom
+      this.#bloom.threshold.value = look.night ? 0.85 : 1.4;
+    }
   }
 
   /** Swap in a new world. Resolves after its first frame has been rendered. */
@@ -505,7 +510,7 @@ export class Engine {
     const sim = this.simFactory ? this.simFactory(world.bundle) : new StubSim(world.bundle);
     this.rapierSim = this.simFactory ? (sim as RapierSim) : null;
     // a fight: shots, flashes and hit-point bars (worlds without weapons or hit points get none)
-    this.#combat = this.rapierSim ? combatView(world.bundle, this.rapierSim.sim) : null;
+    this.#combat = this.rapierSim ? combatView(world.bundle, this.rapierSim.sim, !look.night) : null;
     if (this.#combat) this.#scene.add(this.#combat.root);
     // a race (or anything to drive): vehicles that steer and roll, the chase camera, the next gate
     this.#race = this.rapierSim ? raceView(world.bundle, this.rapierSim.sim, look.kick) : null;
