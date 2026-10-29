@@ -65,7 +65,7 @@ function Routes({ routes, runs, on, onToggle }: { routes: Insights; runs: number
   );
 }
 
-export function ReceiptPanel({ proof, onClose, onShare, onWrong, onExport, onTrust, onFool, fooled, reported, routes, routesOn, onRoutes, report }: { proof: ProofState; onClose: () => void; onShare?: () => void; onWrong?: (note: string) => void; onExport?: () => void; onTrust?: () => void; onFool?: (() => void) | undefined; fooled?: Fooled | null; reported?: string | undefined; routes?: Insights | null; routesOn?: boolean; onRoutes?: () => void; report?: Report | null }) {
+export function ReceiptPanel({ proof, onClose, onShare, onWrong, onExport, onTrust, onFool, fooled, reported, routes, routesOn, onRoutes, report, version }: { proof: ProofState; onClose: () => void; onShare?: () => void; onWrong?: (note: string) => void; onExport?: () => void; onTrust?: () => void; onFool?: (() => void) | undefined; fooled?: Fooled | null; reported?: string | undefined; routes?: Insights | null; routesOn?: boolean; onRoutes?: () => void; report?: Report | null; /** A remix: which version this receipt is for, and that the original's is its own. */ version?: string | null }) {
   const r = proof.receipt;
   const [writing, setWriting] = useState(false);
   const [note, setNote] = useState("");
@@ -76,6 +76,11 @@ export function ReceiptPanel({ proof, onClose, onShare, onWrong, onExport, onTru
         {r && <span className="mono">spec {r.spec.slice(0, 8)} · {r.ms} ms · {r.host}</span>}
         <button type="button" onClick={onClose} aria-label="close">×</button>
       </div>
+      {version && (
+        <p className="receipt-version" data-testid="receipt-version">
+          {version}
+        </p>
+      )}
       {r?.headline && (
         <p className={`headline ${r.headline.status}`}>
           {r.headline.text}: <b>{r.headline.status.replace("_", " ")}</b>

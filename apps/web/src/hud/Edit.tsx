@@ -1,6 +1,6 @@
 // "Change it": the person's own edit to the world they're playing. It comes back re-proved, with
 // its numbers: what changed in the world, and how the receipt moved.
-import { useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
 import type { Delta } from "../edits";
 
 export type EditState =
@@ -13,8 +13,26 @@ export type EditState =
 
 const SIGN = { "-1": "worse", "0": "same", "1": "better" } as const;
 
-export function EditBox({ state, enabled, suggestions, canUndo, onEdit, onUndo }: { state: EditState; enabled: boolean; suggestions: string[]; canUndo: boolean; onEdit: (change: string) => void; onUndo: () => void }) {
+interface Props {
+  state: EditState;
+  enabled: boolean;
+  suggestions: string[];
+  canUndo: boolean;
+  onEdit: (change: string) => void;
+  onUndo: () => void;
+  /** Bumped to put the cursor in the box (Remix opens a world for your first change). */
+  focusKey?: number;
+  placeholder?: string | undefined;
+  /** Shown above it: where a shared or gallery world came from. */
+  children?: ReactNode;
+}
+
+export function EditBox({ state, enabled, suggestions, canUndo, onEdit, onUndo, focusKey = 0, placeholder, children }: Props) {
   const [text, setText] = useState("");
+  const input = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    if (focusKey) input.current?.focus();
+  }, [focusKey]);
   const busy = state.status === "editing" || state.status === "racing" || state.status === "proving";
   const submit = (e: FormEvent) => {
     e.preventDefault();
@@ -25,16 +43,18 @@ export function EditBox({ state, enabled, suggestions, canUndo, onEdit, onUndo }
   };
   return (
     <aside className={`glass editbox ${state.status}`} data-testid="edit-box">
+      {children}
       <form onSubmit={submit}>
         <span className="eyebrow">Change it</span>
         <input
+          ref={input}
           value={text}
           maxLength={300}
           disabled={!enabled}
           spellCheck={false}
           aria-label="Change this world"
           data-testid="edit-input"
-          placeholder={enabled ? "say what to change…" : "edits need the live AI lane"}
+          placeholder={enabled ? (placeholder ?? "say what to change…") : "edits need the live AI lane"}
           onChange={(e) => setText(e.target.value)}
           onKeyDown={(e) => e.key === "Escape" && e.currentTarget.blur()}
         />
