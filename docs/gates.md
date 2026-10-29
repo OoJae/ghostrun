@@ -199,3 +199,5 @@ The `play` Worker now runs main 54318a7: sound, the new landing, combat, ghost r
 | A visitor with no token (headless Chromium) | landing line and starters; Turnstile passed without a click; the brief came back cached in 587 ms, labelled "cached · built live 29 Oct by gpt-oss-120b"; receipt verified, 12 of 12; the AI's ghost runs; the Director's cut starts on Sonnet |
 
 Live benches since the last deploy (first pass, unseen prompts, fast lane): fights 8 of 12 twice, races 0 of 10 then 8 of 10 after the race fixes, a fresh mixed set 14 of 17 games. Re-proved with today's code from their recorded fills, all committed sets: 231 of 239 games won, 62 of 63 places toured.
+
+Characters and props followed (main a457063, deployed the same day): CC0 KayKit bodies and props, 1.0 MB in all, loaded after a world plays. On production, as a visitor: the cached brief's player swapped to an animated character and its props to models, none failed; the receipt and the race line unchanged.
