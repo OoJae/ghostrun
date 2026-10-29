@@ -9,7 +9,7 @@ import { KIND_SIZE } from "@ghostrun/layout";
 import type { PackLayout, PackStatic, ZoneSpec } from "@ghostrun/plugin-api";
 import { packFor } from "@ghostrun/registry";
 import {
-  AdditiveBlending, BoxGeometry, CapsuleGeometry, Color, CylinderGeometry, DoubleSide, Group, Mesh, MeshBasicNodeMaterial, Object3D, PlaneGeometry, RingGeometry,
+  AdditiveBlending, BoxGeometry, CapsuleGeometry, Color, CylinderGeometry, DoubleSide, Group, Mesh, MeshBasicNodeMaterial, NormalBlending, Object3D, PlaneGeometry, RingGeometry,
   SphereGeometry, TorusGeometry, Vector2, Vector3, type BufferGeometry, type PerspectiveCamera,
 } from "three/webgpu";
 import { abs, attribute, clamp, float, fract, fwidth, length, max, min, mix, oneMinus, positionGeometry, positionWorld, smoothstep, uniform, vec3, vertexColor } from "three/tsl";
@@ -49,6 +49,8 @@ const uReach = uniform(60);
 interface Kit {
   wall: MeshBasicNodeMaterial;
   edge: MeshBasicNodeMaterial;
+  /** The same edges drawn in ink, for a pale day. */
+  ink: MeshBasicNodeMaterial;
   ground: MeshBasicNodeMaterial;
   body: MeshBasicNodeMaterial;
   line: MeshBasicNodeMaterial;
@@ -78,12 +80,18 @@ function makeKit(): Kit {
   wall.colorNode = uFill.add(uEdge.mul(band.mul(1.4)));
   wall.opacityNode = float(0.42).add(band.mul(0.5)).mul(smoothstep(0, 0.06, w.k));
 
-  // edges: HDR strips (their vertex colour is a brightness) in the look's glow, rising with the wall
-  const edge = new MeshBasicNodeMaterial({ transparent: true, depthWrite: false, blending: AdditiveBlending });
-  const e = rising();
-  edge.positionNode = e.position;
-  edge.colorNode = uEdge.mul(vertexColor().rgb);
-  edge.opacityNode = smoothstep(0, 0.05, e.k);
+  // edges: HDR strips (their vertex colour is a brightness) in the look's glow, rising with the wall;
+  // on a pale day added light is lost against the sky, so the same strips are drawn in ink
+  const strips = (blending: typeof AdditiveBlending | typeof NormalBlending) => {
+    const m = new MeshBasicNodeMaterial({ transparent: true, depthWrite: false, blending });
+    const e = rising();
+    m.positionNode = e.position;
+    m.colorNode = uEdge.mul(vertexColor().rgb);
+    m.opacityNode = smoothstep(0, 0.05, e.k);
+    return m;
+  };
+  const edge = strips(AdditiveBlending);
+  const ink = strips(NormalBlending);
 
   // the ground: a grid revealed by a ring running out from the centre, fading into the distance
   const ground = new MeshBasicNodeMaterial({ transparent: true, depthWrite: false });
@@ -113,7 +121,7 @@ function makeKit(): Kit {
   const beam = new CylinderGeometry(1, 1, 1, 24, 1, true);
   beam.translate(0, 0.5, 0); // grows up from its foot
   return {
-    wall, edge, ground, body, line, glow, flash,
+    wall, edge, ink, ground, body, line, glow, flash,
     team: { red: solid(PALETTE.red, 3), blue: solid(PALETTE.blue, 3), orb: solid(PALETTE.orb, 5) },
     geo: { plane: new PlaneGeometry(1, 1), box: new BoxGeometry(1, 1, 1), ring: new RingGeometry(0.88, 1.04, 48), beam, torus: new TorusGeometry(1.2, 0.08, 10, 56), orb: new SphereGeometry(1, 24, 12), capsule: new CapsuleGeometry(0.33, 1.1, 4, 12) },
   };
@@ -125,11 +133,15 @@ const luma = (hex: string) => {
   return 0.2126 * r + 0.7152 * g + 0.0722 * b;
 };
 
-/** The preview's edge, fill and grid colours from a look: glowing lines on a dark world; on a pale day, drawn lines instead (glow is lost on a bright sky). */
-function tint(look: LookStyle): [V3, V3, V3] {
+/**
+ * The preview's edge, fill and grid colours from a look, and whether it is pale: glowing lines on a
+ * dark world; on a pale day, lines inked in the shade of its ground over walls of that ground (the
+ * sky's own colours would vanish against the sky).
+ */
+function tint(look: LookStyle): [V3, V3, V3, boolean] {
   const air = look.fog.color || look.sky.horizon;
-  const pale = luma(air) > 0.35;
-  return [lin(pale ? look.hemi.ground : look.sky.glow, pale ? 1 : 2.4), lin(pale ? look.hemi.sky : air, pale ? 0.85 : 1.8), lin(look.hemi.sky, pale ? 0.5 : 1.3)];
+  if (luma(air) > 0.35) return [lin(look.hemi.ground, 0.3), lin(look.hemi.ground, 0.9), lin(look.hemi.ground, 0.55), true];
+  return [lin(look.sky.glow, 2.4), lin(air, 1.8), lin(look.hemi.sky, 1.3), false];
 }
 
 /** The look before the fill's meta line names one: the intent's words read like a look word. */
@@ -172,7 +184,8 @@ export class Materialise {
   readonly #pops: Pop[] = [];
   readonly #onAnchor = new Map<string, number>();
   #nextPopAt = 0;
-  #colours: [V3, V3, V3];
+  #colours: [V3, V3, V3, boolean];
+  #edges: Mesh | null = null;
   /** The scan ring's speed (m/s) and how far out the farthest wall stands (m). */
   #speed = 10;
   #reach = 10;
@@ -236,9 +249,10 @@ export class Materialise {
     if (statics.length) {
       const body = new Mesh(keep(bodies.build()), this.#k.wall);
       body.renderOrder = 1;
-      const edge = new Mesh(keep(edges.build()), this.#k.edge);
+      const edge = new Mesh(keep(edges.build()), this.#colours[3] ? this.#k.ink : this.#k.edge);
       edge.renderOrder = 2;
       this.root.add(body, edge);
+      this.#edges = edge;
     }
     const ground = new Mesh(this.#k.geo.plane, this.#k.ground);
     ground.rotation.x = -Math.PI / 2;
@@ -260,6 +274,7 @@ export class Materialise {
       if (JSON.stringify(next) !== JSON.stringify(this.look)) {
         this.look = next;
         this.#colours = tint(next);
+        if (this.#edges) this.#edges.material = this.#colours[3] ? this.#k.ink : this.#k.edge;
         changed = next;
       }
     }
