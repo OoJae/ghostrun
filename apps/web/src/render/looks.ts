@@ -55,12 +55,14 @@ export interface LookStyle {
   footing: Footing;
   /** What a plain prop (a box the kits don't draw) is made of here: navy in the city, wood in a cabin. */
   prop: string;
+  /** What a wheel kicks up from this ground: sand, snow, sugar, spray when it rains. */
+  kick: string;
   pick: Pick;
 }
 
 const mixHex = (a: string, b: string, t: number) => `#${new Color(a).lerp(new Color(b), t).getHexString()}`;
 
-type Base = Omit<LookStyle, "id" | "variant" | "phase" | "night" | "rain" | "storm" | "cutaway" | "indoor" | "pick" | "drift" | "footing" | "prop"> & { drift?: Drift };
+type Base = Omit<LookStyle, "id" | "variant" | "phase" | "night" | "rain" | "storm" | "cutaway" | "indoor" | "pick" | "drift" | "footing" | "prop" | "kick"> & { drift?: Drift };
 
 /** Where the first three looks always lit from (a light at -20, 40, 18): kept, so they look as before. */
 const CLASSIC = { elevation: 0.9734, azimuth: 2.4088 };
@@ -399,6 +401,12 @@ const PROP: Record<LookId, string> = {
   haunted: "#3a3036", medieval: "#7a5232", candy: "#ff8ac0", jungle: "#6a5a40", home: "#8a5a36",
 };
 
+/** What each look's ground kicks up behind a wheel. */
+const KICK: Record<LookId, string> = {
+  neon: "#8a8aa0", grove: "#a08c68", gallery: "#d8d4cc", desert: "#d8b47c", snow: "#ffffff", space: "#a8b4c8",
+  haunted: "#7a7468", medieval: "#b0a080", candy: "#ffc8e4", jungle: "#7a6a48", home: "#e8dcc8",
+};
+
 /** Each look's floor underfoot. */
 const FOOTING: Record<LookId, Footing> = {
   neon: "street", grove: "soft", gallery: "hard", desert: "sand", snow: "snow", space: "metal",
@@ -465,6 +473,7 @@ export function lookOf(b: WorldBundle, cue: Cue = cueOf(b)): LookStyle {
     indoor,
     footing: p.rain && (p.id === "neon" || !indoor) && FOOTING[p.id] !== "metal" ? "wet" : p.variant === "underwater" ? "sand" : FOOTING[p.id],
     prop: PROP[p.id],
+    kick: p.snow ? "#ffffff" : p.rain && !indoor ? "#d8f4ff" : p.variant === "beach" ? "#efdaa8" : p.variant === "moon" ? "#c4c4bc" : KICK[p.id],
     pick: p,
   };
 }

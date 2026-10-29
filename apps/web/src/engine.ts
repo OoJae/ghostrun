@@ -508,7 +508,7 @@ export class Engine {
     this.#combat = this.rapierSim ? combatView(world.bundle, this.rapierSim.sim) : null;
     if (this.#combat) this.#scene.add(this.#combat.root);
     // a race (or anything to drive): vehicles that steer and roll, the chase camera, the next gate
-    this.#race = this.rapierSim ? raceView(world.bundle, this.rapierSim.sim) : null;
+    this.#race = this.rapierSim ? raceView(world.bundle, this.rapierSim.sim, look.kick) : null;
     if (this.#race) this.#scene.add(this.#race.root);
     this.rapierSim?.subscribe((evs) => {
       for (const ev of evs) {

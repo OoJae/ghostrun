@@ -296,8 +296,11 @@ const PUFFS = 64;
 const LINES = 28;
 const FOV = 60;
 
-/** The race layer for a world with vehicles or a track (null for any other world). */
-export function raceView(bundle: WorldBundle, sim: SimWorld): RaceView | null {
+/**
+ * The race layer for a world with vehicles or a track (null for any other world). `ground` is what
+ * the look's ground kicks up behind a wheel (sand in the desert, snow on snow, spray in the rain).
+ */
+export function raceView(bundle: WorldBundle, sim: SimWorld, ground = "#bfa88a"): RaceView | null {
   const drives = bundle.verbs.filter((v) => v.verb === "vehicle.drive" && bundle.entities.some((e) => e.id === v.on));
   const track = bundle.verbs.find((v) => v.verb === "racing.track");
   if (!drives.length && !track) return null;
@@ -362,7 +365,7 @@ export function raceView(bundle: WorldBundle, sim: SimWorld): RaceView | null {
     if (!m) puffMats.set(hex, (m = keep(additive(glowMaterial(hex, 0.6, 0.35)))));
     return m;
   };
-  const colours = ["#bfa88a", ...new Set(Object.values(DUST))];
+  const colours = [ground, ...new Set(Object.values(DUST))];
   const puffs = Array.from({ length: PUFFS }, (_, i) => {
     const m = new Mesh(puffGeo, puffMat(colours[i % colours.length]!));
     m.frustumCulled = false;
@@ -452,7 +455,7 @@ export function raceView(bundle: WorldBundle, sim: SimWorld): RaceView | null {
           nextPuff = (nextPuff + 1) % PUFFS;
           _p.copy(parts.rear).applyQuaternion(obj.quaternion).add(obj.position);
           p.m.position.set(_p.x + (Math.random() - 0.5) * parts.size[0] * 0.8, _p.y, _p.z + (Math.random() - 0.5) * 0.3);
-          p.m.material = puffMat(DUST[parts.kind] ?? "#bfa88a");
+          p.m.material = puffMat(DUST[parts.kind] ?? ground);
           p.age = 0;
           p.life = 0.45 + Math.random() * 0.35;
           p.vy = 0.6 + Math.random() * 0.8;
