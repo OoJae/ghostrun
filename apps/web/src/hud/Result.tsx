@@ -1,10 +1,21 @@
 // The end of a run: how long it took against the AI par, why it ended (the Host's story, each
 // moment replayable), and the way back in.
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import type { WorldBundle } from "@ghostrun/ir";
+import { firstSentences, recap } from "../audio/lines";
 import { clock, why, type Fact, type Story } from "../host";
 import { raceClock, split } from "../race";
 import "./race.css";
+import "./voice.css";
+
+/** The Host's voice on the card: it says the recap (and each answer), and says the last line again. */
+export interface HostVoice {
+  say(text: string): void;
+  again(): void;
+}
+
+/** After the win or lose sting has rung out, so the Host isn't talking over it. */
+const RECAP_DELAY_MS = 900;
 
 /** The race side of a result: the line to paste anywhere, "Race me", and the world's best times. */
 export interface RaceCard {
@@ -31,7 +42,7 @@ export interface RunResult {
 }
 
 /** Ask the Host about this run: the answer cites its facts, and a cited moment replays. */
-function AskHost({ onAsk, onReplay }: { onAsk: (q: string) => Promise<{ answer: string; cites: Fact[] } | null>; onReplay?: ((tick: number) => void) | undefined }) {
+function AskHost({ onAsk, onReplay, voice }: { onAsk: (q: string) => Promise<{ answer: string; cites: Fact[] } | null>; onReplay?: ((tick: number) => void) | undefined; voice?: HostVoice | undefined }) {
   const [q, setQ] = useState("");
   const [a, setA] = useState<{ answer: string; cites: Fact[] } | "asking" | "failed" | null>(null);
   const submit = async (e: FormEvent) => {
@@ -39,7 +50,10 @@ function AskHost({ onAsk, onReplay }: { onAsk: (q: string) => Promise<{ answer: 
     const t = q.trim();
     if (!t || a === "asking") return;
     setA("asking");
-    setA((await onAsk(t)) ?? "failed");
+    const got = await onAsk(t);
+    setA(got ?? "failed");
+    // the gist out loud; the whole answer and its replayable moments stay on the card
+    if (got) voice?.say(firstSentences(got.answer, 2));
   };
   return (
     <div className="host" data-testid="host">
@@ -64,15 +78,29 @@ function AskHost({ onAsk, onReplay }: { onAsk: (q: string) => Promise<{ answer: 
   );
 }
 
-export function ResultCard({ result, bundle, par, onAgain, onShare, director, onTwist, onReplay, onAsk, race }: { result: RunResult; bundle: WorldBundle; par: number | null; onAgain: () => void; onShare: () => void; director?: { line: string; label: string; status: "proving" | "ready" } | null; onTwist?: () => void; onReplay?: (tick: number) => void; onAsk?: ((q: string) => Promise<{ answer: string; cites: Fact[] } | null>) | undefined; race?: RaceCard | undefined }) {
+export function ResultCard({ result, bundle, par, onAgain, onShare, director, onTwist, onReplay, onAsk, race, voice }: { result: RunResult; bundle: WorldBundle; par: number | null; onAgain: () => void; onShare: () => void; director?: { line: string; label: string; status: "proving" | "ready" } | null; onTwist?: () => void; onReplay?: (tick: number) => void; onAsk?: ((q: string) => Promise<{ answer: string; cites: Fact[] } | null>) | undefined; race?: RaceCard | undefined; voice?: HostVoice | undefined }) {
   const t = Math.round((result.tick / 60) * 10) / 10;
   const reason = why(bundle, result.rule);
+  const said = recap(result, bundle);
+  useEffect(() => {
+    if (!voice) return;
+    const at = setTimeout(() => voice.say(said), RECAP_DELAY_MS);
+    return () => clearTimeout(at);
+  }, [result]); // once per run's end (the card re-renders as the race line and Director land)
   const vsPar = par === null ? null : result.k === "win" ? (t <= par ? `You beat the AI par of ${par} s by ${Math.round((par - t) * 10) / 10} s.` : `AI runners do it in ${par} s: there's a faster route.`) : null;
   return (
     <div className={`glass result ${result.k}`} role="dialog" aria-label="Run result" data-testid="result">
       <div className="result-head">{result.k === "win" ? "You win" : "You lose"}</div>
       <div className="result-time">
         {t} s{reason && <span className="muted"> · {reason}</span>}
+        {voice && (
+          <button type="button" className="host-voice" onClick={voice.again} aria-label="The Host says it again" title={`The Host: “${said}”`} data-testid="host-voice">
+            <svg viewBox="0 0 16 16" aria-hidden="true">
+              <path d="M2.5 6h2.2L8 3.2v9.6L4.7 10H2.5z" />
+              <path d="M10.6 5.6a3.4 3.4 0 0 1 0 4.8M12.4 3.9a5.8 5.8 0 0 1 0 8.2" />
+            </svg>
+          </button>
+        )}
       </div>
       {vsPar && <p className="result-note">{vsPar}</p>}
       {race?.vs && result.k === "win" && (
@@ -97,7 +125,7 @@ export function ResultCard({ result, bundle, par, onAgain, onShare, director, on
           ))}
         </ol>
       )}
-      {onAsk && <AskHost onAsk={onAsk} onReplay={onReplay} />}
+      {onAsk && <AskHost onAsk={onAsk} onReplay={onReplay} voice={voice} />}
       {director && (
         <p className="result-director" data-testid="director">
           <b>Director:</b> {director.line} <span className="muted">({director.label}; {director.status === "ready" ? "re-proved ✓" : "re-proving…"})</span>

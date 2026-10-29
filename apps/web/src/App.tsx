@@ -24,6 +24,8 @@ import { BRIEF, buildWorld, ENGINE_HASH, FIXTURE_PROMPTS, FIXTURES, hashWorld, w
 import { probe } from "./probe";
 import { askHost, clock as mmss, facts, story } from "./host";
 import { useSound } from "./audio/useSound";
+import { useSpeech } from "./audio/useSpeech";
+import { TalkBox } from "./hud/Talk";
 import { MuteButton } from "./hud/Mute";
 import { EXAMPLES, Landing, type Starter } from "./hud/Landing";
 import { substitution } from "./substitutions";
@@ -99,6 +101,7 @@ export function App() {
   /** What the world does instead of a mechanic the prompt asked for (no vehicles yet, …). */
   const [note, setNote] = useState<string | null>(null);
   const sound = useSound();
+  const speech = useSpeech(sound);
   const [specHash, setSpecHash] = useState<string>();
   const [timing, setTiming] = useState<LoadResult | null>(null);
   const [status, setStatus] = useState<Status>("booting");
@@ -158,9 +161,13 @@ export function App() {
   const minds = useRef<Minds | null>(null);
   const [bark, setBark] = useState<{ name: string; line: string; at: number } | null>(null);
   const [talking, setTalking] = useState<{ npc: string; name: string } | null>(null);
+  /** An NPC's line: the subtitle, and said out loud in its own voice. */
+  const barked = (npc: string, name: string, line: string, reply: boolean) => {
+    setBark({ name, line, at: Date.now() });
+    speech.npc(npc, line, reply);
+  };
   const [result, setResult] = useState<RunResult | null>(null);
   const [director, setDirector] = useState<{ line: string; label: string; status: "proving" | "ready"; world?: World } | null>(null);
-  const [said, setSaid] = useState("");
   const [reported, setReported] = useState<string>();
   const pending = useRef(new Map<number, { onChip?: (c: Chip) => void; onPlaytest?: (p: Playtest | null) => void; resolve: (r: Receipt) => void; reject: (e: Error) => void }>());
   const modeRef = useRef<Mode>("checking");
@@ -309,7 +316,7 @@ export function App() {
       setToast(null);
       if (sim) {
         minds.current?.stop();
-        minds.current = modeRef.current === "live" ? new Minds(world, sim, (_npc, name, line) => setBark({ name, line, at: Date.now() })) : null;
+        minds.current = modeRef.current === "live" ? new Minds(world, sim, barked) : null;
         sim.onEvents = (evs) => {
           minds.current?.observe(evs);
           for (const ev of evs) {
@@ -327,6 +334,7 @@ export function App() {
         sim.onHint = setUseHint;
       }
       sound.world(world.bundle, sim);
+      speech.world(world.bundle);
       startProof(world, id);
       const h = await hashWorld(world.bundle);
       if (id !== runId.current) return;
@@ -502,7 +510,7 @@ export function App() {
     if (mode !== "live" || minds.current) return;
     const sim = engine.current?.rapierSim;
     const w = current.current;
-    if (sim && w) minds.current = new Minds(w, sim, (_npc, name, line) => setBark({ name, line, at: Date.now() }));
+    if (sim && w) minds.current = new Minds(w, sim, barked);
   }, [mode, status]);
 
   useEffect(() => {
@@ -888,6 +896,7 @@ export function App() {
               void show(w, ++runId.current, performance.now(), []);
             }}
             race={race.card}
+            voice={speech.enabled ? { say: speech.host, again: speech.again } : undefined}
           />
         )}
         {race.chip && status === "playing" && (collapsed || typing || !intent) && <RaceChip {...race.chip} />}
@@ -897,19 +906,7 @@ export function App() {
             <b>{bark.name}:</b> {bark.line}
           </div>
         )}
-        {talking && (
-          <form
-            className="glass talk"
-            onSubmit={(e) => {
-              e.preventDefault();
-              if (said.trim()) minds.current?.talk(talking.npc, said.trim());
-              setTalking(null);
-              setSaid("");
-            }}
-          >
-            <input autoFocus value={said} maxLength={200} placeholder={`Say something to the ${talking.name}…`} onChange={(e) => setSaid(e.target.value)} onKeyDown={(e) => e.key === "Escape" && setTalking(null)} />
-          </form>
-        )}
+        {talking && <TalkBox name={talking.name} lang={speech.listenLang()} onSay={(t) => minds.current?.talk(talking.npc, t)} onClose={() => setTalking(null)} onListen={speech.hush} />}
         <ProofBadge proof={proof} onOpen={() => setReceiptOpen((o) => !o)} />
         <CutChip cut={cut} onApply={applyCut} />
         <RepairChip
