@@ -337,8 +337,12 @@ const heldWeapons = (b: WorldBundle) => new Set(b.verbs.filter((v) => v.verb ===
  * - a character with props.hp has those hit points; anything a rule wears down, damages or heals
  *   gets 100 if it has none;
  * - "the player hits rival_1" (no hazard, no weapon of its own) with the player armed means
- *   rival_1 is hit by the player's shot (before the kits read it as tagging them);
- * - a player who can be knocked out for good, with no rule for it, loses then.
+ *   rival_1 is hit by the player's shot (before the kits read it as tagging them); with a weapon of
+ *   its own, a loss is its shot hitting you;
+ * - a hit "by" a team is someone hit, on the side the rule's effect says;
+ * - knock-outs that lead nowhere beside a win for one more knock-out: the win needs them all;
+ * - a player who can be knocked out for good, with no rule for it, loses then (unless any hit
+ *   already loses).
  */
 export function repairCombat(b: WorldBundle): string[] {
   const notes: string[] = [];
@@ -382,8 +386,9 @@ export function repairCombat(b: WorldBundle): string[] {
   const guns = b.verbs.filter((v) => v.verb === SHOOT && (v.on === "player" || held.has(v.on)));
   // (and one a rule wants worn down is something to throw the stars at)
   const stars = b.verbs.filter((v) => v.verb === "combat_sport.throw");
+  // (never one a rule you lose by wears down: your own ship, the crystal you defend)
   for (const r of b.rules) {
-    const e = (r.when.t === "hit" || r.when.t === "health_lte") && (!r.when.b || guns.some((g) => g.on === r.when.b)) ? b.entities.find((x) => x.id === r.when.a && x.kind !== "npc") : undefined;
+    const e = (r.when.t === "hit" || r.when.t === "health_lte") && (!r.when.b || guns.some((g) => g.on === r.when.b)) && !r.then.some((x) => x.e === "lose") ? b.entities.find((x) => x.id === r.when.a && x.kind !== "npc") : undefined;
     if (!e) continue;
     for (const g of [...guns, ...(r.when.t === "health_lte" ? stars : [])]) {
       const at = String(g.params.at ?? "").split(",").filter(Boolean);
@@ -392,11 +397,22 @@ export function repairCombat(b: WorldBundle): string[] {
       notes.push(`${e.id}: something to ${g.verb === SHOOT ? "shoot" : "throw"} at with ${g.on === "player" ? "your weapon" : g.on} (rule ${r.id} waits for it to be ${r.when.t === "hit" ? "hit" : "worn down"})`);
     }
   }
+  const them = mine === "red" ? "blue" : "red";
+  // "red scores when the player hits team:blue" (a team where the weapon goes): models name the shooter
+  // and the side shot either way round, so the rule's effect says who was hit: a point or a win for
+  // your side is a rival hit, anything else is your side hit (you, for a loss)
+  for (const r of b.rules) {
+    const w = r.when;
+    if (w.t !== "hit" || !/^team:(red|blue)$/.test(w.b)) continue;
+    const ours = r.then.some((e) => (e.e === "score" && e.target === `team:${mine}`) || e.e === "win");
+    const hit = ours ? `team:${them}` : r.then.some((e) => e.e === "lose") ? "player" : `team:${mine}`;
+    notes.push(`rule ${r.id}: '${w.a || "anyone"} hits ${w.b}' names a team where the weapon goes; it means ${hit === "player" ? "you" : hit} hit (hit a=${hit})`);
+    [w.a, w.b] = [hit, ""];
+  }
   // "red scores when the player hits with gun_blue" (hit a=player b=a weapon you fire): your own shot
   // never hits you, so a point (or a win) for your side means a rival hit (by whichever weapon you
   // have: models mix up whose gun is whose), and one for the other side means you were hit
   const own = new Set(guns.map((g) => g.on));
-  const them = mine === "red" ? "blue" : "red";
   // (rivals on the other team, or none yet: the ones added for a shooting game are; else teamless ones)
   const rivals = b.entities.some((e) => e.kind === "npc" && e.team === them) || !b.entities.some((e) => e.kind === "npc" && e.team !== mine) ? `team:${them}` : "";
   for (const r of b.rules) {
@@ -417,6 +433,22 @@ export function repairCombat(b: WorldBundle): string[] {
     notes.push(`rule ${r.id}: ${side} scoring when its own are hit means ${other} hit (hit a=team:${other})`);
     [w.a, w.b] = [`team:${other}`, ""];
   }
+  // "knock out three dummies, then beat the sensei", "outdraw three bandits", written as knock-outs
+  // that lead nowhere (they only mark or remove who went down, and nothing reads that) beside a
+  // win for knocking out one more: the win is for knocking them all out, whoever goes down last
+  // (one copy of the win per member, each needing the others down: no order to get wrong)
+  const someone = (id: string) => id !== "player" && b.entities.some((e) => e.id === id);
+  const reads = (id: string) => b.rules.some((r) => (r.when.t === "state_is" && r.when.a === id) || r.if.some((c) => c.l.startsWith(`${id}.`)));
+  const win = b.rules.find((r) => r.when.t === "health_lte" && r.when.n <= 0 && someone(r.when.a) && !r.if.length && r.then.some((e) => e.e === "win"));
+  const nowhere = win ? b.rules.filter((r) => r !== win && r.when.t === "health_lte" && r.when.n <= 0 && someone(r.when.a) && r.when.a !== win.when.a && hasHp(r.when.a) && !reads(r.when.a) && r.then.every((e) => e.e === "emit" || ((e.e === "set_state" || e.e === "destroy") && e.target === r.when.a))) : [];
+  const downs = [...new Set(nowhere.map((r) => r.when.a))].sort();
+  if (win && downs.length && downs.length <= 4) {
+    const all = [win.when.a, ...downs];
+    const others = (id: string) => all.filter((x) => x !== id).map((x) => ({ l: `${x}.hp`, op: "lte" as const, r: 0, forS: 0 }));
+    for (const id of downs) b.rules.push({ ...structuredClone(win), id: uniqueId(b, `${win.id}_${id}`), when: { ...win.when, a: id }, if: others(id) });
+    win.if = others(win.when.a);
+    notes.push(`rule ${win.id}: knocking out ${downs.join(", ")} leads nowhere, so the win is for knocking out all of ${all.join(", ")}, whoever goes down last (${all.length} rules)`);
+  }
   // "IF the archer's hp is 0": it stays down (a knock-out it comes back from never meets that)
   for (const r of b.rules) {
     for (const c of r.if) {
@@ -427,12 +459,14 @@ export function repairCombat(b: WorldBundle): string[] {
       notes.push(`${id}: rule ${r.id} needs it down (hp ${c.op} ${String(c.r)}), so it doesn't come back`);
     }
   }
-  // "the player hits rival_1": rival_1 shot by the player
+  // "the player hits rival_1": rival_1 shot by the player (when rival_1 shoots back, only a rule
+  // that is good for you: otherwise it is rival_1's shot hitting you, as written)
   const armed = guns.length > 0;
   for (const r of b.rules) {
     const w = r.when;
     const npc = armed && w.t === "hit" && w.a === "player" ? b.entities.find((e) => e.id === w.b && e.kind === "npc") : undefined;
-    if (!npc || b.verbs.some((v) => v.on === npc.id && (v.verb === SHOOT || v.verb === "motion_hazards.hazard"))) continue;
+    const good = r.then.some((e) => e.e === "win" || (e.e === "score" && e.target === `team:${mine}`) || (e.e === "damage" && e.target === npc?.id));
+    if (!npc || b.verbs.some((v) => v.on === npc.id && v.verb === "motion_hazards.hazard") || (b.verbs.some((v) => v.on === npc.id && v.verb === SHOOT) && !good)) continue;
     [w.a, w.b] = [npc.id, ""];
     notes.push(`rule ${r.id}: the player hitting ${npc.id} means shooting them (hit a=${npc.id})`);
   }
@@ -440,7 +474,12 @@ export function repairCombat(b: WorldBundle): string[] {
   const hp = b.verbs.find((v) => v.verb === HEALTH && v.on === "player");
   const forGood = hp && (hp.params.respawn === false || hp.params.respawn === "false");
   const said = b.rules.some((r) => r.when.t === "health_lte" && (r.when.a === "player" || r.when.a === `team:${mine}`) && r.then.some((e) => e.e === "lose" || e.e === "reset" || e.e === "heal"));
-  if (b.mode === "play" && forGood && !said) {
+  // (nor when any hit from anyone who can hurt you already loses: a knock-out never comes first)
+  const losesOnHit = (id: string) => b.rules.some((r) => r.when.t === "hit" && (r.when.a === "player" || r.when.a === `team:${mine}`) && (!r.when.b || r.when.b === id) && !r.if.length && r.then.some((e) => e.e === "lose"));
+  const hurters = b.entities.filter((e) => e.kind === "npc" && e.team !== mine && b.verbs.some((v) => v.on === e.id && v.verb === SHOOT)).map((e) => e.id);
+  const hurt = b.rules.some((r) => r.then.some((e) => e.e === "damage" && (e.target === "player" || e.target === `team:${mine}`)));
+  const first = hurters.length > 0 && !hurt && hurters.every(losesOnHit);
+  if (b.mode === "play" && forGood && !said && !first) {
     b.rules.push({ id: uniqueId(b, "r_knocked_out"), src: "template", layer: "gameplay", when: { t: "health_lte", a: "player", b: "", s: "", n: 0, act: "" }, if: [], then: [fx("lose", "player")], once: true, cooldownS: 0, prio: 0 });
     notes.push("added r_knocked_out: you can be knocked out for good, so that loses");
   }
@@ -1116,8 +1155,9 @@ export function repairKits(b: WorldBundle): string[] {
       notes.push(`rule ${r.id}: '${w.b} enters ${w.b}' means the player reaching it`);
     }
     // "the player hits blue_1" (not a hazard, not a thrown ball): tagging them, USE next to them
+    // (one with a weapon of its own is its shot hitting you: hit a=player b=it, as written)
     const npc = w.t === "hit" && w.a === "player" ? b.entities.find((e) => e.id === w.b && e.kind === "npc") : undefined;
-    if (npc && !b.verbs.some((v) => v.on === npc.id && v.verb === "motion_hazards.hazard")) {
+    if (npc && !b.verbs.some((v) => v.on === npc.id && (v.verb === "motion_hazards.hazard" || v.verb === SHOOT))) {
       w.t = "touch";
       notes.push(`rule ${r.id}: the player hitting ${npc.id} means tagging them (USE next to them)`);
     }

@@ -207,7 +207,7 @@ export function App() {
    */
   const maybeRepair = useCallback(async (world: World, receipt: Receipt, id: number) => {
     if (!world.source || modeRef.current !== "live") return;
-    const first = issuesOf(receipt, world.bundle);
+    const first = issuesOf(receipt, world.bundle, world.fillNotes);
     if (!first.length) return;
     // up to three rounds: each accepted patch is the base for the next, while it keeps getting better
     let base = world;
@@ -215,7 +215,7 @@ export function App() {
     for (let round = 1; round <= 3; round++) {
       const src = base.source!;
       const now = best?.receipt ?? receipt;
-      const issues = issuesOf(now, base.bundle);
+      const issues = issuesOf(now, base.bundle, base.fillNotes);
       if (!issues.length) break;
       setRepair({ status: "working", issues: issues.length, round });
       const patch = await liveRepair(src.prompt, src.intent as LiveIntent, src.fill, issues, src.seed);
@@ -238,7 +238,7 @@ export function App() {
     }
     // the fast lane couldn't fix it all: one round on the stronger model before giving up
     let hard = false;
-    const still = best ? issuesOf(best.receipt, best.world.bundle) : first;
+    const still = best ? issuesOf(best.receipt, best.world.bundle, best.world.fillNotes) : first;
     if (still.length) {
       const src = base.source!;
       setRepair({ status: "working", issues: still.length, hard: true });

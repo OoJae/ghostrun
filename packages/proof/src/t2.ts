@@ -155,6 +155,18 @@ function plan(sim: SimWorld, b: WorldBundle, r: Rule, playerTeam: string, presse
         if (rival) return rivalFires(sim, b, rival, presses);
         return hurts ? plan(sim, b, hurts, playerTeam, presses) : "nothing in the world hurts the player";
       }
+      // something you lose by losing (your ship, the crystal you defend): a rival's weapon meant for
+      // it, or a rule's damage (never your own shot)
+      if (r.then.some((e) => e.e === "lose")) {
+        const gun = b.verbs.find((v) => v.verb === "combat_sport.shoot" && b.entities.some((e) => e.id === v.on && e.kind === "npc" && e.team !== playerTeam) && String(v.params.at ?? "").split(",").includes(who));
+        if (gun) {
+          const why = lineUp(sim, b, gun.on, who, 2.5);
+          if (why) return why;
+          presses.set(gun.on, { tick: sim.tick + 1, wx: 0, wz: 0, btn: BTN.USE });
+          return null;
+        }
+        return hurts ? plan(sim, b, hurts, playerTeam, presses) : `nothing in the world wears ${who} down`;
+      }
       // the player's weapon (one that does damage first: a harmless one is the bug to show)
       const ws = playerWeapons(b).filter((x) => !w.b || x.on === w.b).sort((p, q) => Number(q.damage > 0) - Number(p.damage > 0));
       const wp = ws[0];
@@ -266,6 +278,36 @@ function plan(sim: SimWorld, b: WorldBundle, r: Rule, playerTeam: string, presse
   }
 }
 
+/** A condition's left side as the sim holds it now, for the paths it can read (else undefined). */
+function valueOf(sim: SimWorld, path: string): string | number | boolean | undefined {
+  const t = /^(team:(?:red|blue))(?:\.score)?$/.exec(path)?.[1];
+  if (t) return sim.scores[t] ?? 0;
+  const [id, ...rest] = path.split(".");
+  const e = sim.entity(id!);
+  if (!e) return undefined;
+  const f = rest.join(".");
+  return f === "hp" ? (sim.hp(id!) ?? undefined) : f === "state" ? e.state : f === "team" ? e.team : f === "carrier" ? e.carrier : f === "carrier.team" ? (sim.entity(e.carrier)?.team ?? "") : undefined;
+}
+
+/**
+ * After a forced run that never fired: if the rule's trigger did happen, the conditions that kept
+ * it from firing, with what they found ("archer.hp eq "0" (it is 0)"); null if the trigger itself
+ * never happened.
+ */
+function unmet(sim: SimWorld, r: Rule): string[] | null {
+  const w = r.when;
+  const on = (id: string) => !w.a || id === w.a || (w.a.startsWith("team:") && sim.entity(id)?.team === w.a.slice(5));
+  if (!r.if.length || !sim.log.some((ev) => (w.t === "health_lte" ? ev.k === "hp" && Number(ev.v) <= w.n : ev.k === w.t) && on(ev.a) && (!w.b || ev.b === w.b))) return null;
+  return r.if.flatMap((c) => {
+    const l = valueOf(sim, c.l);
+    const rv = typeof c.r === "string" && c.r.includes(".") ? (valueOf(sim, c.r) ?? c.r) : c.r;
+    const said = `${c.l} ${c.op} ${JSON.stringify(c.r)}`;
+    if (l === undefined) return [said];
+    const ok = c.op === "eq" ? l === rv : c.op === "ne" ? l !== rv : c.op === "lt" ? Number(l) < Number(rv) : c.op === "lte" ? Number(l) <= Number(rv) : c.op === "gt" ? Number(l) > Number(rv) : c.op === "gte" ? Number(l) >= Number(rv) : c.op === "has" ? String(l).includes(String(rv)) : String(rv).split(",").includes(String(l));
+    return ok ? [] : [`${said} (it is ${JSON.stringify(l)})`];
+  });
+}
+
 export function t2(R: Rapier, b: WorldBundle, playerTeam: "red" | "blue" = "red"): Chip[] {
   const chips: Chip[] = [];
   for (const r of [...b.rules].sort((x, y) => (x.id < y.id ? -1 : 1))) {
@@ -328,14 +370,17 @@ export function t2(R: Rapier, b: WorldBundle, playerTeam: "red" | "blue" = "red"
     const n = firedTicks.size;
     // and its damage or heal lands: some hit points moved for the rule
     const dud = n === 1 ? hpFx.find((e) => !sim.log.some((ev) => ev.k === "hp" && ev.rule === r.id && (ev.a === e.target || e.target.startsWith("team:")))) : undefined;
+    // (never fired though its trigger happened: say which conditions held it back)
+    const held = n === 0 ? unmet(sim, r) : null;
     sim.free();
     const ok = n === 1 && !dud;
+    const never = held?.length ? `never fired when forced: its trigger happened, but not ${held.join(", ")}` : "never fired when forced";
     chips.push({
       ...base,
       k: ok ? 1 : 0,
       status: ok ? "verified" : "counterexample",
       text: `${r.id} fires exactly once`,
-      cx: ok ? null : dud ? { where: null, have: 0, need: 1, unit: "HP changes", text: `fired, but its ${dud.e} on ${dud.target} moved no hit points` } : { where: null, have: n, need: 1, unit: "firings", text: n === 0 ? "never fired when forced" : `fired ${n} times` },
+      cx: ok ? null : dud ? { where: null, have: 0, need: 1, unit: "HP changes", text: `fired, but its ${dud.e} on ${dud.target} moved no hit points` } : { where: null, have: n, need: 1, unit: "firings", text: n === 0 ? never : `fired ${n} times` },
       ms: Math.round((globalThis.performance?.now?.() ?? 0) - t0),
     });
   }
