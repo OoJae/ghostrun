@@ -1,0 +1,20 @@
+{"op":"meta","mode":"play","lang":"en","pack":"floor_plan","sub":[],"seed":9,"look":"space station","mood":[-0.2,0.8,0.8],"timeOfDay":0,"weather":"clear"}
+{"op":"zone","id":"z_dock","slot":"yard","tag":"outside","name":"Docking bay"}
+{"op":"zone","id":"z_lobby","slot":"entrance","tag":"entrance","name":"Airlock"}
+{"op":"zone","id":"z_hall","slot":"main_room","tag":"hall","name":"Command deck"}
+{"op":"zone","id":"z_core","slot":"room_ne","tag":"room","name":"Reactor room"}
+{"op":"spawn","id":"sp_red","zone":"z_dock","anchor":"spawn_pad","team":"red"}
+{"op":"ent","id":"reactor_core","kind":"prop","noun":"reactor core","hyper":"machine","zone":"z_core","anchor":"center","body":"fixed","shape":"box","size":[1.2,1.0,1.2],"props":{"hp":150}}
+{"op":"ent","id":"medkit","kind":"pickup","noun":"med kit","zone":"z_hall","anchor":"corner_sw","body":"sensor"}
+{"op":"npc","id":"robot_1","role":"guard","zone":"z_hall","anchor":"center","team":"blue","noun":"security robot","menu":["guard.attack","guard.patrol"],"dflt":"guard.attack"}
+{"op":"npc","id":"robot_2","role":"guard","zone":"z_core","anchor":"corner_sw","team":"blue","noun":"security robot","menu":["guard.defend","guard.patrol"],"dflt":"guard.defend"}
+{"op":"verb","id":"vb_blaster","verb":"combat_sport.shoot","on":"player","params":{"range":15,"damage":25,"cooldown":0.4}}
+{"op":"verb","id":"vb_hp","verb":"combat_sport.health","on":"player","params":{"hp":100,"respawn":false}}
+{"op":"verb","id":"vb_lasers","verb":"combat_sport.shoot","on":"robots","params":{"range":10,"damage":8,"cooldown":1.2}}
+{"op":"verb","id":"vb_medkit","verb":"puzzle.collect","on":"medkit"}
+{"op":"rule","id":"r_boom","when":{"t":"health_lte","a":"reactor_core","n":0},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_robot_down","when":{"t":"knockout","a":"team:blue"},"then":[{"e":"emit","target":"player","fx":"sparks"}]}
+{"op":"rule","id":"r_heal","when":{"t":"touch","a":"player","b":"medkit"},"then":[{"e":"heal","target":"player","n":50}],"once":true}
+{"op":"expect","id":"x_core","prop":"win_reachable","a":"sp_red","b":"z_core","headline":true,"text":"The reactor core can be shot down past the robots"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

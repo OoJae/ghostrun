@@ -35,4 +35,15 @@ describe("the Host's story", () => {
     expect(f.length).toBeLessThanOrEqual(36);
     expect(s.moments.every((m, i, a) => i === 0 || a[i - 1]!.tick <= m.tick)).toBe(true);
   }, 60_000);
+
+  it("a duel lost standing still: the rival wizard's frost knocked you out", () => {
+    const { bundle } = buildWorld("", "duel");
+    const sim = new SimWorld(R, bundle, { brain: castBrain(buildNav(bundle), bundle) });
+    for (let t = 0; t < 60 * 120 && !sim.result; t++) sim.step(null);
+    expect(sim.result).toBe("lose");
+    const s = story(bundle, sim.log)!;
+    expect(s.ending).toMatch(/^You lost at \d+:\d\d: you were knocked out\.$/);
+    expect(s.moments.map((m) => m.text)).toEqual(["The rival wizard knocked you out"]);
+    expect(facts(bundle, sim.log).some((x) => x.text.endsWith("The rival wizard hit you"))).toBe(true);
+  }, 60_000);
 });

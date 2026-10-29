@@ -78,6 +78,29 @@ describe("cast brains", () => {
     sim.free();
   }, 60_000);
 
+  it("an armed rival fights back: it fires at the player in range, no faster than its weapon allows, and hits", () => {
+    const armed: WorldBundle = {
+      ...world,
+      verbs: [
+        ...world.verbs,
+        { id: "vb_frost", src: "ai", layer: "gameplay", verb: "combat_sport.shoot", on: "rival_1", params: { range: 12, damage: 10, cooldown: 1 }, signature: false },
+        { id: "vb_hp", src: "ai", layer: "gameplay", verb: "combat_sport.health", on: "player", params: { hp: 1000 }, signature: false },
+      ],
+    };
+    const sim = new SimWorld(R, armed, { brain: castBrain(nav, armed) });
+    const orb = sim.pos("orb");
+    sim.teleport("player", [orb[0] + 4, orb[1] + 0.7, orb[2]]); // where rival_1 is headed
+    for (let i = 0; i < 20 * 60 && !sim.result; i++) sim.step(null);
+    const shots = sim.log.filter((e) => e.k === "shoot" && e.a === "rival_1");
+    expect(shots.length).toBeGreaterThan(2);
+    for (let i = 1; i < shots.length; i++) expect(shots[i]!.tick - shots[i - 1]!.tick).toBeGreaterThanOrEqual(60);
+    expect(sim.log.some((e) => e.k === "hit" && e.a === "player" && e.b === "rival_1")).toBe(true);
+    expect(sim.hp("player")).toBeLessThan(1000);
+    // the unarmed ones never fire
+    expect(sim.log.some((e) => e.k === "shoot" && e.a !== "rival_1")).toBe(false);
+    sim.free();
+  }, 60_000);
+
   it("minds may only choose from the typed menu", () => {
     const brain = castBrain(nav, world);
     expect(brain.choose("rival_1", "rival.defend")).toBe(true);

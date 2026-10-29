@@ -2,7 +2,7 @@
 // The LLM chooses relations (zone + anchor), never coordinates (Holodeck/LayoutVLM lesson).
 import { stream } from "@ghostrun/detmath";
 import { groupMembers, type Effect, type Entity, type Rule, type Static, type Vec3, type VerbBinding, type WorldBundle, type Zone } from "@ghostrun/ir";
-import { verb } from "@ghostrun/kits";
+import { HEALTH, SHOOT, verb } from "@ghostrun/kits";
 import type { PackLayout, ZoneSpec } from "@ghostrun/plugin-api";
 
 /** Default physical sizes per entity kind, used when the fill gives none (all metres). */
@@ -244,7 +244,7 @@ export function placeWorld(input: WorldBundle, layout: PackLayout): PlaceResult 
     }
   }
   // wins first: a win rule the repairs add (reach the goal) gets the same trigger and verb repairs
-  notes.push(...repairDoubleDoors(b), ...repairSpawnRefs(b), ...repairGroups(b), ...repairRingOut(b, bound), ...repairAreas(b, bound), ...repairKits(b), ...repairConditions(b), ...repairWin(b), ...repairTriggers(b), ...repairVerbs(b), ...repairExpects(b));
+  notes.push(...repairDoubleDoors(b), ...repairSpawnRefs(b), ...repairGroups(b), ...repairRingOut(b, bound), ...repairAreas(b, bound), ...repairCombat(b), ...repairKits(b), ...repairConditions(b), ...repairWin(b), ...repairTriggers(b), ...repairVerbs(b), ...repairExpects(b));
   notes.push(...addRivals(b), ...repairDeliveries(b, layout, bound), ...addSecrets(b, layout, bound));
   return { bundle: b, notes };
 }
@@ -307,13 +307,99 @@ export function repairDeliveries(b: WorldBundle, layout: PackLayout, bound: Map<
   return notes;
 }
 
+/** Weapons someone holds (on a thing to pick up, not "player" or a character's own). */
+const heldWeapons = (b: WorldBundle) => new Set(b.verbs.filter((v) => v.verb === SHOOT && b.entities.some((e) => e.id === v.on && e.kind !== "npc")).map((v) => v.on));
+
 /**
- * A throwing game with no one to throw at (a snowball fight whose fill forgot the other team)
- * gets two rivals at the rival spawn, playing the usual rival options. Logged.
+ * Fights, wired so they can be won and lost (each repair logged):
+ * - a weapon or hit points bound on a team or a group ("team:blue", "zombies") is one per member;
+ * - a character with props.hp has those hit points; anything a rule wears down, damages or heals
+ *   gets 100 if it has none;
+ * - "the player hits rival_1" (no hazard, no weapon of its own) with the player armed means
+ *   rival_1 is hit by the player's shot (before the kits read it as tagging them);
+ * - a player who can be knocked out for good, with no rule for it, loses then.
+ */
+export function repairCombat(b: WorldBundle): string[] {
+  const notes: string[] = [];
+  const spawnOf = (t: string) => b.entities.some((e) => e.kind === "spawn" && e.team === t);
+  const mine = !spawnOf("red") && spawnOf("blue") ? "blue" : "red";
+  const npcsOn = (team: string) => b.entities.filter((e) => e.kind === "npc" && e.team === team).map((e) => e.id);
+  const members = (ref: string): string[] => {
+    if (ref.startsWith("team:")) return [...(ref === `team:${mine}` ? ["player"] : []), ...npcsOn(ref.slice(5))];
+    if (ref === "player" || b.entities.some((e) => e.id === ref)) return [ref];
+    return groupMembers(ref, b.entities);
+  };
+  // one per member
+  for (const v of [...b.verbs]) {
+    if ((v.verb !== SHOOT && v.verb !== HEALTH) || v.on === "player" || b.entities.some((e) => e.id === v.on)) continue;
+    const ms = members(v.on);
+    if (!ms.length) continue;
+    b.verbs.splice(b.verbs.indexOf(v), 1);
+    for (const m of ms) if (!b.verbs.some((x) => x.verb === v.verb && x.on === m)) b.verbs.push({ ...structuredClone(v), id: uniqueId(b, `${v.id}_${m}`), on: m });
+    notes.push(`${v.id}: ${v.verb} on '${v.on}' means each of ${ms.join(", ")}`);
+  }
+  const hasHp = (id: string) => b.verbs.some((v) => v.verb === HEALTH && v.on === id);
+  for (const e of b.entities) {
+    const n = Number(e.props.hp ?? e.props.health ?? Number.NaN);
+    if (!["npc", "prop", "vehicle"].includes(e.kind) || !(n > 0) || hasHp(e.id)) continue;
+    b.verbs.push(vb(uniqueId(b, `vb_hp_${e.id}`), HEALTH, e.id, { hp: n }));
+    notes.push(`${e.id}: props.hp ${n} → combat_sport.health`);
+  }
+  const need = new Set<string>();
+  for (const r of b.rules) {
+    if (r.when.t === "health_lte" && r.when.a) need.add(r.when.a);
+    for (const e of r.then) if (e.e === "damage" || e.e === "heal") need.add(e.target);
+    for (const c of r.if) if (/^[a-z][a-z0-9_]*\.hp$/.test(c.l)) need.add(c.l.split(".")[0]!);
+  }
+  for (const ref of [...need].sort()) {
+    const ms = members(ref).filter((id) => !hasHp(id));
+    for (const id of ms) b.verbs.push(vb(uniqueId(b, `vb_hp_${id}`), HEALTH, id));
+    if (ms.length) notes.push(`${ms.join(", ")}: a rule wears ${ref} down, so ${ms.length > 1 ? "they have" : "it has"} 100 hit points`);
+  }
+  // something a rule wants shot (a reactor core, a training dummy) is something to aim at
+  const held = heldWeapons(b);
+  const guns = b.verbs.filter((v) => v.verb === SHOOT && (v.on === "player" || held.has(v.on)));
+  for (const r of b.rules) {
+    const e = (r.when.t === "hit" || r.when.t === "health_lte") && (!r.when.b || guns.some((g) => g.on === r.when.b)) ? b.entities.find((x) => x.id === r.when.a && x.kind !== "npc") : undefined;
+    if (!e) continue;
+    for (const g of guns) {
+      const at = String(g.params.at ?? "").split(",").filter(Boolean);
+      if (at.includes(e.id)) continue;
+      g.params = { ...g.params, at: [...at, e.id].join(",") };
+      notes.push(`${e.id}: something to shoot at with ${g.on === "player" ? "your weapon" : g.on} (rule ${r.id} waits for it to be ${r.when.t === "hit" ? "hit" : "worn down"})`);
+    }
+  }
+  // "the player hits rival_1": rival_1 shot by the player
+  const armed = guns.length > 0;
+  for (const r of b.rules) {
+    const w = r.when;
+    const npc = armed && w.t === "hit" && w.a === "player" ? b.entities.find((e) => e.id === w.b && e.kind === "npc") : undefined;
+    if (!npc || b.verbs.some((v) => v.on === npc.id && (v.verb === SHOOT || v.verb === "motion_hazards.hazard"))) continue;
+    [w.a, w.b] = [npc.id, ""];
+    notes.push(`rule ${r.id}: the player hitting ${npc.id} means shooting them (hit a=${npc.id})`);
+  }
+  // knocked out for good with nothing said about it: that's the end of the run
+  const hp = b.verbs.find((v) => v.verb === HEALTH && v.on === "player");
+  const forGood = hp && (hp.params.respawn === false || hp.params.respawn === "false");
+  const said = b.rules.some((r) => r.when.t === "health_lte" && (r.when.a === "player" || r.when.a === `team:${mine}`) && r.then.some((e) => e.e === "lose" || e.e === "reset" || e.e === "heal"));
+  if (b.mode === "play" && forGood && !said) {
+    b.rules.push({ id: uniqueId(b, "r_knocked_out"), src: "template", layer: "gameplay", when: { t: "health_lte", a: "player", b: "", s: "", n: 0, act: "" }, if: [], then: [fx("lose", "player")], once: true, cooldownS: 0, prio: 0 });
+    notes.push("added r_knocked_out: you can be knocked out for good, so that loses");
+  }
+  return notes;
+}
+
+/**
+ * A throwing or shooting game with no one to throw at or shoot (a snowball fight whose fill forgot
+ * the other team) gets two rivals at the rival spawn, playing the usual rival options; in a
+ * shooting game they are armed (half the player's damage, half as often) and have hit points.
+ * Logged.
  */
 export function addRivals(b: WorldBundle): string[] {
   // a throwing game with nothing to throw at needs rivals; one with pins or cans to hit doesn't
-  const throws = b.verbs.filter((v) => v.verb === "combat_sport.throw");
+  const held = heldWeapons(b);
+  const guns = b.verbs.filter((v) => v.verb === SHOOT && (v.on === "player" || held.has(v.on)));
+  const throws = [...b.verbs.filter((v) => v.verb === "combat_sport.throw"), ...guns];
   if (b.mode !== "play" || !throws.length || throws.every((v) => String(v.params.at ?? ""))) return [];
   const spawnOf = (t: string) => b.entities.find((e) => e.kind === "spawn" && e.team === t);
   const mine = !spawnOf("red") && spawnOf("blue") ? "blue" : "red";
@@ -327,9 +413,16 @@ export function addRivals(b: WorldBundle): string[] {
     const id = uniqueId(b, `rival_${k}`);
     b.entities.push({ id, src: "template", layer: "gameplay", kind: "npc", zone: at?.zone ?? b.zones[0]?.id ?? "", anchor: at?.anchor ?? "", pos: [home[0], home[1] + 0.9, home[2] + dz], rotY: 0, size: [0.7, 1.8, 0.7], noun: `rival ${k}`, hyper: "person", asset: "", body: "kinematic", shape: "capsule", team: them, tags: [], states: [], init: "", props: {} });
     b.cast.push({ id: uniqueId(b, `k_${id}`), src: "template", layer: "gameplay", npc: id, role: "rival", minded: false, persona: { identity: "", personality: "", knowledge: "", replyStyle: "", tools: [], safety: "" }, coneDeg: 70, rangeM: 12, hearM: 8, menu, dflt: k === 1 ? "rival.attack" : "rival.defend", utility: {}, memory: 0 });
+    const g = guns[0];
+    if (g) {
+      const spec = verb(SHOOT)!.params;
+      const num = (key: string) => Number(g.params[key] ?? spec[key]!.def);
+      b.verbs.push(vb(uniqueId(b, `vb_shoot_${id}`), SHOOT, id, { range: num("range"), speed: num("speed"), damage: Math.round(num("damage") / 2), cooldown: num("cooldown") * 2 }));
+      b.verbs.push(vb(uniqueId(b, `vb_hp_${id}`), HEALTH, id));
+    }
     added.push(id);
   }
-  return [`added ${added.join(" and ")} on the ${them} side: a throwing game needs someone to throw at`];
+  return [`added ${added.join(" and ")} on the ${them} side: a ${guns.length ? "shooting" : "throwing"} game needs someone to ${guns.length ? "shoot" : "throw at"}`];
 }
 
 /** What a secret is called in each pack (cosmetic: the rule and the count are the same everywhere). */
@@ -929,8 +1022,9 @@ export function repairKits(b: WorldBundle): string[] {
       }
     }
   }
-  // a thrown ball is carried, never collected (collecting it would destroy it)
-  for (const id of new Set(b.verbs.filter((v) => v.verb === "combat_sport.throw").map((v) => v.on))) {
+  // a thrown ball (or a weapon to hold) is carried, never collected (collecting it would destroy it)
+  const held = heldWeapons(b);
+  for (const id of new Set([...b.verbs.filter((v) => v.verb === "combat_sport.throw").map((v) => v.on), ...held])) {
     const n = b.verbs.length;
     b.verbs = b.verbs.filter((v) => !(v.on === id && v.verb === "puzzle.collect"));
     if (b.verbs.length < n) notes.push(`${id}: dropped puzzle.collect (it is thrown, so it is carried)`);
@@ -943,7 +1037,7 @@ export function repairKits(b: WorldBundle): string[] {
     notes.push(`${id}: both carried and collected → ${keep === ".carry" ? "carried (it is delivered somewhere)" : "collected (nothing delivers it)"}`);
   }
   const groups = new Map<string, string[]>();
-  const thrown = new Set(b.verbs.filter((v) => v.verb === "combat_sport.throw").map((v) => v.on));
+  const thrown = new Set([...b.verbs.filter((v) => v.verb === "combat_sport.throw").map((v) => v.on), ...held]);
   for (const v of b.verbs) {
     if (!v.verb.endsWith(".carry") || delivered.has(v.on) || thrown.has(v.on)) continue; // a ball you throw is carried, not collected
     const e = b.entities.find((x) => x.id === v.on);
@@ -963,7 +1057,7 @@ export function repairKits(b: WorldBundle): string[] {
     notes.push(`${ids.length} × ${noun}: carried but never delivered → collected (touch to collect)`);
   }
   // 3. nothing that must be carried is also collected
-  const carried = new Set(b.verbs.filter((v) => v.verb.endsWith(".carry")).map((v) => v.on));
+  const carried = new Set([...b.verbs.filter((v) => v.verb.endsWith(".carry")).map((v) => v.on), ...held]);
   for (const v of b.verbs) if (v.verb === "puzzle.lock" && v.params.key) carried.add(String(v.params.key));
   const before = b.verbs.length;
   b.verbs = b.verbs.filter((v) => !(v.verb === "puzzle.collect" && carried.has(v.on)));

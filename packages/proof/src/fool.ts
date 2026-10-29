@@ -4,7 +4,7 @@
 // receipt that still says "won" would be a lie. Only worlds with one way to win get them: with two,
 // breaking one route isn't a bug.
 import type { Rule, WorldBundle } from "@ghostrun/ir";
-import { t0 } from "./t0";
+import { hitPoints, playerWeapons, t0 } from "./t0";
 import type { Chip, Receipt } from "./types";
 
 export interface Planted {
@@ -76,6 +76,64 @@ export function plants(b: WorldBundle, parS: number | null, team: "red" | "blue"
     const w = copy();
     w.laws = { ...w.laws, jumpH: 0.3, jumpsMax: 1 };
     out.push({ id: "no_jump", text: "a jump only clears 0.3 m", at: null, bundle: w });
+  }
+  out.push(...fights(b, chain, team));
+  return out;
+}
+
+/**
+ * Bugs in a fight the win is shot for: the weapon does no harm, the ones to beat are sealed in
+ * stone, or they heal faster than anything can hurt them. Each only where it really breaks the
+ * game (no rule could do the damage instead).
+ */
+function fights(b: WorldBundle, chain: NonNullable<ReturnType<typeof t0>["chain"]>, team: "red" | "blue"): Planted[] {
+  const shots = chain.steps.filter((s) => s.do === "shoot");
+  const weapons = playerWeapons(b);
+  if (!shots.length || !weapons.length) return [];
+  const out: Planted[] = [];
+  const hp = hitPoints(b);
+  // who the win needs shot: the ones named, or everyone on the team meant
+  const targets = [...new Set(shots.flatMap((s) => (s.at.startsWith("team:") ? b.entities.filter((e) => e.kind === "npc" && e.team === s.at.slice(5)).map((e) => e.id) : s.at ? [s.at] : b.entities.filter((e) => e.kind === "npc" && e.team !== team).map((e) => e.id))))].filter((id) => b.entities.some((e) => e.id === id));
+  if (!targets.length) return [];
+  const worn = shots.some((s) => b.rules.find((r) => r.id === s.rule)?.when.t === "health_lte");
+  // damage rules can do instead: any repeatable one, or a once-only one big enough alone
+  const ruled = (id: string) => b.rules.reduce((n, r) => n + r.then.filter((e) => e.e === "damage" && (e.target === id || e.target === `team:${b.entities.find((x) => x.id === id)?.team}`)).reduce((m, e) => m + (r.once ? e.n || Number(e.v) || 25 : Infinity), 0), 0);
+  const most = Math.max(...weapons.map((x) => x.damage));
+
+  if (worn && targets.every((id) => ruled(id) < (hp.get(id) ?? Infinity)) && most > 0) {
+    const w = structuredClone(b);
+    const ids = new Set(weapons.map((x) => x.id));
+    for (const v of w.verbs) if (ids.has(v.id)) v.params = { ...v.params, damage: 0 };
+    out.push({ id: "harmless_weapon", text: `your ${weapons[0]!.held ? noun(b, weapons[0]!.on) : "weapon"} does no damage`, at: null, bundle: w });
+  }
+
+  // sealed in: a stone box round each of them (four walls and a roof), so no shot gets in
+  {
+    const w = structuredClone(b);
+    let k = 0;
+    for (const id of targets) {
+      const e = w.entities.find((x) => x.id === id)!;
+      const [x, z] = [e.pos[0], e.pos[2]];
+      const floor = e.pos[1] - e.size[1] / 2;
+      const [r, h, t] = [Math.max(1.4, Math.max(e.size[0], e.size[2]) / 2 + 0.8), Math.max(4, e.size[1] + 1.5), 0.4];
+      const slabs: [number, number, number, number, number, number][] = [
+        [x, floor + h / 2, z + r, 2 * r + t, h, t], [x, floor + h / 2, z - r, 2 * r + t, h, t],
+        [x + r, floor + h / 2, z, t, h, 2 * r + t], [x - r, floor + h / 2, z, t, h, 2 * r + t],
+        [x, floor + h + t / 2, z, 2 * r + t, t, 2 * r + t],
+      ];
+      for (const [px, py, pz, sx, sy, sz] of slabs) w.statics.push({ id: `st_fool_${++k}`, src: "template", layer: "gameplay", zone: e.zone, shape: "box", pos: [px, py, pz], rotY: 0, size: [sx, sy, sz], surf: "wall" });
+    }
+    out.push({ id: "walled_in", text: `${targets.length === 1 ? `the ${noun(b, targets[0]!)} is` : `all ${targets.length} of them are`} sealed in stone, out of any shot`, at: targets[0]!, bundle: w });
+  }
+
+  // invulnerable: healed in full every quarter second, when two shots and every damage rule together
+  // can't take its hit points in that time
+  if (worn && targets.every((id) => 2 * most + (Number.isFinite(ruled(id)) ? ruled(id) : Infinity) < (hp.get(id) ?? 0))) {
+    const w = structuredClone(b);
+    for (const id of targets) {
+      w.rules.push({ id: `r_fool_heal_${id}`.slice(0, 32), src: "ai", layer: "gameplay", when: { t: "every", a: "", b: "", s: "", n: 0.25, act: "" }, if: [], then: [{ e: "heal", target: id, v: "", n: 1000, fx: "" }], once: false, cooldownS: 0, prio: 0 });
+    }
+    out.push({ id: "invulnerable", text: `${targets.length === 1 ? `the ${noun(b, targets[0]!)} heals` : "they heal"} in full four times a second`, at: targets[0]!, bundle: w });
   }
   return out;
 }

@@ -4,6 +4,7 @@ import { better, insights, issuesOf, statusWord, type Chip, type Receipt } from 
 // the engine stack (three, physics, navmesh, bots) is a second chunk, fetched as the shell paints
 import type { Engine, LoadResult } from "./engine";
 import { KeyHint } from "./hud/Corner";
+import { HealthBar } from "./hud/Health";
 import { TouchControls } from "./hud/Touch";
 import { XRay } from "./hud/XRay";
 import { ResultCard, type RunResult } from "./hud/Result";
@@ -268,7 +269,7 @@ export function App() {
       setStatus("playing");
       setHint(true);
       const sim = e.rapierSim;
-      setTeams(world.bundle.rules.some((r) => r.then.some((fx) => fx.target === "team:blue")));
+      setTeams(world.bundle.rules.some((r) => r.then.some((fx) => fx.target === "team:blue" && fx.e !== "damage" && fx.e !== "heal")));
       setUseHint(null);
       setToast(null);
       if (sim) {
@@ -801,6 +802,7 @@ export function App() {
             {score.result && <strong>{score.result === "win" ? " · You win!" : " · You lose"}</strong>}
           </div>
         )}
+        <HealthBar engine={engine} active={status === "playing"} />
         {useHint && status === "playing" && !touch && (
           <div className="glass usehint" data-testid="use-hint">
             <kbd>F</kbd> {useHint}

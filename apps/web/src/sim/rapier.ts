@@ -46,6 +46,7 @@ export class RapierSim implements FrameSource {
   #lastBtn = 0;
   #activeTick = 0;
   #pressQueued = false;
+  #useWas = false;
   #facing = 0;
   readonly #npcFacing = new Map<string, number>();
   readonly #nav: NavWorld | null;
@@ -193,6 +194,15 @@ export class RapierSim implements FrameSource {
     if (this.#pressQueued || i.btn & BTN_JUMP) btn |= BTN.JUMP;
     this.#pressQueued = false;
     if (i.btn & BTN_USE) btn |= BTN.USE;
+    // firing aims where the camera looks: on the press, a short push that way (the sim faces the way
+    // the stick last pushed; the push is in the recorded frame, so replays stay exact)
+    const using = (i.btn & BTN_USE) !== 0;
+    if (using && !this.#useWas && this.sim.usable()?.label === "shoot") {
+      x = -s * 0.2;
+      z = -c * 0.2;
+      this.#facing = i.yaw;
+    }
+    this.#useWas = using;
     // a held jump must release for one tick before it counts again (fresh-press semantics)
     const frame: SimInput = { tick: this.sim.tick + 1, wx: q8(x), wz: q8(z), btn };
     if (frame.tick % 30 === 0) this.trail.push(this.sim.pos(PLAYER_ID));

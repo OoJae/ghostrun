@@ -45,6 +45,9 @@ interface Bot {
   best: number;
   progressAt: number;
   shoveAt: number; // the next tick it may shove the player
+  /** Its own weapon (claws, a spell): range in metres and ticks between shots, or null. */
+  arms: { range: number; every: number } | null;
+  fireAt: number; // the next tick it may fire
   last: Vec3 | null;
   dodge: { x: number; z: number; until: number } | null;
   patrol: Vec3[];
@@ -67,6 +70,7 @@ export class CastBrain implements Brain {
   readonly #out = new Map<string, InputFrame>();
   readonly #shoves: boolean; // the player can be shoved (a ring game): rivals next to them do
   readonly #part = new Set<string>(); // NPCs the game is about (caught, shoved, named in a rule): never bystanders
+  #armed = false;
 
   constructor(nav: NavWorld, b: WorldBundle) {
     this.#nav = nav;
@@ -107,6 +111,7 @@ export class CastBrain implements Brain {
         id: e.id, team: e.team, menu: c?.menu ?? [], option, beh: behaviourOf(option), speed: SPEED[c?.role ?? "citizen"] ?? 0.6,
         rng: stream(b.seed, `bot:${e.id}`), path: [], wp: 0, aim: null, replanAt: 0, best: Infinity, progressAt: 0, shoveAt: 0, last: null, dodge: null,
         patrol: home ? [...stops, home] : stops, patrolI: 0,
+        arms: null, fireAt: 0,
       });
     }
   }
@@ -123,6 +128,11 @@ export class CastBrain implements Brain {
 
   think(w: SimWorld): ReadonlyMap<string, InputFrame> {
     const tick = w.tick + 1;
+    // the weapons they were given (clamped by the sim), looked up once
+    if (!this.#armed) {
+      this.#armed = true;
+      for (const bot of this.bots) bot.arms = w.weaponOf(bot.id);
+    }
     for (const bot of this.bots) {
       const e = w.entity(bot.id);
       if (!e || e.destroyed) {
@@ -145,9 +155,45 @@ export class CastBrain implements Brain {
         frame.btn |= BTN.USE;
         bot.shoveAt = tick + 50;
       }
+      if (bot.arms && bot.beh !== "patrol" && bot.beh !== "idle") frame = this.#fight(w, bot, frame, tick);
       this.#out.set(bot.id, frame);
     }
     return this.#out;
+  }
+
+  /**
+   * An armed bot playing a hostile option fights back: the nearest enemy in range with a clear line
+   * is faced and fired at, as often as its weapon allows. One that shoots from afar holds its ground
+   * while it has a shot (claws keep closing in).
+   */
+  #fight(w: SimWorld, bot: Bot, frame: InputFrame, tick: number): InputFrame {
+    const arms = bot.arms!;
+    const p = w.pos(bot.id);
+    const muzzle = w.muzzle(bot.id);
+    let best = "";
+    let bestD = arms.range * 0.95 * (arms.range * 0.95);
+    for (const id of ["player", ...this.bots.map((x) => x.id)]) {
+      const e = w.entity(id);
+      // enemies: anyone on another team (a bot with no team: the player)
+      if (id === bot.id || !e || e.destroyed || (bot.team ? e.team === bot.team : id !== "player")) continue;
+      const q = w.pos(id);
+      const d = d2(p, q);
+      if (d >= bestD || Math.abs(q[1] - p[1]) > arms.range || !w.clearShot(muzzle, q)) continue;
+      best = id;
+      bestD = d;
+    }
+    if (!best) return frame;
+    const q = w.pos(best);
+    const dx = q[0] - p[0];
+    const dz = q[2] - p[2];
+    const len = Math.sqrt(dx * dx + dz * dz) || 1;
+    const fire = tick >= bot.fireAt;
+    if (fire) bot.fireAt = tick + arms.every;
+    // face it: full chase for claws; a ranged weapon turns to fire and otherwise holds its ground
+    // (a small step closer while it is far, standing still once it is near: it keeps facing the way
+    // it fired)
+    const k = arms.range < 4 ? 127 * bot.speed : fire || bestD > arms.range * 0.6 * (arms.range * 0.6) ? 26 : 0;
+    return { tick, wx: Math.round((dx / len) * k), wz: Math.round((dz / len) * k), btn: (frame.btn & ~BTN.USE) | (fire ? BTN.USE : 0) };
   }
 
   #target(w: SimWorld, b: Bot): Vec3 | null {
@@ -162,7 +208,8 @@ export class CastBrain implements Brain {
       case "attack":
         if (carrier) return w.pos(carrier); // chase an enemy carrier, escort a teammate
         if (item) return w.pos(item);
-        return b.team && w.entity("player")!.team !== b.team ? w.pos("player") : null;
+        // (an armed one with no team goes for the player: a zombie, a monster)
+        return (b.team ? w.entity("player")!.team !== b.team : b.arms !== null) ? w.pos("player") : null;
       case "intercept":
         if (enemyCarrier) return w.pos(enemyCarrier);
         if (item && !carrier) return w.pos(item);

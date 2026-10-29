@@ -32,6 +32,12 @@ const nameOf = (b: WorldBundle, id: string) => {
   return /\d$/.test(plain) ? cap(plain) : `the ${plain}`; // "Rival 1", not "the rival 1"
 };
 
+/** A weapon's id in a hit: someone's own (a spell, claws), one held (a wand), or not a weapon. */
+const shooterOf = (b: WorldBundle, id: string): "own" | "held" | null => {
+  if (!id || !b.verbs.some((v) => v.verb === "combat_sport.shoot" && v.on === id)) return null;
+  return id === "player" || b.entities.some((e) => e.id === id && e.kind === "npc") ? "own" : "held";
+};
+
 /** Why a run ended, in words: the trigger of the rule that fired the win or the loss. */
 export function why(b: WorldBundle, ruleId: string): string {
   const r: Rule | undefined = b.rules.find((x) => x.id === ruleId);
@@ -44,7 +50,10 @@ export function why(b: WorldBundle, ruleId: string): string {
     case "timer_end":
       return "time ran out";
     case "hit":
-      return `hit by the ${name(w.b)}`;
+      return w.b === "player" ? `you hit ${w.a ? `the ${name(w.a)}` : "them"}` : `hit by the ${name(w.b)}`;
+    case "health_lte":
+      if (w.a === "player") return "you were knocked out";
+      return w.a.startsWith("team:") ? `you knocked out one of the ${name(w.a)}` : w.n > 0 ? `the ${name(w.a)} was worn down to ${w.n}` : `you knocked out the ${name(w.a)}`;
     case "enter":
       return w.a === "player" ? `reached the ${name(w.b)}` : `the ${name(w.a)} reached the ${name(w.b)}`;
     case "touch":
@@ -68,6 +77,7 @@ export function story(b: WorldBundle, log: readonly SimEvent[], trail: readonly 
   const reason = why(b, end.rule);
   const ending = `You ${lost ? "lost" : "won"} at ${clock(end.tick)}${reason ? `: ${reason}` : ""}.`;
   const posOf = (id: string): Vec3 | null => b.entities.find((e) => e.id === id)?.pos ?? null;
+  const shooter = (id: string) => shooterOf(b, id);
   const playerAt = (tick: number): Vec3 | null => trail[Math.min(trail.length - 1, Math.floor(tick / 30))] ?? null;
   // the event that caused log[i], if any (causes index into the same tick's events)
   const causeOf = (i: number): number => {
@@ -97,6 +107,13 @@ export function story(b: WorldBundle, log: readonly SimEvent[], trail: readonly 
       return { tick: e.tick, text, at: posOf(c.b) };
     }
     if (c?.k === "touch") return { tick: e.tick, text: `${cap(nameOf(b, c.a))} collected ${nameOf(b, c.b)}${pts}`, at: posOf(c.b) };
+    // a shot (or a knock-out) says who fired it: you, with your own weapon or one you hold, or a rival
+    if (c?.k === "hp" || (c?.k === "hit" && shooter(c.b))) {
+      const by = !c.b ? "" : shooter(c.b) === "held" ? "player" : c.b;
+      const what = c.k === "hp" ? "knocked out" : "hit";
+      const text = c.a === "player" ? `${by ? cap(nameOf(b, by)) : "Something"} ${what === "hit" ? "hit you" : "knocked you out"}` : by ? `${cap(nameOf(b, by))} ${what} ${nameOf(b, c.a)}` : `${cap(nameOf(b, c.a))} was ${what}`;
+      return { tick: e.tick, text: `${text}${pts}`, at: c.a === "player" ? playerAt(e.tick) : posOf(c.a) };
+    }
     if (c?.k === "hit") return { tick: e.tick, text: `${cap(nameOf(b, c.a))} ran into ${nameOf(b, c.b)}`, at: c.a === "player" ? playerAt(e.tick) : posOf(c.b) };
     if (c?.k === "state") return { tick: e.tick, text: `${cap(nameOf(b, c.a))} became ${String(c.v)}${pts}`, at: posOf(c.a) };
     if (c?.k === "pickup") return { tick: e.tick, text: `${cap(nameOf(b, c.b))} picked up ${nameOf(b, c.a)}${pts}`, at: posOf(c.a) };
@@ -166,10 +183,10 @@ export function sentence(b: WorldBundle, r: Rule): string {
   const w = r.when;
   const n = (id: string) => (id ? name(id) : "anything");
   const when =
-    w.t === "score_gte" ? `${n(w.a)} reaches ${w.n}` : w.t === "state_is" ? `${n(w.a)} becomes ${w.s}` : w.t === "timer_end" ? "the timer runs out" : w.t === "every" ? `every ${w.n} s` : w.t === "pickup" ? `${n(w.b)} picks up ${n(w.a)}` : `${n(w.a)} ${w.t.replace("_", " ")}${w.t.endsWith("h") ? "es" : "s"} ${n(w.b)}`;
+    w.t === "score_gte" ? `${n(w.a)} reaches ${w.n}` : w.t === "state_is" ? `${n(w.a)} becomes ${w.s}` : w.t === "timer_end" ? "the timer runs out" : w.t === "every" ? `every ${w.n} s` : w.t === "pickup" ? `${n(w.b)} picks up ${n(w.a)}` : w.t === "health_lte" ? (w.n > 0 ? `${n(w.a)} drops to ${w.n} HP` : `${n(w.a)} is knocked out`) : `${n(w.a)} ${w.t.replace("_", " ")}${w.t.endsWith("h") ? "es" : "s"} ${n(w.b)}`;
   const iff = r.if.map((c) => `${n(c.l.split(".")[0]!)} ${c.l.split(".").slice(1).join(" ")} ${c.op} ${String(c.r)}`).join(" and ");
   const then = r.then
-    .map((e) => (e.e === "score" ? `+${e.n || 1} ${n(e.target)}` : e.e === "win" || e.e === "lose" ? `you ${e.e}` : e.e === "set_state" ? `${n(e.target)} becomes ${String(e.v)}` : e.e === "emit" ? `effect ${e.fx}` : `${e.e} ${n(e.target)}`))
+    .map((e) => (e.e === "score" ? `+${e.n || 1} ${n(e.target)}` : e.e === "win" || e.e === "lose" ? `you ${e.e}` : e.e === "set_state" ? `${n(e.target)} becomes ${String(e.v)}` : e.e === "emit" ? `effect ${e.fx}` : e.e === "damage" || e.e === "heal" ? `${e.e === "damage" ? "−" : "+"}${e.n || Number(e.v) || 25} HP ${n(e.target)}` : `${e.e} ${n(e.target)}`))
     .join(", ");
   return `WHEN ${when}${iff ? ` IF ${iff}` : ""} THEN ${then}${r.once ? " (once)" : ""}`;
 }
@@ -200,6 +217,7 @@ export function facts(b: WorldBundle, log: readonly SimEvent[], trail: readonly 
   const s = story(b, log, trail, 8);
   if (s) out.push({ text: s.ending.replace(/\.$/, ""), tick: log.findLast((e) => e.k === "win" || e.k === "lose")?.tick ?? null });
   const carried = new Set(b.verbs.filter((v) => v.verb.endsWith(".carry")).map((v) => v.on));
+  const shooter = (id: string) => shooterOf(b, id);
   const run: Fact[] = [];
   for (const e of log) {
     const t = clock(e.tick);
@@ -207,7 +225,8 @@ export function facts(b: WorldBundle, log: readonly SimEvent[], trail: readonly 
     if (e.k === "tag") run.push({ text: `${t} ${who(e.a)} tagged ${nameOf(b, e.b)}`, tick: e.tick });
     else if (e.k === "pickup" && carried.has(e.a)) run.push({ text: `${t} ${who(e.b)} picked up ${nameOf(b, e.a)}`, tick: e.tick });
     else if (e.k === "drop") run.push({ text: `${t} ${who(e.b)} dropped ${nameOf(b, e.a)}`, tick: e.tick });
-    else if (e.k === "hit" && e.a === "player") run.push({ text: `${t} You ran into ${nameOf(b, e.b)}`, tick: e.tick });
+    else if (e.k === "hit" && e.a === "player") run.push({ text: `${t} ${shooter(e.b) ? `${who(e.b)} hit you` : `You ran into ${nameOf(b, e.b)}`}`, tick: e.tick });
+    else if (e.k === "knockout") run.push({ text: `${t} ${e.a === "player" ? "You were knocked out" : `${who(e.a)} was knocked out`}`, tick: e.tick });
     else if (e.k === "touch" && e.a === "player" && !carried.has(e.b)) run.push({ text: `${t} You touched ${nameOf(b, e.b)}`, tick: e.tick });
     else if (e.k === "state" && b.entities.some((x) => x.id === e.a && ["door", "switch", "plate", "checkpoint"].includes(x.kind))) run.push({ text: `${t} ${who(e.a)} became ${String(e.v)}`, tick: e.tick });
     else if (e.k === "score") run.push({ text: `${t} ${who(e.a)} scored (now ${String(e.v)})`, tick: e.tick });

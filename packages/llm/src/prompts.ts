@@ -89,14 +89,15 @@ export const SUPPORTED = {
     "pickup (a=item, b='player')",
     "state_is (a=entity, s=state it changes to: a switch 'on', a plate 'down', a door 'open', a checkpoint 'reached')",
     "touch (a='player', b=thing collected or inspected; leave b empty for any)",
-    "hit (a='player', b=hazard; or a=the one hit by a thrown item, b=the item: red scoring a throw is {\"t\":\"hit\",\"a\":\"\",\"b\":\"ball\"} with if ball.carrier.team eq red)",
+    "hit (a='player', b=hazard; or a=the one hit by a thrown item or a shot, b=the item or weapon ('player' for your own spell): red scoring a throw is {\"t\":\"hit\",\"a\":\"\",\"b\":\"ball\"} with if ball.carrier.team eq red)",
+    "health_lte (a=character or 'team:blue', n=hit points; n 0 = knocked out)",
     "exit (a=mover, b=the sensor ENTITY it left: a ring is an ent kind goal with body sensor covering the ring, its rivals starting inside it)",
     "timer_end (a=the id the timer verb is bound on, e.g. 'player')",
     "score_gte (a='team:red'|'team:blue', n=threshold)",
     "every (n=seconds)",
   ],
-  effects: ["score (target 'team:red'|'team:blue', n=points)", "win (target 'player')", "lose (target 'player')", "reset (target=entity: back to its start)", "set_state (target, v=state)", "emit (target, fx=visual effect name)", "destroy (target)", "open/close (target door)", "teleport (target, v=destination entity id)"],
-  conditions: "if: [{\"l\":\"orb.carrier.team\",\"op\":\"eq\",\"r\":\"red\"}] — paths: <id>.team, <id>.state, <id>.carrier.team, team:red.score",
+  effects: ["score (target 'team:red'|'team:blue', n=points)", "win (target 'player')", "lose (target 'player')", "reset (target=entity: back to its start)", "set_state (target, v=state)", "emit (target, fx=visual effect name)", "destroy (target)", "open/close (target door)", "teleport (target, v=destination entity id)", "damage/heal (target, n=hit points)"],
+  conditions: "if: [{\"l\":\"orb.carrier.team\",\"op\":\"eq\",\"r\":\"red\"}] — paths: <id>.team, <id>.state, <id>.carrier.team, <id>.hp, team:red.score",
 };
 
 type Msg = { role: "system" | "user"; content: string };
@@ -119,6 +120,7 @@ function worldRules(layout: PackLayout): string[] {
         "Goals are sensors; pickups are carried with the carry verb.",
         "The win must depend on the objective, never on just walking somewhere: e.g. bring the gem to the exit (when enter a=gem b=exit), collect N coins (touch + score_gte), or flip all switches (state_is). Doors that guard the objective go on doorway anchors when the pack has them.",
         "Make it interactive: 10-20 things the player can use, collect, step on or dodge (switches, plates, locked doors and keys, coins, hazards, jump pads, portals, exhibits to inspect), each bound to its verb and wired with rules so it matters.",
+        "Fights (duels, shooters, zombies, laser tag): combat_sport.shoot on the player and on each npc that fights back (claws or a sword: range 2), combat_sport.health on whoever can be knocked out; win or score on health_lte of the rivals (n 0), lose on health_lte of the player.",
         `Verbs:\n${SUPPORTED.verbs.map((x) => `- ${x.id}: ${x.line}`).join("\n")}`,
         `Rule triggers: ${SUPPORTED.triggers.join("; ")}.`,
         `Rule effects: ${SUPPORTED.effects.join("; ")}.`,

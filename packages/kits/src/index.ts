@@ -23,3 +23,4 @@ export function verb(id: string): VerbPlugin | undefined {
 }
 
 export { COMBAT, HAZARDS, MOVEMENT, PUZZLE };
+export { aim, BODY_HALF, BODY_RADIUS, HEALTH, MUZZLE_UP, segBody, segBox, SHOOT, SHOT_RADIUS } from "./combat";
