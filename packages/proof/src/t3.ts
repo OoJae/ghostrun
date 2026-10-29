@@ -8,6 +8,7 @@ import { castBrain } from "@ghostrun/bots";
 import { verb } from "@ghostrun/kits";
 import { BTN, SimWorld, type Rapier } from "@ghostrun/sim";
 import { carryables, causeSteps, producers, type PlanStep, type Want, type WinChain } from "./t0";
+import { GhostRecorder, secretsOf, type Ghost } from "./ghost";
 import { apex, gap, hopOk, hopRoute, reachAt, surfaceUnder as surfaceAt, surfaces, type Surface } from "./t1";
 import type { Chip, Trail } from "./types";
 
@@ -160,6 +161,8 @@ interface RunResult {
   stuckAt: Vec3 | null;
   /** Its feet every 20 ticks (x, y, z triples at 0.1 m). */
   trail: number[];
+  /** The run sampled for racing, when it won. */
+  ghost: Ghost | null;
 }
 
 type Target = Vec3 | (() => Vec3);
@@ -1016,9 +1019,11 @@ function witnessRun(R: Rapier, b: WorldBundle, nav: NavWorld, chain: WinChain, o
   const sim = new SimWorld(R, b, { playerTeam, brain });
   // the route it takes, for play analytics (reading positions only: the run is unchanged)
   const trail: number[] = [];
+  const ghost = new GhostRecorder(sim, secretsOf(b));
   const step = sim.step.bind(sim);
   sim.step = (input) => {
     const evs = step(input);
+    ghost.step(sim, input);
     if (sim.tick % 20 === 0) {
       const p = sim.pos("player");
       trail.push(Math.round(p[0] * 10) / 10, Math.round((p[1] - 0.9) * 10) / 10, Math.round(p[2] * 10) / 10);
@@ -1052,7 +1057,8 @@ function witnessRun(R: Rapier, b: WorldBundle, nav: NavWorld, chain: WinChain, o
   // how a lost run ended: the rule that fired the loss
   const lostBy = sim.result === "lose" ? (sim.log.findLast((e) => e.k === "lose")?.rule ?? "") : null;
   trace?.(`end ${sim.result ?? "none"}${lostBy ? ` (${lostBy})` : ""} at ${v1(sim.pos("player"))} t=${sim.tick}`);
-  const out = { won: sim.result === "win", ticks: sim.tick, stuck, lostBy, stuckAt: sim.result ? null : stuckAt, trail };
+  const won = sim.result === "win";
+  const out = { won, ticks: sim.tick, stuck, lostBy, stuckAt: sim.result ? null : stuckAt, trail, ghost: won ? ghost.finish(sim) : null };
   sim.free();
   return out;
 }
@@ -1149,7 +1155,15 @@ function outOfReach(b: WorldBundle, chain: WinChain, playerTeam: "red" | "blue",
   return null;
 }
 
-export function t3(R: Rapier, b: WorldBundle, nav: NavWorld, chain: WinChain | null, runs: number, playerTeam: "red" | "blue" = "red", openers: ReadonlyMap<string, PlanStep[]> = new Map()): { chips: Chip[]; par: { goldS: number; runs: number; won: number } | null; trails: Trail[] } {
+export interface T3Out {
+  chips: Chip[];
+  par: { goldS: number; runs: number; won: number } | null;
+  trails: Trail[];
+  /** The par runner's run, for racing it (null when no runner won). */
+  ghost: Ghost | null;
+}
+
+export function t3(R: Rapier, b: WorldBundle, nav: NavWorld, chain: WinChain | null, runs: number, playerTeam: "red" | "blue" = "red", openers: ReadonlyMap<string, PlanStep[]> = new Map()): T3Out {
   leap = leapFor(b);
   try {
     return t3Runs(R, b, nav, chain, runs, playerTeam, openers);
@@ -1160,10 +1174,11 @@ export function t3(R: Rapier, b: WorldBundle, nav: NavWorld, chain: WinChain | n
   }
 }
 
-function t3Runs(R: Rapier, b: WorldBundle, nav: NavWorld, chain: WinChain | null, runs: number, playerTeam: "red" | "blue", openers: ReadonlyMap<string, PlanStep[]>): { chips: Chip[]; par: { goldS: number; runs: number; won: number } | null; trails: Trail[] } {
+function t3Runs(R: Rapier, b: WorldBundle, nav: NavWorld, chain: WinChain | null, runs: number, playerTeam: "red" | "blue", openers: ReadonlyMap<string, PlanStep[]>): T3Out {
   const chips: Chip[] = [];
   let par: { goldS: number; runs: number; won: number } | null = null;
   let trails: Trail[] = [];
+  let ghost: Ghost | null = null;
   if (chain && b.mode === "play") {
     const t0 = globalThis.performance?.now?.() ?? 0;
     const results = Array.from({ length: runs }, (_, i) => witnessRun(R, b, nav, chain, openers, b.seed * 1000 + i, playerTeam));
@@ -1173,6 +1188,8 @@ function t3Runs(R: Rapier, b: WorldBundle, nav: NavWorld, chain: WinChain | null
     trails = results.map((r) => ({ won: r.won, xyz: r.trail }));
     const gold = won.length ? Math.min(...won.map((r) => r.ticks)) / 60 : 0;
     par = won.length ? { goldS: Math.round(gold * 10) / 10, runs, won: won.length } : null;
+    // the par runner itself (the first of equals) is the one a player races
+    ghost = won.find((r) => r.ticks / 60 === gold)?.ghost ?? null;
     chips.push({
       id: "T3:win",
       tier: "T3",
@@ -1237,7 +1254,7 @@ function t3Runs(R: Rapier, b: WorldBundle, nav: NavWorld, chain: WinChain | null
       ms: Math.round((globalThis.performance?.now?.() ?? 0) - t0),
     });
   }
-  return { chips, par, trails };
+  return { chips, par, trails, ghost };
 }
 
 /**
