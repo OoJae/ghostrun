@@ -119,13 +119,23 @@ export function governorNs(gov: Governor, opts: { delayMs?: number } = {}): DoNa
 /** A governor that never answers. */
 export const silentNs = (): DoNamespace => ({ idFromName: (n: string) => n, get: () => ({ fetch: () => new Promise<Response>(() => {}) }) });
 
-export function memR2(): R2Bucket & { objects: Map<string, string> } {
+export function memR2(): R2Bucket & { objects: Map<string, string>; meta: Map<string, Record<string, string>> } {
   const objects = new Map<string, string>();
+  const meta = new Map<string, Record<string, string>>();
   return {
     objects,
+    meta,
     get: async (k) => (objects.has(k) ? { text: async () => objects.get(k)! } : null),
     head: async (k) => (objects.has(k) ? {} : null),
-    put: async (k, value) => void objects.set(k, value),
+    put: async (k, value, o) => void (objects.set(k, value), o?.customMetadata && meta.set(k, o.customMetadata)),
+    // like R2: ascending key order, metadata only when asked for
+    list: async ({ prefix = "", limit = 1000, include = [] }) => ({
+      objects: [...objects.keys()]
+        .filter((k) => k.startsWith(prefix))
+        .sort()
+        .slice(0, limit)
+        .map((key) => ({ key, ...(include.includes("customMetadata") ? { customMetadata: meta.get(key) ?? {} } : {}) })),
+    }),
   };
 }
 

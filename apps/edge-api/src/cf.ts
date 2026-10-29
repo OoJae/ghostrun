@@ -34,6 +34,8 @@ export interface R2Bucket {
   get(key: string): Promise<{ text(): Promise<string> } | null>;
   head(key: string): Promise<object | null>;
   put(key: string, value: string, options?: { httpMetadata?: { contentType?: string }; customMetadata?: Record<string, string> }): Promise<unknown>;
+  /** Keys in ascending (UTF-8 byte) order. */
+  list(options: { prefix?: string; limit?: number; include?: ("httpMetadata" | "customMetadata")[] }): Promise<{ objects: { key: string; customMetadata?: Record<string, string> }[] }>;
 }
 
 export interface KvNamespace {

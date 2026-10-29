@@ -7,3 +7,4 @@ export { BUDGETS, FillOp, FillParser, MAX_LINE_BYTES, parseFill, splitObjects, t
 export { gameplayLines, mergeFill, type MergeStats } from "./merge";
 export { layoutLaws, pinLayout } from "./fit";
 export { groupMembers } from "./groups";
+export { nickname, type Nickname } from "./nickname";

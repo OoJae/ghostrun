@@ -131,7 +131,10 @@ export async function shareRecord(s: ShareIn): Promise<{ id: string; text: strin
 export interface BlobStore {
   get(key: string): Promise<string | null>;
   has(key: string): Promise<boolean>;
-  put(key: string, body: string): Promise<void>;
+  /** `meta` rides along as small string metadata a listing returns without reading the body. */
+  put(key: string, body: string, meta?: Record<string, string>): Promise<void>;
+  /** Up to `limit` keys under a prefix, in key order, with their metadata. */
+  list(prefix: string, limit: number): Promise<{ key: string; meta: Record<string, string> }[]>;
 }
 
 export function r2Blobs(bucket: R2Bucket): BlobStore {
@@ -143,18 +146,28 @@ export function r2Blobs(bucket: R2Bucket): BlobStore {
     async has(key) {
       return (await bucket.head(key)) !== null;
     },
-    async put(key, body) {
-      await bucket.put(key, body, { httpMetadata: { contentType: "application/json" } });
+    async put(key, body, meta) {
+      await bucket.put(key, body, { httpMetadata: { contentType: "application/json" }, ...(meta ? { customMetadata: meta } : {}) });
+    },
+    async list(prefix, limit) {
+      const r = await bucket.list({ prefix, limit, include: ["customMetadata"] });
+      return r.objects.map((o) => ({ key: o.key, meta: o.customMetadata ?? {} }));
     },
   };
 }
 
 export function memoryBlobs(): BlobStore & { keys(): string[] } {
-  const m = new Map<string, string>();
+  const m = new Map<string, { body: string; meta: Record<string, string> }>();
   return {
-    get: async (k) => m.get(k) ?? null,
+    get: async (k) => m.get(k)?.body ?? null,
     has: async (k) => m.has(k),
-    put: async (k, body) => void m.set(k, body),
+    put: async (k, body, meta = {}) => void m.set(k, { body, meta }),
+    list: async (prefix, limit) =>
+      [...m.keys()]
+        .filter((k) => k.startsWith(prefix))
+        .sort()
+        .slice(0, limit)
+        .map((key) => ({ key, meta: m.get(key)!.meta })),
     keys: () => [...m.keys()],
   };
 }
@@ -169,7 +182,7 @@ export interface ShareCtx {
 
 const issues = (is: readonly v.BaseIssue<unknown>[]) => is.slice(0, 5).map((i) => `${v.getDotPath(i) ?? "body"}: ${i.message}`);
 const stamp = () => `${new Date().toISOString().slice(0, 10)}/${Date.now().toString(36)}-${crypto.randomUUID().slice(0, 8)}`;
-const who = (c: ShareCtx) => ({ at: new Date().toISOString(), pool: c.caller.pool, via: c.caller.via, ...(c.caller.session ? { session: c.caller.session } : {}), ip: c.ip });
+export const who = (c: ShareCtx) => ({ at: new Date().toISOString(), pool: c.caller.pool, via: c.caller.via, ...(c.caller.session ? { session: c.caller.session } : {}), ip: c.ip });
 
 export async function postShare(req: Request, c: ShareCtx): Promise<Response> {
   const body = await readJson(req, MAX_SHARE_BODY);
