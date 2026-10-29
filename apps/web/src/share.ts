@@ -1,9 +1,11 @@
 // Share links: a run is the world's fill, its seed and the exact int8 input log, so a link replays
 // bit-exactly on any device (the spec hash is checked on the way back in). "This is wrong" sends
-// the spec hash, the chip the judge disputes, a note and the inputs that led there.
+// the spec hash, the chip the judge disputes, a note and the inputs that led there. A share also
+// says the prompt it was built from, and a remix's share its line (see remix.ts).
 import type { InputFrame } from "@ghostrun/sim";
 import { api } from "./api";
 import { ENGINE_HASH, hashWorld, worldFromFill, type World } from "./pipeline";
+import type { Lineage } from "./remix";
 import type { MindChoice } from "./sim/rapier";
 
 export interface ShareRecord {
@@ -14,18 +16,27 @@ export interface ShareRecord {
   fill: string;
   inputs: InputFrame[];
   minds: MindChoice[];
+  prompt?: string;
+  remixOf?: string;
+  origin?: Lineage["origin"];
+  lineage?: Lineage["lineage"];
+  changes?: number;
 }
+
+/** What a share says besides the run: the world's prompt, and a remix's line. */
+export type ShareAbout = { prompt?: string; line?: Lineage | null };
 
 /** The last ten minutes of input at most, ticks strictly increasing (what the store accepts). */
 const clip = (inputs: readonly InputFrame[]) => inputs.slice(-36_000);
 
 /** Store a run; its share id, or null when the share service isn't reachable. */
-export async function storeRun(world: World, specHash: string, inputs: readonly InputFrame[], minds: readonly MindChoice[] = []): Promise<string | null> {
+export async function storeRun(world: World, specHash: string, inputs: readonly InputFrame[], minds: readonly MindChoice[] = [], about: ShareAbout = {}): Promise<string | null> {
+  const prompt = about.prompt?.replace(/[\u0000-\u001f\u007f]+/g, " ").trim().slice(0, 300);
   try {
     const r = await api("/v1/share", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ v: 1, engine: ENGINE_HASH, specHash, seed: world.seed, fill: world.fill, inputs: clip(inputs), ...(minds.length ? { minds: minds.slice(-500) } : {}) }),
+      body: JSON.stringify({ v: 1, engine: ENGINE_HASH, specHash, seed: world.seed, fill: world.fill, inputs: clip(inputs), ...(minds.length ? { minds: minds.slice(-500) } : {}), ...(prompt ? { prompt } : {}), ...(about.line ?? {}) }),
     });
     if (!r.ok) return null;
     return ((await r.json()) as { id: string }).id;
@@ -34,8 +45,8 @@ export async function storeRun(world: World, specHash: string, inputs: readonly 
   }
 }
 
-export async function createShare(world: World, specHash: string, inputs: readonly InputFrame[], minds: readonly MindChoice[] = []): Promise<string | null> {
-  const id = await storeRun(world, specHash, inputs, minds);
+export async function createShare(world: World, specHash: string, inputs: readonly InputFrame[], minds: readonly MindChoice[] = [], about: ShareAbout = {}): Promise<string | null> {
+  const id = await storeRun(world, specHash, inputs, minds, about);
   return id && `${window.location.origin}${window.location.pathname}?s=${id}`;
 }
 

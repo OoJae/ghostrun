@@ -19,14 +19,15 @@ const BACKOFF_TICKS = 60 * 60; // the edge said "rate limited": wait a minute
 export class Minds {
   readonly #world: World;
   readonly #sim: RapierSim;
-  readonly #onBark: (npc: string, name: string, line: string) => void;
+  /** A line to show and say: `reply` when it answers the player (it cuts in over barks). */
+  readonly #onBark: (npc: string, name: string, line: string, reply: boolean) => void;
   readonly #busy = new Set<string>();
   #lastThought = 0;
   #quietUntil = 0;
   #turn = -1;
   #off = false;
 
-  constructor(world: World, sim: RapierSim, onBark: (npc: string, name: string, line: string) => void) {
+  constructor(world: World, sim: RapierSim, onBark: (npc: string, name: string, line: string, reply: boolean) => void) {
     this.#world = world;
     this.#sim = sim;
     this.#onBark = onBark;
@@ -115,7 +116,7 @@ export class Minds {
       if (!r.ok || this.#off) return;
       const m = (await r.json()) as { option: string; line: string };
       if (m.option !== this.#sim.optionOf(npc)) this.#sim.queueMind(npc, m.option);
-      if (m.line) this.#onBark(npc, this.name(npc), m.line);
+      if (m.line) this.#onBark(npc, this.name(npc), m.line, said !== undefined);
     } catch {
       // no live service: the bot keeps playing its current option
     }

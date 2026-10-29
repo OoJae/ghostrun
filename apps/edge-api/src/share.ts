@@ -2,7 +2,9 @@
 // BlobStore. A share is content-addressed: id = base32(sha256(canonical record))[:16], so a run
 // always gets the same link and a stored record is never overwritten. Input frames are stored
 // run-length + delta encoded: a key held for two seconds is one run, not 120 frames.
-import { jcs } from "@ghostrun/ir";
+// A remix's share also says where it came from: remixOf (a share id, or g:<slug> for a gallery
+// world), the original at the top of its line (prompt and spec), and the newest changes on the way.
+import { jcs, nickname } from "@ghostrun/ir";
 import type { InputFrame } from "@ghostrun/sim";
 import * as v from "valibot";
 import type { R2Bucket } from "./cf";
@@ -15,6 +17,9 @@ export const MAX_SHARE_BODY = 2 * 1024 * 1024;
 const MAX_REPORT_BODY = 8 * 1024;
 const MAX_TICK = 2 ** 24;
 export const SHARE_ID = /^[a-z2-7]{16}$/;
+/** The changes a remix's share keeps (the newest), and how long a prompt or a change may be. */
+export const MAX_LINEAGE = 8;
+export const MAX_REMIX_TEXT = 300;
 
 const enc = new TextEncoder();
 const Hex64 = v.pipe(v.string(), v.regex(/^[0-9a-f]{64}$/));
@@ -34,15 +39,58 @@ const Minds = v.pipe(
   v.maxLength(500),
 );
 
-export const ShareIn = v.strictObject({
-  v: v.literal(1),
-  engine: Hex64,
-  specHash: Hex64,
-  seed: int(-(2 ** 31), 2 ** 32 - 1),
-  fill: v.pipe(v.string(), v.check((s) => enc.encode(s).length <= MAX_FILL_BYTES, "fill over 64 KB")),
-  inputs: Frames,
-  minds: v.optional(Minds),
+/** A world a remix came from: a share, or a gallery world by its slug. */
+const Ref = v.pipe(v.string(), v.regex(/^(?:[a-z2-7]{16}|g:[a-z0-9-]{1,64})$/));
+/** A prompt or a change as the person wrote it: one line, not blank, not long. */
+const Said = (min: number) =>
+  v.pipe(
+    v.string(),
+    v.maxLength(MAX_REMIX_TEXT),
+    v.check((s) => !/[\u0000-\u001f\u007f]/.test(s), "no control characters"),
+    v.check((s) => s.trim().length >= min, "blank"),
+  );
+/** One change in a remix's line: the world it was made on, who made it (a board-safe nickname), and what they asked. */
+const Step = v.strictObject({
+  id: Ref,
+  change: Said(1),
+  name: v.optional(
+    v.pipe(
+      v.string(),
+      v.check((n) => {
+        const k = nickname(n);
+        return k.ok && k.name === n;
+      }, "not a nickname"),
+    ),
+  ),
 });
+
+export const ShareIn = v.pipe(
+  v.strictObject({
+    v: v.literal(1),
+    engine: Hex64,
+    specHash: Hex64,
+    seed: int(-(2 ** 31), 2 ** 32 - 1),
+    fill: v.pipe(v.string(), v.check((s) => enc.encode(s).length <= MAX_FILL_BYTES, "fill over 64 KB")),
+    inputs: Frames,
+    minds: v.optional(Minds),
+    /** The prompt the world was built from (a remix of it shows it). */
+    prompt: v.optional(Said(0)),
+    remixOf: v.optional(Ref),
+    /** The world at the top of the line: what was asked for, and its spec (what its own receipt proved). */
+    origin: v.optional(v.strictObject({ id: Ref, prompt: Said(0), spec: Hex64 })),
+    /** The newest changes, oldest first; `changes` counts every one since the original. */
+    lineage: v.optional(v.pipe(v.array(Step), v.minLength(1), v.maxLength(MAX_LINEAGE))),
+    changes: v.optional(int(1, 9999)),
+  }),
+  v.check((s) => {
+    const parts = [s.remixOf, s.origin, s.lineage, s.changes].filter((x) => x !== undefined).length;
+    if (parts === 0) return true;
+    // all four together, the newest change made on the world it says it remixed, and a count that covers the list
+    const steps = s.lineage ?? [];
+    const n = s.changes ?? 0;
+    return parts === 4 && steps.at(-1)?.id === s.remixOf && n >= steps.length && (n > steps.length || steps[0]?.id === s.origin?.id);
+  }, "a remix needs remixOf, origin, lineage and changes, and they must agree"),
+);
 export type ShareIn = v.InferOutput<typeof ShareIn>;
 
 export const ReportIn = v.pipe(
@@ -122,8 +170,9 @@ export function unpackFrames(s: string): InputFrame[] {
 
 /** The stored (canonical) form of a share and its content address. */
 export async function shareRecord(s: ShareIn): Promise<{ id: string; text: string }> {
-  // minds only when present, so runs without them keep the ids they always had
-  const text = jcs({ v: 1, engine: s.engine, specHash: s.specHash, seed: s.seed, fill: s.fill, enc: "rle1", inputs: packFrames(s.inputs), ...(s.minds?.length ? { minds: s.minds } : {}) });
+  // minds, the prompt and a remix's line only when present, so runs without them keep the ids they always had
+  const remix = s.lineage ? { remixOf: s.remixOf, origin: s.origin, lineage: s.lineage, changes: s.changes } : {};
+  const text = jcs({ v: 1, engine: s.engine, specHash: s.specHash, seed: s.seed, fill: s.fill, enc: "rle1", inputs: packFrames(s.inputs), ...(s.minds?.length ? { minds: s.minds } : {}), ...(s.prompt ? { prompt: s.prompt } : {}), ...remix });
   const digest = new Uint8Array(await crypto.subtle.digest("SHA-256", enc.encode(text)));
   return { id: base32(digest.subarray(0, 10)), text };
 }
@@ -200,7 +249,8 @@ export async function getShare(id: string, c: ShareCtx): Promise<Response> {
   const text = await c.store.get(`shares/${id}.json`);
   if (text === null) return json({ error: "not found" }, 404);
   const s = JSON.parse(text) as Omit<ShareIn, "inputs"> & { inputs: string };
-  const record = { id, v: s.v, engine: s.engine, specHash: s.specHash, seed: s.seed, fill: s.fill, inputs: unpackFrames(s.inputs), minds: s.minds ?? [] };
+  const remix = s.lineage ? { remixOf: s.remixOf, origin: s.origin, lineage: s.lineage, changes: s.changes } : {};
+  const record = { id, v: s.v, engine: s.engine, specHash: s.specHash, seed: s.seed, fill: s.fill, inputs: unpackFrames(s.inputs), minds: s.minds ?? [], ...(s.prompt ? { prompt: s.prompt } : {}), ...remix };
   return json(record, 200, { "cache-control": "private, max-age=31536000, immutable" });
 }
 

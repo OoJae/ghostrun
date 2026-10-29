@@ -3,6 +3,7 @@
 // demo even when the live lane is slow or down.
 import { useEffect } from "react";
 import index from "../gallery/index.json";
+import "./remix.css";
 
 export interface GalleryEntry {
   slug: string;
@@ -14,7 +15,7 @@ export interface GalleryEntry {
 
 export const GALLERY = index as GalleryEntry[];
 
-export function Gallery({ onOpen, onClose }: { onOpen: (e: GalleryEntry) => void; onClose: () => void }) {
+export function Gallery({ onOpen, onClose, onRemix }: { onOpen: (e: GalleryEntry) => void; onClose: () => void; onRemix?: (e: GalleryEntry) => void }) {
   useEffect(() => {
     const esc = (e: KeyboardEvent) => e.key === "Escape" && onClose();
     window.addEventListener("keydown", esc);
@@ -39,6 +40,11 @@ export function Gallery({ onOpen, onClose }: { onOpen: (e: GalleryEntry) => void
                 {e.honest && <span className="gallery-honest" title="AI runners win, but the world's own headline claim fails, and the receipt says so"> · honest receipt</span>}
               </span>
             </button>
+            {onRemix && (
+              <button type="button" className="gallery-remix" onClick={() => onRemix(e)} data-testid={`gallery-remix-${e.slug}`} title="Open it as your own copy and change it">
+                Remix
+              </button>
+            )}
           </li>
         ))}
       </ul>

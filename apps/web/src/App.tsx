@@ -24,6 +24,10 @@ import { BRIEF, buildWorld, ENGINE_HASH, FIXTURE_PROMPTS, FIXTURES, hashWorld, w
 import { probe } from "./probe";
 import { askHost, clock as mmss, facts, story } from "./host";
 import { useSound } from "./audio/useSound";
+import { useSpeech } from "./audio/useSpeech";
+import { TalkBox } from "./hud/Talk";
+import { LineagePanel } from "./hud/Lineage";
+import { contextPrompt, galleryRef, lineageOf, receiptVersion, shareSource, yourChanges, type RemixSource } from "./remix";
 import { MuteButton } from "./hud/Mute";
 import { EXAMPLES, Landing, type Starter } from "./hud/Landing";
 import { substitution } from "./substitutions";
@@ -95,10 +99,15 @@ export function App() {
   const [prompt, setPrompt] = useState("");
   const [intent, setIntent] = useState<Intent | null>(null);
   /** First load, until the person builds, moves or opens the gallery: the landing line and starters. */
-  const [fresh, setFresh] = useState(!params0.get("s"));
+  const [fresh, setFresh] = useState(!params0.get("s") && !params0.get("g"));
   /** What the world does instead of a mechanic the prompt asked for (no vehicles yet, …). */
   const [note, setNote] = useState<string | null>(null);
   const sound = useSound();
+  const speech = useSpeech(sound);
+  /** A shared or gallery world on screen: where it came from (its line, if a remix), and whether Remix made it your copy. */
+  const [remixSrc, setRemixSrc] = useState<RemixSource | null>(null);
+  const [copied, setCopied] = useState(false);
+  const [editFocus, setEditFocus] = useState(0);
   const [specHash, setSpecHash] = useState<string>();
   const [timing, setTiming] = useState<LoadResult | null>(null);
   const [status, setStatus] = useState<Status>("booting");
@@ -158,9 +167,13 @@ export function App() {
   const minds = useRef<Minds | null>(null);
   const [bark, setBark] = useState<{ name: string; line: string; at: number } | null>(null);
   const [talking, setTalking] = useState<{ npc: string; name: string } | null>(null);
+  /** An NPC's line: the subtitle, and said out loud in its own voice. */
+  const barked = (npc: string, name: string, line: string, reply: boolean) => {
+    setBark({ name, line, at: Date.now() });
+    speech.npc(npc, line, reply);
+  };
   const [result, setResult] = useState<RunResult | null>(null);
   const [director, setDirector] = useState<{ line: string; label: string; status: "proving" | "ready"; world?: World } | null>(null);
-  const [said, setSaid] = useState("");
   const [reported, setReported] = useState<string>();
   const pending = useRef(new Map<number, { onChip?: (c: Chip) => void; onPlaytest?: (p: Playtest | null) => void; resolve: (r: Receipt) => void; reject: (e: Error) => void }>());
   const modeRef = useRef<Mode>("checking");
@@ -309,7 +322,7 @@ export function App() {
       setToast(null);
       if (sim) {
         minds.current?.stop();
-        minds.current = modeRef.current === "live" ? new Minds(world, sim, (_npc, name, line) => setBark({ name, line, at: Date.now() })) : null;
+        minds.current = modeRef.current === "live" ? new Minds(world, sim, barked) : null;
         sim.onEvents = (evs) => {
           minds.current?.observe(evs);
           for (const ev of evs) {
@@ -327,6 +340,7 @@ export function App() {
         sim.onHint = setUseHint;
       }
       sound.world(world.bundle, sim);
+      speech.world(world.bundle);
       startProof(world, id);
       const h = await hashWorld(world.bundle);
       if (id !== runId.current) return;
@@ -343,6 +357,7 @@ export function App() {
       setNotice(undefined);
       history.current = [];
       setEdit({ status: "idle" });
+      setRemixSrc(null);
       builtPrompt.current = text;
       setSpecHash(undefined);
       setFellBack(false);
@@ -449,6 +464,10 @@ export function App() {
         } else if (shared && !disposed) {
           setPrompt("Shared run");
           setFellBack(false);
+          // an edit of it is told what was asked for (the original prompt and the changes since)
+          const src = shareSource(params.get("s")!, shared.record);
+          builtPrompt.current = contextPrompt(src) || builtPrompt.current;
+          setRemixSrc(src);
           await show(shared.world, ++runId.current, 0, [{ label: "gpu init", ms: e.initMs }]);
           const sim = e.rapierSim;
           if (sim) {
@@ -456,6 +475,8 @@ export function App() {
             sim.onReplayEnd = () => setNotice(undefined);
           }
           setNotice(shared.exact ? "Shared run: replaying exactly as played. Press any key to take over." : "Shared run from another version: the world rebuilt, but the replay may drift.");
+        } else if (GALLERY.some((g) => g.slug === params.get("g")) && !disposed) {
+          await openGallery(GALLERY.find((g) => g.slug === params.get("g"))!); // a remix's link to its original
         } else {
           if (params.get("s") || params.get("race")) setNotice(`That ${params.get("race") ? "race" : "share"} link wasn't found.`);
           await run(FIRST_PROMPT, 0, [{ label: "gpu init", ms: e.initMs }]);
@@ -502,7 +523,7 @@ export function App() {
     if (mode !== "live" || minds.current) return;
     const sim = engine.current?.rapierSim;
     const w = current.current;
-    if (sim && w) minds.current = new Minds(w, sim, (_npc, name, line) => setBark({ name, line, at: Date.now() }));
+    if (sim && w) minds.current = new Minds(w, sim, barked);
   }, [mode, status]);
 
   useEffect(() => {
@@ -537,10 +558,29 @@ export function App() {
     const w = current.current;
     const sim = engine.current?.rapierSim;
     if (!w || !sim || !specHash) return setToast("Nothing to share yet.");
-    const url = await createShare(w, specHash, sim.inputs, sim.minds);
+    // a remix carries its line; any share says the prompt it was built from
+    const line = lineageOf(remixSrc, w);
+    const url = await createShare(w, specHash, sim.inputs, sim.minds, { prompt: line?.origin.prompt || w.source?.base || w.source?.prompt || builtPrompt.current, line });
     if (!url) return setToast("Sharing needs the live service, which isn't reachable.");
     await navigator.clipboard?.writeText(url).catch(() => undefined);
     setToast(`Link copied: ${url}`);
+  };
+
+  /**
+   * Remix: the shared or gallery world on screen as your own copy (a shared run stops replaying and
+   * starts from the top), with the cursor in the edit box; your first accepted edit makes it a remix.
+   */
+  const remix = () => {
+    const w = current.current;
+    if (!w || !remixSrc) return;
+    setCopied(true);
+    setResult(null);
+    setNotice(undefined);
+    setCollapsed(false);
+    history.current = [];
+    setEdit({ status: "idle" });
+    if (remixSrc.kind === "share") void show(w, ++runId.current, performance.now(), []).then(() => setEditFocus((n) => n + 1));
+    else setEditFocus((n) => n + 1);
   };
 
   /** Between attempts: one observation, one twist, re-proved on the device before it is offered. */
@@ -766,7 +806,7 @@ export function App() {
   };
 
   /** A gallery world: the live AI's recorded fill, rebuilt and re-proved here (and editable, like any live world). */
-  const openGallery = async (entry: GalleryEntry) => {
+  const openGallery = async (entry: GalleryEntry, asRemix = false) => {
     setGallery(false);
     const load = GALLERY_WORLDS[`./gallery/worlds/${entry.slug}.json`];
     if (!load) return;
@@ -783,8 +823,12 @@ export function App() {
     setStatus("building");
     setFellBack(false);
     setCachedFrom(null);
+    setRemixSrc(null);
     await show(world, ++runId.current, t0, [{ label: "gallery", ms: performance.now() - t0 }]);
     setToast("A recorded live AI world (unedited), re-proved on your device now.");
+    setRemixSrc({ ref: galleryRef(entry.slug), kind: "gallery", prompt: g.prompt, spec: await hashWorld(world.bundle), line: null });
+    setCopied(asRemix);
+    if (asRemix) (setCollapsed(false), setEditFocus((n) => n + 1));
   };
 
   /** The same world from the top: a fresh run (and a fresh proof of the same spec). */
@@ -847,7 +891,9 @@ export function App() {
         {notice && <div className="glass notice" role="status">{notice}</div>}
         {!collapsed && !typing && intent && building === null && <IntentCard intent={intent} specHash={specHash} note={note} />}
         {current.current && status !== "booting" && !typing && (!collapsed || edit.status === "editing" || edit.status === "racing" || edit.status === "proving") && (
-          <EditBox state={edit} enabled={mode === "live"} suggestions={[...suggestionsFor(current.current.bundle), "surprise me"]} canUndo={history.current.length > 0} onEdit={(c) => void editWorld(c)} onUndo={undo} />
+          <EditBox state={edit} enabled={mode === "live"} suggestions={[...suggestionsFor(current.current.bundle), "surprise me"]} canUndo={history.current.length > 0} onEdit={(c) => void editWorld(c)} onUndo={undo} focusKey={editFocus} placeholder={copied ? "Change it: make it yours…" : undefined}>
+            {remixSrc && <LineagePanel source={remixSrc} line={lineageOf(remixSrc, current.current)} mine={yourChanges(current.current).length} copied={copied} spec={specHash} onRemix={remix} onShare={() => void shareRun()} />}
+          </EditBox>
         )}
         {(score.red > 0 || score.blue > 0 || score.result || clock !== null || secrets.found > 0) && (
           <div className={`glass scoreline ${score.result ?? ""}`} data-testid="score">
@@ -888,6 +934,7 @@ export function App() {
               void show(w, ++runId.current, performance.now(), []);
             }}
             race={race.card}
+            voice={speech.enabled ? { say: speech.host, again: speech.again } : undefined}
           />
         )}
         {race.chip && status === "playing" && (collapsed || typing || !intent) && <RaceChip {...race.chip} />}
@@ -897,19 +944,7 @@ export function App() {
             <b>{bark.name}:</b> {bark.line}
           </div>
         )}
-        {talking && (
-          <form
-            className="glass talk"
-            onSubmit={(e) => {
-              e.preventDefault();
-              if (said.trim()) minds.current?.talk(talking.npc, said.trim());
-              setTalking(null);
-              setSaid("");
-            }}
-          >
-            <input autoFocus value={said} maxLength={200} placeholder={`Say something to the ${talking.name}…`} onChange={(e) => setSaid(e.target.value)} onKeyDown={(e) => e.key === "Escape" && setTalking(null)} />
-          </form>
-        )}
+        {talking && <TalkBox name={talking.name} lang={speech.listenLang()} onSay={(t) => minds.current?.talk(talking.npc, t)} onClose={() => setTalking(null)} onListen={speech.hush} />}
         <ProofBadge proof={proof} onOpen={() => setReceiptOpen((o) => !o)} />
         <CutChip cut={cut} onApply={applyCut} />
         <RepairChip
@@ -960,7 +995,7 @@ export function App() {
             }}
           />
         )}
-        {gallery && <Gallery onOpen={(e) => void openGallery(e)} onClose={() => setGallery(false)} />}
+        {gallery && <Gallery onOpen={(e) => void openGallery(e)} onRemix={(e) => void openGallery(e, true)} onClose={() => setGallery(false)} />}
         {trusting && <TrustPanel onClose={() => setTrusting(false)} />}
         {receiptOpen && (
           <ReceiptPanel
@@ -983,6 +1018,7 @@ export function App() {
               engine.current?.showTrails(on ? (proof.receipt?.trails ?? null) : null, heat);
             }}
             reported={reported}
+            version={receiptVersion(lineageOf(remixSrc, current.current), specHash)}
             onShare={shareRun}
             onExport={async () => {
               const w = current.current;

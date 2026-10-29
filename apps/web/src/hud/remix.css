@@ -1,0 +1,23 @@
+/* ---- remix: where a shared or gallery world came from, at the top of the edit box ---- */
+.lineage { margin: -2px 0 10px; padding: 0 0 10px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); font-size: 12.5px; line-height: 1.4; }
+.lineage p { margin: 0; }
+.lineage .eyebrow { display: block; margin-bottom: 2px; color: #c9adff; }
+.lineage-links { margin-top: 4px !important; font-size: 12px; }
+.lineage-links a { color: #7ff0ff; text-decoration: none; border-bottom: 1px dotted rgba(127, 240, 255, 0.5); }
+.lineage-links a:hover { border-bottom-style: solid; }
+.lineage-receipts { margin-top: 4px !important; font-size: 11.5px; opacity: 0.7; }
+.lineage-actions { display: flex; gap: 6px; margin-top: 8px; }
+.lineage-actions:empty { display: none; }
+.lineage-actions button {
+  font: inherit; font-size: 12px; padding: 4px 11px; border-radius: 999px; cursor: pointer; color: inherit;
+  background: rgba(180, 140, 255, 0.14); border: 1px solid rgba(180, 140, 255, 0.45);
+}
+.lineage-actions button:hover { background: rgba(180, 140, 255, 0.24); }
+.gallery-grid li { position: relative; }
+.gallery-grid li .gallery-meta { padding-right: 58px; }
+.gallery-grid .gallery-remix {
+  position: absolute; right: 8px; bottom: 8px; width: auto; height: auto; display: inline-block; font-size: 11px; padding: 2px 9px; border-radius: 999px;
+  background: rgba(180, 140, 255, 0.14); border: 1px solid rgba(180, 140, 255, 0.4);
+}
+.gallery-grid .gallery-remix:hover { background: rgba(180, 140, 255, 0.26); border-color: rgba(180, 140, 255, 0.7); }
+.receipt-version { margin: 0 0 8px; font-size: 12px; opacity: 0.8; }

@@ -60,6 +60,78 @@ describe("share validation", () => {
   });
 });
 
+describe("remix lineage", () => {
+  const ok = (x: unknown) => v.safeParse(ShareIn, x).success;
+  const SRC = "abcdefghijklmnop";
+  // a gallery world, changed twice by Tester and shared (SRC), then changed once more on top of that share
+  const line = (over: Record<string, unknown> = {}) =>
+    share({
+      prompt: "A museum heist",
+      remixOf: SRC,
+      origin: { id: "g:museum-heist", prompt: "A museum heist", spec: SPEC },
+      lineage: [
+        { id: "g:museum-heist", change: "make it night", name: "Tester" },
+        { id: "g:museum-heist", change: "add three more coins", name: "Tester" },
+        { id: SRC, change: "more guards" },
+      ],
+      changes: 3,
+      ...over,
+    } as Partial<ShareIn>);
+  const step = (change: string, id = SRC) => ({ id, change });
+
+  it("accepts a remix's line up to its caps: eight changes, 300 characters each", () => {
+    expect(ok(line())).toBe(true);
+    expect(ok(share({ prompt: "A plain shared world" }))).toBe(true); // any share may say its prompt
+    const eight = Array.from({ length: 8 }, (_, i) => step(`change ${i}`));
+    expect(ok(line({ lineage: eight, changes: 12 }))).toBe(true); // the newest 8 of 12
+    expect(ok(line({ lineage: [step("x".repeat(300))], changes: 1, origin: { id: SRC, prompt: "", spec: SPEC } }))).toBe(true); // an old share had no prompt
+    expect(ok(line({ prompt: "p".repeat(300) }))).toBe(true);
+  });
+
+  it("rejects a line past its caps or malformed", () => {
+    expect(ok(line({ lineage: Array.from({ length: 9 }, (_, i) => step(`c${i}`)), changes: 9 }))).toBe(false);
+    expect(ok(line({ lineage: [], changes: 1 }))).toBe(false);
+    expect(ok(line({ lineage: [step("x".repeat(301))], changes: 1 }))).toBe(false);
+    expect(ok(line({ prompt: "p".repeat(301) }))).toBe(false);
+    expect(ok(line({ lineage: [step("   ")], changes: 1 }))).toBe(false); // blank
+    expect(ok(line({ lineage: [step("make it\nnight")], changes: 1 }))).toBe(false); // one line
+    expect(ok(line({ lineage: [step("ok", "G:Upper")], changes: 1, remixOf: "G:Upper" }))).toBe(false);
+    expect(ok(line({ remixOf: "not-a-share-id" }))).toBe(false);
+    expect(ok(line({ lineage: [{ ...step("ok"), name: "sh1t" }], changes: 1 }))).toBe(false); // the board's nickname rules
+    expect(ok(line({ lineage: [{ ...step("ok"), name: " Tester " }], changes: 1 }))).toBe(false); // and as the board would store it
+    expect(ok(line({ lineage: [{ ...step("ok"), spec: SPEC }], changes: 1 }))).toBe(false); // no extra fields
+    expect(ok(line({ origin: { id: SRC, prompt: "x", spec: "nope" } }))).toBe(false);
+    // the parts come together, and agree
+    expect(ok(share({ remixOf: SRC }))).toBe(false);
+    expect(ok(line({ origin: undefined }))).toBe(false);
+    expect(ok(line({ changes: undefined }))).toBe(false);
+    expect(ok(line({ remixOf: "bcdefghijklmnopq" }))).toBe(false); // the newest change wasn't made on it
+    expect(ok(line({ changes: 2 }))).toBe(false); // fewer than it lists
+    expect(ok(line({ lineage: [step("first"), step("second")], changes: 2 }))).toBe(false); // the whole line, but not from its origin
+  });
+
+  it("is stored with the share and served back, and changes the address; a share without one keeps its old id", async () => {
+    const plain = await shareRecord(share());
+    expect(plain.text).not.toMatch(/prompt|remixOf|lineage/);
+    const remix = await shareRecord(line());
+    expect(remix.id).not.toBe(plain.id);
+    expect(JSON.parse(remix.text)).toMatchObject({ prompt: "A museum heist", remixOf: SRC, changes: 3 });
+    const SHARES = memR2();
+    vi.stubGlobal("fetch", fakeFetch().fn);
+    const env: Env = { CEREBRAS_API_KEY: "k", TURNSTILE_SECRET: TURNSTILE.secretPass, SESSION_SECRET: SECRET, SHARES };
+    const cookie = (await mintSession(SECRET)).cookie.split(";")[0]!;
+    const call = (method: string, path: string, body?: unknown) => handle(new Request(`https://g.example${path}`, { method, headers: { cookie, "cf-connecting-ip": "198.51.100.7" }, ...(body === undefined ? {} : { body: JSON.stringify(body) }) }), env, waiter());
+    const posted = await call("POST", "/v1/share", line());
+    expect(posted.status).toBe(201);
+    const { id } = (await posted.json()) as { id: string };
+    expect(id).toBe(remix.id);
+    const got = (await (await call("GET", `/v1/share/${id}`)).json()) as Record<string, unknown>;
+    expect(got).toMatchObject({ prompt: "A museum heist", remixOf: SRC, origin: { id: "g:museum-heist", prompt: "A museum heist", spec: SPEC }, changes: 3 });
+    expect(got.lineage).toEqual(line().lineage);
+    expect((await call("POST", "/v1/share", line({ changes: 1 }))).status).toBe(400);
+  });
+});
+
 describe("share routes", () => {
   async function setup() {
     const SHARES = memR2();

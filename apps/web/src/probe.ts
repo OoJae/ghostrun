@@ -1,5 +1,7 @@
 // Test/diagnostic probe on window. The first four fields are the contract the e2e suite reads;
 // the rest are optional diagnostics.
+import type { SpeechStats } from "./audio/speech";
+
 export interface GhostrunProbe {
   ready: boolean;
   fps: number;
@@ -25,6 +27,8 @@ export interface GhostrunProbe {
   overview?: { routes: number; heat: number };
   /** The sound: "off" until the first gesture starts it, "disabled" with ?audio=0. */
   audio?: AudioProbe;
+  /** Spoken lines (NPCs and the Host): "unsupported" without speechSynthesis, "disabled" with ?audio=0. */
+  speech?: SpeechStats;
   /** The build preview on screen (absent when there is none): statics risen and entities popped in so far. */
   materialise?: { statics: number; entities: number };
 }
@@ -37,6 +41,8 @@ export interface AudioProbe {
   counts: Record<string, number>;
   last?: string;
   music?: { key: string; bpm: number };
+  /** The music and ambience are ducked under a voice. */
+  ducked?: boolean;
 }
 
 declare global {
