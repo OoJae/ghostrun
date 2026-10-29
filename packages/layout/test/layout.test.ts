@@ -266,3 +266,58 @@ describe("conditions nothing can satisfy", () => {
     expect(notes.some((n) => n.includes("the countdown already ends the game"))).toBe(true);
   });
 });
+
+describe("fights", () => {
+  const place = (text: string) => {
+    const fill = parseFill(text, { seed: 7 });
+    const layout = cityBlock.generate({ seed: 7, params: cityBlock.defaults, sub: fill.draft.pack.sub, laws: fill.draft.laws, harder: false });
+    return placeWorld({ ...fill.draft, engine: "e".repeat(64) }, layout);
+  };
+  const hpOf = (b: ReturnType<typeof place>["bundle"]) => b.verbs.filter((v) => v.verb === "combat_sport.health").map((v) => [v.on, v.params.hp ?? 100]);
+
+  it("weapons on a team are one each; whatever a rule wears down has hit points; 'the player hits rival_1' is a shot; down for good loses", () => {
+    const { bundle, notes } = place(
+      ctf
+        .replace('{"op":"verb","id":"vb_jump"', [
+          '{"op":"ent","id":"wand","kind":"pickup","noun":"oak wand","zone":"z_plaza","anchor":"wall_w"}',
+          '{"op":"ent","id":"golem","kind":"npc","noun":"stone golem","zone":"z_plaza","anchor":"wall_n","team":"blue","props":{"hp":250}}',
+          '{"op":"verb","id":"vb_jump"',
+        ].join("\n"))
+        .replace('{"op":"law"', [
+          '{"op":"verb","id":"vb_wand","verb":"combat_sport.shoot","on":"wand","params":{"damage":20}}',
+          '{"op":"verb","id":"vb_wand_coin","verb":"puzzle.collect","on":"wand"}',
+          '{"op":"verb","id":"vb_hp","verb":"combat_sport.health","on":"player","params":{"respawn":false}}',
+          '{"op":"verb","id":"vb_fists","verb":"combat_sport.shoot","on":"team:blue","params":{"range":2}}',
+          '{"op":"law"',
+        ].join("\n"))
+        .replace('{"op":"rule","id":"r_pickup"', [
+          '{"op":"rule","id":"r_zap","when":{"t":"hit","a":"player","b":"mate_1"},"then":[{"e":"emit","target":"mate_1","fx":"spark"}]}',
+          '{"op":"rule","id":"r_ko","when":{"t":"health_lte","a":"rival_2","n":0},"then":[{"e":"score","target":"team:red","n":1}]}',
+          '{"op":"rule","id":"r_quake","when":{"t":"every","n":30},"then":[{"e":"damage","target":"team:blue","n":5}]}',
+          '{"op":"rule","id":"r_pickup"',
+        ].join("\n")),
+    );
+    // one weapon each for the blue team; the wand is held, never collected
+    expect(bundle.verbs.filter((v) => v.verb === "combat_sport.shoot").map((v) => v.on).sort()).toEqual(["golem", "rival_1", "rival_2", "wand"]);
+    expect(bundle.verbs.some((v) => v.on === "wand" && v.verb === "puzzle.collect")).toBe(false);
+    // the golem's own 250; the rest of blue 100 because a rule wears them down
+    expect(hpOf(bundle).sort()).toEqual([["golem", 250], ["player", 100], ["rival_1", 100], ["rival_2", 100]]);
+    // mate_1 has no weapon of its own and you have a wand: it is hit by your shot
+    expect(bundle.rules.find((r) => r.id === "r_zap")!.when).toMatchObject({ t: "hit", a: "mate_1", b: "" });
+    expect(bundle.rules.find((r) => r.id === "r_knocked_out")).toMatchObject({ when: { t: "health_lte", a: "player", n: 0 }, then: [{ e: "lose" }] });
+    expect(notes).toContain("vb_fists: combat_sport.shoot on 'team:blue' means each of golem, rival_1, rival_2");
+  });
+
+  it("a shooting game with no one to shoot gets two armed rivals with hit points", () => {
+    const { bundle, notes } = place(
+      ctf
+        .split("\n")
+        .filter((l) => !l.includes('"op":"npc"'))
+        .join("\n")
+        .replace('{"op":"law"', '{"op":"verb","id":"vb_laser","verb":"combat_sport.shoot","on":"player","params":{"damage":30,"cooldown":0.4}}\n{"op":"law"'),
+    );
+    expect(notes.some((n) => n.startsWith("added rival_1 and rival_2 on the blue side: a shooting game needs someone to shoot"))).toBe(true);
+    expect(bundle.verbs.find((v) => v.verb === "combat_sport.shoot" && v.on === "rival_1")!.params).toMatchObject({ damage: 15, cooldown: 0.8 });
+    expect(hpOf(bundle).map(([on]) => on)).toEqual(["rival_1", "rival_2"]);
+  });
+});
