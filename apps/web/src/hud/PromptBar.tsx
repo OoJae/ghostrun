@@ -10,8 +10,8 @@ interface Props {
   onCollapse(): void;
   timing: LoadResult | null;
   busy: boolean;
-  /** Where the world came from: the live LLM lane or the recorded fixture. */
-  source: { label: string; title: string };
+  /** Where the world came from: the live LLM lane, the edge's cache (with a way to build it fresh) or the recorded fixture. */
+  source: { label: string; title: string; action?: { label: string; run(): void } };
   /** One-click prompts shown while the bar is focused. */
   suggestions?: readonly { label: string; prompt: string }[];
   /** The bar gained or lost focus (the side cards step aside while a new world is typed). */
@@ -198,9 +198,14 @@ export function PromptBar({ prompt, onPrompt, onSubmit, collapsed, onExpand, onC
         placeholder={example.full ? `Try: ${example.shown}` : "Describe a world…"}
       />
       <Mic onText={onPrompt} onDone={onSubmit} />
-      <span className="chip" title={source.title}>
+      <span className={`chip${source.action ? " cached" : ""}`} title={source.title} data-testid="source-chip">
         {source.label}
       </span>
+      {source.action && (
+        <button type="button" className="chip-action" onClick={source.action.run} title={source.title} data-testid="build-fresh">
+          {source.action.label}
+        </button>
+      )}
       <Stopwatch timing={timing} busy={busy} />
       {focused && suggestions.length > 0 && (
         <div className="glass suggest" data-testid="suggest">

@@ -389,6 +389,58 @@ kbd {
   color: var(--ink-dim);
 }
 
+/* While the world is built (its preview rising behind): a quiet line count under the scene. */
+.materialise-status {
+  position: absolute;
+  left: 50%;
+  bottom: 14%;
+  transform: translateX(-50%);
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-dim);
+  background: rgba(7, 4, 15, 0.42);
+  border: 1px solid rgba(25, 227, 255, 0.22);
+  pointer-events: none;
+  animation: pulse 1.2s ease-in-out infinite;
+}
+
+/* A world replayed from the edge's cache: a calmer chip than live, and a way to build it fresh. */
+.chip.cached {
+  color: #d6f8ff;
+  background: rgba(25, 227, 255, 0.1);
+  border-color: rgba(25, 227, 255, 0.32);
+}
+
+.chip-action {
+  flex: none;
+  padding: 4px 9px;
+  border-radius: 999px;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.chip-action:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+@media (max-width: 720px) {
+  .chip.cached {
+    max-width: 30vw;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
 @keyframes pulse {
   0%,
   100% {
