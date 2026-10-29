@@ -9,6 +9,7 @@ import vaultFill from "../../../packages/ir/fixtures/vault-heist.jsonl?raw";
 import { layoutLaws, parseFill, specHash, type FillNote, type FillStats, type WorldBundle } from "@ghostrun/ir";
 import { placeWorld } from "@ghostrun/layout";
 import { packFor, PACKS } from "@ghostrun/registry";
+import { cueOf, rawMeta, weatherWord, type Cue } from "./render/pick";
 
 /** The organizer's brief the fixture answers. */
 export const BRIEF = "Create a capture-the-flag game in a neon city. Add double jump. Score when the orb reaches the goal.";
@@ -41,6 +42,8 @@ export interface World {
   /** The fill it was built from (meta pack = the pack actually used) and its seed: a share link. */
   fill: string;
   seed: number;
+  /** What the AI wrote about how it looks (the renderer and the sound pick its look from this). */
+  cue: Cue;
   /** For live (and edited) worlds: what the repair loop needs to ask for a patch. */
   source?: { prompt: string; intent: unknown; fill: string; seed: number; pack: string; base?: string; edits?: string[] };
   intent: Intent;
@@ -115,18 +118,29 @@ export function worldFromFill(fillText: string, seed: number, live?: Intent["liv
     ...(live ? { live } : {}),
   };
 
-  // the stored fill names the pack actually used, so the same fill always rebuilds the same world
+  // the stored fill names the pack actually used, so the same fill always rebuilds the same world,
+  // and carries the intent's setting, so a share link rebuilds the same look
   const lines = fillText.split("\n");
+  const raw = rawMeta(fillText);
+  const setting = live?.setting ? live.setting.slice(0, 240) : (raw?.setting ?? "");
   try {
-    const meta = JSON.parse(lines[0] ?? "") as { op?: string; pack?: string };
-    if (meta.op === "meta" && (meta.pack !== pack.id || (meta as { mode?: string }).mode !== bundle.mode)) lines[0] = JSON.stringify({ ...meta, pack: pack.id, mode: bundle.mode });
+    const meta = JSON.parse(lines[0] ?? "") as { op?: string; pack?: string; mode?: string; setting?: string };
+    if (meta.op === "meta" && (meta.pack !== pack.id || meta.mode !== bundle.mode || (setting && meta.setting !== setting))) lines[0] = JSON.stringify({ ...meta, pack: pack.id, mode: bundle.mode, ...(setting ? { setting } : {}) });
   } catch {
     // no meta line: the parser already defaulted it
+  }
+  // A meta line the parser turned down (a weather word it doesn't know, like "sandstorm") still says
+  // how the world looks: its cosmetic words are kept. Cosmetic only, so the spec hash can't move.
+  if (raw?.look !== undefined && bundle.cosmetic.look !== raw.look) {
+    bundle.cosmetic = { ...bundle.cosmetic, look: raw.look, weather: weatherWord(raw.weather ?? ""), ...(raw.mood && { mood: raw.mood }), ...(raw.timeOfDay !== undefined && { timeOfDay: raw.timeOfDay }) };
+    intent.look = raw.look;
+    intent.weather = bundle.cosmetic.weather;
   }
   return {
     bundle,
     fill: lines.join("\n"),
     seed,
+    cue: cueOf(bundle, { setting, meta: raw }),
     intent,
     notes,
     fillNotes: fill.notes,
