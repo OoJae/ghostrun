@@ -288,7 +288,12 @@ export function vehicleActor(e: Entity, kind: string, c: Ctx): Object3D {
 
 export interface RaceView {
   root: Group;
-  update(dt: number, t: number, actors: ReadonlyMap<string, Object3D>, camera: PerspectiveCamera, follow: FollowCamera): void;
+  /**
+   * `vr`: in a headset the vehicles, gates and dust still animate, but the headset owns the camera
+   * (no chase camera, field of view or speed lines) and the arrow to the next gate floats ahead of
+   * you at eye level rather than over your head.
+   */
+  update(dt: number, t: number, actors: ReadonlyMap<string, Object3D>, camera: PerspectiveCamera, follow: FollowCamera, vr?: boolean): void;
   dispose(camera: PerspectiveCamera, follow: FollowCamera): void;
 }
 
@@ -403,7 +408,7 @@ export function raceView(bundle: WorldBundle, sim: SimWorld, ground = "#bfa88a")
 
   return {
     root,
-    update(dt, t, actors, camera, follow) {
+    update(dt, t, actors, camera, follow, vr = false) {
       // the gates face across the race (once their actors exist)
       if (!turned && order.length > 1) {
         for (const id of order) {
@@ -481,21 +486,21 @@ export function raceView(bundle: WorldBundle, sim: SimWorld, ground = "#bfa88a")
       // the player at the wheel: the chase camera, the field of view widening, speed lines
       const mine = sim.ride("player");
       let rush = 0;
-      if (mine) {
+      if (mine && !vr) {
         const top = mine.feel.speed * (mine.boostLeft > 0 ? mine.feel.boost : 1);
         const k = Math.max(0, Math.min(1, Math.abs(mine.speed) / Math.max(1, mine.feel.speed)));
         follow.chase(Math.atan2(-mine.hx, -mine.hz), k);
         rush = Math.min(1, Math.max(0, (Math.abs(mine.speed) / Math.max(1, top) - 0.75) / 0.25) * 0.5 + (mine.boostLeft > 0 ? 0.6 : 0));
         fov += (FOV + 12 * k + (mine.boostLeft > 0 ? 6 : 0) - fov) * (1 - Math.exp(-dt * 4));
-      } else {
+      } else if (!vr) {
         follow.chase(null);
         fov += (FOV - fov) * (1 - Math.exp(-dt * 4));
       }
-      if (Math.abs(camera.fov - fov) > 0.05) {
+      if (!vr && Math.abs(camera.fov - fov) > 0.05) {
         camera.fov = fov;
         camera.updateProjectionMatrix();
       }
-      lines.visible = rush > 0.02;
+      lines.visible = !vr && rush > 0.02;
       if (lines.visible) {
         lines.position.copy(camera.position);
         lines.quaternion.copy(camera.quaternion);
@@ -516,9 +521,16 @@ export function raceView(bundle: WorldBundle, sim: SimWorld, ground = "#bfa88a")
       if (gate && me) {
         beam.position.set(gate.position.x, gate.position.y + 3.5, gate.position.z);
         beam.scale.set(1 + Math.sin(t * 5) * 0.08, 1, 1 + Math.sin(t * 5) * 0.08);
-        const up = mine ? Math.max(1.2, (tall.get(mine.vehicle) ?? 1) + 0.9) : 1.5;
-        arrow.position.set(me.position.x, me.position.y + up + Math.sin(t * 3) * 0.08, me.position.z);
-        arrow.rotation.y = Math.atan2(-(gate.position.x - me.position.x), -(gate.position.z - me.position.z));
+        const yaw = Math.atan2(-(gate.position.x - me.position.x), -(gate.position.z - me.position.z));
+        if (vr) {
+          // over your head is out of sight in first person: 2.4 m ahead toward the gate, just under the eyes
+          const up = mine ? Math.max(0.5, (tall.get(mine.vehicle) ?? 1) - 0.1) : 0.6;
+          arrow.position.set(me.position.x - Math.sin(yaw) * 2.4, me.position.y + up + Math.sin(t * 3) * 0.05, me.position.z - Math.cos(yaw) * 2.4);
+        } else {
+          const up = mine ? Math.max(1.2, (tall.get(mine.vehicle) ?? 1) + 0.9) : 1.5;
+          arrow.position.set(me.position.x, me.position.y + up + Math.sin(t * 3) * 0.08, me.position.z);
+        }
+        arrow.rotation.y = yaw;
       }
     },
     dispose(camera, follow) {
