@@ -45,11 +45,7 @@ export class Vignette {
     this.#alpha.value = Math.max(0.85 * Math.min(1, s * 1.5), b > 0 ? 0.94 : 0);
   }
 
-  get blink(): number {
-    return this.#blink;
-  }
-
-  /** In front of the eyes: `head` is the headset's world pose. */
+  /** In front of the eyes, from the headset's pose in the world. */
   place(pos: { x: number; y: number; z: number }, quat: { x: number; y: number; z: number; w: number }) {
     this.mesh.position.set(pos.x, pos.y, pos.z);
     this.mesh.quaternion.set(quat.x, quat.y, quat.z, quat.w);

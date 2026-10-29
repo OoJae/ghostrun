@@ -18,7 +18,7 @@ import { BTN_JUMP, BTN_USE, PLAYER_ID } from "../sim/types";
 import type { WorldView } from "../render/world";
 import { Vignette } from "./comfort";
 import { EMPTY_HUD, type VrAction, type VrHud, type VrResult } from "./model";
-import { CYAN, DIM, INK, Panel, TONE, type Ui } from "./panel";
+import { CYAN, DIM, INK, Panel, TONE } from "./panel";
 import { arc, type Arc, type V3 } from "./teleport";
 
 // xr-standard gamepad buttons (Quest Touch: trigger, grip, -, stick press, A/X, B/Y)
@@ -588,6 +588,15 @@ export class VrMode {
     this.#ver++;
   }
 
+  /** Stop listening without building what was heard (the sheet closed, the session ended). */
+  #hush() {
+    const r = this.#rec;
+    if (!r) return;
+    r.onend = r.onresult = null;
+    r.stop();
+    this.#rec = null;
+  }
+
   #build(prompt: string, now: number) {
     if (this.#hud.busy) return void (this.#own = { text: "Still building the last world…", until: now + 2500 });
     this.#sheetOpen = false;
@@ -610,7 +619,7 @@ export class VrMode {
       store.set("gr_vr_vignette", this.#vignetteOn ? "on" : "off");
     } else if (id === "sheet:close") {
       this.#sheetOpen = false;
-      this.#rec?.stop();
+      this.#hush();
     } else if (id.startsWith("sheet:chip:")) {
       const p = this.#hud.prompts[Number(id.slice(11))];
       if (p) this.#build(p.prompt, now);
@@ -1053,7 +1062,7 @@ export class VrMode {
 
   dispose() {
     [window.requestAnimationFrame, window.cancelAnimationFrame] = this.#raf;
-    this.#rec?.stop();
+    this.#hush();
     this.#root.removeFromParent();
     for (const p of this.#panels) p.dispose();
     this.#vignette.dispose();
