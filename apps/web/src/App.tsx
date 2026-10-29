@@ -149,6 +149,12 @@ export function App() {
   modeRef.current = mode;
   // racing: the proof's par runner (or a run someone sent) as a ghost beside the player
   const race = useRace({ engine, world: current.current, loaded: timing, result, receipt: proof.receipt, specHash, prompt, urls: wasmUrls, toast: setToast, again: () => againRef.current() });
+  // the playtest landed while the runners' overview is up: draw its heat map in too
+  const playtest = proof.receipt?.playtest;
+  useEffect(() => {
+    const w = current.current;
+    if (routesOn && playtest && w && receiptRef.current) engine.current?.showTrails(receiptRef.current.trails ?? null, revealed(w.bundle, receiptRef.current)?.heat ?? null);
+  }, [playtest]); // (only when it lands: the toggle draws the overview itself)
 
   /**
    * One proof on the device worker; several can be in flight (the world, and a repair of it).
@@ -577,17 +583,24 @@ export function App() {
     wk.postMessage({ id: 1, bundle: w.bundle, engine: ENGINE_HASH, urls: wasmUrls.current, fool: { k, parS: proof.receipt.par?.goldS ?? null } });
   };
 
-  /** A one-off proof in its own worker (candidate races run several at once, then free them). */
-  const proveOnce = (world: World, runs: number) =>
+  /**
+   * A one-off proof in its own worker (candidate races run several at once, then free them). With
+   * `skill` runners per lower level it waits for the playtest too, and the receipt carries its band.
+   */
+  const proveOnce = (world: World, runs: number, skill = 0) =>
     new Promise<Receipt>((resolve, reject) => {
       const wk = new Worker(new URL("./proof.worker.ts", import.meta.url), { type: "module" });
       const done = (f: () => void) => (wk.terminate(), f());
-      wk.onmessage = (e: MessageEvent<{ receipt?: Receipt; error?: string }>) => {
-        if (e.data.receipt) done(() => resolve(e.data.receipt!));
+      let first: Receipt | null = null;
+      wk.onmessage = (e: MessageEvent<{ receipt?: Receipt; playtest?: Playtest | null; error?: string }>) => {
+        if (e.data.receipt && !skill) done(() => resolve(e.data.receipt!));
+        else if (e.data.receipt) first = e.data.receipt;
+        const r = first;
+        if (e.data.playtest !== undefined && r) done(() => resolve(e.data.playtest ? { ...r, playtest: e.data.playtest } : r));
         if (e.data.error) done(() => reject(new Error(e.data.error)));
       };
       wk.onerror = (e) => done(() => reject(new Error(e.message)));
-      wk.postMessage({ id: 1, bundle: world.bundle, engine: ENGINE_HASH, urls: wasmUrls.current, runs });
+      wk.postMessage({ id: 1, bundle: world.bundle, engine: ENGINE_HASH, urls: wasmUrls.current, runs, ...(skill ? { playtest: true, skillRuns: skill } : {}) });
     });
 
   /**
@@ -615,7 +628,8 @@ export function App() {
     await Promise.all(
       Array.from({ length: lanes }, async () => {
         for (let job = queue.shift(); job; job = queue.shift()) {
-          receipts[job[1]] = await proveOnce(job[0]!, 6).catch(() => null);
+          // 6 experts, then 3 novices and 3 average players: enough to say whether it's a band harder
+          receipts[job[1]] = await proveOnce(job[0]!, 6, before.playtest ? 3 : 0).catch(() => null);
           if (runId.current === base) setEdit({ status: "racing", change, total: ANGLES.length, proved: ++proved });
         }
       }),

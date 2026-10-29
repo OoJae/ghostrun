@@ -22,6 +22,8 @@ export interface ProveOptions {
    */
   playtest?: boolean;
   onReceipt?: (r: Receipt) => void;
+  /** Runners per lower level in the playtest (default 6; a candidate race bands with fewer). */
+  skillRuns?: number;
 }
 
 export async function prove(R: Rapier, b: WorldBundle, opts: ProveOptions): Promise<Receipt> {
@@ -78,7 +80,7 @@ export async function prove(R: Rapier, b: WorldBundle, opts: ProveOptions): Prom
     };
     if (!opts.playtest) return receipt;
     opts.onReceipt?.(receipt);
-    const pt = playtest(R, b, nav, s0.chain, receipt, team, s0.openers);
+    const pt = playtest(R, b, nav, s0.chain, receipt, team, s0.openers, opts.skillRuns);
     return pt ? { ...receipt, playtest: pt } : receipt;
   } finally {
     nav.destroy();

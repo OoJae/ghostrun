@@ -21,12 +21,14 @@ interface Job {
    * as a second message (null when there is none).
    */
   playtest?: boolean;
+  /** Runners per lower level in the playtest (a candidate race bands with fewer). */
+  skillRuns?: number;
 }
 
 let ready: Promise<Rapier> | undefined;
 
 self.onmessage = async (e: MessageEvent<Job>) => {
-  const { id, bundle, engine, urls, runs, fool, playtest } = e.data;
+  const { id, bundle, engine, urls, runs, fool, playtest, skillRuns } = e.data;
   let sent = false;
   try {
     ready ??= (async () => {
@@ -44,7 +46,7 @@ self.onmessage = async (e: MessageEvent<Job>) => {
       self.postMessage({ id, fooled: { id: p.id, text: p.text, at: p.at, of: ps.length, caught: c.caught, by: c.by ? chipLine(c.by) : null } });
       return;
     }
-    const later = playtest ? { playtest: true, onReceipt: (receipt: unknown) => ((sent = true), self.postMessage({ id, receipt })) } : {};
+    const later = playtest ? { playtest: true, ...(skillRuns ? { skillRuns } : {}), onReceipt: (receipt: unknown) => ((sent = true), self.postMessage({ id, receipt })) } : {};
     const receipt = await prove(R, bundle, { engine, host: "device", ...(runs ? { runs } : {}), onChip: (chip) => self.postMessage({ id, chip }), ...later });
     if (playtest) self.postMessage({ id, playtest: receipt.playtest ?? null });
     else self.postMessage({ id, receipt });
