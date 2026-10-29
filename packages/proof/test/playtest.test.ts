@@ -132,5 +132,8 @@ describe("the band and its labels", () => {
     expect(timesLine({ median: 31, lo: 22, hi: 58, n: 19, by: [{ level: "expert", median: 24, n: 12 }, { level: "novice", median: 47, n: 2 }] })).toBe("Clear times: median 0:31, 0:22 to 0:58 (19 winning runs) · experts 0:24 · novices 0:47");
     expect(paceLine([{ step: "orb", s: 12, k: 24 }, { step: "goal", s: 31, k: 19 }], 24)).toBe("orb at 0:12 · goal at 0:31 (19 of 24)");
     expect(failLine({ x: 0, z: 0, near: "lava pit", n: 4, runs: 4, why: [["hit the lava", 4]] }, 24)).toBe("near the lava pit: hit the lava ×4 (4 of 24 runs)");
+    // nobody won at the top: the lower levels aren't sent, and the band says so
+    const none = [{ level: "expert" as const, runs: 12, won: 0 }];
+    expect(bandLine({ levels: none, band: bandOf(none), trails: [], steps: [], ms: 0 })).toBe("Unbeaten (no expert runner won, so the lower levels weren't sent): experts 0 of 12  (physics, 12 AI runners at 1 skill level)");
   });
 });
