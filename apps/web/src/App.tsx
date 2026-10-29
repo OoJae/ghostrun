@@ -21,6 +21,9 @@ import { propose, twistWorld } from "./director";
 import { BRIEF, buildWorld, ENGINE_HASH, FIXTURE_PROMPTS, FIXTURES, hashWorld, worldFromFill, type Intent, type World } from "./pipeline";
 import { probe } from "./probe";
 import { askHost, clock as mmss, facts, story } from "./host";
+import { RaceChip } from "./hud/Race";
+import { BoardPanel } from "./hud/Board";
+import { loadRace, RACE_PROMPT, useRace } from "./useRace";
 
 const HINT_MS = 6000;
 const FIXTURE = new URLSearchParams(window.location.search).get("fixture") ?? "ctf";
@@ -124,6 +127,8 @@ export function App() {
   const pending = useRef(new Map<number, { onChip?: (c: Chip) => void; resolve: (r: Receipt) => void; reject: (e: Error) => void }>());
   const modeRef = useRef<Mode>("checking");
   modeRef.current = mode;
+  // racing: the proof's par runner (or a run someone sent) as a ghost beside the player
+  const race = useRace({ engine, world: current.current, loaded: timing, result, receipt: proof.receipt, specHash, prompt, urls: wasmUrls, toast: setToast, again: () => againRef.current() });
 
   /** One proof on the device worker; several can be in flight (the world, and a repair of it). */
   const proveOnDevice = useCallback((world: World, id: number, onChip?: (c: Chip) => void): Promise<Receipt> => {
@@ -213,6 +218,7 @@ export function App() {
       .then((receipt) => {
         if (id !== runId.current) return;
         setProof((p) => ({ ...p, status: "done", receipt }));
+        race.proved(world, receipt);
         probe().proof = { headline: receipt.headline?.status ?? "none", chips: receipt.chips.length };
         afterProof.current.get(id)?.(receipt);
         afterProof.current.delete(id);
@@ -355,10 +361,18 @@ export function App() {
             probe().sim = "stub";
           }
         }
-        // A share link opens that run (rebuilt from its fill, replayed frame for frame); otherwise
-        // the recorded world appears instantly and Enter builds live.
-        const shared = params.get("s") ? await loadShare(params.get("s")!) : null;
-        if (shared && !disposed) {
+        // A race link opens that run's world with the run as the ghost to beat (replayed here first,
+        // so it starts with you); a share link opens that run (rebuilt from its fill, replayed frame
+        // for frame); otherwise the recorded world appears instantly and Enter builds live.
+        const raced = params.get("race") ? await loadRace(params.get("race")!, params.get("by"), boot.WASM_URLS) : null;
+        const shared = !raced && params.get("s") ? await loadShare(params.get("s")!) : null;
+        if (raced && !disposed) {
+          setPrompt(RACE_PROMPT);
+          setFellBack(false);
+          await show(raced.world, ++runId.current, 0, [{ label: "gpu init", ms: e.initMs }]);
+          if (raced.rival) race.setFriend(raced.world, raced.rival);
+          setToast(raced.message);
+        } else if (shared && !disposed) {
           setPrompt("Shared run");
           setFellBack(false);
           await show(shared.world, ++runId.current, 0, [{ label: "gpu init", ms: e.initMs }]);
@@ -369,7 +383,7 @@ export function App() {
           }
           setNotice(shared.exact ? "Shared run: replaying exactly as played. Press any key to take over." : "Shared run from another version: the world rebuilt, but the replay may drift.");
         } else {
-          if (params.get("s")) setNotice("That share link wasn't found.");
+          if (params.get("s") || params.get("race")) setNotice(`That ${params.get("race") ? "race" : "share"} link wasn't found.`);
           await run(FIRST_PROMPT, 0, [{ label: "gpu init", ms: e.initMs }]);
         }
         // While the player reads and types: compile every look's and kit's shaders in the background.
@@ -767,8 +781,11 @@ export function App() {
               setResult(null);
               void show(w, ++runId.current, performance.now(), []);
             }}
+            race={race.card}
           />
         )}
+        {race.chip && status === "playing" && (collapsed || typing || !intent) && <RaceChip {...race.chip} />}
+        {race.board && <BoardPanel {...race.board} />}
         {bark && (
           <div className="glass bark" data-testid="bark">
             <b>{bark.name}:</b> {bark.line}

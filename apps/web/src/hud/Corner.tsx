@@ -29,6 +29,9 @@ export function KeyHint({ visible }: { visible: boolean }) {
       <kbd>G</kbd>
       <span>gallery</span>
       <span className="sep">·</span>
+      <kbd>H</kbd>
+      <span>ghost</span>
+      <span className="sep">·</span>
       <span>drag to orbit</span>
     </div>
   );

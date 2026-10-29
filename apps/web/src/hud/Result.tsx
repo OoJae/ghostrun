@@ -3,6 +3,23 @@
 import { useState, type FormEvent } from "react";
 import type { WorldBundle } from "@ghostrun/ir";
 import { clock, why, type Fact, type Story } from "../host";
+import { raceClock, split } from "../race";
+import "./race.css";
+
+/** The race side of a result: the line to paste anywhere, "Race me", and the world's best times. */
+export interface RaceCard {
+  /** One line, Wordle-style (its link appears once it has been made). */
+  text: string;
+  /** Copy the line (making its link first, if the share service is reachable). */
+  onCopy: () => void;
+  /** Feedback on the copy button ("Copied"), or null. */
+  copied: string | null;
+  /** A win only: a link that plays this run as the ghost to beat. */
+  onRaceMe?: (() => void) | undefined;
+  onBoard?: (() => void) | undefined;
+  /** The ghost this run raced, for the split at the line. */
+  vs?: { name: string; ticks: number } | null;
+}
 
 export interface RunResult {
   k: "win" | "lose";
@@ -47,7 +64,7 @@ function AskHost({ onAsk, onReplay }: { onAsk: (q: string) => Promise<{ answer: 
   );
 }
 
-export function ResultCard({ result, bundle, par, onAgain, onShare, director, onTwist, onReplay, onAsk }: { result: RunResult; bundle: WorldBundle; par: number | null; onAgain: () => void; onShare: () => void; director?: { line: string; label: string; status: "proving" | "ready" } | null; onTwist?: () => void; onReplay?: (tick: number) => void; onAsk?: ((q: string) => Promise<{ answer: string; cites: Fact[] } | null>) | undefined }) {
+export function ResultCard({ result, bundle, par, onAgain, onShare, director, onTwist, onReplay, onAsk, race }: { result: RunResult; bundle: WorldBundle; par: number | null; onAgain: () => void; onShare: () => void; director?: { line: string; label: string; status: "proving" | "ready" } | null; onTwist?: () => void; onReplay?: (tick: number) => void; onAsk?: ((q: string) => Promise<{ answer: string; cites: Fact[] } | null>) | undefined; race?: RaceCard | undefined }) {
   const t = Math.round((result.tick / 60) * 10) / 10;
   const reason = why(bundle, result.rule);
   const vsPar = par === null ? null : result.k === "win" ? (t <= par ? `You beat the AI par of ${par} s by ${Math.round((par - t) * 10) / 10} s.` : `AI runners do it in ${par} s: there's a faster route.`) : null;
@@ -58,6 +75,12 @@ export function ResultCard({ result, bundle, par, onAgain, onShare, director, on
         {t} s{reason && <span className="muted"> · {reason}</span>}
       </div>
       {vsPar && <p className="result-note">{vsPar}</p>}
+      {race?.vs && result.k === "win" && (
+        <p className="result-race" data-testid="result-race">
+          vs {race.vs.name} {raceClock(race.vs.ticks)}: you {raceClock(result.tick)}{" "}
+          <span className={result.tick <= race.vs.ticks ? "ahead" : "behind"}>({split((result.tick - race.vs.ticks) / 60)})</span>
+        </p>
+      )}
       {result.story && result.story.moments.length > 0 && (
         <ol className="result-story" data-testid="story" aria-label="What happened">
           {result.story.moments.map((m) => (
@@ -89,8 +112,26 @@ export function ResultCard({ result, bundle, par, onAgain, onShare, director, on
             Play with the twist
           </button>
         )}
+        {race?.onRaceMe && (
+          <button type="button" onClick={race.onRaceMe} data-testid="race-me" title="A link that opens this world with your run as the ghost to beat">
+            Race me
+          </button>
+        )}
+        {race?.onBoard && (
+          <button type="button" onClick={race.onBoard} data-testid="best-times">
+            Best times
+          </button>
+        )}
         <button type="button" onClick={onShare}>Share this run</button>
       </div>
+      {race && (
+        <div className="result-card">
+          <output data-testid="result-card" aria-label="Your result, to paste anywhere">{race.text}</output>
+          <button type="button" onClick={race.onCopy} data-testid="copy-card">
+            {race.copied ?? "Copy"}
+          </button>
+        </div>
+      )}
     </div>
   );
 }
