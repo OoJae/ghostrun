@@ -3,6 +3,7 @@
 import * as v from "valibot";
 import { VERBS } from "@ghostrun/kits";
 import type { PackLayout } from "@ghostrun/plugin-api";
+import type { ChatMessage, ImageIn } from "./wire";
 
 export const IntentOut = v.object({
   lang: v.string(),
@@ -78,6 +79,87 @@ export function intentMessages(prompt: string, packs: { id: string; blurb: strin
     },
     { role: "user", content: prompt },
   ];
+}
+
+/**
+ * What the vision step makes of a photo or sketch: a scene brief the world is inspired by (where it
+ * is, how it feels, its colours, the things in it, the shape of the space), never a copy of the
+ * picture. Same wire rules as the intent: flat, every field required.
+ */
+export const BriefOut = v.object({
+  setting: v.string(),
+  mood: v.string(),
+  palette: v.array(v.string()),
+  objects: v.array(v.string()),
+  layout: v.string(),
+  genre: v.string(),
+  goal: v.string(),
+  safety: v.picklist(["ok", "block"]),
+});
+export type BriefOut = v.InferOutput<typeof BriefOut>;
+/** A brief as worlds are built from it and the client shows it: trimmed, bounded, no safety verdict. */
+export type Brief = Omit<BriefOut, "safety">;
+
+/** JSON Schema twin of BriefOut for strict structured outputs. */
+export function briefJsonSchema(): Record<string, unknown> {
+  const str = { type: "string" };
+  const words = { type: "array", items: str };
+  return {
+    type: "object",
+    additionalProperties: false,
+    required: ["setting", "mood", "palette", "objects", "layout", "genre", "goal", "safety"],
+    properties: { setting: str, mood: str, palette: words, objects: words, layout: str, genre: str, goal: str, safety: { type: "string", enum: ["ok", "block"] } },
+  };
+}
+
+/** The picture and the person's words (if any) → a scene brief. */
+export function visionMessages(said: string, image: ImageIn): ChatMessage[] {
+  return [
+    {
+      role: "system",
+      content: [
+        "You look at a photo or sketch that a small 3D game world will be inspired by, and return a compact scene brief as JSON. The world takes ideas from the picture; it is never a copy of it.",
+        "setting: the kind of place, in a few words ('a rainy neon alley at night', 'a sunlit farmhouse kitchen'). mood: one to three words. palette: 3-5 plain colour words.",
+        "objects: 5-10 notable things in the picture as short nouns ('fire escape', 'crate', 'oak tree'). Never people, names, or the words on signs and screens.",
+        "layout: the shape of the space if the picture shows one ('a long corridor', 'an open plaza', 'two floors', 'a ring of trees'), else ''.",
+        "genre and goal: when the person gave no prompt, a game that fits this place (genre 'heist', goal 'steal the lantern and slip out'); when they did, ''.",
+        "If there are people in the picture, never say who they are or describe them: describe the place and the things in it.",
+        "safety: 'block' for sexual or nude content, graphic gore or cruelty, hate symbols, or a picture that is mostly a document or screen with personal details (an ID, a bank card, private messages); otherwise 'ok' (toy weapons, game screenshots and spooky places are fine).",
+        "Rewrite trademarked names as generic things (never output brand names).",
+      ].join("\n"),
+    },
+    { role: "user", content: said ? `Their prompt: ${said}` : "They gave no prompt: suggest the genre and goal.", image },
+  ];
+}
+
+/** One short line of the model's words: no control characters, single spaces, at most `max` characters. */
+const oneLine = (s: string, max: number) => s.replace(/[\u0000-\u001f\u007f]+/g, " ").replace(/\s+/g, " ").trim().slice(0, max).trim();
+
+/** The model's brief, bounded: it is shown as it is and becomes part of a prompt. */
+export function settleBrief(b: BriefOut): Brief {
+  const words = (xs: string[], n: number, max: number) => [...new Set(xs.map((x) => oneLine(x, max).toLowerCase()).filter(Boolean))].slice(0, n);
+  return { setting: oneLine(b.setting, 80) || "a place", mood: oneLine(b.mood, 32), palette: words(b.palette, 5, 16), objects: words(b.objects, 10, 24), layout: oneLine(b.layout, 60), genre: oneLine(b.genre, 24), goal: oneLine(b.goal, 100) };
+}
+
+/** The most a brief adds to the person's own words (the build's hold and the fill's input bound count on it). */
+export const BRIEF_MAX_CHARS = 480;
+
+/**
+ * The prompt a picture's world is written from: the person's words (or, with none, the game the
+ * picture suggested), then what the picture showed. The intent and the fill read only this text,
+ * so the fast lane writes the world and never sees the image.
+ */
+export function inspiredPrompt(said: string, b: Brief): string {
+  const end = (s: string) => s.trim().replace(/[\s.!?;:,]+$/, "");
+  const own = end(said);
+  const lead = own || [b.genre.charAt(0).toUpperCase() + b.genre.slice(1), end(b.goal)].filter(Boolean).join(": ");
+  const scene = (objects: string[]) =>
+    [`Inspired by a picture of ${end(b.setting)}`, b.mood && `mood ${b.mood}`, b.palette.length > 0 && `colours ${b.palette.join(", ")}`, objects.length > 0 && `with ${objects.join(", ")}`, b.layout && `layout: ${end(b.layout)}`].filter(Boolean).join("; ") + ".";
+  const text = (objects: string[]) => (lead ? `${lead}. ` : "") + scene(objects);
+  // over budget: fewer things named, then a hard cut
+  const objects = [...b.objects];
+  while (objects.length > 3 && text(objects).length - own.length > BRIEF_MAX_CHARS) objects.pop();
+  return text(objects).slice(0, own.length + BRIEF_MAX_CHARS);
 }
 
 /** Runtime-supported vocabulary today. The list grows as kits land; the LLM only sees what runs. */

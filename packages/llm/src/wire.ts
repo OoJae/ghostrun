@@ -1,8 +1,16 @@
 // What every provider adapter shares: the call options, the stream events the edge relays, the
 // error a caller can branch on, a POST that waits out a busy provider, and an SSE data reader.
+/** A picture a user turn shows the model: base64 bytes (no data: prefix) and their type. */
+export interface ImageIn {
+  mediaType: "image/jpeg" | "image/png" | "image/webp";
+  data: string;
+}
+
 export interface ChatMessage {
   role: "system" | "user" | "assistant";
   content: string;
+  /** Only the Claude lane reads images (the vision job is routed there alone). */
+  image?: ImageIn;
 }
 
 export interface ChatOptions {

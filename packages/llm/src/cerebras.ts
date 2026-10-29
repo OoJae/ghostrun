@@ -1,12 +1,14 @@
 // Cerebras adapter (OpenAI-compatible chat completions). Streams text deltas and drops the
 // reasoning channel; reports time-to-first-answer-token so the stopwatch can show real splits.
-import { clock, jsonIn, post, sseData, type ChatOptions, type StreamEvent } from "./wire";
+import { clock, jsonIn, LlmError, post, sseData, type ChatOptions, type StreamEvent } from "./wire";
 
-export { LlmError, RETRY_MS, type ChatMessage, type ChatOptions, type StreamEvent } from "./wire";
+export { LlmError, RETRY_MS, type ChatMessage, type ChatOptions, type ImageIn, type StreamEvent } from "./wire";
 
 const BASE = "https://api.cerebras.ai/v1";
 
 function body(o: ChatOptions, stream: boolean) {
+  // the fast lane reads text only: a picture sent here would be dropped without a word, so refuse it
+  if (o.messages.some((m) => m.image)) throw new LlmError("cerebras reads no images", 400, false);
   return JSON.stringify({
     model: o.model,
     messages: o.messages,
