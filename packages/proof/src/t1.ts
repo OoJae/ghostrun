@@ -378,9 +378,9 @@ export function t1Drive(b: WorldBundle, laws: Laws, playerTeam: "red" | "blue" =
   }
   if (!why) chips.push({ ...base, status: "verified", text: `a ${feel.kind} can drive the line and ${route.length - 1} gate${route.length === 2 ? "" : "s"} on the ground (a lap ≥ ${round(lap)} m, turning circle ${round(radius)} m at corner speed)`, cx: null });
   // 3. the laps the win needs against the clock that ends the race
-  const clock = b.rules.find((r) => r.when.t === "timer_end" && r.then.some((e) => e.e === "lose"));
-  const timer = clock && b.verbs.find((v) => v.verb === "puzzle.timer" && v.on === clock.when.a);
-  const seconds = timer ? Math.min(600, Math.max(5, Number(timer.params.seconds ?? 60) || 60)) : 0;
+  // (the shortest clock that ends the race in a loss)
+  const clocks = b.rules.filter((r) => r.when.t === "timer_end" && r.then.some((e) => e.e === "lose")).flatMap((r) => b.verbs.filter((v) => v.verb === "puzzle.timer" && v.on === r.when.a)).map((v) => Math.min(600, Math.max(5, Number(v.params.seconds ?? 60) || 60)));
+  const seconds = clocks.length ? Math.min(...clocks) : 0;
   for (const r of seconds && lap > 0 ? b.rules : []) {
     if (r.when.t !== "lap_done" || !(r.when.a === "player" || r.when.a === `team:${playerTeam}` || !r.when.a) || !r.then.some((e) => e.e === "win")) continue;
     const laps = Math.max(1, r.when.n);

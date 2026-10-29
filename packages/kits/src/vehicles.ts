@@ -32,7 +32,7 @@ export const FEEL: Record<VehicleKind, Feel> = {
   truck: { speed: 13, accel: 6, turn: 1.6, grip: 0.4, boost: 1.3, boostS: 1.5, cooldown: 6 },
   van: { speed: 14, accel: 7, turn: 1.8, grip: 0.35, boost: 1.3, boostS: 1.2, cooldown: 6 },
   boat: { speed: 12, accel: 6, turn: 1.8, grip: 0.08, boost: 1.5, boostS: 1.2, cooldown: 5 },
-  snowmobile: { speed: 15, accel: 9, turn: 2.4, grip: 0.15, boost: 1.5, boostS: 1, cooldown: 4 },
+  snowmobile: { speed: 15, accel: 9, turn: 2.6, grip: 0.2, boost: 1.5, boostS: 1, cooldown: 4 },
   hovercraft: { speed: 14, accel: 8, turn: 2.6, grip: 0.05, boost: 1.5, boostS: 1, cooldown: 4 },
   bike: { speed: 17, accel: 12, turn: 3, grip: 0.35, boost: 1.4, boostS: 1, cooldown: 4 },
   horse: { speed: 11, accel: 9, turn: 3.2, grip: 0.5, boost: 1.4, boostS: 1.5, cooldown: 5 },

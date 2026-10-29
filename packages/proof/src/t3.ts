@@ -854,18 +854,26 @@ function drive(r: Run, st: Extract<PlanStep, { do: "drive" }>): "ok" | "stuck" {
     }
     // pure pursuit: steer at the farthest point of the path up to ten metres ahead that is in plain
     // view (a corner is driven round, not cut through the cover beside it)
-    while (path.length > 1 && d2h(path[0]!, p) < 4) path.shift();
-    const waist = (q: Vec3): Vec3 => [q[0], q[1] + 0.5, q[2]];
-    let look = path[0] ?? floorOf(race.next);
-    for (const q of path) {
-      if (d2h(q, p) > 100) break;
-      if (sim.clearShot(waist([p[0], p[1] - 0.9, p[2]]), waist(q))) look = q;
-    }
+    // (a waypoint is passed once it is reached, or once one beyond it is in plain view: one round
+    // a corner is never skipped while the corner is still in the way)
+    while (path.length > 1 && d2h(path[0]!, p) < 2.25) path.shift();
+    // (in plain view a body's width wide: the line down the middle and one each side)
+    const wide = (q: Vec3) => {
+      const [ex, ez] = [q[0] - p[0], q[2] - p[2]];
+      const el = Math.sqrt(ex * ex + ez * ez) || 1;
+      const [sx, sz] = [(-ez / el) * 0.45, (ex / el) * 0.45];
+      const y = p[1] - 0.4;
+      return [0, 1, -1].every((k) => sim.clearShot([p[0] + sx * k, y, p[2] + sz * k], [q[0] + sx * k, q[1] + 0.5, q[2] + sz * k]));
+    };
+    let seen = -1;
+    for (let i = 0; i < path.length && d2h(path[i]!, p) <= 100; i++) if (wide(path[i]!)) seen = i;
+    if (seen > 0) path.splice(0, seen);
+    const look = path[0] ?? floorOf(race.next);
     let [ux, uz] = [look[0] - p[0], look[2] - p[2]];
     let l = Math.sqrt(ux * ux + uz * uz) || 1;
     // pinned (barely moving for a second and a half): back off, turning away, a moment
     if (Math.abs(ride.speed) > 1.5) movingAt = sim.tick;
-    if (sim.tick - movingAt > 90) {
+    if (sim.tick - movingAt > 45) {
       const s = r.rng() < 0.5 ? 1 : -1;
       side = [-ride.hx - ride.hz * 0.5 * s, -ride.hz + ride.hx * 0.5 * s];
       dodge = sim.tick + 45;
@@ -876,7 +884,21 @@ function drive(r: Run, st: Extract<PlanStep, { do: "drive" }>): "ok" | "stuck" {
     if (sim.tick < dodge) [ux, uz, l] = [side[0], side[1], Math.sqrt(side[0] * side[0] + side[1] * side[1]) || 1];
     const ahead = (ride.hx * ux + ride.hz * uz) / l;
     const boost = ahead > 0.97 && sim.tick >= ride.boostAt && d2h(floorOf(race.next), p) > 400 && sim.tick >= dodge;
-    sim.step({ tick: sim.tick + 1, wx: Math.round((ux / l) * 127 * r.speed), wz: Math.round((uz / l) * 127 * r.speed), btn: boost ? BTN.JUMP : 0 });
+    // sliding wide (a drifting snowmobile, a boat): ease off until it grips again
+    const slip = Math.abs(sim.player.vx * -ride.hz + sim.player.vz * ride.hx);
+    // and slow for a bend: the more the line ahead turns from the way it points, the less throttle,
+    // and less again coming into a gate the next one turns sharply away from
+    const bend = Math.max(0.35, ahead * ahead * ahead);
+    const gate = sim.pos(race.next);
+    const after = sim.raceOf("player")!;
+    const order = String(b.verbs.find((v) => v.verb === "racing.track")?.params.gates ?? "").split(",").filter((g) => sim.entity(g));
+    const nextId = [...order, b.verbs.find((v) => v.verb === "racing.track")!.on][(after.passed + 1) % (order.length + 1)]!;
+    const nq = sim.pos(nextId);
+    const [nx, nz] = [nq[0] - gate[0], nq[2] - gate[2]];
+    const nl = Math.sqrt(nx * nx + nz * nz) || 1;
+    const into = d2h(gate, p) < 100 && (ride.hx * nx + ride.hz * nz) / nl < 0.3 ? (ride.feel.grip < 0.25 ? 0.4 : 0.55) : 1; // (sooner and slower on a slippery one)
+    const k = 127 * r.speed * Math.min(bend, into) * (slip > 2.5 ? 0.55 : 1);
+    sim.step({ tick: sim.tick + 1, wx: Math.round((ux / l) * k), wz: Math.round((uz / l) * k), btn: boost ? BTN.JUMP : 0 });
     budget.ticks--;
   }
   return done() ? "ok" : "stuck";

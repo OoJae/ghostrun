@@ -266,7 +266,7 @@ export class CastBrain implements Brain {
       b.progressAt = tick;
     }
     // (at a wheel a waypoint is passed from a car length away: at speed it would overshoot and circle back)
-    const reach2 = w.ride(b.id) ? 6.25 : 0.2;
+    const reach2 = w.ride(b.id) ? 2.25 : 0.2;
     while (b.wp < b.path.length - 1 && d2(p, b.path[b.wp]!) < reach2) {
       b.wp++;
       b.best = Infinity;
@@ -294,7 +294,11 @@ export class CastBrain implements Brain {
     }
     const len = Math.sqrt(ux * ux + uz * uz);
     if (len < 1e-6) return idle;
-    const k = (127 * (b.beh === "patrol" ? PATROL_SPEED : b.speed)) / len;
+    // at a wheel, slow for a bend: the more the way to go turns from the way it points, the less throttle
+    const ride = w.ride(b.id);
+    const ahead = ride ? (ride.hx * ux + ride.hz * uz) / len : 1;
+    const bend = ride ? Math.max(0.35, ahead * ahead * ahead) : 1;
+    const k = (127 * (b.beh === "patrol" ? PATROL_SPEED : b.speed) * bend) / len;
     return { tick, wx: Math.round(ux * k), wz: Math.round(uz * k), btn };
   }
 }

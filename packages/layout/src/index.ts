@@ -633,6 +633,25 @@ export function placeRace(b: WorldBundle, layout: PackLayout, bound: Map<string,
       const q = loop.points[(i + 1) % loop.points.length]!;
       return [p, [(p[0] + q[0]) / 2, (p[1] + q[1]) / 2, (p[2] + q[2]) / 2] as Vec3];
     });
+    // the loop is a road: low cover standing on it (a kiosk, a crate stack) is cleared away
+    const half = width / 2 + 0.6;
+    const onRoad = (s: (typeof b.statics)[number]) => {
+      for (let i = 0; i < spots.length; i++) {
+        const [a, c] = [spots[i]!, spots[(i + 1) % spots.length]!];
+        const n = Math.max(1, Math.ceil(Math.sqrt((c[0] - a[0]) * (c[0] - a[0]) + (c[2] - a[2]) * (c[2] - a[2])) / 0.5));
+        for (let k = 0; k <= n; k++) {
+          const [x, z] = [a[0] + ((c[0] - a[0]) * k) / n, a[2] + ((c[2] - a[2]) * k) / n];
+          if (Math.abs(x - s.pos[0]) < s.size[0] / 2 + half && Math.abs(z - s.pos[2]) < s.size[2] / 2 + half) return true;
+        }
+      }
+      return false;
+    };
+    const cleared = b.statics.filter((s) => s.surf === "wall" && s.size[1] <= 2.5 && onRoad(s));
+    if (cleared.length) {
+      b.statics = b.statics.filter((s) => !cleared.includes(s));
+      for (const s of cleared) solid.splice(solid.findIndex((x) => x.pos[0] === s.pos[0] && x.pos[1] === s.pos[1] && x.pos[2] === s.pos[2] && x.size[0] === s.size[0]), 1);
+      notes.push(`race: ${cleared.length} low block${cleared.length > 1 ? "s" : ""} of cover cleared off the ${layout.packId} race loop`);
+    }
     for (const e of [line, ...gates]) e.size = [Math.max(width, e.size[0]), Math.max(3, e.size[1]), Math.max(width, e.size[2])];
     put(line, nudge(spots[0]!));
     gates.forEach((g, i) => put(g, nudge(spots[Math.max(1, Math.round(((i + 1) * spots.length) / (gates.length + 1))) % spots.length]!)));
