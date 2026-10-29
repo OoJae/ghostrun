@@ -107,8 +107,9 @@ export function dressJungle(b: WorldBundle, look: LookStyle, c: Ctx): Dressed {
     for (let k = 0; k < 80; k++) {
       const x = bounds.minX + 1.5 + rnd(k * 3 + 31) * (bounds.maxX - bounds.minX - 3);
       const z = bounds.minZ + 1.5 + rnd(k * 3 + 32) * (bounds.maxZ - bounds.minZ - 3);
-      if (!clear(pieces, x, z, 0.6) || spots.some((e) => Math.hypot(e[0] - x, e[2] - z) < 2)) continue;
-      ferns.push({ p: [x, groundY, z], s: [0.7 + rnd(k) * 0.8, 0.6 + rnd(k + 1) * 0.6, 0.7 + rnd(k) * 0.8], r: rnd(k + 2) * 6 });
+      // clear of things and of where the camera trails the player from a spawn
+      if (!clear(pieces, x, z, 0.6) || spots.some((e) => Math.hypot(e[0] - x, e[2] - z) < 4)) continue;
+      ferns.push({ p: [x, groundY, z], s: [0.7 + rnd(k) * 0.6, 0.5 + rnd(k + 1) * 0.4, 0.7 + rnd(k) * 0.6], r: rnd(k + 2) * 6 });
     }
   }
 

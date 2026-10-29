@@ -194,7 +194,7 @@ export function dressHaunted(b: WorldBundle, look: LookStyle, c: Ctx): Dressed {
   mist.colorNode = hex3("#9a96b8");
   mist.opacityNode = oneMinus(smoothstep(0.2, 1, r)).mul(drift).mul(0.22);
   const sheets: Item[] = [];
-  for (let k = 0; k < 26; k++) {
+  for (let k = 0; k < 16; k++) {
     const x = bounds.minX + rnd(k * 9 + 1) * (bounds.maxX - bounds.minX);
     const z = bounds.minZ + rnd(k * 9 + 2) * (bounds.maxZ - bounds.minZ);
     const s = 7 + rnd(k * 9 + 3) * 8;
