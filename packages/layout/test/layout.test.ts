@@ -325,6 +325,21 @@ describe("fights", () => {
     expect(hpOf(bundle).map(([on]) => on)).toEqual(["rival_1", "rival_2"]);
   });
 
+  it("an armed character written with no menu is a sentry whose shot takes at most a quarter of your hit points", () => {
+    const { bundle, notes } = place(
+      ctf.replace('{"op":"verb","id":"vb_jump"', [
+        '{"op":"ent","id":"bandit","kind":"npc","noun":"bandit","zone":"z_plaza","anchor":"wall_n","team":"blue"}',
+        '{"op":"verb","id":"vb_colt","verb":"combat_sport.shoot","on":"bandit","params":{"damage":100}}',
+        '{"op":"verb","id":"vb_hp","verb":"combat_sport.health","on":"player","params":{"hp":100}}',
+        '{"op":"verb","id":"vb_jump"',
+      ].join("\n")),
+    );
+    expect(bundle.verbs.find((v) => v.id === "vb_colt")!.params.damage).toBe(25);
+    expect(notes).toContain("bandit: a sentry (armed, no menu), its shot capped at 25 of your 100 hit points");
+    // the rivals with menus keep theirs
+    expect(bundle.cast.some((c) => c.npc === "bandit")).toBe(false);
+  });
+
   it("what you need never starts where you lose; a win for blue is your loss; your gun 'hitting you' is your shot; blue scoring for blue hit means red hit", () => {
     const { bundle, notes } = place(
       ctf
@@ -404,5 +419,27 @@ describe("races", () => {
     const d = (id: string) => Math.hypot(at(id)[0] - at("finish_line")[0], at(id)[2] - at("finish_line")[2]);
     expect(d("my_car")).toBeLessThan(Math.min(d("racer_1_ride"), d("racer_2_ride")));
     expect([at("sp_red")[0], at("sp_red")[2]]).toEqual([at("my_car")[0], at("my_car")[2]]);
+  });
+
+  it("a rival's car driven by 'npc' gets a rival racer at its wheel, a copy of yours tops out a tenth slower, a rule about your car is about you, and an oil slick on the road moves off it", () => {
+    const fill = parseFill([
+      '{"op":"meta","mode":"play","pack":"city_block","seed":7}',
+      '{"op":"zone","id":"z_plaza","slot":"center","tag":"plaza"}',
+      '{"op":"spawn","id":"sp_red","zone":"z_plaza","team":"red"}',
+      '{"op":"ent","id":"my_car","kind":"car","noun":"red car","zone":"z_plaza"}',
+      '{"op":"ent","id":"their_car","kind":"car","noun":"blue car","zone":"z_plaza"}',
+      '{"op":"ent","id":"oil","kind":"hazard","noun":"oil slick","zone":"z_plaza","body":"sensor","size":[2,0.1,2]}',
+      '{"op":"verb","id":"vb_mine","verb":"vehicle.drive","on":"my_car","params":{"kind":"car","speed":20,"driver":"player"}}',
+      '{"op":"verb","id":"vb_theirs","verb":"vehicle.drive","on":"their_car","params":{"kind":"car","speed":18,"driver":"npc"}}',
+      '{"op":"rule","id":"r_win","when":{"t":"lap_done","a":"player","n":2},"then":[{"e":"win","target":"player"}]}',
+      '{"op":"rule","id":"r_spin","when":{"t":"hit","a":"my_car","b":"oil"},"then":[{"e":"emit","target":"oil","fx":"spin"}]}',
+    ].join("\n"), { seed: 7 });
+    const layout = cityBlock.generate({ seed: 7, params: cityBlock.defaults, sub: [], laws: fill.draft.laws, harder: false });
+    const { bundle, notes } = placeWorld({ ...fill.draft, engine: "e".repeat(64) }, layout);
+    const drives = bundle.verbs.filter((v) => v.verb === "vehicle.drive").map((v) => [v.on, v.params.driver, v.params.speed]);
+    expect(drives).toEqual([["my_car", "player", 20], ["their_car", "racer_1", 18], ["racer_2_ride", "racer_2", 18]]);
+    expect(notes).toContain("their_car: 'npc' is nobody in this world, so a rival racer drives it");
+    expect(bundle.rules.find((r) => r.id === "r_spin")!.when).toMatchObject({ t: "hit", a: "player", b: "oil" });
+    expect(notes.some((n) => n.startsWith("race: ") && n.includes("oil") && n.endsWith("moved off the road"))).toBe(true);
   });
 });

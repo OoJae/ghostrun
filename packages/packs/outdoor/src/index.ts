@@ -255,6 +255,9 @@ export const outdoor: LayoutPack<OutdoorParams> = {
       zones,
       statics,
       cameraBounds: { min: [-H, -1, -H], max: [H, wallTop + 4, H] },
+      // a race loop round the central clearing: north of the lookout, south of the pond and the
+      // grove knoll, through the side clearings (a race clears the trees and rocks standing on it)
+      track: { points: [[0, 0, -7], [12, 0, -7], [12, 0, 7], [0, 0, 7], [-12, 0, 7], [-12, 0, -7]], width: 6 },
       notes: [
         `outdoor ${2 * H}×${2 * H} m: ${counts.tree} trees, ${counts.rock} rocks, ${counts.bush} bushes; grove knoll ${gTop} m; pond ${r2(2 * hx)}×${r2(2 * hz)} m`,
         `lookout deck ${deckTop} m: first ledge ${h1} m (${jumping ? `needs ${k} jump${k === 1 ? "" : "s"}` : "a step: these laws barely jump"}), gaps ${g1} m and ${g2} m${harder ? " (harder: up to 0.95 × reach)" : ""}`,

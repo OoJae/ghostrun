@@ -157,6 +157,10 @@ export class CastBrain implements Brain {
         bot.shoveAt = tick + 50;
       }
       if (bot.arms && bot.beh !== "patrol" && bot.beh !== "idle") frame = this.#fight(w, bot, frame, tick);
+      // armed and written with no menu (a castle's archers, a drone on its post): a sentry that
+      // fires back from where it stands, at half its weapon's rate, and holds fire on a player down
+      // to a quarter of their hit points (it wears you down; it never decides the game alone)
+      else if (bot.arms && !bot.menu.length) frame = this.#fight(w, bot, frame, tick, true);
       this.#out.set(bot.id, frame);
     }
     return this.#out;
@@ -167,7 +171,7 @@ export class CastBrain implements Brain {
    * is faced and fired at, as often as its weapon allows. One that shoots from afar holds its ground
    * while it has a shot (claws keep closing in).
    */
-  #fight(w: SimWorld, bot: Bot, frame: InputFrame, tick: number): InputFrame {
+  #fight(w: SimWorld, bot: Bot, frame: InputFrame, tick: number, sentry = false): InputFrame {
     const arms = bot.arms!;
     const p = w.pos(bot.id);
     const muzzle = w.muzzle(bot.id);
@@ -177,6 +181,7 @@ export class CastBrain implements Brain {
       const e = w.entity(id);
       // enemies: anyone on another team (a bot with no team: the player)
       if (id === bot.id || !e || e.destroyed || (bot.team ? e.team === bot.team : id !== "player")) continue;
+      if (sentry && id === "player" && (w.hp("player") ?? 1) <= (w.maxHp("player") ?? 0) / 4) continue;
       const q = w.pos(id);
       const d = d2(p, q);
       if (d >= bestD || Math.abs(q[1] - p[1]) > arms.range || !w.clearShot(muzzle, q)) continue;
@@ -189,7 +194,8 @@ export class CastBrain implements Brain {
     const dz = q[2] - p[2];
     const len = Math.sqrt(dx * dx + dz * dz) || 1;
     const fire = tick >= bot.fireAt;
-    if (fire) bot.fireAt = tick + arms.every;
+    if (fire) bot.fireAt = tick + arms.every * (sentry ? 2 : 1);
+    if (sentry) return { tick, wx: fire ? Math.round((dx / len) * 26) : 0, wz: fire ? Math.round((dz / len) * 26) : 0, btn: (frame.btn & ~BTN.USE) | (fire ? BTN.USE : 0) };
     // face it: full chase for claws; a ranged weapon turns to fire and otherwise holds its ground
     // (a small step closer while it is far, standing still once it is near: it keeps facing the way
     // it fired)
@@ -207,11 +213,28 @@ export class CastBrain implements Brain {
     const within = (id: string, p: Vec3, r: number) => d2(w.pos(id), p) < r * r;
     // a racer (at a wheel, or racing on foot): the next gate; blocking goes for the player when
     // close, drafting tucks in behind the player when close
+    // (a racer blocks from in front, holding the player's line on the way to its gate, never by
+    // driving back into them; drafting tucks in a few metres behind the player, never into them)
     const race = w.raceOf(b.id);
     if (race && b.beh !== "patrol" && b.beh !== "idle" && (w.ride(b.id) || b.beh === "race")) {
       const near = within("player", w.pos(b.id), b.beh === "follow" ? 14 : 8);
-      if (near && (b.beh === "intercept" || b.beh === "follow")) return w.pos("player");
-      return w.pos(race.next);
+      const gate = w.pos(race.next);
+      if (near && b.beh === "follow") {
+        const pr = w.ride("player");
+        const q = w.pos("player");
+        return pr ? [q[0] - pr.hx * 3, q[1], q[2] - pr.hz * 3] : q;
+      }
+      const mine = w.raceOf("player");
+      const stage = (r: NonNullable<typeof race>) => r.laps * r.gates + r.passed;
+      if (near && b.beh === "intercept" && mine && stage(race) >= stage(mine)) {
+        const [p, q] = [w.pos(b.id), w.pos("player")];
+        const [gx, gz] = [gate[0] - p[0], gate[2] - p[2]];
+        const gl = Math.sqrt(gx * gx + gz * gz) || 1;
+        const side = ((q[0] - p[0]) * -gz + (q[2] - p[2]) * gx) / gl;
+        const s = Math.max(-2, Math.min(2, side));
+        return [gate[0] + (-gz / gl) * s, gate[1], gate[2] + (gx / gl) * s];
+      }
+      return gate;
     }
     switch (b.beh) {
       case "attack":

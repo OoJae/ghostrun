@@ -74,9 +74,10 @@ export function lowHazards(b: WorldBundle): { id: string; pos: Vec3; size: Vec3 
 
 /**
  * Build the walking navmesh: statics plus fixed solid entities (props) as obstacles. With `leap`,
- * the low hazards (lowHazards) are left out: paths that jump them.
+ * the low hazards (lowHazards) are left out: paths that jump them. With `radius`, paths keep that far
+ * from walls (a vehicle's, wider than a walker).
  */
-export function buildNav(b: WorldBundle, opts: { leap?: boolean; closed?: readonly string[] } = {}): NavWorld {
+export function buildNav(b: WorldBundle, opts: { leap?: boolean; closed?: readonly string[]; radius?: number } = {}): NavWorld {
   const pos: number[] = [];
   const idx: number[] = [];
   for (const s of [...b.statics].sort((x, y) => (x.id < y.id ? -1 : 1))) pushBox(pos, idx, s.pos, s.size);
@@ -98,7 +99,7 @@ export function buildNav(b: WorldBundle, opts: { leap?: boolean; closed?: readon
   const { success, navMesh } = generateSoloNavMesh(pos, idx, {
     cs: CS,
     ch: CH,
-    walkableRadius: Math.floor(AGENT.radius / CS),
+    walkableRadius: Math.floor((opts.radius ?? AGENT.radius) / CS),
     walkableHeight: Math.ceil(AGENT.height / CH),
     walkableClimb: Math.floor(AGENT.climb / CH),
     walkableSlopeAngle: 45,
