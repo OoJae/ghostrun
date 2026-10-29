@@ -1,0 +1,37 @@
+/* ---- a photo or sketch to build from: its button, its chip in the bar, the Intent card's line ---- */
+.picture-btn svg { stroke-linejoin: round; }
+.promptbar.dropping { border-color: rgba(25, 227, 255, 0.6); box-shadow: 0 0 0 3px rgba(25, 227, 255, 0.18); }
+.picture-chip {
+  flex: none; position: relative; display: inline-flex; align-items: center; height: 36px; padding: 2px;
+  border-radius: 9px; background: rgba(25, 227, 255, 0.08); border: 1px solid rgba(25, 227, 255, 0.35);
+}
+.picture-chip img { display: block; height: 30px; max-width: 54px; object-fit: cover; border-radius: 7px; }
+.picture-chip button {
+  position: absolute; top: -7px; right: -7px; width: 18px; height: 18px; padding: 0; display: grid; place-items: center;
+  font: inherit; font-size: 12px; line-height: 1; border-radius: 999px; cursor: pointer;
+  color: var(--ink); background: rgba(14, 10, 28, 0.92); border: 1px solid rgba(255, 255, 255, 0.28);
+}
+.picture-chip button:hover { border-color: rgba(255, 59, 92, 0.7); color: #ff8fa3; }
+.picture-reading { width: 30px; height: 30px; border-radius: 7px; background: rgba(255, 255, 255, 0.08); animation: pulse 0.8s ease-in-out infinite alternate; }
+.pill-picture { flex: none; height: 20px; max-width: 34px; object-fit: cover; border-radius: 5px; }
+/* on a phone the one button offers the camera or the library */
+.picture-menu { position: absolute; top: calc(100% + 8px); right: 56px; display: grid; gap: 4px; padding: 6px; border-radius: 12px; background: rgba(14, 10, 28, 0.95); border: 1px solid var(--glass-edge); z-index: 7; animation: drop-in 160ms ease-out; }
+.picture-menu button {
+  font: inherit; font-size: 13px; padding: 9px 14px; text-align: left; border-radius: 9px; cursor: pointer;
+  color: var(--ink); background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.14);
+}
+.picture-menu button:hover { border-color: rgba(25, 227, 255, 0.5); }
+.intent .inspired { margin: -2px 0 10px; padding: 6px 10px; border-radius: 9px; font-size: 12px; color: #c9f7ff; background: rgba(25, 227, 255, 0.08); border: 1px solid rgba(25, 227, 255, 0.28); }
+@media (max-width: 720px) {
+  .picture-chip { height: 32px; }
+  .picture-chip img { height: 26px; max-width: 40px; }
+  .promptbar.takes-picture { gap: 8px; }
+  /* the words need the room: with a picture attached, its × is the way to change it, and the
+     source chip steps aside (a build from a picture is always built live, never from the cache) */
+  .promptbar.has-picture .picture-btn,
+  .promptbar.has-picture .chip,
+  .promptbar.has-picture .chip-action { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .picture-reading { animation: none; }
+}

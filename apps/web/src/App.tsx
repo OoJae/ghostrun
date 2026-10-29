@@ -15,7 +15,8 @@ import { EditBox, type EditState } from "./hud/Edit";
 import { Gallery, GALLERY, type GalleryEntry } from "./hud/Gallery";
 import { TrustPanel } from "./hud/Trust";
 import { CutChip, ProofBadge, ReceiptPanel, RepairChip, type CutState, type Fooled, type ProofState, type RepairState } from "./hud/Proof";
-import { liveAvailable, liveBuild, liveDirector, liveEdit, liveRepair, type LiveCached, type LiveIntent } from "./live";
+import { liveAvailable, liveBuild, liveDirector, liveEdit, liveRepair, type LiveCached, type LiveInspired, type LiveIntent } from "./live";
+import type { Picture } from "./picture";
 import { ANGLES, changeSummary, cutHolds, cutNotes, editedPrompt, HARDER, intentFor, newFailures, pickHarder, receiptDelta, suggestionsFor, SURPRISE } from "./edits";
 import { createShare, loadShare, reportWrong } from "./share";
 import { Minds } from "./minds";
@@ -109,6 +110,9 @@ export function App() {
   const [fresh, setFresh] = useState(!params0.get("s") && !params0.get("g"));
   /** What the world does instead of a mechanic the prompt asked for (no vehicles yet, …). */
   const [note, setNote] = useState<string | null>(null);
+  /** A photo or sketch the next build is inspired by, and the brief the edge read from the last one. */
+  const [picture, setPicture] = useState<Picture | null>(null);
+  const [inspired, setInspired] = useState<LiveInspired | null>(null);
   const sound = useSound();
   const speech = useSpeech(sound);
   /** A shared or gallery world on screen: where it came from (its line, if a remix), and whether Remix made it your copy. */
@@ -371,7 +375,7 @@ export function App() {
   );
 
   const run = useCallback(
-    async (text: string, startedAt: number, extraSplits: LoadResult["splits"] = [], useLive = false, rebuild = false) => {
+    async (text: string, startedAt: number, extraSplits: LoadResult["splits"] = [], useLive = false, rebuild = false, image: Picture | null = null) => {
       const id = ++runId.current;
       setStatus("building");
       setNotice(undefined);
@@ -387,8 +391,17 @@ export function App() {
       setProof({ status: "idle", chips: [], receipt: null });
       delete probe().specHash;
       if (useLive) {
+        if (image) setNotice("Looking at your image…");
         const r = await liveBuild(text, {
           fresh: rebuild,
+          ...(image ? { image: image.url } : {}),
+          // the world is written from the brief's words: they are its prompt from here on (edits, repairs, shares)
+          onInspired: (i) => {
+            if (id !== runId.current) return;
+            builtPrompt.current = i.prompt;
+            setInspired(i);
+            setNotice(`Inspired by your image: ${i.brief.setting} (${i.ms} ms)`);
+          },
           onIntent: (i, ms, seed) => {
             if (id !== runId.current) return;
             setNotice(`${i.genre} · ${i.setting.slice(0, 80)} (${ms} ms)`);
@@ -405,7 +418,7 @@ export function App() {
         if (id !== runId.current) return;
         if (r.kind === "world") {
           const world = worldFromFill(r.fill, r.seed, { genre: r.intent.genre, setting: r.intent.setting, goal: r.intent.goal, fail: r.intent.fail, role: r.intent.role }, r.intent.pack, r.intent.mode);
-          world.source = { prompt: text, intent: r.intent, fill: r.fill, seed: r.seed, pack: r.intent.pack };
+          world.source = { prompt: r.inspired?.prompt ?? text, intent: r.intent, fill: r.fill, seed: r.seed, pack: r.intent.pack };
           setNotice(undefined);
           setFellBack(r.fallback !== null);
           setCachedFrom(r.cached);
@@ -871,8 +884,8 @@ export function App() {
     setFresh(false);
     // offline, a gallery prompt (the bar's examples) opens its recorded world rather than the fixture
     const recorded = mode === "live" ? undefined : GALLERY.find((g) => g.prompt === text);
-    if (recorded) return void openGallery(recorded);
-    run(text, performance.now(), [], mode === "live", rebuild).catch((err: unknown) => {
+    if (recorded && !picture) return void openGallery(recorded);
+    run(text, performance.now(), [], mode === "live", rebuild, mode === "live" ? picture : null).catch((err: unknown) => {
       console.error(err);
       setError(err instanceof Error ? err.message : String(err));
       setStatus("error");
@@ -887,6 +900,9 @@ export function App() {
     submit(text);
   };
   const landing = fresh && !collapsed && !typing;
+  // the card says "inspired by your image" for the world that image made, and the edits and repairs of it
+  const ownPrompt = current.current?.source?.base ?? current.current?.source?.prompt;
+  const inspiredNow = inspired && ownPrompt === inspired.prompt ? inspired.brief : null;
 
   return (
     <>
@@ -909,11 +925,13 @@ export function App() {
             galleryCount={GALLERY.length}
             examples={EXAMPLES}
             playing={builtPrompt.current}
+            picture={mode === "live" ? picture : null}
+            {...(mode === "live" ? { onPicture: setPicture } : {})}
           />
           {landing && <Landing starters={STARTERS} ready={status === "playing"} onPick={pickStarter} />}
         </div>
         {notice && <div className="glass notice" role="status">{notice}</div>}
-        {!collapsed && !typing && intent && building === null && <IntentCard intent={intent} specHash={specHash} note={note} />}
+        {!collapsed && !typing && intent && building === null && <IntentCard intent={intent} specHash={specHash} note={note} inspired={inspiredNow} />}
         {current.current && status !== "booting" && !typing && (!collapsed || edit.status === "editing" || edit.status === "racing" || edit.status === "proving") && (
           <EditBox state={edit} enabled={mode === "live"} suggestions={[...suggestionsFor(current.current.bundle), "surprise me"]} canUndo={history.current.length > 0} onEdit={(c) => void editWorld(c)} onUndo={undo} focusKey={editFocus} placeholder={copied ? "Change it: make it yours…" : undefined}>
             {remixSrc && <LineagePanel source={remixSrc} line={lineageOf(remixSrc, current.current)} mine={yourChanges(current.current).length} copied={copied} spec={specHash} onRemix={remix} onShare={() => void shareRun()} />}

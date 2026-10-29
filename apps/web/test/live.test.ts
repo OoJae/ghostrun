@@ -27,6 +27,21 @@ describe("liveBuild", () => {
     expect(r).toMatchObject({ kind: "world", seed: 7, lines: 4, fallback: null, cached: null });
   });
 
+  it("sends a picture with the words, and hands back the brief and the prompt it made", async () => {
+    const brief = { setting: "a rainy neon alley at night", mood: "tense", palette: ["teal"], objects: ["fire escape", "crate"], layout: "", genre: "", goal: "" };
+    const prompt = "a heist here. Inspired by a picture of a rainy neon alley at night; mood tense; colours teal; with fire escape, crate.";
+    const asked = edge(sse("inspired", { brief, prompt, ms: 900, model: "claude-haiku-5-5" }) + sse("intent", { intent: INTENT, seed: 7, ms: 1300 }) + LINES.map((line, i) => sse("op", { i, line })).join(""));
+    const heard: unknown[] = [];
+    const r = await liveBuild("a heist here", { image: "data:image/webp;base64,UklGRg==", onInspired: (i) => heard.push(i) });
+    expect(asked).toEqual([{ prompt: "a heist here", engine: ENGINE_HASH, image: "data:image/webp;base64,UklGRg==" }]);
+    expect(heard).toEqual([{ brief, prompt, ms: 900 }]);
+    expect(r).toMatchObject({ kind: "world", inspired: { brief, prompt } });
+    // without a picture nothing of the kind is sent or reported
+    const plain = edge(sse("intent", { intent: INTENT, seed: 7, ms: 300 }) + LINES.map((line, i) => sse("op", { i, line })).join(""));
+    expect(await liveBuild("capture the flag")).toMatchObject({ kind: "world", inspired: null });
+    expect(plain[0]).not.toHaveProperty("image");
+  });
+
   it("a replay from the edge's cache says so; fresh asks past it", async () => {
     const cached = { at: "2026-10-28T09:30:00.000Z", intentModel: "qwen-3.8-27b", fillModel: "gpt-oss-120b" };
     edge(sse("cached", cached) + sse("intent", { intent: INTENT, seed: 7, ms: 300 }) + LINES.map((line, i) => sse("op", { i, line })).join(""));

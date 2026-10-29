@@ -1,6 +1,8 @@
-import { useEffect, useRef, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type DragEvent, type FormEvent } from "react";
 import type { LoadResult } from "../engine";
+import { imageIn, preparePicture, type Picture } from "../picture";
 import { firstVoiceNote, speechApi, transcript, voiceError, type Recognition } from "./listen";
+import "./picture.css";
 
 interface Props {
   prompt: string;
@@ -24,6 +26,10 @@ interface Props {
   examples?: readonly string[];
   /** The prompt of the world being played (the pill shows it when the bar is empty). */
   playing?: string;
+  /** A photo or sketch the next build is inspired by (shown as a chip); words are optional with one. */
+  picture?: Picture | null;
+  /** Set or clear the picture; absent, the bar offers no picture (the live lane is needed to read one). */
+  onPicture?(p: Picture | null): void;
 }
 
 const EXAMPLE_MS = 3000;
@@ -123,10 +129,77 @@ function Mic({ onText, onDone }: { onText: (t: string) => void; onDone: (t: stri
   );
 }
 
-export function PromptBar({ prompt, onPrompt, onSubmit, collapsed, onExpand, onCollapse, timing, busy, source, suggestions = [], onFocusChange, onGallery, galleryCount, examples = [], playing }: Props) {
+const coarse = () => window.matchMedia?.("(pointer: coarse)").matches ?? false;
+
+/** The picture controls: a file, the camera on phones, a paste or a drop; and the chip once there is one. */
+function usePicture(onPicture: Props["onPicture"]) {
+  const [reading, setReading] = useState(false);
+  const [note, setNote] = useState<string | null>(null);
+  const take = async (file: File | null | undefined) => {
+    if (!file || !onPicture) return;
+    setReading(true);
+    setNote(null);
+    const r = await preparePicture(file);
+    setReading(false);
+    if (r.ok) onPicture(r.picture);
+    else setNote(r.why);
+  };
+  return { reading, note, clearNote: () => setNote(null), take };
+}
+
+/** One button: a file picker on a desktop; on a phone, a choice of the camera or the photo library. */
+function PictureButtons({ take }: { take: (f: File | null | undefined) => void }) {
+  const file = useRef<HTMLInputElement>(null);
+  const camera = useRef<HTMLInputElement>(null);
+  const [menu, setMenu] = useState(false);
+  const phone = coarse();
+  const picked = (el: HTMLInputElement) => {
+    take(el.files?.[0]);
+    el.value = ""; // the same file again is a new pick
+  };
+  const open = (el: HTMLInputElement | null) => {
+    setMenu(false);
+    el?.click();
+  };
+  return (
+    <>
+      <button
+        type="button"
+        className="mic picture-btn"
+        onClick={() => (phone ? setMenu((m) => !m) : open(file.current))}
+        aria-label="Build from a photo or sketch"
+        aria-expanded={phone ? menu : undefined}
+        title="Build from a photo or sketch (or paste or drop one on the bar): the world is inspired by it"
+        data-testid="picture-button"
+      >
+        <svg viewBox="0 0 16 16" aria-hidden="true">
+          <rect x="1.5" y="3" width="13" height="10" rx="2" />
+          <circle cx="5.5" cy="6.5" r="1.3" />
+          <path d="M2.5 12l3.5-3.5 2.5 2.5 2-2 3 3" />
+        </svg>
+      </button>
+      <input ref={file} type="file" accept="image/*" hidden onChange={(e) => picked(e.currentTarget)} data-testid="picture-input" />
+      {phone && <input ref={camera} type="file" accept="image/*" capture="environment" hidden onChange={(e) => picked(e.currentTarget)} data-testid="camera-input" />}
+      {menu && (
+        <span className="picture-menu" role="menu" data-testid="picture-menu">
+          <button type="button" role="menuitem" onClick={() => open(camera.current)} data-testid="camera-button">
+            Take a photo
+          </button>
+          <button type="button" role="menuitem" onClick={() => open(file.current)}>
+            Choose an image
+          </button>
+        </span>
+      )}
+    </>
+  );
+}
+
+export function PromptBar({ prompt, onPrompt, onSubmit, collapsed, onExpand, onCollapse, timing, busy, source, suggestions = [], onFocusChange, onGallery, galleryCount, examples = [], playing, picture = null, onPicture }: Props) {
   const input = useRef<HTMLInputElement>(null);
   const [focused, setFocusedState] = useState(false);
-  const example = useExample(examples, !focused && !prompt);
+  const [dropping, setDropping] = useState(false);
+  const pic = usePicture(onPicture);
+  const example = useExample(examples, !focused && !prompt && !picture);
   const setFocused = (f: boolean) => {
     setFocusedState(f);
     onFocusChange?.(f);
@@ -139,18 +212,21 @@ export function PromptBar({ prompt, onPrompt, onSubmit, collapsed, onExpand, onC
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
-    // an empty bar builds the example it shows
-    const text = prompt.trim() ? prompt : example.full;
-    if (!text) return;
+    if (pic.reading) return; // the picture is still being made small: Enter would build without it
+    // an empty bar builds the example it shows; with a picture it builds from the picture alone
+    const text = prompt.trim() ? prompt : picture ? "" : example.full;
+    if (!text && !picture) return;
     input.current?.blur();
     if (text !== prompt) onPrompt(text);
     onSubmit(text);
   };
+  const carriesFiles = (e: DragEvent) => Boolean(onPicture) && Array.from(e.dataTransfer.types).includes("Files");
 
   if (collapsed) {
     return (
       <button className="glass pill" onClick={onExpand} title="Edit prompt" data-testid="prompt-pill">
         <span className="mark" aria-hidden="true" />
+        {picture && <img className="pill-picture" src={picture.url} alt="" />}
         <span className="pill-text">{prompt || playing}</span>
         <Stopwatch timing={timing} busy={busy} />
       </button>
@@ -158,9 +234,35 @@ export function PromptBar({ prompt, onPrompt, onSubmit, collapsed, onExpand, onC
   }
 
   return (
-    <form className="glass promptbar" onSubmit={submit} data-testid="prompt-bar">
+    <form
+      className={`glass promptbar${onPicture ? " takes-picture" : ""}${dropping ? " dropping" : ""}${picture ? " has-picture" : ""}`}
+      onSubmit={submit}
+      data-testid="prompt-bar"
+      onDragOver={(e) => {
+        if (!carriesFiles(e)) return;
+        e.preventDefault(); // without this the browser would open the dropped file instead
+        setDropping(true);
+      }}
+      onDragLeave={() => setDropping(false)}
+      onDrop={(e) => {
+        if (!carriesFiles(e)) return;
+        e.preventDefault();
+        setDropping(false);
+        void pic.take(imageIn(e.dataTransfer));
+      }}
+    >
       <span className="mark" aria-hidden="true" />
       <span className="brand">GHOSTRUN</span>
+      {(picture || pic.reading) && (
+        <span className="picture-chip" data-testid="picture-chip" title={picture ? `Your image, ${picture.width}×${picture.height}, ${Math.round(picture.bytes / 1024)} KB with its metadata removed. The world takes ideas from it (the place, colours, things); it doesn't rebuild it.` : "Making the image small…"}>
+          {picture ? <img src={picture.url} alt="Your image" /> : <span className="picture-reading" aria-label="Making the image small" />}
+          {picture && (
+            <button type="button" onClick={() => onPicture?.(null)} aria-label="Remove the image" data-testid="picture-remove">
+              ×
+            </button>
+          )}
+        </span>
+      )}
       <input
         ref={input}
         value={prompt}
@@ -170,10 +272,22 @@ export function PromptBar({ prompt, onPrompt, onSubmit, collapsed, onExpand, onC
         onKeyDown={(e) => {
           if (e.key === "Escape") onCollapse();
         }}
+        onPaste={(e) => {
+          const f = onPicture ? imageIn(e.clipboardData) : null;
+          if (!f) return; // words paste as words
+          e.preventDefault();
+          void pic.take(f);
+        }}
         spellCheck={false}
         aria-label="Describe a world"
-        placeholder={example.full ? `Try: ${example.shown}` : "Describe a world…"}
+        placeholder={picture ? "Add words (“a heist here”), or press Enter to build from the image" : example.full ? `Try: ${example.shown}` : "Describe a world…"}
       />
+      {onPicture && <PictureButtons take={(f) => void pic.take(f)} />}
+      {pic.note && (
+        <span className="voice-note" role="status" onClick={pic.clearNote} data-testid="picture-note">
+          {pic.note}
+        </span>
+      )}
       <Mic onText={onPrompt} onDone={onSubmit} />
       <span className={`chip${source.action ? " cached" : ""}`} title={source.title} data-testid="source-chip">
         {source.label}
