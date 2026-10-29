@@ -47,8 +47,12 @@ export interface PlaceResult {
   notes: string[];
 }
 
-/** Pure and deterministic: positions depend only on the bundle, the layout and the world seed. */
-export function placeWorld(input: WorldBundle, layout: PackLayout): PlaceResult {
+/**
+ * Pure and deterministic: positions depend only on the bundle, the layout and the world seed.
+ * `reach`: a fresh fill nobody wrote laws for (lawsUnwritten), where a jump the win needs may be
+ * allowed; never for laws someone wrote, an edit or a patch.
+ */
+export function placeWorld(input: WorldBundle, layout: PackLayout, opts: { reach?: boolean } = {}): PlaceResult {
   const b = structuredClone(input);
   const notes = [...layout.notes];
   const bound = bindZones(b.zones, layout);
@@ -244,7 +248,7 @@ export function placeWorld(input: WorldBundle, layout: PackLayout): PlaceResult 
     }
   }
   // wins first: a win rule the repairs add (reach the goal) gets the same trigger and verb repairs
-  notes.push(...repairDoubleDoors(b), ...repairSpawnRefs(b), ...repairGroups(b), ...repairRingOut(b, bound), ...repairAreas(b, bound), ...repairCombat(b), ...repairSentries(b), ...repairKits(b), ...repairConditions(b), ...repairRace(b, layout), ...repairRiders(b), ...repairWin(b), ...repairTriggers(b), ...repairVerbs(b), ...repairExpects(b));
+  notes.push(...repairDoubleDoors(b), ...repairSpawnRefs(b), ...repairGroups(b), ...repairRingOut(b, bound), ...repairAreas(b, bound), ...repairCombat(b), ...repairSentries(b), ...repairKits(b), ...repairConditions(b), ...repairRace(b, layout), ...repairRiders(b), ...repairWin(b), ...(opts.reach ? repairReach(b) : []), ...repairTriggers(b), ...repairVerbs(b), ...repairExpects(b));
   notes.push(...addRivals(b), ...placeRace(b, layout, bound), ...repairDeliveries(b, layout, bound), ...addSecrets(b, layout, bound));
   return { bundle: b, notes };
 }
@@ -294,19 +298,8 @@ export function repairDeliveries(b: WorldBundle, layout: PackLayout, bound: Map<
   }
   // a hazard you lose by touching (a lake bank, a spike strip) that covers a place the win needs you
   // to reach (the finish, a gate, a buoy to pass) shrinks round its centre until it no longer does
-  // (something to pick up or use is moved instead, below). What the win needs: what its rules name,
-  // then what the rules that change those name, and so on (a race's line and gates too)
-  const wanted = new Set<string>();
-  for (const v of b.verbs.filter((x) => x.verb === TRACK)) for (const id of [v.on, ...String(v.params.gates ?? "").split(",")]) wanted.add(id.trim());
-  const named = (r: Rule) => [r.when.a, r.when.b, ...r.if.map((c) => c.l.split(".")[0]!)];
-  for (const r of b.rules) if (r.then.some((e) => e.e === "win")) for (const id of named(r)) wanted.add(id);
-  for (let grew = true, k = 0; grew && k < 8; k++) {
-    grew = false;
-    for (const r of b.rules) {
-      if (!r.then.some((e) => wanted.has(e.target))) continue;
-      for (const id of named(r)) if (id && !wanted.has(id)) ((grew = true), wanted.add(id));
-    }
-  }
+  // (something to pick up or use is moved instead, below)
+  const wanted = winNeeds(b);
   const needs = b.entities.filter((e) => (e.kind === "goal" || e.kind === "checkpoint") && wanted.has(e.id));
   for (const h of b.entities.filter((e) => e.kind === "hazard" && e.body === "sensor")) {
     if (!b.rules.some((r) => (r.when.t === "hit" || r.when.t === "enter") && r.when.b === h.id && (r.when.a === "player" || !r.when.a) && r.then.some((e) => e.e === "lose"))) continue;
@@ -861,9 +854,11 @@ export function placeRace(b: WorldBundle, layout: PackLayout, bound: Map<string,
     if (driver) driver.pos = driver.kind === "spawn" ? [e.pos[0], floor, e.pos[2]] : [e.pos[0], floor + driver.size[1] / 2, e.pos[2]];
   });
   if (rides.length) notes.push(`race: the grid behind ${line.id}: ${rides.map((v) => `${String(v.params.driver)} in ${v.on}`).join(", ")}`);
-  // off the road: a vehicle nobody drives, and a hazard standing on it (the race goes round them,
-  // not through them)
+  // off the road: a vehicle nobody drives, a hazard, and anything you lose by entering or touching
+  // (a police car parked across it) standing on it: the race goes round them, not through them
   if (road.length) {
+    const course = new Set([line.id, ...gates.map((g) => g.id)]);
+    const loses = (e: Entity) => !course.has(e.id) && e.body === "sensor" && b.rules.some((r) => (r.when.t === "enter" || r.when.t === "hit") && r.when.b === e.id && (r.when.a === "player" || !r.when.a) && r.then.some((x) => x.e === "lose"));
     const nearest = (x: number, z: number) => {
       let best = { d: Infinity, nx: 0, nz: 0 };
       for (let i = 0; i < road.length; i++) {
@@ -878,7 +873,7 @@ export function placeRace(b: WorldBundle, layout: PackLayout, bound: Map<string,
       return best;
     };
     const parked = b.verbs.filter((v) => v.verb === DRIVE && !v.params.driver).map((v) => b.entities.find((e) => e.id === v.on));
-    const hazards = b.entities.filter((e) => e.kind === "hazard" && Math.max(e.size[0], e.size[2]) <= width);
+    const hazards = b.entities.filter((e) => (e.kind === "hazard" || loses(e)) && Math.max(e.size[0], e.size[2]) <= width);
     const moved: string[] = [];
     for (const e of [...parked, ...hazards]) {
       if (!e) continue;
@@ -1202,6 +1197,91 @@ export function repairAreas(b: WorldBundle, bound: Map<string, ZoneSpec>): strin
     w.b = id;
   }
   return notes;
+}
+
+/** What the win needs: what its rules name, then what the rules that change those name, and so on (a race's line and gates too). */
+export function winNeeds(b: WorldBundle): Set<string> {
+  const wanted = new Set<string>();
+  for (const v of b.verbs.filter((x) => x.verb === TRACK)) for (const id of [v.on, ...String(v.params.gates ?? "").split(",")]) wanted.add(id.trim());
+  const named = (r: Rule) => [r.when.a, r.when.b, ...r.if.map((c) => c.l.split(".")[0]!)];
+  for (const r of b.rules) if (r.then.some((e) => e.e === "win")) for (const id of named(r)) wanted.add(id);
+  for (let grew = true, k = 0; grew && k < 8; k++) {
+    grew = false;
+    for (const r of b.rules) {
+      if (!r.then.some((e) => wanted.has(e.target))) continue;
+      for (const id of named(r)) if (id && !wanted.has(id)) ((grew = true), wanted.add(id));
+    }
+  }
+  return wanted;
+}
+
+/**
+ * Something the win needs that stands up where the laws' jumps can't reach (a spray can on an
+ * arena deck, two jumps up, with one jump allowed): the laws allow the jumps it takes (up to
+ * three). Reach is a climb over the layout's surfaces from the spawn (a course's platforms step up
+ * a jump at a time, so its finish is in reach however high it stands). Logged.
+ */
+export function repairReach(b: WorldBundle): string[] {
+  if (b.mode !== "play" || b.laws.gravityScale < 0.05 || b.laws.jumpH <= 0) return [];
+  const sp = b.entities.find((e) => e.kind === "spawn" && e.team === "red") ?? b.entities.find((e) => e.kind === "spawn");
+  if (!sp) return [];
+  const apex = (n: number) => n * b.laws.jumpH * 0.94;
+  // (walls are no footing: the proof's runners don't climb on cover)
+  const tops = b.statics.filter((s) => s.surf !== "wall").map((s) => ({ s, top: s.pos[1] + s.size[1] / 2 }));
+  const under = (x: number, z: number, y: number) => {
+    let best = -1;
+    tops.forEach((t, i) => {
+      if (Math.abs(x - t.s.pos[0]) <= t.s.size[0] / 2 && Math.abs(z - t.s.pos[2]) <= t.s.size[2] / 2 && t.top <= y + 0.3 && (best < 0 || t.top > tops[best]!.top)) best = i;
+    });
+    return best;
+  };
+  const gap = (i: number, j: number) => {
+    const [p, q] = [tops[i]!.s, tops[j]!.s];
+    const dx = Math.max(0, Math.abs(p.pos[0] - q.pos[0]) - (p.size[0] + q.size[0]) / 2);
+    const dz = Math.max(0, Math.abs(p.pos[2] - q.pos[2]) - (p.size[2] + q.size[2]) / 2);
+    return Math.sqrt(dx * dx + dz * dz);
+  };
+  // how far across a hop of n jumps carries you while ending `rise` higher (the course's own model)
+  const across = (n: number, rise: number) => {
+    if (n <= 0) return 0.05;
+    const gr = 9.81 * Math.max(0.05, b.laws.gravityScale);
+    const H = b.laws.jumpH * 0.94;
+    const v = Math.sqrt(2 * gr * H);
+    const disc = v * v + 2 * gr * ((n - 1) * H - Math.max(rise, -3));
+    return disc < 0 ? -1 : b.laws.speed * ((((n - 1) * v) / gr + (v + Math.sqrt(disc)) / gr) * 0.85);
+  };
+  // every surface you can climb to from the spawn's with n jumps (a hop as far across as the jump
+  // carries, up to the apex; down a drop)
+  const reach = (n: number) => {
+    const from = under(sp.pos[0], sp.pos[2], sp.pos[1] + 0.1);
+    const seen = new Set<number>(from >= 0 ? [from] : []);
+    const todo = [...seen];
+    while (todo.length) {
+      const i = todo.pop()!;
+      for (let j = 0; j < tops.length; j++) {
+        if (seen.has(j)) continue;
+        const [rise, g] = [tops[j]!.top - tops[i]!.top, gap(i, j)];
+        if ((rise <= 0.41 && g <= 0.05) || (rise <= (n > 0 ? apex(n) - 0.1 : 0.41) && g <= across(n, rise) + 0.3)) ((seen.add(j)), todo.push(j));
+      }
+    }
+    return seen;
+  };
+  const wanted = winNeeds(b);
+  const spots = b.entities.filter((e) => wanted.has(e.id) && e.kind !== "npc" && e.kind !== "spawn").map((e) => ({ e, at: under(e.pos[0], e.pos[2], e.pos[1] - e.size[1] / 2) })).filter((x) => x.at >= 0);
+  const missing = (n: number) => {
+    const r = reach(n);
+    return spots.filter((x) => !r.has(x.at));
+  };
+  const now = missing(b.laws.jumpsMax);
+  if (!now.length) return [];
+  for (let n = b.laws.jumpsMax + 1; n <= 3; n++) {
+    if (missing(n).length) continue;
+    const was = b.laws.jumpsMax;
+    b.laws = { ...b.laws, jumpsMax: n };
+    const x = now[0]!;
+    return [`laws: ${x.e.id} stands ${Math.round((tops[x.at]!.top - sp.pos[1]) * 10) / 10} m up where ${was} jump${was === 1 ? "" : "s"} can't climb, and the win needs it, so ${n} jumps`];
+  }
+  return [];
 }
 
 /**
@@ -1593,6 +1673,19 @@ export function repairKits(b: WorldBundle): string[] {
       notes.push(`rule ${r.id}: no longer once-only (${g.id} needs ${g.when.a} to reach ${g.when.n})`);
     }
   }
+  // 4e. a score goal past every point the world can give (four drones knocked out for good, a point
+  // each, and a goal of 15) is lowered to that many: each scorer fires at most once when its trigger
+  // can only happen once (a knock-out with no respawn, a collectible touched)
+  const healthOf = new Map(b.verbs.filter((v) => v.verb === HEALTH).map((v) => [v.on, v]));
+  const onlyOnce = (r: Rule) => r.once || (r.when.t === "health_lte" && healthOf.get(r.when.a)?.params.respawn === false) || (r.when.t === "touch" && collected.has(r.when.b));
+  for (const g of b.rules.filter((r) => r.when.t === "score_gte" && r.then.some((e) => e.e === "win"))) {
+    const scorers = b.rules.filter((r) => r.then.some((e) => e.e === "score" && e.target === g.when.a));
+    if (!scorers.length || !scorers.every(onlyOnce)) continue;
+    const most = scorers.reduce((n, r) => n + r.then.filter((e) => e.e === "score" && e.target === g.when.a).reduce((m, e) => m + (e.n || 1), 0), 0);
+    if (most <= 0 || most >= g.when.n) continue;
+    notes.push(`rule ${g.id}: ${g.when.a} can score at most ${most}, so its goal of ${g.when.n} is ${most}`);
+    g.when = { ...g.when, n: most };
+  }
   // 4d. a timer's finished state is "done", whatever word the rules used for it
   const timers = new Set(b.verbs.filter((v) => v.verb === "puzzle.timer").map((v) => v.on));
   for (const r of b.rules) {
@@ -1733,6 +1826,14 @@ export function repairWin(b: WorldBundle): string[] {
     const n = b.rules.find((r) => r.when.t === "score_gte" && r.when.a !== `team:${mine}` && r.then.some((e) => e.e === "lose"))?.when.n || 10;
     b.rules.push({ id: uniqueId(b, "r_win_score"), src: "template", layer: "gameplay", when: { t: "score_gte", a: `team:${mine}`, b: "", s: "", n, act: "" }, if: [], then: [fx("win", "player")], once: true, cooldownS: 0, prio: 0 });
     return [...notes, `added r_win_score: no rule wins and the world scores for ${mine}, so ${mine} reaching ${n} does`];
+  }
+  // else collecting everything there is to collect (six spray cans and no word on winning): each
+  // one scores a point, and all of them wins
+  const loot = b.verbs.filter((v) => v.verb === "puzzle.collect" && b.entities.some((e) => e.id === v.on)).map((v) => v.on);
+  if (loot.length >= 2 && !b.entities.some((e) => e.kind === "goal" && (e.team === mine || !e.team))) {
+    for (const id of loot) b.rules.push({ id: uniqueId(b, `r_got_${id}`), src: "template", layer: "gameplay", when: { t: "touch", a: "player", b: id, s: "", n: 0, act: "" }, if: [], then: [fx("score", `team:${mine}`, 1)], once: true, cooldownS: 0, prio: 0 });
+    b.rules.push({ id: uniqueId(b, "r_win_all"), src: "template", layer: "gameplay", when: { t: "score_gte", a: `team:${mine}`, b: "", s: "", n: loot.length, act: "" }, if: [], then: [fx("win", "player")], once: true, cooldownS: 0, prio: 0 });
+    return [...notes, `added r_win_all: no rule wins, so collecting all ${loot.length} (${loot.join(", ")}) does, a point each`];
   }
   // else reaching a goal, never one right by the spawn (your own base: that wins in a step)
   const sp = b.entities.find((e) => e.kind === "spawn" && e.team === mine) ?? b.entities.find((e) => e.kind === "spawn");

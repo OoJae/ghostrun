@@ -35,3 +35,19 @@ export function pinLayout(fill: string): string {
     return fill;
   }
 }
+
+/**
+ * A fresh fill whose laws nobody wrote: no law line, and never edited or patched (an edit pins
+ * "fit" in its meta line, a merged patch marks it "patched"). Only then may the placer allow a jump
+ * the win needs; laws someone wrote ("only one jump") are kept, and a broken promise shows.
+ */
+export function lawsUnwritten(fill: string): boolean {
+  const lines = fill.split("\n");
+  try {
+    const m = JSON.parse(lines[0] ?? "") as Record<string, unknown>;
+    if (m.op === "meta" && (m.fit || m.patched)) return false;
+  } catch {
+    // no meta line: judged on the law lines alone
+  }
+  return !lines.some((l) => /"op"\s*:\s*"law"/.test(l));
+}

@@ -13,7 +13,7 @@ import stationFill from "../../../packages/ir/fixtures/space-station.jsonl?raw";
 import kartFill from "../../../packages/ir/fixtures/kart-race.jsonl?raw";
 import streetFill from "../../../packages/ir/fixtures/street-race.jsonl?raw";
 import snowFill from "../../../packages/ir/fixtures/snowmobile-race.jsonl?raw";
-import { layoutLaws, parseFill, specHash, type FillNote, type FillStats, type WorldBundle } from "@ghostrun/ir";
+import { lawsUnwritten, layoutLaws, parseFill, specHash, type FillNote, type FillStats, type WorldBundle } from "@ghostrun/ir";
 import { placeWorld } from "@ghostrun/layout";
 import { packFor, PACKS } from "@ghostrun/registry";
 import { cueOf, rawMeta, weatherWord, type Cue } from "./render/pick";
@@ -112,7 +112,7 @@ export function worldFromFill(fillText: string, seed: number, live?: Intent["liv
   const known = PACKS.some((p) => p.id === draft.pack.id);
   const pack = packFor(draft.pack.id);
   const layout = pack.generate({ seed, params: pack.defaults, sub: draft.pack.sub, laws: layoutLaws(fillText, draft.laws), harder: false });
-  const { bundle, notes } = placeWorld({ ...draft, engine: ENGINE_HASH }, layout);
+  const { bundle, notes } = placeWorld({ ...draft, engine: ENGINE_HASH }, layout, { reach: lawsUnwritten(fillText) });
   const t2 = performance.now();
   if (!known) notes.unshift(`pack '${draft.pack.id}' not available, using '${pack.id}'`);
 

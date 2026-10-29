@@ -856,6 +856,7 @@ function drive(r: Run, st: Extract<PlanStep, { do: "drive" }>): "ok" | "stuck" {
   let aim = "";
   let replan = 0;
   let movingAt = sim.tick;
+  let turnedFrom: [number, number] = [0, 0];
   let dodge = 0;
   let side: [number, number] = [0, 0];
   while (live(r) && !done()) {
@@ -895,9 +896,10 @@ function drive(r: Run, st: Extract<PlanStep, { do: "drive" }>): "ok" | "stuck" {
     const look = path[0] ?? floorOf(race.next);
     let [ux, uz] = [look[0] - p[0], look[2] - p[2]];
     let l = Math.sqrt(ux * ux + uz * uz) || 1;
-    // pinned (barely moving for a second and a half): back off, turning away, a moment
-    if (Math.abs(ride.speed) > 1.5) movingAt = sim.tick;
-    if (sim.tick - movingAt > 45) {
+    // pinned (barely moving for a second and a half, and not turning either: a slow boat turning
+    // round in place is getting somewhere): back off, turning away, a moment
+    if (Math.abs(ride.speed) > 1.5 || ride.hx * turnedFrom[0] + ride.hz * turnedFrom[1] < 0.98) ((movingAt = sim.tick), (turnedFrom = [ride.hx, ride.hz]));
+    if (sim.tick - movingAt > 45 && sim.tick >= dodge) {
       const s = r.rng() < 0.5 ? 1 : -1;
       side = [-ride.hx - ride.hz * 0.5 * s, -ride.hz + ride.hx * 0.5 * s];
       dodge = sim.tick + 45;

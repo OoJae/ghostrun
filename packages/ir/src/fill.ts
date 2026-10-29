@@ -421,6 +421,18 @@ export class FillParser {
       this.#note(line, "repaired", `'${String(hp.id)}' (kind ${String((raw as { kind: unknown }).kind)}) is ${String(hp.on)}'s hit points: combat_sport.health on ${String(hp.on)}, ${String((hp.params as { hp: number }).hp)} HP`, raw);
       raw = hp;
     }
+    // a trigger's subject written under another key ("score_gte" with target team:red, "who": the
+    // player) is its a
+    const when = raw && typeof raw === "object" && (raw as { op?: unknown }).op === "rule" ? (raw as { when?: unknown }).when : undefined;
+    if (when && typeof when === "object") {
+      const w = when as Record<string, unknown>;
+      const key = ["target", "who", "subject", "entity", "actor", "team"].find((k) => typeof w[k] === "string" && w[k]);
+      if ((w.a === undefined || w.a === "") && key) {
+        w.a = w[key];
+        this.stats.repaired++;
+        this.#note(line, "repaired", `when.${key} '${String(w[key])}' is the trigger's subject (a)`);
+      }
+    }
     let parsed = v.safeParse(FillOp, raw);
     const filled: string[] = [];
     if (!parsed.success && raw && typeof raw === "object" && repair(raw, parsed.issues, this.draft.zones[0]?.id, filled)) {

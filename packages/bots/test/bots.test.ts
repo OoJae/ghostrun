@@ -128,6 +128,20 @@ describe("cast brains", () => {
     const p = sim.pos("archer");
     expect(Math.hypot(p[0] - home[0], p[2] - home[2])).toBeLessThan(0.5);
     sim.free();
+    // and it never decides the game alone: a hit from it that loses outright, or a player with no
+    // hit points, and it holds fire
+    for (const world2 of [
+      { ...armed, rules: [...armed.rules, { id: "r_caught", src: "ai" as const, layer: "gameplay" as const, when: { t: "hit" as const, a: "player", b: "archer", s: "", n: 0, act: "" as const }, if: [], then: [{ e: "lose" as const, target: "player", v: "", n: 0, fx: "" }], once: true, cooldownS: 0, prio: 0 }] },
+      { ...armed, verbs: armed.verbs.filter((v) => v.id !== "vb_hp") },
+    ]) {
+      const s2 = new SimWorld(R, world2, { brain: castBrain(nav, world2) });
+      for (let i = 0; i < 10 * 60 && !s2.result; i++) {
+        s2.teleport("player", at);
+        s2.step(null);
+      }
+      expect(s2.log.some((e) => e.k === "shoot" && e.a === "archer")).toBe(false);
+      s2.free();
+    }
   }, 60_000);
 
   it("minds may only choose from the typed menu", () => {

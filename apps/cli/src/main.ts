@@ -3,7 +3,7 @@
 // comparisons).
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
-import { FillParser, layoutLaws, mergeFill, parseFill, pinLayout, splitObjects, type FillNote, type WorldBundle } from "@ghostrun/ir";
+import { FillParser, lawsUnwritten, layoutLaws, mergeFill, parseFill, pinLayout, splitObjects, type FillNote, type WorldBundle } from "@ghostrun/ir";
 import { placeWorld } from "@ghostrun/layout";
 import { directorMessages, editMessages, fillMessages, hostJsonSchema, hostMessages, IntentOut, intentJsonSchema, intentMessages, jsonLanes, lanesFor, mindJsonSchema, mindMessages, repairMessages, settleIntent, streamLanes, type JobCall, type Keys } from "@ghostrun/llm";
 import { loadNavNode } from "@ghostrun/nav/node";
@@ -43,7 +43,7 @@ function placeFromFill(text: string, seed: number, packId?: string, mode?: World
   if (mode) fill.draft.mode = mode;
   const pack = packFor(fill.draft.pack.id);
   const layout = pack.generate({ seed, params: pack.defaults, sub: fill.draft.pack.sub, laws: layoutLaws(text, fill.draft.laws), harder: false });
-  const placed = placeWorld({ ...fill.draft, engine: ENGINE }, layout);
+  const placed = placeWorld({ ...fill.draft, engine: ENGINE }, layout, { reach: lawsUnwritten(text) });
   for (const n of fill.notes) console.log(`  · fill line ${n.line}: ${n.kind} — ${n.text}`);
   return { bundle: placed.bundle, invalid: fill.stats.invalid, lines: fill.stats.lines, notes: placed.notes, fillNotes: fill.notes };
 }
@@ -234,7 +234,7 @@ async function main() {
       if (intentMode) fill.draft.mode = intentMode;
       const pack = packFor(fill.draft.pack.id);
       const layout = pack.generate({ seed: meta.seed ?? 7, params: pack.defaults, sub: fill.draft.pack.sub, laws: fill.draft.laws, harder: false });
-      const placed = placeWorld({ ...fill.draft, engine: ENGINE }, layout);
+      const placed = placeWorld({ ...fill.draft, engine: ENGINE }, layout, { reach: lawsUnwritten(text) });
       const r = await prove(R, placed.bundle, { engine: ENGINE, runs: 12 });
       const row = (rc: Receipt, bd: WorldBundle) => {
         const win = rc.chips.find((c) => c.id === "T3:win");

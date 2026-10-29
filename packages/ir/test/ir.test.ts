@@ -208,6 +208,19 @@ describe("fill repairs from the fourth unseen set", () => {
   });
 });
 
+describe("a trigger's subject under another key", () => {
+  it("score_gte with 'target' team:red, and enter with 'who' the player, read as a", () => {
+    const p = parseFill([
+      '{"op":"meta","mode":"play","pack":"arena","seed":3}',
+      '{"op":"zone","id":"z_a","slot":"midfield","tag":"center"}',
+      '{"op":"ent","id":"pad","kind":"goal","zone":"z_a"}',
+      '{"op":"rule","id":"r_win","when":{"t":"score_gte","target":"team:red","n":15},"then":[{"e":"win","target":"player"}]}',
+      '{"op":"rule","id":"r_in","when":{"t":"enter","who":"player","b":"pad"},"then":[{"e":"score","target":"team:red","n":1}]}',
+    ].join("\n"), { seed: 3 });
+    expect(p.draft.rules.map((r) => [r.id, r.when.a])).toEqual([["r_win", "team:red"], ["r_in", "player"]]);
+  });
+});
+
 describe("fill repairs for races", () => {
   it("go-karts, jetskis and sleds are vehicles that drive as their kind, a circuit is the track, and a lap is lap_done", () => {
     const lines = [
@@ -381,6 +394,17 @@ describe("references", () => {
   });
 });
 
+describe("laws nobody wrote", () => {
+  it("a fresh fill with no law line has unwritten laws; a law line, an edit's pinned fit or a merged patch means someone decided", async () => {
+    const { lawsUnwritten, mergeFill, pinLayout } = await import("../src");
+    const fresh = ['{"op":"meta","mode":"play","pack":"arena","seed":3}', '{"op":"zone","id":"z_a","slot":"midfield"}'].join("\n");
+    expect(lawsUnwritten(fresh)).toBe(true);
+    expect(lawsUnwritten(`${fresh}\n{"op":"law","player":{"jumpsMax":1}}`)).toBe(false);
+    expect(lawsUnwritten(pinLayout(fresh))).toBe(false);
+    expect(lawsUnwritten(mergeFill(fresh, '{"op":"zone","id":"z_b","slot":"west_half"}').text)).toBe(false);
+  });
+});
+
 describe("mergeFill (repair patches)", () => {
   const base = [
     '{"op":"meta","mode":"play","pack":"arena","seed":3}',
@@ -423,7 +447,7 @@ describe("mergeFill (repair patches)", () => {
     const { text, stats } = mergeFill(base, patch, { edit: true });
     expect(stats).toEqual({ replaced: 1, added: 1, deleted: 0, ignored: 1, locked: 2 });
     const ops = text.trim().split("\n").map((l) => JSON.parse(l) as Record<string, unknown>);
-    expect(ops[0]).toEqual({ op: "meta", mode: "play", pack: "arena", seed: 3, timeOfDay: 22, weather: "rain" });
+    expect(ops[0]).toEqual({ op: "meta", mode: "play", pack: "arena", seed: 3, timeOfDay: 22, weather: "rain", patched: true });
     expect(ops.map((o) => o.id ?? o.op)).toEqual(["meta", "z_a", "gem", "law", "r_win", "x_win", "end"]);
     expect(text).toContain('"prop":"win_reachable"');
   });
