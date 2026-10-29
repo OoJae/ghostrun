@@ -49,10 +49,15 @@ export class Atmosphere {
     const key = look.id === "neon" ? "neon" : `${look.id}:${look.variant}:${look.phase}:${look.rain ? "wet" : ""}`;
     let env = this.#envs.get(key);
     if (!env) {
-      env = environment(this.#renderer, look.envLights);
-      this.#envs.set(key, env);
+      try {
+        env = environment(this.#renderer, look.envLights);
+        this.#envs.set(key, env);
+      } catch (e) {
+        // (an emulated headset can't render off screen while it presents): the last reflections stay
+        console.warn("reflection map skipped", e);
+      }
     }
-    this.#scene.environment = env.texture;
+    if (env) this.#scene.environment = env.texture;
     this.#scene.environmentIntensity = look.env;
     this.#rain.object.visible = look.rain;
     this.#rain.shelter(look.indoor ? shelter : null);
