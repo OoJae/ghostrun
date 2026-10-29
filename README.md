@@ -41,7 +41,7 @@ Phones get on-screen controls. Browsers with WebXR get **Enter VR** (first perso
 | `packages/layout` | The placer and its logged repairs (verbs implied by kinds, collections, door placement, footprints, win fallbacks…) |
 | `packages/proof` | The proof ladder T0–T3, the tour proof for places, issues for the repair loop, planted bugs for "Try to fool it" |
 | `packages/llm` | Prompts and a streaming client for the intent and fill models |
-| `apps/web` | three.js r186 (WebGPU with WebGL2 fallback) client: looks (neon, grove, gallery), HUD, receipt, X-ray, share, touch, VR |
+| `apps/web` | three.js r186 (WebGPU with WebGL2 fallback) client: eleven looks picked from what the AI wrote (neon city, grove, gallery, desert, snow, space station, haunted, medieval, candy, jungle, home, with sub-styles such as beach, moon, ice cave, wizard school, tea house), HUD, receipt, X-ray, share, touch, VR |
 | `apps/edge-api` | Cloudflare Worker: governed `/v1/build`, `/v1/edit` and `/v1/repair` (spend caps per session, IP and pool; fails closed), Turnstile and judge-token gate, share store |
 | `apps/cli` | `ghostrun verify`, `build`, `bench`, `rebench [--repair]`, `edits`, `trust` (the eval table), `fool` (planted bugs), `diagnose` (one world taken apart), `gallery-add` |
 | `tools/detcheck` | Cross-runtime determinism check |

@@ -1,7 +1,8 @@
 // Statics for the non-city looks. Grove: terrain, trees, rocks, bushes, water and tree lines (at
 // night bioluminescent canopies, glowing mushrooms and fireflies). Gallery: polished floors, pale
-// walls with baseboards, white plinths and warm pools of light. Colliders are never changed: each
-// static keeps its exact box, dressed to read as what its shape is.
+// walls with baseboards, white plinths and warm pools of light. The newer looks dress themselves
+// (render/dressing). Colliders are never changed: each static keeps its exact box, dressed to read
+// as what its shape is.
 import type { WorldBundle } from "@ghostrun/ir";
 import {
   Color, ConeGeometry, CylinderGeometry, DodecahedronGeometry, Group, IcosahedronGeometry, InstancedMesh, Matrix4, Mesh,
@@ -11,6 +12,7 @@ import { mx_noise_float, positionWorld, vec3, vertexColor } from "three/tsl";
 import { BoxBatch } from "./boxes";
 import type { LookStyle } from "./looks";
 import { glowMaterial, lin, stripMaterial } from "./materials";
+import { DRESS } from "./dressing";
 
 interface Ctx {
   keep<T extends BufferGeometry | Material>(x: T): T;
@@ -53,6 +55,10 @@ export interface Scenery {
   groundY: number;
   bounds: { minX: number; maxX: number; minZ: number; maxZ: number };
   groundHex: string;
+  /** A procedural ground in place of the flat groundHex. */
+  ground?: Material;
+  /** A cut-away building's footprint: the weather stays outside it. */
+  shelter?: { minX: number; maxX: number; minZ: number; maxZ: number } | null;
 }
 
 function mainFloor(b: WorldBundle): number {
@@ -62,7 +68,10 @@ function mainFloor(b: WorldBundle): number {
 }
 
 export function buildScenery(b: WorldBundle, look: LookStyle, c: Ctx): Scenery {
-  return look.id === "gallery" ? gallery(b, look, c) : grove(b, look, c);
+  if (look.variant === "underwater") return DRESS.desert(b, look, c); // a seabed under caustics, indoors or out
+  if (look.id === "gallery") return gallery(b, look, c);
+  if (look.id === "grove" || look.id === "neon") return grove(b, look, c);
+  return DRESS[look.id](b, look, c);
 }
 
 function grove(b: WorldBundle, look: LookStyle, c: Ctx): Scenery {
@@ -123,7 +132,8 @@ function grove(b: WorldBundle, look: LookStyle, c: Ctx): Scenery {
       (rnd(i + 11) < 0.5 ? rocks : bushes).push(item);
       return;
     }
-    solid.add(s.pos, s.size, lin("#4a3626")); // anything else: a timber block (cabin, stall)
+    // anything else: a timber block (cabin, stall), or in a maze a stretch of hedge
+    solid.add(s.pos, s.size, b.pack.id === "maze" ? lin(night ? "#0b1a14" : "#2f4a26") : lin("#4a3626"));
   });
 
   // distant forest ring beyond the map: silhouettes the fog dissolves
@@ -185,10 +195,12 @@ function gallery(b: WorldBundle, look: LookStyle, c: Ctx): Scenery {
   const wall = lin("#efebe4");
   const floor = lin("#c9c3b8");
   const base = lin("#2c2b30");
+  const floorY = mainFloor(b);
   b.statics.forEach((s) => {
     const [x, y, z] = s.pos;
     const [w, h, d] = s.size;
     const top = y + h / 2;
+    if (s.surf !== "floor" && y - h / 2 >= floorY + CUT_H) return; // over a doorway: above the cut walls, so not floating there
     if (s.surf === "floor") {
       floorTops.push(top);
       if (w * d > 400 && w * d > (bounds.maxX - bounds.minX) * (bounds.maxZ - bounds.minZ) * 0.5) bounds = { minX: x - w / 2, maxX: x + w / 2, minZ: z - d / 2, maxZ: z + d / 2 };
@@ -229,5 +241,5 @@ function gallery(b: WorldBundle, look: LookStyle, c: Ctx): Scenery {
     l.position.set(...p);
     c.root.add(l);
   }
-  return { floorTops, bounds, groundY: mainFloor(b), groundHex: "#a9a296" };
+  return { floorTops, bounds, groundY: mainFloor(b), groundHex: "#a9a296", shelter: look.indoor ? bounds : null };
 }

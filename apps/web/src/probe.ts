@@ -17,6 +17,8 @@ export interface GhostrunProbe {
   proof?: { headline: string; chips: number };
   /** NPC ground positions [x, z], refreshed twice a second. */
   cast?: Record<string, [number, number]>;
+  /** The current world's look (and variant). */
+  look?: string;
   /** How long the background shader prewarm took. */
   prewarmMs?: number;
   /** In an immersive VR session. */

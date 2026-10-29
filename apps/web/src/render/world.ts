@@ -14,7 +14,8 @@ import { PALETTE, beamMaterial, bodyMaterial, buildingMaterial, glowMaterial, gr
 import { kitActor, type KitActor } from "./kits";
 import type { LookStyle } from "./looks";
 import { buildScenery, type Scenery } from "./scenery";
-import { signMaterial } from "./sign";
+import { SIGN_STYLE, signMaterial, signText } from "./sign";
+import { sunDirection } from "./sky";
 import { vehicleActor } from "./vehicles";
 import { verb } from "@ghostrun/kits";
 
@@ -23,6 +24,10 @@ export interface WorldView {
   /** Pose-driven objects by entity id, plus the player under PLAYER_ID. */
   actors: Map<string, Object3D>;
   colliders: Box[];
+  /** Top of the main floor (where the weather's ground-hugging drift starts). */
+  groundY: number;
+  /** A cut-away building's footprint: rain and snow stay outside it. */
+  shelter: { minX: number; maxX: number; minZ: number; maxZ: number } | null;
   /** Cosmetic per-frame animation only; never moves an actor's pose. */
   update(t: number): void;
   /** Sim state changes and removals (switch on, door open, coin collected). */
@@ -64,7 +69,7 @@ export function buildWorldView(bundle: WorldBundle, look: LookStyle): WorldView 
   const neonLook = look.id === "neon";
   const city = neonLook && bundle.pack.id === "city_block";
   // entity glow lights were tuned for dark streets; pale rooms and daylight need far less
-  const lightK = neonLook ? 1 : look.night ? 0.45 : 0.15;
+  const lightK = neonLook ? 1 : look.night ? 0.45 : look.phase === "dusk" ? 0.3 : 0.15;
   const root = new Group();
   root.name = "world";
   const actors = new Map<string, Object3D>();
@@ -188,10 +193,11 @@ export function buildWorldView(bundle: WorldBundle, look: LookStyle): WorldView 
   neonMesh.name = "neon";
   if (neonLook) root.add(solidMesh, neonMesh);
 
-  const groundMat = neonLook ? groundMaterial() : new MeshStandardNodeMaterial({ color: new Color(scenery!.groundHex), roughness: 0.95, metalness: 0 });
+  const groundMat = neonLook ? groundMaterial() : (scenery!.ground ?? new MeshStandardNodeMaterial({ color: new Color(scenery!.groundHex), roughness: 0.95, metalness: 0 }));
   const ground = new Mesh(keep(new PlaneGeometry(320, 240)), keep(groundMat));
   ground.rotation.x = -Math.PI / 2;
-  ground.position.y = gy - 0.012;
+  // a little under the floors' tops so the two never fight for the same depth (the city keeps its own)
+  ground.position.y = gy - (neonLook ? 0.012 : 0.05);
   ground.name = "ground";
   root.add(ground);
 
@@ -204,7 +210,7 @@ export function buildWorldView(bundle: WorldBundle, look: LookStyle): WorldView 
   // ---- Lights ----------------------------------------------------------------------------------
   const hemi = new HemisphereLight(look.hemi.sky, look.hemi.ground, look.hemi.intensity);
   const moon = new DirectionalLight(look.sun.color, look.sun.intensity);
-  moon.position.set(-20, 40, 18);
+  moon.position.copy(sunDirection(look)).multiplyScalar(48.4); // from where the sky draws its sun or moon
   root.add(hemi, moon);
   if (neonLook) for (const [hex, p] of [[PALETTE.magenta, [-14, 5, -9]], [PALETTE.cyan, [14, 5, 9]]] as const) {
     const l = new PointLight(hex, 38, 24, 1.6);
@@ -231,7 +237,10 @@ export function buildWorldView(bundle: WorldBundle, look: LookStyle): WorldView 
   const visorGeo = keep(new CapsuleGeometry(0.07, 0.3, 4, 8));
   visorGeo.rotateZ(Math.PI / 2);
   const footRingGeo = keep(new RingGeometry(0.42, 0.5, 40));
-  const npcBody = keep(bodyMaterial("#1b1d2b", 0.4, 0.45));
+  // on a dark look without the city's own light, the moon picks out everyone's edge: a dark body alone
+  // would be a shape against the floor
+  const moonlit = look.night && !neonLook;
+  const npcBody = keep(moonlit ? rimBodyMaterial("#2c2e40", look.sun.color, 1.4) : bodyMaterial("#1b1d2b", 0.4, 0.45));
   const npcShadows: [Object3D, Mesh][] = [];
 
   const character = (e: Pick<Entity, "pos" | "team">, body: Material, visorHex: string, visorScale: number) => {
@@ -333,8 +342,9 @@ export function buildWorldView(bundle: WorldBundle, look: LookStyle): WorldView 
       }
       case "platform": {
         const g = new Group();
-        const slabGeo = new BoxBatch().add([0, 0, 0], e.size, lin("#1a1c2a"), [0, 0, 0, 0], false).build();
-        const slab = new Mesh(keep(slabGeo), keep(bodyMaterial("#1a1c2a", 0.35, 0.5)));
+        const slabHex = neonLook ? "#1a1c2a" : look.prop;
+        const slabGeo = new BoxBatch().add([0, 0, 0], e.size, lin(slabHex), [0, 0, 0, 0], false).build();
+        const slab = new Mesh(keep(slabGeo), keep(bodyMaterial(slabHex, 0.35, 0.5)));
         const edges = new BoxBatch();
         const [hx, hy, hz] = [e.size[0] / 2, e.size[1] / 2, e.size[2] / 2];
         const c = lin(PALETTE.cyan, 3);
@@ -353,7 +363,7 @@ export function buildWorldView(bundle: WorldBundle, look: LookStyle): WorldView 
         const g = new Group();
         const face = new Group();
         face.rotation.y = Math.atan2(-e.pos[0], -e.pos[2]);
-        const panel = new Mesh(keep(new PlaneGeometry(e.size[0], e.size[1])), keep(signMaterial("NOODLES", "OPEN 24H  ·  CTF FINALS")));
+        const panel = new Mesh(keep(new PlaneGeometry(e.size[0], e.size[1])), keep(signMaterial(...signText(bundle, e, look.id), SIGN_STYLE[look.id])));
         panel.position.z = e.size[2] / 2 + 0.005;
         const back = new Mesh(keep(new PlaneGeometry(e.size[0] + 0.12, e.size[1] + 0.12)), keep(bodyMaterial("#0c0b12", 0.6, 0.3)));
         back.position.z = -0.005;
@@ -379,8 +389,8 @@ export function buildWorldView(bundle: WorldBundle, look: LookStyle): WorldView 
         break;
       }
       default: {
-        const b = new BoxBatch().add([0, 0, 0], e.size, lin("#22243a"), [0, 0, 0, 0], false);
-        const m = new Mesh(keep(b.build()), keep(bodyMaterial("#22243a")));
+        const b = new BoxBatch().add([0, 0, 0], e.size, [1, 1, 1], [0, 0, 0, 0], false);
+        const m = new Mesh(keep(b.build()), keep(bodyMaterial(look.prop)));
         m.position.set(...e.pos);
         obj = m;
       }
@@ -392,7 +402,7 @@ export function buildWorldView(bundle: WorldBundle, look: LookStyle): WorldView 
 
   // ---- Player ----------------------------------------------------------------------------------
   const spawn = bundle.entities.find((e) => e.id === "sp_red") ?? bundle.entities.find((e) => e.kind === "spawn");
-  const player = character({ pos: spawn ? [spawn.pos[0], spawn.pos[1] + 0.9, spawn.pos[2]] : [0, 0.9, 0], team: spawn?.team ?? "red" }, keep(rimBodyMaterial("#eef1ff", PALETTE.cyan, 1.8)), PALETTE.cyan, 6);
+  const player = character({ pos: spawn ? [spawn.pos[0], spawn.pos[1] + 0.9, spawn.pos[2]] : [0, 0.9, 0], team: spawn?.team ?? "red" }, keep(rimBodyMaterial("#eef1ff", PALETTE.cyan, moonlit ? 3 : 1.8)), PALETTE.cyan, 6);
   const waist = new Mesh(keep(new TorusGeometry(0.335, 0.03, 8, 40)), keep(glowMaterial(PALETTE.red, 3)));
   waist.rotation.x = Math.PI / 2;
   waist.position.y = -0.08;
@@ -410,6 +420,8 @@ export function buildWorldView(bundle: WorldBundle, look: LookStyle): WorldView 
     root,
     actors,
     colliders,
+    groundY: gy,
+    shelter: scenery?.shelter ?? null,
     setState(id: string, st: string) {
       kits.get(id)?.setState?.(st);
     },

@@ -3,7 +3,7 @@
 // only: it reads the sim's shots and hit points and never writes them.
 import type { WorldBundle } from "@ghostrun/ir";
 import type { SimWorld } from "@ghostrun/sim";
-import { AdditiveBlending, CylinderGeometry, Group, Mesh, PlaneGeometry, SphereGeometry, Vector3, type BufferGeometry, type Camera, type Material, type Object3D } from "three/webgpu";
+import { AdditiveBlending, BackSide, CylinderGeometry, Group, Mesh, MeshBasicNodeMaterial, PlaneGeometry, SphereGeometry, Vector3, type BufferGeometry, type Camera, type Material, type Object3D } from "three/webgpu";
 import { glowMaterial, PALETTE } from "./materials";
 
 const PER_TEAM = 12; // shots drawn at once, per team colour
@@ -24,8 +24,12 @@ export interface CombatView {
   dispose(): void;
 }
 
-/** The fight layer for a world with weapons or hit points (null for any other world). */
-export function combatView(bundle: WorldBundle, sim: SimWorld): CombatView | null {
+/**
+ * The fight layer for a world with weapons or hit points (null for any other world). Under a `pale`
+ * look (a day, snow, candy) added light vanishes against the ground, so a bolt glows less and wears a
+ * dark edge, its tracer and the flash tint instead of adding, and the bars sit on a darker back.
+ */
+export function combatView(bundle: WorldBundle, sim: SimWorld, pale = false): CombatView | null {
   if (!bundle.verbs.some((v) => v.verb === "combat_sport.shoot" || v.verb === "combat_sport.health")) return null;
   const root = new Group();
   root.name = "combat";
@@ -42,12 +46,20 @@ export function combatView(bundle: WorldBundle, sim: SimWorld): CombatView | nul
   const boltGeo = keep(new SphereGeometry(0.17, 16, 10));
   const tailGeo = keep(new CylinderGeometry(0.05, 0.02, 0.9, 8, 1, true));
   const pools = new Map<string, { bolt: Mesh; tail: Mesh }[]>();
+  // the dark edge: the back faces of a slightly bigger sphere, showing only round the bolt
+  const edge = pale ? keep(new MeshBasicNodeMaterial({ color: "#140c1c", side: BackSide })) : null;
   for (const [team, hex] of Object.entries(SHOT_HEX)) {
-    const core = keep(glowMaterial(hex, 7));
-    const trail = keep(glowMaterial(hex, 3, 0.6));
-    trail.blending = AdditiveBlending;
+    const core = keep(glowMaterial(hex, pale ? 2.4 : 7));
+    const trail = keep(glowMaterial(hex, pale ? 1.4 : 3, pale ? 0.75 : 0.6));
+    if (!pale) trail.blending = AdditiveBlending;
     pools.set(team, Array.from({ length: PER_TEAM }, () => {
       const bolt = new Mesh(boltGeo, core);
+      if (edge) {
+        const rim = new Mesh(boltGeo, edge);
+        rim.scale.setScalar(1.35);
+        rim.frustumCulled = false;
+        bolt.add(rim);
+      }
       const tail = new Mesh(tailGeo, trail);
       for (const m of [bolt, tail]) ((m.frustumCulled = false), m.position.set(0, -500, 0), root.add(m));
       return { bolt, tail };
@@ -57,8 +69,8 @@ export function combatView(bundle: WorldBundle, sim: SimWorld): CombatView | nul
   // flashes where a shot lands
   const flashGeo = keep(new SphereGeometry(0.5, 16, 10));
   const flashes = Array.from({ length: FLASHES }, () => {
-    const mat = keep(glowMaterial("#ffffff", 3, 0.8));
-    mat.blending = AdditiveBlending;
+    const mat = keep(pale ? glowMaterial("#ffb050", 1.6, 0.8) : glowMaterial("#ffffff", 3, 0.8));
+    if (!pale) mat.blending = AdditiveBlending;
     const m = new Mesh(flashGeo, mat);
     m.frustumCulled = false;
     m.position.set(0, -500, 0);
@@ -72,8 +84,8 @@ export function combatView(bundle: WorldBundle, sim: SimWorld): CombatView | nul
   const team = (id: string) => (id === "player" ? sim.entity("player")?.team ?? "red" : bundle.entities.find((e) => e.id === id)?.team ?? "");
   const backGeo = keep(new PlaneGeometry(BAR_W + 0.06, 0.13));
   const fillGeo = keep(new PlaneGeometry(BAR_W, 0.08).translate(BAR_W / 2, 0, 0));
-  const backMat = keep(glowMaterial("#000000", 1, 0.55));
-  const fillMats = new Map(Object.entries(BAR_HEX).map(([k, hex]) => [k, keep(glowMaterial(hex, 1.8))]));
+  const backMat = keep(glowMaterial("#000000", 1, pale ? 0.8 : 0.55));
+  const fillMats = new Map(Object.entries(BAR_HEX).map(([k, hex]) => [k, keep(glowMaterial(hex, pale ? 1.2 : 1.8))]));
   const bars = sim.order
     .filter((id) => sim.maxHp(id) !== null)
     .map((id) => {

@@ -1,16 +1,21 @@
 // The sound of the place, one bed per look: filtered noise under slow LFOs, with the odd event
-// scattered over it (a car going by, a bird, a cricket's chirp, a raindrop). A new world crossfades
-// from the last one's bed. Rain is a layer of its own that follows whether the world's rain is on.
+// scattered over it (a car going by, a bird, a cricket's chirp, a raindrop, a beep, a creak). A new
+// world crossfades from the last one's bed. Rain is a layer of its own that follows whether the
+// world's rain is on (muffled when you hear it from indoors).
 import type { LookStyle } from "../render/looks";
 
 const SILENT = 0.0004;
 
 export interface Place {
   look: LookStyle["id"];
+  variant: string;
   night: boolean;
   rain: boolean;
   storm: boolean;
   snow: boolean;
+  dust: boolean;
+  /** Inside a building: the weather is heard through its walls. */
+  indoor: boolean;
 }
 
 /** A running bed: its nodes, and how often each of its scattered events comes round. */
@@ -59,11 +64,21 @@ export class Ambience {
     bed.out.gain.setValueAtTime(0, now);
     bed.out.gain.linearRampToValueAtTime(1, now + 2.5);
     bed.out.connect(this.#out);
-    if (p.look === "neon") this.#city(bed);
-    else if (p.look === "grove") (p.night ? this.#night(bed, p) : this.#day(bed, p));
-    else this.#room(bed);
-    if (p.rain || p.storm) this.#rain(bed, p.storm);
-    if (p.snow) this.#wind(bed, 380, 0.05);
+    switch (p.look) {
+      case "neon": this.#city(bed); break;
+      case "grove": (p.night ? this.#night(bed, p) : this.#day(bed, p)); break;
+      case "desert": (p.variant === "underwater" ? this.#seabed(bed) : p.variant === "beach" ? this.#beach(bed, p) : this.#desert(bed, p)); break;
+      case "snow": (p.variant === "cave" ? this.#cave(bed) : this.#snowfield(bed, p)); break;
+      case "space": this.#station(bed, p.variant === "moon"); break;
+      case "haunted": this.#haunt(bed, p); break;
+      case "medieval": this.#castle(bed, p); break;
+      case "candy": this.#candy(bed, p); break;
+      case "jungle": this.#jungle(bed, p); break;
+      case "home": this.#home(bed, p); break;
+      default: (p.variant === "underwater" ? this.#seabed(bed) : this.#room(bed));
+    }
+    if (p.rain || p.storm) this.#rain(bed, p.storm, p.indoor);
+    if (p.snow && p.look !== "snow") this.#wind(bed, 380, 0.05);
     this.#bed = bed;
   }
 
@@ -302,11 +317,301 @@ export class Ambience {
     this.#hum(bed, 117, 0.005);
   }
 
+  /** A gust: wind rising and falling through a sweeping band, from one side. */
+  #gust(bed: Bed, t: number, level: number, f = 420) {
+    const v = this.#spot(bed, rand(-0.8, 0.8), 1, 0.2);
+    const d = rand(1.8, 3.6);
+    this.#burst(v, t, "bandpass", f * rand(0.8, 1.1), f * rand(1.8, 2.6), 0.9, d * 0.45, d * 0.55, level * rand(0.6, 1));
+  }
+
+  /** Desert: a dry wind with grains of sand in it and gusts sweeping through; at night, a few crickets. */
+  #desert(bed: Bed, p: Place) {
+    const storm = p.dust;
+    this.#wind(bed, 420, storm ? 0.14 : 0.08);
+    this.#layer(bed, "highpass", 4200, 0.6, storm ? 0.03 : 0.012, 0.17, 0.8);
+    bed.events.push({ next: 0, every: storm ? [2.5, 6] : [7, 15], play: (t) => this.#gust(bed, t, storm ? 0.09 : 0.05) });
+    if (!p.night) return;
+    for (let i = 0; i < 2; i++) {
+      const f = rand(3800, 4600);
+      const pan = rand(-0.8, 0.8);
+      bed.events.push({ next: 0, every: [0.6, 1.4], play: (t) => Math.random() < 0.6 && this.#chirp(bed, t, f, pan) });
+    }
+  }
+
+  /** The beach: waves rolling in and drawing back, a sea breeze, now and then a gull. */
+  #beach(bed: Bed, p: Place) {
+    this.#layer(bed, "lowpass", 380, 0.6, 0.16, 0.09, 0.85);
+    this.#layer(bed, "bandpass", 1300, 0.5, 0.035, 0.09, 0.9);
+    this.#wind(bed, 600, 0.05);
+    if (p.rain || p.night) return;
+    bed.events.push({
+      next: 0,
+      every: [6, 15],
+      play: (t) => {
+        // a gull: two falling cries with a crack in them
+        const v = this.#spot(bed, rand(-0.8, 0.8), rand(0.5, 0.9), 0.4);
+        const f = rand(1500, 1900);
+        this.#tone(v, t, f, f * 0.7, 0.03, 0.32, 0.02, "sawtooth");
+        this.#tone(v, t + 0.42, f * 1.05, f * 0.68, 0.03, 0.26, 0.016, "sawtooth");
+      },
+    });
+  }
+
+  /** Under the sea: a deep muffled swell, and bubbles rising past. */
+  #seabed(bed: Bed) {
+    this.#layer(bed, "lowpass", 160, 0.7, 0.22, 0.07, 0.4);
+    this.#layer(bed, "bandpass", 420, 0.8, 0.02, 0.11, 0.7);
+    bed.events.push({
+      next: 0,
+      every: [0.8, 3],
+      play: (t) => {
+        const v = this.#spot(bed, rand(-0.7, 0.7), rand(0.4, 1), 0.6);
+        const n = 1 + Math.floor(Math.random() * 4);
+        for (let i = 0; i < n; i++) {
+          const f = rand(260, 520);
+          this.#tone(v, t + i * rand(0.05, 0.12), f, f * 2.4, 0.004, 0.06, 0.03);
+        }
+      },
+    });
+  }
+
+  /** Snowfields: the hush of snow, a low wind, gusts that lift it, and the odd crack of a branch. */
+  #snowfield(bed: Bed, p: Place) {
+    this.#wind(bed, 300, p.night ? 0.05 : 0.04);
+    this.#layer(bed, "highpass", 5200, 0.5, 0.006, 0.08, 0.6);
+    bed.events.push({ next: 0, every: [8, 18], play: (t) => this.#gust(bed, t, p.snow ? 0.07 : 0.05, 520) });
+    bed.events.push({
+      next: 0,
+      every: [20, 45],
+      play: (t) => {
+        const v = this.#spot(bed, rand(-0.8, 0.8), 0.6, 0.7);
+        this.#burst(v, t, "bandpass", 1800, 900, 1.2, 0.002, 0.08, 0.05);
+      },
+    });
+  }
+
+  /** An ice cave: a low drone under the rock and water dripping into pools, ringing round the walls. */
+  #cave(bed: Bed) {
+    this.#layer(bed, "lowpass", 110, 0.7, 0.14, 0.04, 0.3);
+    this.#hum(bed, 55, 0.006);
+    bed.events.push({
+      next: 0,
+      every: [1.2, 4],
+      play: (t) => {
+        const v = this.#spot(bed, rand(-0.9, 0.9), rand(0.4, 1), 0.85);
+        const f = rand(1100, 1900);
+        this.#tone(v, t, f, f * 0.55, 0.002, 0.09, 0.03);
+      },
+    });
+  }
+
+  /** A space station: the air handling, a mains hum, panels beeping and a servo whirring somewhere. On the moon, almost nothing. */
+  #station(bed: Bed, moon: boolean) {
+    if (moon) {
+      this.#layer(bed, "lowpass", 90, 0.7, 0.07, 0.03, 0.3);
+      this.#hum(bed, 50, 0.004);
+    } else {
+      this.#layer(bed, "lowpass", 300, 0.6, 0.09, 0.05, 0.2);
+      this.#layer(bed, "bandpass", 1800, 2, 0.006, 0.07, 0.5);
+      this.#hum(bed, 60, 0.012);
+      this.#hum(bed, 120, 0.004, "sawtooth", 900);
+    }
+    bed.events.push({
+      next: 0,
+      every: moon ? [9, 20] : [3, 9],
+      play: (t) => {
+        // a console: two or three short tones
+        const v = this.#spot(bed, rand(-0.8, 0.8), rand(0.4, 0.8), 0.35);
+        const base = [880, 1175, 1320, 1568][Math.floor(Math.random() * 4)]!;
+        const n = 2 + Math.floor(Math.random() * 2);
+        for (let i = 0; i < n; i++) this.#tone(v, t + i * 0.11, base * (i % 2 ? 1.335 : 1), base * (i % 2 ? 1.335 : 1), 0.004, 0.07, 0.022, "square");
+      },
+    });
+    if (moon) return;
+    bed.events.push({
+      next: 0,
+      every: [10, 22],
+      play: (t) => {
+        const v = this.#spot(bed, rand(-0.8, 0.8), 0.7, 0.4);
+        const d = rand(0.6, 1.2);
+        this.#burst(v, t, "bandpass", 700, 2400, 4, d * 0.5, d * 0.5, 0.025);
+        this.#tone(v, t, 180, 320, d * 0.5, d * 0.5, 0.006, "sawtooth");
+      },
+    });
+  }
+
+  /** Haunted: a low beating drone, the wind moaning far off, timbers creaking, and now and then a distant bell. */
+  #haunt(bed: Bed, p: Place) {
+    this.#hum(bed, 55, 0.008);
+    this.#hum(bed, 55.6, 0.008); // two close tones beat slowly against each other
+    this.#layer(bed, "lowpass", 140, 0.7, 0.1, 0.05, 0.4);
+    // the wind's howl: a narrow band sweeping slowly
+    this.#layer(bed, "bandpass", 520, 6, 0.05, 0.06, 0.8, [0.04, 220]);
+    bed.events.push({
+      next: 0,
+      every: [6, 15],
+      play: (t) => {
+        // a creak: a slow, rough, falling groan through a resonant band
+        const v = this.#spot(bed, rand(-0.9, 0.9), rand(0.5, 1), 0.6);
+        const bp = this.#ctx.createBiquadFilter();
+        bp.type = "bandpass";
+        bp.frequency.value = rand(600, 1100);
+        bp.Q.value = 5;
+        bp.connect(v);
+        const f = rand(70, 110);
+        this.#tone(bp, t, f, f * 0.75, 0.15, rand(0.5, 0.9), 0.06, "sawtooth");
+        setTimeout(() => bp.disconnect(), 2500);
+      },
+    });
+    if (p.indoor) return;
+    bed.events.push({
+      next: 0,
+      every: [25, 50],
+      play: (t) => {
+        const v = this.#spot(bed, rand(-0.5, 0.5), 0.5, 0.9);
+        this.#tone(v, t, 196, 194, 0.01, 3.5, 0.02);
+        this.#tone(v, t, 196 * 2.76, 196 * 2.74, 0.01, 2.2, 0.006);
+      },
+    });
+  }
+
+  /** A crackle of flames: tiny bright pops at random, louder now and then. */
+  #crackle(bed: Bed, level: number) {
+    bed.events.push({
+      next: 0,
+      every: [0.04, 0.3],
+      play: (t) => {
+        const v = this.#spot(bed, rand(-0.6, 0.6), 1, 0.2);
+        this.#burst(v, t, "highpass", rand(1500, 4000), rand(1200, 3000), 0.7, 0.001, rand(0.004, 0.02), level * (Math.random() < 0.1 ? 2.5 : rand(0.3, 1)));
+      },
+    });
+    this.#layer(bed, "lowpass", 400, 0.6, level * 2.5, 0.3, 0.5); // the fire's low roar
+  }
+
+  /** The castle: torches crackling, a breeze over the walls and birds by day; crickets and an owl by night. Magic adds a shimmer. */
+  #castle(bed: Bed, p: Place) {
+    this.#wind(bed, 480, 0.06);
+    this.#crackle(bed, p.night ? 0.012 : 0.006);
+    if (p.variant === "magic") {
+      bed.events.push({
+        next: 0,
+        every: [2.5, 7],
+        play: (t) => {
+          const v = this.#spot(bed, rand(-0.8, 0.8), rand(0.4, 0.8), 0.7);
+          const scale = [1, 9 / 8, 5 / 4, 3 / 2, 5 / 3, 2];
+          for (let i = 0; i < 3; i++) {
+            const f = 1046 * scale[Math.floor(Math.random() * scale.length)]!;
+            this.#tone(v, t + i * 0.09, f, f, 0.005, 0.5, 0.012);
+          }
+        },
+      });
+    }
+    if (p.night) return this.#night(bed, { ...p, look: "grove" });
+    if (p.rain) return;
+    bed.events.push({ next: 0, every: [3, 9], play: (t) => this.#bird(bed, t) });
+  }
+
+  /** Candy land: a music box chiming in the breeze, never the same tune twice. */
+  #candy(bed: Bed, p: Place) {
+    this.#wind(bed, 700, 0.05);
+    const scale = [0, 2, 4, 7, 9, 12, 14, 16];
+    bed.events.push({
+      next: 0,
+      every: [1.4, 3.8],
+      play: (t) => {
+        const v = this.#spot(bed, rand(-0.7, 0.7), rand(0.4, 0.8), 0.6);
+        const n = 1 + Math.floor(Math.random() * 3);
+        for (let i = 0; i < n; i++) {
+          const f = 1046.5 * 2 ** (scale[Math.floor(Math.random() * scale.length)]! / 12);
+          this.#tone(v, t + i * 0.16, f, f, 0.003, 0.6, p.night ? 0.014 : 0.02, "triangle");
+        }
+      },
+    });
+  }
+
+  /** The jungle: insects buzzing in waves, calls and whoops from the canopy; at night crickets and frogs. */
+  #jungle(bed: Bed, p: Place) {
+    this.#wind(bed, 380, 0.04);
+    // cicadas: a narrow high band whose level swells and fades
+    this.#layer(bed, "bandpass", 5600, 7, 0.034, 0.09, 0.95);
+    this.#layer(bed, "bandpass", 4300, 6, 0.018, 0.13, 0.9);
+    if (p.night) {
+      this.#night(bed, { ...p, look: "grove" });
+      bed.events.push({
+        next: 0,
+        every: [0.5, 1.6],
+        play: (t) => {
+          // a frog: a few low rubbery pulses
+          const v = this.#spot(bed, rand(-0.9, 0.9), rand(0.4, 0.9), 0.3);
+          const f = rand(240, 380);
+          for (let i = 0; i < 3; i++) this.#tone(v, t + i * 0.07, f, f * 0.9, 0.006, 0.05, 0.03, "triangle");
+        },
+      });
+      return;
+    }
+    if (p.rain) return;
+    bed.events.push({ next: 0, every: [2, 6], play: (t) => this.#bird(bed, t) });
+    bed.events.push({
+      next: 0,
+      every: [7, 16],
+      play: (t) => {
+        // a whooping call from the canopy, rising
+        const v = this.#spot(bed, rand(-0.9, 0.9), rand(0.5, 0.9), 0.6);
+        const f = rand(500, 700);
+        for (let i = 0; i < 3; i++) this.#tone(v, t + i * 0.28, f * (1 + i * 0.12), f * (1.5 + i * 0.12), 0.03, 0.2, 0.025);
+      },
+    });
+  }
+
+  /** A home: room tone, the fridge's hum and a clock ticking; a tea house hears a bamboo knock; a library turns a page. */
+  #home(bed: Bed, p: Place) {
+    this.#layer(bed, "lowpass", 220, 0.6, 0.085, 0.03, 0.2);
+    this.#hum(bed, 98, 0.003);
+    if (p.variant === "japanese") {
+      bed.events.push({
+        next: 0,
+        every: [14, 26],
+        play: (t) => {
+          // a shishi-odoshi: water tips the bamboo, which knocks on the stone
+          const v = this.#spot(bed, rand(-0.6, 0.6), 0.8, 0.6);
+          this.#tone(v, t, 520, 380, 0.002, 0.18, 0.05, "triangle");
+          this.#burst(v, t, "bandpass", 1400, 900, 2, 0.001, 0.05, 0.04);
+        },
+      });
+    } else {
+      let tick = true;
+      bed.events.push({
+        next: 0,
+        every: [1, 1],
+        play: (t) => {
+          const v = this.#spot(bed, 0.35, 0.5, 0.3);
+          this.#burst(v, t, "bandpass", tick ? 3200 : 2700, 2000, 4, 0.001, 0.012, 0.03);
+          tick = !tick;
+        },
+      });
+    }
+    if (p.variant !== "library") return;
+    bed.events.push({
+      next: 0,
+      every: [12, 28],
+      play: (t) => {
+        const v = this.#spot(bed, rand(-0.7, 0.7), 0.7, 0.4);
+        this.#burst(v, t, "highpass", 2500, 4500, 0.7, 0.04, 0.18, 0.025);
+      },
+    });
+  }
+
   /** Rain: a wash of high noise, heavier in a storm (with thunder), and drops landing close by. */
-  #rain(bed: Bed, storm: boolean) {
+  #rain(bed: Bed, storm: boolean, indoor = false) {
     const level = storm ? 0.085 : 0.05;
-    this.#layer(bed, "highpass", 900, 0.5, level, 0.13, 0.25);
-    this.#layer(bed, "bandpass", 5200, 0.7, level * 0.4, 0.21, 0.3);
+    if (indoor) {
+      // heard through the walls: the wash without its hiss, on the roof rather than all around
+      this.#layer(bed, "lowpass", 1400, 0.5, level * 0.8, 0.13, 0.25);
+      this.#layer(bed, "bandpass", 700, 0.7, level * 0.4, 0.21, 0.3);
+    } else {
+      this.#layer(bed, "highpass", 900, 0.5, level, 0.13, 0.25);
+      this.#layer(bed, "bandpass", 5200, 0.7, level * 0.4, 0.21, 0.3);
+    }
     bed.events.push({
       next: 0,
       every: storm ? [0.04, 0.12] : [0.07, 0.2],
