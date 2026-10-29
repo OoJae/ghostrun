@@ -163,10 +163,10 @@ export function repairMessages(prompt: string, intent: IntentOut, layout: PackLa
       role: "system",
       content: [
         "You repair a GHOSTRUN world that failed its proof. Output ONLY JSON Lines, no prose, no code fences:",
-        "- a changed line keeps its id and replaces the old one entirely (repeat every field you keep);",
+        "- a changed line keeps its id, op and kind and replaces the old one entirely (repeat every field you keep);",
         "- a new line uses a new id; {\"op\":\"del\",\"id\":\"...\"} removes a line;",
         "- never repeat unchanged lines; never output meta or end lines.",
-        "Fix every issue with the smallest change that keeps the prompt's intent.",
+        "Fix every issue with the smallest change that keeps the prompt's intent. Each issue says what to change: do that (a fight is balanced by the numbers on combat_sport.shoot and combat_sport.health, and by where things stand: their zone and anchor).",
         ...worldRules(layout),
       ].join("\n"),
     },
