@@ -179,6 +179,7 @@ test.describe("phone controls", () => {
     await page.goto("/?gl=webgl2&fx=0&dpr=0.5&touch=1&prewarm=0");
     await page.waitForFunction(() => window.__GHOSTRUN__?.ready === true, null, { timeout: 90_000 });
     await expect(page.getByTestId("touch")).toBeVisible();
+    await expect(page.getByTestId("mute")).toBeVisible(); // above the Jump button, clear of the thumbs
     const p0 = (await probe(page)).player!;
     const zone = page.locator(".stick-zone");
     const touch = { pointerType: "touch", pointerId: 7, isPrimary: true, bubbles: true };
@@ -237,6 +238,11 @@ test("VR (emulated Quest 3): enter VR, the left stick walks, A jumps", async ({ 
   await ctl("right", (c) => c.updateButtonValue("a-button", 1));
   await page.waitForFunction((y) => (window.__GHOSTRUN__.player?.[1] ?? y) > y + 0.4, y0, { timeout: 5_000 });
   await ctl("right", (c) => c.updateButtonValue("a-button", 0));
+  // no keyboard in a headset: B mutes the sound (Enter VR's click started it)
+  await page.waitForFunction(() => window.__GHOSTRUN__.audio?.state === "running", null, { timeout: 10_000 });
+  await ctl("right", (c) => c.updateButtonValue("b-button", 1));
+  await page.waitForFunction(() => window.__GHOSTRUN__.audio?.muted === true, null, { timeout: 5_000 });
+  await ctl("right", (c) => c.updateButtonValue("b-button", 0));
   // Emulator artifact, not ours: three picks XR layers support when the renderer is built, before
   // IWER's layers polyfill exists, so it falls back to XRWebGLLayer, whose emulated framebuffer is
   // null (a real headset gives an opaque framebuffer object). Rendering is checked on a real Quest.
@@ -420,6 +426,49 @@ test("first ten seconds: try-one suggestions open a world in one click; a spoken
   await expect(page.getByRole("textbox", { name: "Describe a world" })).toHaveValue(/Collect five gold coins/, { timeout: 10_000 });
   await expect(page.getByTestId("intent-card")).toContainText("arena", { timeout: 30_000 });
   await expect(page.getByRole("status").filter({ hasText: "speech service" })).toBeVisible();
+  expect(errors).toEqual([]);
+});
+
+test("sound: the first key press starts it, a coin chimes, M mutes it (remembered), ?audio=0 turns it off", async ({ page }) => {
+  const errors = collectErrors(page);
+  const audio = () => page.evaluate(() => window.__GHOSTRUN__.audio!);
+  await page.goto("/?gl=webgl2&fx=0&dpr=0.5&prewarm=0&fixture=coin-rush");
+  await page.waitForFunction(() => window.__GHOSTRUN__?.ready === true, null, { timeout: 90_000 });
+  expect((await audio()).state).toBe("off"); // browsers allow no sound before a gesture, and none is made
+
+  // coin_1 sits on the midfield line ahead of the spawn
+  await page.keyboard.down("KeyW");
+  await page.waitForFunction(() => window.__GHOSTRUN__.audio?.state === "running", null, { timeout: 10_000 });
+  await expect(page.getByTestId("score")).toContainText("SCORE 1", { timeout: 15_000 });
+  await page.keyboard.up("KeyW");
+  await expect.poll(async () => (await audio()).counts.coin ?? 0).toBeGreaterThan(0);
+  const a = await audio();
+  expect(a.counts.step ?? 0).toBeGreaterThan(0); // footsteps on the way there
+  expect(a.music?.key).toMatch(/^[A-G]/); // the loop plays in the world's key
+
+  // M mutes: the clock stops, and walking makes no more sound
+  await page.keyboard.press("KeyM");
+  await expect(page.getByTestId("mute")).toHaveAttribute("aria-pressed", "true");
+  await page.waitForFunction(() => window.__GHOSTRUN__.audio?.state === "suspended", null, { timeout: 5_000 });
+  const played = (await audio()).played;
+  await page.keyboard.down("KeyS");
+  await page.waitForTimeout(1200);
+  await page.keyboard.up("KeyS");
+  expect((await audio()).played).toBe(played);
+
+  // remembered across a reload; the HUD button turns it back on
+  await page.reload();
+  await page.waitForFunction(() => window.__GHOSTRUN__?.ready === true, null, { timeout: 90_000 });
+  expect((await audio()).muted).toBe(true);
+  await page.getByTestId("mute").click();
+  await page.waitForFunction(() => window.__GHOSTRUN__.audio?.state === "running" && !window.__GHOSTRUN__.audio.muted, null, { timeout: 10_000 });
+
+  // ?audio=0: no sound at all, and no button for it
+  await page.goto("/?gl=webgl2&fx=0&dpr=0.5&prewarm=0&fixture=coin-rush&audio=0");
+  await page.waitForFunction(() => window.__GHOSTRUN__?.ready === true, null, { timeout: 90_000 });
+  await page.keyboard.press("KeyW");
+  expect((await audio()).state).toBe("disabled");
+  await expect(page.getByTestId("mute")).toHaveCount(0);
   expect(errors).toEqual([]);
 });
 

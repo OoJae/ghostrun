@@ -19,6 +19,18 @@ export interface GhostrunProbe {
   prewarmMs?: number;
   /** In an immersive VR session. */
   vr?: boolean;
+  /** The sound: "off" until the first gesture starts it, "disabled" with ?audio=0. */
+  audio?: AudioProbe;
+}
+
+export interface AudioProbe {
+  state: "off" | "disabled" | AudioContextState;
+  muted: boolean;
+  /** Effects played so far (none while muted), in all and by name. */
+  played: number;
+  counts: Record<string, number>;
+  last?: string;
+  music?: { key: string; bpm: number };
 }
 
 declare global {

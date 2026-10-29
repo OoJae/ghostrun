@@ -38,6 +38,8 @@ export interface LoadResult {
 const TICK_MS = 1000 / TICK_HZ;
 const _q0 = new Quaternion();
 const _q1 = new Quaternion();
+const _ear = new Vector3();
+const _look = new Vector3();
 
 export class Engine {
   readonly backend: "webgpu" | "webgl2";
@@ -52,6 +54,7 @@ export class Engine {
   #vrYaw = 0;
   #snapTurn = 0;
   #snapArmed = true;
+  #bHeld = false;
   readonly #pipeline: RenderPipeline | null;
   readonly #follow: FollowCamera;
   readonly #input = new InputCollector();
@@ -79,6 +82,10 @@ export class Engine {
   #onResize = () => this.#resize();
 
   onInput: (() => void) | undefined;
+  /** Every simulation frame, as the renderer gets it (the sound reads the player's steps from it). */
+  onFrame: ((f: SimFrame) => void) | undefined;
+  /** B or Y on a VR controller (a fresh press): the sound's mute, where there is no keyboard. */
+  onVrB: (() => void) | undefined;
   #bloom: ReturnType<typeof bloom> | null = null;
   /** Prewarmed sample worlds: never rendered, kept so their compiled programs stay cached. */
   readonly #warm: WorldView[] = [];
@@ -201,6 +208,7 @@ export class Engine {
     let sy = 0;
     let jump = false;
     let use = false;
+    let b = false;
     for (const src of session.inputSources) {
       const g = src.gamepad;
       if (!g) continue;
@@ -213,7 +221,10 @@ export class Engine {
       }
       if (g.buttons[4]?.pressed) jump = true;
       if (g.buttons[0]?.pressed) use = true;
+      if (g.buttons[5]?.pressed) b = true;
     }
+    if (b && !this.#bHeld) this.onVrB?.();
+    this.#bHeld = b;
     this.#input.setStick(sx, sy);
     this.#input.setButton(1, jump);
     this.#input.setButton(2, use);
@@ -274,6 +285,14 @@ export class Engine {
     this.#follow.pitch = 1.05;
     this.#follow.dist = 30;
     this.#follow.setColliders([]);
+  }
+
+  /** Where the sound is heard from: the camera (the headset in VR), and the way it faces. */
+  ear(): { p: [number, number, number]; yaw: number } {
+    const cam = this.#vr ? this.#renderer.xr.getCamera() : this.#camera;
+    cam.getWorldPosition(_ear);
+    cam.getWorldDirection(_look);
+    return { p: [_ear.x, _ear.y, _ear.z], yaw: Math.atan2(-_look.x, -_look.z) };
   }
 
   /** Light up one thing (Logic X-ray hover); null puts the beam away. */
@@ -380,6 +399,7 @@ export class Engine {
         pr.cast = cast;
       }
       pr.tick = f.tick;
+      this.onFrame?.(f);
     });
 
     t = performance.now();

@@ -695,3 +695,12 @@ kbd {
 .trust-table { width: 100%; border-collapse: collapse; font-size: 12.5px; font-variant-numeric: tabular-nums; }
 .trust-table th, .trust-table td { text-align: left; padding: 5px 8px; border-bottom: 1px solid rgba(255, 255, 255, 0.08); }
 .trust-table th { color: var(--ink-dim); font-weight: 600; }
+
+/* ---- sound toggle ---- */
+.mutebtn { position: absolute; right: 20px; bottom: 20px; width: 36px; height: 36px; padding: 0; display: grid; place-items: center; border-radius: 999px; cursor: pointer; color: var(--ink-dim); }
+.mutebtn svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; }
+.mutebtn:hover { color: var(--ink); border-color: rgba(25, 227, 255, 0.4); }
+.mutebtn.off { color: var(--ink-faint); }
+.vrbtn { right: 66px; }
+/* on phones: above the Jump button, under the right thumb */
+.touch-mode .mutebtn { right: 48px; bottom: 140px; opacity: 0.75; }

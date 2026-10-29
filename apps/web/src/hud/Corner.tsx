@@ -7,7 +7,7 @@ export function ProofBadge() {
   );
 }
 
-export function KeyHint({ visible }: { visible: boolean }) {
+export function KeyHint({ visible, sound = false }: { visible: boolean; sound?: boolean }) {
   return (
     <div className={`glass keyhint${visible ? "" : " gone"}`} aria-hidden={!visible} data-testid="key-hint">
       <kbd>WASD</kbd>
@@ -29,6 +29,13 @@ export function KeyHint({ visible }: { visible: boolean }) {
       <kbd>G</kbd>
       <span>gallery</span>
       <span className="sep">·</span>
+      {sound && (
+        <>
+          <kbd>M</kbd>
+          <span>sound</span>
+          <span className="sep">·</span>
+        </>
+      )}
       <span>drag to orbit</span>
     </div>
   );

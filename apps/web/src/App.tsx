@@ -21,6 +21,8 @@ import { propose, twistWorld } from "./director";
 import { BRIEF, buildWorld, ENGINE_HASH, FIXTURE_PROMPTS, FIXTURES, hashWorld, worldFromFill, type Intent, type World } from "./pipeline";
 import { probe } from "./probe";
 import { askHost, clock as mmss, facts, story } from "./host";
+import { useSound } from "./audio/useSound";
+import { MuteButton } from "./hud/Mute";
 
 const HINT_MS = 6000;
 const FIXTURE = new URLSearchParams(window.location.search).get("fixture") ?? "ctf";
@@ -62,6 +64,7 @@ export function App() {
   const runId = useRef(0);
   const [prompt, setPrompt] = useState(FIRST_PROMPT);
   const [intent, setIntent] = useState<Intent | null>(null);
+  const sound = useSound();
   const [specHash, setSpecHash] = useState<string>();
   const [timing, setTiming] = useState<LoadResult | null>(null);
   const [status, setStatus] = useState<Status>("booting");
@@ -264,6 +267,7 @@ export function App() {
         };
         sim.onHint = setUseHint;
       }
+      sound.world(world.bundle, sim);
       startProof(world, id);
       const h = await hashWorld(world.bundle);
       if (id !== runId.current) return;
@@ -339,6 +343,7 @@ export function App() {
         }
         engine.current = e;
         e.onInput = () => setCollapsed(true);
+        sound.attach(e);
         void e.vrSupported().then((ok) => !disposed && setVrOk(ok));
         probe().sim = "stub";
         // the proof worker needs the wasm URLs whichever simulation plays here (boot is tiny)
@@ -874,7 +879,8 @@ export function App() {
             }}
           />
         )}
-        {!touch && <KeyHint visible={hint && status === "playing"} />}
+        {sound.enabled && <MuteButton muted={sound.muted} onToggle={sound.toggle} />}
+        {!touch && <KeyHint visible={hint && status === "playing"} sound={sound.enabled} />}
         {touch && status === "playing" && (
           <TouchControls
             onStick={(x, y) => engine.current?.touchStick(x, y)}
