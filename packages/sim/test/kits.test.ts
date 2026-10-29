@@ -249,3 +249,114 @@ describe("rule cascades", () => {
     expect(sim.result).toBe("win");
   });
 });
+
+describe("combat: hit points, shots and knock-outs", () => {
+  /** world() with a brain that plays the NPC presses queued for the next tick. */
+  function fight(entities: Entity[], verbs: VerbBinding[], rules: Rule[] = [], presses: Map<string, InputFrame> = new Map()): SimWorld {
+    const b: WorldBundle = {
+      ...template,
+      statics: [{ id: "floor", src: "template", layer: "gameplay", zone: template.zones[0]!.id, shape: "box", pos: [0, -0.5, 0], rotY: 0, size: [60, 1, 60], surf: "floor" }],
+      entities: [ent("sp_red", "spawn", [0, 0, 0], [1.2, 0.1, 1.2], "none", { team: "red" }), ...entities],
+      verbs, rules, cast: [], expects: [], states: [],
+    };
+    const think = () => {
+      const now = new Map(presses);
+      presses.clear();
+      return now;
+    };
+    return new SimWorld(R, b, { brain: { think } });
+  }
+  const someone = (id: string, pos: Vec3, team: Entity["team"] = "blue") => ent(id, "npc", pos, [0.7, 1.8, 0.7], "kinematic", { team, shape: "capsule" });
+  const shoot = (on: string, params: VerbBinding["params"] = {}) => vb(`vb_shoot_${on}`, "combat_sport.shoot", on, params);
+  const health = (on: string, params: VerbBinding["params"] = {}) => vb(`vb_hp_${on}`, "combat_sport.health", on, params);
+  /** Press USE on every tick that is a multiple of `gap` (a fresh press each time). */
+  const volley = (gap: number) => (t: number): InputFrame => ({ tick: t, wx: 0, wz: 0, btn: t % gap === 0 ? BTN.USE : 0 });
+
+  it("a spell fired the way you face hits the rival for its damage, and the fourth knocks it out (the rule fires once)", () => {
+    const sim = fight(
+      [someone("wizard", [0, 0.9, 8])],
+      [shoot("player", { damage: 25, cooldown: 0.5, speed: 20, range: 14 }), health("wizard", { hp: 100, respawn: false })],
+      [{ ...rule("r_ko", { t: "health_lte", a: "wizard", n: 0 }, [{ e: "win", target: "player" }]), once: true }],
+    );
+    sim.face("player", 0, 1);
+    expect(sim.usable()).toMatchObject({ on: "player", label: "shoot" });
+    const evs = run(sim, 400, volley(40));
+    const hits = evs.filter((e) => e.k === "hit");
+    expect(hits).toHaveLength(4);
+    expect(hits[0]).toMatchObject({ a: "wizard", b: "player" });
+    expect(evs.filter((e) => e.k === "touch")).toEqual([]); // firing touches nothing
+    expect(evs.filter((e) => e.k === "hp").map((e) => e.v)).toEqual([75, 50, 25, 0]);
+    expect(evs.some((e) => e.k === "knockout" && e.a === "wizard")).toBe(true);
+    expect(sim.fires.get("r_ko")).toBe(1);
+    expect(sim.result).toBe("win");
+    expect(sim.entity("wizard")!.destroyed).toBe(true);
+    sim.free();
+  });
+
+  it("cover stops a shot; the cooldown holds fire; a rival knocked out with respawn is back at its start, healed", () => {
+    const sim = fight(
+      [someone("zombie", [0, 0.9, 8]), ent("crate", "prop", [0, 1, 4], [2, 2, 1], "fixed")],
+      [shoot("player", { damage: 50, cooldown: 1, range: 20 }), health("zombie", { hp: 50 })],
+    );
+    sim.face("player", 0, 1);
+    const blocked = run(sim, 60, volley(2));
+    expect(blocked.filter((e) => e.k === "shoot")).toHaveLength(1); // 30 presses in a second, one shot
+    expect(blocked.some((e) => e.k === "hit")).toBe(false);
+    sim.teleport("player", [3, 0.95, 4]);
+    sim.face("player", -3, 4);
+    const open = run(sim, 60, volley(3));
+    expect(open.find((e) => e.k === "hit")).toMatchObject({ a: "zombie", b: "player" });
+    expect(open.some((e) => e.k === "knockout" && e.a === "zombie")).toBe(true);
+    expect(open.some((e) => e.k === "respawn" && e.a === "zombie")).toBe(true);
+    expect(sim.hp("zombie")).toBe(50);
+    expect(sim.entity("zombie")!.destroyed).toBe(false);
+    sim.free();
+  });
+
+  it("aim assist: a rival 30° off the way you face is still the one hit", () => {
+    const sim = fight([someone("blue_1", [5, 0.9, 9])], [shoot("player", { range: 20, speed: 30 }), health("blue_1")]);
+    sim.face("player", 0, 1);
+    const evs = run(sim, 40, volley(1));
+    expect(evs.find((e) => e.k === "hit")?.a).toBe("blue_1");
+    sim.free();
+  });
+
+  it("an NPC's claws hurt the player; health_lte fires crossing its line; heal moves hit points; a held blaster hits as 'blaster'", () => {
+    const presses = new Map<string, InputFrame>();
+    const sim = fight(
+      [someone("ghoul", [0, 0.9, 1.4]), ent("blaster", "pickup", [6, 0.25, 0], [0.4, 0.4, 0.4], "dynamic", { shape: "sphere" })],
+      [shoot("ghoul", { range: 1.8, damage: 10 }), shoot("blaster", { damage: 30 }), health("player", { hp: 100, respawn: false }), health("ghoul", { hp: 60 })],
+      [rule("r_low", { t: "health_lte", a: "player", n: 50 }, [{ e: "emit", target: "player" }]), rule("r_potion", { t: "every", n: 1 }, [{ e: "heal", target: "player" }])],
+      presses,
+    );
+    presses.set("ghoul", { tick: 1, wx: 0, wz: -60, btn: BTN.USE });
+    const bite = run(sim, 3);
+    expect(bite.find((e) => e.k === "hit")).toMatchObject({ a: "player", b: "ghoul" });
+    expect(sim.hp("player")).toBe(90);
+    expect(bite.some((e) => e.rule === "r_low")).toBe(false);
+    run(sim, 30); // the claws cool down
+    sim.forceHp("player", 55);
+    presses.set("ghoul", { tick: sim.tick + 1, wx: 0, wz: -60, btn: BTN.USE });
+    const low = run(sim, 3);
+    expect(low.some((e) => e.rule === "r_low")).toBe(true); // 55 → 45 crosses 50
+    run(sim, 60 - sim.tick); // at one second the potion rule heals 25
+    expect(sim.hp("player")).toBe(70);
+    sim.attach("blaster", "player");
+    sim.teleport("player", [0, 0.95, -6]);
+    sim.teleport("ghoul", [0, 0.95, 2]);
+    sim.face("player", 0, 1);
+    const shot = run(sim, 60, volley(45));
+    expect(shot.find((e) => e.k === "hit")).toMatchObject({ a: "ghoul", b: "blaster" });
+    expect(sim.hp("ghoul")).toBe(30);
+    expect(sim.entity("blaster")!.carrier).toBe("player");
+    sim.free();
+  });
+
+  it("a shot passes through teammates to the rival behind them", () => {
+    const sim = fight([someone("mate", [0, 0.9, 4], "red"), someone("foe", [0, 0.9, 9])], [shoot("player", { range: 20 }), health("foe")]);
+    sim.face("player", 0, 1);
+    const evs = run(sim, 80, volley(40));
+    expect(evs.find((e) => e.k === "hit")?.a).toBe("foe");
+    sim.free();
+  });
+});

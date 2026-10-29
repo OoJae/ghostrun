@@ -7,7 +7,7 @@ import { buildNav, lowHazards, type NavWorld } from "@ghostrun/nav";
 import { castBrain } from "@ghostrun/bots";
 import { verb } from "@ghostrun/kits";
 import { BTN, SimWorld, type Rapier } from "@ghostrun/sim";
-import { carryables, causeSteps, producers, type PlanStep, type Want, type WinChain } from "./t0";
+import { carryables, causeSteps, playerWeapons, producers, type PlanStep, type Want, type WinChain } from "./t0";
 import { apex, gap, hopOk, hopRoute, reachAt, surfaceUnder as surfaceAt, surfaces, type Surface } from "./t1";
 import type { Chip, Trail } from "./types";
 
@@ -943,6 +943,90 @@ function perform(r: Run, st: PlanStep): "ok" | "lost" | "stuck" {
       }
       return done() ? "ok" : "stuck";
     }
+    case "shoot": {
+      // in range with a clear line: face it and fire (the sim's aim assist leads a moving one);
+      // out of range or behind cover: close in. The weapon in hand first, if it is one to hold
+      const fired = counter(sim, st.rule);
+      const done = () => (st.want ? met(st.want) : fired() >= (st.times ?? 1));
+      const all = playerWeapons(b);
+      const wp = all.find((x) => x.on === (st.weapon ?? "player")) ?? all[0];
+      if (!wp) return "stuck";
+      const mine = sim.entity("player")?.team ?? "";
+      const team = st.at.startsWith("team:") ? st.at.slice(5) : null;
+      // the one the rule names; else anyone on that team; else any rival (or thing to shoot at)
+      const named = st.at && !team ? st.at : "";
+      const pool = named ? [named] : b.entities.filter((e) => (e.kind === "npc" && sim.npcs.has(e.id) && e.team !== mine && (!team || e.team === team)) || (!team && wp.at.includes(e.id))).map((e) => e.id);
+      const standing = () => pool.filter((id) => sim.entity(id) && !sim.entity(id)!.destroyed);
+      const reach = wp.range * 0.8;
+      const inShot = (id: string) => {
+        const p = sim.pos("player");
+        const q = sim.pos(id);
+        return d2h(p, q) < reach * reach && Math.abs(q[1] - p[1]) < reach && sim.clearShot([p[0], p[1] + 0.35, p[2]], q);
+      };
+      const nearest = (ids: string[]) => {
+        const p = sim.pos("player");
+        return ids.sort((x, y) => d2h(sim.pos(x), p) - d2h(sim.pos(y), p) || (x < y ? -1 : 1))[0];
+      };
+      let waits = 0;
+      let misses = 0;
+      while (live(r) && !done()) {
+        if (wp.held && sim.entity(wp.on)?.carrier !== "player") {
+          go(() => sim.pos(wp.on), () => sim.entity(wp.on)?.carrier === "player" || done());
+          if (sim.entity(wp.on)?.carrier !== "player") return done() ? "ok" : "stuck";
+        }
+        const up = standing();
+        const ready = nearest(up.filter(inShot));
+        if (!ready) {
+          const t = nearest(up);
+          if (!t) {
+            // nobody standing (knocked out, on their way back): wait for them, a while
+            if (++waits > 600) return "stuck";
+            sim.step({ tick: sim.tick + 1, wx: 0, wz: 0, btn: 0 });
+            budget.ticks--;
+            continue;
+          }
+          const before = sim.tick;
+          go(() => sim.pos(t), () => done() || standing().some(inShot));
+          trace?.(`  shoot: closing in on ${t} from ${v1(sim.pos("player"))}`);
+          if (!standing().some(inShot) && (sim.tick === before || ++misses > 6)) return done() ? "ok" : "stuck";
+          continue;
+        }
+        // between shots, back away from claws close by (as anyone would), along the ground: straight
+        // away from them, else to either side
+        const p = sim.pos("player");
+        const cooling = Number(sim.verbs.find((x) => x.bound.id === wp.id)?.bound.mem.next ?? 0) > sim.tick + 1;
+        const claws = cooling ? [...sim.npcs.keys()].filter((id) => !sim.entity(id)!.destroyed && sim.entity(id)!.team !== mine && (sim.weaponOf(id)?.range ?? 99) < 4 && d2h(sim.pos(id), p) < 3.5 * 3.5) : [];
+        if (claws.length) {
+          let ax = 0;
+          let az = 0;
+          for (const id of claws) {
+            const c = sim.pos(id);
+            const l = Math.sqrt(d2h(p, c)) || 1;
+            ax += (p[0] - c[0]) / l;
+            az += (p[2] - c[2]) / l;
+          }
+          const al = Math.sqrt(ax * ax + az * az) || 1;
+          const ways: [number, number][] = [[ax / al, az / al], [-az / al, ax / al], [az / al, -ax / al]];
+          const open = ([ux, uz]: [number, number]) => {
+            const t: Vec3 = [p[0] + ux * 1.5, p[1] - 0.9, p[2] + uz * 1.5];
+            const n = nav.nearest(t, 0.6);
+            return n !== null && d2h(n, t) < 0.3;
+          };
+          const [ux, uz] = ways.find(open) ?? ways[1]!;
+          sim.step({ tick: sim.tick + 1, wx: Math.round(ux * 127), wz: Math.round(uz * 127), btn: 0 });
+          budget.ticks--;
+          continue;
+        }
+        // face it (a short push on the stick, toward it) and press USE afresh every other tick
+        const q = sim.pos(ready);
+        const dx = q[0] - p[0];
+        const dz = q[2] - p[2];
+        const d = Math.sqrt(dx * dx + dz * dz) || 1;
+        sim.step({ tick: sim.tick + 1, wx: Math.round((dx / d) * 24), wz: Math.round((dz / d) * 24), btn: sim.tick % 2 === 0 ? BTN.USE : 0 });
+        budget.ticks--;
+      }
+      return done() ? "ok" : "stuck";
+    }
     case "touch": {
       const fired = counter(sim, st.rule);
       const done = () => (st.want ? met(st.want) : fired() > 0 || gone(st.at));
@@ -1065,6 +1149,7 @@ function endings(b: WorldBundle, results: readonly RunResult[]): string {
     const w = b.rules.find((x) => x.id === id)?.when;
     const name = (x: string) => b.entities.find((e) => e.id === x)?.noun || x.replace(/_/g, " ");
     if (!w) return id || "a loss rule";
+    if (w.t === "health_lte") return w.a === "player" || w.a.startsWith("team:") ? "knocked out" : `${name(w.a)} down`;
     return w.t === "hit" ? `hit the ${name(w.b)}` : w.t === "timer_end" ? "the timer ran out" : w.t === "score_gte" ? `${w.a.replace("team:", "")} reached ${w.n}` : w.t === "enter" ? `${name(w.a)} reached the ${name(w.b)}` : `${id}`;
   };
   const nLost = [...lost.values()].reduce((a, x) => a + x, 0);

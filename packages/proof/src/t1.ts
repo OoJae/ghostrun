@@ -1,7 +1,9 @@
 // T1, kinematic: reachability over the surfaces of the level using the movement law's jump
 // abstraction (k jumps lift the feet k × jumpH), with analytic counterexamples
 // ("apex 1.6 m < ledge 2.6 m").
-import type { Expect, Laws, Vec3, WorldBundle } from "@ghostrun/ir";
+import type { Expect, Laws, Rule, Vec3, WorldBundle } from "@ghostrun/ir";
+import { MUZZLE_UP, segBox } from "@ghostrun/kits";
+import { hitPoints, playerWeapons } from "./t0";
 import type { Chip } from "./types";
 
 export interface Surface {
@@ -188,6 +190,132 @@ export function t1(b: WorldBundle, laws: Laws): Chip[] {
       const hit = targets.some((t) => set.has(t.id));
       const good = x.prop === "reachable" ? hit : !hit;
       chips.push({ ...base, status: good ? "verified" : "counterexample", text: label(x), cx: good ? null : { where: null, have: hit ? 1 : 0, need: hit ? 0 : 1, unit: "route", text: hit ? "reachable after all" : "no route found" } });
+    }
+    chips[chips.length - 1]!.ms = Math.round((globalThis.performance?.now?.() ?? 0) - t0);
+  }
+  return chips;
+}
+
+const STEP = 0.5;
+
+/**
+ * The ground the player can stand on, as a 0.5 m grid flooded from the spawn: across each surface
+ * wherever there is room to stand (a wall or solid prop in the way stops it; doors don't, they
+ * open), and onto another surface wherever the jump model's hop reaches it from that spot. Feet.
+ */
+function groundReached(b: WorldBundle, laws: Laws, playerTeam: string, solid: readonly { pos: Vec3; size: Vec3 }[]): Vec3[] {
+  const ss = surfaces(b);
+  const spawn = b.entities.find((e) => e.kind === "spawn" && e.team === playerTeam) ?? b.entities.find((e) => e.kind === "spawn");
+  const start = spawn ? surfaceUnder(ss, [spawn.pos[0], spawn.pos[1] + 0.2, spawn.pos[2]]) : undefined;
+  if (!spawn || !start) return [];
+  const roomy = (x: number, top: number, z: number) => !solid.some((o) => Math.abs(x - o.pos[0]) < o.size[0] / 2 + 0.3 && Math.abs(z - o.pos[2]) < o.size[2] / 2 + 0.3 && o.pos[1] - o.size[1] / 2 < top + 1.7 && o.pos[1] + o.size[1] / 2 > top + 0.3);
+  const grid = ss.map((s) => {
+    const nx = Math.max(1, Math.floor((s.max[0] - s.min[0]) / STEP));
+    const nz = Math.max(1, Math.floor((s.max[1] - s.min[1]) / STEP));
+    return { nx, nz, x0: (s.min[0] + s.max[0]) / 2 - ((nx - 1) * STEP) / 2, z0: (s.min[1] + s.max[1]) / 2 - ((nz - 1) * STEP) / 2, seen: new Uint8Array(nx * nz) };
+  });
+  const queue: [number, number, number][] = [];
+  const visit = (si: number, i: number, j: number) => {
+    const g = grid[si]!;
+    if (i < 0 || j < 0 || i >= g.nx || j >= g.nz || g.seen[i * g.nz + j]) return;
+    g.seen[i * g.nz + j] = 1;
+    if (roomy(g.x0 + i * STEP, ss[si]!.top, g.z0 + j * STEP)) queue.push([si, i, j]);
+  };
+  const cell = (si: number, x: number, z: number): [number, number] => {
+    const g = grid[si]!;
+    return [Math.min(g.nx - 1, Math.max(0, Math.round((x - g.x0) / STEP))), Math.min(g.nz - 1, Math.max(0, Math.round((z - g.z0) / STEP)))];
+  };
+  const hops = new Map<number, boolean>();
+  const hop = (si: number, ti: number) => {
+    const k = si * ss.length + ti;
+    let h = hops.get(k);
+    if (h === undefined) hops.set(k, (h = hopOk(ss[si]!, ss[ti]!, laws, laws.jumpsMax)));
+    return h;
+  };
+  const s0 = ss.indexOf(start);
+  visit(s0, ...cell(s0, spawn.pos[0], spawn.pos[2]));
+  const out: Vec3[] = [];
+  for (let q = 0; q < queue.length; q++) {
+    const [si, i, j] = queue[q]!;
+    const s = ss[si]!;
+    const g = grid[si]!;
+    const [x, z] = [g.x0 + i * STEP, g.z0 + j * STEP];
+    out.push([x, s.top, z]);
+    visit(si, i + 1, j);
+    visit(si, i - 1, j);
+    visit(si, i, j + 1);
+    visit(si, i, j - 1);
+    for (let ti = 0; ti < ss.length; ti++) {
+      if (ti === si) continue;
+      const t = ss[ti]!;
+      const dx = Math.max(0, t.min[0] - x, x - t.max[0]);
+      const dz = Math.max(0, t.min[1] - z, z - t.max[1]);
+      if (!s.launch && Math.sqrt(dx * dx + dz * dz) > Math.max(STEP + 0.05, reachAt(laws, laws.jumpsMax, t.top - s.top))) continue;
+      if (hop(si, ti)) visit(ti, ...cell(ti, x, z));
+    }
+  }
+  return out;
+}
+
+/**
+ * The range model, for rules won by shooting someone (worn down, or hit): from the ground the jump
+ * model reaches from the spawn, sampled every metre, is there a spot with the target's centre
+ * within the weapon's range and nothing solid on the line? (Statics and solid props block; doors
+ * don't, since they open.) Targets are where they start: one a rule names, or the rivals it means.
+ */
+export function t1Range(b: WorldBundle, laws: Laws, playerTeam: "red" | "blue" = "red"): Chip[] {
+  const weapons = playerWeapons(b);
+  if (!weapons.length || b.mode !== "play") return [];
+  const hp = hitPoints(b);
+  const ents = new Map(b.entities.map((e) => [e.id, e]));
+  const shotAt = (r: Rule) => (r.when.t === "health_lte" || r.when.t === "hit") && r.when.a !== "player" && r.when.a !== `team:${playerTeam}`;
+  const rules = [...b.rules].filter(shotAt).sort((x, y) => (x.id < y.id ? -1 : 1));
+  if (!rules.length) return [];
+  const t0 = globalThis.performance?.now?.() ?? 0;
+  // where the player can stand: every metre of each surface the jump model reaches, with room overhead
+  const solid = [...b.statics, ...b.entities.filter((e) => (e.body === "fixed" || e.body === "kinematic") && e.kind !== "npc" && e.kind !== "door")];
+  const muzzles = groundReached(b, laws, playerTeam, solid).map(([x, y, z]): Vec3 => [x, y + 0.95 + MUZZLE_UP, z]);
+  if (!muzzles.length) return [];
+  const blockers = solid.filter((o) => !("kind" in o) || !b.verbs.some((v) => v.on === o.id && /carry|oscillate|crumble/.test(v.verb)));
+  const centre = (id: string): Vec3 => {
+    const e = ents.get(id)!;
+    return e.kind === "npc" ? [e.pos[0], e.pos[1] - e.size[1] / 2 + 0.95, e.pos[2]] : e.pos;
+  };
+  const name = (id: string) => `the ${ents.get(id)?.noun || id.replace(/_/g, " ")}`;
+  const chips: Chip[] = [];
+  for (const r of rules) {
+    const w = r.when;
+    const ws = weapons.filter((x) => !w.b || x.on === w.b);
+    if (!ws.length) continue;
+    const range = Math.max(...ws.map((x) => x.range));
+    const team = w.a.startsWith("team:") ? w.a.slice(5) : null;
+    const targets = (w.a && !team ? [w.a] : b.entities.filter((e) => (e.kind === "npc" && e.body !== "sensor" && e.body !== "none" && e.team !== playerTeam && (!team || e.team === team)) || (!team && ws.some((x) => x.at.includes(e.id)))).map((e) => e.id))
+      .filter((id) => ents.has(id) && (w.t !== "health_lte" || hp.has(id)));
+    if (!targets.length) continue;
+    // per target: the farthest spot in range with a clear line (how much room there is), else why not
+    const res = targets.map((id) => {
+      const q = centre(id);
+      let near = Infinity;
+      let clearAt = -1;
+      for (const m of muzzles) {
+        const d = Math.sqrt((m[0] - q[0]) * (m[0] - q[0]) + (m[1] - q[1]) * (m[1] - q[1]) + (m[2] - q[2]) * (m[2] - q[2]));
+        if (d < near) near = d;
+        if (d > range || d <= clearAt) continue;
+        if (!blockers.some((o) => o !== ents.get(id) && segBox(m, q, o.pos, o.size) >= 0)) clearAt = d;
+      }
+      return { id, near, clearAt };
+    });
+    const ok = res.filter((x) => x.clearAt >= 0);
+    const base: Omit<Chip, "status" | "text" | "cx"> = { id: `T1:range:${r.id}`, tier: "T1", subject: { kind: "rule", id: r.id }, method: "line-of-sight range model (from ground the jump model reaches)", n: 0, k: 0, src: r.src, ms: 0 };
+    const who = targets.length === 1 ? name(targets[0]!) : `${ok.length} of ${targets.length} ${team ? `${team} ` : ""}rivals`;
+    if (ok.length) {
+      const best = Math.max(...ok.map((x) => x.clearAt));
+      chips.push({ ...base, status: "verified", text: `a shot reaches ${who}: clear lines from as far as ${round(best)} m (range ${round(range)} m)`, cx: null });
+    } else {
+      const far = res.find((x) => x.near > range);
+      const id = (far ?? res[0]!).id;
+      const text = far ? `the nearest ground you can reach is ${round(far.near)} m from ${name(far.id)}; the shot reaches ${round(range)} m` : `every spot within ${round(range)} m of ${name(id)} is behind cover (no clear line)`;
+      chips.push({ ...base, status: "counterexample", text: `a shot reaches ${who}`, cx: { where: centre(id), have: far ? round(far.near) : 0, need: round(range), unit: "m", text } });
     }
     chips[chips.length - 1]!.ms = Math.round((globalThis.performance?.now?.() ?? 0) - t0);
   }
