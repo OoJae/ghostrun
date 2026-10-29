@@ -1,0 +1,192 @@
+{
+  "prompt": "A go-kart race around a neon track, three laps against two rivals",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "racing",
+    "setting": "neon go-kart track",
+    "role": "go-kart driver",
+    "goal": "Complete three laps and finish first among two rivals",
+    "fail": "Finish behind a rival or crash out of the race",
+    "mood": "energetic synthwave",
+    "pack": "course",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Three-lap kart race decided by finish order against two rivals",
+    "nouns": [
+      {
+        "noun": "go-kart",
+        "hyper": "vehicle"
+      },
+      {
+        "noun": "track",
+        "hyper": "racecourse"
+      },
+      {
+        "noun": "neon",
+        "hyper": "lighting"
+      },
+      {
+        "noun": "laps",
+        "hyper": "race rounds"
+      },
+      {
+        "noun": "rivals",
+        "hyper": "opponents"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.6,
+      "arousal": 0.8,
+      "tension": 0.6
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "8405be91b3b61b7b76e75f789c8f907be01d5032ceffd5f157bb119bb6156199",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_race",
+      "text": "Three-lap kart race decided by finish order against two rivals",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners vs 2 bots + physics, 3 menu schedules × 3 runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 1,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 3 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 1,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (lap 3 done) ← drive kart_player through 5 gates and finish_line ×3",
+        "src": ""
+      },
+      {
+        "id": "T1:drive:finish_line",
+        "tier": "T1",
+        "subject": {
+          "kind": "world",
+          "id": "finish_line"
+        },
+        "method": "drivability model (ground a vehicle drives to, turning circle, top speed)",
+        "n": 0,
+        "k": 0,
+        "src": "template",
+        "ms": 19,
+        "status": "verified",
+        "text": "a kart can drive the line and 5 gates on the ground (a lap ≥ 196.52 m, turning circle 2.14 m at corner speed)",
+        "cx": null
+      },
+      {
+        "id": "T2:r_crash",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_crash"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 43,
+        "status": "verified",
+        "text": "r_crash fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lose_rivals",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_rivals"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_lose_rivals fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners vs 2 bots",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it vs 2 bots (AI par 39.9 s)",
+        "cx": null,
+        "src": "",
+        "ms": 1636
+      },
+      {
+        "id": "T3:envelope",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 3 menu schedules × 3 runners",
+        "n": 9,
+        "k": 9,
+        "text": "runners still win whatever the cast's minds choose (3 schedules)",
+        "cx": null,
+        "src": "",
+        "ms": 1091
+      }
+    ],
+    "par": {
+      "goldS": 39.9,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 3452
+  }
+}

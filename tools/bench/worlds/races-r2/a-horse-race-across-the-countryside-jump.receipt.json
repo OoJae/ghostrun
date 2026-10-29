@@ -1,0 +1,168 @@
+{
+  "prompt": "A horse race across the countryside, jump the fences and win",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "racing",
+    "setting": "open countryside",
+    "role": "jockey or horse",
+    "goal": "race across the countryside, clear the fences and finish first to win",
+    "fail": "falling over a fence or finishing behind the other racers",
+    "mood": "thrilling and free",
+    "pack": "outdoor",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Countryside course includes jumpable fences",
+    "nouns": [
+      {
+        "noun": "horse",
+        "hyper": "animal"
+      },
+      {
+        "noun": "fence",
+        "hyper": "obstacle"
+      },
+      {
+        "noun": "countryside",
+        "hyper": "landscape"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.8,
+      "arousal": 0.8,
+      "tension": 0.5
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "6fde1957d6707639e597b27afee75850fff85ce94e71a318db68b1dc3c62eeac",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_course",
+      "text": "Countryside course includes jumpable fences",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners vs 2 bots + physics, 3 menu schedules × 3 runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 2 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_finish (lap 1 done) ← drive horse_1 through 4 gates and finish_line ×1",
+        "src": ""
+      },
+      {
+        "id": "T1:drive:finish_line",
+        "tier": "T1",
+        "subject": {
+          "kind": "world",
+          "id": "finish_line"
+        },
+        "method": "drivability model (ground a vehicle drives to, turning circle, top speed)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 54,
+        "status": "verified",
+        "text": "a horse can drive the line and 4 gates on the ground (a lap ≥ 66.46 m, turning circle 1.88 m at corner speed)",
+        "cx": null
+      },
+      {
+        "id": "T2:r_fall",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_fall"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_fall fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_finish",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_finish"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_finish fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners vs 2 bots",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it vs 2 bots (AI par 6.9 s)",
+        "cx": null,
+        "src": "",
+        "ms": 541
+      },
+      {
+        "id": "T3:envelope",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 3 menu schedules × 3 runners",
+        "n": 9,
+        "k": 9,
+        "text": "runners still win whatever the cast's minds choose (3 schedules)",
+        "cx": null,
+        "src": "",
+        "ms": 314
+      }
+    ],
+    "par": {
+      "goldS": 6.9,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 1209
+  }
+}

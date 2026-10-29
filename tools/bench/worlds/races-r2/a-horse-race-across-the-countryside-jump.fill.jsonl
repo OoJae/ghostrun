@@ -1,0 +1,25 @@
+{"op":"meta","mode":"play","lang":"en","pack":"outdoor","sub":[],"seed":12,"look":"countryside race","mood":[0.8,0.8,0.5],"timeOfDay":14,"weather":"clear"}
+{"op":"zone","id":"z_start","slot":"entrance","tag":"entrance","name":"Start line"}
+{"op":"zone","id":"z_mid","slot":"clearing","tag":"hub","name":"Midway meadow"}
+{"op":"zone","id":"z_hill","slot":"lookout","tag":"high_ground","name":"Hilltop"}
+{"op":"zone","id":"z_finish","slot":"clearing_e","tag":"base","name":"Finish arena"}
+{"op":"spawn","id":"sp_red","zone":"z_start","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"finish_line","zone":"z_finish","anchor":"goal","noun":"finish line","hyper":"goal","team":"red"}
+{"op":"ent","id":"horse_1","kind":"vehicle","noun":"racing horse","hyper":"horse","zone":"z_start","anchor":"spawn_pad","body":"dynamic","shape":"box","size":[2,2,2]}
+{"op":"ent","id":"fence_1","kind":"prop","noun":"wooden fence","hyper":"fence","zone":"z_mid","anchor":"center","body":"fixed","shape":"box","size":[0.2,1,3]}
+{"op":"ent","id":"fence_2","kind":"prop","noun":"wooden fence","hyper":"fence","zone":"z_hill","anchor":"center","body":"fixed","shape":"box","size":[0.2,1,3]}
+{"op":"ent","id":"fence_3","kind":"prop","noun":"wooden fence","hyper":"fence","zone":"z_finish","anchor":"center_w","body":"fixed","shape":"box","size":[0.2,1,3]}
+{"op":"ent","id":"hazard_fall","kind":"hazard","noun":"falling hazard","hyper":"spike","zone":"z_mid","anchor":"center_n","body":"sensor","shape":"box","size":[1,0.2,1]}
+{"op":"verb","id":"vb_jump","verb":"locomotion.jump","on":"player","params":{"jumpsMax":2}}
+{"op":"verb","id":"vb_drive","verb":"vehicle.drive","on":"horse_1","params":{"kind":"horse","speed":20,"driver":"player"}}
+{"op":"verb","id":"vb_inspect_f1","verb":"social.inspect","on":"fence_1","params":{"text":"A rustic wooden fence, jump over it."}}
+{"op":"verb","id":"vb_inspect_f2","verb":"social.inspect","on":"fence_2","params":{"text":"A tall fence marking the hill."}}
+{"op":"verb","id":"vb_inspect_f3","verb":"social.inspect","on":"fence_3","params":{"text":"The final fence before the finish."}}
+{"op":"verb","id":"vb_hazard","verb":"motion_hazards.hazard","on":"hazard_fall","params":{"respawn":true}}
+{"op":"verb","id":"vb_track","verb":"racing.track","on":"finish_line","params":{"gates":"cp_start,cp_mid,cp_hill","laps":1}}
+{"op":"rule","id":"r_finish","when":{"t":"lap_done","a":"player","b":"finish_line"},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_fall","when":{"t":"hit","a":"player","b":"hazard_fall"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"expect","id":"x_course","prop":"win_reachable","a":"sp_red","b":"finish_line","headline":true,"text":"Countryside course includes jumpable fences"}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":6}}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

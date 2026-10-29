@@ -1,0 +1,19 @@
+{"op":"meta","mode":"play","lang":"en","pack":"floor_plan","sub":[],"seed":16,"look":"kitchen race","mood":[0.8,0.4,0.2],"timeOfDay":14,"weather":"clear"}
+{"op":"zone","id":"z_kitchen","slot":"main_room","tag":"room","name":"Kitchen"}
+{"op":"spawn","id":"sp_red","zone":"z_kitchen","anchor":"center","team":"red"}
+{"op":"ent","id":"toy_car","kind":"vehicle","noun":"toy car","hyper":"vehicle","zone":"z_kitchen","anchor":"center","body":"dynamic","shape":"box","size":[0.3,0.2,0.5]}
+{"op":"ent","id":"table","kind":"prop","noun":"kitchen table","hyper":"furniture","zone":"z_kitchen","anchor":"corner_ne","body":"fixed","shape":"box","size":[1.2,0.8,0.6]}
+{"op":"ent","id":"chair","kind":"prop","noun":"chair","hyper":"furniture","zone":"z_kitchen","anchor":"corner_sw","body":"fixed","shape":"box","size":[0.5,0.5,0.8]}
+{"op":"ent","id":"cp1","kind":"checkpoint","noun":"gate 1","hyper":"checkpoint","zone":"z_kitchen","anchor":"doorway_n","body":"sensor","shape":"box","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"cp2","kind":"checkpoint","noun":"gate 2","hyper":"checkpoint","zone":"z_kitchen","anchor":"doorway_w","body":"sensor","shape":"box","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"cp3","kind":"checkpoint","noun":"gate 3","hyper":"checkpoint","zone":"z_kitchen","anchor":"doorway_e","body":"sensor","shape":"box","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"finish_line","kind":"checkpoint","noun":"finish line","hyper":"checkpoint","zone":"z_kitchen","anchor":"doorway_s","body":"sensor","shape":"box","size":[0.2,0.2,0.2]}
+{"op":"verb","id":"vb_drive","verb":"vehicle.drive","on":"toy_car","params":{"kind":"kart","speed":8,"driver":"player"}}
+{"op":"verb","id":"vb_track","verb":"racing.track","on":"finish_line","params":{"gates":"cp1,cp2,cp3","laps":3}}
+{"op":"rule","id":"r_win","when":{"t":"lap_done","a":"player","b":"finish_line","n":3},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_crash","when":{"t":"hit","a":"player","b":"chair"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_table_hit","when":{"t":"hit","a":"player","b":"table"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"expect","id":"x_track","prop":"win_reachable","a":"sp_red","b":"finish_line","headline":true,"text":"Track must be a ring around a central table"}
+{"op":"law","player":{"jumpsMax":0,"jumpH":0,"speed":6}}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

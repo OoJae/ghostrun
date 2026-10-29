@@ -1,0 +1,168 @@
+{
+  "prompt": "A snowmobile race through a frozen forest, pass through every ice gate",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "sports",
+    "setting": "A snowmobile race through a frozen forest, pass through every ice gate",
+    "role": "snowmobile racer",
+    "goal": "complete the run by passing through every ice gate in order",
+    "fail": "crash the snowmobile or miss an ice gate and end up back on the start pad",
+    "mood": "chilly, fast, focused",
+    "pack": "outdoor",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Frozen forest trail has a chain of ice gates that must all be passed to finish the race",
+    "nouns": [
+      {
+        "noun": "ice gate",
+        "hyper": "gate"
+      },
+      {
+        "noun": "snowmobile",
+        "hyper": "vehicle"
+      },
+      {
+        "noun": "frozen forest",
+        "hyper": "forest"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.2,
+      "arousal": 0.7,
+      "tension": 0.3
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "35f421a405c0f9014b5f6713f756ff48c6645764e7fe342410357e46538c4400",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_race",
+      "text": "Frozen forest trail has a chain of ice gates that must all be passed to finish the race",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners vs 2 bots + physics, 3 menu schedules × 3 runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 2 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (lap 1 done) ← drive snowmobile through 5 gates and finish_line ×1",
+        "src": ""
+      },
+      {
+        "id": "T1:drive:finish_line",
+        "tier": "T1",
+        "subject": {
+          "kind": "world",
+          "id": "finish_line"
+        },
+        "method": "drivability model (ground a vehicle drives to, turning circle, top speed)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 151,
+        "status": "verified",
+        "text": "a snowmobile can drive the line and 5 gates on the ground (a lap ≥ 76 m, turning circle 2.31 m at corner speed)",
+        "cx": null
+      },
+      {
+        "id": "T2:r_crash",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_crash"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_crash: nothing produces hit on snowmobile",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners vs 2 bots",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it vs 2 bots (AI par 10.1 s)",
+        "cx": null,
+        "src": "",
+        "ms": 1817
+      },
+      {
+        "id": "T3:envelope",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 3 menu schedules × 3 runners",
+        "n": 9,
+        "k": 9,
+        "text": "runners still win whatever the cast's minds choose (3 schedules)",
+        "cx": null,
+        "src": "",
+        "ms": 1108
+      }
+    ],
+    "par": {
+      "goldS": 10.1,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 4390
+  }
+}

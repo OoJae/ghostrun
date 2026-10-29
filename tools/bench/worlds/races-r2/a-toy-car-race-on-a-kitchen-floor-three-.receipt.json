@@ -1,0 +1,200 @@
+{
+  "prompt": "A toy car race on a kitchen floor, three laps around the table",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "racing",
+    "setting": "A domestic kitchen floor with a central table creating a ring-shaped track",
+    "role": "Driver",
+    "goal": "Complete three laps around the kitchen table without failing",
+    "fail": "Crashing into furniture or falling off the track",
+    "mood": "Casual and playful",
+    "pack": "floor_plan",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Track must be a ring around a central table",
+    "nouns": [
+      {
+        "noun": "toy car",
+        "hyper": "vehicle"
+      },
+      {
+        "noun": "kitchen",
+        "hyper": "room"
+      },
+      {
+        "noun": "table",
+        "hyper": "furniture"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.8,
+      "arousal": 0.4,
+      "tension": 0.2
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "68b880dd1a7b748ed4a2b1ec1ca3412a5d221d2a3385c4af212010e514a79a37",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_track",
+      "text": "Track must be a ring around a central table",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners vs 2 bots + physics, 3 menu schedules × 3 runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 4 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (lap 3 done) ← drive toy_car through 3 gates and finish_line ×3",
+        "src": ""
+      },
+      {
+        "id": "T1:drive:finish_line",
+        "tier": "T1",
+        "subject": {
+          "kind": "world",
+          "id": "finish_line"
+        },
+        "method": "drivability model (ground a vehicle drives to, turning circle, top speed)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 19,
+        "status": "verified",
+        "text": "a kart can drive the line and 3 gates on the ground (a lap ≥ 87.76 m, turning circle 0.86 m at corner speed)",
+        "cx": null
+      },
+      {
+        "id": "T2:r_crash",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_crash"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_crash: nothing produces hit on chair",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_nw",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_nw"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_secret_corner_nw fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_table_hit",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_table_hit"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_table_hit: nothing produces hit on table",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners vs 2 bots",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it vs 2 bots (AI par 49.4 s)",
+        "cx": null,
+        "src": "",
+        "ms": 5715
+      },
+      {
+        "id": "T3:envelope",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 3 menu schedules × 3 runners",
+        "n": 9,
+        "k": 9,
+        "text": "runners still win whatever the cast's minds choose (3 schedules)",
+        "cx": null,
+        "src": "",
+        "ms": 4559
+      }
+    ],
+    "par": {
+      "goldS": 49.4,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 10334
+  }
+}

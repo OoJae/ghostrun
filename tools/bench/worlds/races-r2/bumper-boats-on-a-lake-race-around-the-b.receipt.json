@@ -1,0 +1,208 @@
+{
+  "prompt": "Bumper boats on a lake: race around the buoys and finish first",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "racing",
+    "setting": "calm artificial lake with a perimeter of race buoys",
+    "role": "driver of a red bumper boat",
+    "goal": "lap the buoy course fastest and finish first",
+    "fail": "finish last or ram a buoy and spin out",
+    "mood": "breezy, playful, competitive",
+    "pack": "arena",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Boat handles are bouncy so buoy rounds are risky",
+    "nouns": [
+      {
+        "noun": "bumper boat",
+        "hyper": "vehicle"
+      },
+      {
+        "noun": "lake",
+        "hyper": "water body"
+      },
+      {
+        "noun": "buoy",
+        "hyper": "course marker"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.7,
+      "arousal": 0.5,
+      "tension": 0.3
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "ba56fe0670536b652ee000ebb602ec643e6b5dc08ec345bc5d0bc6a977c7947f",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_race",
+      "text": "Boat handles are bouncy so buoy rounds are risky",
+      "status": "counterexample",
+      "method": "static goal regression over rules + physics, 12 AI runners vs 2 bots + physics, 3 menu schedules × 3 runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 4 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (lap 1 done) ← drive boat_red through 2 gates and finish_line ×1",
+        "src": ""
+      },
+      {
+        "id": "T1:drive:finish_line",
+        "tier": "T1",
+        "subject": {
+          "kind": "world",
+          "id": "finish_line"
+        },
+        "method": "drivability model (ground a vehicle drives to, turning circle, top speed)",
+        "n": 0,
+        "k": 0,
+        "src": "template",
+        "ms": 27,
+        "status": "verified",
+        "text": "a boat can drive the line and 2 gates on the ground (a lap ≥ 82.23 m, turning circle 1.33 m at corner speed)",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lose_buoy",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_buoy"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_lose_buoy fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lose_buoy2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_buoy2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_lose_buoy2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lose_buoy3",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_buoy3"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_lose_buoy3 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "counterexample",
+        "method": "physics, 12 AI runners vs 2 bots",
+        "n": 12,
+        "k": 0,
+        "text": "no AI runner could win vs 2 bots",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "wins",
+          "text": "1 lost (hit the buoy ×1), 11 got stuck (in the Lake Center ×11, at 'drive r_win')"
+        },
+        "src": "",
+        "ms": 6747
+      },
+      {
+        "id": "T3:envelope",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "counterexample",
+        "method": "physics, 3 menu schedules × 3 runners",
+        "n": 9,
+        "k": 0,
+        "text": "a choice the cast's minds can make stops every runner",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "wins",
+          "text": "if racer_1 plays racer.race, racer_2 plays racer.race, no runner wins"
+        },
+        "src": "",
+        "ms": 7870
+      }
+    ],
+    "par": null,
+    "ms": 14862
+  }
+}

@@ -1,0 +1,21 @@
+{"op":"meta","mode":"play","lang":"en","pack":"city_block","sub":[],"seed":13,"look":"modern city streets","mood":[0.1,0.8,0.7],"timeOfDay":14,"weather":"clear"}
+{"op":"zone","id":"z_center","slot":"center","tag":"plaza","name":"City Plaza"}
+{"op":"zone","id":"z_west","slot":"west_block","tag":"base","name":"West Garage"}
+{"op":"zone","id":"z_east","slot":"east_block","tag":"base","name":"East Residential"}
+{"op":"zone","id":"z_street_w","slot":"street_w","tag":"street","name":"West Street"}
+{"op":"zone","id":"z_street_e","slot":"street_e","tag":"street","name":"East Street"}
+{"op":"spawn","id":"sp_red","zone":"z_west","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"house_goal","zone":"z_east","anchor":"goal_ring","noun":"target house","hyper":"building","team":"","body":"sensor","shape":"box"}
+{"op":"ent","id":"van_vehicle","kind":"vehicle","noun":"delivery van","hyper":"vehicle","zone":"z_west","anchor":"spawn_pad","body":"dynamic","shape":"box","size":[2,1.5,5]}
+{"op":"ent","id":"pkg_box","kind":"pickup","noun":"package","hyper":"object","zone":"z_center","anchor":"plinth","body":"dynamic","shape":"box","size":[0.5,0.5,0.5]}
+{"op":"ent","id":"wall_nw","kind":"prop","noun":"wall","hyper":"wall","zone":"z_west","anchor":"wall_n","body":"fixed","shape":"box","size":[5,3,0.2]}
+{"op":"ent","id":"obstacle_e","kind":"prop","noun":"traffic cone","hyper":"cone","zone":"z_street_e","anchor":"floor_ne","body":"fixed","shape":"box","size":[0.3,0.3,0.6]}
+{"op":"verb","id":"vb_drive_van","verb":"vehicle.drive","on":"van_vehicle","params":{"kind":"van","speed":20,"driver":"player"}}
+{"op":"verb","id":"vb_carry_pkg","verb":"physics_props.carry","on":"pkg_box","params":{}}
+{"op":"verb","id":"vb_timer","verb":"puzzle.timer","on":"player","params":{"seconds":120}}
+{"op":"rule","id":"r_deliver","when":{"t":"enter","a":"pkg_box","b":"house_goal"},"if":[{"l":"pkg_box.carrier.team","op":"eq","r":"red"}],"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_timer_fail","when":{"t":"timer_end","a":"player"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"expect","id":"exp_deliver","prop":"win_reachable","a":"sp_red","b":"house_goal","headline":true,"text":"Delivery van must breach the timer limit to fail"}
+{"op":"law","player":{"jumpsMax":0,"jumpH":0,"speed":25}}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

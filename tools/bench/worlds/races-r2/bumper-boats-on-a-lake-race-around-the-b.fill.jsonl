@@ -1,0 +1,23 @@
+{"op":"meta","mode":"play","lang":"en","pack":"arena","sub":[],"seed":11,"look":"calm artificial lake","mood":[0.7,0.5,0.3],"timeOfDay":12,"weather":"clear"}
+{"op":"zone","id":"z_midfield","slot":"midfield","tag":"lake","name":"Lake Center"}
+{"op":"zone","id":"z_west_half","slot":"west_half","tag":"start","name":"West Dock"}
+{"op":"zone","id":"z_east_half","slot":"east_half","tag":"finish","name":"East Dock"}
+{"op":"zone","id":"z_north_deck","slot":"north_deck","tag":"checkpoint","name":"North Platform"}
+{"op":"zone","id":"z_south_deck","slot":"south_deck","tag":"checkpoint","name":"South Platform"}
+{"op":"spawn","id":"sp_red","zone":"z_west_half","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"finish_line","zone":"z_east_half","anchor":"goal_ring","noun":"finish buoy","hyper":"buoy","team":"red"}
+{"op":"ent","id":"boat_red","kind":"vehicle","noun":"bumper boat","hyper":"bumper_boat","zone":"z_midfield","anchor":"center","body":"dynamic","shape":"hull","size":[2,1,1]}
+{"op":"ent","id":"buoy_1","kind":"hazard","noun":"buoy","hyper":"buoy","zone":"z_west_half","anchor":"flank_n","body":"sensor","shape":"box","size":[0.5,0.5,0.5]}
+{"op":"ent","id":"buoy_2","kind":"hazard","noun":"buoy","hyper":"buoy","zone":"z_west_half","anchor":"flank_s","body":"sensor","shape":"box","size":[0.5,0.5,0.5]}
+{"op":"ent","id":"buoy_3","kind":"hazard","noun":"buoy","hyper":"buoy","zone":"z_east_half","anchor":"flank_n","body":"sensor","shape":"box","size":[0.5,0.5,0.5]}
+{"op":"ent","id":"cp_1","kind":"checkpoint","noun":"checkpoint buoy","hyper":"buoy","zone":"z_north_deck","anchor":"deck_center","body":"sensor","shape":"box","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"cp_2","kind":"checkpoint","noun":"checkpoint buoy","hyper":"buoy","zone":"z_south_deck","anchor":"deck_center","body":"sensor","shape":"box","size":[0.3,0.3,0.3]}
+{"op":"verb","id":"vb_drive_boat","verb":"vehicle.drive","on":"boat_red","params":{"kind":"boat","speed":8,"driver":"player"}}
+{"op":"law","player":{"jumpsMax":0,"jumpH":0,"speed":6}}
+{"op":"rule","id":"r_win","when":{"t":"lap_done","a":"player","b":"finish_line","n":1},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose_buoy","when":{"t":"hit","a":"player","b":"buoy_1"},"then":[{"e":"lose","target":"player"}],"once":false}
+{"op":"rule","id":"r_lose_buoy2","when":{"t":"hit","a":"player","b":"buoy_2"},"then":[{"e":"lose","target":"player"}],"once":false}
+{"op":"rule","id":"r_lose_buoy3","when":{"t":"hit","a":"player","b":"buoy_3"},"then":[{"e":"lose","target":"player"}],"once":false}
+{"op":"expect","id":"x_race","prop":"win_reachable","a":"sp_red","b":"finish_line","headline":true,"text":"Boat handles are bouncy so buoy rounds are risky"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

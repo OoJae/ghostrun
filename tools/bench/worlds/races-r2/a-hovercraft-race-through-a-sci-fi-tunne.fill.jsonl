@@ -1,0 +1,30 @@
+{"op":"meta","mode":"play","lang":"en","pack":"course","sub":[],"seed":15,"look":"futuristic tunnel","mood":[0.8,0.9,0.6],"timeOfDay":12,"weather":"clear"}
+{"op":"zone","id":"z_start","slot":"start","tag":"start","name":"Tunnel entrance"}
+{"op":"zone","id":"z_seg_1","slot":"seg_1","tag":"ledge","name":"Segment 1"}
+{"op":"zone","id":"z_seg_2","slot":"seg_2","tag":"beam","name":"Segment 2"}
+{"op":"zone","id":"z_seg_3","slot":"seg_3","tag":"gaps","name":"Segment 3"}
+{"op":"zone","id":"z_seg_4","slot":"seg_4","tag":"beam","name":"Segment 4"}
+{"op":"zone","id":"z_seg_5","slot":"seg_5","tag":"steps","name":"Segment 5"}
+{"op":"zone","id":"z_seg_6","slot":"seg_6","tag":"pit","name":"Segment 6"}
+{"op":"zone","id":"z_finish","slot":"finish","tag":"finish","name":"Tunnel exit"}
+{"op":"spawn","id":"sp_red","zone":"z_start","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"goal_finish","zone":"z_finish","anchor":"goal","noun":"exit tunnel","hyper":"goal","team":""}
+{"op":"ent","id":"veh_hover","kind":"vehicle","noun":"hovercraft","hyper":"vehicle","zone":"z_start","anchor":"host","body":"dynamic","shape":"hull","size":[2,1,2]}
+{"op":"ent","id":"drone_1","kind":"npc","noun":"drone","hyper":"drone","zone":"z_seg_2","anchor":"cp_2","body":"dynamic","shape":"box","size":[0.8,0.5,0.5],"team":"blue"}
+{"op":"ent","id":"drone_2","kind":"npc","noun":"drone","hyper":"drone","zone":"z_seg_4","anchor":"cp_4","body":"dynamic","shape":"box","size":[0.8,0.5,0.5],"team":"blue"}
+{"op":"ent","id":"boost_1","kind":"plate","noun":"boost pad","hyper":"plate","zone":"z_seg_1","anchor":"pickup_1","body":"sensor","shape":"box","size":[1,0.2,1]}
+{"op":"ent","id":"boost_2","kind":"plate","noun":"boost pad","hyper":"plate","zone":"z_seg_5","anchor":"pickup_5","body":"sensor","shape":"box","size":[1,0.2,1]}
+{"op":"verb","id":"vb_drive","verb":"vehicle.drive","on":"veh_hover","params":{"kind":"hovercraft","speed":20,"driver":"player"}}
+{"op":"verb","id":"vb_boost1","verb":"locomotion.jump","on":"player","params":{"jumpsMax":2}}
+{"op":"verb","id":"vb_boost2","verb":"locomotion.jump","on":"player","params":{"jumpsMax":2}}
+{"op":"verb","id":"vb_inspect_drone1","verb":"social.inspect","on":"drone_1","params":{"text":"Autonomous patrol drone, fast and deadly."}}
+{"op":"verb","id":"vb_inspect_drone2","verb":"social.inspect","on":"drone_2","params":{"text":"High‑speed drone, watch your speed."}}
+{"op":"rule","id":"r_boost1","when":{"t":"enter","a":"player","b":"boost_1"},"then":[{"e":"set_state","target":"veh_hover","v":"speed_boost"}]}
+{"op":"rule","id":"r_boost2","when":{"t":"enter","a":"player","b":"boost_2"},"then":[{"e":"set_state","target":"veh_hover","v":"speed_boost"}]}
+{"op":"rule","id":"r_finish","when":{"t":"enter","a":"veh_hover","b":"goal_finish"},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_crash","when":{"t":"hit","a":"player","b":"drone_1"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_crash2","when":{"t":"hit","a":"player","b":"drone_2"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"expect","id":"x_course","prop":"win_reachable","a":"sp_red","b":"goal_finish","headline":true,"text":"A linear hovercraft course with drone obstacles and boost zones"}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":6}}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

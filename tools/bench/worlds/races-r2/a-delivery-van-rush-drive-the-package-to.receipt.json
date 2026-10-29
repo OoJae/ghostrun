@@ -1,0 +1,172 @@
+{
+  "prompt": "A delivery van rush: drive the package to the house before the timer runs out",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "vehicle race",
+    "setting": "Modern city streets winding between residential buildings, featuring tight corners and obstacles before the destination house.",
+    "role": "Delivery driver",
+    "goal": "Deliver the package to the target house before the countdown timer expires",
+    "fail": "Timer reaches zero or van crashes into a wall",
+    "mood": "Urgent and tense",
+    "pack": "city_block",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Delivery van must breach the timer limit to fail",
+    "nouns": [
+      {
+        "noun": "van",
+        "hyper": "vehicle"
+      },
+      {
+        "noun": "package",
+        "hyper": "object"
+      },
+      {
+        "noun": "house",
+        "hyper": "building"
+      },
+      {
+        "noun": "timer",
+        "hyper": "interface"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.1,
+      "arousal": 0.8,
+      "tension": 0.7
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "cc17c97a11f830d83f8f7857072fbeba0b179dda9dc56e999e31e0a885846f09",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "exp_deliver",
+      "text": "Delivery van must breach the timer limit to fail",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 4 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_deliver (pkg_box into house_goal, carried by red) ← pick up pkg_box",
+        "src": ""
+      },
+      {
+        "id": "T2:r_deliver",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_deliver"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_deliver fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_floor_ne",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_floor_ne"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_secret_floor_ne fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_floor_sw",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_floor_sw"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_floor_sw fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_timer_fail",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_timer_fail"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_timer_fail fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it (AI par 5.2 s)",
+        "cx": null,
+        "src": "",
+        "ms": 108
+      }
+    ],
+    "par": {
+      "goldS": 5.2,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 258
+  }
+}

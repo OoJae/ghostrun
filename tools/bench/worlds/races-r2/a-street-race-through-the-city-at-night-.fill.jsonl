@@ -1,0 +1,29 @@
+{"op":"meta","mode":"play","lang":"en","pack":"city_block","sub":[],"seed":9,"look":"neon city night","mood":[0.2,0.7,0.9],"timeOfDay":22,"weather":"clear"}
+{"op":"zone","id":"z_center","slot":"center","tag":"plaza","name":"Central plaza"}
+{"op":"zone","id":"z_west","slot":"west_block","tag":"base","name":"West garage"}
+{"op":"zone","id":"z_east","slot":"east_block","tag":"base","name":"East finish"}
+{"op":"zone","id":"z_street_w","slot":"street_w","tag":"street","name":"West street"}
+{"op":"zone","id":"z_street_e","slot":"street_e","tag":"street","name":"East street"}
+{"op":"spawn","id":"sp_red","zone":"z_west","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"finish_line","zone":"z_east","anchor":"goal_ring","noun":"finish line","hyper":"finish","team":"red"}
+{"op":"ent","id":"player_car","kind":"vehicle","noun":"racer car","hyper":"car","zone":"z_west","anchor":"spawn_pad","body":"dynamic","shape":"box","size":[2,1,4],"team":"red"}
+{"op":"ent","id":"rival_car_1","kind":"vehicle","noun":"rival car 1","hyper":"car","zone":"z_street_w","anchor":"spawn_pad","body":"dynamic","shape":"box","size":[2,1,4],"team":"blue"}
+{"op":"ent","id":"rival_car_2","kind":"vehicle","noun":"rival car 2","hyper":"car","zone":"z_street_e","anchor":"spawn_pad","body":"dynamic","shape":"box","size":[2,1,4],"team":"blue"}
+{"op":"ent","id":"police_car","kind":"goal","noun":"police cruiser","hyper":"police","zone":"z_east","body":"sensor","shape":"box","size":[2,1,4],"team":"blue"}
+{"op":"ent","id":"boost_1","kind":"pickup","noun":"nitro boost","hyper":"boost","zone":"z_street_w","body":"dynamic","shape":"sphere","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"oil_spill","kind":"hazard","noun":"oil spill","hyper":"oil","zone":"z_street_w","body":"sensor","shape":"box","size":[3,0.2,3]}
+{"op":"ent","id":"jump_pad_1","kind":"plate","noun":"jump pad","hyper":"jump_pad","zone":"z_street_e","body":"sensor","shape":"box","size":[2,0.2,2]}
+{"op":"ent","id":"sign_1","kind":"sign","noun":"Neon sign","hyper":"sign","zone":"z_center","anchor":"wall_n","body":"fixed","shape":"box","size":[1,2,0.1]}
+{"op":"verb","id":"vb_drive_player","verb":"vehicle.drive","on":"player_car","params":{"kind":"car","speed":20,"driver":"player"}}
+{"op":"verb","id":"vb_drive_rival1","verb":"vehicle.drive","on":"rival_car_1","params":{"kind":"car","speed":18,"driver":"npc"}}
+{"op":"verb","id":"vb_drive_rival2","verb":"vehicle.drive","on":"rival_car_2","params":{"kind":"car","speed":18,"driver":"npc"}}
+{"op":"verb","id":"vb_carry_boost","verb":"physics_props.carry","on":"boost_1","params":{}}
+{"op":"verb","id":"vb_hazard_oil","verb":"motion_hazards.hazard","on":"oil_spill","params":{"respawn":true}}
+{"op":"verb","id":"vb_jump_pad","verb":"locomotion.jump_pad","on":"jump_pad_1","params":{"height":5}}
+{"op":"verb","id":"vb_inspect_sign","verb":"social.inspect","on":"sign_1","params":{"text":"Neon flickers: \"Speed or be caught\""}}
+{"op":"rule","id":"r_win","when":{"t":"lap_done","a":"player","b":"finish_line","n":1},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose_police","when":{"t":"enter","a":"player","b":"police_car"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"expect","id":"exp_race","prop":"win_reachable","a":"sp_red","b":"finish_line","headline":true,"text":"Night street race must reach rivals before police catch you"}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":6}}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

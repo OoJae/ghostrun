@@ -1,0 +1,31 @@
+{"op":"meta","mode":"play","lang":"en","pack":"course","sub":[],"seed":14,"look":"mountain road","mood":[0.4,0.7,0.4],"timeOfDay":12,"weather":"clear"}
+{"op":"zone","id":"z_start","slot":"start","tag":"outside","name":"Mountain base"}
+{"op":"zone","id":"z_seg_1","slot":"seg_1","tag":"ridge","name":"Ridge stretch"}
+{"op":"zone","id":"z_seg_2","slot":"seg_2","tag":"gaps","name":"Gap section"}
+{"op":"zone","id":"z_seg_3","slot":"seg_3","tag":"pit","name":"Deep pit"}
+{"op":"zone","id":"z_seg_4","slot":"seg_4","tag":"steps","name":"Stepped climb"}
+{"op":"zone","id":"z_seg_5","slot":"seg_5","tag":"gaps","name":"Final gaps"}
+{"op":"zone","id":"z_seg_6","slot":"seg_6","tag":"beam","name":"Narrow beam"}
+{"op":"zone","id":"z_finish","slot":"finish","tag":"outside","name":"Mountain summit"}
+{"op":"spawn","id":"sp_red","zone":"z_start","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"finish_line","zone":"z_finish","anchor":"goal","noun":"summit checkpoint","hyper":"goal","team":"red"}
+{"op":"ent","id":"bike","kind":"vehicle","noun":"motorbike","hyper":"vehicle","zone":"z_start","anchor":"spawn_pad","body":"dynamic","shape":"hull","size":[1.2,0.6,2.0],"team":"red"}
+{"op":"ent","id":"cp_1","kind":"checkpoint","noun":"checkpoint 1","hyper":"checkpoint","zone":"z_seg_1","anchor":"cp_1","body":"sensor","shape":"box","size":[0.5,0.5,0.2]}
+{"op":"ent","id":"cp_2","kind":"checkpoint","noun":"checkpoint 2","hyper":"checkpoint","zone":"z_seg_2","anchor":"cp_2","body":"sensor","shape":"box","size":[0.5,0.5,0.2]}
+{"op":"ent","id":"cp_3","kind":"checkpoint","noun":"checkpoint 3","hyper":"checkpoint","zone":"z_seg_3","anchor":"cp_3","body":"sensor","shape":"box","size":[0.5,0.5,0.2]}
+{"op":"ent","id":"cp_4","kind":"checkpoint","noun":"checkpoint 4","hyper":"checkpoint","zone":"z_seg_4","anchor":"cp_4","body":"sensor","shape":"box","size":[0.5,0.5,0.2]}
+{"op":"ent","id":"cp_5","kind":"checkpoint","noun":"checkpoint 5","hyper":"checkpoint","zone":"z_seg_5","anchor":"cp_5","body":"sensor","shape":"box","size":[0.5,0.5,0.2]}
+{"op":"ent","id":"cp_6","kind":"checkpoint","noun":"checkpoint 6","hyper":"checkpoint","zone":"z_seg_6","anchor":"pickup_6","body":"sensor","shape":"box","size":[0.5,0.5,0.2]}
+{"op":"ent","id":"haz_spike_1","kind":"hazard","noun":"spike trap","hyper":"hazard","zone":"z_seg_2","anchor":"spike_a","body":"sensor","shape":"box","size":[0.3,0.3,0.1]}
+{"op":"ent","id":"haz_spike_2","kind":"hazard","noun":"spike trap","hyper":"hazard","zone":"z_seg_5","anchor":"spike_b","body":"sensor","shape":"box","size":[0.3,0.3,0.1]}
+{"op":"verb","id":"vb_drive_bike","verb":"vehicle.drive","on":"bike","params":{"kind":"bike","speed":25,"driver":"player"}}
+{"op":"verb","id":"vb_hazard_1","verb":"motion_hazards.hazard","on":"haz_spike_1","params":{"respawn":true}}
+{"op":"verb","id":"vb_hazard_2","verb":"motion_hazards.hazard","on":"haz_spike_2","params":{"respawn":true}}
+{"op":"verb","id":"vb_track","verb":"racing.track","on":"finish_line","params":{"gates":"cp_1,cp_2,cp_3,cp_4,cp_5,cp_6","laps":1}}
+{"op":"rule","id":"r_win","when":{"t":"lap_done","a":"player","b":"finish_line","n":1},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_crash","when":{"t":"hit","a":"player","b":"haz_spike_1"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_crash2","when":{"t":"hit","a":"player","b":"haz_spike_2"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"expect","id":"x_tt","prop":"win_reachable","a":"sp_red","b":"finish_line","headline":true,"text":"Mountain road time trial measures split times"}
+{"op":"law","player":{"jumpsMax":0,"jumpH":0,"speed":6}}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

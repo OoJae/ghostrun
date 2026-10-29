@@ -1,0 +1,184 @@
+{
+  "prompt": "A desert canyon race in dune buggies, first to finish two laps wins",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "racing",
+    "setting": "A winding desert canyon with rocky walls and sand-filled turns.",
+    "role": "Racer",
+    "goal": "Complete two laps of the canyon track before the opponent to win the race.",
+    "fail": "Finishing in second place or failing to complete two laps in time.",
+    "mood": "Exciting and fast-paced",
+    "pack": "course",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Canyon track must support two-lap racing without collisions",
+    "nouns": [
+      {
+        "noun": "canyon",
+        "hyper": "rock formation"
+      },
+      {
+        "noun": "dune buggies",
+        "hyper": "vehicles"
+      },
+      {
+        "noun": "laps",
+        "hyper": "circuits"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.7,
+      "arousal": 0.9,
+      "tension": 0.7
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "579973c7ceb3dcd7470bdde13b1dd1631b29f0587c9cb14940a80fc397cba0cc",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_race",
+      "text": "Canyon track must support two-lap racing without collisions",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners vs 1 bot + physics, 2 menu schedules × 3 runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 3 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (lap 2 done) ← drive buggy_red through 5 gates and finish ×2",
+        "src": ""
+      },
+      {
+        "id": "T1:drive:finish",
+        "tier": "T1",
+        "subject": {
+          "kind": "world",
+          "id": "finish"
+        },
+        "method": "drivability model (ground a vehicle drives to, turning circle, top speed)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 21,
+        "status": "verified",
+        "text": "a buggy can drive the line and 5 gates on the ground (a lap ≥ 231.96 m, turning circle 2.4 m at corner speed)",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lose",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_lose fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_host",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_host"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 6,
+        "status": "verified",
+        "text": "r_secret_host fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners vs 1 bot",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it vs 1 bot (AI par 34 s)",
+        "cx": null,
+        "src": "",
+        "ms": 841
+      },
+      {
+        "id": "T3:envelope",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 2 menu schedules × 3 runners",
+        "n": 6,
+        "k": 6,
+        "text": "runners still win whatever the cast's minds choose (2 schedules)",
+        "cx": null,
+        "src": "",
+        "ms": 381
+      }
+    ],
+    "par": {
+      "goldS": 34,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 1761
+  }
+}

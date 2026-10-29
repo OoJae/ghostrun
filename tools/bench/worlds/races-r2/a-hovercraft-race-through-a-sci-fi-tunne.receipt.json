@@ -1,0 +1,264 @@
+{
+  "prompt": "A hovercraft race through a sci-fi tunnel, boost past the drones",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "sci-fi racing",
+    "setting": "futuristic metallic tunnel network",
+    "role": "pilot of a hovercraft",
+    "goal": "complete the course faster than rival AI drivers",
+    "fail": "crash into tunnel walls or drones",
+    "mood": "high-energy, fast",
+    "pack": "course",
+    "sub": [],
+    "safety": "ok",
+    "headline": "A linear hovercraft course with drone obstacles and boost zones",
+    "nouns": [
+      {
+        "noun": "hovercraft",
+        "hyper": "vehicle"
+      },
+      {
+        "noun": "tunnel",
+        "hyper": "structure"
+      },
+      {
+        "noun": "drone",
+        "hyper": "obstacle"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.8,
+      "arousal": 0.9,
+      "tension": 0.6
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "2e12f143d2df49ecb6e97ddce19d986ada6fc9f0ad764e0d0573850765f0cc47",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_course",
+      "text": "A linear hovercraft course with drone obstacles and boost zones",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners vs 2 bots"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 10 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_finish (player enters goal_finish)",
+        "src": ""
+      },
+      {
+        "id": "T2:r_boost1",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_boost1"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 9,
+        "status": "verified",
+        "text": "r_boost1 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_boost2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_boost2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 10,
+        "status": "verified",
+        "text": "r_boost2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_crash",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_crash"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_crash fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_crash2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_crash2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_crash2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_finish",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_finish"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_finish fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_cp_5",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_cp_5"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 10,
+        "status": "verified",
+        "text": "r_secret_cp_5 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_host",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_host"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 9,
+        "status": "verified",
+        "text": "r_secret_host fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_pickup_4",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_pickup_4"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 7,
+        "status": "verified",
+        "text": "r_secret_pickup_4 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_pickup_6",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_pickup_6"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 6,
+        "status": "verified",
+        "text": "r_secret_pickup_6 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_trophy",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_trophy"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 6,
+        "status": "verified",
+        "text": "r_secret_trophy fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners vs 2 bots",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it vs 2 bots (AI par 21.6 s)",
+        "cx": null,
+        "src": "",
+        "ms": 736
+      }
+    ],
+    "par": {
+      "goldS": 21.6,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 1492
+  }
+}

@@ -1,0 +1,22 @@
+{"op":"meta","mode":"play","lang":"en","pack":"outdoor","sub":[],"seed":10,"look":"snowy forest","mood":[0.2,0.7,0.3],"timeOfDay":10,"weather":"snow"}
+{"op":"zone","id":"z_start","slot":"entrance","tag":"entrance","name":"Start Pad"}
+{"op":"zone","id":"z_mid1","slot":"clearing","tag":"clearing","name":"Midway Clearing"}
+{"op":"zone","id":"z_mid2","slot":"clearing_w","tag":"base","name":"West Ridge"}
+{"op":"zone","id":"z_mid3","slot":"clearing_e","tag":"base","name":"East Ridge"}
+{"op":"zone","id":"z_finish","slot":"clearing","tag":"clearing","name":"Finish Clearing"}
+{"op":"spawn","id":"sp_red","zone":"z_start","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"finish_line","zone":"z_finish","anchor":"center","noun":"finish line","hyper":"goal","team":"red"}
+{"op":"ent","id":"snowmobile","kind":"vehicle","noun":"snowmobile","hyper":"vehicle","zone":"z_start","anchor":"spawn_pad","body":"dynamic","shape":"hull","size":[2,1.5,1.5]}
+{"op":"ent","id":"gate1","kind":"checkpoint","noun":"ice gate","hyper":"gate","zone":"z_mid1","anchor":"center","body":"sensor","shape":"box","size":[1,2,0.2]}
+{"op":"ent","id":"gate2","kind":"checkpoint","noun":"ice gate","hyper":"gate","zone":"z_mid2","anchor":"center","body":"sensor","shape":"box","size":[1,2,0.2]}
+{"op":"ent","id":"gate3","kind":"checkpoint","noun":"ice gate","hyper":"gate","zone":"z_mid3","anchor":"center","body":"sensor","shape":"box","size":[1,2,0.2]}
+{"op":"ent","id":"gate4","kind":"checkpoint","noun":"ice gate","hyper":"gate","zone":"z_mid2","anchor":"flank_n","body":"sensor","shape":"box","size":[1,2,0.2]}
+{"op":"ent","id":"gate5","kind":"checkpoint","noun":"ice gate","hyper":"gate","zone":"z_mid1","anchor":"flank_s","body":"sensor","shape":"box","size":[1,2,0.2]}
+{"op":"verb","id":"vb_drive","verb":"vehicle.drive","on":"snowmobile","params":{"kind":"snowmobile","speed":20,"driver":"player"}}
+{"op":"verb","id":"vb_track","verb":"racing.track","on":"finish_line","params":{"gates":"gate1,gate2,gate3,gate4,gate5","laps":1}}
+{"op":"rule","id":"r_win","when":{"t":"lap_done","a":"player","b":"finish_line","n":1},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_crash","when":{"t":"hit","a":"player","b":"snowmobile"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"expect","id":"x_race","prop":"win_reachable","a":"sp_red","b":"finish_line","headline":true,"text":"Frozen forest trail has a chain of ice gates that must all be passed to finish the race"}
+{"op":"law","player":{"jumpsMax":0,"jumpH":0,"speed":20}}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}
