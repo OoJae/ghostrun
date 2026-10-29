@@ -1,0 +1,18 @@
+{"op":"meta","mode":"play","lang":"en","pack":"arena","sub":[],"seed":44,"look":"neon","mood":[0.5,0.9,0.5],"timeOfDay":22,"weather":"clear"}
+{"op":"zone","id":"z_mid","slot":"midfield","tag":"center","name":"Neon maze"}
+{"op":"zone","id":"z_red","slot":"west_half","tag":"base","name":"Red base"}
+{"op":"zone","id":"z_blue","slot":"east_half","tag":"base","name":"Blue base"}
+{"op":"spawn","id":"sp_red","zone":"z_red","anchor":"spawn_pad","team":"red"}
+{"op":"spawn","id":"sp_blue","zone":"z_blue","anchor":"spawn_pad","team":"blue"}
+{"op":"verb","id":"vb_gun","verb":"weapons.laser_gun","on":"player","params":{"range":18,"damage":0,"cooldown":0.4}}
+{"op":"verb","id":"vb_blue_guns","verb":"combat_sport.blaster","on":"team:blue","params":{"range":12,"damage":0,"cooldown":1.5}}
+{"op":"rule","id":"r_tag_blue","when":{"t":"hit","a":"team:blue","b":"player"},"then":[{"e":"score","target":"team:red","n":1}]}
+{"op":"rule","id":"r_tagged","when":{"t":"shot","a":"player"},"then":[{"e":"score","target":"team:blue","n":1}]}
+{"op":"rule","id":"r_win","when":{"t":"score_gte","a":"team:red","n":10},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose","when":{"t":"score_gte","a":"team:blue","n":10},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"npc","id":"blue_1","role":"rival","zone":"z_blue","anchor":"flank_n","team":"blue","menu":["rival.attack","rival.defend"],"dflt":"rival.attack"}
+{"op":"npc","id":"blue_2","role":"rival","zone":"z_blue","anchor":"flank_s","team":"blue","menu":["rival.attack","rival.defend"],"dflt":"rival.defend"}
+{"op":"npc","id":"blue_3","role":"rival","zone":"z_blue","anchor":"goal_ring","team":"blue","menu":["rival.attack","rival.defend"],"dflt":"rival.attack"}
+{"op":"expect","id":"x_tag","prop":"win_reachable","a":"sp_red","b":"z_blue","headline":true,"text":"Red can tag blue ten times first"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

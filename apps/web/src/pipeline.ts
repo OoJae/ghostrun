@@ -8,6 +8,8 @@ import heistFill from "../../../packages/ir/fixtures/heist-live-1.jsonl?raw";
 import vaultFill from "../../../packages/ir/fixtures/vault-heist.jsonl?raw";
 import duelFill from "../../../packages/ir/fixtures/wizard-duel.jsonl?raw";
 import zombieFill from "../../../packages/ir/fixtures/zombie-survival.jsonl?raw";
+import laserFill from "../../../packages/ir/fixtures/laser-tag.jsonl?raw";
+import stationFill from "../../../packages/ir/fixtures/space-station.jsonl?raw";
 import { layoutLaws, parseFill, specHash, type FillNote, type FillStats, type WorldBundle } from "@ghostrun/ir";
 import { placeWorld } from "@ghostrun/layout";
 import { packFor, PACKS } from "@ghostrun/registry";
@@ -74,7 +76,7 @@ export function buildWorld(_prompt: string, fixture = "ctf"): World {
 }
 
 /** Recorded fills: the organizer's CTF brief, and a kit-verb world (?fixture=coin-rush). */
-export const FIXTURES: Record<string, string> = { ctf: fixtureFill, "coin-rush": coinRushFill, forest: forestFill, parkour: parkourFill, heist: heistFill, vault: vaultFill, duel: duelFill, zombies: zombieFill };
+export const FIXTURES: Record<string, string> = { ctf: fixtureFill, "coin-rush": coinRushFill, forest: forestFill, parkour: parkourFill, heist: heistFill, vault: vaultFill, duel: duelFill, zombies: zombieFill, "laser-tag": laserFill, station: stationFill };
 export const FIXTURE_PROMPTS: Record<string, string> = {
   ctf: BRIEF,
   "coin-rush": "Collect five gold coins in a neon arena before the clock runs out. Mind the lava.",
@@ -84,6 +86,8 @@ export const FIXTURE_PROMPTS: Record<string, string> = {
   parkour: "A parkour time trial: double jump the opening wall, then race the gaps and beams to the finish.",
   duel: "A wizard duel in a neon arena: fireballs against a frost mage, healing potions in your circle, a storm crystal on the balcony.",
   zombies: "Zombie survival: hold the yard with a blaster and knock out ten zombies before they get you.",
+  "laser-tag": "A laser tag game in a neon arena: red against blue, first team to ten tags wins.",
+  station: "A shooter in a space station: get past the security robots and shoot down the reactor core.",
 };
 
 /** Fill text (fixture or a live stream) → placed world, choosing the pack from the registry. */

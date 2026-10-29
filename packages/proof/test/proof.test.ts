@@ -208,14 +208,15 @@ describe("try to fool it", () => {
   }, 180_000);
 });
 
-describe("fights (a wizard duel; a zombie horde)", () => {
+describe("fights (a wizard duel; a zombie horde; laser tag and a space station, written the way models write them)", () => {
   const combat = async (name: string) => {
     const { arena } = await import("@ghostrun/pack-arena");
+    const { floorPlan } = await import("@ghostrun/pack-floor-plan");
     const text = readFileSync(new URL(`../../ir/fixtures/${name}.jsonl`, import.meta.url), "utf8");
     const seed = (JSON.parse(text.split("\n", 1)[0]!) as { seed: number }).seed;
     const fill = parseFill(text, { seed });
     expect(fill.notes.filter((n) => n.kind === "invalid" || n.kind === "unresolved")).toEqual([]);
-    const layout = arena.generate({ seed, params: arena.defaults, sub: [], laws: fill.draft.laws, harder: false });
+    const layout = fill.draft.pack.id === "floor_plan" ? floorPlan.generate({ seed, params: floorPlan.defaults, sub: [], laws: fill.draft.laws, harder: false }) : arena.generate({ seed, params: arena.defaults, sub: [], laws: fill.draft.laws, harder: false });
     return placeWorld({ ...fill.draft, engine: ENGINE }, layout).bundle;
   };
   const forced = (r: Awaited<ReturnType<typeof prove>>) => r.chips.filter((c) => c.tier === "T2").map((c) => [c.subject.id, c.status]);
@@ -223,6 +224,8 @@ describe("fights (a wizard duel; a zombie horde)", () => {
   it.each([
     ["wizard-duel", "win ← r_win (rival_wizard down to 0 HP) ← shoot rival_wizard (5 hits of 20)"],
     ["zombie-survival", "win ← r_win (team:red reaches 10) ← r_down (team:blue down to 0 HP) ← shoot team:blue (3 hits of 20)"],
+    ["laser-tag", "win ← r_win (team:red reaches 10) ← r_tag_blue (team:blue shot by you)"],
+    ["space-station", "win ← r_boom (reactor_core down to 0 HP) ← shoot reactor_core (6 hits of 25)"],
   ])("%s: the win regresses through knock-outs, every shot lands in the range model, every rule is forced, and runners win the fight", async (name, explain) => {
     const b = await combat(name);
     const r = await prove(R, b, { engine: ENGINE, runs: 12 });
