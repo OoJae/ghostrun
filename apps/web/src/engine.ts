@@ -23,6 +23,8 @@ import { buildWorldView, type WorldView } from "./render/world";
 import { StubSim } from "./sim/stub";
 import type { RapierSim } from "./sim/rapier";
 import { PLAYER_ID, TICK_HZ, type FrameSource, type SimFrame } from "./sim/types";
+import { EMPTY_HUD, type VrAction, type VrHud } from "./xr/model";
+import { VrMode, type VrWorld } from "./xr/vr";
 
 export type SimFactory = (bundle: World["bundle"]) => RapierSim;
 
@@ -60,10 +62,9 @@ export class Engine {
   /** VR: the camera rides this rig (at the player's feet); outside VR it stays at identity. */
   readonly #rig = new Group();
   #vr = false;
-  #vrYaw = 0;
-  #snapTurn = 0;
-  #snapArmed = true;
-  #bHeld = false;
+  /** The headset's controls, panels and comfort (xr/vr.ts), while a session runs. */
+  #vrMode: VrMode | null = null;
+  #vrHud: VrHud = EMPTY_HUD;
   readonly #pipeline: RenderPipeline | null;
   readonly #follow: FollowCamera;
   readonly #input = new InputCollector();
@@ -97,6 +98,8 @@ export class Engine {
   onFrame: ((f: SimFrame) => void) | undefined;
   /** B or Y on a VR controller (a fresh press): the sound's mute, where there is no keyboard. */
   onVrB: (() => void) | undefined;
+  /** A panel button or a spoken prompt in VR: play again, or build a world. */
+  onVrAction: ((a: VrAction) => void) | undefined;
   #bloom: ReturnType<typeof bloom> | null = null;
   /** Prewarmed sample worlds: never rendered, kept so their compiled programs stay cached. */
   readonly #warm: WorldView[] = [];
@@ -205,15 +208,21 @@ export class Engine {
       await xr.setSession(session);
       this.#vr = true;
       probe().vr = true;
+      // facing where the desktop camera looked
+      const vr = (this.#vrMode = new VrMode({ renderer: this.#renderer, scene: this.#scene, rig: this.#rig, input: this.#input }, this.#follow.yaw));
+      vr.hud = this.#vrHud;
+      vr.onAction = (a) => this.onVrAction?.(a);
+      vr.onMute = () => this.onVrB?.();
       session.addEventListener("end", () => {
         this.#vr = false;
         probe().vr = false;
         xr.enabled = false;
+        this.#vrMode?.dispose();
+        this.#vrMode = null;
         this.#rig.position.set(0, 0, 0);
         this.#rig.rotation.set(0, 0, 0);
         const player = this.#view?.actors.get(PLAYER_ID);
         if (player) player.visible = true;
-        this.#input.setStick(0, 0);
       });
       return "started";
     } catch (e) {
@@ -222,38 +231,14 @@ export class Engine {
     }
   }
 
-  /** VR controls: left stick moves (relative to where you look), right stick snap-turns, A/X jump, triggers use. */
-  #vrInput() {
-    const session = this.#renderer.xr.getSession();
-    if (!session) return;
-    let sx = 0;
-    let sy = 0;
-    let jump = false;
-    let use = false;
-    let b = false;
-    for (const src of session.inputSources) {
-      const g = src.gamepad;
-      if (!g) continue;
-      const ax = g.axes[2] ?? 0;
-      const ay = g.axes[3] ?? 0;
-      if (src.handedness === "left") ((sx = Math.abs(ax) > 0.15 ? ax : 0), (sy = Math.abs(ay) > 0.15 ? -ay : 0));
-      if (src.handedness === "right") {
-        if (Math.abs(ax) > 0.7 && this.#snapArmed) ((this.#snapTurn -= Math.sign(ax) * (Math.PI / 6)), (this.#snapArmed = false));
-        if (Math.abs(ax) < 0.3) this.#snapArmed = true;
-      }
-      if (g.buttons[4]?.pressed) jump = true;
-      if (g.buttons[0]?.pressed) use = true;
-      if (g.buttons[5]?.pressed) b = true;
-    }
-    if (b && !this.#bHeld) this.onVrB?.();
-    this.#bHeld = b;
-    this.#input.setStick(sx, sy);
-    this.#input.setButton(1, jump);
-    this.#input.setButton(2, use);
-    // the direction you look is "forward"
-    const dir = new Vector3();
-    this.#renderer.xr.getCamera().getWorldDirection(dir);
-    this.#vrYaw = Math.atan2(-dir.x, -dir.z);
+  /** What the headset's panels show (the HUD's facts as words); kept for a session that starts later. */
+  vrHud(h: VrHud) {
+    this.#vrHud = h;
+    if (this.#vrMode) this.#vrMode.hud = h;
+  }
+
+  #vrWorld(): VrWorld {
+    return { view: this.#view, sim: this.rapierSim, building: this.#preview !== null };
   }
 
   #trails: Group | null = null;
@@ -414,7 +399,6 @@ export class Engine {
    */
   materialise(spec: MaterialiseSpec) {
     this.#stopPreview();
-    if (this.#vr) return;
     this.#previewAsk = { spec, at: performance.now() };
   }
 
@@ -531,12 +515,17 @@ export class Engine {
     this.#compiling = true;
     try {
       await this.#renderer.compileAsync(this.#scene, this.#camera);
+    } catch (e) {
+      // in a headset a failed precompile mustn't end the session: the first frames compile instead
+      if (!this.#vr) throw e;
+      console.warn("precompile failed in VR", e);
     } finally {
       this.#compiling = false;
     }
     splits.push({ label: "compile", ms: performance.now() - t });
 
     this.#sim = sim;
+    this.#vrMode?.loaded(sim.spawnYaw);
     sim.start((f) => {
       this.#prev = this.#curr ?? f;
       this.#curr = f;
@@ -609,7 +598,10 @@ export class Engine {
   }
 
   #pushInput() {
-    this.#sim?.input(this.#input.sample((this.#curr?.tick ?? 0) + 1, this.#vr ? this.#vrYaw : this.#follow.yaw));
+    const vr = this.#vrMode;
+    const f = this.#input.sample((this.#curr?.tick ?? 0) + 1, vr ? vr.moveYaw : this.#follow.yaw);
+    if (vr) f.aim = vr.aimYaw;
+    this.#sim?.input(f);
   }
 
   #applyPoses(now: number) {
@@ -642,7 +634,8 @@ export class Engine {
     this.#lastT = now;
 
     const view = this.#view;
-    if (this.#vr) this.#vrInput();
+    const vr = this.#vrMode;
+    if (vr) vr.before(now, this.#vrWorld());
     this.#pushInput();
     this.#applyPoses(now);
     this.#placeGhost(now);
@@ -652,14 +645,11 @@ export class Engine {
     const preview = this.#preview;
     const player = view?.actors.get(PLAYER_ID);
     if (preview) {
-      // building: the camera circles the layout instead of following the player
-      preview.update(now, this.#camera);
-      this.#air.follow(this.#camera.position);
-    } else if (player && this.#vr) {
-      // first person: the rig stands on the player's feet; the headset adds the eye height
-      player.visible = false;
-      this.#rig.position.set(player.position.x, player.position.y - 0.9, player.position.z);
-      this.#rig.rotation.y = this.#snapTurn;
+      // building: the camera circles the layout instead of following the player (in VR it says
+      // where you stand to watch)
+      preview.update(now, vr ? vr.eye : this.#camera);
+      this.#air.follow(vr ? vr.eye.position : this.#camera.position);
+    } else if (player && vr) {
       this.#air.follow(player.position);
     } else if (player) {
       this.#follow.update(dt, player.position);
@@ -667,30 +657,41 @@ export class Engine {
     }
     view?.update(now / 1000);
     if (view) this.#combat?.update(now / 1000, view.actors, this.#camera);
-    if (view && !this.#vr) this.#race?.update(dt, now / 1000, view.actors, this.#camera, this.#follow);
+    // (in VR too: the vehicles turn and the gates show, without the chase camera)
+    if (view) this.#race?.update(dt, now / 1000, view.actors, this.#camera, this.#follow, vr !== null);
     const focused = this.#focus ? view?.actors.get(this.#focus) : undefined;
     this.#beacon.visible = Boolean(focused);
     if (focused) this.#beacon.position.set(focused.position.x, focused.position.y + 6, focused.position.z);
-
-    if (this.#pipeline && !this.#vr) this.#pipeline.render();
-    else this.#renderer.render(this.#scene, this.#camera);
-
-    const pr = probe();
-    this.#frames++;
-    if (this.#dts.length < 512) this.#dts.push(dt);
-    if (now - this.#fpsT0 >= 1000) {
-      pr.fps = Math.round((this.#frames * 1000) / (now - this.#fpsT0));
-      pr.drawCalls = this.#renderer.info.render.drawCalls;
-      this.#frames = 0;
-      this.#fpsT0 = now;
-      this.#governor();
-      pr.pixelRatio = this.#renderer.getPixelRatio();
+    if (vr) {
+      // first person: the rig stands on the player's feet (or in the seat); then the hands and panels
+      const w = this.#vrWorld();
+      vr.place(now, w);
+      vr.after(now, dt, w);
     }
 
-    if (this.#firstFrame) {
-      const resolve = this.#firstFrame;
-      this.#firstFrame = null;
-      resolve(performance.now());
+    // the frame's bookkeeping runs even when drawing throws (an emulated headset's null framebuffer
+    // does on every frame), so a world loaded in VR still starts
+    try {
+      if (this.#pipeline && !this.#vr) this.#pipeline.render();
+      else this.#renderer.render(this.#scene, this.#camera);
+    } finally {
+      const pr = probe();
+      this.#frames++;
+      if (this.#dts.length < 512) this.#dts.push(dt);
+      if (now - this.#fpsT0 >= 1000) {
+        pr.fps = Math.round((this.#frames * 1000) / (now - this.#fpsT0));
+        pr.drawCalls = this.#renderer.info.render.drawCalls;
+        this.#frames = 0;
+        this.#fpsT0 = now;
+        this.#governor();
+        pr.pixelRatio = this.#renderer.getPixelRatio();
+      }
+
+      if (this.#firstFrame) {
+        const resolve = this.#firstFrame;
+        this.#firstFrame = null;
+        resolve(performance.now());
+      }
     }
   }
 

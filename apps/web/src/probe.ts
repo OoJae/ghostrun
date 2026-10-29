@@ -35,6 +35,34 @@ export interface GhostrunProbe {
   materialise?: { statics: number; entities: number };
   /** The run's clip recorder: "disabled" with ?clip=0 (and on phones), "unsupported" where the browser can't record a canvas. */
   clip?: { state: "disabled" | "unsupported" | "failed" | "off" | "paused" | "rolling" | "held" | "take"; segments: number; bytes: number; type: string };
+  /** In a VR session (refreshed ten times a second): the panels, the pointer, the comfort options. */
+  xr?: XrProbe;
+}
+
+export interface XrProbe {
+  /** Each panel: shown now, how often its canvas has been painted, and the words on it. */
+  panels: Record<string, { shown: boolean; draws: number; words: string[] }>;
+  /** Every button on a shown panel: its centre in the play space (the reference space the controllers move in). */
+  buttons: Record<string, [number, number, number]>;
+  /** The button a controller points at. */
+  hover: string | null;
+  move: "smooth" | "teleport";
+  vignette: boolean;
+  teleport: { aiming: boolean; valid: boolean; target: [number, number, number] | null; walking: boolean };
+  /** The pickup a grab is walking you to, and what you carry ("" for nothing). */
+  grab: string | null;
+  carrying: string;
+  /** At the wheel: the vehicle, and the seat's heading. */
+  seat: { vehicle: string; yaw: number } | null;
+  /** Where a character's line is shown: over their head, or in front of you while they're out of sight. */
+  bark: "head" | "front" | null;
+  listening: boolean;
+  /** A world is being built: you stand where its reveal is watched from. */
+  watching: boolean;
+  /** The prompt sheet (chips, or the voice prompt) is open. */
+  sheet: boolean;
+  /** Main-thread time of the VR layer's own work per frame (ms). */
+  cpu: { p50: number; p95: number };
 }
 
 export interface AudioProbe {

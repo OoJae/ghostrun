@@ -14,7 +14,7 @@ import { PromptBar } from "./hud/PromptBar";
 import { EditBox, type EditState } from "./hud/Edit";
 import { Gallery, GALLERY, type GalleryEntry } from "./hud/Gallery";
 import { TrustPanel } from "./hud/Trust";
-import { CutChip, ProofBadge, ReceiptPanel, RepairChip, type CutState, type Fooled, type ProofState, type RepairState } from "./hud/Proof";
+import { CutChip, ProofBadge, proofBadge, ReceiptPanel, RepairChip, type CutState, type Fooled, type ProofState, type RepairState } from "./hud/Proof";
 import { liveAvailable, liveBuild, liveDirector, liveEdit, liveRepair, type LiveCached, type LiveIntent } from "./live";
 import { ANGLES, changeSummary, cutHolds, cutNotes, editedPrompt, HARDER, intentFor, newFailures, pickHarder, receiptDelta, suggestionsFor, SURPRISE } from "./edits";
 import { createShare, loadShare, reportWrong } from "./share";
@@ -39,6 +39,7 @@ import { useClip } from "./useClip";
 import { clipName } from "./clip";
 import { worldTitle } from "./race";
 import { RecordStrip } from "./hud/RecordStrip";
+import { scoreText, vrResult, type VrAction } from "./xr/model";
 
 const HINT_MS = 6000;
 const FIXTURE = new URLSearchParams(window.location.search).get("fixture") ?? "ctf";
@@ -174,11 +175,11 @@ export function App() {
   const repaired = useRef<World | null>(null);
   const current = useRef<World | null>(null);
   const minds = useRef<Minds | null>(null);
-  const [bark, setBark] = useState<{ name: string; line: string; at: number } | null>(null);
+  const [bark, setBark] = useState<{ npc: string; name: string; line: string; at: number } | null>(null);
   const [talking, setTalking] = useState<{ npc: string; name: string } | null>(null);
   /** An NPC's line: the subtitle, and said out loud in its own voice. */
   const barked = (npc: string, name: string, line: string, reply: boolean) => {
-    setBark({ name, line, at: Date.now() });
+    setBark({ npc, name, line, at: Date.now() });
     speech.npc(npc, line, reply);
   };
   const [result, setResult] = useState<RunResult | null>(null);
@@ -454,6 +455,7 @@ export function App() {
         }
         engine.current = e;
         e.onInput = () => (setCollapsed(true), setFresh(false));
+        e.onVrAction = (a) => vrAct.current(a);
         sound.attach(e);
         void e.vrSupported().then((ok) => !disposed && setVrOk(ok));
         probe().sim = "stub";
@@ -864,6 +866,13 @@ export function App() {
   };
   const againRef = useRef(again);
   againRef.current = again;
+  /** A panel button or a spoken prompt in the headset: the same as R, or as the prompt bar's Enter. */
+  const vrAct = useRef<(a: VrAction) => void>(() => undefined);
+  vrAct.current = (a) => {
+    if (a.k === "again") return again();
+    setPrompt(a.prompt);
+    submit(a.prompt);
+  };
 
   /** Build a prompt; `rebuild` skips the edge's cache ("Build it fresh"). */
   const submit = (text: string, rebuild = false) => {
@@ -887,6 +896,26 @@ export function App() {
     submit(text);
   };
   const landing = fresh && !collapsed && !typing;
+
+  // the HUD can't be seen in a headset: its facts go to the in-headset panels as words
+  const vrCard = race.card?.vs ?? null;
+  useEffect(() => {
+    const e = engine.current;
+    if (!inVr || !e) return;
+    const w = current.current;
+    const busy = status === "building" || status === "booting";
+    e.vrHud({
+      proof: proofBadge(proof),
+      score: scoreText(score, teams, clock, secrets),
+      hint: useHint,
+      toast: toast ?? notice ?? (status === "building" ? (building === null ? "Building the world…" : `Building… ${building} ${building === 1 ? "line" : "lines"}`) : null),
+      bark,
+      result: result && w ? vrResult(result, w.bundle, proof.receipt?.par?.goldS ?? null, vrCard) : null,
+      race: race.chip ? { rival: race.chip.rival, secrets: race.chip.secrets } : null,
+      prompts: SUGGESTIONS.filter((x) => mode === "live" || !x.live),
+      busy,
+    });
+  }, [inVr, proof, score, teams, clock, secrets, useHint, toast, notice, status, building, bark, result, vrCard, race.chip?.rival, race.chip?.secrets, mode]);
 
   return (
     <>
