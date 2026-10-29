@@ -67,11 +67,13 @@ export function useSound(): SoundControl {
       unlock.buffer = c.createBuffer(1, 1, 22050);
       unlock.connect(c.destination);
       unlock.start(0);
-      void import("./sound").then(({ Sound }) => {
-        const s = new Sound(c, { muted: mutedRef.current, ear: () => engine.current?.ear() ?? null });
-        sound.current = s;
-        if (current.current) s.world(current.current.b, current.current.sim);
-      });
+      import("./sound")
+        .then(({ Sound }) => {
+          const s = new Sound(c, { muted: mutedRef.current, ear: () => engine.current?.ear() ?? null });
+          sound.current = s;
+          if (current.current) s.world(current.current.b, current.current.sim);
+        })
+        .catch((err: unknown) => console.warn("sound unavailable", err)); // the game plays on without it
     }
     if (!mutedRef.current && ctx.current.state !== "running") void ctx.current.resume().catch(() => undefined);
   }, []);
