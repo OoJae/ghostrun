@@ -79,12 +79,19 @@ describe("recorded unseen worlds", () => {
     ["fights", "a-ninja-dojo", "throwing stars hurt what has hit points, and the sensei the win wears down is something to throw them at"],
     ["fights", "paintball-in-a-forest", "'most hits when the clock runs out': your hits with either gun, theirs on you, and runners fire back while they wait"],
     ["fights", "laser-tag-in-a-neon-warehouse", "'player_red' is you, 'player_blue' is blue, blue scoring when blue is hit means red hit, and a blue win is your loss"],
+    ["fights-r2", "a-castle-siege-with-bows", "'IF archer_west.hp is \"0\"' compares numbers, and an archer 'hitting the player' is its shot, not a tag"],
+    ["fights-r2", "a-space-station-shooter", "a drone on a platform across the pit is reached by the course's hops, not chased into the pit"],
+    ["fights-r2", "laser-tag-in-a-neon-warehouse", "'hits an opponent, if opponent.team is blue' means blue hit, for red's tag"],
+    ["fights-r2", "a-ninja-dojo", "three dummy knock-outs that lead nowhere make the win need them all, so it's no longer won in 1.2 s"],
+    ["fights-r2", "a-cowboy-showdown", "'outdraw three bandits' with a win for the third alone needs all three, whoever goes down last"],
   ])("%s %s: %s", async (set, prefix) => {
     const w = recorded(set, prefix);
     const r = await prove(R, w.bundle, { engine: ENGINE_HASH, runs: 12 });
     // a game: AI runners win it; a place: the AI visitor reaches and uses everything in it
     if (w.bundle.mode === "wander") expect(r.chips.find((c) => c.id === "T3:tour")?.status).toBe("played");
     else expect(r.chips.find((c) => c.id === "T3:win")?.k ?? 0).toBeGreaterThanOrEqual(10);
-    if (set === "fights") expect(r.chips.find((c) => c.id === "T3:too_easy")).toBeUndefined(); // (laser tag was won in 0.2 s by walking into your own base)
+    // (laser tag was won in 0.2 s by walking into your own base; the second dojo in 1.2 s by the sensei alone)
+    if (set.startsWith("fights")) expect(r.chips.find((c) => c.id === "T3:too_easy")).toBeUndefined();
+    if (set === "fights-r2") expect(r.chips.filter((c) => c.status === "counterexample").map((c) => c.id)).toEqual([]);
   }, 180_000);
 });

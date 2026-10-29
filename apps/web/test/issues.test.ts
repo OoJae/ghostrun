@@ -71,10 +71,11 @@ describe("repair issues for fights", () => {
     expect(issues).toContain("Rule r_win never fired when forced: its trigger happened, but not archer_west.hp lt -1 (it is 0). Fix its trigger, conditions or the verb that should cause it. Hit points and scores are numbers (\"r\":0, never \"0\").");
   });
 
-  it("rejected lines: hit points written as an ent are a verb on whoever has them", async () => {
-    // defend the crystal without its timer: no way to win, and the two hp lines it lost say why
-    const { issues } = await proved(world("defend-the-crystal", (o) => (id(o) === "r_win_timer" ? [] : [o])));
-    expect(issues[0]).toBe(`ents crystal_hp, player_hp were rejected: "health" is not a kind. Hit points are a verb on whoever has them, e.g. {"op":"verb","id":"vb_hp_crystal","verb":"combat_sport.health","on":"crystal","params":{"hp":100}}.`);
+  it("rejected lines: hit points written as an ent whose owner nothing says are a verb on whoever has them", async () => {
+    // defend the crystal without its timer, its hit points called 'shield' (crystal_hp is read as the crystal's)
+    const { issues } = await proved(world("defend-the-crystal", (o) => (id(o) === "r_win_timer" ? [] : [JSON.parse(JSON.stringify(o).replaceAll("crystal_hp", "shield")) as Line])));
+    expect(issues[0]).toBe(`ent shield was rejected: "health" is not a kind. Hit points are a verb on whoever has them, e.g. {"op":"verb","id":"vb_hp_x","verb":"combat_sport.health","on":"<id>","params":{"hp":100}}.`);
+    expect(issues[1]).toMatch(/^rule r_lose_crystal was dropped: it names 'shield'/);
     expect(issues).toContain(`No chain of rules lets the player win (no rule ever wins the game): no rule wins the game. Add one for beating the rivals, e.g. {"op":"rule","id":"r_win","when":{"t":"health_lte","a":"monster_template","n":0},"then":[{"e":"win","target":"player"}],"once":true}.`);
   });
 
