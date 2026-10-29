@@ -194,13 +194,15 @@ export class RapierSim implements FrameSource {
     if (this.#pressQueued || i.btn & BTN_JUMP) btn |= BTN.JUMP;
     this.#pressQueued = false;
     if (i.btn & BTN_USE) btn |= BTN.USE;
-    // firing aims where the camera looks: on the press, a short push that way (the sim faces the way
-    // the stick last pushed; the push is in the recorded frame, so replays stay exact)
+    // firing aims where the camera looks (in VR, where the controller points): on the press, a short
+    // push that way (the sim faces the way the stick last pushed; the push is quantised into the
+    // recorded frame like any other, so replays stay exact)
     const using = (i.btn & BTN_USE) !== 0;
     if (using && !this.#useWas && this.sim.usable()?.label === "shoot") {
-      x = -s * 0.2;
-      z = -c * 0.2;
-      this.#facing = i.yaw;
+      const aim = i.aim ?? i.yaw;
+      x = -Math.sin(aim) * 0.2;
+      z = -Math.cos(aim) * 0.2;
+      this.#facing = aim;
     }
     this.#useWas = using;
     // a held jump must release for one tick before it counts again (fresh-press semantics)
