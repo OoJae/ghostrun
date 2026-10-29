@@ -183,10 +183,10 @@ export function sentence(b: WorldBundle, r: Rule): string {
   const w = r.when;
   const n = (id: string) => (id ? name(id) : "anything");
   const when =
-    w.t === "score_gte" ? `${n(w.a)} reaches ${w.n}` : w.t === "state_is" ? `${n(w.a)} becomes ${w.s}` : w.t === "timer_end" ? "the timer runs out" : w.t === "every" ? `every ${w.n} s` : w.t === "pickup" ? `${n(w.b)} picks up ${n(w.a)}` : `${n(w.a)} ${w.t.replace("_", " ")}${w.t.endsWith("h") ? "es" : "s"} ${n(w.b)}`;
+    w.t === "score_gte" ? `${n(w.a)} reaches ${w.n}` : w.t === "state_is" ? `${n(w.a)} becomes ${w.s}` : w.t === "timer_end" ? "the timer runs out" : w.t === "every" ? `every ${w.n} s` : w.t === "pickup" ? `${n(w.b)} picks up ${n(w.a)}` : w.t === "health_lte" ? (w.n > 0 ? `${n(w.a)} drops to ${w.n} HP` : `${n(w.a)} is knocked out`) : `${n(w.a)} ${w.t.replace("_", " ")}${w.t.endsWith("h") ? "es" : "s"} ${n(w.b)}`;
   const iff = r.if.map((c) => `${n(c.l.split(".")[0]!)} ${c.l.split(".").slice(1).join(" ")} ${c.op} ${String(c.r)}`).join(" and ");
   const then = r.then
-    .map((e) => (e.e === "score" ? `+${e.n || 1} ${n(e.target)}` : e.e === "win" || e.e === "lose" ? `you ${e.e}` : e.e === "set_state" ? `${n(e.target)} becomes ${String(e.v)}` : e.e === "emit" ? `effect ${e.fx}` : `${e.e} ${n(e.target)}`))
+    .map((e) => (e.e === "score" ? `+${e.n || 1} ${n(e.target)}` : e.e === "win" || e.e === "lose" ? `you ${e.e}` : e.e === "set_state" ? `${n(e.target)} becomes ${String(e.v)}` : e.e === "emit" ? `effect ${e.fx}` : e.e === "damage" || e.e === "heal" ? `${e.e === "damage" ? "−" : "+"}${e.n || Number(e.v) || 25} HP ${n(e.target)}` : `${e.e} ${n(e.target)}`))
     .join(", ");
   return `WHEN ${when}${iff ? ` IF ${iff}` : ""} THEN ${then}${r.once ? " (once)" : ""}`;
 }
