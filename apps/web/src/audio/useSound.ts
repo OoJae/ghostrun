@@ -41,6 +41,8 @@ export interface SoundControl {
   world(b: WorldBundle, sim: RapierSim | null): void;
   /** Someone started or stopped speaking: the music and ambience duck under the voice. */
   voice(on: boolean): void;
+  /** The mix as a stream for a clip of the run: null while there is no sound to hear (not started yet, muted or off). */
+  tap(): MediaStream | null;
 }
 
 export function useSound(): SoundControl {
@@ -127,5 +129,7 @@ export function useSound(): SoundControl {
 
   const voice = useCallback((on: boolean) => sound.current?.voice(on), []);
 
-  return { enabled: !OFF, muted, toggle, attach, world, voice };
+  const tap = useCallback(() => (!mutedRef.current && ctx.current?.state === "running" ? (sound.current?.tap() ?? null) : null), []);
+
+  return { enabled: !OFF, muted, toggle, attach, world, voice, tap };
 }
