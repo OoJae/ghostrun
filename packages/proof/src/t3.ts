@@ -40,6 +40,15 @@ function shutNav(b: WorldBundle, closed: string[]): NavWorld {
   }
   return n;
 }
+/** The navmesh a runner at the wheel follows: paths a metre off the walls, so a car takes a corner wide (built when first needed). */
+function driveNav(b: WorldBundle): NavWorld {
+  let n = shutNavs?.get("\u0000drive");
+  if (!n) {
+    n = buildNav(b, { radius: 1 });
+    (shutNavs ??= new Map()).set("\u0000drive", n);
+  }
+  return n;
+}
 const freeShut = () => {
   for (const n of shutNavs?.values() ?? []) n.destroy();
   shutNavs = null;
@@ -863,7 +872,7 @@ function drive(r: Run, st: Extract<PlanStep, { do: "drive" }>): "ok" | "stuck" {
     }
     if (race.next !== aim || sim.tick >= replan) {
       const to = floorOf(race.next);
-      path = nav.path([p[0], p[1] - 0.9, p[2]], to) ?? [to];
+      path = driveNav(b).path([p[0], p[1] - 0.9, p[2]], to) ?? nav.path([p[0], p[1] - 0.9, p[2]], to) ?? [to];
       aim = race.next;
       replan = sim.tick + 30;
     }
@@ -894,7 +903,7 @@ function drive(r: Run, st: Extract<PlanStep, { do: "drive" }>): "ok" | "stuck" {
       dodge = sim.tick + 45;
       movingAt = sim.tick;
       replan = 0;
-      trace?.(`  drive: pinned at ${v1(p)}, backing off`);
+      trace?.(`  drive: pinned at ${v1(p)}, backing off; heading ${ride.hx.toFixed(2)},${ride.hz.toFixed(2)} speed ${ride.speed.toFixed(1)} aim ${v1(look)} next ${race.next}; near ${[...sim.npcs.keys()].filter((id) => d2h(sim.pos(id), p) < 16).map((id) => `${id}@${v1(sim.pos(id))}`).join(" ")}`);
     }
     if (sim.tick < dodge) [ux, uz, l] = [side[0], side[1], Math.sqrt(side[0] * side[0] + side[1] * side[1]) || 1];
     const ahead = (ride.hx * ux + ride.hz * uz) / l;
@@ -919,9 +928,21 @@ function drive(r: Run, st: Extract<PlanStep, { do: "drive" }>): "ok" | "stuck" {
   return done() ? "ok" : "stuck";
 }
 
+/** At the wheel for a step that isn't a race (a delivery, a run to a finish over jumps): stop and get out, then do it on foot. */
+function stepOut(r: Run) {
+  const { sim, budget } = r;
+  for (let k = 0; k < 180 && sim.ride("player") && live(r); k++) {
+    const slow = Math.abs(sim.ride("player")!.speed) < 1.5;
+    sim.step({ tick: sim.tick + 1, wx: 0, wz: 0, btn: slow && k % 2 === 0 ? BTN.USE : 0 });
+    budget.ticks--;
+  }
+  trace?.(`  ${sim.ride("player") ? "couldn't get out" : "got out"} at ${v1(sim.pos("player"))}`);
+}
+
 /** Execute one plan step in physics; "lost" means a carried item was taken (start over). */
 function perform(r: Run, st: PlanStep): "ok" | "lost" | "stuck" {
   const { sim, nav, b, rng, speed, budget } = r;
+  if (st.do !== "drive" && sim.ride("player")) stepOut(r);
   const go = (t: Vec3 | (() => Vec3), stop: () => boolean) => {
     if (typeof t !== "function") clearDoors(r, t);
     // doors still shut after that (a gate that opens later): walk round them when there's a way
