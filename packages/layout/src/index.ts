@@ -673,11 +673,17 @@ export function placeRace(b: WorldBundle, layout: PackLayout, bound: Map<string,
   [dx, dz] = [dx / dl, dz / dl];
   const floor = line.pos[1] - line.size[1] / 2;
   const rides = b.verbs.filter((v) => v.verb === DRIVE && v.params.driver).sort((x, y) => (x.params.driver === "player" ? -1 : y.params.driver === "player" ? 1 : x.id < y.id ? -1 : 1));
+  // (spaced by the biggest vehicle on it, room to spare: each starts turned toward the first gate)
+  let [wide, long] = [0, 0];
+  for (const v of rides) {
+    const e = b.entities.find((x) => x.id === v.on);
+    if (e) [wide, long] = [Math.max(wide, e.size[0]), Math.max(long, e.size[2])];
+  }
   rides.forEach((v, i) => {
     const e = b.entities.find((x) => x.id === v.on);
     if (!e) return;
-    const back = line.size[0] / 2 + (i === 0 ? 2 : 5.5 + 3.5 * Math.floor((i - 1) / 2));
-    const side = i === 0 ? 0 : (i % 2 ? 1 : -1) * 1.8;
+    const back = line.size[0] / 2 + 2 + (i === 0 ? 0 : (long + 1.4) * (1 + Math.floor((i - 1) / 2)));
+    const side = i === 0 ? 0 : (i % 2 ? 1 : -1) * (wide + 0.6);
     put(e, nudge([line.pos[0] - dx * back - dz * side, floor, line.pos[2] - dz * back + dx * side]));
     const driver = v.params.driver === "player" ? b.entities.find((s) => s.kind === "spawn" && s.team === (b.entities.some((x) => x.kind === "spawn" && x.team === "red") ? "red" : s.team)) : b.entities.find((x) => x.id === v.params.driver);
     if (driver) driver.pos = driver.kind === "spawn" ? [e.pos[0], floor, e.pos[2]] : [e.pos[0], floor + driver.size[1] / 2, e.pos[2]];

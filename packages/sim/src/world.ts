@@ -367,6 +367,9 @@ export class SimWorld {
     }
     const ctrl = agent === "player" ? this.player : this.npcs.get(agent)!;
     ctrl.vx = ctrl.vz = 0;
+    // at the wheel the driver's capsule is as wide as the vehicle (up to 1.7 m), its feet where they were
+    const wide = Math.min(0.85, Math.max(PLAYER_RADIUS, Math.min(v.size[0], v.size[2]) / 2));
+    ctrl.collider.setShape(new this.R.Capsule(PLAYER_HALF_HEIGHT + PLAYER_RADIUS - wide, wide));
     this.#rides.set(agent, { vehicle, feel: feelOf(this.#given.get(b.bound.id) ?? {}, b.bound.params), hx, hz, speed: 0, boostLeft: 0, boostAt: 0 });
     this.#riddenBy.set(vehicle, agent);
     this.#facing.set(agent, [hx, hz]);
@@ -385,6 +388,7 @@ export class SimWorld {
     const [ux, uz] = sides.find(free) ?? sides[0]!;
     this.#rides.delete(agent);
     this.#riddenBy.delete(r.vehicle);
+    (agent === "player" ? this.player : this.npcs.get(agent)!).collider.setShape(new this.R.Capsule(PLAYER_HALF_HEIGHT, PLAYER_RADIUS));
     this.teleport(agent, [p[0] + ux * off, p[1], p[2] + uz * off]);
     v.col?.setEnabled(true);
     return true;
