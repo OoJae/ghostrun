@@ -52,14 +52,19 @@ export type LiveResult =
   | { kind: "refused"; message: string }
   | { kind: "unavailable"; reason: string };
 
-export async function liveAvailable(): Promise<boolean> {
+/** Is the live lane up, and can it read a picture (the Claude lane is configured)? */
+export async function liveHealth(): Promise<{ llm: boolean; vision: boolean }> {
   try {
     const r = await fetch("/v1/health", { cache: "no-store" });
-    return r.ok && Boolean(((await r.json()) as { llm?: boolean }).llm);
+    if (!r.ok) return { llm: false, vision: false };
+    const h = (await r.json()) as { llm?: boolean; vision?: boolean };
+    return { llm: Boolean(h.llm), vision: Boolean(h.llm && h.vision) };
   } catch {
-    return false;
+    return { llm: false, vision: false };
   }
 }
+
+export const liveAvailable = async (): Promise<boolean> => (await liveHealth()).llm;
 
 export interface BuildHooks {
   /** The intent has landed (with the world's seed): the layout can be drawn before any fill line. */
@@ -86,7 +91,11 @@ export async function liveBuild(prompt: string, hooks: BuildHooks = {}): Promise
   } catch (e) {
     return { kind: "unavailable", reason: String(e) };
   }
-  if (!res.ok || !res.body) return { kind: "unavailable", reason: `HTTP ${res.status}` };
+  if (!res.ok || !res.body) {
+    // the edge says why when it can ("image too large", "builds paused")
+    const why = await res.json().then((b: { error?: unknown }) => (typeof b.error === "string" ? b.error : ""), () => "");
+    return { kind: "unavailable", reason: `HTTP ${res.status}${why ? `: ${why}` : ""}` };
+  }
 
   const reader = res.body.getReader();
   const dec = new TextDecoder();

@@ -112,7 +112,8 @@ export async function handle(req: Request, env: Env, ctx?: WaitUntil): Promise<R
   const url = new URL(req.url);
   const path = url.pathname;
   const later = (p: Promise<unknown>) => (ctx ? ctx.waitUntil(p) : void p.catch(() => undefined));
-  if (path === "/v1/health") return json({ ok: true, packs: PACKS.map((p) => p.id), llm: hasModel(env), fallback: Boolean(env.CEREBRAS_API_KEY && env.ANTHROPIC_API_KEY), gate: gateMode(env, url), sitekey: env.TURNSTILE_SITEKEY ?? null });
+  // `vision`: a build can bring a picture (the client offers one only then)
+  if (path === "/v1/health") return json({ ok: true, packs: PACKS.map((p) => p.id), llm: hasModel(env), fallback: Boolean(env.CEREBRAS_API_KEY && env.ANTHROPIC_API_KEY), vision: lanesFor("vision", keysOf(env), { messages: [] }).length > 0, gate: gateMode(env, url), sitekey: env.TURNSTILE_SITEKEY ?? null });
   if (path === "/v1/session" && req.method === "POST") return session(req, env, url);
   if (path === "/v1/build" && req.method === "POST") return build(req, env, url, later);
   if (path === "/v1/repair" && req.method === "POST") return patch("repair", req, env, url, later);

@@ -31,7 +31,7 @@ function collectErrors(page: Page): string[] {
 
 test("picture: an attached image is made small and clean, sent with the words, and the Intent card says the world is inspired by it", async ({ page }) => {
   const errors = collectErrors(page);
-  await page.route("**/v1/health", (r) => r.fulfill({ json: { ok: true, packs: [], llm: true, gate: "dev", sitekey: null } }));
+  await page.route("**/v1/health", (r) => r.fulfill({ json: { ok: true, packs: [], llm: true, vision: true, gate: "dev", sitekey: null } }));
   await page.route("**/v1/mind", (r) => r.fulfill({ status: 503, json: { error: "off in this test" } }));
   for (const path of ["repair", "director"]) await page.route(`**/v1/${path}`, (r) => r.fulfill({ contentType: "text/event-stream", body: sse("error", { message: "off in this test" }) }));
   const asked: { prompt: string; image?: string }[] = [];
@@ -82,4 +82,25 @@ test("picture: an attached image is made small and clean, sent with the words, a
   await page.getByTestId("picture-remove").click();
   await expect(chip).toHaveCount(0);
   expect(errors.filter((e) => !e.includes("503"))).toEqual([]);
+});
+
+test("picture: no picture button without the Claude lane, and a picture the edge turns away keeps the live lane", async ({ page }) => {
+  let vision = false;
+  await page.route("**/v1/health", (r) => r.fulfill({ json: { ok: true, packs: [], llm: true, vision, gate: "dev", sitekey: null } }));
+  await page.route("**/v1/mind", (r) => r.fulfill({ status: 503, json: { error: "off in this test" } }));
+  await page.route("**/v1/build", (r) => r.fulfill({ status: 413, json: { error: "image too large" } }));
+  await page.goto("/?gl=webgl2&fx=0&dpr=0.5&prewarm=0");
+  await page.waitForFunction(() => window.__GHOSTRUN__?.ready === true, null, { timeout: 90_000 });
+  await expect(page.getByTestId("prompt-bar")).toContainText("live AI");
+  await expect(page.getByTestId("picture-button")).toHaveCount(0);
+
+  vision = true;
+  await page.reload();
+  await page.waitForFunction(() => window.__GHOSTRUN__?.ready === true, null, { timeout: 90_000 });
+  await page.getByTestId("picture-input").setInputFiles(SKETCH);
+  await expect(page.getByTestId("picture-chip").locator("img")).toBeVisible({ timeout: 15_000 });
+  await page.getByRole("textbox", { name: "Describe a world" }).press("Enter"); // the picture alone, no words
+  await expect(page.getByRole("status").filter({ hasText: "Couldn't build from the image" })).toContainText("HTTP 413: image too large");
+  await expect(page.getByTestId("source-chip")).toHaveText("live AI"); // not dropped to the recorded fixture
+  await expect(page.getByTestId("picture-chip")).toBeVisible();
 });

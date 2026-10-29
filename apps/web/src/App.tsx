@@ -15,7 +15,7 @@ import { EditBox, type EditState } from "./hud/Edit";
 import { Gallery, GALLERY, type GalleryEntry } from "./hud/Gallery";
 import { TrustPanel } from "./hud/Trust";
 import { CutChip, ProofBadge, ReceiptPanel, RepairChip, type CutState, type Fooled, type ProofState, type RepairState } from "./hud/Proof";
-import { liveAvailable, liveBuild, liveDirector, liveEdit, liveRepair, type LiveCached, type LiveInspired, type LiveIntent } from "./live";
+import { liveBuild, liveDirector, liveEdit, liveHealth, liveRepair, type LiveCached, type LiveInspired, type LiveIntent } from "./live";
 import type { Picture } from "./picture";
 import { ANGLES, changeSummary, cutHolds, cutNotes, editedPrompt, HARDER, intentFor, newFailures, pickHarder, receiptDelta, suggestionsFor, SURPRISE } from "./edits";
 import { createShare, loadShare, reportWrong } from "./share";
@@ -113,6 +113,8 @@ export function App() {
   /** A photo or sketch the next build is inspired by, and the brief the edge read from the last one. */
   const [picture, setPicture] = useState<Picture | null>(null);
   const [inspired, setInspired] = useState<LiveInspired | null>(null);
+  /** The live lane can read a picture (the edge has the Claude lane); the bar offers one only then. */
+  const [canSee, setCanSee] = useState(false);
   const sound = useSound();
   const speech = useSpeech(sound);
   /** A shared or gallery world on screen: where it came from (its line, if a remix), and whether Remix made it your copy. */
@@ -432,6 +434,13 @@ export function App() {
           setStatus("playing");
           return;
         }
+        if (image) {
+          // a picture the edge couldn't read leaves the live lane as it was: the words alone still build
+          engine.current?.endPreview();
+          setNotice(`Couldn't build from the image just now (${r.reason.slice(0, 60)}). Try again, or remove it to build from words alone.`);
+          setStatus("playing");
+          return;
+        }
         setNotice(`Live AI unavailable (${r.reason.slice(0, 60)}): showing the fixture world instead.`);
         setMode("fixture");
       }
@@ -450,7 +459,11 @@ export function App() {
     const num = (k: string) => (params.has(k) && Number.isFinite(Number(params.get(k))) ? Number(params.get(k)) : undefined);
     const dpr = num("dpr");
     const msaa = num("msaa");
-    void liveAvailable().then((ok) => !disposed && setMode(ok && params.get("live") !== "0" ? "live" : "fixture"));
+    void liveHealth().then((h) => {
+      if (disposed) return;
+      setMode(h.llm && params.get("live") !== "0" ? "live" : "fixture");
+      setCanSee(h.vision);
+    });
     import("./engine")
       .then(({ Engine }) =>
         Engine.create(el, {
@@ -884,8 +897,8 @@ export function App() {
     setFresh(false);
     // offline, a gallery prompt (the bar's examples) opens its recorded world rather than the fixture
     const recorded = mode === "live" ? undefined : GALLERY.find((g) => g.prompt === text);
-    if (recorded && !picture) return void openGallery(recorded);
-    run(text, performance.now(), [], mode === "live", rebuild, mode === "live" ? picture : null).catch((err: unknown) => {
+    if (recorded) return void openGallery(recorded);
+    run(text, performance.now(), [], mode === "live", rebuild, mode === "live" && canSee ? picture : null).catch((err: unknown) => {
       console.error(err);
       setError(err instanceof Error ? err.message : String(err));
       setStatus("error");
@@ -925,8 +938,8 @@ export function App() {
             galleryCount={GALLERY.length}
             examples={EXAMPLES}
             playing={builtPrompt.current}
-            picture={mode === "live" ? picture : null}
-            {...(mode === "live" ? { onPicture: setPicture } : {})}
+            picture={mode === "live" && canSee ? picture : null}
+            {...(mode === "live" && canSee ? { onPicture: setPicture } : {})}
           />
           {landing && <Landing starters={STARTERS} ready={status === "playing"} onPick={pickStarter} />}
         </div>

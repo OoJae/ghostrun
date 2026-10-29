@@ -202,6 +202,12 @@ describe("POST /v1/build with a picture", () => {
     expect(w.pool()).toMatchObject({ spent: visionEstimate(visionMessages("a heist here", { mediaType: "image/png", data: B64 }), 640, 480), held: 0 });
   });
 
+  it("health says whether a picture can be read, so the client offers one only then", async () => {
+    const health = async (env: Env) => (await (await handle(new Request("http://localhost/v1/health"), env)).json()) as { vision: boolean };
+    expect(await health({ CEREBRAS_API_KEY: "k", ANTHROPIC_API_KEY: "ak", DEV_OPEN: "1" })).toMatchObject({ vision: true });
+    expect(await health({ CEREBRAS_API_KEY: "k", DEV_OPEN: "1" })).toMatchObject({ vision: false });
+  });
+
   it("an HTTP error on the look is free and says so; without the Claude key a picture can't be read at all", async () => {
     const e = world({ up: { vision: { inTok: 0, outTok: 0, status: 400 } } });
     const r1 = await e.build({ prompt: "a heist here", image: PICTURE });
