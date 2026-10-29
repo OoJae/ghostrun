@@ -29,9 +29,32 @@ const FACE_2 = 5;
 const DEAD = 0.15;
 /** A snap turn: 30°. */
 const SNAP = Math.PI / 6;
-/** A grab reaches a pickup this far from you, within this angle of where the hand points. */
+/** A grab reaches a pickup this far from you. */
 const GRAB_RANGE = 6;
+/**
+ * And it is pointed at when it lies within GRAB_CONE of the hand's ray sideways (or above it), and up
+ * to GRAB_DROP below it: a hand held level still means the thing on the floor in front of you.
+ */
 const GRAB_CONE = 0.4;
+const GRAB_DROP = 0.8;
+
+/** How well a ray (origin, unit direction) points at a spot, lower is better; null if it doesn't. */
+export function aimScore(o: readonly number[], d: readonly number[], at: readonly number[]): number | null {
+  const [dx, dy, dz] = [at[0]! - o[0]!, at[1]! - o[1]!, at[2]! - o[2]!];
+  const dist = Math.hypot(dx, dy, dz);
+  const flat = Math.hypot(d[0]!, d[2]!);
+  const far = Math.hypot(dx, dz);
+  if (dist < 1e-6) return 0;
+  // a ray pointed steeply up or down has no sideways: a plain cone then
+  if (flat < 0.3 || far < 0.05) {
+    const angle = Math.acos(Math.max(-1, Math.min(1, (dx * d[0]! + dy * d[1]! + dz * d[2]!) / dist)));
+    return angle > GRAB_CONE ? null : angle + dist * 0.02;
+  }
+  const side = Math.acos(Math.max(-1, Math.min(1, (dx * d[0]! + dz * d[2]!) / (far * flat))));
+  const below = Math.atan2(d[1]!, flat) - Math.atan2(dy, far);
+  if (side > GRAB_CONE || below > GRAB_DROP || below < -GRAB_CONE) return null;
+  return side + Math.abs(below) * 0.5 + dist * 0.02;
+}
 /** Let go of the grip moving at least this fast (m/s) and it's a throw. */
 const THROW_SPEED = 1.4;
 /** Fonts on each panel: the smallest is ≥ 0.02 rad tall where that panel is read (panel.test.ts checks). */
@@ -543,7 +566,7 @@ export class VrMode {
     }
   }
 
-  /** The pickup the right hand points at (within GRAB_CONE of its ray and GRAB_RANGE of you), or "". */
+  /** The pickup the right hand points at (see aimScore), within GRAB_RANGE of you, or "". */
   #pointedItem(w: VrWorld): string {
     const sim = w.sim?.sim;
     const me = this.#me(w);
@@ -556,12 +579,8 @@ export class VrMode {
       if (!e?.carryable || e.carrier || e.destroyed) continue;
       const p = sim.pos(id);
       if (Math.hypot(p[0] - me.x, p[2] - me.z) > GRAB_RANGE) continue;
-      _w.set(p[0] - ray.p.x, p[1] - ray.p.y, p[2] - ray.p.z);
-      const d = _w.length();
-      const angle = d > 1e-6 ? Math.acos(Math.max(-1, Math.min(1, _w.dot(ray.d) / d))) : 0;
-      if (angle > GRAB_CONE) continue;
-      const score = angle + d * 0.02;
-      if (score < bestScore) ((bestScore = score), (best = id));
+      const score = aimScore([ray.p.x, ray.p.y, ray.p.z], [ray.d.x, ray.d.y, ray.d.z], p);
+      if (score !== null && score < bestScore) ((bestScore = score), (best = id));
     }
     return best;
   }
