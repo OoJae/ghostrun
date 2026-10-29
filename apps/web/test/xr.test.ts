@@ -9,7 +9,7 @@ import type { Box } from "../src/sim/aabb";
 import { RapierSim } from "../src/sim/rapier";
 import { BTN_USE } from "../src/sim/types";
 import { minFont, MIN_RAD } from "../src/xr/panel";
-import { PANELS } from "../src/xr/vr";
+import { aimScore, PANELS } from "../src/xr/vr";
 import { arc, reachable, type V3 } from "../src/xr/teleport";
 import { scoreText } from "../src/xr/model";
 
@@ -56,6 +56,22 @@ describe("teleport", () => {
     expect(reachable([FLOOR], [box([-1, 0, -5], [1, 0.2, -3])], feet, [0, 0, -4])).toBe(false);
     expect(reachable([FLOOR], [], feet, [0, 0, -0.3])).toBe(false); // too near to be worth a blink
     expect(reachable([FLOOR], [], feet, [0, 0, -12])).toBe(false); // too far
+  });
+});
+
+describe("grab", () => {
+  const hand = [0.2, 1.5, 0];
+  const level = [0, 0, -1];
+  it("a hand held level points at the pickup on the floor ahead, not at one at its feet, to the side or overhead", () => {
+    expect(aimScore(hand, level, [0.2, 0.25, -2.6])).not.toBeNull(); // 26° below the ray
+    expect(aimScore(hand, level, [0.2, 0.25, -5])).not.toBeNull();
+    expect(aimScore(hand, level, [0.2, 0.25, -1])).toBeNull(); // 51° down: look at it
+    expect(aimScore(hand, level, [2.2, 0.25, -2])).toBeNull(); // 45° to the side
+    expect(aimScore(hand, level, [0.2, 3.5, -2.6])).toBeNull(); // well over the ray
+  });
+  it("a hand pointed down at it reaches it, and the nearer of two in line wins", () => {
+    expect(aimScore(hand, [0, -1, 0], [0.25, 0.2, 0.1])).not.toBeNull();
+    expect(aimScore(hand, level, [0.2, 0.3, -2])!).toBeLessThan(aimScore(hand, level, [0.6, 0.3, -2])!);
   });
 });
 

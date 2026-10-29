@@ -242,12 +242,13 @@ export class Engine {
   }
 
   /** What a VR frame plays in (one object, refreshed each frame rather than made anew). */
-  readonly #vrW: VrWorld = { view: null, sim: null, building: false };
+  readonly #vrW: VrWorld = { view: null, sim: null, building: false, tick: 0 };
   #vrWorld(): VrWorld {
     const w = this.#vrW;
     w.view = this.#view;
     w.sim = this.rapierSim;
     w.building = this.#preview !== null;
+    w.tick = this.#curr?.tick ?? 0;
     return w;
   }
 
@@ -572,7 +573,9 @@ export class Engine {
     this.#slowWindows = 0;
     pr.ready = true;
     // the world is playable: now the models load, each replacing its primitive when it's ready
-    if (this.#modelTier !== "off") this.#models = new ModelLayer(world.bundle, view, this.rapierSim, { tier: this.#modelTier, night: look.night, ghost: this.#ghost.obj, role: world.intent.live?.role ?? "", compile: (o) => this.#renderer.compileAsync(o, this.#camera, this.#scene) });
+    // (a world loaded in a headset gets the lighter layer, as a page that reloads into VR does)
+    const tier = this.#vr && this.#modelTier === "full" ? "lite" : this.#modelTier;
+    if (tier !== "off") this.#models = new ModelLayer(world.bundle, view, this.rapierSim, { tier, night: look.night, ghost: this.#ghost.obj, role: world.intent.live?.role ?? "", compile: (o) => this.#renderer.compileAsync(o, this.#camera, this.#scene) });
     return { ttffMs, splits };
   }
 
@@ -684,11 +687,16 @@ export class Engine {
       vr.after(now, dt, w);
     }
 
-    // the frame's bookkeeping runs even when drawing throws (an emulated headset's null framebuffer
-    // does on every frame), so a world loaded in VR still starts
+    // An immersive session's layer always has a framebuffer to draw into, except in an emulated
+    // headset (IWER), whose layer's is null: three would run the whole scene pass, then throw drawing
+    // it out, every frame, and with nothing ever shown nothing paces the GPU, which falls minutes
+    // behind (the next page waits for it). With nowhere to draw, the frame isn't drawn.
+    const layer = this.#vr ? this.#renderer.xr.getBaseLayer() : null;
+    const nowhere = layer !== null && "framebuffer" in layer && layer.framebuffer === null;
+    // (the frame's bookkeeping runs even when drawing throws, so a world loaded in VR still starts)
     try {
       if (this.#pipeline && !this.#vr) this.#pipeline.render();
-      else this.#renderer.render(this.#scene, this.#camera);
+      else if (!nowhere) this.#renderer.render(this.#scene, this.#camera);
     } finally {
       const pr = probe();
       this.#frames++;

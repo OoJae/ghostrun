@@ -142,16 +142,25 @@ test("VR driving: the kart steers from the seat with the stick, the seat turns w
   const errors = collectErrors(page);
   await enterVr(page, "&fixture=kart"); // you start at the wheel
   await page.waitForFunction(() => window.__GHOSTRUN__.xr?.seat?.vehicle === "kart_red", null, { timeout: 10_000 });
-  const yaw0 = (await xr(page)).seat!.yaw;
-  const p0 = await player(page);
-  await stick(page, "left", 0.8, -1); // throttle and steer right
-  await page.waitForTimeout(2500);
+  // throttle and steer right for 2.5 s, adding up the turn and the way driven as they happen (a kart
+  // at speed comes most of the way round in that time, so where it ends says little)
+  let { yaw } = (await xr(page)).seat!;
+  let at = await player(page);
+  let turned = 0;
+  let driven = 0;
+  await stick(page, "left", 0.8, -1);
+  for (const end = Date.now() + 2500; Date.now() < end; ) {
+    await page.waitForTimeout(100);
+    const s = (await xr(page)).seat!;
+    const p = await player(page);
+    turned += Math.abs(Math.atan2(Math.sin(s.yaw - yaw), Math.cos(s.yaw - yaw)));
+    driven += Math.hypot(p[0] - at[0], p[2] - at[2]);
+    ({ yaw } = s);
+    at = p;
+  }
   await stick(page, "left", 0, 0);
-  const s = (await xr(page)).seat!;
-  const turned = Math.abs(Math.atan2(Math.sin(s.yaw - yaw0), Math.cos(s.yaw - yaw0)));
   expect(turned).toBeGreaterThan(0.3); // the vehicle (and you in it) turned, where it used to keep its parked heading
-  const p1 = await player(page);
-  expect(Math.hypot(p1[0] - p0[0], p1[2] - p0[2])).toBeGreaterThan(3);
+  expect(driven).toBeGreaterThan(3);
   expect((await xr(page)).panels.wrist!.words.join(" ")).toMatch(/LAP 1\/3/);
   expect(real(errors)).toEqual([]);
 });
@@ -254,10 +263,12 @@ test("VR grab: the right grip on the orb it points at walks you to it, and the s
   await page.waitForFunction(() => window.__GHOSTRUN__.ready === true && Boolean(window.__GHOSTRUN__.specHash) && window.__GHOSTRUN__.materialise === undefined, null, { timeout: 90_000 });
   await page.getByTestId("enter-vr").click();
   await page.waitForFunction(() => window.__GHOSTRUN__?.vr === true && Boolean(window.__GHOSTRUN__.xr), null, { timeout: 20_000 });
-  // you start facing the orb, 36 m off on its plinth: walk up the lane until the watch offers the grab
+  // you start facing the orb, 36 m off on its plinth: walk up the lane to about 5 m short of it, stop,
+  // and the watch offers the grab
   await stick(page, "left", 0, -1);
-  await page.waitForFunction(() => window.__GHOSTRUN__.xr?.panels.wrist?.words.includes("Right grip: grab it"), null, { timeout: 20_000, polling: 20 });
+  await page.waitForFunction(() => (window.__GHOSTRUN__.player?.[0] ?? -99) > -5.5, null, { timeout: 20_000, polling: 20 });
   await stick(page, "left", 0, 0);
+  await page.waitForFunction(() => window.__GHOSTRUN__.xr?.panels.wrist?.words.includes("Right grip: grab it"), null, { timeout: 5_000 });
   const p0 = await player(page);
   await button(page, "right", "squeeze", 1);
   await page.waitForFunction(() => window.__GHOSTRUN__.xr?.grab === "orb", null, { timeout: 3_000, polling: 20 });

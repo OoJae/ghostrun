@@ -29,9 +29,32 @@ const FACE_2 = 5;
 const DEAD = 0.15;
 /** A snap turn: 30°. */
 const SNAP = Math.PI / 6;
-/** A grab reaches a pickup this far from you, within this angle of where the hand points. */
+/** A grab reaches a pickup this far from you. */
 const GRAB_RANGE = 6;
+/**
+ * And it is pointed at when it lies within GRAB_CONE of the hand's ray sideways (or above it), and up
+ * to GRAB_DROP below it: a hand held level still means the thing on the floor in front of you.
+ */
 const GRAB_CONE = 0.4;
+const GRAB_DROP = 0.8;
+
+/** How well a ray (origin, unit direction) points at a spot, lower is better; null if it doesn't. */
+export function aimScore(o: readonly number[], d: readonly number[], at: readonly number[]): number | null {
+  const [dx, dy, dz] = [at[0]! - o[0]!, at[1]! - o[1]!, at[2]! - o[2]!];
+  const dist = Math.hypot(dx, dy, dz);
+  const flat = Math.hypot(d[0]!, d[2]!);
+  const far = Math.hypot(dx, dz);
+  if (dist < 1e-6) return 0;
+  // a ray pointed steeply up or down has no sideways: a plain cone then
+  if (flat < 0.3 || far < 0.05) {
+    const angle = Math.acos(Math.max(-1, Math.min(1, (dx * d[0]! + dy * d[1]! + dz * d[2]!) / dist)));
+    return angle > GRAB_CONE ? null : angle + dist * 0.02;
+  }
+  const side = Math.acos(Math.max(-1, Math.min(1, (dx * d[0]! + dz * d[2]!) / (far * flat))));
+  const below = Math.atan2(d[1]!, flat) - Math.atan2(dy, far);
+  if (side > GRAB_CONE || below > GRAB_DROP || below < -GRAB_CONE) return null;
+  return side + Math.abs(below) * 0.5 + dist * 0.02;
+}
 /** Let go of the grip moving at least this fast (m/s) and it's a throw. */
 const THROW_SPEED = 1.4;
 /** Fonts on each panel: the smallest is ≥ 0.02 rad tall where that panel is read (panel.test.ts checks). */
@@ -57,16 +80,26 @@ export interface VrWorld {
   sim: RapierSim | null;
   /** A world is being built and its reveal is on show (stand and watch: no input reaches the old one). */
   building: boolean;
+  /** The simulation's tick on the latest frame drawn. */
+  tick: number;
 }
 
+/**
+ * A teleport or a grab walking you somewhere. Its clock is the simulation's ticks, not the wall's:
+ * a frame that stalls (a shader compiling on its first draw) is time the sim didn't walk, and must
+ * not count against the walk or end it as stuck.
+ */
 interface Walk {
   kind: "teleport" | "grab";
   target: V3;
   item: string;
+  /** Gives up at this tick, or when no nearer for STUCK_TICKS. */
   until: number;
   best: number;
   bestAt: number;
 }
+/** A walk that has got no nearer for this many ticks (0.45 s) is blocked. */
+const STUCK_TICKS = 27;
 
 const wrap = (a: number) => Math.atan2(Math.sin(a), Math.cos(a));
 const dead = (x: number) => (Math.abs(x) > DEAD ? x : 0);
@@ -402,7 +435,7 @@ export class VrMode {
       jump = jump || trigR;
       use = trigL;
     } else if (this.#walk) {
-      const step = this.#walking(now, w);
+      const step = this.#walking(w);
       if (step) ({ mx, my, yaw } = step);
       jump = false;
     } else {
@@ -423,7 +456,7 @@ export class VrMode {
       } else if (this.#aiming) {
         this.#aiming = false;
         const tgt = this.#arc?.valid ? this.#arc.target : null;
-        if (tgt) this.#go(tgt, now, w);
+        if (tgt) this.#go(tgt, w);
         this.#arc = null;
       }
       this.#grab(now, w);
@@ -480,17 +513,17 @@ export class VrMode {
   }
 
   /** Teleport: walked there by the sim under logged input while the view blinks. */
-  #go(target: V3, now: number, w: VrWorld) {
+  #go(target: V3, w: VrWorld) {
     const me = this.#me(w);
     if (!me) return;
     const dist = Math.hypot(target[0] - me.x, target[2] - me.z);
     const speed = w.sim?.sim.laws.speed ?? 6;
-    this.#walk = { kind: "teleport", target, item: "", until: now + (dist / Math.max(1, speed)) * 1000 + 800, best: Infinity, bestAt: now };
+    this.#walk = { kind: "teleport", target, item: "", until: w.tick + Math.ceil((dist / Math.max(1, speed)) * 60) + 48, best: Infinity, bestAt: w.tick };
     this.#right.buzz(0.3, 20);
   }
 
   /** A teleport or a grab under way: the stick input that walks there, or null once it's over. */
-  #walking(now: number, w: VrWorld): { mx: number; my: number; yaw: number } | null {
+  #walking(w: VrWorld): { mx: number; my: number; yaw: number } | null {
     const walk = this.#walk!;
     const me = this.#me(w);
     const end = () => ((this.#walk = null), null);
@@ -506,9 +539,9 @@ export class VrMode {
     const dx = walk.target[0] - me.x;
     const dz = walk.target[2] - me.z;
     const d = Math.hypot(dx, dz);
-    if (d < walk.best - 0.05) ((walk.best = d), (walk.bestAt = now));
+    if (d < walk.best - 0.05) ((walk.best = d), (walk.bestAt = w.tick));
     // there, out of time, or not getting any closer (a wall the arc didn't see, a shelf too high)
-    if ((walk.kind === "teleport" && d < 0.25) || now > walk.until || now - walk.bestAt > 450) return end();
+    if ((walk.kind === "teleport" && d < 0.25) || w.tick > walk.until || w.tick - walk.bestAt > STUCK_TICKS) return end();
     return { mx: 0, my: Math.min(1, d / 0.3), yaw: Math.atan2(-dx, -dz) };
   }
 
@@ -522,7 +555,7 @@ export class VrMode {
       const item = this.#pointedItem(w);
       if (item) {
         const p = sim.pos(item);
-        this.#walk = { kind: "grab", target: [p[0], p[1], p[2]], item, until: now + 3500, best: Infinity, bestAt: now };
+        this.#walk = { kind: "grab", target: [p[0], p[1], p[2]], item, until: w.tick + 210, best: Infinity, bestAt: w.tick };
         R.buzz(0.3, 20);
       }
     }
@@ -533,7 +566,7 @@ export class VrMode {
     }
   }
 
-  /** The pickup the right hand points at (within GRAB_CONE of its ray and GRAB_RANGE of you), or "". */
+  /** The pickup the right hand points at (see aimScore), within GRAB_RANGE of you, or "". */
   #pointedItem(w: VrWorld): string {
     const sim = w.sim?.sim;
     const me = this.#me(w);
@@ -546,12 +579,8 @@ export class VrMode {
       if (!e?.carryable || e.carrier || e.destroyed) continue;
       const p = sim.pos(id);
       if (Math.hypot(p[0] - me.x, p[2] - me.z) > GRAB_RANGE) continue;
-      _w.set(p[0] - ray.p.x, p[1] - ray.p.y, p[2] - ray.p.z);
-      const d = _w.length();
-      const angle = d > 1e-6 ? Math.acos(Math.max(-1, Math.min(1, _w.dot(ray.d) / d))) : 0;
-      if (angle > GRAB_CONE) continue;
-      const score = angle + d * 0.02;
-      if (score < bestScore) ((bestScore = score), (best = id));
+      const score = aimScore([ray.p.x, ray.p.y, ray.p.z], [ray.d.x, ray.d.y, ray.d.z], p);
+      if (score !== null && score < bestScore) ((bestScore = score), (best = id));
     }
     return best;
   }
