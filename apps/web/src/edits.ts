@@ -3,7 +3,7 @@
 // re-proved, and the change comes back with its numbers: what changed in the world, and how the
 // receipt moved (headline, AI runners, par, counterexamples, force-tested rules).
 import type { Entity, WorldBundle } from "@ghostrun/ir";
-import { badness, fraction, insights, statusWord, type Chip, type Receipt } from "@ghostrun/proof/light";
+import { badness, BANDS, fraction, insights, statusWord, type Chip, type Receipt } from "@ghostrun/proof/light";
 import type { LiveIntent } from "./live";
 import type { World } from "./pipeline";
 
@@ -185,7 +185,9 @@ const LETTERS = "ABCDEFGH";
  * The race's judge: a candidate is fair if at least half the AI runners still win, its headline is
  * no worse and it fails no check the world passed before (the envelope included: whatever the
  * cast's minds choose); it is harder if the AI par grows by at least 10% (or fewer runners win).
- * The hardest fair candidate wins; each gets a one-line verdict with its numbers.
+ * When the playtest has banded the world and the candidates, one fair candidate a band harder
+ * (Normal → Hard) with the experts still winning at least 10 of 12 is what "harder but fair" means
+ * first; otherwise the hardest fair candidate wins. Each gets a one-line verdict with its numbers.
  */
 export function pickHarder(before: Receipt, cands: (Receipt | null)[]): { best: number | null; verdicts: string[] } {
   const rate = (r: Receipt) => {
@@ -202,18 +204,25 @@ export function pickHarder(before: Receipt, cands: (Receipt | null)[]): { best: 
   const broke = (r: Receipt) => r.chips.filter((c) => c.status === "counterexample" && !failed.has(c.id) && c.id !== "T3:win").map((c) => c.id);
   let best: number | null = null;
   let bestScore = 0;
+  // a band one step harder (the playtest's novices and average players), experts still ≥ 10 of 12
+  const step = (r: Receipt) => (r.playtest ? BANDS.indexOf(r.playtest.band) : -1);
+  const oneUp = (r: Receipt) => step(before) >= 0 && step(r) === step(before) + 1 && rate(r) * 12 >= 10;
+  let banded: number | null = null;
+  let bandedScore = 0;
   const verdicts = cands.map((r, i) => {
     const tag = `${LETTERS[i]}:`;
     if (!r) return `${tag} the model's patch didn't arrive`;
     const fair = rate(r) >= 0.5 && head(r) >= head(before) && !broke(r).length;
     const par = r.par?.goldS ?? 0;
-    const harder = par >= par0 * 1.1 || (rate(r) < rate(before) && rate(r) >= 0.5);
-    const nums = `par ${par0} → ${par || "–"} s, ${won(r)} runners won`;
+    const harder = par >= par0 * 1.1 || (rate(r) < rate(before) && rate(r) >= 0.5) || (fair && oneUp(r));
+    const band = before.playtest && r.playtest ? `, ${before.playtest.band} → ${r.playtest.band}` : "";
+    const nums = `par ${par0} → ${par || "–"} s, ${won(r)} runners won${band}`;
     if (!fair) return `${tag} too hard or broken (${nums}${head(r) < head(before) && r.headline ? `, headline ${statusWord(r.headline.status)}` : broke(r).length ? `, fails ${broke(r).join(", ")}` : ""})`;
     if (!harder) return `${tag} not harder (${nums})`;
     const score = par / Math.max(1, par0) + (rate(before) - rate(r));
     if (score > bestScore) ((best = i), (bestScore = score));
+    if (oneUp(r) && score > bandedScore) ((banded = i), (bandedScore = score));
     return `${tag} harder and fair (${nums})`;
   });
-  return { best, verdicts };
+  return { best: banded ?? best, verdicts };
 }

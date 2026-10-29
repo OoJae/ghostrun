@@ -13,6 +13,7 @@ import { FollowCamera } from "./render/camera";
 import { ghostActor } from "./render/ghost";
 import type { GhostTrack, Rival } from "./race";
 import { combatView, type CombatView } from "./render/combat";
+import { heatView, type HeatCells } from "./render/heat";
 import { makeRain } from "./render/rain";
 import { lookOf } from "./render/looks";
 import { beamMaterial, PALETTE } from "./render/materials";
@@ -252,9 +253,10 @@ export class Engine {
 
   /**
    * Where the AI runners went, as ribbons just above the ground they walked on (winning runs cyan,
-   * the rest magenta), with the camera raised to look down over them. null puts them away.
+   * the rest magenta), over the playtest's heat map when there is one, with the camera raised to
+   * look down over them. null puts them away.
    */
-  showTrails(trails: readonly { won: boolean; xyz: readonly number[] }[] | null) {
+  showTrails(trails: readonly { won: boolean; xyz: readonly number[] }[] | null, heat: HeatCells | null = null) {
     if (this.#trails) {
       this.#scene.remove(this.#trails);
       this.#trails.traverse((o) => {
@@ -268,9 +270,12 @@ export class Engine {
       this.#follow.setColliders(this.#view && this.#lookId !== "gallery" ? this.#view.colliders : []);
       this.#beforeOverview = null;
     }
+    delete probe().overview;
     if (!trails?.length) return;
     const g = new Group();
     g.name = "trails";
+    const hot = heat && heatView(heat);
+    if (hot) g.add(hot);
     const W = 0.18; // half the ribbon's width (wide enough to read from the overview)
     for (const t of trails) {
       const p = t.xyz;
@@ -292,6 +297,7 @@ export class Engine {
     }
     this.#scene.add(g);
     this.#trails = g;
+    probe().overview = { routes: g.children.length - (hot ? 1 : 0), heat: hot ? hot.geometry.getAttribute("position").count / 6 : 0 };
     // look down over the routes (and back as you were when they go)
     if (!this.#beforeOverview) this.#beforeOverview = { pitch: this.#follow.pitch, dist: this.#follow.dist };
     this.#follow.pitch = 1.05;

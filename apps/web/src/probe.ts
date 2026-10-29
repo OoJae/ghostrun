@@ -21,6 +21,8 @@ export interface GhostrunProbe {
   vr?: boolean;
   /** The ghost being raced (absent when there is none): where it is drawn this frame, by tick. */
   ghost?: { shown: boolean; tick: number; p: [number, number, number]; finished: boolean };
+  /** The runners' overview while it is shown: route ribbons and heat-map tiles drawn. */
+  overview?: { routes: number; heat: number };
   /** The sound: "off" until the first gesture starts it, "disabled" with ?audio=0. */
   audio?: AudioProbe;
 }
