@@ -71,8 +71,9 @@ export function plants(b: WorldBundle, parS: number | null, team: "red" | "blue"
     out.push({ id: "five_second_timer", text: "you lose after 5 seconds", at: null, bundle: w });
   }
 
-  // on a course, jumping cut to a hop
-  if (b.pack.id === "course") {
+  // on a course, jumping cut to a hop (not in a race: its loop runs along the canyon floor, so a
+  // world won at the wheel never needed the jump, and taking it away breaks nothing)
+  if (b.pack.id === "course" && !chain.steps.some((s) => s.do === "drive")) {
     const w = copy();
     w.laws = { ...w.laws, jumpH: 0.3, jumpsMax: 1 };
     out.push({ id: "no_jump", text: "a jump only clears 0.3 m", at: null, bundle: w });

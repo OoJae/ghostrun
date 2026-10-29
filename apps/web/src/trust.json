@@ -1,5 +1,5 @@
 {
- "generated": "2026-10-27",
+ "generated": "2026-10-29",
  "won": "at least 10 of 12 AI runners win in physics",
  "sets": [
   {
@@ -13,6 +13,32 @@
    "firstPass": 0,
    "now": 4,
    "playableP50Ms": 3237,
+   "controlsP50": 10
+  },
+  {
+   "name": "fights",
+   "note": "Fights (shoot and health verbs, 29 Oct): written before the first live run, benched once, unedited",
+   "prompts": 12,
+   "play": 12,
+   "places": 0,
+   "touredFirst": 0,
+   "toured": 0,
+   "firstPass": 8,
+   "now": 12,
+   "playableP50Ms": 1812,
+   "controlsP50": 10
+  },
+  {
+   "name": "fights-r2",
+   "note": "",
+   "prompts": 12,
+   "play": 12,
+   "places": 0,
+   "touredFirst": 0,
+   "toured": 0,
+   "firstPass": 9,
+   "now": 12,
+   "playableP50Ms": 1747,
    "controlsP50": 10
   },
   {
@@ -39,6 +65,19 @@
    "firstPass": 15,
    "now": 19,
    "playableP50Ms": 2315,
+   "controlsP50": 10
+  },
+  {
+   "name": "fresh11",
+   "note": "Fresh mixed set (30 Oct, after combat and vehicles): written before the first live run, benched once, unedited",
+   "prompts": 20,
+   "play": 17,
+   "places": 3,
+   "touredFirst": 3,
+   "toured": 3,
+   "firstPass": 14,
+   "now": 17,
+   "playableP50Ms": 1852,
    "controlsP50": 10
   },
   {
@@ -169,6 +208,32 @@
    "firstPass": 6,
    "now": 8,
    "playableP50Ms": 3772,
+   "controlsP50": 10
+  },
+  {
+   "name": "races",
+   "note": "Races (vehicle and track verbs, 30 Oct): written before the first live run, benched once, unedited",
+   "prompts": 10,
+   "play": 10,
+   "places": 0,
+   "touredFirst": 0,
+   "toured": 0,
+   "firstPass": 0,
+   "now": 9,
+   "playableP50Ms": 1981,
+   "controlsP50": 12
+  },
+  {
+   "name": "races-r2",
+   "note": "",
+   "prompts": 10,
+   "play": 10,
+   "places": 0,
+   "touredFirst": 0,
+   "toured": 0,
+   "firstPass": 8,
+   "now": 10,
+   "playableP50Ms": 1802,
    "controlsP50": 10
   }
  ],
