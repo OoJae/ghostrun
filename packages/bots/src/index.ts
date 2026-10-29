@@ -157,6 +157,10 @@ export class CastBrain implements Brain {
         bot.shoveAt = tick + 50;
       }
       if (bot.arms && bot.beh !== "patrol" && bot.beh !== "idle") frame = this.#fight(w, bot, frame, tick);
+      // armed and written with no menu (a castle's archers, a drone on its post): a sentry that
+      // fires back from where it stands, at half its weapon's rate, and holds fire on a player down
+      // to a quarter of their hit points (it wears you down; it never decides the game alone)
+      else if (bot.arms && !bot.menu.length) frame = this.#fight(w, bot, frame, tick, true);
       this.#out.set(bot.id, frame);
     }
     return this.#out;
@@ -167,7 +171,7 @@ export class CastBrain implements Brain {
    * is faced and fired at, as often as its weapon allows. One that shoots from afar holds its ground
    * while it has a shot (claws keep closing in).
    */
-  #fight(w: SimWorld, bot: Bot, frame: InputFrame, tick: number): InputFrame {
+  #fight(w: SimWorld, bot: Bot, frame: InputFrame, tick: number, sentry = false): InputFrame {
     const arms = bot.arms!;
     const p = w.pos(bot.id);
     const muzzle = w.muzzle(bot.id);
@@ -177,6 +181,7 @@ export class CastBrain implements Brain {
       const e = w.entity(id);
       // enemies: anyone on another team (a bot with no team: the player)
       if (id === bot.id || !e || e.destroyed || (bot.team ? e.team === bot.team : id !== "player")) continue;
+      if (sentry && id === "player" && (w.hp("player") ?? 1) <= (w.maxHp("player") ?? 0) / 4) continue;
       const q = w.pos(id);
       const d = d2(p, q);
       if (d >= bestD || Math.abs(q[1] - p[1]) > arms.range || !w.clearShot(muzzle, q)) continue;
@@ -189,7 +194,8 @@ export class CastBrain implements Brain {
     const dz = q[2] - p[2];
     const len = Math.sqrt(dx * dx + dz * dz) || 1;
     const fire = tick >= bot.fireAt;
-    if (fire) bot.fireAt = tick + arms.every;
+    if (fire) bot.fireAt = tick + arms.every * (sentry ? 2 : 1);
+    if (sentry) return { tick, wx: fire ? Math.round((dx / len) * 26) : 0, wz: fire ? Math.round((dz / len) * 26) : 0, btn: (frame.btn & ~BTN.USE) | (fire ? BTN.USE : 0) };
     // face it: full chase for claws; a ranged weapon turns to fire and otherwise holds its ground
     // (a small step closer while it is far, standing still once it is near: it keeps facing the way
     // it fired)

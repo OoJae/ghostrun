@@ -244,7 +244,7 @@ export function placeWorld(input: WorldBundle, layout: PackLayout): PlaceResult 
     }
   }
   // wins first: a win rule the repairs add (reach the goal) gets the same trigger and verb repairs
-  notes.push(...repairDoubleDoors(b), ...repairSpawnRefs(b), ...repairGroups(b), ...repairRingOut(b, bound), ...repairAreas(b, bound), ...repairCombat(b), ...repairKits(b), ...repairConditions(b), ...repairRace(b, layout), ...repairRiders(b), ...repairWin(b), ...repairTriggers(b), ...repairVerbs(b), ...repairExpects(b));
+  notes.push(...repairDoubleDoors(b), ...repairSpawnRefs(b), ...repairGroups(b), ...repairRingOut(b, bound), ...repairAreas(b, bound), ...repairCombat(b), ...repairSentries(b), ...repairKits(b), ...repairConditions(b), ...repairRace(b, layout), ...repairRiders(b), ...repairWin(b), ...repairTriggers(b), ...repairVerbs(b), ...repairExpects(b));
   notes.push(...addRivals(b), ...placeRace(b, layout, bound), ...repairDeliveries(b, layout, bound), ...addSecrets(b, layout, bound));
   return { bundle: b, notes };
 }
@@ -369,6 +369,29 @@ const heldWeapons = (b: WorldBundle) => new Set(b.verbs.filter((v) => v.verb ===
  * - a player who can be knocked out for good, with no rule for it, loses then (unless any hit
  *   already loses).
  */
+/**
+ * An armed character written with no menu (the castle's archers, the bandits on the street) is a
+ * sentry: the bots have it fire back from where it stands, at half its weapon's rate, holding fire
+ * on a player down to a quarter of their hit points; here its shot is capped at a quarter of the
+ * player's hit points, so no one shot from a sentry decides the game. Logged.
+ */
+export function repairSentries(b: WorldBundle): string[] {
+  const mine = b.verbs.find((v) => v.verb === HEALTH && v.on === "player");
+  if (!mine) return [];
+  const yours = Math.min(1000, Math.max(1, Number(mine.params.hp ?? 100) || 100));
+  const menu = new Set(b.cast.filter((c) => c.menu.length).map((c) => c.npc));
+  const notes: string[] = [];
+  for (const v of b.verbs) {
+    const e = b.entities.find((x) => x.id === v.on);
+    if (v.verb !== SHOOT || !e || e.kind !== "npc" || menu.has(e.id)) continue;
+    const dmg = Number(v.params.damage ?? 25);
+    if (!(dmg > yours / 4)) continue;
+    v.params = { ...v.params, damage: Math.floor(yours / 4) };
+    notes.push(`${e.id}: a sentry (armed, no menu), its shot capped at ${Math.floor(yours / 4)} of your ${yours} hit points`);
+  }
+  return notes;
+}
+
 export function repairCombat(b: WorldBundle): string[] {
   const notes: string[] = [];
   const spawnOf = (t: string) => b.entities.some((e) => e.kind === "spawn" && e.team === t);

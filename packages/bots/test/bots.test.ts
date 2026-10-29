@@ -101,6 +101,35 @@ describe("cast brains", () => {
     sim.free();
   }, 60_000);
 
+  it("an armed character with no menu is a sentry: it fires back from where it stands at half its weapon's rate, and holds fire on a player down to a quarter of their hit points", () => {
+    const rival = world.entities.find((e) => e.id === "rival_1")!;
+    const orb = world.entities.find((e) => e.id === "orb")!;
+    const at: [number, number, number] = [orb.pos[0] + 4, orb.pos[1] + 0.7, orb.pos[2]];
+    const armed: WorldBundle = {
+      ...world,
+      entities: [...world.entities, { ...rival, id: "archer", pos: [at[0], at[1], at[2] + 6] }],
+      verbs: [
+        ...world.verbs,
+        { id: "vb_bow", src: "ai", layer: "gameplay", verb: "combat_sport.shoot", on: "archer", params: { range: 12, damage: 10, cooldown: 1 }, signature: false },
+        { id: "vb_hp", src: "ai", layer: "gameplay", verb: "combat_sport.health", on: "player", params: { hp: 100, respawn: false }, signature: false },
+      ],
+    };
+    const sim = new SimWorld(R, armed, { brain: castBrain(nav, armed) });
+    const home = sim.pos("archer");
+    for (let i = 0; i < 30 * 60 && !sim.result; i++) {
+      sim.teleport("player", at); // standing still in its sights
+      sim.step(null);
+    }
+    const shots = sim.log.filter((e) => e.k === "shoot" && e.a === "archer");
+    expect(shots.length).toBeGreaterThan(2);
+    for (let i = 1; i < shots.length; i++) expect(shots[i]!.tick - shots[i - 1]!.tick).toBeGreaterThanOrEqual(120);
+    expect(sim.hp("player")).toBeLessThan(100);
+    expect(sim.hp("player")).toBeGreaterThanOrEqual(15); // it stopped at a quarter (one shot under)
+    const p = sim.pos("archer");
+    expect(Math.hypot(p[0] - home[0], p[2] - home[2])).toBeLessThan(0.5);
+    sim.free();
+  }, 60_000);
+
   it("minds may only choose from the typed menu", () => {
     const brain = castBrain(nav, world);
     expect(brain.choose("rival_1", "rival.defend")).toBe(true);
