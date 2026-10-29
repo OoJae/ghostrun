@@ -26,8 +26,8 @@ export function Revealed({ receipt, report, playing, children }: { receipt: Rece
         <div data-testid="fails">
           <p>Where runs went wrong:</p>
           <ul>
-            {report.fails.map((f) => (
-              <li key={`${f.x},${f.z}`}>{failLine(f, report.runs)}</li>
+            {report.fails.map((f, i) => (
+              <li key={i}>{failLine(f, report.runs)}</li>
             ))}
           </ul>
         </div>
