@@ -47,8 +47,12 @@ export interface PlaceResult {
   notes: string[];
 }
 
-/** Pure and deterministic: positions depend only on the bundle, the layout and the world seed. */
-export function placeWorld(input: WorldBundle, layout: PackLayout): PlaceResult {
+/**
+ * Pure and deterministic: positions depend only on the bundle, the layout and the world seed.
+ * `reach`: a fresh fill nobody wrote laws for (lawsUnwritten), where a jump the win needs may be
+ * allowed; never for laws someone wrote, an edit or a patch.
+ */
+export function placeWorld(input: WorldBundle, layout: PackLayout, opts: { reach?: boolean } = {}): PlaceResult {
   const b = structuredClone(input);
   const notes = [...layout.notes];
   const bound = bindZones(b.zones, layout);
@@ -244,7 +248,7 @@ export function placeWorld(input: WorldBundle, layout: PackLayout): PlaceResult 
     }
   }
   // wins first: a win rule the repairs add (reach the goal) gets the same trigger and verb repairs
-  notes.push(...repairDoubleDoors(b), ...repairSpawnRefs(b), ...repairGroups(b), ...repairRingOut(b, bound), ...repairAreas(b, bound), ...repairCombat(b), ...repairSentries(b), ...repairKits(b), ...repairConditions(b), ...repairRace(b, layout), ...repairRiders(b), ...repairWin(b), ...repairReach(b), ...repairTriggers(b), ...repairVerbs(b), ...repairExpects(b));
+  notes.push(...repairDoubleDoors(b), ...repairSpawnRefs(b), ...repairGroups(b), ...repairRingOut(b, bound), ...repairAreas(b, bound), ...repairCombat(b), ...repairSentries(b), ...repairKits(b), ...repairConditions(b), ...repairRace(b, layout), ...repairRiders(b), ...repairWin(b), ...(opts.reach ? repairReach(b) : []), ...repairTriggers(b), ...repairVerbs(b), ...repairExpects(b));
   notes.push(...addRivals(b), ...placeRace(b, layout, bound), ...repairDeliveries(b, layout, bound), ...addSecrets(b, layout, bound));
   return { bundle: b, notes };
 }

@@ -70,8 +70,7 @@ describe("course pack, end to end through the proof ladder", () => {
     const relaw = (laws: Partial<Laws>) => placeWorld({ ...draft, laws: { ...draft.laws, ...laws }, engine: ENGINE }, layout).bundle;
     const high = await prove(R, relaw({ jumpH: 4 }), { engine: ENGINE, runs: 4 });
     expect(high.chips.find((c) => c.id === "T3:win")!.k).toBeGreaterThan(0);
-    // (the placer would allow the jump the finish takes again; the proof is asked about one jump as edited)
-    const one = await prove(R, { ...relaw({}), laws: { ...draft.laws, jumpsMax: 1 } }, { engine: ENGINE, runs: 2 });
+    const one = await prove(R, relaw({ jumpsMax: 1 }), { engine: ENGINE, runs: 2 });
     expect(one.chips.find((c) => c.id === "T3:win")!.cx!.text).toMatch(/no route reaches the finish arch: a 2\.3 m step on the way, and 1 jump reaches 1\.5 m$/);
   }, 120_000);
 });

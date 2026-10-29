@@ -118,6 +118,13 @@ export function mergeFill(base: string, patch: string, opts: { edit?: boolean } 
     lines.splice(insert < 0 ? lines.length : insert, 0, p);
     stats.added++;
   }
+  // a patched fill says so in its meta line: the placer never second-guesses laws a patch left as
+  // they were (it only allows a jump the win needs in a fresh fill nobody wrote laws for)
+  const meta = lines.findIndex((l) => l.op === "meta");
+  if (meta >= 0 && stats.replaced + stats.added + stats.deleted > 0) {
+    const m = JSON.parse(lines[meta]!.raw) as Record<string, unknown>;
+    if (!m.patched) lines[meta] = { ...lines[meta]!, raw: JSON.stringify({ ...m, patched: true }) };
+  }
   return { text: `${lines.map((l) => l.raw).join("\n")}\n`, stats };
 }
 
