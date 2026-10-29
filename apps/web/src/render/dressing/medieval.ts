@@ -4,7 +4,7 @@
 // floor and violet banners.
 import type { WorldBundle } from "@ghostrun/ir";
 import { BoxGeometry, ConeGeometry, CylinderGeometry, DoubleSide, IcosahedronGeometry, InstancedMesh, Matrix4, Mesh, MeshBasicNodeMaterial, MeshStandardNodeMaterial, Object3D, PlaneGeometry, RingGeometry } from "three/webgpu";
-import { abs, float, fract, hash, instanceIndex, length, max, mix, mx_worley_noise_float, oneMinus, positionLocal, positionWorld, sin, smoothstep, step, time, uv, vec3 } from "three/tsl";
+import { abs, float, fract, hash, instanceIndex, length, max, mix, mx_worley_noise_vec2, oneMinus, positionLocal, positionWorld, sin, smoothstep, step, time, uv, vec3 } from "three/tsl";
 import { BoxBatch } from "../boxes";
 import type { LookStyle } from "../looks";
 import { glowMaterial, lin } from "../materials";
@@ -145,8 +145,10 @@ export function dressMedieval(b: WorldBundle, look: LookStyle, c: Ctx): Dressed 
     const m = masonry(a.along, a.up, 1.0, 0.5, 0.05);
     const blocks = mix(m.id.mul(0.22).add(0.86), float(0.55), m.mortar).mul(fine.mul(0.18).add(0.9));
     // floors: grass, cobbles in a courtyard, big flagstones in a hall
-    const cob = mx_worley_noise_float(a.p.mul(2.6));
-    const cobbles = mix(float(0.55), hash(a.p.mul(2.6).floor().x.add(a.p.mul(2.6).floor().z.mul(19))).mul(0.25).add(0.85), smoothstep(0.08, 0.3, cob));
+    // cobbles: round stones (cells of a Voronoi pattern) with dark joints between them
+    const cell = mx_worley_noise_vec2(vec3(a.p.x.mul(2.2), a.p.z.mul(2.2), 0));
+    const cob = smoothstep(0.02, 0.14, cell.y.sub(cell.x));
+    const cobbles = mix(float(0.42), noise01(a.p, 1.7, 3).mul(0.3).add(0.75), cob);
     const flags = masonry(a.p.x, a.p.z, 1.4, 1.1, 0.03);
     const paving = mix(cobbles, mix(flags.id.mul(0.2).add(0.85), float(0.5), flags.mortar), cut ? 1 : 0);
     const grass = mix(n1.mul(0.25).add(0.8), fine.mul(0.2).add(0.7), smoothstep(0.6, 0.75, noise01(a.p, 0.12, 9)));
@@ -160,9 +162,9 @@ export function dressMedieval(b: WorldBundle, look: LookStyle, c: Ctx): Dressed 
     const side = mix(blocks, crate, isCover);
     const top = mix(mix(blocks, crate, isCover), floorTone, flat);
     const k = mix(side, top, max(a.top, flat));
-    const floorBump = cut ? flags.mortar.mul(-0.02) : smoothstep(0.1, 0.25, cob).mul(0.03);
+    const floorBump = cut ? flags.mortar.mul(-0.02) : cob.mul(0.035);
     // a wizard school's flagstones: a faint violet glow along their joints
-    const emissive = magic ? hex3("#b07aff", 0.35).mul(flags.mortar).mul(flat).mul(is(a.alt, 1)) : vec3(0, 0, 0);
+    const emissive = magic ? hex3("#b07aff", 0.22).mul(flags.mortar).mul(flat).mul(is(a.alt, 1)) : vec3(0, 0, 0);
     return { color: vec3(k, k, k), emissive, roughness: float(0.88), bump: mix(m.mortar.mul(-0.03), floorBump.mul(is(a.alt, 1)), flat) };
   }, { roughness: 0.88, bump: 1 });
   batchMesh(c, solid, mat, "statics");

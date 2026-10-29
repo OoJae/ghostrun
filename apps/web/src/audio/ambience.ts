@@ -513,7 +513,7 @@ export class Ambience {
 
   /** Candy land: a music box chiming in the breeze, never the same tune twice. */
   #candy(bed: Bed, p: Place) {
-    this.#wind(bed, 700, 0.035);
+    this.#wind(bed, 700, 0.05);
     const scale = [0, 2, 4, 7, 9, 12, 14, 16];
     bed.events.push({
       next: 0,
@@ -523,7 +523,7 @@ export class Ambience {
         const n = 1 + Math.floor(Math.random() * 3);
         for (let i = 0; i < n; i++) {
           const f = 1046.5 * 2 ** (scale[Math.floor(Math.random() * scale.length)]! / 12);
-          this.#tone(v, t + i * 0.16, f, f, 0.003, 0.6, p.night ? 0.01 : 0.014, "triangle");
+          this.#tone(v, t + i * 0.16, f, f, 0.003, 0.6, p.night ? 0.014 : 0.02, "triangle");
         }
       },
     });
@@ -533,8 +533,8 @@ export class Ambience {
   #jungle(bed: Bed, p: Place) {
     this.#wind(bed, 380, 0.04);
     // cicadas: a narrow high band whose level swells and fades
-    this.#layer(bed, "bandpass", 5600, 7, 0.022, 0.09, 0.95);
-    this.#layer(bed, "bandpass", 4300, 6, 0.012, 0.13, 0.9);
+    this.#layer(bed, "bandpass", 5600, 7, 0.034, 0.09, 0.95);
+    this.#layer(bed, "bandpass", 4300, 6, 0.018, 0.13, 0.9);
     if (p.night) {
       this.#night(bed, { ...p, look: "grove" });
       bed.events.push({
@@ -565,7 +565,7 @@ export class Ambience {
 
   /** A home: room tone, the fridge's hum and a clock ticking; a tea house hears a bamboo knock; a library turns a page. */
   #home(bed: Bed, p: Place) {
-    this.#layer(bed, "lowpass", 220, 0.6, 0.06, 0.03, 0.2);
+    this.#layer(bed, "lowpass", 220, 0.6, 0.085, 0.03, 0.2);
     this.#hum(bed, 98, 0.003);
     if (p.variant === "japanese") {
       bed.events.push({

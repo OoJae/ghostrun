@@ -81,12 +81,16 @@ async function shoot(page: Page, name: string) {
   await page.screenshot({ path: resolve(OUT, `${name}.png`) });
   const frame = await cadence(page);
   const p = await page.evaluate(() => ({ ...window.__GHOSTRUN__ }));
-  const line = JSON.stringify({ name, look: (p as { look?: string }).look, backend: p.backend, fps: p.fps, drawCalls: p.drawCalls, pixelRatio: p.pixelRatio, ...frame });
+  const line = JSON.stringify({ name, look: p.look, backend: p.backend, fps: p.fps, drawCalls: p.drawCalls, pixelRatio: p.pixelRatio, compileMs: p.splits?.compile, ...frame });
   console.log(`[looks] ${line}`);
   appendFileSync(resolve(OUT, "metrics.jsonl"), `${line}\n`);
 }
 
 test.beforeAll(() => mkdirSync(OUT, { recursive: true }));
+
+// LOOKS_CPU=4: the main thread slowed fourfold (a weaker laptop or a phone), to see the CPU side keep up
+const CPU = Number(process.env.LOOKS_CPU ?? 1);
+if (CPU > 1) test.beforeEach(async ({ page }) => void (await (await page.context().newCDPSession(page)).send("Emulation.setCPUThrottlingRate", { rate: CPU })));
 
 for (const fx of FIXTURES) {
   test(`looks: fixture ${fx}`, async ({ page }) => {

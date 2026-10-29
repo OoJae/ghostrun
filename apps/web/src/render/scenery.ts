@@ -132,7 +132,8 @@ function grove(b: WorldBundle, look: LookStyle, c: Ctx): Scenery {
       (rnd(i + 11) < 0.5 ? rocks : bushes).push(item);
       return;
     }
-    solid.add(s.pos, s.size, lin("#4a3626")); // anything else: a timber block (cabin, stall)
+    // anything else: a timber block (cabin, stall), or in a maze a stretch of hedge
+    solid.add(s.pos, s.size, b.pack.id === "maze" ? lin(night ? "#0b1a14" : "#2f4a26") : lin("#4a3626"));
   });
 
   // distant forest ring beyond the map: silhouettes the fog dissolves

@@ -337,8 +337,9 @@ export function buildWorldView(bundle: WorldBundle, look: LookStyle): WorldView 
       }
       case "platform": {
         const g = new Group();
-        const slabGeo = new BoxBatch().add([0, 0, 0], e.size, lin("#1a1c2a"), [0, 0, 0, 0], false).build();
-        const slab = new Mesh(keep(slabGeo), keep(bodyMaterial("#1a1c2a", 0.35, 0.5)));
+        const slabHex = neonLook ? "#1a1c2a" : look.prop;
+        const slabGeo = new BoxBatch().add([0, 0, 0], e.size, lin(slabHex), [0, 0, 0, 0], false).build();
+        const slab = new Mesh(keep(slabGeo), keep(bodyMaterial(slabHex, 0.35, 0.5)));
         const edges = new BoxBatch();
         const [hx, hy, hz] = [e.size[0] / 2, e.size[1] / 2, e.size[2] / 2];
         const c = lin(PALETTE.cyan, 3);
@@ -375,8 +376,8 @@ export function buildWorldView(bundle: WorldBundle, look: LookStyle): WorldView 
         break;
       }
       default: {
-        const b = new BoxBatch().add([0, 0, 0], e.size, lin("#22243a"), [0, 0, 0, 0], false);
-        const m = new Mesh(keep(b.build()), keep(bodyMaterial("#22243a")));
+        const b = new BoxBatch().add([0, 0, 0], e.size, [1, 1, 1], [0, 0, 0, 0], false);
+        const m = new Mesh(keep(b.build()), keep(bodyMaterial(look.prop)));
         m.position.set(...e.pos);
         obj = m;
       }

@@ -53,12 +53,14 @@ export interface LookStyle {
   /** The weather stays outside the building's walls. */
   indoor: boolean;
   footing: Footing;
+  /** What a plain prop (a box the kits don't draw) is made of here: navy in the city, wood in a cabin. */
+  prop: string;
   pick: Pick;
 }
 
 const mixHex = (a: string, b: string, t: number) => `#${new Color(a).lerp(new Color(b), t).getHexString()}`;
 
-type Base = Omit<LookStyle, "id" | "variant" | "phase" | "night" | "rain" | "storm" | "cutaway" | "indoor" | "pick" | "drift" | "footing"> & { drift?: Drift };
+type Base = Omit<LookStyle, "id" | "variant" | "phase" | "night" | "rain" | "storm" | "cutaway" | "indoor" | "pick" | "drift" | "footing" | "prop"> & { drift?: Drift };
 
 /** Where the first three looks always lit from (a light at -20, 40, 18): kept, so they look as before. */
 const CLASSIC = { elevation: 0.9734, azimuth: 2.4088 };
@@ -391,6 +393,12 @@ function palettes(p: Pick): Palettes {
   }
 }
 
+/** Each look's plain props. */
+const PROP: Record<LookId, string> = {
+  neon: "#22243a", grove: "#5a4632", gallery: "#2c2b30", desert: "#a8744a", snow: "#7a5a3e", space: "#4a5462",
+  haunted: "#3a3036", medieval: "#7a5232", candy: "#ff8ac0", jungle: "#6a5a40", home: "#8a5a36",
+};
+
 /** Each look's floor underfoot. */
 const FOOTING: Record<LookId, Footing> = {
   neon: "street", grove: "soft", gallery: "hard", desert: "sand", snow: "snow", space: "metal",
@@ -456,6 +464,7 @@ export function lookOf(b: WorldBundle, cue: Cue = cueOf(b)): LookStyle {
     cutaway: indoor || p.id === "gallery", // the gallery has always looked down over its walls
     indoor,
     footing: p.rain && (p.id === "neon" || !indoor) && FOOTING[p.id] !== "metal" ? "wet" : p.variant === "underwater" ? "sand" : FOOTING[p.id],
+    prop: PROP[p.id],
     pick: p,
   };
 }

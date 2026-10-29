@@ -4,7 +4,7 @@
 // shelves of crumbling books.
 import type { WorldBundle } from "@ghostrun/ir";
 import { BufferGeometry, ConeGeometry, CylinderGeometry, Float32BufferAttribute, InstancedMesh, Matrix4, MeshBasicNodeMaterial, MeshStandardNodeMaterial, Object3D, PlaneGeometry, SphereGeometry, BoxGeometry, DoubleSide } from "three/webgpu";
-import { abs, float, floor, fract, hash, instanceIndex, length, max, mix, oneMinus, positionWorld, sin, smoothstep, step, time, uv, vec2, vec3 } from "three/tsl";
+import { abs, float, hash, instanceIndex, length, max, mix, oneMinus, positionWorld, sin, smoothstep, step, time, uv, vec3 } from "three/tsl";
 import { BoxBatch } from "../boxes";
 import type { LookStyle } from "../looks";
 import { lin } from "../materials";
@@ -65,7 +65,7 @@ export function dressHaunted(b: WorldBundle, look: LookStyle, c: Ctx): Dressed {
 
   for (const p of pieces) {
     const { s, i } = p;
-    const [x, y, z] = s.pos;
+    const [x, , z] = s.pos;
     const [w, h, d] = s.size;
     switch (p.kind) {
       case "ground":
@@ -124,12 +124,14 @@ export function dressHaunted(b: WorldBundle, look: LookStyle, c: Ctx): Dressed {
   }
 
   // a graveyard's worth of leaning headstones on open ground, clear of everything you collide with
-  if (!cut && b.pack.id !== "maze") {
+  if (b.pack.id !== "maze") {
     const spots = b.entities.map((e) => e.pos);
     for (let k = 0; k < 70; k++) {
       const x = bounds.minX + 2 + rnd(k * 3 + 1) * (bounds.maxX - bounds.minX - 4);
       const z = bounds.minZ + 2 + rnd(k * 3 + 2) * (bounds.maxZ - bounds.minZ - 4);
       if (!clear(pieces, x, z, 0.9, ["wall", "boundary", "block", "cover", "ledge", "trunk", "path", "water"]) || spots.some((e) => Math.hypot(e[0] - x, e[2] - z) < 2.5)) continue;
+      // round a house, the graves are out in its grounds, never in its rooms
+      if (cut && x > bounds.minX - 0.5 && x < bounds.maxX + 0.5 && z > bounds.minZ - 0.5 && z < bounds.maxZ + 0.5) continue;
       const s = 0.8 + rnd(k) * 0.5;
       graves.push({ p: [x, groundY, z], s: [s, s, s], r: Math.round(rnd(k + 9) * 3) * (Math.PI / 2) + (rnd(k + 4) - 0.5) * 0.3, tilt: [(rnd(k + 5) - 0.5) * 0.25, (rnd(k + 6) - 0.5) * 0.25], color: ["#8a8894", "#7a7884", "#9a98a2"][k % 3]! });
     }
@@ -229,7 +231,7 @@ export function dressHaunted(b: WorldBundle, look: LookStyle, c: Ctx): Dressed {
     const n1 = noise01(p, 0.12);
     const patch = smoothstep(0.45, 0.65, noise01(p, 0.3, 4));
     const fine = noise01(p, 3, 6);
-    const color = mix(hex3("#3a3e2e"), hex3("#2a2420"), patch).mul(fine.mul(0.25).add(n1.mul(0.2)).add(0.7));
+    const color = mix(hex3("#4a4e3a"), hex3("#3a3228"), patch).mul(fine.mul(0.25).add(n1.mul(0.2)).add(0.7));
     return { color, roughness: float(0.95), bump: fine.mul(0.05) };
   }, { bump: 1 });
 

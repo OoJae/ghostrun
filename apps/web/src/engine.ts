@@ -3,7 +3,7 @@
 import { bloom } from "three/addons/tsl/display/BloomNode.js";
 import { pass } from "three/tsl";
 import {
-  ACESFilmicToneMapping, BufferGeometry, CylinderGeometry, DoubleSide, Float32BufferAttribute, Group, Mesh, MeshBasicMaterial, PerspectiveCamera, Quaternion, RenderPipeline, Scene, Vector3, WebGPURenderer, type Fog,
+  ACESFilmicToneMapping, BufferGeometry, CylinderGeometry, DoubleSide, Float32BufferAttribute, Group, Mesh, MeshBasicMaterial, PerspectiveCamera, Quaternion, RenderPipeline, Scene, Vector3, WebGPURenderer,
 } from "three/webgpu";
 import { InputCollector } from "./input";
 import type { WorldBundle } from "@ghostrun/ir";

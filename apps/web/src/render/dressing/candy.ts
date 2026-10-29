@@ -47,7 +47,7 @@ export function dressCandy(b: WorldBundle, look: LookStyle, c: Ctx): Dressed {
 
   for (const p of pieces) {
     const { s, i } = p;
-    const [x, y, z] = s.pos;
+    const [x, , z] = s.pos;
     const [w, h, d] = s.size;
     switch (p.kind) {
       case "ground":
