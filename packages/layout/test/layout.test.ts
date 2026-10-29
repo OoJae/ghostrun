@@ -347,4 +347,31 @@ describe("fights", () => {
     expect(rule("r_mine").when).toMatchObject({ t: "hit", a: "team:blue", b: "" });
     expect(rule("r_theirs").when).toMatchObject({ t: "hit", a: "team:red", b: "" });
   });
+
+  it("an archer 'hitting the player' is its shot, a loss as written (and then no knock-out rule); a team where the weapon goes is who was hit; knock-outs that lead nowhere make the win need them all", () => {
+    const { bundle, notes } = place(
+      ctf
+        .replace('{"op":"law"', [
+          '{"op":"verb","id":"vb_gun","verb":"combat_sport.shoot","on":"player"}',
+          '{"op":"verb","id":"vb_bow","verb":"combat_sport.shoot","on":"rival_1","params":{"range":20}}',
+          '{"op":"verb","id":"vb_hp","verb":"combat_sport.health","on":"player","params":{"respawn":false}}',
+          '{"op":"law"',
+        ].join("\n"))
+        .replace('{"op":"rule","id":"r_pickup"', [
+          '{"op":"rule","id":"r_shot","when":{"t":"hit","a":"player","b":"rival_1"},"then":[{"e":"lose","target":"player"}]}',
+          '{"op":"rule","id":"r_tag","when":{"t":"hit","a":"player","b":"team:red"},"then":[{"e":"score","target":"team:blue","n":1}]}',
+          '{"op":"rule","id":"r_down","when":{"t":"health_lte","a":"rival_1","n":0},"then":[{"e":"destroy","target":"rival_1"}],"once":true}',
+          '{"op":"rule","id":"r_boss","when":{"t":"health_lte","a":"rival_2","n":0},"then":[{"e":"win","target":"player"}],"once":true}',
+          '{"op":"rule","id":"r_pickup"',
+        ].join("\n")),
+    );
+    const rule = (id: string) => bundle.rules.find((r) => r.id === id)!;
+    expect(rule("r_shot").when).toMatchObject({ t: "hit", a: "player", b: "rival_1" });
+    expect(bundle.rules.some((r) => r.id === "r_knocked_out")).toBe(false); // (the first hit already loses)
+    expect(rule("r_tag").when).toMatchObject({ t: "hit", a: "team:red", b: "" }); // blue scores: one of yours was hit
+    // whoever goes down last wins it: one win per member, each needing the other down
+    expect(rule("r_boss").if).toEqual([{ l: "rival_1.hp", op: "lte", r: 0, forS: 0 }]);
+    expect(rule("r_boss_rival_1")).toMatchObject({ when: { t: "health_lte", a: "rival_1" }, if: [{ l: "rival_2.hp", op: "lte", r: 0 }], then: [{ e: "win" }] });
+    expect(notes).toContain("rule r_boss: knocking out rival_1 leads nowhere, so the win is for knocking out all of rival_2, rival_1, whoever goes down last (2 rules)");
+  });
 });
