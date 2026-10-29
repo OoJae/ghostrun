@@ -116,7 +116,8 @@ export function makeParticles(kind: Exclude<Drift, "">): Particles {
       floor.value = floorY;
     },
     shelter: (b) => {
-      roofOn.value = b ? 1 : 0;
+      // only the weather stays out: dust motes and sparkles drift indoors too
+      roofOn.value = b && k.outside ? 1 : 0;
       if (b) roof.value.set(b.minX, b.minZ, b.maxX, b.maxZ);
     },
     dispose: () => m.dispose(),
