@@ -112,6 +112,7 @@ export class SimWorld {
   /** A world that fights: hit points and shots go into the state hash (others hash as they always did). */
   readonly #combat: boolean;
   #evs: SimEvent[] = [];
+  #push: Push = () => -1;
 
   constructor(R: Rapier, bundle: WorldBundle, opts: SimOptions = {}) {
     this.R = R;
@@ -245,6 +246,7 @@ export class SimWorld {
         w.shots.push({ ...s, at: [...s.at], id: ++w.#shotSeq, p: [s.from[0], s.from[1], s.from[2]], left: s.range, born: w.tick });
         w.#emit("shoot", s.by, s.weapon);
       },
+      hurt: (id, n, by) => w.#hurt(id, n, by, w.#push),
     };
   }
 
@@ -555,6 +557,7 @@ export class SimWorld {
     const evs: SimEvent[] = [];
     const push: Push = (k, a, b = "", v = "", rule = "", cause = -1) => evs.push({ tick: t, k, a, b, v, rule, cause }) - 1;
     this.#evs = evs;
+    this.#push = push;
 
     this.#emit = (k, a, b = "", v = "") => push(k, a, b, v);
     // 0. the cast decides from where everything stood at the end of the last tick

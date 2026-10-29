@@ -91,6 +91,8 @@ export interface VerbCtx {
   los(from: Vec3, to: Vec3, ignore?: string): boolean;
   /** Launch a projectile; the sim marches it every tick and resolves what it hits. */
   fire(s: Shot): void;
+  /** Takes n hit points from something that has them (a thrown star landing); nothing for anything else. */
+  hurt(id: string, n: number, by: string): void;
 }
 
 /** A projectile in flight (fixed-step, deterministic): it hits the first character or target on its line. */

@@ -352,6 +352,18 @@ describe("combat: hit points, shots and knock-outs", () => {
     sim.free();
   });
 
+  it("a thrown star hurts what has hit points, by its damage", () => {
+    const sim = fight(
+      [someone("sensei", [0, 0.9, 3]), ent("star", "pickup", [0, 0.1, 0.5], [0.2, 0.2, 0.2], "dynamic", { shape: "sphere" })],
+      [vb("vb_star", "combat_sport.throw", "star", { damage: 20 }), health("sensei", { hp: 60, respawn: false })],
+    );
+    sim.attach("star", "player");
+    const evs = run(sim, 2, press(BTN.USE));
+    expect(evs.find((e) => e.k === "hit")).toMatchObject({ a: "sensei", b: "star" });
+    expect(sim.hp("sensei")).toBe(40);
+    sim.free();
+  });
+
   it("a shot passes through teammates to the rival behind them", () => {
     const sim = fight([someone("mate", [0, 0.9, 4], "red"), someone("foe", [0, 0.9, 9])], [shoot("player", { range: 20 }), health("foe")]);
     sim.face("player", 0, 1);

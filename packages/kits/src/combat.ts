@@ -36,9 +36,9 @@ function nearestTarget(c: Parameters<NonNullable<VerbPlugin["tick"]>>[0], from: 
 
 export const throwVerb: VerbPlugin = {
   id: "combat_sport.throw",
-  line: 'on a ball/snowball: carry it, USE hits the nearest rival (or thing in "at") in range (hit a=the one hit b=it), then it goes back to its spot; params {"range":3-20,"at":"pin_1,pin_2"}',
+  line: 'on a ball/snowball/throwing star: carry it, USE hits the nearest rival (or thing in "at") in range (hit a=the one hit b=it) for damage HP, then it goes back to its spot; params {"range":3-20,"damage":0-100,"at":"pin_1,pin_2"}',
   on: ["pickup"],
-  params: { range: { def: 10, min: 3, max: 20 }, at: { def: "" } },
+  params: { range: { def: 10, min: 3, max: 20 }, damage: { def: 25, min: 0, max: 100 }, at: { def: "" } },
   carries: (b) => [b.on],
   use: {
     radius: 1.5,
@@ -55,6 +55,7 @@ export const throwVerb: VerbPlugin = {
       if (!target) return false;
       // the hit first, the release next tick: rules see who threw it ("IF ball.carrier.team eq red")
       c.emit("hit", target, b.on);
+      c.hurt(target, Number(b.params.damage), b.on); // (only something with hit points feels it)
       b.mem.release = c.tick + 1; // verbs tick before rules: let go on the next tick, after the rules have seen the hit
     },
   },
