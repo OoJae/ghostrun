@@ -1,0 +1,239 @@
+things (pickup, prop, switch, door): 79 of 192 distinct nouns drawn as a prop, 376 of 532 entities
+characters (npc): 37 of 40 distinct nouns given a body, 63 of 67 entities
+props used: 23 of 36 (barrel, flag, chair, pumpkin, gravestone, skull, target, tree, sword, wand, crossbow, shield, bomb unused here)
+
+kind     n  noun → prop
+door     1  airlock door → -
+door     1  body slot → -
+door     1  branch gate → gate
+door     1  castle gate → gate
+door     1  cely dvere → door
+door     1  concealed door → door
+door     1  east hallway door → door
+door     1  exit door → door
+door     1  exit gate → gate
+door     1  floating bridge → -
+door     1  gate → gate
+door     1  gym west door → door
+door     1  head slot → -
+door     1  iron gate → gate
+door     1  legs slot → -
+door     1  locked exit door → door
+door     1  main hall door → door
+door     1  platform gate → gate
+door     1  rope gate → gate
+door     1  safe door → -
+door     1  sealed door → door
+door     1  sealed exit door → door
+door     1  sliding shoji door → -
+door     1  southwest door → door
+door     1  steel door → -
+door     1  stone door → -
+door     1  tower gate → gate
+door     4  vault door → -
+door     1  wooden door → door
+door     1  zamek vychodu → -
+pickup   1  ancient secret book → book
+pickup   2  basketball → -
+pickup   1  battering ram → -
+pickup   1  blue balloon → -
+pickup   1  blue candy → -
+pickup   1  blue silk handbag → sack
+pickup   1  body module → -
+pickup   1  bowling ball → -
+pickup   1  branch key → key
+pickup   1  brass key → key
+pickup   1  coin → coin
+pickup  10  crystal → gem
+pickup   3  cursed book → book
+pickup   1  diamond → gem
+pickup   3  dodgeball → -
+pickup   7  domino → -
+pickup   1  dragon scale → -
+pickup   1  elf root → -
+pickup   4  energy cell → -
+pickup   1  first aid kit → -
+pickup   4  fish → -
+pickup   1  flare kit → torch
+pickup   1  fuel canister → -
+pickup  36  glow seed → gem
+pickup   1  glowing orb → -
+pickup   1  glowing seed → gem
+pickup   1  glowing stone → gem
+pickup  120  gold coin → coin
+pickup   1  golden artifact → trophy
+pickup   2  golden coin → coin
+pickup   1  golden harp → trophy
+pickup   1  golf ball → -
+pickup   1  green balloon → -
+pickup   1  green candy → -
+pickup   1  green silk handbag → sack
+pickup   1  head module → -
+pickup   2  healing potion → potion
+pickup   1  keycard → -
+pickup   1  klic k vychodu → key
+pickup   5  kristall → gem
+pickup   1  latte cup → mug
+pickup   1  legs module → -
+pickup   1  med kit → -
+pickup   1  moon leaf → -
+pickup   6  neon shard → gem
+pickup  10  neon token → coin
+pickup   1  old map → -
+pickup   1  priceless gem → gem
+pickup   1  principal key → key
+pickup   1  purple balloon → -
+pickup   1  red balloon → -
+pickup   1  red candy → -
+pickup   1  red gem → gem
+pickup   1  red silk handbag → sack
+pickup   1  relay baton → staff
+pickup   1  repair toolkit → -
+pickup   3  rune stone → gem
+pickup   2  rusty key → key
+pickup   5  seashell → -
+pickup   1  shimmering coin → coin
+pickup   2  silver coin → coin
+pickup   2  silver key → key
+pickup   2  snowball → -
+pickup   4  soccer ball → -
+pickup   1  speed boost → -
+pickup   1  star sapphire → gem
+pickup  77  star token → coin
+pickup   1  storm crystal → gem
+pickup   1  tennis ball → -
+pickup  27  time gem → gem
+pickup   1  tool kit → -
+pickup   1  train ticket → -
+pickup   1  treasure chest → chest
+pickup   1  vault key → key
+pickup   1  vault loot → coins
+pickup   1  yellow balloon → -
+pickup   1  yellow silk handbag → sack
+pickup   1  zelezny klic → key
+prop     2  alarm timer → -
+prop     1  ambient rain sound → -
+prop     1  ancient statue → -
+prop     1  art piece → -
+prop     1  battle banner → banner
+prop     1  boarding plank → -
+prop     1  bookshelf → bookcase
+prop     1  brass telescope → -
+prop     1  buzzer timer → -
+prop     1  capture timer → -
+prop     1  catapult → -
+prop     1  ceremonial tea set → mug
+prop     2  control panel → -
+prop     2  cottage → -
+prop     1  counter → table
+prop     4  cover block → -
+prop     1  curtain → -
+prop     1  desk → table
+prop     1  dinosaur skeleton → -
+prop     1  flickering gaslight → lamp
+prop     1  glowing mushroom ring → -
+prop     1  great white shark → -
+prop     1  historic microscope → -
+prop     1  incense burner → -
+prop     1  jellyfish → -
+prop     1  jump pad → -
+prop     1  landscape → -
+prop     1  large rock → rock
+prop     1  lever → -
+prop     1  manta ray → -
+prop     3  marked shelf slot → bookcase
+prop     1  match timer → -
+prop     1  menu board → -
+prop     1  metal crate → crate
+prop     1  mission timer → -
+prop     1  music → -
+prop     2  neon sign → -
+prop     4  neon stall → -
+prop     1  net → -
+prop     1  overhead lamp → lamp
+prop     1  paper lantern → lantern
+prop     1  planetarium star dome → -
+prop     1  police siren → -
+prop     1  portrait → -
+prop     1  potted plant → bush
+prop     1  rain soaked window → -
+prop     1  reactor core → -
+prop     1  scale rocket model → -
+prop     1  shelf of dragon scales → bookcase
+prop     1  shelf of elf roots → bookcase
+prop     1  shelf of moon leaves → bookcase
+prop     1  shoji screen → -
+prop     1  siege ladder → -
+prop     1  sled → -
+prop     2  snow fence → -
+prop     2  tatami mat → -
+prop     1  tide timer → -
+prop     2  timer → -
+switch   1  blue wire → -
+switch   3  breaker → -
+switch   1  breaker a → -
+switch   1  breaker b → -
+switch   1  breaker c → -
+switch   1  breaker d → -
+switch   1  bridge lever → -
+switch   3  broken panel → -
+switch   1  broken panel a → -
+switch   1  broken panel b → -
+switch   1  broken panel c → -
+switch   4  candle → candle
+switch   1  code panel → -
+switch   1  control switch → -
+switch   1  dig spot → -
+switch   1  floodlight switch → lamp
+switch   1  green wire → -
+switch   1  ignition lever → -
+switch   1  lever → -
+switch   1  lever switch → -
+switch   1  main hall switch → -
+switch   1  mode switch → -
+switch   1  prepinac brany → -
+switch   1  red wire → -
+switch   1  rope hook → -
+switch   1  signal flare → torch
+
+npc      n  noun → body
+npc      1  barista → rogue
+npc      1  blue 1 → rogue
+npc      1  blue 2 → rogue
+npc      1  blue 3 → rogue
+npc      1  blue coupe driver → rogue
+npc      2  blue racer → rogue
+npc      1  blue rider → rogue
+npc      1  camp cook → barbarian
+npc      1  coach → rogue
+npc      1  creature 1 → skeleton
+npc      2  duch → skeleton
+npc      1  enemy boarding party → barbarian
+npc      3  ghost → skeleton
+npc      1  goalkeeper → knight
+npc      1  groaning zombie → skeleton
+npc      2  guard 1 → knight
+npc      1  guard 2 → knight
+npc      6  guide 1 → rogue
+npc      1  judge → rogue
+npc      2  librarian → mage
+npc      1  mate 1 → rogue
+npc      1  minotaur → barbarian
+npc      1  museum guide → rogue
+npc      1  owl guide → capsule
+npc      1  owl keeper → capsule
+npc      1  referee → rogue
+npc      4  rival 1 → rogue
+npc      4  rival 2 → rogue
+npc      1  rival player → rogue
+npc      3  rival skater → rogue
+npc      1  rival wizard → mage
+npc      2  rival wrestler → barbarian
+npc      1  security guard → knight
+npc      2  security robot → capsule
+npc      6  shambling zombie → skeleton
+npc      1  sleeping giant → barbarian
+npc      1  spirit 1 → skeleton
+npc      1  spirit 2 → skeleton
+npc      2  straznik → knight
+npc      1  yellow taxi driver → rogue
