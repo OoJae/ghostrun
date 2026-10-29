@@ -208,6 +208,19 @@ describe("fill repairs from the fourth unseen set", () => {
   });
 });
 
+describe("a trigger's subject under another key", () => {
+  it("score_gte with 'target' team:red, and enter with 'who' the player, read as a", () => {
+    const p = parseFill([
+      '{"op":"meta","mode":"play","pack":"arena","seed":3}',
+      '{"op":"zone","id":"z_a","slot":"midfield","tag":"center"}',
+      '{"op":"ent","id":"pad","kind":"goal","zone":"z_a"}',
+      '{"op":"rule","id":"r_win","when":{"t":"score_gte","target":"team:red","n":15},"then":[{"e":"win","target":"player"}]}',
+      '{"op":"rule","id":"r_in","when":{"t":"enter","who":"player","b":"pad"},"then":[{"e":"score","target":"team:red","n":1}]}',
+    ].join("\n"), { seed: 3 });
+    expect(p.draft.rules.map((r) => [r.id, r.when.a])).toEqual([["r_win", "team:red"], ["r_in", "player"]]);
+  });
+});
+
 describe("fill repairs for races", () => {
   it("go-karts, jetskis and sleds are vehicles that drive as their kind, a circuit is the track, and a lap is lap_done", () => {
     const lines = [
