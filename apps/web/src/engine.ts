@@ -242,12 +242,13 @@ export class Engine {
   }
 
   /** What a VR frame plays in (one object, refreshed each frame rather than made anew). */
-  readonly #vrW: VrWorld = { view: null, sim: null, building: false };
+  readonly #vrW: VrWorld = { view: null, sim: null, building: false, tick: 0 };
   #vrWorld(): VrWorld {
     const w = this.#vrW;
     w.view = this.#view;
     w.sim = this.rapierSim;
     w.building = this.#preview !== null;
+    w.tick = this.#curr?.tick ?? 0;
     return w;
   }
 
