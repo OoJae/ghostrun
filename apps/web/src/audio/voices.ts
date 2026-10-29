@@ -110,7 +110,7 @@ const jitter = (x: number, by = 0.25) => x * (1 + (Math.random() - 0.5) * by);
 export type Floor = "street" | "wet" | "soft" | "hard";
 
 export function step(v: Voice, floor: Floor, loud: number): number {
-  const k = jitter(loud, 0.35);
+  const k = jitter(loud * 1.3, 0.35);
   if (floor === "hard") {
     // a heel on polished stone
     hiss(v, { type: "bandpass", f: 2700 * v.p, q: 1.4, a: 0.002, d: 0.04, peak: 0.08 * k });
@@ -121,7 +121,7 @@ export function step(v: Voice, floor: Floor, loud: number): number {
     hiss(v, { type: "lowpass", f: 480, a: 0.003, d: 0.05, peak: 0.08 * k });
   } else if (floor === "soft") {
     // grass and earth: all body, no click
-    hiss(v, { type: "lowpass", f: 850 * v.p, q: 0.5, a: 0.008, d: 0.08, peak: 0.13 * k });
+    hiss(v, { type: "lowpass", f: 850 * v.p, q: 0.5, a: 0.008, d: 0.08, peak: 0.18 * k });
   } else {
     hiss(v, { type: "bandpass", f: 1300 * v.p, q: 0.9, a: 0.003, d: 0.045, peak: 0.07 * k });
     blip(v, { type: "sine", f: 125 * v.p, to: 75, a: 0.002, d: 0.045, peak: 0.07 * k });
@@ -255,9 +255,9 @@ export function hurt(v: Voice, harm: Harm): number {
     lfo.onended = () => (depth.disconnect(), trem.disconnect());
     blip(v, { type: "sine", f: 95, to: 40, a: 0.003, d: 0.2, peak: 0.14 });
   } else if (harm === "zap") {
-    blip(v, { type: "sawtooth", f: 1300 * v.p, to: 90, a: 0.002, d: 0.22, peak: 0.06 });
-    blip(v, { type: "square", f: 1950 * v.p, to: 130, a: 0.002, d: 0.16, peak: 0.025 });
-    hiss(v, { type: "bandpass", f: 4200, q: 2, a: 0.002, d: 0.12, peak: 0.07 });
+    blip(v, { type: "sawtooth", f: 1300 * v.p, to: 90, a: 0.002, d: 0.22, peak: 0.12 });
+    blip(v, { type: "square", f: 1950 * v.p, to: 130, a: 0.002, d: 0.16, peak: 0.05 });
+    hiss(v, { type: "bandpass", f: 4200, q: 2, a: 0.002, d: 0.12, peak: 0.12 });
   } else if (harm === "blade") {
     blip(v, { type: "square", f: 1530 * v.p, a: 0.001, d: 0.12, peak: 0.025 });
     blip(v, { type: "square", f: 2370 * v.p, a: 0.001, d: 0.09, peak: 0.02 });
@@ -286,7 +286,7 @@ export function impact(v: Voice): number {
 }
 
 export function whoosh(v: Voice): number {
-  hiss(v, { type: "bandpass", f: 480 * v.p, to: 2300 * v.p, q: 1.3, a: 0.05, d: 0.14, peak: 0.08 });
+  hiss(v, { type: "bandpass", f: 480 * v.p, to: 2300 * v.p, q: 1.3, a: 0.05, d: 0.14, peak: 0.2 });
   return 0.25;
 }
 
@@ -310,8 +310,8 @@ export function pew(v: Voice): number {
   lp.type = "lowpass";
   lp.frequency.value = 3200;
   lp.connect(v.out);
-  blip(v, { type: "square", f: 1600 * v.p, to: 280, a: 0.002, d: 0.1, peak: 0.035, dest: lp });
-  hiss(v, { type: "highpass", f: 4000, a: 0.001, d: 0.03, peak: 0.03 });
+  blip(v, { type: "square", f: 1600 * v.p, to: 280, a: 0.002, d: 0.1, peak: 0.055, dest: lp });
+  hiss(v, { type: "highpass", f: 4000, a: 0.001, d: 0.03, peak: 0.05 });
   setTimeout(() => lp.disconnect(), 400);
   return 0.2;
 }
@@ -320,9 +320,9 @@ export function pew(v: Voice): number {
 
 /** A switch or lever: two clicks and a tone (higher for on). */
 export function flip(v: Voice, on: boolean): number {
-  hiss(v, { type: "bandpass", f: 3600, q: 4, a: 0.001, d: 0.012, peak: 0.3 });
-  hiss(v, { type: "bandpass", f: 2600, q: 4, at: v.t + 0.035, a: 0.001, d: 0.014, peak: 0.22 });
-  blip(v, { type: "triangle", f: (on ? 880 : 520) * v.p, at: v.t + 0.04, a: 0.004, d: 0.08, peak: 0.035 });
+  hiss(v, { type: "bandpass", f: 3600, q: 4, a: 0.001, d: 0.012, peak: 0.45 });
+  hiss(v, { type: "bandpass", f: 2600, q: 4, at: v.t + 0.035, a: 0.001, d: 0.014, peak: 0.33 });
+  blip(v, { type: "triangle", f: (on ? 880 : 520) * v.p, at: v.t + 0.04, a: 0.004, d: 0.08, peak: 0.05 });
   return 0.2;
 }
 
@@ -414,14 +414,14 @@ export function info(v: Voice, f: number): number {
 }
 
 export function use(v: Voice): number {
-  hiss(v, { type: "bandpass", f: 2500, q: 3, a: 0.001, d: 0.02, peak: 0.12 });
-  blip(v, { type: "sine", f: 700 * v.p, a: 0.003, d: 0.05, peak: 0.03 });
+  hiss(v, { type: "bandpass", f: 2500, q: 3, a: 0.001, d: 0.02, peak: 0.18 });
+  blip(v, { type: "sine", f: 700 * v.p, a: 0.003, d: 0.05, peak: 0.05 });
   return 0.1;
 }
 
 /** Something goes back to where it started. */
 export function fwip(v: Voice): number {
-  hiss(v, { type: "bandpass", f: 3000, to: 600, q: 1.4, a: 0.02, d: 0.16, peak: 0.04 });
+  hiss(v, { type: "bandpass", f: 3000, to: 600, q: 1.4, a: 0.02, d: 0.16, peak: 0.08 });
   return 0.25;
 }
 
@@ -446,8 +446,8 @@ export function gong(v: Voice): number {
 
 /** The last ten seconds of a countdown. */
 export function tick(v: Voice, last: boolean): number {
-  blip(v, { type: "sine", f: last ? 2000 : 1500, a: 0.001, d: 0.035, peak: last ? 0.06 : 0.04 });
-  hiss(v, { type: "bandpass", f: 3200, q: 3, a: 0.001, d: 0.012, peak: 0.05 });
+  blip(v, { type: "sine", f: last ? 2000 : 1500, a: 0.001, d: 0.035, peak: last ? 0.1 : 0.07 });
+  hiss(v, { type: "bandpass", f: 3200, q: 3, a: 0.001, d: 0.012, peak: 0.08 });
   return 0.1;
 }
 

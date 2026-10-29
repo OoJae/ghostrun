@@ -18,7 +18,9 @@ export type Ear = () => { p: Vec3; yaw: number } | null;
 
 type Entity = WorldBundle["entities"][number];
 
-const LEVEL = { master: 0.9, sfx: 0.85, amb: 0.5, music: 0.3 };
+// measured offline through the master compressor: effects peak around −12 to −24 dBFS, the music
+// sits near −32 RMS under them, and the beds lower still (rain is broadband, so it is kept down)
+const LEVEL = { master: 0.9, sfx: 1.6, amb: 0.4, music: 0.55 };
 /** Room size per look: the gallery rings, the grove is open air. */
 const WET = { neon: 0.3, grove: 0.2, gallery: 0.55 } as const;
 
@@ -175,7 +177,7 @@ export class Sound {
     const [dx, dy, dz] = [p[0] - last[0], p[1] - last[1], p[2] - last[2]];
     const d = Math.hypot(dx, dz);
     if (d > 1 || Math.abs(dy) > 1) return; // a respawn or a portal, not a step
-    // the controller's grounded flag flickers walking on the flat: a few ticks off it still count as ground
+    // a tick or three off the ground (a bump, a step down) doesn't break the stride; a jump does (see "jump")
     const grounded = this.#sim ? this.#sim.sim.player.grounded : Math.abs(dy) < 0.004;
     this.#air = grounded ? 0 : this.#air + 1;
     if (!grounded) this.#fall = Math.min(this.#fall, dy * 60);

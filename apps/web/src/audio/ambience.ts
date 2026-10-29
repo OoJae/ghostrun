@@ -219,8 +219,8 @@ export class Ambience {
 
   /** The grove by day: wind in the leaves and birds. */
   #day(bed: Bed, p: Place) {
-    this.#wind(bed, 520, 0.07);
-    this.#layer(bed, "highpass", 3200, 0.5, 0.012, 0.11, 0.8);
+    this.#wind(bed, 520, 0.1);
+    this.#layer(bed, "highpass", 3200, 0.5, 0.018, 0.11, 0.8);
     if (p.rain || p.snow) return; // the birds keep quiet in bad weather
     bed.events.push({ next: 0, every: [2.2, 7], play: (t) => this.#bird(bed, t) });
     bed.events.push({ next: 0, every: [5, 12], play: (t) => this.#bird(bed, t) });
@@ -246,7 +246,7 @@ export class Ambience {
 
   /** The grove at night: a low breeze, crickets in rounds, and now and then an owl. */
   #night(bed: Bed, p: Place) {
-    this.#wind(bed, 300, 0.05);
+    this.#wind(bed, 300, 0.08);
     if (p.snow) return;
     for (let i = 0; i < 3; i++) {
       const f = rand(4200, 5300);
@@ -283,8 +283,8 @@ export class Ambience {
     const pulses = 3 + Math.floor(Math.random() * 2);
     for (let i = 0; i < pulses; i++) {
       const at = t + i * 0.032;
-      g.gain.linearRampToValueAtTime(0.012, at + 0.004);
-      g.gain.setValueAtTime(0.012, at + 0.012);
+      g.gain.linearRampToValueAtTime(0.025, at + 0.004);
+      g.gain.setValueAtTime(0.025, at + 0.012);
       g.gain.linearRampToValueAtTime(0, at + 0.017);
     }
     const p = ctx.createStereoPanner();
@@ -297,14 +297,14 @@ export class Ambience {
 
   /** The gallery: a quiet room, the air handling, and a faint hum. */
   #room(bed: Bed) {
-    this.#layer(bed, "lowpass", 260, 0.6, 0.06, 0.03, 0.2);
+    this.#layer(bed, "lowpass", 260, 0.6, 0.08, 0.03, 0.2);
     this.#layer(bed, "bandpass", 900, 3, 0.006, 0.05, 0.4);
     this.#hum(bed, 117, 0.005);
   }
 
   /** Rain: a wash of high noise, heavier in a storm (with thunder), and drops landing close by. */
   #rain(bed: Bed, storm: boolean) {
-    const level = storm ? 0.2 : 0.12;
+    const level = storm ? 0.085 : 0.05;
     this.#layer(bed, "highpass", 900, 0.5, level, 0.13, 0.25);
     this.#layer(bed, "bandpass", 5200, 0.7, level * 0.4, 0.21, 0.3);
     bed.events.push({
@@ -312,7 +312,7 @@ export class Ambience {
       every: storm ? [0.04, 0.12] : [0.07, 0.2],
       play: (t) => {
         const v = this.#spot(bed, rand(-0.9, 0.9), 1, 0.15);
-        this.#burst(v, t, "bandpass", rand(2200, 6500), rand(1500, 3000), 2.5, 0.001, rand(0.006, 0.014), rand(0.01, 0.03));
+        this.#burst(v, t, "bandpass", rand(2200, 6500), rand(1500, 3000), 2.5, 0.001, rand(0.006, 0.014), rand(0.005, 0.016));
       },
     });
     if (!storm) return;
