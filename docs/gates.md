@@ -185,3 +185,17 @@ The `play` Worker at **https://play.ghostrun.workers.dev**, with its own KV, R2 
 | The Host | answered "Why did I lose?" from the run's facts in 1.5 s, citing 4 |
 
 Found on the way: the landing world's three minded NPCs all thought on every pickup, score and tag, about 2.4 calls a second in a bot-played match, which spends the edge's 120 minds per session in under a minute, after which talking to a character gets no answer. Now one NPC thinks on its own at most every 8 s, in turn (about 75 calls in 10 minutes), only while someone is playing (a minute without input stops it) and never during replays; a 429 pauses them for a minute; talking always goes through. Unit-tested in `apps/web/test/minds.test.ts`.
+
+## Production redeployed with the 29 Oct additions (2026-10-29)
+
+The `play` Worker now runs main 54318a7: sound, the new landing, combat, ghost racing, runner skill levels and the playtest report, the exact-repeat cache and materialise reveal, vehicles, spoken characters and remix, prompt-matched looks, the run clip, and three robustness passes. Staging carries the same build.
+
+| Check | Result |
+|---|---|
+| `/v1/health` | ok; both providers; gate `turnstile` |
+| Staging, dev token | the brief 1.5 s server-side; a wizard duel and a go-kart race build on the fast lane in 1.2–1.6 s |
+| Exact-repeat cache on real R2 | a repeat answers in 228 ms with `cached` first; no model call |
+| Warm cache | the brief and the landing's 7 starts and suggestions cached on production (arcade worlds included) |
+| A visitor with no token (headless Chromium) | landing line and starters; Turnstile passed without a click; the brief came back cached in 587 ms, labelled "cached · built live 29 Oct by gpt-oss-120b"; receipt verified, 12 of 12; the AI's ghost runs; the Director's cut starts on Sonnet |
+
+Live benches since the last deploy (first pass, unseen prompts, fast lane): fights 8 of 12 twice, races 0 of 10 then 8 of 10 after the race fixes, a fresh mixed set 14 of 17 games. Re-proved with today's code from their recorded fills, all committed sets: 231 of 239 games won, 62 of 63 places toured.
