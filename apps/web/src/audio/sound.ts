@@ -47,6 +47,9 @@ const clamp01 = (x: number) => Math.max(0, Math.min(1, x));
 export class Sound {
   readonly ctx: AudioContext;
   readonly #master: GainNode;
+  /** The master bus after its compressor: what the speakers get, and what a clip's sound is tapped from. */
+  readonly #out: DynamicsCompressorNode;
+  #tap: MediaStreamAudioDestinationNode | null = null;
   readonly #sfx: GainNode;
   readonly #duck: GainNode;
   /** Music and ambience together, lowered while someone speaks. */
@@ -98,6 +101,7 @@ export class Sound {
     comp.attack.value = 0.004;
     comp.release.value = 0.25;
     comp.connect(ctx.destination);
+    this.#out = comp;
     this.#master = ctx.createGain();
     this.#master.gain.value = o.muted ? 0 : LEVEL.master;
     this.#master.connect(comp);
@@ -142,6 +146,18 @@ export class Sound {
     // after the fade, stop the clock altogether: no CPU spent on sound nobody hears
     if (m) setTimeout(() => this.#muted && void this.ctx.suspend(), 250);
     else void this.ctx.resume().catch(() => undefined);
+  }
+
+  /**
+   * The mix as a stream, for clips of the run: taken after the master fade, so a muted game is
+   * silent there too. (Spoken lines are the browser's own voices, outside this mix.)
+   */
+  tap(): MediaStream {
+    if (!this.#tap) {
+      this.#tap = this.ctx.createMediaStreamDestination();
+      this.#out.connect(this.#tap);
+    }
+    return this.#tap.stream;
   }
 
   /** Someone is speaking (an NPC, the Host): the music and the beds step back under the voice. */

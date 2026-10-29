@@ -33,6 +33,8 @@ export interface GhostrunProbe {
   speech?: SpeechStats;
   /** The build preview on screen (absent when there is none): statics risen and entities popped in so far. */
   materialise?: { statics: number; entities: number };
+  /** The run's clip recorder: "disabled" with ?clip=0 (and on phones), "unsupported" where the browser can't record a canvas. */
+  clip?: { state: "disabled" | "unsupported" | "failed" | "off" | "paused" | "rolling" | "held" | "take"; segments: number; bytes: number; type: string };
 }
 
 export interface AudioProbe {

@@ -1,0 +1,48 @@
+/* ---- the run's clip on the result card; ?record=1's caption strip; a clean take ------------- */
+
+.result-clip { margin: 12px 0 0; display: flex; gap: 10px; align-items: center; text-align: left; }
+.result-clip video { flex: none; width: 128px; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 8px; background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(255, 255, 255, 0.12); }
+.result-clip .clip-wait { flex: none; width: 128px; aspect-ratio: 16 / 9; display: grid; place-items: center; border-radius: 8px; font-size: 11.5px; color: var(--ink-faint); background: rgba(0, 0, 0, 0.3); border: 1px dashed rgba(255, 255, 255, 0.14); }
+.clip-actions { display: flex; flex-wrap: wrap; gap: 6px; }
+.clip-actions button { white-space: nowrap; font: inherit; font-size: 12.5px; padding: 6px 11px; border-radius: 8px; cursor: pointer; color: inherit; background: rgba(25, 227, 255, 0.12); border: 1px solid rgba(25, 227, 255, 0.4); }
+.clip-actions button[data-testid="clip-take"] { background: rgba(255, 255, 255, 0.06); border-color: rgba(255, 255, 255, 0.2); }
+.clip-actions button:disabled { opacity: 0.5; cursor: default; }
+.clip-actions .muted { font-variant-numeric: tabular-nums; }
+
+/* (.glass.record-strip: this sheet loads before styles.css, whose .glass would otherwise win) */
+.glass.record-strip {
+  position: absolute; left: 50%; bottom: 18px; transform: translateX(-50%);
+  display: inline-flex; align-items: center; gap: 8px; max-width: min(920px, calc(100vw - 32px));
+  padding: 6px 14px; border-radius: 999px; background: rgba(10, 7, 22, 0.6);
+  font: 500 12.5px/1.3 system-ui, sans-serif; color: var(--ink-dim); white-space: nowrap; text-align: left; cursor: pointer;
+}
+.record-strip .rs-prompt { min-width: 0; max-width: 48ch; overflow: hidden; text-overflow: ellipsis; color: var(--ink); }
+.record-strip .sep { opacity: 0.4; }
+.record-strip .rs-time { font-variant-numeric: tabular-nums; }
+.record-strip .rs-proof.good { color: #3dffa8; }
+.record-strip .rs-proof.bad { color: #ff8095; }
+.record-strip .rs-proof.pending { color: var(--amber); }
+@media (max-width: 720px) {
+  .glass.record-strip { width: calc(100vw - 32px); flex-wrap: wrap; justify-content: center; gap: 2px 10px; border-radius: 14px; white-space: normal; text-align: center; }
+  .record-strip .mark,
+  .record-strip .sep { display: none; }
+  .record-strip .rs-prompt { flex-basis: 100%; max-width: none; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+}
+
+/* ?record=1: what a viewer of the footage doesn't need steps aside, and the cursor hides */
+body.record-mode .keyhint,
+body.record-mode .mutebtn,
+body.record-mode .vrbtn,
+body.record-mode .hud > .proof,
+body.record-mode .repair,
+body.record-mode .intent,
+body.record-mode .toast,
+body.record-mode .pill { display: none; }
+body.record-mode .stage,
+body.record-mode.cursor-rest,
+body.record-mode.cursor-rest * { cursor: none !important; }
+
+/* a clean take: the world alone on screen while its replay is recorded */
+body.clip-take .hud { visibility: hidden; }
+body.clip-take,
+body.clip-take * { cursor: none !important; }
