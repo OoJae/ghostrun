@@ -15,12 +15,19 @@ interface Job {
   runs?: number;
   /** "Try to fool it": plant the k-th bug that applies to this world (its AI par decides some), prove that. */
   fool?: { k: number; parS: number | null };
+  /**
+   * Then the playtest (novice and average runners: the difficulty band, what the runners
+   * revealed). The receipt is posted first, as soon as it is without them; the playtest follows
+   * as a second message (null when there is none).
+   */
+  playtest?: boolean;
 }
 
 let ready: Promise<Rapier> | undefined;
 
 self.onmessage = async (e: MessageEvent<Job>) => {
-  const { id, bundle, engine, urls, runs, fool } = e.data;
+  const { id, bundle, engine, urls, runs, fool, playtest } = e.data;
+  let sent = false;
   try {
     ready ??= (async () => {
       const [rm, nm] = await Promise.all([WebAssembly.compileStreaming(fetch(urls.rapier)), WebAssembly.compileStreaming(fetch(urls.recast))]);
@@ -37,9 +44,12 @@ self.onmessage = async (e: MessageEvent<Job>) => {
       self.postMessage({ id, fooled: { id: p.id, text: p.text, at: p.at, of: ps.length, caught: c.caught, by: c.by ? chipLine(c.by) : null } });
       return;
     }
-    const receipt = await prove(R, bundle, { engine, host: "device", ...(runs ? { runs } : {}), onChip: (chip) => self.postMessage({ id, chip }) });
-    self.postMessage({ id, receipt });
+    const later = playtest ? { playtest: true, onReceipt: (receipt: unknown) => ((sent = true), self.postMessage({ id, receipt })) } : {};
+    const receipt = await prove(R, bundle, { engine, host: "device", ...(runs ? { runs } : {}), onChip: (chip) => self.postMessage({ id, chip }), ...later });
+    if (playtest) self.postMessage({ id, playtest: receipt.playtest ?? null });
+    else self.postMessage({ id, receipt });
   } catch (err) {
-    self.postMessage({ id, error: err instanceof Error ? err.message : String(err) });
+    // the receipt is out already: only the playtest is lost
+    self.postMessage(sent ? { id, playtest: null } : { id, error: err instanceof Error ? err.message : String(err) });
   }
 };

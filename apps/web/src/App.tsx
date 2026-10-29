@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { mergeFill, pinLayout, splitObjects } from "@ghostrun/ir";
-import { better, insights, issuesOf, statusWord, type Chip, type Receipt } from "@ghostrun/proof/light";
+import { allRuns, better, insights, issuesOf, revealed, statusWord, type Chip, type Playtest, type Receipt } from "@ghostrun/proof/light";
 // the engine stack (three, physics, navmesh, bots) is a second chunk, fetched as the shell paints
 import type { Engine, LoadResult } from "./engine";
 import { KeyHint } from "./hud/Corner";
@@ -144,28 +144,35 @@ export function App() {
   const [director, setDirector] = useState<{ line: string; label: string; status: "proving" | "ready"; world?: World } | null>(null);
   const [said, setSaid] = useState("");
   const [reported, setReported] = useState<string>();
-  const pending = useRef(new Map<number, { onChip?: (c: Chip) => void; resolve: (r: Receipt) => void; reject: (e: Error) => void }>());
+  const pending = useRef(new Map<number, { onChip?: (c: Chip) => void; onPlaytest?: (p: Playtest | null) => void; resolve: (r: Receipt) => void; reject: (e: Error) => void }>());
   const modeRef = useRef<Mode>("checking");
   modeRef.current = mode;
   // racing: the proof's par runner (or a run someone sent) as a ghost beside the player
   const race = useRace({ engine, world: current.current, loaded: timing, result, receipt: proof.receipt, specHash, prompt, urls: wasmUrls, toast: setToast, again: () => againRef.current() });
 
-  /** One proof on the device worker; several can be in flight (the world, and a repair of it). */
-  const proveOnDevice = useCallback((world: World, id: number, onChip?: (c: Chip) => void): Promise<Receipt> => {
+  /**
+   * One proof on the device worker; several can be in flight (the world, and a repair of it).
+   * With onPlaytest the worker goes on to the playtest once the receipt is out, and sends it after.
+   */
+  const proveOnDevice = useCallback((world: World, id: number, onChip?: (c: Chip) => void, onPlaytest?: (p: Playtest | null) => void): Promise<Receipt> => {
     if (!worker.current) {
       worker.current = new Worker(new URL("./proof.worker.ts", import.meta.url), { type: "module" });
-      worker.current.onmessage = (e: MessageEvent<{ id: number; chip?: Chip; receipt?: Receipt; error?: string }>) => {
+      worker.current.onmessage = (e: MessageEvent<{ id: number; chip?: Chip; receipt?: Receipt; playtest?: Playtest | null; error?: string }>) => {
         const p = pending.current.get(e.data.id);
         if (!p) return;
         if (e.data.chip) p.onChip?.(e.data.chip);
-        if (e.data.receipt) (pending.current.delete(e.data.id), p.resolve(e.data.receipt));
+        if (e.data.receipt) {
+          if (!p.onPlaytest) pending.current.delete(e.data.id); // (else the playtest follows)
+          p.resolve(e.data.receipt);
+        }
+        if (e.data.playtest !== undefined) (pending.current.delete(e.data.id), p.onPlaytest?.(e.data.playtest));
         if (e.data.error) (pending.current.delete(e.data.id), p.reject(new Error(e.data.error)));
       };
     }
     const w = worker.current;
     return new Promise((resolve, reject) => {
-      pending.current.set(id, { ...(onChip ? { onChip } : {}), resolve, reject });
-      w.postMessage({ id, bundle: world.bundle, engine: ENGINE_HASH, urls: wasmUrls.current });
+      pending.current.set(id, { ...(onChip ? { onChip } : {}), ...(onPlaytest ? { onPlaytest } : {}), resolve, reject });
+      w.postMessage({ id, bundle: world.bundle, engine: ENGINE_HASH, urls: wasmUrls.current, ...(onPlaytest ? { playtest: true } : {}) });
     });
   }, []);
 
@@ -234,10 +241,13 @@ export function App() {
     setRepair({ status: "idle", issues: 0 });
     setFooled(null);
     setRoutesOn(false);
-    proveOnDevice(world, id, (chip) => id === runId.current && setProof((p) => ({ ...p, chips: [...p.chips, chip] })))
+    // the receipt turns green as soon as it is out; the playtest (the difficulty band, what the
+    // runners revealed) lands on it after
+    const played = (pt: Playtest | null) => id === runId.current && setProof((p) => ({ ...p, playing: false, ...(pt && p.receipt ? { receipt: { ...p.receipt, playtest: pt } } : {}) }));
+    proveOnDevice(world, id, (chip) => id === runId.current && setProof((p) => ({ ...p, chips: [...p.chips, chip] })), played)
       .then((receipt) => {
         if (id !== runId.current) return;
-        setProof((p) => ({ ...p, status: "done", receipt }));
+        setProof((p) => ({ ...p, status: "done", receipt, playing: true }));
         race.proved(world, receipt);
         probe().proof = { headline: receipt.headline?.status ?? "none", chips: receipt.chips.length };
         afterProof.current.get(id)?.(receipt);
@@ -910,12 +920,15 @@ export function App() {
             onTrust={() => (setReceiptOpen(false), setTrusting(true))}
             onFool={proof.status === "done" && proof.receipt ? tryFool : undefined}
             fooled={fooled}
-            routes={proof.receipt?.trails && current.current ? insights(current.current.bundle, proof.receipt.trails) : null}
+            routes={proof.receipt?.trails && current.current ? insights(current.current.bundle, allRuns(proof.receipt)) : null}
+            report={proof.receipt && current.current ? revealed(current.current.bundle, proof.receipt) : null}
             routesOn={routesOn}
             onRoutes={() => {
               const on = !routesOn;
               setRoutesOn(on);
-              engine.current?.showTrails(on ? (proof.receipt?.trails ?? null) : null);
+              // the experts' routes, over the heat map of every run at every level
+              const heat = on && proof.receipt && current.current ? (revealed(current.current.bundle, proof.receipt)?.heat ?? null) : null;
+              engine.current?.showTrails(on ? (proof.receipt?.trails ?? null) : null, heat);
             }}
             reported={reported}
             onShare={shareRun}

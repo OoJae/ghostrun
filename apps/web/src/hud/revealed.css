@@ -1,0 +1,11 @@
+/* ---- the playtest in the receipt: the difficulty band, what the AI runners revealed --------- */
+
+.receipt .revealed { margin: 10px 0 0; padding: 8px 0 0; border-top: 1px solid rgba(255, 255, 255, 0.1); font-size: 12px; line-height: 1.45; }
+.receipt .revealed h4 { margin: 8px 0 2px; font-size: 12px; font-weight: 600; letter-spacing: 0.02em; }
+.receipt .revealed p { margin: 4px 0 0; }
+.receipt .revealed ul { gap: 2px; margin: 2px 0 0 10px; }
+.receipt .revealed .band b { color: #19e3ff; }
+.receipt .revealed .band-very-easy b, .receipt .revealed .band-easy b { color: #3dffa8; }
+.receipt .revealed .band-hard b, .receipt .revealed .band-expert-only b { color: #ffb02e; }
+.receipt .revealed .band-unbeaten b { color: #ff3b5c; }
+.receipt .revealed .routes { margin: 2px 0 0; }
