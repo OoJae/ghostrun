@@ -20,6 +20,7 @@ export function dressHome(b: WorldBundle, look: LookStyle, c: Ctx): Dressed {
   const library = look.variant === "library";
   const { pieces, bounds, groundY } = classify(b);
   const solid = new BoxBatch();
+  const floors = new BoxBatch();
   const pool = new BoxBatch();
   const floorTops: number[] = [];
   const furniture: Item[] = [];
@@ -45,7 +46,7 @@ export function dressHome(b: WorldBundle, look: LookStyle, c: Ctx): Dressed {
         floorTops.push(p.top);
         const inside = cut && x > bounds.minX - 0.1 && x < bounds.maxX + 0.1 && z > bounds.minZ - 0.1 && z < bounds.maxZ + 0.1;
         // rooms get boards or tatami; the yard outside is lawn, or raked gravel at a tea house
-        solid.add(s.pos, s.size, lin(inside || !cut ? (jp ? "#c8c08a" : "#b08058") : jp ? "#c8c4b8" : "#6a9a4a"), style(CLS.ground, i, 0, inside || !cut ? (jp ? 2 : 1) : jp ? 3 : 0));
+        floors.add(s.pos, s.size, lin(inside || !cut ? (jp ? "#c8c08a" : "#b08058") : jp ? "#c8c4b8" : "#6a9a4a"), style(CLS.ground, i, 0, inside || !cut ? (jp ? 2 : 1) : jp ? 3 : 0));
         break;
       }
       case "water":
@@ -163,26 +164,29 @@ export function dressHome(b: WorldBundle, look: LookStyle, c: Ctx): Dressed {
   for (const { x, z, k } of ring(bounds, 46, 6, 20, 1700)) bushes.push({ p: [x, groundY + 1.2, z], s: [1.4 + rnd(k), 1.6 + rnd(k + 1) * 1.6, 1.4 + rnd(k)], r: rnd(k) * 6, color: ["#3a7a3a", "#4a8a3e", "#2f6a32"][k % 3]! });
 
   // ---- materials ----------------------------------------------------------------------------
-  const mat = staticsMaterial((a) => {
+  // floors and the rest are separate draws, so each pixel runs only the pattern it shows
+  const floorMat = staticsMaterial((a) => {
     const fine = noise01(a.p, 3, 2);
-    const up = a.p.y.sub(groundY);
-    // floors: boards, tatami, the lawn, raked gravel (only what this variant can show is built)
-    const pl = planks(a.p.x, a.p.z, 0.24, 2.4);
-    let floorK: N;
     if (jp) {
-      // tatami: 1.8 × 0.9 m mats, every other row offset by half a mat, dark cloth edges
+      // tatami: 1.8 × 0.9 m mats, every other row offset by half a mat, dark cloth edges; raked gravel outside
       const mu = fract(a.p.x.div(1.8).add(step(0.5, fract(a.p.z.div(1.8))).mul(0.5)));
       const mv = fract(a.p.z.div(0.9));
       const matEdge = max(smoothstep(0.035, 0.0, mu.min(oneMinus(mu))), smoothstep(0.07, 0.0, mv.min(oneMinus(mv))));
       const tatami = mix(fine.mul(0.1).add(0.92).mul(sin(a.p.x.mul(60)).mul(0.03).add(1)), float(0.35), matEdge);
       const gravel = sin(a.p.z.mul(9).add(noise01(a.p, 0.4).mul(2))).mul(0.12).add(fine.mul(0.06)).add(0.88);
-      floorK = mix(tatami, gravel, is(a.alt, 3));
-    } else {
-      const grain = noise01(a.p.mul(vec3(1, 1, 8)), 3).mul(0.12).add(0.94);
-      const boards = mix(pl.id.mul(0.22).add(0.84).mul(grain), float(0.5), pl.seam);
-      const lawn = fine.mul(0.25).add(noise01(a.p, 0.3).mul(0.15)).add(0.7);
-      floorK = mix(lawn, boards, is(a.alt, 1));
+      const k = mix(tatami, gravel, is(a.alt, 3));
+      return { color: vec3(k, k, k), roughness: float(0.75) };
     }
+    // oak boards inside, the lawn outside
+    const pl = planks(a.p.x, a.p.z, 0.24, 2.4);
+    const grain = noise01(a.p.mul(vec3(1, 1, 8)), 3).mul(0.12).add(0.94);
+    const boards = mix(pl.id.mul(0.22).add(0.84).mul(grain), float(0.5), pl.seam);
+    const lawn = fine.mul(0.25).add(0.75);
+    const k = mix(lawn, boards, is(a.alt, 1));
+    return { color: vec3(k, k, k), roughness: mix(float(0.75), float(0.4), is(a.alt, 1)), bump: pl.seam.mul(-0.02).mul(is(a.alt, 1)) };
+  }, { roughness: 0.7, bump: 1 });
+  const mat = staticsMaterial((a) => {
+    const up = a.p.y.sub(groundY);
     // walls: wallpaper over wainscot, shoji (paper in a dark wooden grid), or books
     let wallK: N;
     let wallTint: N3;
@@ -207,15 +211,13 @@ export function dressHome(b: WorldBundle, look: LookStyle, c: Ctx): Dressed {
     const isWall = is(a.cls, CLS.wall);
     // furniture boxes: wood with a lighter top
     const woodK = noise01(a.p.mul(vec3(1, 4, 1)), 2).mul(0.15).add(0.88);
-    const flat = is(a.cls, CLS.ground);
     const side = mix(vec3(woodK, woodK, woodK), vec3(wallK, wallK, wallK).mul(wallTint).mul(shojiWood), isWall);
     // a cut wall's top is a dark wooden cap, so the rooms read from above
     const cap = hex3("#5a3a24").div(max(vertexColor().xyz, vec3(0.02, 0.02, 0.02))).mul(woodK);
-    const top = mix(mix(vec3(woodK, woodK, woodK).mul(1.12), cap, isWall), vec3(floorK, floorK, floorK), flat);
-    const color = mix(side, top, max(a.top, flat));
-    const roughness: N = mix(float(0.75), float(0.4), flat.mul(is(a.alt, 1)));
-    return { color, roughness, bump: pl.seam.mul(-0.02).mul(flat).mul(is(a.alt, 1)) };
-  }, { roughness: 0.7, bump: 1 });
+    const top = mix(vec3(woodK, woodK, woodK).mul(1.12), cap, isWall);
+    return { color: mix(side, top, a.top), roughness: float(0.75) };
+  }, { roughness: 0.7 });
+  batchMesh(c, floors, floorMat, "floors");
   batchMesh(c, solid, mat, "statics");
   batchMesh(c, pool, liquidMaterial({ deep: "#2a5a6a", shallow: "#6ab0c0", roughness: 0.08 }), "water");
 

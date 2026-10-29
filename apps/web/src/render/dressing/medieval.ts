@@ -32,6 +32,7 @@ export function dressMedieval(b: WorldBundle, look: LookStyle, c: Ctx): Dressed 
   const magic = look.variant === "magic";
   const { pieces, bounds, groundY } = classify(b);
   const solid = new BoxBatch();
+  const floors = new BoxBatch();
   const pool = new BoxBatch();
   const floorTops: number[] = [];
   const merlons: Item[] = [];
@@ -82,7 +83,7 @@ export function dressMedieval(b: WorldBundle, look: LookStyle, c: Ctx): Dressed 
       case "mound":
       case "path":
         floorTops.push(p.top);
-        solid.add(s.pos, s.size, lin(p.kind === "path" ? "#a89a80" : magic && cut ? "#6e6670" : paved || cut ? "#9a948a" : "#6a8a4a"), style(p.kind === "path" ? CLS.path : CLS.ground, i, 0, paved || cut ? 1 : 0));
+        floors.add(s.pos, s.size, lin(p.kind === "path" ? "#a89a80" : magic && cut ? "#6e6670" : paved || cut ? "#9a948a" : "#6a8a4a"), style(p.kind === "path" ? CLS.path : CLS.ground, i, 0, paved || cut ? 1 : 0));
         break;
       case "water":
       case "hazard":
@@ -139,34 +140,36 @@ export function dressMedieval(b: WorldBundle, look: LookStyle, c: Ctx): Dressed 
   });
 
   // ---- materials ----------------------------------------------------------------------------
+  // floors and the rest are separate draws, so each pixel runs only the pattern it shows
+  const paving = staticsMaterial((a) => {
+    // grass outside, cobbles in a courtyard (round stones: cells of a Voronoi pattern), flagstones in a hall
+    const n1 = noise01(a.p, 0.4);
+    const fine = noise01(a.p, 3.3, 4);
+    const grass = mix(n1.mul(0.25).add(0.8), fine.mul(0.2).add(0.7), smoothstep(0.6, 0.75, noise01(a.p, 0.12, 9)));
+    if (cut) {
+      const flags = masonry(a.p.x, a.p.z, 1.4, 1.1, 0.03);
+      const k = mix(grass, mix(flags.id.mul(0.2).add(0.85), float(0.5), flags.mortar), is(a.alt, 1));
+      // a wizard school's flagstones: a faint violet glow along their joints
+      const emissive = magic ? hex3("#b07aff", 0.22).mul(flags.mortar).mul(is(a.alt, 1)) : vec3(0, 0, 0);
+      return { color: vec3(k, k, k), emissive, roughness: float(0.88), bump: flags.mortar.mul(-0.02).mul(is(a.alt, 1)) };
+    }
+    const cell = mx_worley_noise_vec2(vec2(a.p.x.mul(2.2), a.p.z.mul(2.2)));
+    const cob = smoothstep(0.02, 0.14, cell.y.sub(cell.x));
+    const k = mix(grass, mix(float(0.42), noise01(a.p, 1.7, 3).mul(0.3).add(0.75), cob), is(a.alt, 1));
+    return { color: vec3(k, k, k), roughness: float(0.88), bump: cob.mul(0.035).mul(is(a.alt, 1)) };
+  }, { roughness: 0.88, bump: 1 });
   const mat = staticsMaterial((a) => {
     const fine = noise01(a.p, 3.3, 4);
-    const n1 = noise01(a.p, 0.4);
     const m = masonry(a.along, a.up, 1.0, 0.5, 0.05);
     const blocks = mix(m.id.mul(0.22).add(0.86), float(0.55), m.mortar).mul(fine.mul(0.18).add(0.9));
-    // floors: grass, cobbles in a courtyard, big flagstones in a hall
-    // cobbles: round stones (cells of a Voronoi pattern) with dark joints between them
-    const cell = cut ? null : mx_worley_noise_vec2(vec2(a.p.x.mul(2.2), a.p.z.mul(2.2)));
-    const cob = cell ? smoothstep(0.02, 0.14, cell.y.sub(cell.x)) : float(1);
-    const cobbles = cell ? mix(float(0.42), noise01(a.p, 1.7, 3).mul(0.3).add(0.75), cob) : float(1);
-    const flags = masonry(a.p.x, a.p.z, 1.4, 1.1, 0.03);
-    const paving = cut ? mix(flags.id.mul(0.2).add(0.85), float(0.5), flags.mortar) : cobbles;
-    const grass = mix(n1.mul(0.25).add(0.8), fine.mul(0.2).add(0.7), smoothstep(0.6, 0.75, noise01(a.p, 0.12, 9)));
-    const floorTone = mix(grass, paving, is(a.alt, 1));
     // crates: planks inside a dark frame
     const pl = planks(a.p.y, a.along, 0.24, 9);
     const edge = max(smoothstep(0.12, 0.0, fract(a.along.div(1.2))), smoothstep(0.12, 0.0, abs(a.p.y.sub(a.extra))));
     const crate = mix(pl.id.mul(0.2).add(0.85), float(0.45), max(pl.seam, edge.mul(0.8)));
-    const isCover = is(a.cls, CLS.cover);
-    const flat = max(is(a.cls, CLS.ground), is(a.cls, CLS.path));
-    const side = mix(blocks, crate, isCover);
-    const top = mix(mix(blocks, crate, isCover), floorTone, flat);
-    const k = mix(side, top, max(a.top, flat));
-    const floorBump = cut ? flags.mortar.mul(-0.02) : cob.mul(0.035);
-    // a wizard school's flagstones: a faint violet glow along their joints
-    const emissive = magic ? hex3("#b07aff", 0.22).mul(flags.mortar).mul(flat).mul(is(a.alt, 1)) : vec3(0, 0, 0);
-    return { color: vec3(k, k, k), emissive, roughness: float(0.88), bump: mix(m.mortar.mul(-0.03), floorBump.mul(is(a.alt, 1)), flat) };
+    const k = mix(blocks, crate, is(a.cls, CLS.cover));
+    return { color: vec3(k, k, k), roughness: float(0.88), bump: m.mortar.mul(-0.03) };
   }, { roughness: 0.88, bump: 1 });
+  batchMesh(c, floors, paving, "floors");
   batchMesh(c, solid, mat, "statics");
   batchMesh(c, pool, liquidMaterial({ deep: "#1a3a4a", shallow: "#3a7a8a", roughness: 0.1 }), "water");
 

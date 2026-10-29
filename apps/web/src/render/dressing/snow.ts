@@ -34,6 +34,7 @@ export function dressSnow(b: WorldBundle, look: LookStyle, c: Ctx): Dressed {
   const cave = look.variant === "cave";
   const { pieces, bounds, groundY } = classify(b);
   const solid = new BoxBatch();
+  const floors = new BoxBatch();
   const ice = new BoxBatch();
   const hot = new BoxBatch();
   const floorTops: number[] = [];
@@ -56,7 +57,7 @@ export function dressSnow(b: WorldBundle, look: LookStyle, c: Ctx): Dressed {
       case "mound":
       case "path":
         floorTops.push(p.top);
-        solid.add(s.pos, s.size, p.kind === "path" ? [snow[0] * 0.86, snow[1] * 0.9, snow[2] * 0.96] : snow, style(CLS.ground, i));
+        floors.add(s.pos, s.size, p.kind === "path" ? [snow[0] * 0.86, snow[1] * 0.9, snow[2] * 0.96] : snow, style(CLS.ground, i));
         break;
       case "water":
         ice.add([x, p.top - 0.01, z], [w, 0.02, d], [1, 1, 1]);
@@ -118,28 +119,30 @@ export function dressSnow(b: WorldBundle, look: LookStyle, c: Ctx): Dressed {
   });
 
   // ---- materials ----------------------------------------------------------------------------
-  const mat = staticsMaterial((a) => {
+  // floors and the rest are separate draws, so each pixel runs only the pattern it shows
+  const drifts = staticsMaterial((a) => {
+    // drifts: soft undulation, glitter where the light lines up
+    const k = noise01(a.p, 0.4).mul(0.12).add(noise01(a.p, 4, 3).mul(0.05)).add(0.88);
+    return { color: vec3(k, k, k), emissive: hex3(cave ? "#7fe8ff" : "#ffffff").mul(glitter(a.p, 40).mul(cave ? 0.4 : 2.2)) };
+  }, { roughness: 0.75 });
+  const blocks = staticsMaterial((a) => {
     const n1 = noise01(a.p, 0.4);
     const fine = noise01(a.p, 4, 3);
-    // drifts: soft undulation on the tops, glitter where the light lines up
-    const drift = n1.mul(0.12).add(fine.mul(0.05)).add(0.88);
-    const sparkle = glitter(a.p, 40).mul(cave ? 0.4 : 2.2);
     // sides: blocks of packed ice with blue depth, or stone; tops always carry a snow cap
     const m = masonry(a.along, a.up, 1.4, 0.7, 0.03);
     const iceSide = mix(m.id.mul(0.12).add(0.92), float(0.7), m.mortar).mul(fine.mul(0.1).add(0.95));
     // rock: rough and cracked, darker in the creases
     const crack = smoothstep(0.02, 0.0, abs(noise01(vec3(a.along.mul(0.6), a.p.y.mul(0.25), a.seed), 1).sub(0.5)));
     const stone = fine.mul(0.3).add(n1.mul(0.3)).add(0.6).mul(oneMinus(crack.mul(0.2)));
-    const side = mix(stone, iceSide, is(a.cls, CLS.ledge));
-    const flat = is(a.cls, CLS.ground);
-    const k = mix(side, drift, max(a.top, flat));
-    const cap = a.top.mul(oneMinus(flat)); // a white cap on every rock and ice top
+    const drift = n1.mul(0.12).add(fine.mul(0.05)).add(0.88);
+    const k = mix(mix(stone, iceSide, is(a.cls, CLS.ledge)), drift, a.top);
     // the cap is white whatever the box's own colour: divide out the vertex colour the material multiplies in
     const white = hex3(cave ? "#b8cce4" : "#f6f9fc").div(max(vertexColor().xyz, vec3(0.02, 0.02, 0.02)));
-    const color = mix(vec3(k, k, k), white.mul(drift), cap.mul(smoothstep(0.35, 0.55, n1.add(0.25))));
-    return { color, roughness: mix(float(0.75), float(0.35), is(a.cls, CLS.ledge).mul(oneMinus(a.top))), emissive: hex3(cave ? "#7fe8ff" : "#ffffff").mul(sparkle), bump: m.mortar.mul(is(a.cls, CLS.ledge)).mul(-0.02) };
+    const color = mix(vec3(k, k, k), white.mul(drift), a.top.mul(smoothstep(0.35, 0.55, n1.add(0.25))));
+    return { color, roughness: mix(float(0.75), float(0.35), is(a.cls, CLS.ledge).mul(oneMinus(a.top))), emissive: hex3(cave ? "#7fe8ff" : "#ffffff").mul(glitter(a.p, 40).mul(cave ? 0.4 : 2.2)).mul(a.top), bump: m.mortar.mul(is(a.cls, CLS.ledge)).mul(-0.02) };
   }, { roughness: 0.8, bump: 1 });
-  batchMesh(c, solid, mat, "statics");
+  batchMesh(c, floors, drifts, "floors");
+  batchMesh(c, solid, blocks, "statics");
   batchMesh(c, ice, liquidMaterial({ deep: cave ? "#2a5a8a" : "#8ab8d8", shallow: cave ? "#4a8ac8" : "#d0ecfa", roughness: 0.05, metalness: 0.2, flow: 0.05 }), "ice");
   batchMesh(c, hot, liquidMaterial({ deep: "#5a1a08", shallow: "#ff6a1a", glow: "#ff5a10", glowScale: 2.2, roughness: 0.6, flow: 0.4 }), "lava");
 

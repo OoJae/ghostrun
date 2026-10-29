@@ -4,7 +4,7 @@
 // shelves of crumbling books.
 import type { WorldBundle } from "@ghostrun/ir";
 import { BufferGeometry, ConeGeometry, CylinderGeometry, Float32BufferAttribute, InstancedMesh, Matrix4, MeshBasicNodeMaterial, MeshStandardNodeMaterial, Object3D, PlaneGeometry, SphereGeometry, BoxGeometry, DoubleSide } from "three/webgpu";
-import { abs, float, hash, instanceIndex, length, max, mix, oneMinus, positionWorld, sin, smoothstep, step, time, uv, vec3 } from "three/tsl";
+import { abs, float, hash, instanceIndex, length, mix, oneMinus, positionWorld, sin, smoothstep, step, time, uv, vec3 } from "three/tsl";
 import { BoxBatch } from "../boxes";
 import type { LookStyle } from "../looks";
 import { lin } from "../materials";
@@ -47,6 +47,7 @@ export function dressHaunted(b: WorldBundle, look: LookStyle, c: Ctx): Dressed {
   const library = look.variant === "library";
   const { pieces, bounds, groundY } = classify(b);
   const solid = new BoxBatch();
+  const floors = new BoxBatch();
   const pool = new BoxBatch();
   const floorTops: number[] = [];
   const trees: Item[] = [];
@@ -76,7 +77,7 @@ export function dressHaunted(b: WorldBundle, look: LookStyle, c: Ctx): Dressed {
         {
           // inside the house, old boards; out in the grounds, dead grass
           const inside = cut && x > bounds.minX - 0.1 && x < bounds.maxX + 0.1 && z > bounds.minZ - 0.1 && z < bounds.maxZ + 0.1;
-          solid.add(s.pos, s.size, lin(inside ? "#6a5444" : p.kind === "path" ? "#4a443c" : "#3e4234"), style(p.kind === "path" ? CLS.path : CLS.ground, i, 0, inside ? 1 : 0));
+          floors.add(s.pos, s.size, lin(inside ? "#6a5444" : p.kind === "path" ? "#4a443c" : "#3e4234"), style(p.kind === "path" ? CLS.path : CLS.ground, i, 0, inside ? 1 : 0));
         }
         break;
       case "water":
@@ -141,6 +142,16 @@ export function dressHaunted(b: WorldBundle, look: LookStyle, c: Ctx): Dressed {
   if (!cut) for (const { x, z, k } of ring(bounds, 50, 4, 20, 820)) trees.push({ p: [x, groundY, z], s: [1 + rnd(k) * 0.5, 1 + rnd(k + 1) * 0.6, 1 + rnd(k) * 0.5], r: rnd(k + 2) * 6 });
 
   // ---- materials ----------------------------------------------------------------------------
+  // floors and the rest are separate draws, so each pixel runs only the pattern it shows
+  const yard = staticsMaterial((a) => {
+    // dead grass outside, worn boards inside
+    const n1 = noise01(a.p, 0.5);
+    const fine = noise01(a.p, 3.7, 2);
+    const grass = mix(n1.mul(0.3).add(0.75), fine.mul(0.3).add(0.6), smoothstep(0.55, 0.7, noise01(a.p, 0.15, 5)));
+    const boards = cut ? planks(a.p.x, a.p.z, 0.22, 2.4) : null;
+    const k = boards ? mix(grass, mix(boards.id.mul(0.25).add(0.7), float(0.35), boards.seam), is(a.alt, 1)) : grass;
+    return { color: vec3(k, k, k), roughness: float(0.9) };
+  }, { roughness: 0.9 });
   const mat = staticsMaterial((a) => {
     const n1 = noise01(a.p, 0.5);
     const fine = noise01(a.p, 3.7, 2);
@@ -159,17 +170,13 @@ export function dressHaunted(b: WorldBundle, look: LookStyle, c: Ctx): Dressed {
     const alt = a.alt;
     const isWall = is(a.cls, CLS.wall);
     const wallSide = mix(mix(blocks, panel, is(alt, 1)), shelves, is(alt, 2));
-    // floors: dead grass outside, worn boards inside
-    const grass = mix(n1.mul(0.3).add(0.75), fine.mul(0.3).add(0.6), smoothstep(0.55, 0.7, noise01(a.p, 0.15, 5)));
-    const boards = planks(a.p.x, a.p.z, 0.22, 2.4);
-    const floorTone = mix(grass, mix(boards.id.mul(0.25).add(0.7), float(0.35), boards.seam), is(alt, 1));
-    const flat = max(is(a.cls, CLS.ground), is(a.cls, CLS.path));
     const lid = smoothstep(0.03, 0.0, abs(a.p.y.sub(a.extra).add(0.12))).mul(is(a.cls, CLS.cover));
-    const k = mix(mix(blocks, wallSide, isWall).mul(oneMinus(lid.mul(0.5))), mix(blocks, floorTone, flat), max(a.top, flat));
-    const tint = mix(vec3(1, 1, 1), hex3("#6a8a4a").mul(1.4), moss.mul(oneMinus(flat)).mul(oneMinus(is(alt, 1))));
+    const k = mix(mix(blocks, wallSide, isWall).mul(oneMinus(lid.mul(0.5))), blocks, a.top);
+    const tint = mix(vec3(1, 1, 1), hex3("#6a8a4a").mul(1.4), moss.mul(oneMinus(is(alt, 1))));
     const color = mix(vec3(k, k, k).mul(tint), bookTint.mul(shelves).mul(2), is(alt, 2).mul(isWall).mul(oneMinus(a.top)));
     return { color, roughness: float(0.9), bump: m.mortar.mul(-0.03).mul(isWall).mul(oneMinus(is(alt, 2))) };
   }, { roughness: 0.9, bump: 1 });
+  batchMesh(c, floors, yard, "floors");
   batchMesh(c, solid, mat, "statics");
   batchMesh(c, pool, liquidMaterial({ deep: "#0a1a10", shallow: "#2a5a2a", glow: "#5aff7a", glowScale: 0.6, roughness: 0.3, flow: 0.3 }), "ooze");
 

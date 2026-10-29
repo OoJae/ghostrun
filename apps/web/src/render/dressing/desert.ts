@@ -59,6 +59,7 @@ export function dressDesert(b: WorldBundle, look: LookStyle, c: Ctx): Dressed {
   const under = v === "underwater";
   const { pieces, bounds, groundY } = classify(b);
   const solid = new BoxBatch();
+  const floors = new BoxBatch();
   const water = new BoxBatch();
   const hot = new BoxBatch();
   const floorTops: number[] = [];
@@ -82,10 +83,10 @@ export function dressDesert(b: WorldBundle, look: LookStyle, c: Ctx): Dressed {
       case "mound":
         floorTops.push(p.top);
         if (overSea && p.kind === "ground") water.add([x, p.top - 0.01, z], [w, 0.02, d], [1, 1, 1]);
-        else solid.add(s.pos, s.size, p.kind === "mound" ? [sand[0] * 1.05, sand[1] * 1.03, sand[2]] : sand, style(CLS.ground, i));
+        else floors.add(s.pos, s.size, p.kind === "mound" ? [sand[0] * 1.05, sand[1] * 1.03, sand[2]] : sand, style(CLS.ground, i));
         break;
       case "path":
-        solid.add(s.pos, s.size, [sand[0] * 0.88, sand[1] * 0.84, sand[2] * 0.8], style(CLS.path, i));
+        floors.add(s.pos, s.size, [sand[0] * 0.88, sand[1] * 0.84, sand[2] * 0.8], style(CLS.path, i));
         break;
       case "water":
         water.add([x, p.top - 0.01, z], [w, 0.02, d], [1, 1, 1]);
@@ -139,27 +140,32 @@ export function dressDesert(b: WorldBundle, look: LookStyle, c: Ctx): Dressed {
   });
 
   // ---- materials ----------------------------------------------------------------------------
-  const mat = staticsMaterial((a) => {
+  // floors and rock are separate draws, so each pixel runs only the pattern it shows
+  const sandFloor = staticsMaterial((a) => {
     const n1 = noise01(a.p, 0.32);
     const fine = noise01(a.p, 3.1, 7);
     const ripple = sin(a.p.x.mul(0.9).add(a.p.z.mul(2.4)).add(n1.mul(5))).mul(0.5).add(0.5);
-    const grains = mix(float(0.9), float(1.06), ripple.mul(0.45).add(fine.mul(0.55)));
+    const k = mix(float(0.9), float(1.06), ripple.mul(0.45).add(fine.mul(0.55)));
+    // under the sea, the same caustics play over every floor as over the seabed
+    return { color: vec3(k, k, k), emissive: under ? caustics(a.p) : vec3(0, 0, 0), bump: ripple.mul(0.015) };
+  }, { roughness: 0.92, bump: 1 });
+  const masonryWalls = pieces.some((p) => p.kind === "wall");
+  const rock = staticsMaterial((a) => {
+    const n1 = noise01(a.p, 0.32);
+    const fine = noise01(a.p, 3.1, 7);
     // cliffs in layered strata, wavering, with vertical streaks where water once ran
     const layer = fract(a.p.y.mul(0.85).add(n1.mul(0.9)));
     const streak = noise01(vec3(a.along.mul(1.4), a.p.y.mul(0.12), a.seed), 1).mul(0.22).add(0.88);
     const strata = mix(float(0.8), float(1.1), smoothstep(0.15, 0.85, layer)).mul(fine.mul(0.2).add(0.88)).mul(streak);
+    const rockTop = mix(strata, fine.mul(0.16).add(0.97), smoothstep(0.4, 0.62, n1)); // sand settles on the tops
     // temple walls in dressed blocks
-    const m = masonry(a.along, a.up, 1.7, 0.85, 0.03);
-    const blocks = mix(m.id.mul(0.14).add(0.92).mul(fine.mul(0.16).add(0.9)), float(0.72), m.mortar);
-    const flat = max(is(a.cls, CLS.ground), is(a.cls, CLS.path));
-    const rockTop = mix(strata, grains.mul(1.08), smoothstep(0.4, 0.62, n1)); // sand settles on the tops
-    const side = mix(strata, blocks, is(a.cls, CLS.wall));
-    const k = mix(mix(side, rockTop, a.top), grains, flat);
-    // under the sea, the same caustics play over every floor as over the seabed
-    const emissive = under ? caustics(a.p).mul(a.top) : vec3(0, 0, 0);
-    return { color: vec3(k, k, k), emissive, bump: mix(fine.mul(0.02).add(m.mortar.mul(is(a.cls, CLS.wall)).mul(-0.03)), ripple.mul(0.015), flat) };
+    const m = masonryWalls ? masonry(a.along, a.up, 1.7, 0.85, 0.03) : null;
+    const blocks = m ? mix(m.id.mul(0.14).add(0.92).mul(fine.mul(0.16).add(0.9)), float(0.72), m.mortar) : strata;
+    const k = mix(mix(strata, blocks, is(a.cls, CLS.wall)), rockTop, a.top);
+    return { color: vec3(k, k, k), emissive: under ? caustics(a.p).mul(a.top) : vec3(0, 0, 0), bump: m ? fine.mul(0.02).add(m.mortar.mul(is(a.cls, CLS.wall)).mul(-0.03)) : fine.mul(0.02) };
   }, { roughness: 0.92, bump: 1 });
-  batchMesh(c, solid, mat, "statics");
+  batchMesh(c, floors, sandFloor, "floors");
+  batchMesh(c, solid, rock, "statics");
   batchMesh(c, water, liquidMaterial(under ? { deep: "#0a5a66", shallow: "#2aa6b0", roughness: 0.2 } : { deep: beach ? "#0a7a9a" : "#1a6a7a", shallow: beach ? "#3ad0d0" : "#4ab0a8" }), "water");
   batchMesh(c, hot, liquidMaterial({ deep: "#5a1a08", shallow: "#ff6a1a", glow: "#ff5a10", glowScale: 2.2, roughness: 0.6, flow: 0.4 }), "lava");
 

@@ -41,6 +41,7 @@ function fern() {
 export function dressJungle(b: WorldBundle, look: LookStyle, c: Ctx): Dressed {
   const { pieces, bounds, groundY } = classify(b);
   const solid = new BoxBatch();
+  const floors = new BoxBatch();
   const pool = new BoxBatch();
   const floorTops: number[] = [];
   const trees: Item[] = [];
@@ -68,7 +69,7 @@ export function dressJungle(b: WorldBundle, look: LookStyle, c: Ctx): Dressed {
       case "mound":
       case "path":
         floorTops.push(p.top);
-        solid.add(s.pos, s.size, lin(p.kind === "path" ? "#7a6a4e" : cut || b.pack.id === "maze" ? "#8a8674" : "#4a6a32"), style(p.kind === "path" ? CLS.path : CLS.ground, i, 0, cut || b.pack.id === "maze" ? 1 : 0));
+        floors.add(s.pos, s.size, lin(p.kind === "path" ? "#7a6a4e" : cut || b.pack.id === "maze" ? "#8a8674" : "#4a6a32"), style(p.kind === "path" ? CLS.path : CLS.ground, i, 0, cut || b.pack.id === "maze" ? 1 : 0));
         break;
       case "water":
       case "hazard":
@@ -114,6 +115,18 @@ export function dressJungle(b: WorldBundle, look: LookStyle, c: Ctx): Dressed {
   }
 
   // ---- materials ----------------------------------------------------------------------------
+  // floors and the rest are separate draws, so each pixel runs only the pattern it shows
+  const flagged = cut || b.pack.id === "maze";
+  const soilMat = staticsMaterial((a) => {
+    // wet soil outside; inside a temple, flagstones with moss in the joints
+    const fine = noise01(a.p, 3.4, 6);
+    const soil = mix(fine.mul(0.3).add(0.75), float(0.55), step(0.82, fine));
+    if (!flagged) return { color: vec3(soil, soil, soil), roughness: float(0.9) };
+    const m = masonry(a.p.x, a.p.z, 1.2, 0.6, 0.05);
+    const k = mix(soil, mix(m.id.mul(0.2).add(0.86), float(0.6), m.mortar), is(a.alt, 1));
+    const mossCol = hex3("#4a7a2a").mul(fine.mul(0.4).add(0.7)).div(0.5);
+    return { color: mix(vec3(k, k, k), mossCol, m.mortar.mul(is(a.alt, 1)).mul(0.8)), roughness: float(0.9), bump: m.mortar.mul(-0.03) };
+  }, { roughness: 0.9, bump: 1 });
   const mat = staticsMaterial((a) => {
     const n1 = noise01(a.p, 0.45);
     const fine = noise01(a.p, 3.4, 6);
@@ -132,14 +145,11 @@ export function dressJungle(b: WorldBundle, look: LookStyle, c: Ctx): Dressed {
     // the green wall: leaves, light and dark
     const leaves = mix(float(0.6), float(1.2), step(0.5, noise01(a.p, 2.2)));
     const isFoliage = is(a.cls, CLS.cover);
-    const flat = max(is(a.cls, CLS.ground), is(a.cls, CLS.path));
-    const soil = mix(fine.mul(0.3).add(0.75), float(0.55), step(0.82, fine)); // dark wet patches
-    const flags = mix(blocks, float(0.6), m.mortar);
-    const floorK = mix(soil, flags, is(a.alt, 1));
-    const k = mix(blocks.mul(oneMinus(glyph.mul(0.35))), floorK, flat);
-    const stoneCol = mix(vec3(k, k, k), mossCol, moss.mul(oneMinus(flat)).add(flat.mul(is(a.alt, 1)).mul(m.mortar).mul(0.8)).min(1));
+    const k = blocks.mul(oneMinus(glyph.mul(0.35)));
+    const stoneCol = mix(vec3(k, k, k), mossCol, moss.min(1));
     return { color: mix(stoneCol, vec3(leaves, leaves, leaves), isFoliage), roughness: float(0.9), bump: m.mortar.mul(-0.03).add(glyph.mul(-0.01)) };
   }, { roughness: 0.9, bump: 1 });
+  batchMesh(c, floors, soilMat, "floors");
   batchMesh(c, solid, mat, "statics");
   batchMesh(c, pool, liquidMaterial({ deep: "#1a3a22", shallow: "#4a7a3a", roughness: 0.15, flow: 0.5 }), "river");
 

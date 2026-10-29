@@ -33,6 +33,7 @@ export function dressSpace(b: WorldBundle, look: LookStyle, c: Ctx): Dressed {
   const moon = look.variant === "moon";
   const { pieces, bounds, groundY } = classify(b);
   const solid = new BoxBatch();
+  const floors = new BoxBatch();
   const pool = new BoxBatch();
   const floorTops: number[] = [];
   const pillars: Item[] = [];
@@ -53,7 +54,7 @@ export function dressSpace(b: WorldBundle, look: LookStyle, c: Ctx): Dressed {
       case "mound":
       case "path":
         floorTops.push(p.top);
-        solid.add(s.pos, s.size, p.kind === "path" ? [deckRgb[0] * 0.7, deckRgb[1] * 0.72, deckRgb[2] * 0.78] : deckRgb, style(p.kind === "path" ? CLS.path : CLS.ground, i));
+        floors.add(s.pos, s.size, p.kind === "path" ? [deckRgb[0] * 0.7, deckRgb[1] * 0.72, deckRgb[2] * 0.78] : deckRgb, style(p.kind === "path" ? CLS.path : CLS.ground, i));
         break;
       case "water":
       case "hazard":
@@ -84,7 +85,14 @@ export function dressSpace(b: WorldBundle, look: LookStyle, c: Ctx): Dressed {
   }
 
   // ---- materials ----------------------------------------------------------------------------
-  const mat = staticsMaterial((a) => {
+  // floors and the rest are separate draws, so each pixel runs only the pattern it shows
+  const decks = staticsMaterial((a) => {
+    const d = deck(a.p, 2);
+    // a path: a lit centre line
+    const line = hex3("#ffb02e", 1.4).mul(is(a.cls, CLS.path)).mul(step(0.6, fract(a.p.x.add(a.p.z).mul(0.5)))).mul(0.25);
+    return { color: vec3(d.tone, d.tone, d.tone), emissive: line.mul(a.top), metalness: float(moon ? 0.1 : 0.55), roughness: float(moon ? 0.85 : 0.42), bump: d.seam.mul(-0.02) };
+  }, { roughness: 0.45, metalness: 0.5, bump: 1 });
+  const hull = staticsMaterial((a) => {
     const d = deck(a.p, 2);
     // bulkheads: tall panels, a light strip near the top of each wall (just under a cut-away's edge)
     const panelU = a.along.div(1.5);
@@ -100,23 +108,21 @@ export function dressSpace(b: WorldBundle, look: LookStyle, c: Ctx): Dressed {
     const blink = step(0.55, fract(hash(cellU.add(cellV.mul(37))).add(time.mul(hash(cellU.mul(3).add(cellV)).mul(0.6).add(0.1)))));
     const isCover = is(a.cls, CLS.cover);
     const isLedge = is(a.cls, CLS.ledge);
-    const flat = max(is(a.cls, CLS.ground), is(a.cls, CLS.path));
     const top = mix(d.tone, float(0.25), isCover); // a screen is dark glass
     // the moon's cliffs: plain grey rock
     const rock = moon ? noise01(a.p, 0.6).mul(0.3).add(noise01(a.p, 3, 4).mul(0.15)).add(0.6) : float(1);
     const sideTone = mix(mix(wall, d.tone, isLedge), rock, is(a.cls, CLS.trim));
-    const k = mix(sideTone, top, max(a.top, flat));
+    const k = mix(sideTone, top, a.top);
     let emissive: N3 = hex3("#4fd8ff", 2.2).mul(strip.mul(is(a.cls, CLS.wall)).mul(oneMinus(a.top)));
     emissive = emissive.add(hex3("#3ab0ff", 1.3).mul(blink.mul(0.7).add(0.3)).mul(isCover).mul(a.top));
-    // path: a lit centre line
-    emissive = emissive.add(hex3("#ffb02e", 1.4).mul(is(a.cls, CLS.path)).mul(a.top).mul(step(0.6, fract(a.p.x.add(a.p.z).mul(0.5)))).mul(0.25));
     const yellow = mix(vec3(1, 1, 1), mix(hex3("#ffc21a").mul(1.6), vec3(0.08, 0.08, 0.08), stripes), isLedge.mul(oneMinus(a.top)).mul(step(a.extra.sub(0.3), a.p.y)));
     const color = vec3(k, k, k).mul(yellow);
     const metalness: N = mix(float(moon ? 0.1 : 0.55), float(0.2), isCover.mul(a.top));
     const roughness: N = mix(float(moon ? 0.85 : 0.42), float(0.15), isCover.mul(a.top));
-    return { color, emissive, metalness, roughness, bump: d.seam.mul(-0.02).mul(flat).add(wallSeam.mul(-0.02).mul(oneMinus(flat))) };
+    return { color, emissive, metalness, roughness, bump: mix(wallSeam, d.seam, a.top).mul(-0.02) };
   }, { roughness: 0.45, metalness: 0.5, bump: 1 });
-  batchMesh(c, solid, mat, "statics");
+  batchMesh(c, floors, decks, "floors");
+  batchMesh(c, solid, hull, "statics");
   batchMesh(c, pool, liquidMaterial({ deep: "#08203a", shallow: "#1a6aff", glow: "#3ab0ff", glowScale: 1.6, roughness: 0.2, flow: 0.6 }), "coolant");
 
   const steel = new MeshStandardNodeMaterial({ color: "#8a94a2", roughness: 0.35, metalness: 0.75 });
