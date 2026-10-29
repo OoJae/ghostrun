@@ -156,7 +156,8 @@ export const FillOp = v.variant("op", [
 export type FillOp = v.InferOutput<typeof FillOp>;
 
 export type FillNoteKind = "repaired" | "invalid" | "over_budget" | "unresolved" | "late";
-export interface FillNote { line: number; kind: FillNoteKind; text: string }
+/** What happened to one fill line; `op` and `id` say which line it was, when it could be read. */
+export interface FillNote { line: number; kind: FillNoteKind; text: string; op?: string; id?: string }
 export interface FillEvent { line: number; op: FillOp["op"]; ids: string[] }
 
 export interface FillStats { lines: number; accepted: number; invalid: number; repaired: number; dropped: number }
@@ -242,14 +243,53 @@ function setAt(obj: unknown, path: (string | number)[], value: unknown) {
   node[path[path.length - 1]!] = value;
 }
 
-/** One local repair pass driven by the validation issues: numeric strings → numbers, enum case/space fixes. */
-function repair(raw: unknown, issues: v.BaseIssue<unknown>[]): boolean {
+/**
+ * An ent line with no kind: the kind its type, id, noun or hyper names ("guard_1" an npc, a "flag" a
+ * pickup), else what its body says (a sensor is somewhere to walk into, a capsule is someone), else
+ * a prop.
+ */
+function kindOf(raw: Record<string, unknown>): string {
+  const kinds = ENTITY_KINDS as readonly string[];
+  const words = [raw.type, raw.id, raw.noun, raw.hyper].filter((x): x is string => typeof x === "string").flatMap((x) => norm(x).split("_"));
+  const named = words.find((w) => kinds.includes(w));
+  if (named) return named;
+  for (const w of words) {
+    const syn = SYNONYMS[w];
+    const k = (typeof syn === "string" ? [syn] : (syn ?? [])).find((x) => kinds.includes(x));
+    if (k) return k;
+  }
+  return raw.body === "sensor" ? "goal" : raw.shape === "capsule" ? "npc" : "prop";
+}
+
+/**
+ * Keys a line left out that its other keys settle (the shapes models write): an ent's kind, a
+ * dress line's noun (its "type"), a poster's prompt (its "text") and either one's zone (the first).
+ */
+function missingKey(raw: Record<string, unknown>, key: string | number, zone: string | undefined): string | undefined {
+  const s = (k: string) => (typeof raw[k] === "string" && raw[k] ? (raw[k] as string) : undefined);
+  if (raw.op === "ent" && key === "kind") return kindOf(raw);
+  if (raw.op === "dress" && key === "noun") return s("type") ?? s("name") ?? s("kind") ?? s("asset");
+  if (raw.op === "poster" && key === "prompt") return s("text") ?? s("title") ?? s("caption") ?? s("label") ?? s("description");
+  if ((raw.op === "dress" || raw.op === "poster") && key === "zone") return zone;
+  return undefined;
+}
+
+/**
+ * One local repair pass driven by the validation issues: numeric strings → numbers, enum case/space
+ * fixes, keys the rest of the line settles (each one filled in is said in `filled`).
+ */
+function repair(raw: unknown, issues: v.BaseIssue<unknown>[], zone?: string, filled: string[] = []): boolean {
   let changed = false;
   for (const issue of issues) {
     const path = issue.path?.map((p) => p.key as string | number);
     if (!path?.length) continue;
     const input = issue.input;
-    if (issue.expected === "number" && typeof input === "string" && /^-?\d+(\.\d+)?$/.test(input.trim())) {
+    const fill = path.length === 1 && input === undefined ? missingKey(raw as Record<string, unknown>, path[0]!, zone) : undefined;
+    if (fill !== undefined) {
+      setAt(raw, path, fill);
+      filled.push(`${String(path[0])} '${fill}'`);
+      changed = true;
+    } else if (issue.expected === "number" && typeof input === "string" && /^-?\d+(\.\d+)?$/.test(input.trim())) {
       setAt(raw, path, Number(input));
       changed = true;
     } else if (path.length === 2 && path[0] === "when" && path[1] === "t" && typeof input === "string" && USE_WORDS.has(norm(input))) {
@@ -331,8 +371,9 @@ export class FillParser {
     return out;
   }
 
-  #note(line: number, kind: FillNoteKind, text: string) {
-    this.notes.push({ line, kind, text });
+  #note(line: number, kind: FillNoteKind, text: string, of?: unknown) {
+    const o = of && typeof of === "object" ? (of as { op?: unknown; id?: unknown }) : {};
+    this.notes.push({ line, kind, text, ...(typeof o.op === "string" ? { op: o.op } : {}), ...(typeof o.id === "string" ? { id: o.id } : {}) });
   }
 
   #line_(text: string): FillEvent[] | undefined {
@@ -354,17 +395,18 @@ export class FillParser {
       return undefined;
     }
     let parsed = v.safeParse(FillOp, raw);
-    if (!parsed.success && raw && typeof raw === "object" && repair(raw, parsed.issues)) {
+    const filled: string[] = [];
+    if (!parsed.success && raw && typeof raw === "object" && repair(raw, parsed.issues, this.draft.zones[0]?.id, filled)) {
       parsed = v.safeParse(FillOp, raw);
       if (parsed.success) {
         this.stats.repaired++;
-        this.#note(line, "repaired", "coerced field types/enums");
+        this.#note(line, "repaired", filled.length ? `left out, read from the rest of the line: ${filled.join(", ")}` : "coerced field types/enums");
       }
     }
     if (!parsed.success) {
       this.stats.invalid++;
       const issue = parsed.issues[0]!;
-      this.#note(line, "invalid", `${v.getDotPath(issue) ?? "op"}: ${issue.message}`);
+      this.#note(line, "invalid", `${v.getDotPath(issue) ?? "op"}: ${issue.message}`, raw);
       return undefined;
     }
     return this.#accept(line, parsed.output);
@@ -435,6 +477,33 @@ export class FillParser {
       return l !== c.l && c.op === "eq" && (l === `team:${String(c.r)}.team` || (l === "player.team" && c.r === mine)) ? [] : [{ ...c, l }];
     });
     op.then = op.then.map((e) => ({ ...e, target: fix(e.target) }));
+    // "archer.hp eq '0'": hit points and scores are numbers (as a string the sim's eq never holds)
+    for (const c of op.if) {
+      if (typeof c.r !== "string" || !/^-?\d+(\.\d+)?$/.test(c.r.trim()) || !/^team:(red|blue)$|\.(hp|score)$/.test(c.l)) continue;
+      this.#note(line, "repaired", `'${c.l} ${c.op} "${c.r}"' compares numbers: ${c.r.trim()}`);
+      c.r = Number(c.r);
+    }
+  }
+
+  /**
+   * "when the player hits an opponent, if opponent.team is blue": a name nothing in the world has,
+   * with its team given, means anyone on that team (the condition goes with it). True if it did.
+   */
+  #anyOnTeam(line: number, op: Extract<FillOp, { op: "rule" }>): boolean {
+    let changed = false;
+    for (const ref of new Set([op.when.a, op.when.b, ...op.then.map((e) => e.target)])) {
+      if (this.#has(ref)) continue;
+      const c = op.if.find((x) => x.l === `${ref}.team` && x.op === "eq" && (x.r === "red" || x.r === "blue"));
+      if (!c) continue;
+      const t = `team:${String(c.r)}`;
+      if (op.when.a === ref) op.when.a = t;
+      if (op.when.b === ref) op.when.b = t;
+      op.then = op.then.map((e) => (e.target === ref ? { ...e, target: t } : e));
+      op.if = op.if.filter((x) => x !== c);
+      this.#note(line, "repaired", `'${ref}' names nothing, and its team is ${String(c.r)}: anyone on ${String(c.r)} (${t})`);
+      changed = true;
+    }
+    return changed;
   }
 
   #refsOk(op: FillOp): boolean {
@@ -525,13 +594,26 @@ export class FillParser {
   }
 
   #closeGameplay(line: number): FillEvent[] {
+    const out: FillEvent[] = [];
+    // last chance for a rule still waiting: an unknown name with its team given is that team
+    for (const h of [...this.#held]) {
+      if (h.op.op !== "rule" || !this.#anyOnTeam(h.line, h.op) || !this.#refsOk(h.op)) continue;
+      this.#held.splice(this.#held.indexOf(h), 1);
+      const e = this.#apply(h.line, h.op);
+      if (e) {
+        this.stats.accepted++;
+        out.push(e);
+      }
+    }
     for (const h of this.#held) {
       this.stats.dropped++;
-      this.#note(h.line, "unresolved", `'${h.op.op}' references an id that never arrived`);
+      const refs = h.op.op === "rule" ? [h.op.when.a, h.op.when.b, ...h.op.if.map((c) => c.l), ...h.op.then.map((e) => e.target)] : "on" in h.op ? [h.op.on] : [];
+      const missing = [...new Set(refs.filter((r) => !this.#has(r)).map((r) => r.split(".")[0]!))];
+      this.#note(h.line, "unresolved", `'${h.op.op}' references ${missing.length ? missing.map((m) => `'${m}'`).join(", ") : "an id"}, which never arrived`, h.op);
     }
     this.#held = [];
     this.#gameplayDone = true;
-    return [{ line, op: "end", ids: [] }];
+    return [...out, { line, op: "end", ids: [] }];
   }
 
   #placed(line: number, op: Omit<v.InferOutput<typeof OpSpawn>, "op">, kind: Entity["kind"], body: Entity["body"], shape: Entity["shape"], states: string[], init: string): Entity | undefined {
@@ -587,7 +669,7 @@ export class FillParser {
         if (this.#dupe(line, vid) || !this.#budget(line, "verb")) return undefined;
         if (!/^[a-z_]+\.[a-z_]+$/.test(op.verb)) {
           this.stats.invalid++;
-          this.#note(line, "invalid", `verb id '${op.verb}' is not kit.verb`);
+          this.#note(line, "invalid", `verb id '${op.verb}' is not kit.verb`, op);
           return undefined;
         }
         if (op.op === "sig" && d.verbs.some((x) => x.signature)) {

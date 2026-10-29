@@ -261,6 +261,37 @@ describe("fill repairs for fights", () => {
   });
 });
 
+describe("fill repairs from the second fights bench", () => {
+  it("an ent with no kind takes the one its words or body say; 'opponent' with its team given is that team; hit points compared to \"0\" compare numbers; dress and poster lines in the shapes models write are kept", () => {
+    const lines = [
+      '{"op":"meta","mode":"play","pack":"arena","seed":3}',
+      '{"op":"zone","id":"z_a","slot":"midfield","tag":"center"}',
+      '{"op":"spawn","id":"sp","zone":"z_a","team":"red"}',
+      '{"op":"ent","id":"guard_1","zone":"z_a"}',
+      '{"op":"ent","id":"banner","noun":"banner","zone":"z_a","body":"sensor"}',
+      '{"op":"ent","id":"crate","noun":"wooden box","zone":"z_a"}',
+      '{"op":"verb","id":"vb_hp","verb":"combat_sport.health","on":"guard_1"}',
+      '{"op":"rule","id":"r_tag","when":{"t":"hit","a":"player","b":"opponent"},"if":[{"l":"opponent.team","op":"eq","r":"blue"}],"then":[{"e":"score","target":"team:red","n":1}]}',
+      '{"op":"rule","id":"r_win","when":{"t":"enter","a":"player","b":"banner"},"if":[{"l":"guard_1.hp","op":"eq","r":"0"},{"l":"team:red.score","op":"gte","r":"3"}],"then":[{"e":"win","target":"player"}]}',
+      '{"op":"rule","id":"r_ghost","when":{"t":"hit","a":"player","b":"phantom"},"then":[{"e":"lose","target":"player"}]}',
+      '{"op":"end","layer":"gameplay"}',
+      '{"op":"dress","id":"d_neon","type":"lighting","params":{"color":"#ff00ff"}}',
+      '{"op":"poster","id":"p_rules","slot":0,"text":"First to 10 tags wins"}',
+      '{"op":"end","layer":"cosmetic"}',
+    ].join("\n");
+    const p = parseFill(lines, { seed: 3 });
+    expect(p.stats.invalid).toBe(0);
+    expect(p.draft.entities.map((e) => [e.id, e.kind])).toEqual([["sp", "spawn"], ["guard_1", "npc"], ["banner", "goal"], ["crate", "prop"]]);
+    const r = (id: string) => p.draft.rules.find((x) => x.id === id)!;
+    expect([r("r_tag").when.b, r("r_tag").if]).toEqual(["team:blue", []]); // (the placer reads who was hit)
+    expect(r("r_win").if.map((c) => c.r)).toEqual([0, 3]);
+    // what never arrived is named, on a note that says which line it was
+    expect(p.notes.filter((n) => n.kind === "unresolved")).toEqual([{ line: 10, kind: "unresolved", text: "'rule' references 'phantom', which never arrived", op: "rule", id: "r_ghost" }]);
+    expect(p.draft.cosmetic.dress).toMatchObject([{ id: "d_neon", noun: "lighting", zone: "z_a" }]);
+    expect(p.draft.cosmetic.posters).toMatchObject([{ id: "p_rules", prompt: "First to 10 tags wins", zone: "z_a" }]);
+  });
+});
+
 describe("glued objects", () => {
   it("a whole world on one line (no newlines) parses like one object per line; strings with braces stay whole", async () => {
     const { parseFill, splitObjects } = await import("../src");
@@ -319,6 +350,13 @@ describe("mergeFill (repair patches)", () => {
     const ops = text.trim().split("\n").map((l) => JSON.parse(l) as { op: string; id?: string });
     expect(ops.map((o) => o.id ?? o.op)).toEqual(["meta", "z_a", "gem", "vb_carry", "r_win", "end"]);
     expect(text).toContain('"a":"gem"');
+  });
+  it("a goal a patch rewrites as an ent line with no kind (or zone) keeps them", async () => {
+    const { mergeFill } = await import("../src");
+    const goal = base.replace('{"op":"rule"', '{"op":"goal","id":"exit","zone":"z_a","anchor":"center"}\n{"op":"rule"');
+    const { text } = mergeFill(goal, '{"op":"ent","id":"exit","anchor":"deck_center","noun":"banner","body":"sensor","size":[2,3,0.2]}');
+    const exit = text.trim().split("\n").map((l) => JSON.parse(l) as Record<string, unknown>).find((o) => o.id === "exit")!;
+    expect(exit).toMatchObject({ op: "ent", kind: "goal", zone: "z_a", anchor: "deck_center" });
   });
   it("edits restyle through meta but never change the world's promises", async () => {
     const { mergeFill } = await import("../src");
