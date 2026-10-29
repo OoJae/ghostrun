@@ -1,0 +1,23 @@
+{"op":"meta","mode":"play","lang":"en","pack":"floor_plan","sub":[],"seed":14,"look":"museum night","mood":[-0.2,0.7,0.9],"timeOfDay":23,"weather":"clear"}
+{"op":"zone","id":"z_yard","slot":"yard","tag":"outside","name":"Museum exterior"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Main entrance"}
+{"op":"zone","id":"z_west","slot":"room_sw","tag":"room","name":"West gallery"}
+{"op":"zone","id":"z_east","slot":"room_se","tag":"room","name":"East gallery"}
+{"op":"zone","id":"z_hall","slot":"main_room","tag":"hall","name":"Great hall"}
+{"op":"spawn","id":"sp_red","zone":"z_yard","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"exit_gate","zone":"z_yard","anchor":"corner_w","noun":"escape","hyper":"vehicle","team":"red"}
+{"op":"ent","id":"mask","kind":"pickup","noun":"golden mask","hyper":"artifact","zone":"z_hall","anchor":"center","body":"dynamic","shape":"box","size":[0.4,0.3,0.2]}
+{"op":"ent","id":"alarm_plate","kind":"plate","noun":"alarm plate","hyper":"pressure_plate","zone":"z_hall","anchor":"corner_ne","body":"sensor","shape":"box","size":[0.5,0.1,0.5]}
+{"op":"ent","id":"laser_grid","kind":"hazard","noun":"laser grid","hyper":"laser","zone":"z_hall","anchor":"corner_se","body":"sensor","shape":"box","size":[2,0.2,2]}
+{"op":"ent","id":"guard_door","kind":"door","noun":"security door","hyper":"door","zone":"z_hall","anchor":"doorway_n","body":"fixed","shape":"box"}
+{"op":"verb","id":"vb_carry_mask","verb":"physics_props.carry","on":"mask","params":{}}
+{"op":"verb","id":"vb_plate_alarm","verb":"motion_hazards.hazard","on":"alarm_plate","params":{"respawn":true}}
+{"op":"verb","id":"vb_laser_hazard","verb":"motion_hazards.hazard","on":"laser_grid","params":{"respawn":true}}
+{"op":"verb","id":"vb_lock_door","verb":"puzzle.lock","on":"guard_door","params":{"key":"mask","keep":false}}
+{"op":"rule","id":"r_guard_catch","when":{"t":"enter","a":"player","b":"guard_1"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_win","when":{"t":"enter","a":"mask","b":"exit_gate"},"if":[{"l":"mask.carrier.team","op":"eq","r":"red"}],"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"npc","id":"guard_1","role":"guard","zone":"z_hall","anchor":"doorway_s","team":"","menu":["guard.patrol"],"dflt":"guard.patrol"}
+{"op":"expect","id":"x_heist","prop":"win_reachable","a":"sp_red","b":"exit_gate","headline":true,"text":"One guard patrols a single-storey museum with one golden mask"}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":6}}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

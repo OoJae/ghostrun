@@ -1,0 +1,246 @@
+{
+  "prompt": "A jungle river boat race past crocodiles",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "action-adventure",
+    "setting": "A narrow jungle river cut through dense rainforest walls, with drifting logs and crocodiles basking on rocks, from a banked launch to a rivermouth finish.",
+    "role": "You are the pilot of a small jungle river boat.",
+    "goal": "Race the length of the river and be the first boat to cross the rivermouth finish line without wrecking.",
+    "fail": "If the boat is destroyed or lost into the crocodiles before reaching the finish.",
+    "mood": "tense, exotic, high-speed",
+    "pack": "course",
+    "sub": [],
+    "safety": "arcade",
+    "headline": "Jungle river needs boat-only steering along the channel with crocodile hits",
+    "nouns": [
+      {
+        "noun": "jungle river",
+        "hyper": "waterway-course"
+      },
+      {
+        "noun": "boat",
+        "hyper": "vehicle"
+      },
+      {
+        "noun": "crocodiles",
+        "hyper": "obstacle"
+      },
+      {
+        "noun": "logs",
+        "hyper": "obstacle"
+      },
+      {
+        "noun": "rivermouth finish",
+        "hyper": "endpoint"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.1,
+      "arousal": 0.8,
+      "tension": 0.6
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "a9c04fffd2f0cfb043b47da6c26e485e506164494946cac72bbbf61f31e29be3",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_race",
+      "text": "Jungle river needs boat-only steering along the channel with crocodile hits",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners vs 2 bots + physics, 3 menu schedules × 3 runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 6 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (lap 1 done) ← drive boat through 4 gates and finish_line ×1",
+        "src": ""
+      },
+      {
+        "id": "T1:drive:finish_line",
+        "tier": "T1",
+        "subject": {
+          "kind": "world",
+          "id": "finish_line"
+        },
+        "method": "drivability model (ground a vehicle drives to, turning circle, top speed)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 27,
+        "status": "verified",
+        "text": "a boat can drive the line and 4 gates on the ground (a lap ≥ 169.52 m, turning circle 1.33 m at corner speed)",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lose_boat",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_boat"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_lose_boat: nothing in the world wears boat down",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lose_croc",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_croc"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_lose_croc fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lose_croc2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_croc2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 0,
+        "src": "ai",
+        "ms": 12,
+        "status": "counterexample",
+        "text": "r_lose_croc2 fires exactly once",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "firings",
+          "text": "never fired when forced"
+        }
+      },
+      {
+        "id": "T2:r_secret_host",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_host"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 9,
+        "status": "verified",
+        "text": "r_secret_host fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_trophy",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_trophy"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 7,
+        "status": "verified",
+        "text": "r_secret_trophy fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners vs 2 bots",
+        "n": 12,
+        "k": 11,
+        "text": "AI runners won by playing it vs 2 bots (AI par 27.4 s)",
+        "cx": null,
+        "src": "",
+        "ms": 2948
+      },
+      {
+        "id": "T3:envelope",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 3 menu schedules × 3 runners",
+        "n": 9,
+        "k": 8,
+        "text": "runners still win whatever the cast's minds choose (3 schedules)",
+        "cx": null,
+        "src": "",
+        "ms": 3028
+      }
+    ],
+    "par": {
+      "goldS": 27.4,
+      "runs": 12,
+      "won": 11
+    },
+    "ms": 6691
+  }
+}

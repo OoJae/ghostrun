@@ -1,0 +1,124 @@
+{
+  "prompt": "Visit a Japanese zen garden and ring the temple bell",
+  "intent": {
+    "lang": "en",
+    "mode": "wander",
+    "genre": "Cultural / Meditation",
+    "setting": "A traditional Japanese zen garden featuring raked gravel patterns, moss-covered koi ponds, stone lanterns, and a timber temple structure.",
+    "role": "Visitor",
+    "goal": "Explore the serene garden and ring the large temple bell to hear its chime.",
+    "fail": "N/A",
+    "mood": "Serene and contemplative",
+    "pack": "outdoor",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Temple bell must be interactable to produce sound and visual swaying",
+    "nouns": [
+      {
+        "noun": "zen garden",
+        "hyper": "garden"
+      },
+      {
+        "noun": "temple",
+        "hyper": "building"
+      },
+      {
+        "noun": "bell",
+        "hyper": "object"
+      },
+      {
+        "noun": "gravel",
+        "hyper": "ground material"
+      },
+      {
+        "noun": "lantern",
+        "hyper": "object"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.8,
+      "arousal": 0.1,
+      "tension": 0
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "90964bf3105a8d467502e7e43c48a0d9683e5a2bf56f5c42ea5dc274d24e976a",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_bell",
+      "text": "Temple bell must be interactable to produce sound and visual swaying",
+      "status": "not_checkable",
+      "method": "kinematic reachability (jump apex model)"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 1 rules reference existing things",
+        "src": ""
+      },
+      {
+        "id": "T1:x_bell",
+        "tier": "T1",
+        "subject": {
+          "kind": "property",
+          "id": "x_bell"
+        },
+        "method": "kinematic reachability (jump apex model)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "Temple bell must be interactable to produce sound and visual swaying",
+        "cx": null
+      },
+      {
+        "id": "T2:r_bell_ring",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_bell_ring"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 8,
+        "status": "verified",
+        "text": "r_bell_ring fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:tour",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "tour"
+        },
+        "status": "played",
+        "method": "physics, an AI visitor walks to and uses each",
+        "n": 6,
+        "k": 6,
+        "text": "walked to and inspected 6 of 6 things",
+        "cx": null,
+        "src": "",
+        "ms": 83
+      }
+    ],
+    "par": null,
+    "ms": 645
+  }
+}

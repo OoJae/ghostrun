@@ -1,0 +1,34 @@
+{"op":"meta","mode":"play","lang":"en","pack":"course","sub":[],"seed":9,"look":"rainbow clouds","mood":[0.7,0.75,0.45],"timeOfDay":12,"weather":"clear"}
+{"op":"zone","id":"z_start","slot":"start","tag":"outside","name":"Rainbow start platform"}
+{"op":"zone","id":"z_seg_1","slot":"seg_1","tag":"turn","name":"Rainbow turn 1"}
+{"op":"zone","id":"z_seg_2","slot":"seg_2","tag":"gap","name":"Rainbow gap"}
+{"op":"zone","id":"z_seg_3","slot":"seg_3","tag":"straight","name":"Rainbow straight"}
+{"op":"zone","id":"z_seg_4","slot":"seg_4","tag":"dip","name":"Rainbow dip"}
+{"op":"zone","id":"z_seg_5","slot":"seg_5","tag":"curve","name":"Rainbow curve"}
+{"op":"zone","id":"z_seg_6","slot":"seg_6","tag":"final","name":"Rainbow final stretch"}
+{"op":"zone","id":"z_finish","slot":"finish","tag":"finish","name":"Rainbow finish line"}
+{"op":"spawn","id":"sp_red","zone":"z_start","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"finish_line","zone":"z_finish","anchor":"goal","noun":"finish line","hyper":"goal","team":"red"}
+{"op":"ent","id":"kart_player","kind":"vehicle","noun":"hover‑kart","hyper":"vehicle","zone":"z_start","anchor":"spawn_alt","body":"dynamic","shape":"box","size":[1.2,0.8,2.0]}
+{"op":"ent","id":"kart_rival1","kind":"vehicle","noun":"rival kart","hyper":"vehicle","zone":"z_start","anchor":"spawn_alt","body":"dynamic","shape":"box","size":[1.2,0.8,2.0]}
+{"op":"ent","id":"kart_rival2","kind":"vehicle","noun":"rival kart","hyper":"vehicle","zone":"z_start","anchor":"spawn_alt","body":"dynamic","shape":"box","size":[1.2,0.8,2.0]}
+{"op":"ent","id":"boost_1","kind":"prop","noun":"jump boost pad","hyper":"pad","zone":"z_seg_2","anchor":"pickup_1","body":"fixed","shape":"box","size":[1,1,0.2]}
+{"op":"ent","id":"cloud_hazard","kind":"hazard","noun":"cloud pit","hyper":"hazard","zone":"z_seg_4","anchor":"pit_4","body":"sensor","shape":"box","size":[5,0.5,5]}
+{"op":"ent","id":"cp_1","kind":"checkpoint","noun":"checkpoint 1","hyper":"checkpoint","zone":"z_seg_1","anchor":"cp_1","body":"sensor","shape":"box"}
+{"op":"ent","id":"cp_2","kind":"checkpoint","noun":"checkpoint 2","hyper":"checkpoint","zone":"z_seg_2","anchor":"cp_2","body":"sensor","shape":"box"}
+{"op":"ent","id":"cp_3","kind":"checkpoint","noun":"checkpoint 3","hyper":"checkpoint","zone":"z_seg_3","anchor":"cp_3","body":"sensor","shape":"box"}
+{"op":"ent","id":"cp_4","kind":"checkpoint","noun":"checkpoint 4","hyper":"checkpoint","zone":"z_seg_4","anchor":"cp_4","body":"sensor","shape":"box"}
+{"op":"ent","id":"cp_5","kind":"checkpoint","noun":"checkpoint 5","hyper":"checkpoint","zone":"z_seg_5","anchor":"cp_5","body":"sensor","shape":"box"}
+{"op":"verb","id":"vb_drive_player","verb":"vehicle.drive","on":"kart_player","params":{"kind":"hover","speed":20,"driver":"player"}}
+{"op":"verb","id":"vb_drive_rival1","verb":"vehicle.drive","on":"kart_rival1","params":{"kind":"hover","speed":18,"driver":"rival1"}}
+{"op":"verb","id":"vb_drive_rival2","verb":"vehicle.drive","on":"kart_rival2","params":{"kind":"hover","speed":18,"driver":"rival2"}}
+{"op":"verb","id":"vb_boost","verb":"locomotion.jump_pad","on":"boost_1","params":{"height":6}}
+{"op":"verb","id":"vb_hazard","verb":"motion_hazards.hazard","on":"cloud_hazard","params":{"respawn":true}}
+{"op":"verb","id":"vb_track","verb":"racing.track","on":"finish_line","params":{"gates":"cp_1,cp_2,cp_3,cp_4,cp_5","laps":2}}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":6}}
+{"op":"rule","id":"r_win","when":{"t":"lap_done","a":"player","b":"finish_line","n":2},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose_rival","when":{"t":"lap_done","a":"team:blue","b":"finish_line","n":2},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_crash","when":{"t":"hit","a":"player","b":"cloud_hazard"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"expect","id":"x_rainbow","prop":"win_reachable","a":"sp_red","b":"finish_line","headline":true,"text":"Rainbow tracks must stay reachable from the cloud edges when drifting or losing speed."}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

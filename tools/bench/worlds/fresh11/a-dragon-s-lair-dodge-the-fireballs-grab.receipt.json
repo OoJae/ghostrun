@@ -1,0 +1,232 @@
+{
+  "prompt": "A dragon's lair: dodge the fireballs, grab the egg and escape",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "arcade action platformer",
+    "setting": "Cavernous volcanic lair with molten rivers, stone pillars, and a guarded egg on a pedestal",
+    "role": "Dungeon explorer",
+    "goal": "Reach the golden egg, claim it, and reach the lair exit before being consumed by fire",
+    "fail": "Hit too many fireballs to lose all life, or touch the lava",
+    "mood": "frenzied, high-stakes, perilous",
+    "pack": "outdoor",
+    "sub": [],
+    "safety": "arcade",
+    "headline": "Must survive fireball volleys to reach the guarded egg and clear before the cave collapses",
+    "nouns": [
+      {
+        "noun": "dragon",
+        "hyper": "monstrous reptile"
+      },
+      {
+        "noun": "fireball",
+        "hyper": "projectile"
+      },
+      {
+        "noun": "egg",
+        "hyper": "golden object"
+      }
+    ],
+    "moodVec": {
+      "valence": -0.4,
+      "arousal": 0.9,
+      "tension": 0.9
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "a78a728b3d61231e64540f1345b4802b8b1ea56a3464fa8140bf410700e307e6",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_egg",
+      "text": "Must survive fireball volleys to reach the guarded egg and clear before the cave collapses",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners vs 1 bot"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 8 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (egg into exit_gate, carried by red) ← pick up egg",
+        "src": ""
+      },
+      {
+        "id": "T2:r_dragon_hit",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_dragon_hit"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 13,
+        "status": "verified",
+        "text": "r_dragon_hit fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lose_health",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_health"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_lose_health fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_bank",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_bank"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 11,
+        "status": "verified",
+        "text": "r_secret_bank fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_dock",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_dock"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 6,
+        "status": "verified",
+        "text": "r_secret_dock fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_n",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_n"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 16,
+        "status": "verified",
+        "text": "r_secret_flank_n fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_n_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_n_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 17,
+        "status": "verified",
+        "text": "r_secret_flank_n_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_shore",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_shore"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 6,
+        "status": "verified",
+        "text": "r_secret_shore fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners vs 1 bot",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it vs 1 bot (AI par 10.2 s)",
+        "cx": null,
+        "src": "",
+        "ms": 1530
+      }
+    ],
+    "par": {
+      "goldS": 10.2,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 2893
+  }
+}

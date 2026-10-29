@@ -1,0 +1,14 @@
+{"op":"meta","mode":"play","lang":"de","pack":"maze","sub":[],"seed":22,"look":"dunkler Wald","mood":[-0.2,0.7,0.8],"timeOfDay":18,"weather":"mist"}
+{"op":"zone","id":"z_start","slot":"start","tag":"outside","name":"Labyrinth Eingang"}
+{"op":"zone","id":"z_maze","slot":"maze","tag":"maze","name":"Waldlabyrinth"}
+{"op":"spawn","id":"sp_red","zone":"z_start","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"exit","zone":"z_maze","anchor":"exit","noun":"Ausgangsplattform","hyper":"exit","team":"","body":"sensor","shape":"box"}
+{"op":"ent","id":"sign","kind":"sign","noun":"Hinweis","hyper":"sign","zone":"z_start","anchor":"sign","body":"fixed","shape":"none"}
+{"op":"verb","id":"vb_timer","verb":"puzzle.timer","on":"player","params":{"seconds":180}}
+{"op":"verb","id":"vb_jump","verb":"locomotion.jump","on":"player","params":{"jumpsMax":2}}
+{"op":"rule","id":"r_win","when":{"t":"enter","a":"player","b":"exit"},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose","when":{"t":"timer_end","a":"player"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"expect","id":"x_maze","prop":"win_reachable","a":"sp_red","b":"exit","headline":true,"text":"Maze im Wald braucht Zeitlimit bis zum Ausgang"}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":5}}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

@@ -1,0 +1,254 @@
+{
+  "prompt": "A haunted hospital escape: find the three keys and get out before the ghost catches you",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "horror-escape",
+    "setting": "a derelut multi-room hospital at night",
+    "role": "a survivor fleeing a trapped wing",
+    "goal": "find all three keys scattered across the wards and reach the exit door before the ghost reaches you",
+    "fail": "the ghost tags you, or the timer runs out",
+    "mood": "tense, spooky and urgent",
+    "pack": "maze",
+    "sub": [],
+    "safety": "arcade",
+    "headline": "Three keys must be found before the ghost catches you",
+    "nouns": [
+      {
+        "noun": "hospital",
+        "hyper": "building"
+      },
+      {
+        "noun": "keys",
+        "hyper": "object"
+      },
+      {
+        "noun": "ghost",
+        "hyper": "entity"
+      },
+      {
+        "noun": "exit",
+        "hyper": "location"
+      }
+    ],
+    "moodVec": {
+      "valence": -0.7,
+      "arousal": 0.7,
+      "tension": 0.9
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "68c8c66c55c3513af30f12f2b506e02ad8ef2f6935ca828b2dee21cb109e8304",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_keys",
+      "text": "Three keys must be found before the ghost catches you",
+      "status": "counterexample",
+      "method": "static goal regression over rules + physics, 12 AI runners vs 1 bot"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 1,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 9 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 1,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win_key_1_all (key_1 into exit_door, carried by red) ← pick up key_1 [after key_2 in, key_3 in]",
+        "src": ""
+      },
+      {
+        "id": "T2:r_ghost_hit",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_ghost_hit"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_ghost_hit fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_dead_end_4",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_dead_end_4"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 9,
+        "status": "verified",
+        "text": "r_secret_dead_end_4 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_timer_end",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_timer_end"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_timer_end fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win_key_1",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win_key_1"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 6,
+        "status": "verified",
+        "text": "r_win_key_1 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win_key_1_all",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win_key_1_all"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_win_key_1_all fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win_key_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win_key_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_win_key_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win_key_2_all",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win_key_2_all"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_win_key_2_all fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win_key_3",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win_key_3"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_win_key_3 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win_key_3_all",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win_key_3_all"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_win_key_3_all fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "counterexample",
+        "method": "physics, 12 AI runners vs 1 bot",
+        "n": 12,
+        "k": 0,
+        "text": "no AI runner could win vs 1 bot",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "wins",
+          "text": "12 lost (shot by ghost_npc ×12, after 16–18.9 s)"
+        },
+        "src": "",
+        "ms": 358
+      }
+    ],
+    "par": null,
+    "ms": 414
+  }
+}

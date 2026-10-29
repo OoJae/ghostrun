@@ -1,0 +1,75 @@
+[1/20] {"prompt":"A rooftop chase across a rainy cyberpunk city, grab the data chip and reach the helipad","pack":"city_block","intentMs":1538,"fillFirstTokenMs":2151,"firstEntityMs":2225,"gameplayEndMs":2491,"fillDoneMs":2492,"playableMs":2515,"proofMs":666,"outTok":1177,"invalid":0,"lines":24,"intentModel":"qwen-3.8-27b","fillModel":"gpt-oss-120b","controls":8,"headline":"verified","t3win":"12/12","par":17.9,"tooEasy":false,"chips":12}
+[2/20] {"prompt":"A medieval tavern brawl: knock out the three bandits before they steal the gold","pack":"floor_plan","intentMs":556,"fillFirstTokenMs":2017,"firstEntityMs":2032,"gameplayEndMs":2159,"fillDoneMs":2159,"playableMs":2162,"proofMs":161,"outTok":1840,"invalid":0,"lines":25,"intentModel":"qwen-3.8-27b","fillModel":"gpt-oss-120b","controls":4,"headline":"verified","t3win":"12/12","par":4.3,"tooEasy":false,"chips":15}
+[3/20] {"prompt":"Kart racing on a rainbow track in the clouds, two laps, beat the rival karts","pack":"course","intentMs":3239,"fillFirstTokenMs":4612,"firstEntityMs":4637,"gameplayEndMs":4967,"fillDoneMs":6158,"playableMs":6162,"proofMs":2163,"outTok":1955,"invalid":0,"lines":34,"intentModel":"qwen-3.8-27b","fillModel":"gpt-oss-120b","controls":13,"headline":"verified","t3win":"12/12","par":33.9,"tooEasy":false,"chips":8}
+[4/20] {"prompt":"Explore a cozy treehouse village and talk to the villagers","pack":"outdoor","intentMs":509,"fillFirstTokenMs":1190,"firstEntityMs":1316,"gameplayEndMs":1701,"fillDoneMs":1702,"playableMs":1711,"proofMs":337,"outTok":1302,"invalid":0,"lines":25,"intentModel":"qwen-3.8-27b","fillModel":"gpt-oss-120b","controls":9,"headline":"not_checkable","t3win":"-","par":null,"tooEasy":false,"chips":2}
+[5/20] {"prompt":"A haunted hospital escape: find the three keys and get out before the ghost catches you","pack":"maze","intentMs":942,"fillFirstTokenMs":2079,"firstEntityMs":2080,"gameplayEndMs":2393,"fillDoneMs":2394,"playableMs":2399,"proofMs":414,"outTok":1394,"invalid":0,"lines":22,"intentModel":"qwen-3.8-27b","fillModel":"gpt-oss-120b","controls":6,"headline":"counterexample","t3win":"0/12","par":null,"tooEasy":false,"chips":12}
+[6/20] {"prompt":"A lighthouse keeper's island: repair the light before the storm arrives","pack":"outdoor","intentMs":576,"fillFirstTokenMs":1260,"firstEntityMs":1313,"gameplayEndMs":1586,"fillDoneMs":1586,"playableMs":1594,"proofMs":1016,"outTok":1375,"invalid":0,"lines":25,"intentModel":"qwen-3.8-27b","fillModel":"gpt-oss-120b","controls":10,"headline":"verified","t3win":"12/12","par":22.3,"tooEasy":false,"chips":13}
+  · fill line 12: repaired — coerced field types/enums
+  · fill line 29: late — gameplay op 'npc' after the gameplay layer closed
+  · fill line 30: late — gameplay op 'npc' after the gameplay layer closed
+  · fill line 31: late — gameplay op 'npc' after the gameplay layer closed
+[7/20] {"prompt":"A tank battle in a desert: destroy the enemy tanks with your cannon","pack":"arena","intentMs":706,"fillFirstTokenMs":1332,"firstEntityMs":1387,"gameplayEndMs":1726,"fillDoneMs":1786,"playableMs":1791,"proofMs":362,"outTok":1757,"invalid":0,"lines":32,"intentModel":"qwen-3.8-27b","fillModel":"gpt-oss-120b","controls":8,"headline":"verified","t3win":"12/12","par":11.7,"tooEasy":false,"chips":14}
+[8/20] {"prompt":"A museum at night: sneak past the guard and steal the golden mask","pack":"floor_plan","intentMs":541,"fillFirstTokenMs":1148,"firstEntityMs":1198,"gameplayEndMs":1379,"fillDoneMs":1388,"playableMs":1389,"proofMs":241,"outTok":1152,"invalid":0,"lines":23,"intentModel":"qwen-3.8-27b","fillModel":"gpt-oss-120b","controls":10,"headline":"verified","t3win":"12/12","par":12.6,"tooEasy":false,"chips":10}
+  · fill line 30: repaired — left out, read from the rest of the line: noun 'sign'
+  · fill line 31: repaired — left out, read from the rest of the line: noun 'sign'
+[9/20] {"prompt":"Capture the flag in a frozen arctic base, red against blue","pack":"floor_plan","intentMs":683,"fillFirstTokenMs":1188,"firstEntityMs":1282,"gameplayEndMs":1507,"fillDoneMs":1554,"playableMs":1558,"proofMs":190,"outTok":1362,"invalid":0,"lines":32,"intentModel":"qwen-3.8-27b","fillModel":"gpt-oss-120b","controls":10,"headline":"verified","t3win":"12/12","par":10.1,"tooEasy":false,"chips":10}
+[10/20] {"prompt":"A farm where you herd the sheep into the pen before sunset","pack":"outdoor","intentMs":529,"fillFirstTokenMs":1462,"firstEntityMs":1500,"gameplayEndMs":1772,"fillDoneMs":1772,"playableMs":1779,"proofMs":1731,"outTok":1623,"invalid":0,"lines":19,"intentModel":"qwen-3.8-27b","fillModel":"gpt-oss-120b","controls":9,"headline":"verified","t3win":"12/12","par":29.5,"tooEasy":false,"chips":14}
+[11/20] {"prompt":"A skateboard park: collect all the spray cans before time runs out","pack":"arena","intentMs":561,"fillFirstTokenMs":1252,"firstEntityMs":1305,"gameplayEndMs":1482,"fillDoneMs":1482,"playableMs":1483,"proofMs":230,"outTok":1308,"invalid":0,"lines":24,"intentModel":"qwen-3.8-27b","fillModel":"gpt-oss-120b","controls":10,"headline":"counterexample","t3win":"-","par":null,"tooEasy":false,"chips":7}
+[12/20] {"prompt":"A bank vault heist with lasers and a timer","pack":"floor_plan","intentMs":580,"fillFirstTokenMs":1295,"firstEntityMs":1335,"gameplayEndMs":1530,"fillDoneMs":1530,"playableMs":1532,"proofMs":284,"outTok":1287,"invalid":0,"lines":22,"intentModel":"qwen-3.8-27b","fillModel":"gpt-oss-120b","controls":10,"headline":"verified","t3win":"11/12","par":9.1,"tooEasy":false,"chips":13}
+[13/20] {"prompt":"A dragon's lair: dodge the fireballs, grab the egg and escape","pack":"outdoor","intentMs":586,"fillFirstTokenMs":1171,"firstEntityMs":1248,"gameplayEndMs":1482,"fillDoneMs":1487,"playableMs":1490,"proofMs":2893,"outTok":1256,"invalid":0,"lines":26,"intentModel":"qwen-3.8-27b","fillModel":"gpt-oss-120b","controls":10,"headline":"verified","t3win":"12/12","par":10.2,"tooEasy":false,"chips":11}
+[14/20] {"prompt":"Visit a Japanese zen garden and ring the temple bell","pack":"outdoor","intentMs":3044,"fillFirstTokenMs":3741,"firstEntityMs":3800,"gameplayEndMs":4042,"fillDoneMs":4043,"playableMs":4045,"proofMs":645,"outTok":1345,"invalid":0,"lines":23,"intentModel":"qwen-3.8-27b","fillModel":"gpt-oss-120b","controls":6,"headline":"not_checkable","t3win":"-","par":null,"tooEasy":false,"chips":4}
+  · fill line 2: invalid — not JSON
+  · fill line 4: invalid — not JSON
+  · fill line 6: invalid — not JSON
+  · fill line 8: invalid — not JSON
+  · fill line 10: invalid — not JSON
+  · fill line 12: invalid — not JSON
+  · fill line 14: invalid — not JSON
+  · fill line 16: invalid — not JSON
+  · fill line 18: invalid — not JSON
+  · fill line 20: invalid — not JSON
+  · fill line 22: invalid — not JSON
+  · fill line 24: invalid — not JSON
+  · fill line 26: invalid — not JSON
+  · fill line 28: invalid — not JSON
+  · fill line 30: invalid — not JSON
+  · fill line 32: invalid — not JSON
+  · fill line 34: invalid — not JSON
+  · fill line 36: invalid — not JSON
+  · fill line 38: invalid — not JSON
+  · fill line 40: invalid — not JSON
+  · fill line 42: invalid — not JSON
+  · fill line 44: invalid — not JSON
+  · fill line 46: invalid — not JSON
+  · fill line 48: invalid — not JSON
+  · fill line 50: invalid — not JSON
+  · fill line 52: invalid — not JSON
+  · fill line 54: invalid — not JSON
+  · fill line 56: invalid — not JSON
+  · fill line 58: invalid — not JSON
+  · fill line 60: invalid — not JSON
+  · fill line 61: invalid — not JSON
+  · fill line 63: invalid — not JSON
+  · fill line 65: invalid — not JSON
+  · fill line 67: invalid — not JSON
+  · fill line 69: invalid — not JSON
+  · fill line 71: invalid — not JSON
+  · fill line 73: invalid — not JSON
+  · fill line 75: invalid — not JSON
+  · fill line 77: invalid — not JSON
+[15/20] {"prompt":"A sci-fi arena where you shoot the training drones, first to 15 points","pack":"arena","intentMs":1268,"fillFirstTokenMs":1958,"firstEntityMs":2012,"gameplayEndMs":2454,"fillDoneMs":2454,"playableMs":2458,"proofMs":344,"outTok":2223,"invalid":39,"lines":78,"intentModel":"qwen-3.8-27b","fillModel":"gpt-oss-120b","controls":10,"headline":"counterexample","t3win":"-","par":null,"tooEasy":false,"chips":13}
+  · fill line 1: repaired — coerced field types/enums
+[16/20] {"prompt":"Ein Labyrinth im Wald: finde den Ausgang bevor die Zeit abläuft","pack":"maze","intentMs":820,"fillFirstTokenMs":1628,"firstEntityMs":1648,"gameplayEndMs":1847,"fillDoneMs":1851,"playableMs":1852,"proofMs":538,"outTok":673,"invalid":0,"lines":14,"intentModel":"qwen-3.8-27b","fillModel":"gpt-oss-120b","controls":6,"headline":"verified","t3win":"12/12","par":25.2,"tooEasy":false,"chips":11}
+  · fill line 20: invalid — not JSON
+[17/20] {"prompt":"A jungle river boat race past crocodiles","pack":"course","intentMs":770,"fillFirstTokenMs":1457,"firstEntityMs":1585,"gameplayEndMs":1811,"fillDoneMs":1823,"playableMs":1826,"proofMs":6691,"outTok":1246,"invalid":1,"lines":29,"intentModel":"qwen-3.8-27b","fillModel":"gpt-oss-120b","controls":10,"headline":"verified","t3win":"11/12","par":27.4,"tooEasy":false,"chips":11}
+  · fill line 12: invalid — anchor: Invalid type: Expected string but received null
+  · fill line 13: invalid — anchor: Invalid type: Expected string but received null
+  · fill line 19: unresolved — 'verb' references 'haz_spike_w', which never arrived
+  · fill line 20: unresolved — 'verb' references 'haz_spike_e', which never arrived
+  · fill line 28: invalid — noun: Invalid key: Expected "noun" but received undefined
+  · fill line 29: repaired — left out, read from the rest of the line: prompt 'Deliver hot pizza before it cools!', zone 'z_center'
+[18/20] {"prompt":"A pizza delivery across town on a scooter before the pizza gets cold","pack":"city_block","intentMs":1321,"fillFirstTokenMs":2220,"firstEntityMs":2270,"gameplayEndMs":2535,"fillDoneMs":2539,"playableMs":2542,"proofMs":499,"outTok":1201,"invalid":3,"lines":30,"intentModel":"qwen-3.8-27b","fillModel":"gpt-oss-120b","controls":8,"headline":"verified","t3win":"12/12","par":10.5,"tooEasy":false,"chips":8}
+  · fill line 27: late — gameplay op 'law' after the gameplay layer closed
+[19/20] {"prompt":"A volcano island: climb to the summit and plant the flag","pack":"outdoor","intentMs":742,"fillFirstTokenMs":1614,"firstEntityMs":1685,"gameplayEndMs":1923,"fillDoneMs":1931,"playableMs":1934,"proofMs":904,"outTok":1378,"invalid":0,"lines":28,"intentModel":"qwen-3.8-27b","fillModel":"gpt-oss-120b","controls":10,"headline":"verified","t3win":"12/12","par":7.8,"tooEasy":false,"chips":10}
+  · fill line 19: invalid — duplicate id 'guide_npc'
+[20/20] {"prompt":"A showroom of luxury cars: inspect each car and book a test drive","pack":"floor_plan","intentMs":1169,"fillFirstTokenMs":2902,"firstEntityMs":2961,"gameplayEndMs":3195,"fillDoneMs":3195,"playableMs":3205,"proofMs":69,"outTok":1381,"invalid":1,"lines":22,"intentModel":"qwen-3.8-27b","fillModel":"gpt-oss-120b","controls":5,"headline":"not_checkable","t3win":"-","par":null,"tooEasy":false,"chips":3}

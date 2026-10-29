@@ -1,0 +1,23 @@
+{"op":"meta","mode":"wander","lang":"en","pack":"outdoor","sub":[],"seed":20,"look":"Japanese zen garden","mood":[0.8,0.1,0.0],"timeOfDay":10,"weather":"clear"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Garden entrance"}
+{"op":"zone","id":"z_clearing","slot":"clearing","tag":"clearing","name":"Central clearing"}
+{"op":"zone","id":"z_pond","slot":"pond","tag":"pond","name":"Koi pond"}
+{"op":"zone","id":"z_grove","slot":"grove","tag":"grove","name":"Moss grove"}
+{"op":"zone","id":"z_lookout","slot":"lookout","tag":"high_ground","name":"Temple overlook"}
+{"op":"spawn","id":"sp_red","zone":"z_entrance","anchor":"spawn_pad","team":"red"}
+{"op":"ent","id":"bell","kind":"switch","noun":"temple bell","hyper":"bell","zone":"z_clearing","anchor":"center","body":"fixed","shape":"box","size":[1.0,2.0,0.5]}
+{"op":"ent","id":"lantern_1","kind":"prop","noun":"stone lantern","hyper":"lantern","zone":"z_clearing","anchor":"flank_n","body":"fixed","shape":"box","size":[0.3,0.8,0.3]}
+{"op":"ent","id":"lantern_2","kind":"prop","noun":"stone lantern","hyper":"lantern","zone":"z_clearing","anchor":"flank_s","body":"fixed","shape":"box","size":[0.3,0.8,0.3]}
+{"op":"ent","id":"gravel","kind":"prop","noun":"raked gravel","hyper":"ground_material","zone":"z_clearing","anchor":"center_n","body":"fixed","shape":"box","size":[4,0.1,4]}
+{"op":"ent","id":"koi_pond","kind":"prop","noun":"koi pond","hyper":"pond","zone":"z_pond","anchor":"water","body":"fixed","shape":"box","size":[3,0.5,3]}
+{"op":"ent","id":"guide","kind":"npc","noun":"garden guide","hyper":"guide","zone":"z_clearing","anchor":"center_s","body":"kinematic","shape":"box"}
+{"op":"verb","id":"vb_ring_bell","verb":"puzzle.switch","on":"bell","params":{"once":false}}
+{"op":"verb","id":"vb_inspect_lantern1","verb":"social.inspect","on":"lantern_1","params":{"text":"A stone lantern, moss-covered and quiet."}}
+{"op":"verb","id":"vb_inspect_lantern2","verb":"social.inspect","on":"lantern_2","params":{"text":"Another lantern, reflecting the moon's glow."}}
+{"op":"verb","id":"vb_inspect_gravel","verb":"social.inspect","on":"gravel","params":{"text":"Carefully raked patterns in the white gravel."}}
+{"op":"verb","id":"vb_inspect_pond","verb":"social.inspect","on":"koi_pond","params":{"text":"A tranquil pond with koi gliding beneath lily pads."}}
+{"op":"verb","id":"vb_inspect_guide","verb":"social.inspect","on":"guide","params":{"text":"The guide smiles, offering quiet words about the garden."}}
+{"op":"rule","id":"r_bell_ring","when":{"t":"state_is","a":"bell","s":"on"},"then":[{"e":"emit","target":"bell","fx":"chime"},{"e":"set_state","target":"bell","v":"sway"}]}
+{"op":"expect","id":"x_bell","prop":"reachable","a":"sp_red","b":"bell","headline":true,"text":"Temple bell must be interactable to produce sound and visual swaying"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

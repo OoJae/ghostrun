@@ -1,0 +1,276 @@
+{
+  "prompt": "A lighthouse keeper's island: repair the light before the storm arrives",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "puzzle survival",
+    "setting": "A remote rocky island surrounded by a darkening sea, featuring a tall hollow lighthouse with a spiral staircase, a lamp room at the top, and a small supply shed on the shore.",
+    "role": "Lighthouse keeper",
+    "goal": "Ascend the lighthouse, replace the broken lens, and fuel the lamp to emit a continuous beam before the storm hits.",
+    "fail": "The storm arrives and blots out the light, causing a ship to crash on the rocks.",
+    "mood": "Claustrophobic yet atmospheric, high stakes against time and weather",
+    "pack": "outdoor",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Lens must be swapped and lamp fueled inside the lighthouse tower before the storm timer expires.",
+    "nouns": [
+      {
+        "noun": "lighthouse",
+        "hyper": "tower"
+      },
+      {
+        "noun": "lens",
+        "hyper": "optics"
+      },
+      {
+        "noun": "lamp",
+        "hyper": "light source"
+      },
+      {
+        "noun": "storm",
+        "hyper": "weather"
+      },
+      {
+        "noun": "island",
+        "hyper": "terrain"
+      },
+      {
+        "noun": "staircase",
+        "hyper": "structure"
+      }
+    ],
+    "moodVec": {
+      "valence": -0.1,
+      "arousal": 0.8,
+      "tension": 0.9
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "9198d18401abb65f2120fc0846896525802a4e7c931323474ce92478e8bb3f4b",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_lighthouse",
+      "text": "Lens must be swapped and lamp fueled inside the lighthouse tower before the storm timer expires.",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 1,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 10 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 1,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win_fuel_can_all (fuel_can into goal_beam, carried by red) ← pick up fuel_can [after lens_broken in]",
+        "src": ""
+      },
+      {
+        "id": "T2:r_secret_fire",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_fire"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_secret_fire fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_n",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_n"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_flank_n fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_s",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_s"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_flank_s fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_stall_3",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_stall_3"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_stall_3 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_tent",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_tent"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_secret_tent fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_timer",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_timer"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_timer fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win_fuel_can",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win_fuel_can"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_win_fuel_can fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win_fuel_can_all",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win_fuel_can_all"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_win_fuel_can_all fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win_lens_broken",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win_lens_broken"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_win_lens_broken fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win_lens_broken_all",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win_lens_broken_all"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_win_lens_broken_all fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it (AI par 22.3 s)",
+        "cx": null,
+        "src": "",
+        "ms": 706
+      }
+    ],
+    "par": {
+      "goldS": 22.3,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 1016
+  }
+}

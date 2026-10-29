@@ -1,0 +1,32 @@
+{"op":"meta","mode":"play","lang":"en","pack":"floor_plan","sub":[],"seed":15,"look":"arctic base","mood":[0.2,0.7,0.6],"timeOfDay":12,"weather":"snow"}
+{"op":"zone","id":"z_yard","slot":"yard","tag":"outside","name":"Snowy perimeter"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Main entrance hall"}
+{"op":"zone","id":"z_west","slot":"room_sw","tag":"room","name":"West wing"}
+{"op":"zone","id":"z_east","slot":"room_se","tag":"room","name":"East wing"}
+{"op":"zone","id":"z_north","slot":"room_nw","tag":"room","name":"North lab"}
+{"op":"zone","id":"z_south","slot":"room_ne","tag":"room","name":"South lab"}
+{"op":"zone","id":"z_hall","slot":"main_room","tag":"hall","name":"Central corridor"}
+{"op":"spawn","id":"sp_red","zone":"z_yard","anchor":"spawn_pad","team":"red"}
+{"op":"spawn","id":"sp_blue","zone":"z_yard","anchor":"corner_e","team":"blue"}
+{"op":"goal","id":"red_base","zone":"z_yard","anchor":"corner_w","noun":"red flag base","hyper":"base","team":"red"}
+{"op":"goal","id":"blue_base","zone":"z_yard","anchor":"gate","noun":"blue flag base","hyper":"base","team":"blue"}
+{"op":"ent","id":"flag_red","kind":"pickup","noun":"red flag","hyper":"flag","zone":"z_north","anchor":"center","body":"dynamic","shape":"box","size":[0.3,0.8,0.05]}
+{"op":"ent","id":"flag_blue","kind":"pickup","noun":"blue flag","hyper":"flag","zone":"z_south","anchor":"center","body":"dynamic","shape":"box","size":[0.3,0.8,0.05]}
+{"op":"ent","id":"ammo_crate","kind":"pickup","noun":"ammo crate","hyper":"ammo","zone":"z_west","anchor":"corner_sw","body":"dynamic","shape":"box","size":[0.5,0.5,0.5]}
+{"op":"ent","id":"ice_spike","kind":"hazard","noun":"ice spikes","hyper":"spike","zone":"z_hall","anchor":"corner_ne","body":"sensor","shape":"box","size":[1,0.2,2]}
+{"op":"ent","id":"door_west","kind":"door","noun":"steel door","hyper":"door","zone":"z_west","anchor":"doorway_n","body":"fixed","shape":"box"}
+{"op":"ent","id":"door_east","kind":"door","noun":"steel door","hyper":"door","zone":"z_east","anchor":"doorway_n","body":"fixed","shape":"box"}
+{"op":"verb","id":"vb_carry_red","verb":"physics_props.carry","on":"flag_red","params":{}}
+{"op":"verb","id":"vb_carry_blue","verb":"physics_props.carry","on":"flag_blue","params":{}}
+{"op":"verb","id":"vb_carry_ammo","verb":"physics_props.carry","on":"ammo_crate","params":{}}
+{"op":"verb","id":"vb_unlock_west","verb":"puzzle.lock","on":"door_west","params":{"key":"ammo_crate","keep":false}}
+{"op":"verb","id":"vb_unlock_east","verb":"puzzle.lock","on":"door_east","params":{"key":"ammo_crate","keep":false}}
+{"op":"verb","id":"vb_spike","verb":"motion_hazards.hazard","on":"ice_spike","params":{"respawn":true}}
+{"op":"rule","id":"r_red_capture","when":{"t":"enter","a":"flag_blue","b":"red_base"},"if":[{"l":"flag_blue.carrier.team","op":"eq","r":"red"}],"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_blue_capture","when":{"t":"enter","a":"flag_red","b":"blue_base"},"if":[{"l":"flag_red.carrier.team","op":"eq","r":"blue"}],"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_spike_hurt","when":{"t":"hit","a":"player","b":"ice_spike"},"then":[{"e":"damage","target":"player","n":20}],"once":false}
+{"op":"expect","id":"x_capture","prop":"win_reachable","a":"sp_red","b":"red_base","headline":true,"text":"Arctic facility layout supports team-based flag capture with clear objectives"}
+{"op":"end","layer":"gameplay"}
+{"op":"dress","id":"poster_0","type":"sign","zone":"z_entrance","anchor":"wall_n","text":"RED TEAM: Capture BLUE FLAG"}
+{"op":"dress","id":"poster_2","type":"sign","zone":"z_entrance","anchor":"wall_s","text":"BLUE TEAM: Capture RED FLAG"}
+{"op":"end","layer":"cosmetic"}

@@ -1,0 +1,28 @@
+{"op":"meta","mode":"play","lang":"en","pack":"outdoor","sub":[],"seed":25,"look":"volcano island","mood":[0.35,0.6,0.35],"timeOfDay":14,"weather":"clear"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Beach landing"}
+{"op":"zone","id":"z_mid","slot":"clearing","tag":"clearing","name":"Mid‑volcano plateau"}
+{"op":"zone","id":"z_west","slot":"clearing_w","tag":"base","name":"West climbing shaft"}
+{"op":"zone","id":"z_east","slot":"clearing_e","tag":"base","name":"East climbing shaft"}
+{"op":"zone","id":"z_crater","slot":"pond","tag":"crater","name":"Summit crater"}
+{"op":"zone","id":"z_forest","slot":"grove","tag":"grove","name":"Lava‑forest fringe"}
+{"op":"spawn","id":"sp_red","zone":"z_entrance","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"flag_goal","zone":"z_crater","anchor":"goal","noun":"volcano summit flag","hyper":"flag marker","team":"red"}
+{"op":"ent","id":"flag_item","kind":"pickup","noun":"flag","hyper":"flag marker","zone":"z_mid","anchor":"center","body":"dynamic","shape":"box","size":[0.3,0.6,0.05]}
+{"op":"ent","id":"rope","kind":"pickup","noun":"climbing rope","hyper":"rope","zone":"z_west","anchor":"flank_n","body":"dynamic","shape":"box","size":[0.2,0.2,0.5]}
+{"op":"ent","id":"lava_pool","kind":"hazard","noun":"lava pool","hyper":"lava","zone":"z_crater","anchor":"water","body":"sensor","shape":"box","size":[4,0.5,4]}
+{"op":"ent","id":"spike_east","kind":"hazard","noun":"spike trap","hyper":"spikes","zone":"z_east","anchor":"flank_s","body":"sensor","shape":"box","size":[2,0.2,2]}
+{"op":"ent","id":"gate_west","kind":"door","noun":"west gate","hyper":"gate","zone":"z_west","anchor":"spawn_pad","body":"fixed","shape":"box"}
+{"op":"ent","id":"sign_info","kind":"sign","noun":"climb info sign","hyper":"sign","zone":"z_forest","anchor":"heart","body":"fixed","shape":"box"}
+{"op":"verb","id":"vb_carry_flag","verb":"physics_props.carry","on":"flag_item","params":{}}
+{"op":"verb","id":"vb_carry_rope","verb":"physics_props.carry","on":"rope","params":{}}
+{"op":"verb","id":"vb_jump","verb":"locomotion.jump","on":"player","params":{"jumpsMax":2}}
+{"op":"verb","id":"vb_lava_hazard","verb":"motion_hazards.hazard","on":"lava_pool","params":{"respawn":true}}
+{"op":"verb","id":"vb_spike_hazard","verb":"motion_hazards.hazard","on":"spike_east","params":{"respawn":true}}
+{"op":"verb","id":"vb_inspect_sign","verb":"social.inspect","on":"sign_info","params":{"text":"The summit is 30 m high. Use rope and double‑jump to reach the flag."}}
+{"op":"rule","id":"r_win","when":{"t":"enter","a":"flag_item","b":"flag_goal"},"if":[{"l":"flag_item.carrier.team","op":"eq","r":"red"}],"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_fall_lava","when":{"t":"hit","a":"player","b":"lava_pool"},"then":[{"e":"lose","target":"player"}],"once":false}
+{"op":"rule","id":"r_fall_spike","when":{"t":"hit","a":"player","b":"spike_east"},"then":[{"e":"lose","target":"player"}],"once":false}
+{"op":"expect","id":"x_climb","prop":"win_reachable","a":"sp_red","b":"flag_goal","headline":true,"text":"Climbing to the volcanic summit resets if the climber falls"}
+{"op":"end","layer":"gameplay"}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":6}}
+{"op":"end","layer":"cosmetic"}

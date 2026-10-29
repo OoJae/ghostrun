@@ -1,0 +1,220 @@
+{
+  "prompt": "A museum at night: sneak past the guard and steal the golden mask",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "stealth heist",
+    "setting": "A museum interior at night, featuring the main hall and side gallery rooms lit dimly, populated by patrolling guards and security systems.",
+    "role": "A phantom thief",
+    "goal": "Sneak past the guard to steal the golden mask and escape the museum.",
+    "fail": "Getting caught by the guard or tripping an alarm.",
+    "mood": "Tense, quiet, and stealthy.",
+    "pack": "floor_plan",
+    "sub": [],
+    "safety": "arcade",
+    "headline": "One guard patrols a single-storey museum with one golden mask",
+    "nouns": [
+      {
+        "noun": "museum",
+        "hyper": "interior space"
+      },
+      {
+        "noun": "guard",
+        "hyper": "agent"
+      },
+      {
+        "noun": "golden mask",
+        "hyper": "artifact"
+      },
+      {
+        "noun": "night",
+        "hyper": "time of day"
+      }
+    ],
+    "moodVec": {
+      "valence": -0.2,
+      "arousal": 0.7,
+      "tension": 0.9
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "64bd51972311d9863cbb23e122a29e5ccf23f692840303ca026816319f78f646",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_heist",
+      "text": "One guard patrols a single-storey museum with one golden mask",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 7 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (mask into exit_gate, carried by red) ← pick up mask",
+        "src": ""
+      },
+      {
+        "id": "T2:r_guard_catch",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_guard_catch"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_guard_catch fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_e",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_e"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_corner_e fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_ne",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_ne"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_corner_ne fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_nw",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_nw"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_secret_corner_nw fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_nw_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_nw_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_corner_nw_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_sw",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_sw"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_secret_corner_sw fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it (AI par 12.6 s)",
+        "cx": null,
+        "src": "",
+        "ms": 212
+      }
+    ],
+    "par": {
+      "goldS": 12.6,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 241
+  }
+}

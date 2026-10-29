@@ -1,0 +1,216 @@
+{
+  "prompt": "A volcano island: climb to the summit and plant the flag",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "exploration / parkour",
+    "setting": "A rugged volcanic island with a climbing path leading to an active summit crater",
+    "role": "Expedition climber",
+    "goal": "Climb the volcano to the summit and plant the flag to claim the peak",
+    "fail": "Falling over the cliff edge or back down from the climb resets the ascent",
+    "mood": "Dramatic, triumphant, adventurous",
+    "pack": "outdoor",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Climbing to the volcanic summit resets if the climber falls",
+    "nouns": [
+      {
+        "noun": "volcano island",
+        "hyper": "volcanic island"
+      },
+      {
+        "noun": "summit",
+        "hyper": "mountain peak"
+      },
+      {
+        "noun": "flag",
+        "hyper": "flag marker"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.35,
+      "arousal": 0.6,
+      "tension": 0.35
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "252214dfea9b03d64b6c7b18da12f0f09cf9010d1697b19017d16d8efd7e2c88",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_climb",
+      "text": "Climbing to the volcanic summit resets if the climber falls",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 7 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (flag_item into flag_goal, carried by red) ← pick up flag_item",
+        "src": ""
+      },
+      {
+        "id": "T2:r_fall_lava",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_fall_lava"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_fall_lava fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_fall_spike",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_fall_spike"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_fall_spike fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_bank",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_bank"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_bank fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_dock",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_dock"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_secret_dock fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_hollow",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_hollow"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_secret_hollow fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_stump",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_stump"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_secret_stump fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it (AI par 7.8 s)",
+        "cx": null,
+        "src": "",
+        "ms": 546
+      }
+    ],
+    "par": {
+      "goldS": 7.8,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 904
+  }
+}

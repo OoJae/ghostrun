@@ -1,0 +1,25 @@
+{"op":"meta","mode":"play","lang":"en","pack":"floor_plan","sub":[],"seed":8,"look":"medieval tavern interior","mood":[0.3,0.8,0.6],"timeOfDay":19,"weather":"clear"}
+{"op":"zone","id":"z_tavern","slot":"main_room","tag":"hall","name":"Tavern main area"}
+{"op":"spawn","id":"sp_red","zone":"z_tavern","anchor":"center","team":"red"}
+{"op":"goal","id":"gold_chest","zone":"z_tavern","anchor":"corner_ne","noun":"gold chest","hyper":"objective","team":""}
+{"op":"ent","id":"bandit_1","kind":"npc","noun":"bandit","hyper":"npc enemy","zone":"z_tavern","anchor":"corner_sw","body":"dynamic","shape":"capsule"}
+{"op":"ent","id":"bandit_2","kind":"npc","noun":"bandit","hyper":"npc enemy","zone":"z_tavern","anchor":"wall_n","body":"dynamic","shape":"capsule"}
+{"op":"ent","id":"bandit_3","kind":"npc","noun":"bandit","hyper":"npc enemy","zone":"z_tavern","anchor":"wall_s","body":"dynamic","shape":"capsule"}
+{"op":"ent","id":"stool_1","kind":"prop","noun":"tavern stool","hyper":"prop","zone":"z_tavern","anchor":"corner_nw","body":"fixed","shape":"box","size":[0.4,0.5,0.4]}
+{"op":"ent","id":"bar_counter","kind":"prop","noun":"bar counter","hyper":"prop","zone":"z_tavern","anchor":"wall_e","body":"fixed","shape":"box","size":[2,1,0.5]}
+{"op":"verb","id":"vb_shoot","verb":"combat_sport.shoot","on":"player","params":{"range":2,"speed":12,"damage":30,"cooldown":0.3,"at":"bandit_1,bandit_2,bandit_3"}}
+{"op":"verb","id":"vb_health_player","verb":"combat_sport.health","on":"player","params":{"hp":100,"respawn":false}}
+{"op":"verb","id":"vb_health_b1","verb":"combat_sport.health","on":"bandit_1","params":{"hp":40,"respawn":false}}
+{"op":"verb","id":"vb_health_b2","verb":"combat_sport.health","on":"bandit_2","params":{"hp":40,"respawn":false}}
+{"op":"verb","id":"vb_health_b3","verb":"combat_sport.health","on":"bandit_3","params":{"hp":40,"respawn":false}}
+{"op":"rule","id":"r_bandit1_dead","when":{"t":"health_lte","a":"bandit_1","n":0},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_bandit2_dead","when":{"t":"health_lte","a":"bandit_2","n":0},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_bandit3_dead","when":{"t":"health_lte","a":"bandit_3","n":0},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_win","when":{"t":"score_gte","a":"team:red","n":3},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose_chest","when":{"t":"enter","a":"bandit_1","b":"gold_chest"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose_chest2","when":{"t":"enter","a":"bandit_2","b":"gold_chest"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose_chest3","when":{"t":"enter","a":"bandit_3","b":"gold_chest"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose_player","when":{"t":"health_lte","a":"player","n":0},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"expect","id":"x_brawl","prop":"win_reachable","a":"sp_red","b":"gold_chest","headline":true,"text":"Must drop three bandits inside the tavern before any of them grabs the gold chest"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

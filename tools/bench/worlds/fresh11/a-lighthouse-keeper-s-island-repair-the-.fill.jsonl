@@ -1,0 +1,25 @@
+{"op":"meta","mode":"play","lang":"en","pack":"outdoor","sub":[],"seed":12,"look":"lighthouse island","mood":[-0.1,0.8,0.9],"timeOfDay":18,"weather":"storm","headline":"Lens must be swapped and lamp fueled inside the lighthouse tower before the storm timer expires."}
+{"op":"zone","id":"z_shore","slot":"entrance","tag":"entrance","name":"Shore"}
+{"op":"zone","id":"z_base","slot":"clearing_w","tag":"clearing","name":"Lighthouse base"}
+{"op":"zone","id":"z_tower","slot":"clearing_e","tag":"clearing","name":"Lighthouse tower top"}
+{"op":"zone","id":"z_shed","slot":"camp","tag":"camp","name":"Supply shed"}
+{"op":"spawn","id":"sp_red","zone":"z_shore","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"goal_beam","zone":"z_tower","anchor":"goal","noun":"light beam","hyper":"beam","team":"","body":"sensor","shape":"none"}
+{"op":"ent","id":"lens_broken","kind":"pickup","noun":"broken lens","hyper":"lens","zone":"z_shed","anchor":"stall_1","body":"dynamic","shape":"box","size":[0.3,0.3,0.1]}
+{"op":"ent","id":"fuel_can","kind":"pickup","noun":"fuel canister","hyper":"fuel","zone":"z_shed","anchor":"stall_2","body":"dynamic","shape":"box","size":[0.2,0.2,0.4]}
+{"op":"ent","id":"lamp_room","kind":"prop","noun":"lamp apparatus","hyper":"lamp","zone":"z_tower","anchor":"center","body":"fixed","shape":"box","size":[0.5,0.5,0.3]}
+{"op":"ent","id":"lens_slot","kind":"door","noun":"lens slot","hyper":"door","zone":"z_tower","anchor":"flank_n","body":"fixed","shape":"box"}
+{"op":"ent","id":"fuel_valve","kind":"switch","noun":"fuel valve","hyper":"valve","zone":"z_tower","anchor":"flank_s","body":"sensor","shape":"box"}
+{"op":"ent","id":"storm_timer","kind":"prop","noun":"storm timer","hyper":"timer","zone":"z_shore","anchor":"center","body":"fixed","shape":"none"}
+{"op":"ent","id":"spike_hazard","kind":"hazard","noun":"spike trap","hyper":"spike","zone":"z_shore","anchor":"center_n","body":"sensor","shape":"box","size":[2,0.2,2]}
+{"op":"verb","id":"vb_carry_lens","verb":"physics_props.carry","on":"lens_broken","params":{}}
+{"op":"verb","id":"vb_carry_fuel","verb":"physics_props.carry","on":"fuel_can","params":{}}
+{"op":"verb","id":"vb_insert_lens","verb":"puzzle.lock","on":"lens_slot","params":{"key":"lens_broken"}}
+{"op":"verb","id":"vb_open_valve","verb":"puzzle.switch","on":"fuel_valve","params":{"once":false}}
+{"op":"verb","id":"vb_hazard_spike","verb":"motion_hazards.hazard","on":"spike_hazard","params":{"respawn":true}}
+{"op":"verb","id":"vb_timer_storm","verb":"puzzle.timer","on":"player","params":{"seconds":180}}
+{"op":"rule","id":"r_win","when":{"t":"enter","a":"player","b":"goal_beam"},"if":[{"l":"lens_broken.carrier.team","op":"eq","r":"red"},{"l":"fuel_can.carrier.team","op":"eq","r":"red"}],"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_timer","when":{"t":"timer_end","a":"player"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"expect","id":"x_lighthouse","prop":"win_reachable","a":"sp_red","b":"goal_beam","headline":true,"text":"Lens must be swapped and lamp fueled inside the lighthouse tower before the storm timer expires."}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

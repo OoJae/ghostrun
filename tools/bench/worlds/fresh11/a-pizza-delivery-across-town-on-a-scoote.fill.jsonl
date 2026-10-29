@@ -1,0 +1,30 @@
+{"op":"meta","mode":"play","lang":"en","pack":"city_block","sub":["rooftop"],"seed":24,"look":"urban dusk","mood":[0.6,0.8,0.5],"timeOfDay":18,"weather":"clear"}
+{"op":"zone","id":"z_center","slot":"center","tag":"plaza","name":"Central Plaza"}
+{"op":"zone","id":"z_west","slot":"west_block","tag":"base","name":"West Base"}
+{"op":"zone","id":"z_east","slot":"east_block","tag":"base","name":"East Base"}
+{"op":"zone","id":"z_street_w","slot":"street_w","tag":"street","name":"West Street"}
+{"op":"zone","id":"z_street_e","slot":"street_e","tag":"street","name":"East Street"}
+{"op":"zone","id":"z_roof","slot":"roof_lane_a","tag":"rooftop","name":"Rooftop Shortcut"}
+{"op":"spawn","id":"sp_red","zone":"z_west","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"goal_delivery","zone":"z_east","anchor":"goal_ring","noun":"delivery point","hyper":"goal","team":"red"}
+{"op":"ent","id":"scooter","kind":"vehicle","noun":"scooter","hyper":"vehicle","zone":"z_west","anchor":"spawn_pad","body":"kinematic","shape":"box","size":[0.8,1.2,0.4]}
+{"op":"ent","id":"pizza","kind":"pickup","noun":"hot pizza","hyper":"food","zone":"z_west","anchor":"spawn_pad","body":"dynamic","shape":"box","size":[0.4,0.2,0.4]}
+{"op":"ent","id":"haz_spike_w","kind":"hazard","noun":"spike trap","hyper":"spikes","zone":"z_street_w","anchor":null,"body":"sensor","shape":"box","size":[2,0.1,2]}
+{"op":"ent","id":"haz_spike_e","kind":"hazard","noun":"spike trap","hyper":"spikes","zone":"z_street_e","anchor":null,"body":"sensor","shape":"box","size":[2,0.1,2]}
+{"op":"ent","id":"door_roof","kind":"door","noun":"roof gate","hyper":"door","zone":"z_roof","anchor":"edge","body":"fixed","shape":"box"}
+{"op":"ent","id":"plate_start","kind":"plate","noun":"start pad","hyper":"plate","zone":"z_center","anchor":"floor_ne","body":"sensor","shape":"box"}
+{"op":"ent","id":"plate_end","kind":"plate","noun":"finish pad","hyper":"plate","zone":"z_center","anchor":"floor_sw","body":"sensor","shape":"box"}
+{"op":"verb","id":"vb_drive_scooter","verb":"vehicle.drive","on":"scooter","params":{"kind":"bike","speed":12,"driver":"player"}}
+{"op":"verb","id":"vb_carry_pizza","verb":"physics_props.carry","on":"pizza","params":{}}
+{"op":"verb","id":"vb_hazard_w","verb":"motion_hazards.hazard","on":"haz_spike_w","params":{"respawn":true}}
+{"op":"verb","id":"vb_hazard_e","verb":"motion_hazards.hazard","on":"haz_spike_e","params":{"respawn":true}}
+{"op":"verb","id":"vb_open_roof","verb":"puzzle.lock","on":"door_roof","params":{"key":"pizza","keep":false}}
+{"op":"verb","id":"vb_timer","verb":"puzzle.timer","on":"player","params":{"seconds":120}}
+{"op":"rule","id":"r_deliver","when":{"t":"enter","a":"pizza","b":"goal_delivery"},"if":[{"l":"pizza.carrier.team","op":"eq","r":"red"}],"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_cold","when":{"t":"timer_end","a":"player"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"expect","id":"x_delivery","prop":"win_reachable","a":"sp_red","b":"goal_delivery","headline":true,"text":"Delivery must cross city_block including rooftop shortcuts before timer expires"}
+{"op":"law","player":{"jumpsMax":1,"jumpH":1.6,"speed":6}}
+{"op":"end","layer":"gameplay"}
+{"op":"dress","id":"d_scooter_skin","entity":"scooter","skin":"red_scooter"}
+{"op":"poster","id":"p_delivery","text":"Deliver hot pizza before it cools!"}
+{"op":"end","layer":"cosmetic"}

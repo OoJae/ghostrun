@@ -1,0 +1,22 @@
+{"op":"meta","mode":"play","lang":"en","pack":"maze","sub":[],"seed":11,"look":"haunted hospital","mood":[-0.7,0.7,0.9],"timeOfDay":22,"weather":"clear"}
+{"op":"zone","id":"z_start","slot":"start","tag":"outside","name":"Hospital entrance"}
+{"op":"zone","id":"z_maze","slot":"maze","tag":"maze","name":"Abandoned wards"}
+{"op":"spawn","id":"sp_red","zone":"z_start","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"exit_door","zone":"z_maze","anchor":"exit","noun":"escape door","hyper":"exit","team":"red"}
+{"op":"ent","id":"key_1","kind":"pickup","noun":"rusty key","hyper":"key","zone":"z_maze","anchor":"dead_end_1","body":"dynamic","shape":"box","size":[0.2,0.1,0.05]}
+{"op":"ent","id":"key_2","kind":"pickup","noun":"rusty key","hyper":"key","zone":"z_maze","anchor":"dead_end_2","body":"dynamic","shape":"box","size":[0.2,0.1,0.05]}
+{"op":"ent","id":"key_3","kind":"pickup","noun":"rusty key","hyper":"key","zone":"z_maze","anchor":"dead_end_3","body":"dynamic","shape":"box","size":[0.2,0.1,0.05]}
+{"op":"ent","id":"ghost_npc","kind":"npc","noun":"ghost","hyper":"ghost","zone":"z_maze","anchor":"center","body":"kinematic","shape":"capsule"}
+{"op":"ent","id":"timer","kind":"prop","noun":"countdown timer","hyper":"timer","zone":"z_maze","anchor":"entrance","body":"sensor","shape":"box","size":[0.3,0.2,0.1]}
+{"op":"verb","id":"vb_carry_key1","verb":"physics_props.carry","on":"key_1","params":{}}
+{"op":"verb","id":"vb_carry_key2","verb":"physics_props.carry","on":"key_2","params":{}}
+{"op":"verb","id":"vb_carry_key3","verb":"physics_props.carry","on":"key_3","params":{}}
+{"op":"verb","id":"vb_timer","verb":"puzzle.timer","on":"timer","params":{"seconds":120}}
+{"op":"verb","id":"vb_ghost_attack","verb":"combat_sport.shoot","on":"ghost_npc","params":{"range":5,"speed":20,"damage":100,"cooldown":1,"at":"player"}}
+{"op":"rule","id":"r_win","when":{"t":"enter","a":"player","b":"exit_door"},"if":[{"l":"key_1.carrier.team","op":"eq","r":"red"},{"l":"key_2.carrier.team","op":"eq","r":"red"},{"l":"key_3.carrier.team","op":"eq","r":"red"}],"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_ghost_hit","when":{"t":"hit","a":"player","b":"ghost_npc"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_timer_end","when":{"t":"timer_end","a":"timer"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"expect","id":"x_keys","prop":"win_reachable","a":"sp_red","b":"exit_door","headline":true,"text":"Three keys must be found before the ghost catches you"}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":5}}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

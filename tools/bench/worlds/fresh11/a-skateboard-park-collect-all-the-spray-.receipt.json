@@ -1,0 +1,170 @@
+{
+  "prompt": "A skateboard park: collect all the spray cans before time runs out",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "action-puzzle",
+    "setting": "An outdoor concrete skate park with bowls, ramps, and a central plaza scattered with scattered graffiti tags.",
+    "role": "skater",
+    "goal": "Locate and collect every hidden spray can in the park before the timer hits zero.",
+    "fail": "The timer reaches zero with at least one spray can remaining uncollected",
+    "mood": "fast-paced and urban",
+    "pack": "arena",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Must reach ramps to touch every can before timeout",
+    "nouns": [
+      {
+        "noun": "skate park",
+        "hyper": "outdoor recreational area"
+      },
+      {
+        "noun": "spray cans",
+        "hyper": "collectible objects"
+      },
+      {
+        "noun": "timer",
+        "hyper": "game mechanic"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.8,
+      "arousal": 0.7,
+      "tension": 0.6
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "92ce6f97ca1278df770a2291400e75b9590ba20d1f35d1d8f74667f3ad9ad04f",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_collect",
+      "text": "Must reach ramps to touch every can before timeout",
+      "status": "counterexample",
+      "method": "static goal regression over rules"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 5 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "chain",
+          "text": "win unreachable in the rule graph"
+        },
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "counterexample",
+        "method": "static goal regression over rules",
+        "text": "no rule ever wins the game",
+        "src": ""
+      },
+      {
+        "id": "T2:r_lose_time",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_time"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_lose_time fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_center_n",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_center_n"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 9,
+        "status": "verified",
+        "text": "r_secret_center_n fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_deck_e",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_deck_e"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_secret_deck_e fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_deck_w",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_deck_w"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 6,
+        "status": "verified",
+        "text": "r_secret_deck_w fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_deck_w_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_deck_w_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_secret_deck_w_2 fires exactly once",
+        "cx": null
+      }
+    ],
+    "par": null,
+    "ms": 230
+  }
+}

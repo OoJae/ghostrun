@@ -1,0 +1,19 @@
+{"op":"meta","mode":"play","lang":"en","pack":"outdoor","sub":[],"seed":16,"look":"rural farm at dusk","mood":[0.6,0.3,0.4],"timeOfDay":19,"weather":"clear"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Farm entrance"}
+{"op":"zone","id":"z_field","slot":"clearing","tag":"outside","name":"Pasture field"}
+{"op":"zone","id":"z_pen","slot":"clearing_w","tag":"structure","name":"Sheep pen"}
+{"op":"spawn","id":"sp_red","zone":"z_entrance","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"pen_goal","zone":"z_pen","anchor":"goal","noun":"sheep pen","hyper":"pen","team":""}
+{"op":"ent","id":"sheep1","kind":"npc","noun":"sheep","hyper":"animal","zone":"z_field","anchor":"center","body":"dynamic","shape":"capsule","size":[0.6,0.6,1.2]}
+{"op":"ent","id":"sheep2","kind":"npc","noun":"sheep","hyper":"animal","zone":"z_field","anchor":"center_n","body":"dynamic","shape":"capsule","size":[0.6,0.6,1.2]}
+{"op":"ent","id":"sheep3","kind":"npc","noun":"sheep","hyper":"animal","zone":"z_field","anchor":"center_s","body":"dynamic","shape":"capsule","size":[0.6,0.6,1.2]}
+{"op":"verb","id":"vb_timer","verb":"puzzle.timer","on":"player","params":{"seconds":120}}
+{"op":"rule","id":"r_s1","when":{"t":"enter","a":"sheep1","b":"pen_goal"},"then":[{"e":"set_state","target":"sheep1","v":"in_pen"},{"e":"score","target":"team:red","n":1}],"once":false}
+{"op":"rule","id":"r_s2","when":{"t":"enter","a":"sheep2","b":"pen_goal"},"then":[{"e":"set_state","target":"sheep2","v":"in_pen"},{"e":"score","target":"team:red","n":1}],"once":false}
+{"op":"rule","id":"r_s3","when":{"t":"enter","a":"sheep3","b":"pen_goal"},"then":[{"e":"set_state","target":"sheep3","v":"in_pen"},{"e":"score","target":"team:red","n":1}],"once":false}
+{"op":"rule","id":"r_win","when":{"t":"score_gte","a":"team:red","n":3},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose","when":{"t":"timer_end","a":"player"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"expect","id":"x_herd","prop":"win_reachable","a":"sp_red","b":"pen_goal","headline":true,"text":"Sunset timer determines fail state during herding"}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":5}}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

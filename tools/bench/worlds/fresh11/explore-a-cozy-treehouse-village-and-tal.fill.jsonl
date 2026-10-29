@@ -1,0 +1,25 @@
+{"op":"meta","mode":"wander","lang":"en","pack":"outdoor","sub":[],"seed":10,"look":"treehouse village","mood":[0.75,0.3,-0.2],"timeOfDay":12,"weather":"clear"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Village entry"}
+{"op":"zone","id":"z_clearing","slot":"clearing","tag":"hub","name":"Central clearing"}
+{"op":"zone","id":"z_grove","slot":"grove","tag":"grove","name":"Treehouse grove"}
+{"op":"zone","id":"z_camp","slot":"camp","tag":"camp","name":"Hammock camp"}
+{"op":"zone","id":"z_lookout","slot":"lookout","tag":"high_ground","name":"Treehouse lookout"}
+{"op":"spawn","id":"sp_red","zone":"z_entrance","anchor":"spawn_pad","team":"red"}
+{"op":"ent","id":"ladder_1","kind":"prop","noun":"wooden ladder","hyper":"ladder","zone":"z_clearing","anchor":"center_n","body":"fixed","shape":"box","size":[0.3,3,0.3]}
+{"op":"ent","id":"ladder_2","kind":"prop","noun":"rope ladder","hyper":"ladder","zone":"z_grove","anchor":"heart","body":"fixed","shape":"box","size":[0.3,2.5,0.3]}
+{"op":"ent","id":"platform_1","kind":"prop","noun":"wooden platform","hyper":"platform","zone":"z_clearing","anchor":"center_e","body":"fixed","shape":"box","size":[2,0.4,2]}
+{"op":"ent","id":"platform_2","kind":"prop","noun":"bridge platform","hyper":"platform","zone":"z_grove","anchor":"stump","body":"fixed","shape":"box","size":[1.5,0.4,1.5]}
+{"op":"ent","id":"hammock_1","kind":"prop","noun":"hammock","hyper":"hammock","zone":"z_camp","anchor":"tent","body":"fixed","shape":"box","size":[2,0.2,0.5]}
+{"op":"ent","id":"hammock_2","kind":"prop","noun":"hammock","hyper":"hammock","zone":"z_camp","anchor":"stall_1","body":"fixed","shape":"box","size":[2,0.2,0.5]}
+{"op":"verb","id":"vb_inspect_ladder1","verb":"social.inspect","on":"ladder_1","params":{"text":"A sturdy wooden ladder leading up."}}
+{"op":"verb","id":"vb_inspect_ladder2","verb":"social.inspect","on":"ladder_2","params":{"text":"A rope ladder swaying gently."}}
+{"op":"verb","id":"vb_inspect_platform1","verb":"social.inspect","on":"platform_1","params":{"text":"A broad platform connecting homes."}}
+{"op":"verb","id":"vb_inspect_platform2","verb":"social.inspect","on":"platform_2","params":{"text":"A narrow bridge between trees."}}
+{"op":"verb","id":"vb_inspect_hammock1","verb":"social.inspect","on":"hammock_1","params":{"text":"A cozy hammock for resting."}}
+{"op":"verb","id":"vb_inspect_hammock2","verb":"social.inspect","on":"hammock_2","params":{"text":"Another hammock swaying in the breeze."}}
+{"op":"npc","id":"villager_anna","role":"guide","zone":"z_clearing","anchor":"center","team":"","menu":["guide.talk"],"dflt":"guide.talk"}
+{"op":"npc","id":"villager_boris","role":"guide","zone":"z_grove","anchor":"roots","team":"","menu":["guide.talk"],"dflt":"guide.talk"}
+{"op":"npc","id":"villager_clara","role":"guide","zone":"z_camp","anchor":"fire","team":"","menu":["guide.talk"],"dflt":"guide.talk"}
+{"op":"expect","id":"x_village","prop":"win_reachable","a":"sp_red","b":"z_clearing","headline":true,"text":"Treehouse village links homes by ladders, platforms and hammocks for chatting villagers."}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

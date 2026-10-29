@@ -1,0 +1,284 @@
+{
+  "prompt": "A farm where you herd the sheep into the pen before sunset",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "Simulation / Management",
+    "setting": "Rural farm at dusk",
+    "role": "Shepherd",
+    "goal": "Herd all sheep into the pen before sunset",
+    "fail": "Sheep remain outside when the sun sets",
+    "mood": "Cozy, pastoral, time-pressured",
+    "pack": "outdoor",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Sunset timer determines fail state during herding",
+    "nouns": [
+      {
+        "noun": "farm",
+        "hyper": "location"
+      },
+      {
+        "noun": "sheep",
+        "hyper": "animal"
+      },
+      {
+        "noun": "pen",
+        "hyper": "structure"
+      },
+      {
+        "noun": "sunset",
+        "hyper": "time_marker"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.6,
+      "arousal": 0.3,
+      "tension": 0.4
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "dd7fe739f8f7777d3073b8125084b47814a4e2472815b12d170484fe66fb1c94",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_herd",
+      "text": "Sunset timer determines fail state during herding",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners vs 3 bots"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 11 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (team:red reaches 3) ← r_s1 (sheep1 knocked into pen_goal) + r_s2 (sheep2 knocked into pen_goal) + r_s3 (sheep3 knocked into pen_goal)",
+        "src": ""
+      },
+      {
+        "id": "T2:r_lose",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_lose fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_s1",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_s1"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 8,
+        "status": "verified",
+        "text": "r_s1 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_s2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_s2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 9,
+        "status": "verified",
+        "text": "r_s2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_s3",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_s3"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_s3 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_center_e",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_center_e"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 6,
+        "status": "verified",
+        "text": "r_secret_center_e fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_center_w",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_center_w"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 9,
+        "status": "verified",
+        "text": "r_secret_center_w fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_n",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_n"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 6,
+        "status": "verified",
+        "text": "r_secret_flank_n fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_s",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_s"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 6,
+        "status": "verified",
+        "text": "r_secret_flank_s fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_gate",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_gate"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_secret_gate fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_sign",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_sign"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 6,
+        "status": "verified",
+        "text": "r_secret_sign fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners vs 3 bots",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it vs 3 bots (AI par 29.5 s)",
+        "cx": null,
+        "src": "",
+        "ms": 1223
+      }
+    ],
+    "par": {
+      "goldS": 29.5,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 1731
+  }
+}

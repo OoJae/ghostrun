@@ -1,0 +1,280 @@
+{
+  "prompt": "A tank battle in a desert: destroy the enemy tanks with your cannon",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "shooter / war",
+    "setting": "Open desert battlefield",
+    "role": "Tank commander",
+    "goal": "Destroy all enemy tanks with your cannon",
+    "fail": "Your tank is destroyed",
+    "mood": "intense, aggressive, warlike",
+    "pack": "arena",
+    "sub": [],
+    "safety": "arcade",
+    "headline": "Cannon-based tank combat in an open desert arena",
+    "nouns": [
+      {
+        "noun": "tank",
+        "hyper": "combat vehicle"
+      },
+      {
+        "noun": "desert",
+        "hyper": "terrain"
+      },
+      {
+        "noun": "cannon",
+        "hyper": "weapon"
+      }
+    ],
+    "moodVec": {
+      "valence": -0.2,
+      "arousal": 0.8,
+      "tension": 0.7
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "f4b7e056b01351fc5b4537bc3195ae78a663f0ad78cb9c5475b68dfcc16c8493",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "exp_desert",
+      "text": "Cannon-based tank combat in an open desert arena",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 1,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 7 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 1,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (team:red reaches 3) ← r_score1 (enemy_tank_1 down to 0 HP) ← shoot enemy_tank_1 (3 hits of 50) + r_score2 (enemy_tank_2 down to 0 HP) ← shoot enemy_tank_2 (3 hits of 50) + r_score3 (enemy_tank_3 down to 0 HP) ← shoot enemy_tank_3 (3 hits of 50)",
+        "src": ""
+      },
+      {
+        "id": "T1:range:r_lose",
+        "tier": "T1",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose"
+        },
+        "method": "line-of-sight range model (from ground the jump model reaches)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 39,
+        "status": "verified",
+        "text": "a shot reaches the your tank: clear lines from as far as 24.99 m (range 25 m)",
+        "cx": null
+      },
+      {
+        "id": "T1:range:r_score1",
+        "tier": "T1",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score1"
+        },
+        "method": "line-of-sight range model (from ground the jump model reaches)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 40,
+        "status": "verified",
+        "text": "a shot reaches the enemy tank 1: clear lines from as far as 25 m (range 25 m)",
+        "cx": null
+      },
+      {
+        "id": "T1:range:r_score2",
+        "tier": "T1",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score2"
+        },
+        "method": "line-of-sight range model (from ground the jump model reaches)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 40,
+        "status": "verified",
+        "text": "a shot reaches the enemy tank 2: clear lines from as far as 24.99 m (range 25 m)",
+        "cx": null
+      },
+      {
+        "id": "T1:range:r_score3",
+        "tier": "T1",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score3"
+        },
+        "method": "line-of-sight range model (from ground the jump model reaches)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 40,
+        "status": "verified",
+        "text": "a shot reaches the enemy tank 3: clear lines from as far as 24.99 m (range 25 m)",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lose",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_lose: nothing in the world wears player_tank down",
+        "cx": null
+      },
+      {
+        "id": "T2:r_score1",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score1"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 6,
+        "status": "verified",
+        "text": "r_score1 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_score2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_score2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_score3",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score3"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_score3 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_n",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_n"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_flank_n fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_s",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_s"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_flank_s fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it (AI par 11.7 s)",
+        "cx": null,
+        "src": "",
+        "ms": 183
+      }
+    ],
+    "par": {
+      "goldS": 11.7,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 362
+  }
+}

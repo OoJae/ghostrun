@@ -1,0 +1,92 @@
+{
+  "prompt": "Explore a cozy treehouse village and talk to the villagers",
+  "intent": {
+    "lang": "en",
+    "mode": "wander",
+    "genre": "adventure",
+    "setting": "A cozy treehouse village built among the branches of giant trees, with ladders, platforms and hammocks connecting the homes.",
+    "role": "Villager",
+    "goal": "Explore the treehouse village and talk to the villagers.",
+    "fail": "None.",
+    "mood": "cozy, whimsical, peaceful",
+    "pack": "outdoor",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Treehouse village links homes by ladders, platforms and hammocks for chatting villagers.",
+    "nouns": [
+      {
+        "noun": "treehouse village",
+        "hyper": "outdoor settlement"
+      },
+      {
+        "noun": "villagers",
+        "hyper": "people"
+      },
+      {
+        "noun": "ladders",
+        "hyper": "climbing structures"
+      },
+      {
+        "noun": "platforms",
+        "hyper": "wooden walkways"
+      },
+      {
+        "noun": "hammocks",
+        "hyper": "suspended seats"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.75,
+      "arousal": 0.3,
+      "tension": -0.2
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "3630d411fe50f213a001fc1f99c1ffd65d8a419eed31ee492b22eb63fd71fc47",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_village",
+      "text": "Treehouse village links homes by ladders, platforms and hammocks for chatting villagers.",
+      "status": "not_checkable",
+      "method": "none"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 0 rules reference existing things",
+        "src": ""
+      },
+      {
+        "id": "T3:tour",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "tour"
+        },
+        "status": "played",
+        "method": "physics, an AI visitor walks to and uses each",
+        "n": 6,
+        "k": 6,
+        "text": "walked to and inspected 6 of 6 things",
+        "cx": null,
+        "src": "",
+        "ms": 48
+      }
+    ],
+    "par": null,
+    "ms": 337
+  }
+}

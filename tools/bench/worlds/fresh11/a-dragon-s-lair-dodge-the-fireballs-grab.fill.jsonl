@@ -1,0 +1,26 @@
+{"op":"meta","mode":"play","lang":"en","pack":"outdoor","sub":[],"seed":19,"look":"cavernous volcanic lair","mood":[-0.4,0.9,0.9],"timeOfDay":14,"weather":"clear"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"outside","name":"Lava Cave Entrance"}
+{"op":"zone","id":"z_hub","slot":"clearing","tag":"outside","name":"Central Chamber"}
+{"op":"zone","id":"z_egg_base","slot":"clearing_w","tag":"outside","name":"Egg Pedestal"}
+{"op":"zone","id":"z_exit","slot":"clearing_e","tag":"outside","name":"Cave Exit"}
+{"op":"zone","id":"z_lava_pond","slot":"pond","tag":"outside","name":"Molten River"}
+{"op":"spawn","id":"sp_red","zone":"z_entrance","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"exit_gate","zone":"z_exit","anchor":"goal","noun":"cave exit","hyper":"exit","team":"red"}
+{"op":"ent","id":"egg","kind":"pickup","noun":"golden egg","hyper":"egg","zone":"z_egg_base","anchor":"goal","body":"dynamic","shape":"sphere","size":[0.4,0.4,0.4]}
+{"op":"ent","id":"fireball_haz1","kind":"hazard","noun":"fireball volley","hyper":"fireball","zone":"z_hub","anchor":"center_n","body":"sensor","shape":"box","size":[2,2,2]}
+{"op":"ent","id":"fireball_haz2","kind":"hazard","noun":"fireball volley","hyper":"fireball","zone":"z_hub","anchor":"center_s","body":"sensor","shape":"box","size":[2,2,2]}
+{"op":"ent","id":"lava_hazard","kind":"hazard","noun":"lava pool","hyper":"lava","zone":"z_lava_pond","anchor":"water","body":"sensor","shape":"box","size":[6,0.5,6]}
+{"op":"ent","id":"dragon_npc","kind":"npc","noun":"dragon","hyper":"dragon","zone":"z_hub","anchor":"center","body":"kinematic","shape":"hull","team":"","menu":["combat_sport.shoot"],"dflt":"combat_sport.shoot"}
+{"op":"verb","id":"vb_carry_egg","verb":"physics_props.carry","on":"egg","params":{}}
+{"op":"verb","id":"vb_hazard_fire1","verb":"motion_hazards.hazard","on":"fireball_haz1","params":{"respawn":true}}
+{"op":"verb","id":"vb_hazard_fire2","verb":"motion_hazards.hazard","on":"fireball_haz2","params":{"respawn":true}}
+{"op":"verb","id":"vb_hazard_lava","verb":"motion_hazards.hazard","on":"lava_hazard","params":{"respawn":true}}
+{"op":"verb","id":"vb_dragon_shoot","verb":"combat_sport.shoot","on":"dragon_npc","params":{"range":20,"speed":25,"damage":30,"cooldown":2,"at":""}}
+{"op":"verb","id":"vb_player_shoot","verb":"combat_sport.shoot","on":"player","params":{"range":15,"speed":30,"damage":20,"cooldown":1.5,"at":""}}
+{"op":"rule","id":"r_win","when":{"t":"enter","a":"egg","b":"exit_gate"},"if":[{"l":"egg.carrier.team","op":"eq","r":"red"}],"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose_health","when":{"t":"health_lte","a":"player","n":0},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_dragon_hit","when":{"t":"hit","a":"player","b":"dragon_npc"},"then":[{"e":"damage","target":"player","n":15}],"once":false}
+{"op":"expect","id":"x_egg","prop":"win_reachable","a":"sp_red","b":"egg","headline":true,"text":"Must survive fireball volleys to reach the guarded egg and clear before the cave collapses"}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":6}}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

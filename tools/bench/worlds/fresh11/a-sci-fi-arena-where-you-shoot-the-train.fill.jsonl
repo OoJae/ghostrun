@@ -1,0 +1,78 @@
+{"op":"meta","mode":"play","lang":"en","pack":"arena","sub":[],"seed":21,"look":"sci-fi training arena","mood":[0.3,0.9,0.7],"timeOfDay":12,"weather":"clear"}
+\
+{"op":"zone","id":"z_midfield","slot":"midfield","tag":"center","name":"Arena Center"}
+\
+{"op":"zone","id":"z_west","slot":"west_half","tag":"base","name":"West Base"}
+\
+{"op":"zone","id":"z_east","slot":"east_half","tag":"base","name":"East Base"}
+\
+{"op":"zone","id":"z_north","slot":"north_deck","tag":"platform","name":"North Deck"}
+\
+{"op":"zone","id":"z_south","slot":"south_deck","tag":"platform","name":"South Deck"}
+\
+{"op":"spawn","id":"sp_red","zone":"z_west","anchor":"spawn_pad","team":"red"}
+\
+{"op":"goal","id":"score_goal","zone":"z_midfield","anchor":"scoreboard","noun":"score board","hyper":"score","team":"red"}
+\
+{"op":"ent","id":"drone_n1","kind":"npc","noun":"training drone","hyper":"hosts","zone":"z_north","anchor":"spawn_pad","body":"dynamic","shape":"capsule","size":[0.5,1.5,0.5],"team":"blue"}
+\
+{"op":"ent","id":"drone_s1","kind":"npc","noun":"training drone","hyper":"hosts","zone":"z_south","anchor":"spawn_pad","body":"dynamic","shape":"capsule","size":[0.5,1.5,0.5],"team":"blue"}
+\
+{"op":"ent","id":"drone_n2","kind":"npc","noun":"training drone","hyper":"hosts","zone":"z_north","anchor":"spawn_pad","body":"dynamic","shape":"capsule","size":[0.5,1.5,0.5],"team":"blue"}
+\
+{"op":"ent","id":"drone_s2","kind":"npc","noun":"training drone","hyper":"hosts","zone":"z_south","anchor":"spawn_pad","body":"dynamic","shape":"capsule","size":[0.5,1.5,0.5],"team":"blue"}
+\
+{"op":"ent","id":"player_weapon","kind":"pickup","noun":"laser rifle","hyper":"weapon","zone":"z_west","anchor":"center","body":"dynamic","shape":"box","size":[0.2,0.5,0.2]}
+\
+{"op":"verb","id":"vb_shoot","verb":"combat_sport.shoot","on":"player","params":{"range":20,"speed":30,"damage":5,"cooldown":0.3,"at":""}}
+\
+{"op":"verb","id":"vb_carry_weapon","verb":"physics_props.carry","on":"player_weapon","params":{}}
+\
+{"op":"verb","id":"vb_drone_shoot","verb":"combat_sport.shoot","on":"drone_n1","params":{"range":15,"speed":25,"damage":3,"cooldown":0.5,"at":""}}
+\
+{"op":"verb","id":"vb_drone_shoot2","verb":"combat_sport.shoot","on":"drone_s1","params":{"range":15,"speed":25,"damage":3,"cooldown":0.5,"at":""}}
+\
+{"op":"verb","id":"vb_drone_shoot3","verb":"combat_sport.shoot","on":"drone_n2","params":{"range":15,"speed":25,"damage":3,"cooldown":0.5,"at":""}}
+\
+{"op":"verb","id":"vb_drone_shoot4","verb":"combat_sport.shoot","on":"drone_s2","params":{"range":15,"speed":25,"damage":3,"cooldown":0.5,"at":""}}
+\
+{"op":"verb","id":"vb_player_health","verb":"combat_sport.health","on":"player","params":{"hp":100,"respawn":false}}
+\
+{"op":"verb","id":"vb_drone_health_n1","verb":"combat_sport.health","on":"drone_n1","params":{"hp":20,"respawn":false}}
+\
+{"op":"verb","id":"vb_drone_health_s1","verb":"combat_sport.health","on":"drone_s1","params":{"hp":20,"respawn":false}}
+\
+{"op":"verb","id":"vb_drone_health_n2","verb":"combat_sport.health","on":"drone_n2","params":{"hp":20,"respawn":false}}
+\
+{"op":"verb","id":"vb_drone_health_s2","verb":"combat_sport.health","on":"drone_s2","params":{"hp":20,"respawn":false}}
+\
+{"op":"rule","id":"r_score_drone_n1","when":{"t":"health_lte","a":"drone_n1","n":0},"then":[{"e":"score","target":"team:red","n":1}],"once":false}
+\
+{"op":"rule","id":"r_score_drone_s1","when":{"t":"health_lte","a":"drone_s1","n":0},"then":[{"e":"score","target":"team:red","n":1}],"once":false}
+\
+{"op":"rule","id":"r_score_drone_n2","when":{"t":"health_lte","a":"drone_n2","n":0},"then":[{"e":"score","target":"team:red","n":1}],"once":false}
+\
+{"op":"rule","id":"r_score_drone_s2","when":{"t":"health_lte","a":"drone_s2","n":0},"then":[{"e":"score","target":"team:red","n":1}],"once":false}
+\
+{"op":"rule","id":"r_win","when":{"t":"score_gte","target":"team:red","n":15},"then":[{"e":"win","target":"player"}],"once":true}
+\
+{"op":"rule","id":"r_lose_hp","when":{"t":"health_lte","a":"player","n":0},"then":[{"e":"lose","target":"player"}],"once":true}
+\
+{"op":"rule","id":"r_lose_timer","when":{"t":"timer_end","a":"timer"},{"then":[{"e":"lose","target":"player"}],"once":true}\
+{"op":"verb","id":"vb_timer","verb":"puzzle.timer","on":"player","params":{"seconds":300}}
+\
+{"op":"npc","id":"drone_n1_npc","role":"rival","zone":"z_north","anchor":"spawn_pad","team":"blue","menu":["combat_sport.shoot"],"dflt":"combat_sport.shoot"}
+\
+{"op":"npc","id":"drone_s1_npc","role":"rival","zone":"z_south","anchor":"spawn_pad","team":"blue","menu":["combat_sport.shoot"],"dflt":"combat_sport.shoot"}
+\
+{"op":"npc","id":"drone_n2_npc","role":"rival","zone":"z_north","anchor":"spawn_pad","team":"blue","menu":["combat_sport.shoot"],"dflt":"combat_sport.shoot"}
+\
+{"op":"npc","id":"drone_s2_npc","role":"rival","zone":"z_south","anchor":"spawn_pad","team":"blue","menu":["combat_sport.shoot"],"dflt":"combat_sport.shoot"}
+\
+{"op":"expect","id":"x_shoot","prop":"win_reachable","a":"sp_red","b":"score_goal","headline":true,"text":"Shooting drones to a 15-point win condition in a sci-fi arena"}
+\
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":6}}
+\
+{"op":"end","layer":"gameplay"}
+\
+{"op":"end","layer":"cosmetic"}

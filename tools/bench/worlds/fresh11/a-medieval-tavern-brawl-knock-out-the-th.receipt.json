@@ -1,0 +1,300 @@
+{
+  "prompt": "A medieval tavern brawl: knock out the three bandits before they steal the gold",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "fighting / action",
+    "setting": "cramped medieval tavern interior with wooden stools, tables and a bar counter",
+    "role": "tavern bouncer",
+    "goal": "knock out the three bandits before any of them reach the gold chest",
+    "fail": "a bandit touches the gold chest or you are knocked out",
+    "mood": "rowdy, boisterous medieval pub fight",
+    "pack": "floor_plan",
+    "sub": [],
+    "safety": "arcade",
+    "headline": "Must drop three bandits inside the tavern before any of them grabs the gold chest",
+    "nouns": [
+      {
+        "noun": "bandit",
+        "hyper": "npc enemy"
+      },
+      {
+        "noun": "gold chest",
+        "hyper": "objective object"
+      },
+      {
+        "noun": "tavern stool",
+        "hyper": "prop"
+      },
+      {
+        "noun": "bar counter",
+        "hyper": "prop"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.3,
+      "arousal": 0.8,
+      "tension": 0.6
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "9a4f2c1d27b1d3da90db4ba64775f53a8092d1c2ce2a3aa345a6307a5d83933d",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_brawl",
+      "text": "Must drop three bandits inside the tavern before any of them grabs the gold chest",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners vs 3 bots"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 1,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 9 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 1,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (team:red reaches 3) ← r_bandit1_dead (bandit_1 down to 0 HP) ← shoot bandit_1 (2 hits of 30) + r_bandit2_dead (bandit_2 down to 0 HP) ← shoot bandit_2 (2 hits of 30) + r_bandit3_dead (bandit_3 down to 0 HP) ← shoot bandit_3 (2 hits of 30)",
+        "src": ""
+      },
+      {
+        "id": "T1:range:r_bandit1_dead",
+        "tier": "T1",
+        "subject": {
+          "kind": "rule",
+          "id": "r_bandit1_dead"
+        },
+        "method": "line-of-sight range model (from ground the jump model reaches)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 21,
+        "status": "verified",
+        "text": "a shot reaches the bandit: clear lines from as far as 1.98 m (range 2 m)",
+        "cx": null
+      },
+      {
+        "id": "T1:range:r_bandit2_dead",
+        "tier": "T1",
+        "subject": {
+          "kind": "rule",
+          "id": "r_bandit2_dead"
+        },
+        "method": "line-of-sight range model (from ground the jump model reaches)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 23,
+        "status": "verified",
+        "text": "a shot reaches the bandit: clear lines from as far as 2 m (range 2 m)",
+        "cx": null
+      },
+      {
+        "id": "T1:range:r_bandit3_dead",
+        "tier": "T1",
+        "subject": {
+          "kind": "rule",
+          "id": "r_bandit3_dead"
+        },
+        "method": "line-of-sight range model (from ground the jump model reaches)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 24,
+        "status": "verified",
+        "text": "a shot reaches the bandit: clear lines from as far as 1.98 m (range 2 m)",
+        "cx": null
+      },
+      {
+        "id": "T2:r_bandit1_dead",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_bandit1_dead"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 8,
+        "status": "verified",
+        "text": "r_bandit1_dead fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_bandit2_dead",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_bandit2_dead"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_bandit2_dead: no clear spot near bandit_2 to shoot from",
+        "cx": null
+      },
+      {
+        "id": "T2:r_bandit3_dead",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_bandit3_dead"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_bandit3_dead: no clear spot near bandit_3 to shoot from",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lose_chest",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_chest"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_lose_chest fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lose_chest2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_chest2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_lose_chest2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lose_chest3",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_chest3"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_lose_chest3 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lose_player",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_player"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_lose_player: nothing in the world hurts the player",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_se",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_se"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 6,
+        "status": "verified",
+        "text": "r_secret_corner_se fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners vs 3 bots",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it vs 3 bots (AI par 4.3 s)",
+        "cx": null,
+        "src": "",
+        "ms": 103
+      }
+    ],
+    "par": {
+      "goldS": 4.3,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 161
+  }
+}

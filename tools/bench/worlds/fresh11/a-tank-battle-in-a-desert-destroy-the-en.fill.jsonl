@@ -1,0 +1,32 @@
+{"op":"meta","mode":"play","lang":"en","pack":"arena","sub":[],"seed":13,"look":"open desert battlefield","mood":[-0.2,0.8,0.7],"timeOfDay":14,"weather":"clear"}
+{"op":"zone","id":"z_midfield","slot":"midfield","tag":"arena","name":"Desert arena center"}
+{"op":"zone","id":"z_west_half","slot":"west_half","tag":"base","name":"Western base"}
+{"op":"zone","id":"z_east_half","slot":"east_half","tag":"base","name":"Eastern base"}
+{"op":"spawn","id":"sp_red","zone":"z_west_half","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"goal_destroy","zone":"z_midfield","anchor":"center","noun":"enemy tanks destroyed","hyper":"goal","team":"red"}
+{"op":"ent","id":"player_tank","kind":"vehicle","noun":"your tank","hyper":"tank","zone":"z_west_half","anchor":"spawn_pad","body":"dynamic","shape":"box","size":[3,2,4],"team":"red","params":{"kind":"tank","speed":12}}
+{"op":"ent","id":"enemy_tank_1","kind":"vehicle","noun":"enemy tank 1","hyper":"tank","zone":"z_east_half","anchor":"spawn_pad","body":"dynamic","shape":"box","size":[3,2,4],"team":"blue","params":{"kind":"tank","speed":10}}
+{"op":"ent","id":"enemy_tank_2","kind":"vehicle","noun":"enemy tank 2","hyper":"tank","zone":"z_east_half","anchor":"flank_n","body":"dynamic","shape":"box","size":[3,2,4],"team":"blue","params":{"kind":"tank","speed":10}}
+{"op":"ent","id":"enemy_tank_3","kind":"vehicle","noun":"enemy tank 3","hyper":"tank","zone":"z_east_half","anchor":"flank_s","body":"dynamic","shape":"box","size":[3,2,4],"team":"blue","params":{"kind":"tank","speed":10}}
+{"op":"ent","id":"sand_dune","kind":"prop","noun":"sand dune","hyper":"terrain","zone":"z_midfield","anchor":"center","body":"fixed","shape":"hull","size":[10,2,10]}
+{"op":"ent","id":"crater_hazard","kind":"hazard","noun":"lava crater","hyper":"hazard","zone":"z_midfield","anchor":"center_n","body":"sensor","shape":"cylinder","size":[3,0.5,3]}
+{"op":"ent","id":"jump_pad","kind":"platform","noun":"jump pad","hyper":"jump_pad","zone":"z_midfield","anchor":"center_s","body":"fixed","shape":"box","size":[2,0.2,2]}
+{"op":"verb","id":"vb_shoot","verb":"combat_sport.shoot","on":"player_tank","params":{"range":25,"speed":30,"damage":50,"cooldown":1,"at":""}}
+{"op":"verb","id":"vb_player_health","verb":"combat_sport.health","on":"player_tank","params":{"hp":200,"respawn":false}}
+{"op":"verb","id":"vb_enemy1_health","verb":"combat_sport.health","on":"enemy_tank_1","params":{"hp":150,"respawn":false}}
+{"op":"verb","id":"vb_enemy2_health","verb":"combat_sport.health","on":"enemy_tank_2","params":{"hp":150,"respawn":false}}
+{"op":"verb","id":"vb_enemy3_health","verb":"combat_sport.health","on":"enemy_tank_3","params":{"hp":150,"respawn":false}}
+{"op":"verb","id":"vb_jump_pad","verb":"locomotion.jump_pad","on":"jump_pad","params":{"height":5}}
+{"op":"verb","id":"vb_hazard","verb":"motion_hazards.hazard","on":"crater_hazard","params":{"respawn":true}}
+{"op":"rule","id":"r_score1","when":{"t":"health_lte","a":"enemy_tank_1","n":0},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_score2","when":{"t":"health_lte","a":"enemy_tank_2","n":0},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_score3","when":{"t":"health_lte","a":"enemy_tank_3","n":0},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_win","when":{"t":"score_gte","a":"team:red","n":3},"then":[{"e":"win","target":"player"}]}
+{"op":"rule","id":"r_lose","when":{"t":"health_lte","a":"player_tank","n":0},"then":[{"e":"lose","target":"player"}]}
+{"op":"expect","id":"exp_desert","prop":"win_reachable","a":"sp_red","b":"goal_destroy","headline":true,"text":"Cannon-based tank combat in an open desert arena"}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":6}}
+{"op":"end","layer":"gameplay"}
+{"op":"npc","id":"npc_rival_1","role":"rival","zone":"z_east_half","anchor":"flank_n","team":"blue","menu":["combat_sport.shoot"],"dflt":"combat_sport.shoot"}
+{"op":"npc","id":"npc_rival_2","role":"rival","zone":"z_east_half","anchor":"flank_s","team":"blue","menu":["combat_sport.shoot"],"dflt":"combat_sport.shoot"}
+{"op":"npc","id":"npc_rival_3","role":"rival","zone":"z_east_half","anchor":"center","team":"blue","menu":["combat_sport.shoot"],"dflt":"combat_sport.shoot"}
+{"op":"end","layer":"cosmetic"}

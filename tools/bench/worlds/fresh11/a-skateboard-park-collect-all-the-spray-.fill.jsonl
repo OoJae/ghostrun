@@ -1,0 +1,24 @@
+{"op":"meta","mode":"play","lang":"en","pack":"arena","sub":[],"seed":17,"look":"skate park","mood":[0.8,0.7,0.6],"timeOfDay":14,"weather":"clear"}
+{"op":"zone","id":"z_midfield","slot":"midfield","tag":"center","name":"Central plaza"}
+{"op":"zone","id":"z_west","slot":"west_half","tag":"base","name":"West ramp area"}
+{"op":"zone","id":"z_east","slot":"east_half","tag":"base","name":"East ramp area"}
+{"op":"zone","id":"z_north","slot":"north_deck","tag":"platform","name":"North platform"}
+{"op":"zone","id":"z_south","slot":"south_deck","tag":"platform","name":"South platform"}
+{"op":"spawn","id":"sp_red","zone":"z_midfield","anchor":"spawn_pad","team":"red"}
+{"op":"ent","id":"can_1","kind":"pickup","noun":"spray can","hyper":"spray_can","zone":"z_midfield","anchor":"center","body":"dynamic","shape":"box","size":[0.2,0.2,0.4]}
+{"op":"ent","id":"can_2","kind":"pickup","noun":"spray can","hyper":"spray_can","zone":"z_west","anchor":"flank_n","body":"dynamic","shape":"box","size":[0.2,0.2,0.4]}
+{"op":"ent","id":"can_3","kind":"pickup","noun":"spray can","hyper":"spray_can","zone":"z_west","anchor":"flank_s","body":"dynamic","shape":"box","size":[0.2,0.2,0.4]}
+{"op":"ent","id":"can_4","kind":"pickup","noun":"spray can","hyper":"spray_can","zone":"z_east","anchor":"flank_n","body":"dynamic","shape":"box","size":[0.2,0.2,0.4]}
+{"op":"ent","id":"can_5","kind":"pickup","noun":"spray can","hyper":"spray_can","zone":"z_east","anchor":"flank_s","body":"dynamic","shape":"box","size":[0.2,0.2,0.4]}
+{"op":"ent","id":"can_6","kind":"pickup","noun":"spray can","hyper":"spray_can","zone":"z_north","anchor":"deck_center","body":"dynamic","shape":"box","size":[0.2,0.2,0.4]}
+{"op":"verb","id":"vb_carry_can_1","verb":"physics_props.carry","on":"can_1","params":{}}
+{"op":"verb","id":"vb_carry_can_2","verb":"physics_props.carry","on":"can_2","params":{}}
+{"op":"verb","id":"vb_carry_can_3","verb":"physics_props.carry","on":"can_3","params":{}}
+{"op":"verb","id":"vb_carry_can_4","verb":"physics_props.carry","on":"can_4","params":{}}
+{"op":"verb","id":"vb_carry_can_5","verb":"physics_props.carry","on":"can_5","params":{}}
+{"op":"verb","id":"vb_carry_can_6","verb":"physics_props.carry","on":"can_6","params":{}}
+{"op":"verb","id":"vb_timer","verb":"puzzle.timer","on":"player","params":{"seconds":120}}
+{"op":"rule","id":"r_lose_time","when":{"t":"timer_end","a":"player"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"expect","id":"x_collect","prop":"win_reachable","a":"sp_red","b":"can_6","headline":true,"text":"Must reach ramps to touch every can before timeout"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

@@ -1,0 +1,29 @@
+{"op":"meta","mode":"play","lang":"en","pack":"course","sub":[],"seed":23,"look":"jungle river","mood":[0.1,0.8,0.6],"timeOfDay":12,"weather":"rain"}
+{"op":"zone","id":"z_start","slot":"start","tag":"bank","name":"Launch bank"}
+{"op":"zone","id":"z_seg_1","slot":"seg_1","tag":"ledge","name":"Log ledge"}
+{"op":"zone","id":"z_seg_2","slot":"seg_2","tag":"beam","name":"Narrow beam"}
+{"op":"zone","id":"z_seg_3","slot":"seg_3","tag":"gaps","name":"Crooked gaps"}
+{"op":"zone","id":"z_seg_4","slot":"seg_4","tag":"pit","name":"Crocodile pit"}
+{"op":"zone","id":"z_seg_5","slot":"seg_5","tag":"gaps","name":"Winding gaps"}
+{"op":"zone","id":"z_seg_6","slot":"seg_6","tag":"steps","name":"Stepping stones"}
+{"op":"zone","id":"z_finish","slot":"finish","tag":"mouth","name":"Rivermouth finish"}
+{"op":"spawn","id":"sp_red","zone":"z_start","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"finish_line","zone":"z_finish","anchor":"goal","noun":"rivermouth finish","hyper":"endpoint","team":"red"}
+{"op":"ent","id":"boat","kind":"vehicle","noun":"jungle boat","hyper":"vehicle","zone":"z_start","anchor":"spawn_alt","body":"dynamic","shape":"hull","size":[2,1,1]}
+{"op":"ent","id":"croc_1","kind":"hazard","noun":"crocodile","hyper":"obstacle","zone":"z_seg_4","anchor":"pit_4","body":"sensor","shape":"box","size":[1,0.5,0.3]}
+{"op":"ent","id":"croc_2","kind":"hazard","noun":"crocodile","hyper":"obstacle","zone":"z_seg_4","anchor":"pit_4","body":"sensor","shape":"box","size":[1,0.5,0.3]}
+{"op":"ent","id":"log_1","kind":"prop","noun":"drifting log","hyper":"obstacle","zone":"z_seg_1","anchor":"cp_1","body":"kinematic","shape":"box","size":[3,0.4,0.4]}
+{"op":"ent","id":"log_2","kind":"prop","noun":"drifting log","hyper":"obstacle","zone":"z_seg_2","anchor":"cp_2","body":"kinematic","shape":"box","size":[2,0.4,0.4]}
+{"op":"ent","id":"log_3","kind":"prop","noun":"drifting log","hyper":"obstacle","zone":"z_seg_5","anchor":"cp_5","body":"kinematic","shape":"box","size":[2.5,0.4,0.4]}
+{"op":"verb","id":"vb_drive_boat","verb":"vehicle.drive","on":"boat","params":{"kind":"boat","speed":8,"driver":"player"}}
+{"op":"verb","id":"vb_hazard_croc_1","verb":"motion_hazards.hazard","on":"croc_1","params":{"respawn":true}}
+{"op":"verb":"vb_hazard_croc_2","verb":"motion_hazards.hazard","on":"croc_2","params":{"respawn":true}}
+{"op":"verb","id":"vb_track_finish","verb":"racing.track","on":"finish_line","params":{"gates":"cp_1,cp_2,cp_3,cp_4,cp_5,cp_6","laps":1}}
+{"op":"rule","id":"r_win","when":{"t":"lap_done","a":"player","b":"finish_line"},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose_croc","when":{"t":"hit","a":"player","b":"croc_1"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose_croc2","when":{"t":"hit","a":"player","b":"croc_2"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose_boat","when":{"t":"health_lte","a":"boat","n":0},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"expect","id":"x_race","prop":"win_reachable","a":"sp_red","b":"finish_line","headline":true,"text":"Jungle river needs boat-only steering along the channel with crocodile hits"}
+{"op":"law","player":{"jumpsMax":0,"jumpH":0,"speed":6}}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

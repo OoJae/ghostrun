@@ -1,0 +1,272 @@
+{
+  "prompt": "A sci-fi arena where you shoot the training drones, first to 15 points",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "sci-fi shooter",
+    "setting": "A walled sci-fi training arena with cover, two team bases, and raised side decks where hostile training drones spawn",
+    "role": "A cadet or soldier running a combat simulation in a future military or robotic training facility",
+    "goal": "Score the first 15 points by shooting the incoming training drones before they reach the base",
+    "fail": "Allow the drones to rack up 15 points against you or run out of time/resources in the simulation",
+    "mood": "intense, futuristic competition",
+    "pack": "arena",
+    "sub": [],
+    "safety": "arcade",
+    "headline": "Shooting drones to a 15-point win condition in a sci-fi arena",
+    "nouns": [
+      {
+        "noun": "training drones",
+        "hyper": "hosts"
+      },
+      {
+        "noun": "sci-fi arena",
+        "hyper": "walled combat field"
+      },
+      {
+        "noun": "points",
+        "hyper": "score"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.3,
+      "arousal": 0.9,
+      "tension": 0.7
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "99379ae042ba37985541da7b0bdd2cf0cf31d40b9cf9de28d69840878029f334",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_shoot",
+      "text": "Shooting drones to a 15-point win condition in a sci-fi arena",
+      "status": "counterexample",
+      "method": "static goal regression over rules"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 7 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "chain",
+          "text": "win unreachable in the rule graph"
+        },
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "counterexample",
+        "method": "static goal regression over rules",
+        "text": "no rule chain lets the player trigger the win",
+        "src": ""
+      },
+      {
+        "id": "T1:range:r_score_drone_n1",
+        "tier": "T1",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score_drone_n1"
+        },
+        "method": "line-of-sight range model (from ground the jump model reaches)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 23,
+        "status": "verified",
+        "text": "a shot reaches the training drone: clear lines from as far as 20 m (range 20 m)",
+        "cx": null
+      },
+      {
+        "id": "T1:range:r_score_drone_n2",
+        "tier": "T1",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score_drone_n2"
+        },
+        "method": "line-of-sight range model (from ground the jump model reaches)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 25,
+        "status": "verified",
+        "text": "a shot reaches the training drone: clear lines from as far as 20 m (range 20 m)",
+        "cx": null
+      },
+      {
+        "id": "T1:range:r_score_drone_s1",
+        "tier": "T1",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score_drone_s1"
+        },
+        "method": "line-of-sight range model (from ground the jump model reaches)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 28,
+        "status": "verified",
+        "text": "a shot reaches the training drone: clear lines from as far as 20 m (range 20 m)",
+        "cx": null
+      },
+      {
+        "id": "T1:range:r_score_drone_s2",
+        "tier": "T1",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score_drone_s2"
+        },
+        "method": "line-of-sight range model (from ground the jump model reaches)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 28,
+        "status": "verified",
+        "text": "a shot reaches the training drone: clear lines from as far as 20 m (range 20 m)",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lose_hp",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_hp"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_lose_hp fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_score_drone_n1",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score_drone_n1"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 0,
+        "src": "ai",
+        "ms": 10,
+        "status": "counterexample",
+        "text": "r_score_drone_n1 fires exactly once",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "firings",
+          "text": "never fired when forced"
+        }
+      },
+      {
+        "id": "T2:r_score_drone_n2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score_drone_n2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 19,
+        "status": "verified",
+        "text": "r_score_drone_n2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_score_drone_s1",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score_drone_s1"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 28,
+        "status": "verified",
+        "text": "r_score_drone_s1 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_score_drone_s2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score_drone_s2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 10,
+        "status": "verified",
+        "text": "r_score_drone_s2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_n",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_n"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 11,
+        "status": "verified",
+        "text": "r_secret_flank_n fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      }
+    ],
+    "par": null,
+    "ms": 344
+  }
+}

@@ -1,0 +1,22 @@
+{"op":"meta","mode":"play","lang":"en","pack":"floor_plan","sub":[],"seed":18,"look":"bank vault interior","mood":[0.2,0.7,0.9],"timeOfDay":12,"weather":"clear"}
+{"op":"zone","id":"z_yard","slot":"yard","tag":"outside","name":"Bank exterior"}
+{"op":"zone","id":"z_vault","slot":"main_room","tag":"hall","name":"Vault interior"}
+{"op":"spawn","id":"sp_red","zone":"z_yard","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"exit","zone":"z_yard","anchor":"corner_w","noun":"bank van","hyper":"vehicle","team":"red"}
+{"op":"ent","id":"safe","kind":"pickup","noun":"cash safe","hyper":"safe","zone":"z_vault","anchor":"center","body":"dynamic","shape":"box","size":[0.8,0.8,0.5]}
+{"op":"ent","id":"laser_n","kind":"hazard","noun":"laser tripwire north","hyper":"laser","zone":"z_vault","anchor":"doorway_n","body":"sensor","shape":"box","size":[2,0.1,2]}
+{"op":"ent","id":"laser_e","kind":"hazard","noun":"laser tripwire east","hyper":"laser","zone":"z_vault","anchor":"doorway_e","body":"sensor","shape":"box","size":[2,0.1,2]}
+{"op":"ent","id":"laser_s","kind":"hazard","noun":"laser tripwire south","hyper":"laser","zone":"z_vault","anchor":"doorway_s","body":"sensor","shape":"box","size":[2,0.1,2]}
+{"op":"ent","id":"laser_w","kind":"hazard","noun":"laser tripwire west","hyper":"laser","zone":"z_vault","anchor":"doorway_w","body":"sensor","shape":"box","size":[2,0.1,2]}
+{"op":"ent","id":"timer","kind":"goal","noun":"countdown timer","hyper":"timer","zone":"z_vault","anchor":"corner_ne","body":"sensor","shape":"box","size":[0.5,0.5,0.2]}
+{"op":"verb","id":"vb_carry_safe","verb":"physics_props.carry","on":"safe","params":{}}
+{"op":"verb","id":"vb_timer","verb":"puzzle.timer","on":"timer","params":{"seconds":120}}
+{"op":"rule","id":"r_win","when":{"t":"enter","a":"safe","b":"exit"},"if":[{"l":"safe.carrier.team","op":"eq","r":"red"}],"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_timer","when":{"t":"timer_end","a":"timer"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_laser","when":{"t":"hit","a":"player","b":"laser_n"},"then":[{"e":"lose","target":"player"}],"once":false}
+{"op":"rule","id":"r_laser_e","when":{"t":"hit","a":"player","b":"laser_e"},"then":[{"e":"lose","target":"player"}],"once":false}
+{"op":"rule","id":"r_laser_s","when":{"t":"hit","a":"player","b":"laser_s"},"then":[{"e":"lose","target":"player"}],"once":false}
+{"op":"rule","id":"r_laser_w","when":{"t":"hit","a":"player","b":"laser_w"},"then":[{"e":"lose","target":"player"}],"once":false}
+{"op":"expect","id":"x_heist","prop":"win_reachable","a":"sp_red","b":"exit","headline":true,"text":"Vault interior must contain navigable laser tripwires and a functioning countdown timer"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

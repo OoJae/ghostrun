@@ -1,0 +1,212 @@
+{
+  "prompt": "Capture the flag in a frozen arctic base, red against blue",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "team shooter",
+    "setting": "Snow-covered arctic research facility with icy walls and frozen corridors",
+    "role": "Soldier defending or invading an outpost (Red vs Blue teams)",
+    "goal": "Capture the opposing team's flag and bring it back to your base",
+    "fail": "The opposing team captures your flag more times than you capture theirs",
+    "mood": "Chilling high-stakes tactical combat",
+    "pack": "floor_plan",
+    "sub": [],
+    "safety": "arcade",
+    "headline": "Arctic facility layout supports team-based flag capture with clear objectives",
+    "nouns": [
+      {
+        "noun": "arctic base",
+        "hyper": "snow-cold facility"
+      },
+      {
+        "noun": "flag",
+        "hyper": "capture objective"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.2,
+      "arousal": 0.7,
+      "tension": 0.6
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "3137f35560f8658548121001ba21103f1b604e0cbc6293752fa2fbb5577c3dae",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_capture",
+      "text": "Arctic facility layout supports team-based flag capture with clear objectives",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 7 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_red_capture (flag_blue into red_base, carried by red) ← pick up flag_blue",
+        "src": ""
+      },
+      {
+        "id": "T2:r_blue_capture",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_blue_capture"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_blue_capture: no agent on team blue to carry flag_red",
+        "cx": null
+      },
+      {
+        "id": "T2:r_red_capture",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_red_capture"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_red_capture fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_ne",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_ne"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_secret_corner_ne fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_ne_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_ne_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_secret_corner_ne_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_nw",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_nw"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_secret_corner_nw fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_nw_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_nw_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_corner_nw_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_spike_hurt",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_spike_hurt"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_spike_hurt fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it (AI par 10.1 s)",
+        "cx": null,
+        "src": "",
+        "ms": 161
+      }
+    ],
+    "par": {
+      "goldS": 10.1,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 190
+  }
+}

@@ -1,0 +1,250 @@
+{
+  "prompt": "A rooftop chase across a rainy cyberpunk city, grab the data chip and reach the helipad",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "cyberpunk chase",
+    "setting": "A rainy cyberpunk city skyline featuring narrow alley lanes and a precarious rooftop lane spanning between two buildings that terminates at a glowing helipad.",
+    "role": "A rogue courier",
+    "goal": "Sprint through the streets to grab the targeted data chip and make it across the rooftop lane to the helipad without falling.",
+    "fail": "Falling off the skyline into the city below or running out of time to escape before the area locks down.",
+    "mood": "High-stakes, neon-soaked urgency",
+    "pack": "city_block",
+    "sub": [
+      "rooftop"
+    ],
+    "safety": "arcade",
+    "headline": "Rooftop lane requires precision jumps and sprinting to reach the helipad",
+    "nouns": [
+      {
+        "noun": "data chip",
+        "hyper": "digital object"
+      },
+      {
+        "noun": "helipad",
+        "hyper": "structure"
+      },
+      {
+        "noun": "rainey cyberpunk city",
+        "hyper": "environment"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.4,
+      "arousal": 0.9,
+      "tension": 0.8
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "048a8133679dfb26f4750aebd362d244f016f5b102951c8ca22883d62b6dafb4",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_rooftop",
+      "text": "Rooftop lane requires precision jumps and sprinting to reach the helipad",
+      "status": "verified",
+      "method": "kinematic reachability (jump apex model) + physics jump witness, 4 attempts per jump count"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 1,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 7 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 1,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (data_chip into helipad, carried by red) ← pick up data_chip",
+        "src": ""
+      },
+      {
+        "id": "T1:x_rooftop",
+        "tier": "T1",
+        "subject": {
+          "kind": "property",
+          "id": "x_rooftop"
+        },
+        "method": "kinematic reachability (jump apex model)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "Rooftop lane requires precision jumps and sprinting to reach the helipad",
+        "cx": null
+      },
+      {
+        "id": "T2:r_fall",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_fall"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 44,
+        "status": "verified",
+        "text": "r_fall fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_rain_slow",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_rain_slow"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 15,
+        "status": "verified",
+        "text": "r_rain_slow fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_floor_ne",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_floor_ne"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 7,
+        "status": "verified",
+        "text": "r_secret_floor_ne fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_floor_sw",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_floor_sw"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 84,
+        "status": "verified",
+        "text": "r_secret_floor_sw fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_lane_end",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_lane_end"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 10,
+        "status": "verified",
+        "text": "r_secret_lane_end fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_plinth",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_plinth"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 12,
+        "status": "verified",
+        "text": "r_secret_plinth fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it (AI par 17.9 s)",
+        "cx": null,
+        "src": "",
+        "ms": 227
+      },
+      {
+        "id": "T3:x_rooftop",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "x_rooftop"
+        },
+        "status": "played",
+        "method": "physics jump witness, 4 attempts per jump count",
+        "n": 4,
+        "k": 4,
+        "text": "Rooftop lane requires precision jumps and sprinting to reach the helipad: reached with 2 jumps 4 of 4, with 1 0 of 4",
+        "cx": null,
+        "src": "ai",
+        "ms": 37
+      }
+    ],
+    "par": {
+      "goldS": 17.9,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 666
+  }
+}

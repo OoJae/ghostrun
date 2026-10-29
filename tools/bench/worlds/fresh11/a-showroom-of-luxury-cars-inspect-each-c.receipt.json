@@ -1,0 +1,100 @@
+{
+  "prompt": "A showroom of luxury cars: inspect each car and book a test drive",
+  "intent": {
+    "lang": "en",
+    "mode": "wander",
+    "genre": "virtual showroom simulator",
+    "setting": "A spacious, modern luxury car dealership showroom with polished floors and display lighting",
+    "role": "Prospective buyer",
+    "goal": "Inspect each luxury car and book a test drive for one of them",
+    "fail": "None specific (exploratory activity)",
+    "mood": "Aspirational, calm, sophisticated",
+    "pack": "floor_plan",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Showroom needs clickable cars with booking UI",
+    "nouns": [
+      {
+        "noun": "cars",
+        "hyper": "vehicles"
+      },
+      {
+        "noun": "showroom",
+        "hyper": "interior space"
+      },
+      {
+        "noun": "test drive",
+        "hyper": "event"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.6,
+      "arousal": 0.2,
+      "tension": 0
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "a9e8d11cb4e52153a08c580035ea02bc4b2c3a1520965e7d466383578804fafd",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_showroom",
+      "text": "Showroom needs clickable cars with booking UI",
+      "status": "not_checkable",
+      "method": "kinematic reachability (jump apex model)"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 0 rules reference existing things",
+        "src": ""
+      },
+      {
+        "id": "T1:x_showroom",
+        "tier": "T1",
+        "subject": {
+          "kind": "property",
+          "id": "x_showroom"
+        },
+        "method": "kinematic reachability (jump apex model)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "Showroom needs clickable cars with booking UI: needs nothing stated, no checker for that yet",
+        "cx": null
+      },
+      {
+        "id": "T3:tour",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "tour"
+        },
+        "status": "played",
+        "method": "physics, an AI visitor walks to and uses each",
+        "n": 5,
+        "k": 5,
+        "text": "walked to and inspected 5 of 5 things",
+        "cx": null,
+        "src": "",
+        "ms": 45
+      }
+    ],
+    "par": null,
+    "ms": 69
+  }
+}
