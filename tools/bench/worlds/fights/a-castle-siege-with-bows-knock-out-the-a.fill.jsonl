@@ -1,0 +1,63 @@
+{"op":"meta","mode":"play","lang":"en","pack":"arena","sub":[],"seed":11,"look":"castle siege","mood":[0.2,0.8,0.7],"timeOfDay":14,"weather":"clear"}
+\
+{"op":"zone","id":"z_midfield","slot":"midfield","tag":"center","name":"Castle courtyard"}
+\
+{"op":"zone","id":"z_west_half","slot":"west_half","tag":"west_base","name":"West wall ramparts"}
+\
+{"op":"zone","id":"z_east_half","slot":"east_half","tag":"east_base","name":"East wall ramparts"}
+\
+{"op":"zone","id":"z_north_deck","slot":"north_deck","tag":"north_platform","name":"North platform"}
+\
+{"op":"zone","id":"z_south_deck","slot":"south_deck","tag":"south_platform","name":"South platform"}
+\
+{"op":"spawn","id":"sp_red","zone":"z_west_half","anchor":"spawn_pad","team":"red"}
+\
+{"op":"goal","id":"banner","zone":"z_midfield","anchor":"center","noun":"enemy banner","hyper":"banner","team":"red","body":"sensor","shape":"box","size":[1,2,0.2]}
+\
+{"op":"ent","id":"bow","kind":"pickup","noun":"longbow","hyper":"bow","zone":"z_west_half","anchor":"spawn_pad","body":"dynamic","shape":"box","size":[0.2,0.5,0.2]}
+\
+{"op":"ent","id":"archer_w1","kind":"npc","noun":"archer","hyper":"archer","zone":"z_west_half","anchor":"goal_ring","body":"dynamic","shape":"capsule","team":"blue"}
+\
+{"op":"ent","id":"archer_w2","kind":"npc","noun":"archer","hyper":"archer","zone":"z_west_half","anchor":"flank_n","body":"dynamic","shape":"capsule","team":"blue"}
+\
+{"op":"ent","id":"archer_e1","kind":"npc","noun":"archer","hyper":"archer","zone":"z_east_half","anchor":"goal_ring","body":"dynamic","shape":"capsule","team":"blue"}
+\
+{"op":"ent","id":"archer_e2","kind":"npc","noun":"archer","hyper":"archer","zone":"z_east_half","anchor":"flank_s","body":"dynamic","shape":"capsule","team":"blue"}
+\
+{"op":"ent","id":"wall_hazard","kind":"hazard","noun":"spike trap","hyper":"spikes","zone":"z_midfield","anchor":"scoreboard","body":"sensor","shape":"box","size":[5,0.2,2]}
+\
+{"op":"verb","id":"vb_carry_bow","verb":"physics_props.carry","on":"bow","params":{}}
+\
+{"op":"verb","id":"vb_shoot_bow","verb":"combat_sport.shoot","on":"bow","params":{"range":25,"speed":30,"damage":40,"cooldown":0.5,"at":"archer_w1,archer_w2,archer_e1,archer_e2"}}
+\
+{"op":"verb","id":"vb_player_health","verb":"combat_sport.health","on":"player","params":{"hp":100,"respawn":true}}
+\
+{"op":"verb","id":"vb_archer_health_w1","verb":"combat_sport.health","on":"archer_w1","params":{"hp":30,"respawn":false}}
+\
+{"op":"verb","id":"vb_archer_health_w2","verb":"combat_sport.health","on":"archer_w2","params":{"hp":30,"respawn":false}}
+\
+{"op":"verb","id":"vb_archer_health_e1","verb":"combat_sport.health","on":"archer_e1","params":{"hp":30,"respawn":false}}
+\
+{"op":"verb","id":"vb_archer_health_e2","verb":"combat_sport.health","on":"archer_e2","params":{"hp":30,"respawn":false}}
+\
+{"op":"verb","id":"vb_hazard_spikes","verb":"motion_hazards.hazard","on":"wall_hazard","params":{"respawn":true}}
+\
+{"op":"rule","id":"r_win","when":{"t":"enter","a":"player","b":"banner"},"if":[{"l":"archer_w1.hp","op":"eq","r":0},{"l":"archer_w2.hp","op":"eq","r":0},{"l":"archer_e1.hp","op":"eq","r":0},{"l":"archer_e2.hp","op":"eq","r":0}],"then":[{"e":"win","target":"player"}],"once":true}
+\
+{"op":"rule","id":"r_lose","when":{"t":"health_lte","a":"player","n":0},"then":[{"e":"lose","target":"player"}],"once":true}
+\
+{"op":"expect","id":"x_clear","prop":"win_reachable","a":"sp_red","b":"banner","headline":true,"text":"Must clear the wall archers before capturing the banner"}
+\
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":6}}
+\
+{"op":"npc","id":"archer_w1","role":"rival","zone":"z_west_half","anchor":"goal_ring","team":"blue","menu":["archer.idle"],"dflt":"archer.idle"}
+\
+{"op":"npc","id":"archer_w2","role":"rival","zone":"z_west_half","anchor":"flank_n","team":"blue","menu":["archer.idle"],"dflt":"archer.idle"}
+\
+{"op":"npc","id":"archer_e1","role":"rival","zone":"z_east_half","anchor":"goal_ring","team":"blue","menu":["archer.idle"],"dflt":"archer.idle"}
+\
+{"op":"npc","id":"archer_e2","role":"rival","zone":"z_east_half","anchor":"flank_s","team":"blue","menu":["archer.idle"],"dflt":"archer.idle"}
+\
+{"op":"end","layer":"gameplay"}
+\
+{"op":"end","layer":"cosmetic"}

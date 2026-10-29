@@ -1,0 +1,13 @@
+# Fights (shoot and health verbs, 29 Oct): written before the first live run, benched once, unedited
+A wizard duel on a floating island: throw fireballs, knock out the rival mage to win
+Zombie survival in an abandoned mall: knock out 8 zombies before they get you
+Laser tag in a neon warehouse, red team against blue team, first to 10 tags
+A space station shooter: blast the security drones and reach the escape pod
+A castle siege with bows: knock out the archers on the walls, then grab the banner
+A cowboy showdown in a desert town: outdraw three bandits
+Paintball in a forest, two teams, most hits in 90 seconds wins
+A robot arena: destroy the boss robot's core while dodging its lasers
+Defend the crystal: monsters attack the crystal, survive for 60 seconds
+A ninja dojo: knock out three training dummies with throwing stars, then beat the sensei
+Water balloon fight in a backyard, first to five hits
+A pirate ship battle: fire the cannons at the enemy ship until it sinks

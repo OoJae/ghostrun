@@ -1,0 +1,21 @@
+{"op":"meta","mode":"play","lang":"en","pack":"arena","sub":[],"seed":18,"look":"open ocean daylight","mood":[0.4,0.9,0.8],"timeOfDay":12,"weather":"clear"}
+{"op":"zone","id":"z_player","slot":"west_half","tag":"base","name":"Player Galleon"}
+{"op":"zone","id":"z_enemy","slot":"east_half","tag":"base","name":"Enemy Frigate"}
+{"op":"spawn","id":"sp_red","zone":"z_player","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"goal_sink","zone":"z_enemy","anchor":"goal_ring","noun":"enemy hull","hyper":"hull","team":"red"}
+{"op":"ent","id":"cannon_port","kind":"prop","noun":"portside cannon","hyper":"cannon","zone":"z_player","anchor":"flank_n","body":"fixed","shape":"box","size":[0.5,0.5,2.0]}
+{"op":"ent","id":"cannon_starboard","kind":"prop","noun":"starboard cannon","hyper":"cannon","zone":"z_player","anchor":"flank_s","body":"fixed","shape":"box","size":[0.5,0.5,2.0]}
+{"op":"ent","id":"ammo_crate","kind":"pickup","noun":"ammo crate","hyper":"ammo","zone":"z_player","anchor":"spawn_pad","body":"dynamic","shape":"box","size":[0.4,0.4,0.4]}
+{"op":"ent","id":"enemy_ship","kind":"npc","noun":"enemy frigate","hyper":"vessel","zone":"z_enemy","anchor":"center","body":"fixed","shape":"hull"}
+{"op":"ent","id":"enemy_hull","kind":"goal","noun":"enemy hull integrity","hyper":"hull","zone":"z_enemy","anchor":"center","body":"sensor","shape":"box","size":[4,2,0.5]}
+{"op":"ent","id":"player_hull","kind":"prop","noun":"your hull integrity","hyper":"hull","zone":"z_player","anchor":"center","body":"fixed","shape":"box","size":[4,2,0.5]}
+{"op":"verb","id":"vb_carry_ammo","verb":"physics_props.carry","on":"ammo_crate","params":{}}
+{"op":"verb","id":"vb_shoot_port","verb":"combat_sport.shoot","on":"cannon_port","params":{"range":30,"speed":25,"damage":25,"cooldown":1,"at":"enemy_ship"}}
+{"op":"verb","id":"vb_shoot_star","verb":"combat_sport.shoot","on":"cannon_starboard","params":{"range":30,"speed":25,"damage":25,"cooldown":1,"at":"enemy_ship"}}
+{"op":"verb","id":"vb_wind","verb":"motion_hazards.wind","on":"player_hull","params":{"x":5,"z":0}}
+{"op":"rule","id":"r_win","when":{"t":"health_lte","a":"enemy_ship","n":0},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose","when":{"t":"health_lte","a":"player_hull","n":0},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_ammo_limit","when":{"t":"pickup","a":"ammo_crate","b":"player"},"then":[{"e":"set_state","target":"cannon_port","v":"ready"},{"e":"set_state","target":"cannon_starboard","v":"ready"}]}
+{"op":"expect","id":"x_cannon","prop":"headline","a":"sp_red","b":"goal_sink","headline":true,"text":"Each cannon shot must be aimed against a moving target with a wind drift mechanic"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

@@ -1,0 +1,38 @@
+{"op":"meta","mode":"play","lang":"en","pack":"arena","sub":[],"seed":10,"look":"low-gravity space station","mood":[-0.1,0.85,0.8],"timeOfDay":12,"weather":"clear"}
+{"op":"zone","id":"z_midfield","slot":"midfield","tag":"central","name":"Core Hub"}
+{"op":"zone","id":"z_west_half","slot":"west_half","tag":"west","name":"West Ducts"}
+{"op":"zone","id":"z_east_half","slot":"east_half","tag":"east","name":"East Corridor"}
+{"op":"zone","id":"z_north_deck","slot":"north_deck","tag":"north","name":"North Platform"}
+{"op":"zone","id":"z_south_deck","slot":"south_deck","tag":"south","name":"South Platform"}
+{"op":"spawn","id":"sp_red","zone":"z_west_half","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"escape_pod","zone":"z_east_half","anchor":"goal_ring","noun":"escape pod","hyper":"exit","team":"red"}
+{"op":"ent","id":"laser_pistol","kind":"pickup","noun":"laser pistol","hyper":"weapon","zone":"z_midfield","anchor":"center","body":"dynamic","shape":"box","size":[0.2,0.2,0.6]}
+{"op":"ent","id":"airlock_door","kind":"door","noun":"airlock door","hyper":"door","zone":"z_east_half","anchor":"goal_ring","body":"fixed","shape":"box"}
+{"op":"ent","id":"drone_1","kind":"npc","noun":"security drone","hyper":"enemy","zone":"z_midfield","anchor":"flank_n","body":"dynamic","shape":"capsule","size":[0.3,0.3,0.6],"team":"blue"}
+{"op":"ent","id":"drone_2","kind":"npc","noun":"security drone","hyper":"enemy","zone":"z_midfield","anchor":"flank_s","body":"dynamic","shape":"capsule","size":[0.3,0.3,0.6],"team":"blue"}
+{"op":"ent","id":"drone_3","kind":"npc","noun":"security drone","hyper":"enemy","zone":"z_west_half","anchor":"flank_n","body":"dynamic","shape":"capsule","size":[0.3,0.3,0.6],"team":"blue"}
+{"op":"ent","id":"drone_4","kind":"npc","noun":"security drone","hyper":"enemy","zone":"z_west_half","anchor":"flank_s","body":"dynamic","shape":"capsule","size":[0.3,0.3,0.6],"team":"blue"}
+{"op":"ent","id":"drone_5","kind":"npc","noun":"security drone","hyper":"enemy","zone":"z_east_half","anchor":"flank_n","body":"dynamic","shape":"capsule","size":[0.3,0.3,0.6],"team":"blue"}
+{"op":"ent","id":"drone_6","kind":"npc","noun":"security drone","hyper":"enemy","zone":"z_east_half","anchor":"flank_s","body":"dynamic","shape":"capsule","size":[0.3,0.3,0.6],"team":"blue"}
+{"op":"verb","id":"vb_carry_pistol","verb":"physics_props.carry","on":"laser_pistol","params":{}}
+{"op":"verb","id":"vb_lock_airlock","verb":"puzzle.lock","on":"airlock_door","params":{"key":"laser_pistol","keep":false}}
+{"op":"verb","id":"vb_shoot_player","verb":"combat_sport.shoot","on":"player","params":{"range":20,"speed":30,"damage":25,"cooldown":0.5,"at":"drone_1,drone_2,drone_3,drone_4,drone_5,drone_6"}}
+{"op":"verb","id":"vb_shoot_drone_1","verb":"combat_sport.shoot","on":"drone_1","params":{"range":15,"speed":28,"damage":20,"cooldown":1,"at":"player"}}
+{"op":"verb","id":"vb_shoot_drone_2","verb":"combat_sport.shoot","on":"drone_2","params":{"range":15,"speed":28,"damage":20,"cooldown":1,"at":"player"}}
+{"op":"verb","id":"vb_shoot_drone_3","verb":"combat_sport.shoot","on":"drone_3","params":{"range":15,"speed":28,"damage":20,"cooldown":1,"at":"player"}}
+{"op":"verb","id":"vb_shoot_drone_4","verb":"combat_sport.shoot","on":"drone_4","params":{"range":15,"speed":28,"damage":20,"cooldown":1,"at":"player"}}
+{"op":"verb","id":"vb_shoot_drone_5","verb":"combat_sport.shoot","on":"drone_5","params":{"range":15,"speed":28,"damage":20,"cooldown":1,"at":"player"}}
+{"op":"verb","id":"vb_shoot_drone_6","verb":"combat_sport.shoot","on":"drone_6","params":{"range":15,"speed":28,"damage":20,"cooldown":1,"at":"player"}}
+{"op":"verb","id":"vb_health_player","verb":"combat_sport.health","on":"player","params":{"hp":100,"respawn":false}}
+{"op":"verb","id":"vb_health_drone_1","verb":"combat_sport.health","on":"drone_1","params":{"hp":30,"respawn":false}}
+{"op":"verb","id":"vb_health_drone_2","verb":"combat_sport.health","on":"drone_2","params":{"hp":30,"respawn":false}}
+{"op":"verb","id":"vb_health_drone_3","verb":"combat_sport.health","on":"drone_3","params":{"hp":30,"respawn":false}}
+{"op":"verb","id":"vb_health_drone_4","verb":"combat_sport.health","on":"drone_4","params":{"hp":30,"respawn":false}}
+{"op":"verb","id":"vb_health_drone_5","verb":"combat_sport.health","on":"drone_5","params":{"hp":30,"respawn":false}}
+{"op":"verb","id":"vb_health_drone_6","verb":"combat_sport.health","on":"drone_6","params":{"hp":30,"respawn":false}}
+{"op":"rule","id":"r_win","when":{"t":"enter","a":"player","b":"escape_pod"},"if":[{"l":"drone_1.hp","op":"eq","r":"0"},{"l":"drone_2.hp","op":"eq","r":"0"},{"l":"drone_3.hp","op":"eq","r":"0"},{"l":"drone_4.hp","op":"eq","r":"0"},{"l":"drone_5.hp","op":"eq","r":"0"},{"l":"drone_6.hp","op":"eq","r":"0"}],"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose","when":{"t":"health_lte","a":"player","n":0},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"expect","id":"x_escape","prop":"win_reachable","a":"sp_red","b":"escape_pod","headline":true,"text":"Three-body security drone waves gate the escape pod exit"}
+{"op":"end","layer":"gameplay"}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":6}}
+{"op":"end","layer":"cosmetic"}

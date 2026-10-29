@@ -1,0 +1,27 @@
+{"op":"meta","mode":"play","lang":"en","pack":"arena","sub":[],"seed":14,"look":"metal industrial arena with cover obstacles and raised side decks","mood":[0.3,0.8,0.7],"timeOfDay":14,"weather":"clear"}
+{"op":"zone","id":"z_midfield","slot":"midfield","tag":"center","name":"Central arena"}
+{"op":"zone","id":"z_west_base","slot":"west_half","tag":"base","name":"West base"}
+{"op":"zone","id":"z_east_base","slot":"east_half","tag":"base","name":"East base"}
+{"op":"zone","id":"z_north_deck","slot":"north_deck","tag":"platform","name":"North raised deck"}
+{"op":"zone","id":"z_south_deck","slot":"south_deck","tag":"platform","name":"South raised deck"}
+{"op":"spawn","id":"sp_red","zone":"z_west_base","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"core_goal","zone":"z_east_base","anchor":"center","noun":"boss core","hyper":"core","team":"red","body":"sensor","shape":"sphere"}
+{"op":"ent","id":"laser_1","kind":"hazard","noun":"laser sweep","hyper":"lasers","zone":"z_midfield","anchor":"flank_n","body":"sensor","shape":"box","size":[4,0.2,0.2]}
+{"op":"ent","id":"laser_2","kind":"hazard","noun":"laser sweep","hyper":"lasers","zone":"z_midfield","anchor":"flank_s","body":"sensor","shape":"box","size":[4,0.2,0.2]}
+{"op":"ent","id":"cover_1","kind":"prop","noun":"metal crate","hyper":"cover","zone":"z_midfield","anchor":"center_n","body":"fixed","shape":"box","size":[1,1,1]}
+{"op":"ent","id":"cover_2","kind":"prop","noun":"metal crate","hyper":"cover","zone":"z_midfield","anchor":"center_s","body":"fixed","shape":"box","size":[1,1,1]}
+{"op":"ent","id":"boss_robot","kind":"npc","noun":"boss robot","hyper":"boss robot","zone":"z_midfield","anchor":"center","body":"kinematic","shape":"hull","team":"","menu":["boss.attack"],"dflt":"boss.attack"}
+{"op":"ent","id":"player_drone","kind":"npc","noun":"combat drone","hyper":"drone","zone":"z_west_base","anchor":"spawn_pad","body":"kinematic","shape":"hull","team":"red","menu":["drone.control"],"dflt":"drone.control"}
+{"op":"verb","id":"vb_laser_1_hazard","verb":"motion_hazards.hazard","on":"laser_1","params":{"respawn":true}}
+{"op":"verb","id":"vb_laser_2_hazard","verb":"motion_hazards.hazard","on":"laser_2","params":{"respawn":true}}
+{"op":"verb","id":"vb_boss_shoot","verb":"combat_sport.shoot","on":"boss_robot","params":{"range":20,"speed":30,"damage":20,"cooldown":1,"at":""}}
+{"op":"verb","id":"vb_player_shoot","verb":"combat_sport.shoot","on":"player_drone","params":{"range":20,"speed":30,"damage":25,"cooldown":1,"at":""}}
+{"op":"verb","id":"vb_player_health","verb":"combat_sport.health","on":"player_drone","params":{"hp":100,"respawn":false}}
+{"op":"verb","id":"vb_boss_health","verb":"combat_sport.health","on":"boss_robot","params":{"hp":200,"respawn":false}}
+{"op":"rule","id":"r_win_core","when":{"t":"enter","a":"player_drone","b":"core_goal"},"if":[],"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose_player","when":{"t":"health_lte","a":"player_drone","n":0},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_boss_dead","when":{"t":"health_lte","a":"boss_robot","n":0},"then":[{"e":"emit","target":"boss_robot","fx":"explosion"}],"once":true}
+{"op":"expect","id":"x_boss_fight","prop":"win_reachable","a":"sp_red","b":"core_goal","headline":true,"text":"Boss fight requires dodging laser sweeps to reach and destroy the core"}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":6}}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

@@ -1,0 +1,26 @@
+{"op":"meta","mode":"play","lang":"en","pack":"arena","sub":[],"seed":9,"look":"neon warehouse","mood":[0.4,0.85,0.6],"timeOfDay":20,"weather":"clear"}
+{"op":"zone","id":"z_midfield","slot":"midfield","tag":"arena","name":"Neon arena center"}
+{"op":"zone","id":"z_west","slot":"west_half","tag":"arena","name":"Red base"}
+{"op":"zone","id":"z_east","slot":"east_half","tag":"arena","name":"Blue base"}
+{"op":"zone","id":"z_north","slot":"north_deck","tag":"arena","name":"North platform"}
+{"op":"zone","id":"z_south","slot":"south_deck","tag":"arena","name":"South platform"}
+{"op":"spawn","id":"sp_red","zone":"z_west","anchor":"spawn_pad","team":"red"}
+{"op":"spawn","id":"sp_blue","zone":"z_east","anchor":"spawn_pad","team":"blue"}
+{"op":"goal","id":"goal_red","zone":"z_west","anchor":"goal_ring","noun":"red tag zone","hyper":"zone","team":"red"}
+{"op":"goal","id":"goal_blue","zone":"z_east","anchor":"goal_ring","noun":"blue tag zone","hyper":"zone","team":"blue"}
+{"op":"ent","id":"red_tagger","kind":"pickup","noun":"laser tagger","hyper":"tagger","zone":"z_west","anchor":"spawn_pad","body":"dynamic","shape":"box","size":[0.3,0.3,0.6]}
+{"op":"ent","id":"blue_tagger","kind":"pickup","noun":"laser tagger","hyper":"tagger","zone":"z_east","anchor":"spawn_pad","body":"dynamic","shape":"box","size":[0.3,0.3,0.6]}
+{"op":"ent","id":"neon_hazard","kind":"hazard","noun":"neon laser grid","hyper":"laser","zone":"z_midfield","anchor":"center","body":"sensor","shape":"box","size":[8,0.2,8]}
+{"op":"verb","id":"vb_shoot_red","verb":"combat_sport.shoot","on":"red_tagger","params":{"range":20,"speed":30,"damage":0,"cooldown":0.5,"at":"player_blue"}}
+{"op":"verb","id":"vb_shoot_blue","verb":"combat_sport.shoot","on":"blue_tagger","params":{"range":20,"speed":30,"damage":0,"cooldown":0.5,"at":"player_red"}}
+{"op":"verb","id":"vb_hazard","verb":"motion_hazards.hazard","on":"neon_hazard","params":{"respawn":true}}
+{"op":"rule","id":"r_score_red","when":{"t":"hit","a":"player_red","b":"blue_tagger"},"if":[{"l":"player_red.team","op":"eq","r":"red"}],"then":[{"e":"score","target":"team:red","n":1}],"once":false}
+{"op":"rule","id":"r_score_blue","when":{"t":"hit","a":"player_blue","b":"red_tagger"},"if":[{"l":"player_blue.team","op":"eq","r":"blue"}],"then":[{"e":"score","target":"team:blue","n":1}],"once":false}
+{"op":"rule","id":"r_win_red","when":{"t":"score_gte","a":"team:red","n":10},"then":[{"e":"win","target":"player_red"}],"once":true}
+{"op":"rule","id":"r_win_blue","when":{"t":"score_gte","a":"team:blue","n":10},"then":[{"e":"win","target":"player_blue"}],"once":true}
+{"op":"expect","id":"x_tag","prop":"win_reachable","a":"sp_red","b":"goal_red","headline":true,"text":"First team to hit exactly 10 neon tags"}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":8}}
+{"op":"end","layer":"gameplay"}
+{"op":"dress","id":"d_neon_lights","kind":"prop","noun":"neon light fixtures","hyper":"light","zone":"z_midfield","anchor":"deck_center","body":"fixed","shape":"box","size":[10,0.2,0.2]}
+{"op":"poster","id":"poster_0","kind":"sign","noun":"Scoreboard","hyper":"sign","zone":"z_midfield","anchor":"scoreboard","body":"fixed","shape":"box","size":[2,1,0.1]}
+{"op":"end","layer":"cosmetic"}

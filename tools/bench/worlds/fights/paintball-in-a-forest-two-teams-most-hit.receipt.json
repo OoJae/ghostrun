@@ -1,0 +1,242 @@
+{
+  "prompt": "Paintball in a forest, two teams, most hits in 90 seconds wins",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "team_sport",
+    "setting": "forested clearing with cover and two team bases",
+    "role": "player on a team",
+    "goal": "achieve highest team score of hits",
+    "fail": "other team scores more hits in 90 seconds",
+    "mood": "adrenaline",
+    "pack": "outdoor",
+    "sub": [],
+    "safety": "arcade",
+    "headline": "90-second score limit with two opposing paintball teams",
+    "nouns": [
+      {
+        "noun": "paintball",
+        "hyper": "ammunition"
+      },
+      {
+        "noun": "forest",
+        "hyper": "terrain"
+      },
+      {
+        "noun": "teams",
+        "hyper": "groups"
+      },
+      {
+        "noun": "hits",
+        "hyper": "score"
+      },
+      {
+        "noun": "timer",
+        "hyper": "time_limiter"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.8,
+      "arousal": 0.9,
+      "tension": 0.75
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "dc8d3ce472305163e1b6555371db326612612d4540a2c5dc9fe6c3a9cd0d7058",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_paintball_match",
+      "text": "90-second score limit with two opposing paintball teams",
+      "status": "counterexample",
+      "method": "static goal regression over rules"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 1,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 9 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "chain",
+          "text": "win unreachable in the rule graph"
+        },
+        "ms": 1,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "counterexample",
+        "method": "static goal regression over rules",
+        "text": "no rule chain lets the player trigger the win",
+        "src": ""
+      },
+      {
+        "id": "T2:r_end_blue_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_end_blue_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_end_blue_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_end_red_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_end_red_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_end_red_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_score_blue",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score_blue"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_score_blue: nothing produces hit on gun_red",
+        "cx": null
+      },
+      {
+        "id": "T2:r_score_red",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score_red"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_score_red: nothing produces hit on gun_blue",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_bank",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_bank"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 12,
+        "status": "verified",
+        "text": "r_secret_bank fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_dock",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_dock"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 10,
+        "status": "verified",
+        "text": "r_secret_dock fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_n",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_n"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 10,
+        "status": "verified",
+        "text": "r_secret_flank_n fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_shore",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_shore"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 9,
+        "status": "verified",
+        "text": "r_secret_shore fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_water",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_water"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 9,
+        "status": "verified",
+        "text": "r_secret_water fires exactly once",
+        "cx": null
+      }
+    ],
+    "par": null,
+    "ms": 679
+  }
+}

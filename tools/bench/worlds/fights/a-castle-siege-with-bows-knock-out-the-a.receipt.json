@@ -1,0 +1,212 @@
+{
+  "prompt": "A castle siege with bows: knock out the archers on the walls, then grab the banner",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "FPS / Action",
+    "setting": "A medieval castle courtyard leading up to a fortified wall with archer positions and a central flag.",
+    "role": "Soldier",
+    "goal": "Knock out all the archers defending the walls and then capture the enemy banner.",
+    "fail": "Getting shot down by the archers before reaching the banner.",
+    "mood": "Intense",
+    "pack": "arena",
+    "sub": [],
+    "safety": "arcade",
+    "headline": "Must clear the wall archers before capturing the banner",
+    "nouns": [
+      {
+        "noun": "castle",
+        "hyper": "fortification"
+      },
+      {
+        "noun": "archers",
+        "hyper": "enemies"
+      },
+      {
+        "noun": "walls",
+        "hyper": "structure"
+      },
+      {
+        "noun": "banner",
+        "hyper": "goal"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.2,
+      "arousal": 0.8,
+      "tension": 0.7
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "473432aa44a30acd48b2e331b31f5859802896651187f9d8af21732d86bddd99",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_clear",
+      "text": "Must clear the wall archers before capturing the banner",
+      "status": "counterexample",
+      "method": "static goal regression over rules + physics, 12 AI runners vs 4 bots"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 6 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (player enters banner)",
+        "src": ""
+      },
+      {
+        "id": "T2:r_lose",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_lose: nothing in the world hurts the player",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_deck_center",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_deck_center"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 11,
+        "status": "verified",
+        "text": "r_secret_deck_center fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_deck_e",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_deck_e"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 10,
+        "status": "verified",
+        "text": "r_secret_deck_e fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_deck_e_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_deck_e_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 10,
+        "status": "verified",
+        "text": "r_secret_deck_e_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_n",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_n"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 11,
+        "status": "verified",
+        "text": "r_secret_flank_n fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 0,
+        "src": "ai",
+        "ms": 12,
+        "status": "counterexample",
+        "text": "r_win fires exactly once",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "firings",
+          "text": "never fired when forced"
+        }
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "counterexample",
+        "method": "physics, 12 AI runners vs 4 bots",
+        "n": 12,
+        "k": 0,
+        "text": "no AI runner could win vs 4 bots",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "wins",
+          "text": "12 got stuck (in the Castle courtyard ×12)"
+        },
+        "src": "",
+        "ms": 777
+      }
+    ],
+    "par": null,
+    "ms": 1125
+  }
+}

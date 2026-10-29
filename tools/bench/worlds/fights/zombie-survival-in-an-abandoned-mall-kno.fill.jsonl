@@ -1,0 +1,42 @@
+{"op":"meta","mode":"play","lang":"en","pack":"floor_plan","sub":[],"seed":8,"look":"abandoned mall","mood":[-0.3,0.8,0.85],"timeOfDay":14,"weather":"overcast"}
+{"op":"zone","id":"z_yard","slot":"yard","tag":"outside","name":"Mall parking lot"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Mall entrance"}
+{"op":"zone","id":"z_west","slot":"room_sw","tag":"room","name":"West wing"}
+{"op":"zone","id":"z_east","slot":"room_se","tag":"room","name":"East wing"}
+{"op":"zone","id":"z_north","slot":"room_nw","tag":"room","name":"North wing"}
+{"op":"zone","id":"z_main","slot":"main_room","tag":"hall","name":"Central atrium"}
+{"op":"spawn","id":"sp_red","zone":"z_yard","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"goal_win","zone":"z_main","anchor":"corner_w","noun":"survivor triumph","hyper":"goal","team":"red"}
+{"op":"ent","id":"weapon_pipe","kind":"pickup","noun":"metal pipe","hyper":"weapon","zone":"z_entrance","anchor":"center","body":"dynamic","shape":"box","size":[0.3,0.8,0.2]}
+{"op":"ent","id":"zombie_1","kind":"npc","noun":"zombie","hyper":"undead enemy","zone":"z_west","anchor":"corner_sw","body":"dynamic","shape":"capsule"}
+{"op":"ent","id":"zombie_2","kind":"npc","noun":"zombie","hyper":"undead enemy","zone":"z_west","anchor":"corner_ne","body":"dynamic","shape":"capsule"}
+{"op":"ent","id":"zombie_3","kind":"npc","noun":"zombie","hyper":"undead enemy","zone":"z_east","anchor":"corner_sw","body":"dynamic","shape":"capsule"}
+{"op":"ent","id":"zombie_4","kind":"npc","noun":"zombie","hyper":"undead enemy","zone":"z_east","anchor":"corner_ne","body":"dynamic","shape":"capsule"}
+{"op":"ent","id":"zombie_5","kind":"npc","noun":"zombie","hyper":"undead enemy","zone":"z_north","anchor":"corner_sw","body":"dynamic","shape":"capsule"}
+{"op":"ent","id":"zombie_6","kind":"npc","noun":"zombie","hyper":"undead enemy","zone":"z_north","anchor":"corner_ne","body":"dynamic","shape":"capsule"}
+{"op":"ent","id":"zombie_7","kind":"npc","noun":"zombie","hyper":"undead enemy","zone":"z_main","anchor":"corner_se","body":"dynamic","shape":"capsule"}
+{"op":"ent","id":"zombie_8","kind":"npc","noun":"zombie","hyper":"undead enemy","zone":"z_main","anchor":"corner_se","body":"dynamic","shape":"capsule"}
+{"op":"verb","id":"vb_carry_weapon","verb":"physics_props.carry","on":"weapon_pipe","params":{}}
+{"op":"verb","id":"vb_shoot_weapon","verb":"combat_sport.shoot","on":"weapon_pipe","params":{"range":3,"speed":20,"damage":30,"cooldown":0.5,"at":""}}
+{"op":"verb","id":"vb_player_jump","verb":"locomotion.jump","on":"player","params":{"jumpsMax":2}}
+{"op":"rule","id":"r_zombie_hit","when":{"t":"hit","a":"zombie_1","b":"weapon_pipe"},"then":[{"e":"damage","target":"zombie_1","n":30}]}
+{"op":"rule","id":"r_zombie2_hit","when":{"t":"hit","a":"zombie_2","b":"weapon_pipe"},"then":[{"e":"damage","target":"zombie_2","n":30}]}
+{"op":"rule","id":"r_zombie3_hit","when":{"t":"hit","a":"zombie_3","b":"weapon_pipe"},"then":[{"e":"damage","target":"zombie_3","n":30}]}
+{"op":"rule","id":"r_zombie4_hit","when":{"t":"hit","a":"zombie_4","b":"weapon_pipe"},"then":[{"e":"damage","target":"zombie_4","n":30}]}
+{"op":"rule","id":"r_zombie5_hit","when":{"t":"hit","a":"zombie_5","b":"weapon_pipe"},"then":[{"e":"damage","target":"zombie_5","n":30}]}
+{"op":"rule","id":"r_zombie6_hit","when":{"t":"hit","a":"zombie_6","b":"weapon_pipe"},"then":[{"e":"damage","target":"zombie_6","n":30}]}
+{"op":"rule","id":"r_zombie7_hit","when":{"t":"hit","a":"zombie_7","b":"weapon_pipe"},"then":[{"e":"damage","target":"zombie_7","n":30}]}
+{"op":"rule","id":"r_zombie8_hit","when":{"t":"hit","a":"zombie_8","b":"weapon_pipe"},"then":[{"e":"damage","target":"zombie_8","n":30}]}
+{"op":"rule","id":"r_zombie1_dead","when":{"t":"health_lte","a":"zombie_1","n":0},"then":[{"e":"score","target":"team:red","n":1},{"e":"destroy","target":"zombie_1"}],"once":true}
+{"op":"rule","id":"r_zombie2_dead","when":{"t":"health_lte","a":"zombie_2","n":0},"then":[{"e":"score","target":"team:red","n":1},{"e":"destroy","target":"zombie_2"}],"once":true}
+{"op":"rule","id":"r_zombie3_dead","when":{"t":"health_lte","a":"zombie_3","n":0},"then":[{"e":"score","target":"team:red","n":1},{"e":"destroy","target":"zombie_3"}],"once":true}
+{"op":"rule","id":"r_zombie4_dead","when":{"t":"health_lte","a":"zombie_4","n":0},"then":[{"e":"score","target":"team:red","n":1},{"e":"destroy","target":"zombie_4"}],"once":true}
+{"op":"rule","id":"r_zombie5_dead","when":{"t":"health_lte","a":"zombie_5","n":0},"then":[{"e":"score","target":"team:red","n":1},{"e":"destroy","target":"zombie_5"}],"once":true}
+{"op":"rule","id":"r_zombie6_dead","when":{"t":"health_lte","a":"zombie_6","n":0},"then":[{"e":"score","target":"team:red","n":1},{"e":"destroy","target":"zombie_6"}],"once":true}
+{"op":"rule","id":"r_zombie7_dead","when":{"t":"health_lte","a":"zombie_7","n":0},"then":[{"e":"score","target":"team:red","n":1},{"e":"destroy","target":"zombie_7"}],"once":true}
+{"op":"rule","id":"r_zombie8_dead","when":{"t":"health_lte","a":"zombie_8","n":0},"then":[{"e":"score","target":"team:red","n":1},{"e":"destroy","target":"zombie_8"}],"once":true}
+{"op":"rule","id":"r_win","when":{"t":"score_gte","a":"team:red","n":8},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_player_dead","when":{"t":"health_lte","a":"player","n":0},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"expect","id":"exp_mall","prop":"win_reachable","a":"sp_red","b":"goal_win","headline":true,"text":"Mall floor must allow close-range knockouts against 8 zombies"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

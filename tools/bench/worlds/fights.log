@@ -1,0 +1,74 @@
+  · fill line 1: invalid — weather: Invalid type: Expected ("clear" | "rain" | "snow" | "fog" | "storm") but received "windy"
+  · fill line 22: late — gameplay op 'npc' after the gameplay layer closed
+[1/12] {"prompt":"A wizard duel on a floating island: throw fireballs, knock out the rival mage to win","pack":"outdoor","intentMs":1232,"fillFirstTokenMs":1816,"firstEntityMs":1887,"gameplayEndMs":2066,"fillDoneMs":2090,"playableMs":2098,"proofMs":1472,"outTok":1133,"invalid":1,"lines":23,"intentModel":"qwen-3.8-27b","fillModel":"gpt-oss-120b","controls":9,"headline":"counterexample","t3win":"0/12","par":null,"tooEasy":false,"chips":13}
+  · fill line 1: invalid — weather: Invalid type: Expected ("clear" | "rain" | "snow" | "fog" | "storm") but received "overcast"
+[2/12] {"prompt":"Zombie survival in an abandoned mall: knock out 8 zombies before they get you","pack":"floor_plan","intentMs":542,"fillFirstTokenMs":1220,"firstEntityMs":1240,"gameplayEndMs":1665,"fillDoneMs":1669,"playableMs":1672,"proofMs":1489,"outTok":2126,"invalid":1,"lines":42,"intentModel":"qwen-3.8-27b","fillModel":"gpt-oss-120b","controls":10,"headline":"verified","t3win":"12/12","par":21.6,"tooEasy":false,"chips":38}
+  · fill line 17: unresolved — 'rule' references an id that never arrived
+  · fill line 18: unresolved — 'rule' references an id that never arrived
+  · fill line 19: unresolved — 'rule' references an id that never arrived
+  · fill line 20: unresolved — 'rule' references an id that never arrived
+  · fill line 25: invalid — prompt: Invalid key: Expected "prompt" but received undefined
+[3/12] {"prompt":"Laser tag in a neon warehouse, red team against blue team, first to 10 tags","pack":"arena","intentMs":847,"fillFirstTokenMs":1636,"firstEntityMs":1702,"gameplayEndMs":1887,"fillDoneMs":1953,"playableMs":1955,"proofMs":324,"outTok":1553,"invalid":1,"lines":26,"intentModel":"qwen-3.8-27b","fillModel":"gpt-oss-120b","controls":9,"headline":"counterexample","t3win":"12/12","par":0.2,"tooEasy":true,"chips":11}
+  · fill line 33: invalid — if: Invalid length: Expected <=4 but received 6
+  · fill line 37: late — gameplay op 'law' after the gameplay layer closed
+[4/12] {"prompt":"A space station shooter: blast the security drones and reach the escape pod","pack":"arena","intentMs":599,"fillFirstTokenMs":1203,"firstEntityMs":1277,"gameplayEndMs":1678,"fillDoneMs":1689,"playableMs":1693,"proofMs":1956,"outTok":1997,"invalid":1,"lines":38,"intentModel":"qwen-3.8-27b","fillModel":"gpt-oss-120b","controls":10,"headline":"verified","t3win":"12/12","par":6,"tooEasy":false,"chips":7}
+  · fill line 2: invalid — not JSON
+  · fill line 4: invalid — not JSON
+  · fill line 6: invalid — not JSON
+  · fill line 8: invalid — not JSON
+  · fill line 10: invalid — not JSON
+  · fill line 12: invalid — not JSON
+  · fill line 14: invalid — not JSON
+  · fill line 16: invalid — not JSON
+  · fill line 18: invalid — not JSON
+  · fill line 20: invalid — not JSON
+  · fill line 22: invalid — not JSON
+  · fill line 24: invalid — not JSON
+  · fill line 26: invalid — not JSON
+  · fill line 28: invalid — not JSON
+  · fill line 30: invalid — not JSON
+  · fill line 32: invalid — not JSON
+  · fill line 34: invalid — not JSON
+  · fill line 36: invalid — not JSON
+  · fill line 38: invalid — not JSON
+  · fill line 40: invalid — not JSON
+  · fill line 42: invalid — not JSON
+  · fill line 44: invalid — not JSON
+  · fill line 46: invalid — not JSON
+  · fill line 48: invalid — not JSON
+  · fill line 50: invalid — not JSON
+  · fill line 52: invalid — not JSON
+  · fill line 53: invalid — duplicate id 'archer_w1'
+  · fill line 54: invalid — not JSON
+  · fill line 55: invalid — duplicate id 'archer_w2'
+  · fill line 56: invalid — not JSON
+  · fill line 57: invalid — duplicate id 'archer_e1'
+  · fill line 58: invalid — not JSON
+  · fill line 59: invalid — duplicate id 'archer_e2'
+  · fill line 60: invalid — not JSON
+  · fill line 62: invalid — not JSON
+[5/12] {"prompt":"A castle siege with bows: knock out the archers on the walls, then grab the banner","pack":"arena","intentMs":695,"fillFirstTokenMs":1406,"firstEntityMs":1411,"gameplayEndMs":1719,"fillDoneMs":1721,"playableMs":1725,"proofMs":1125,"outTok":1705,"invalid":35,"lines":63,"intentModel":"qwen-3.8-27b","fillModel":"gpt-oss-120b","controls":10,"headline":"counterexample","t3win":"0/12","par":null,"tooEasy":false,"chips":9}
+  · fill line 15: invalid — kind: Invalid type: Expected ("prop" | "pickup" | "goal" | "spawn" | "checkpoint" | "door" | "switch" | "plate" | "hazard" | "platform" | "vehicle" | "npc" | "portal" | "sign") but received "health"
+  · fill line 16: invalid — kind: Invalid type: Expected ("prop" | "pickup" | "goal" | "spawn" | "checkpoint" | "door" | "switch" | "plate" | "hazard" | "platform" | "vehicle" | "npc" | "portal" | "sign") but received "health"
+  · fill line 17: invalid — kind: Invalid type: Expected ("prop" | "pickup" | "goal" | "spawn" | "checkpoint" | "door" | "switch" | "plate" | "hazard" | "platform" | "vehicle" | "npc" | "portal" | "sign") but received "health"
+  · fill line 18: invalid — kind: Invalid type: Expected ("prop" | "pickup" | "goal" | "spawn" | "checkpoint" | "door" | "switch" | "plate" | "hazard" | "platform" | "vehicle" | "npc" | "portal" | "sign") but received "health"
+[6/12] {"prompt":"A cowboy showdown in a desert town: outdraw three bandits","pack":"city_block","intentMs":697,"fillFirstTokenMs":1485,"firstEntityMs":1524,"gameplayEndMs":1829,"fillDoneMs":1835,"playableMs":1837,"proofMs":1421,"outTok":1977,"invalid":4,"lines":35,"intentModel":"qwen-3.8-27b","fillModel":"gpt-oss-120b","controls":9,"headline":"verified","t3win":"12/12","par":11.8,"tooEasy":false,"chips":13}
+[7/12] {"prompt":"Paintball in a forest, two teams, most hits in 90 seconds wins","pack":"outdoor","intentMs":539,"fillFirstTokenMs":1510,"firstEntityMs":1570,"gameplayEndMs":1802,"fillDoneMs":1806,"playableMs":1812,"proofMs":679,"outTok":1635,"invalid":0,"lines":26,"intentModel":"qwen-3.8-27b","fillModel":"gpt-oss-120b","controls":10,"headline":"counterexample","t3win":"-","par":null,"tooEasy":false,"chips":11}
+[8/12] {"prompt":"A robot arena: destroy the boss robot's core while dodging its lasers","pack":"arena","intentMs":708,"fillFirstTokenMs":1310,"firstEntityMs":1374,"gameplayEndMs":1648,"fillDoneMs":1654,"playableMs":1656,"proofMs":943,"outTok":1429,"invalid":0,"lines":27,"intentModel":"qwen-3.8-27b","fillModel":"gpt-oss-120b","controls":10,"headline":"verified","t3win":"12/12","par":11.4,"tooEasy":false,"chips":12}
+  · fill line 24: late — gameplay op 'law' after the gameplay layer closed
+  · fill line 25: late — gameplay op 'npc' after the gameplay layer closed
+  · fill line 26: late — gameplay op 'npc' after the gameplay layer closed
+  · fill line 27: late — gameplay op 'npc' after the gameplay layer closed
+  · fill line 28: late — gameplay op 'npc' after the gameplay layer closed
+[9/12] {"prompt":"Defend the crystal: monsters attack the crystal, survive for 60 seconds","pack":"outdoor","intentMs":533,"fillFirstTokenMs":1093,"firstEntityMs":1168,"gameplayEndMs":1316,"fillDoneMs":1380,"playableMs":1387,"proofMs":3935,"outTok":1271,"invalid":0,"lines":29,"intentModel":"qwen-3.8-27b","fillModel":"gpt-oss-120b","controls":10,"headline":"verified","t3win":"12/12","par":60,"tooEasy":false,"chips":11}
+[10/12] {"prompt":"A ninja dojo: knock out three training dummies with throwing stars, then beat the sensei","pack":"arena","intentMs":640,"fillFirstTokenMs":2156,"firstEntityMs":2207,"gameplayEndMs":2582,"fillDoneMs":2598,"playableMs":2601,"proofMs":281,"outTok":2344,"invalid":0,"lines":37,"intentModel":"qwen-3.8-27b","fillModel":"gpt-oss-120b","controls":10,"headline":"counterexample","t3win":"-","par":null,"tooEasy":false,"chips":9}
+  · fill line 24: invalid — kind: Invalid type: Expected ("prop" | "pickup" | "goal" | "spawn" | "checkpoint" | "door" | "switch" | "plate" | "hazard" | "platform" | "vehicle" | "npc" | "portal" | "sign") but received "health"
+  · fill line 25: invalid — kind: Invalid type: Expected ("prop" | "pickup" | "goal" | "spawn" | "checkpoint" | "door" | "switch" | "plate" | "hazard" | "platform" | "vehicle" | "npc" | "portal" | "sign") but received "health"
+  · fill line 26: invalid — kind: Invalid type: Expected ("prop" | "pickup" | "goal" | "spawn" | "checkpoint" | "door" | "switch" | "plate" | "hazard" | "platform" | "vehicle" | "npc" | "portal" | "sign") but received "health"
+  · fill line 27: invalid — kind: Invalid type: Expected ("prop" | "pickup" | "goal" | "spawn" | "checkpoint" | "door" | "switch" | "plate" | "hazard" | "platform" | "vehicle" | "npc" | "portal" | "sign") but received "health"
+  · fill line 28: invalid — kind: Invalid type: Expected ("prop" | "pickup" | "goal" | "spawn" | "checkpoint" | "door" | "switch" | "plate" | "hazard" | "platform" | "vehicle" | "npc" | "portal" | "sign") but received "health"
+  · fill line 40: invalid — prompt: Invalid key: Expected "prompt" but received undefined
+  · fill line 41: invalid — prompt: Invalid key: Expected "prompt" but received undefined
+[11/12] {"prompt":"Water balloon fight in a backyard, first to five hits","pack":"arena","intentMs":645,"fillFirstTokenMs":1806,"firstEntityMs":1872,"gameplayEndMs":2355,"fillDoneMs":2401,"playableMs":2404,"proofMs":1659,"outTok":2997,"invalid":7,"lines":42,"intentModel":"qwen-3.8-27b","fillModel":"gpt-oss-120b","controls":10,"headline":"verified","t3win":"12/12","par":7.1,"tooEasy":false,"chips":20}
+  · fill line 19: repaired — coerced field types/enums
+[12/12] {"prompt":"A pirate ship battle: fire the cannons at the enemy ship until it sinks","pack":"arena","intentMs":556,"fillFirstTokenMs":1175,"firstEntityMs":1220,"gameplayEndMs":1452,"fillDoneMs":1460,"playableMs":1461,"proofMs":575,"outTok":1220,"invalid":0,"lines":21,"intentModel":"qwen-3.8-27b","fillModel":"gpt-oss-120b","controls":7,"headline":"verified","t3win":"12/12","par":8.8,"tooEasy":false,"chips":10}

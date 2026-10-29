@@ -1,0 +1,246 @@
+{
+  "prompt": "Laser tag in a neon warehouse, red team against blue team, first to 10 tags",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "arena shooter",
+    "setting": "Neon-lit abandoned warehouse interior",
+    "role": "Red or blue laser tag player",
+    "goal": "Tag every opposing player until the score reaches 10 tags",
+    "fail": "Opposing team reaches 10 tags first",
+    "mood": "fast neon competition",
+    "pack": "arena",
+    "sub": [],
+    "safety": "arcade",
+    "headline": "First team to hit exactly 10 neon tags",
+    "nouns": [
+      {
+        "noun": "warehouse",
+        "hyper": "industrial space"
+      },
+      {
+        "noun": "neon lights",
+        "hyper": "light fixtures"
+      },
+      {
+        "noun": "tagger",
+        "hyper": "laser weapon"
+      },
+      {
+        "noun": "red team",
+        "hyper": "group"
+      },
+      {
+        "noun": "blue team",
+        "hyper": "group"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.4,
+      "arousal": 0.85,
+      "tension": 0.6
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "904a3e0c0765f1f956451f15a8d98d52d87b2237f5d4fb00391507181ca0c98c",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_tag",
+      "text": "First team to hit exactly 10 neon tags",
+      "status": "counterexample",
+      "method": "static goal regression over rules + physics, 12 AI runners + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 7 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win_goal (player enters goal_red)",
+        "src": ""
+      },
+      {
+        "id": "T2:r_secret_deck_center",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_deck_center"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 13,
+        "status": "verified",
+        "text": "r_secret_deck_center fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_deck_center_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_deck_center_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 10,
+        "status": "verified",
+        "text": "r_secret_deck_center_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_deck_e",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_deck_e"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 11,
+        "status": "verified",
+        "text": "r_secret_deck_e fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_deck_e_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_deck_e_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 10,
+        "status": "verified",
+        "text": "r_secret_deck_e_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_n",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_n"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 8,
+        "status": "verified",
+        "text": "r_secret_flank_n fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_s",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_s"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 9,
+        "status": "verified",
+        "text": "r_secret_flank_s fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win_goal",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win_goal"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_win_goal fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it (AI par 0.2 s)",
+        "cx": null,
+        "src": "",
+        "ms": 29
+      },
+      {
+        "id": "T3:too_easy",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "counterexample",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 12,
+        "text": "won in 0.2 s: over almost before it starts",
+        "cx": {
+          "where": null,
+          "have": 0.2,
+          "need": 3,
+          "unit": "s",
+          "text": "AI par 0.2 s < 3 s"
+        },
+        "src": "",
+        "ms": 0
+      }
+    ],
+    "par": {
+      "goldS": 0.2,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 324
+  }
+}
