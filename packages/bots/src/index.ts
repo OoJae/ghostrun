@@ -72,12 +72,15 @@ export class CastBrain implements Brain {
   readonly #shoves: boolean; // the player can be shoved (a ring game): rivals next to them do
   readonly #part = new Set<string>(); // NPCs the game is about (caught, shoved, named in a rule): never bystanders
   #armed = false;
+  /** Whose hit on the player loses the game outright (a rule: hit a=player b=it → lose; "" for anyone's). */
+  readonly #fatal = new Set<string>();
 
   constructor(nav: NavWorld, b: WorldBundle) {
     this.#nav = nav;
     this.#shoves = b.verbs.some((v) => v.verb === "combat_sport.shove" && v.on === "player");
     for (const v of b.verbs) if (/^combat_sport\./.test(v.verb)) this.#part.add(v.on);
     for (const r of b.rules) for (const id of [r.when.a, r.when.b, ...r.if.map((c) => c.l.split(".")[0]!)]) this.#part.add(id);
+    for (const r of b.rules) if (r.when.t === "hit" && (r.when.a === "player" || !r.when.a) && r.then.some((e) => e.e === "lose")) this.#fatal.add(r.when.b);
     // the thing to fight over; never a ball that gets thrown (bots don't throw, and crowding one
     // they can't pick up only kicks it into a corner): in a throwing game they go for the player
     const thrown = new Set(b.verbs.filter((v) => v.verb === "combat_sport.throw").map((v) => v.on));
@@ -181,7 +184,9 @@ export class CastBrain implements Brain {
       const e = w.entity(id);
       // enemies: anyone on another team (a bot with no team: the player)
       if (id === bot.id || !e || e.destroyed || (bot.team ? e.team === bot.team : id !== "player")) continue;
-      if (sentry && id === "player" && (w.hp("player") ?? 1) <= (w.maxHp("player") ?? 0) / 4) continue;
+      // (a sentry never decides the game alone: no shot at a player with no hit points to spare, or
+      // whom its hit would beat outright)
+      if (sentry && id === "player" && (w.hp("player") === null || w.hp("player")! <= w.maxHp("player")! / 4 || this.#fatal.has(bot.id) || this.#fatal.has(""))) continue;
       const q = w.pos(id);
       const d = d2(p, q);
       if (d >= bestD || Math.abs(q[1] - p[1]) > arms.range || !w.clearShot(muzzle, q)) continue;
