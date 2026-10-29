@@ -35,7 +35,7 @@ Phones get on-screen controls. Browsers with WebXR get **Enter VR** (first perso
 |---|---|
 | `packages/ir` | IR v1: the typed world document (Valibot), spec hash (SHA-256 over canonical JSON, cosmetics stripped), streaming JSONL fill parser with repairs and synonyms, patch merge |
 | `packages/sim` | Deterministic 60 Hz simulation on `@dimforge/rapier3d-deterministic`: character controllers, carry, tags, triggers, rule cascades, kit verbs, respawns |
-| `packages/kits` | Verb plugins: switch, pressure plate, lock and key, collectible, checkpoint, portal, timer, hazard, crumbling floor, wind, jump pad, inspect, throw, shove (plus jump, carry, oscillate, tag) |
+| `packages/kits` | Verb plugins: switch, pressure plate, lock and key, collectible, checkpoint, portal, timer, hazard, crumbling floor, wind, jump pad, inspect, throw, shove, shoot (spells, blasters, bows, claws) and hit points (plus jump, carry, oscillate, tag) |
 | `packages/bots` | NPCs that play their typed menu options (attack, defend, intercept, follow, patrol) on navmesh paths |
 | `packages/packs/*` | Layout packs: city block, floor plan (with doorways), arena, maze, outdoor, obstacle course; each tested over 50 seeds |
 | `packages/layout` | The placer and its logged repairs (verbs implied by kinds, collections, door placement, footprints, win fallbacks…) |
@@ -53,6 +53,8 @@ The same world and the same inputs give the same state hash everywhere, so a pro
 | Runtime | Node 26 | workerd | Chromium 156 | Firefox 157 | WebKit 27.2 |
 |---|---|---|---|---|---|
 | CTF state / event-log hash | `becbbeec` / `d9881845` | same | same | same | same |
+
+A zombie horde fought with a blaster (shots marched tick by tick, hit points, armed bots firing back) runs alongside it: `7d1e9553` / `0357af80`, with the same 26 shots, 18 hits and 3 knock-outs on all five.
 
 Simulation-path code avoids anything engines may compute differently (no `**`, no transcendental `Math`, no clocks or `Math.random`); a lint test enforces it.
 
