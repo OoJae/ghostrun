@@ -207,11 +207,28 @@ export class CastBrain implements Brain {
     const within = (id: string, p: Vec3, r: number) => d2(w.pos(id), p) < r * r;
     // a racer (at a wheel, or racing on foot): the next gate; blocking goes for the player when
     // close, drafting tucks in behind the player when close
+    // (a racer blocks from in front, holding the player's line on the way to its gate, never by
+    // driving back into them; drafting tucks in a few metres behind the player, never into them)
     const race = w.raceOf(b.id);
     if (race && b.beh !== "patrol" && b.beh !== "idle" && (w.ride(b.id) || b.beh === "race")) {
       const near = within("player", w.pos(b.id), b.beh === "follow" ? 14 : 8);
-      if (near && (b.beh === "intercept" || b.beh === "follow")) return w.pos("player");
-      return w.pos(race.next);
+      const gate = w.pos(race.next);
+      if (near && b.beh === "follow") {
+        const pr = w.ride("player");
+        const q = w.pos("player");
+        return pr ? [q[0] - pr.hx * 3, q[1], q[2] - pr.hz * 3] : q;
+      }
+      const mine = w.raceOf("player");
+      const stage = (r: NonNullable<typeof race>) => r.laps * r.gates + r.passed;
+      if (near && b.beh === "intercept" && mine && stage(race) >= stage(mine)) {
+        const [p, q] = [w.pos(b.id), w.pos("player")];
+        const [gx, gz] = [gate[0] - p[0], gate[2] - p[2]];
+        const gl = Math.sqrt(gx * gx + gz * gz) || 1;
+        const side = ((q[0] - p[0]) * -gz + (q[2] - p[2]) * gx) / gl;
+        const s = Math.max(-2, Math.min(2, side));
+        return [gate[0] + (-gz / gl) * s, gate[1], gate[2] + (gx / gl) * s];
+      }
+      return gate;
     }
     switch (b.beh) {
       case "attack":
