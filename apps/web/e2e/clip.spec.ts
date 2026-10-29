@@ -1,6 +1,6 @@
 // Clips of the run: the canvas and the game's sound are recorded while you play, the result card
 // previews the last seconds ending at the win and saves them as a file, and Clean replay records
-// the run replayed exactly with the HUD hidden.
+// the run replayed exactly with the HUD hidden. ?record=1 is the HUD for screen-recording a demo.
 import { expect, test, type Page } from "@playwright/test";
 import { readFileSync } from "node:fs";
 
@@ -61,5 +61,39 @@ test("clip: a win's card previews its last seconds and Save clip downloads them;
   await expect(page.locator("body")).not.toHaveClass(/clip-take/);
   await expect(page.getByTestId("proof-badge")).toBeVisible();
   await expect(page.getByRole("status").filter({ hasText: "Saved the clean replay" })).toBeVisible();
+  expect(errors).toEqual([]);
+});
+
+test("?record=1: a caption strip says the prompt, how fast it was playable, where it came from and the receipt's headline; the extras and the cursor step aside", async ({ page }) => {
+  const errors = collectErrors(page);
+  await page.goto("/?gl=webgl2&fx=0&dpr=0.5&prewarm=0&fixture=coin-rush&record=1");
+  await page.waitForFunction(() => window.__GHOSTRUN__?.ready === true, null, { timeout: 90_000 });
+  const strip = page.getByTestId("record-strip");
+  await expect(strip).toBeVisible();
+  await expect(strip).toContainText("Collect five gold coins");
+  await expect(strip).toContainText(/playable in \d+\.\d s/);
+  await expect(strip).toContainText("recorded world"); // no live service in this test
+  await expect(strip).toContainText("All 5 coins before the clock runs out: verified", { timeout: 60_000 });
+  for (const id of ["key-hint", "mute", "proof-badge"]) await expect(page.getByTestId(id)).toBeHidden();
+  expect(await page.getByTestId("stage").evaluate((c) => getComputedStyle(c).cursor)).toBe("none");
+  // a resting cursor hides everywhere, and moving brings it back
+  await page.mouse.move(640, 650);
+  expect(await page.evaluate(() => document.body.classList.contains("cursor-rest"))).toBe(false);
+  await page.waitForFunction(() => document.body.classList.contains("cursor-rest"), null, { timeout: 5_000 });
+  // play: the prompt pill steps aside (the strip says the prompt), and the strip opens the bar again
+  await page.keyboard.down("KeyW");
+  await page.waitForTimeout(400);
+  await page.keyboard.up("KeyW");
+  await expect(page.getByTestId("prompt-pill")).toHaveCount(1);
+  await expect(page.getByTestId("prompt-pill")).toBeHidden();
+  await strip.click();
+  await expect(page.getByTestId("prompt-bar")).toBeVisible();
+
+  // ?clip=0: no recording at all
+  await page.goto("/?gl=webgl2&fx=0&dpr=0.5&prewarm=0&fixture=coin-rush&clip=0");
+  await page.waitForFunction(() => window.__GHOSTRUN__?.ready === true, null, { timeout: 90_000 });
+  await page.waitForFunction(() => window.__GHOSTRUN__.clip !== undefined, null, { timeout: 10_000 });
+  expect((await clipState(page))!.state).toBe("disabled");
+  await expect(page.getByTestId("record-strip")).toHaveCount(0);
   expect(errors).toEqual([]);
 });

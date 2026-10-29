@@ -37,12 +37,15 @@ import { loadRace, RACE_PROMPT, useRace } from "./useRace";
 import { useClip } from "./useClip";
 import { clipName } from "./clip";
 import { worldTitle } from "./race";
+import { RecordStrip } from "./hud/RecordStrip";
 
 const HINT_MS = 6000;
 const FIXTURE = new URLSearchParams(window.location.search).get("fixture") ?? "ctf";
 const FIRST_PROMPT = FIXTURE_PROMPTS[FIXTURE] ?? BRIEF;
 const params0 = new URLSearchParams(window.location.search);
 const TOUCH_PARAM = params0.get("touch");
+/** ?record=1: a clean HUD and a caption strip, for screen-recording the demo. */
+const RECORD = params0.get("record") === "1";
 
 /** One-click prompts: the organizer's brief, the recorded worlds, and live-only stretches. */
 const SUGGESTIONS: readonly { label: string; prompt: string; live?: true }[] = [
@@ -118,6 +121,8 @@ export function App() {
   const [fellBack, setFellBack] = useState(false);
   /** The live world came from the edge's cache: when and by whom it was built. */
   const [cachedFrom, setCachedFrom] = useState<LiveCached | null>(null);
+  /** This live world was built with the edge's cache skipped ("Build it fresh"). */
+  const [bypassed, setBypassed] = useState(false);
   /** Fill lines streamed so far while the world is built (its preview is on screen). */
   const [building, setBuilding] = useState<number | null>(null);
   const [error, setError] = useState<string>();
@@ -376,6 +381,7 @@ export function App() {
       setSpecHash(undefined);
       setFellBack(false);
       setCachedFrom(null);
+      setBypassed(useLive && rebuild);
       setBuilding(null);
       setProof({ status: "idle", chips: [], receipt: null });
       delete probe().specHash;
@@ -838,6 +844,7 @@ export function App() {
     setStatus("building");
     setFellBack(false);
     setCachedFrom(null);
+    setBypassed(false);
     setRemixSrc(null);
     await show(world, ++runId.current, t0, [{ label: "gallery", ms: performance.now() - t0 }]);
     setToast("A recorded live AI world (unedited), re-proved on your device now.");
@@ -1059,6 +1066,16 @@ export function App() {
             onStick={(x, y) => engine.current?.touchStick(x, y)}
             onButton={(bit, down) => engine.current?.touchButton(bit, down)}
             useLabel={useHint}
+          />
+        )}
+        {RECORD && (
+          <RecordStrip
+            prompt={remixSrc?.prompt || current.current?.source?.base || current.current?.source?.prompt || (prompt === RACE_PROMPT && current.current ? worldTitle(current.current, "") : builtPrompt.current)}
+            ttffMs={timing?.ttffMs ?? null}
+            busy={status === "building" || status === "booting"}
+            source={{ mode, cached: cachedFrom && fromCache(cachedFrom, () => undefined).label, bypassed, fellBack, kind: remixSrc?.kind ?? null }}
+            proof={proof}
+            onExpand={() => setCollapsed(false)}
           />
         )}
         {status === "booting" && <div className="boot">building world…</div>}
