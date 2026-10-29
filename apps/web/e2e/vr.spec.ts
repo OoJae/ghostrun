@@ -138,24 +138,6 @@ test("VR teleport: the right stick held forward aims an arc at the floor, and le
   expect(real(errors)).toEqual([]);
 });
 
-test("VR grab: the right grip on the orb it points at walks you to it and the sim's pickup makes it yours", async ({ page }) => {
-  const errors = collectErrors(page);
-  await enterVr(page); // the CTF brief: you start facing the orb
-  // close enough that the watch offers the grab
-  for (let i = 0; i < 12 && !(await xr(page)).panels.wrist!.words.includes("Right grip: grab it"); i++) {
-    await stick(page, "left", 0, -1);
-    await page.waitForTimeout(250);
-    await stick(page, "left", 0, 0);
-    await page.waitForTimeout(300);
-  }
-  await button(page, "right", "squeeze", 1);
-  await page.waitForFunction(() => window.__GHOSTRUN__.xr?.grab === "orb" || window.__GHOSTRUN__.xr?.carrying === "orb", null, { timeout: 3_000 });
-  await page.waitForFunction(() => window.__GHOSTRUN__.xr?.carrying === "orb", null, { timeout: 6_000 });
-  expect((await xr(page)).grab).toBeNull(); // the walk ends once it's yours
-  await button(page, "right", "squeeze", 0);
-  expect(real(errors)).toEqual([]);
-});
-
 test("VR driving: the kart steers from the seat with the stick, the seat turns with it, and the race layer animates", async ({ page }) => {
   const errors = collectErrors(page);
   await enterVr(page, "&fixture=kart"); // you start at the wheel
@@ -187,7 +169,7 @@ test("VR barks: a character's line is shown by them, sized for the distance (in 
   expect(real(errors)).toEqual([]);
 });
 
-// ---- saying a world, with the live lane stubbed (as build.spec.ts does) ----------------------
+// ---- with the live lane stubbed (as build.spec.ts does): a world of your own, and saying a world --
 
 const gameplay = (fill: string) => {
   const lines = fill.split("\n").filter(Boolean);
@@ -196,11 +178,18 @@ const gameplay = (fill: string) => {
 const VAULT = {
   lines: gameplay(fixture("packages/ir/fixtures/vault-heist.jsonl")),
   seed: 5,
-  intent: { lang: "en", mode: "play", genre: "game", setting: "a museum at night", role: "runner", goal: "win", fail: "lose", mood: "tense", pack: "floor_plan", sub: [], safety: "ok", headline: "The gem can be stolen before the alarm", nouns: [], moodVec: { valence: 0, arousal: 0.5, tension: 0.5 } },
+  intent: { lang: "en", mode: "play", genre: "game", setting: "a museum at night", role: "runner", goal: "win", fail: "lose", mood: "tense", pack: "floor_plan", sub: [] as string[], safety: "ok", headline: "The gem can be stolen before the alarm", nouns: [], moodVec: { valence: 0, arousal: 0.5, tension: 0.5 } },
 };
 const sse = (event: string, data: unknown) => `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`;
 
-async function liveLane(page: Page, speech: string | null) {
+/** The CTF brief with nobody else in it: no rival races you for the orb (or wins before you get there). */
+const SOLO = {
+  lines: gameplay(fixture("packages/ir/fixtures/ctf-neon.jsonl")).filter((l) => !l.includes('"op":"npc"')),
+  seed: 7,
+  intent: { ...VAULT.intent, setting: "neon city at night", pack: "city_block", sub: ["rooftop"], headline: "Rooftop lane needs double jump" },
+};
+
+async function liveLane(page: Page, speech: string | null, world = VAULT) {
   await page.route("**/v1/health", (r) => r.fulfill({ json: { ok: true, packs: [], llm: true, gate: "dev", sitekey: null } }));
   await page.route("**/v1/mind", (r) => r.fulfill({ status: 503, json: { error: "off in this test" } }));
   for (const path of ["repair", "director"]) await page.route(`**/v1/${path}`, (r) => r.fulfill({ contentType: "text/event-stream", body: sse("error", { message: "off in this test" }) }));
@@ -250,8 +239,37 @@ async function liveLane(page: Page, speech: string | null) {
         }
       };
     }
-  }, { ...VAULT, speech });
+  }, { ...world, speech });
 }
+
+test("VR grab: the right grip on the orb it points at walks you to it, and the sim's pickup makes it yours", async ({ page }) => {
+  const errors = collectErrors(page);
+  await liveLane(page, null, SOLO);
+  await page.goto("/?gl=webgl2&fx=0&dpr=0.5&prewarm=0&iwer=1");
+  await page.waitForFunction(() => window.__GHOSTRUN__?.ready === true, null, { timeout: 90_000 });
+  await expect(page.getByTestId("prompt-bar")).toContainText("live AI");
+  const bar = page.getByRole("textbox", { name: "Describe a world" });
+  await bar.fill("Capture the flag on neon rooftops, on your own");
+  await bar.press("Enter");
+  await page.waitForFunction(() => window.__GHOSTRUN__.ready === true && Boolean(window.__GHOSTRUN__.specHash) && window.__GHOSTRUN__.materialise === undefined, null, { timeout: 90_000 });
+  await page.getByTestId("enter-vr").click();
+  await page.waitForFunction(() => window.__GHOSTRUN__?.vr === true && Boolean(window.__GHOSTRUN__.xr), null, { timeout: 20_000 });
+  // you start facing the orb, 36 m off on its plinth: walk up the lane until the watch offers the grab
+  await stick(page, "left", 0, -1);
+  await page.waitForFunction(() => window.__GHOSTRUN__.xr?.panels.wrist?.words.includes("Right grip: grab it"), null, { timeout: 20_000, polling: 20 });
+  await stick(page, "left", 0, 0);
+  const p0 = await player(page);
+  await button(page, "right", "squeeze", 1);
+  await page.waitForFunction(() => window.__GHOSTRUN__.xr?.grab === "orb", null, { timeout: 3_000, polling: 20 });
+  await page.waitForFunction(() => window.__GHOSTRUN__.xr?.carrying === "orb", null, { timeout: 6_000 });
+  expect((await xr(page)).grab).toBeNull(); // the walk ends once it's yours
+  expect(Math.abs((await player(page))[0] - p0[0])).toBeGreaterThan(1.5); // walked there, under logged input
+  await button(page, "right", "squeeze", 0);
+  // a gentle let-go keeps it (the orb has no throw): it stays yours, as on the desktop
+  await page.waitForTimeout(500);
+  expect((await xr(page)).carrying).toBe("orb");
+  expect(real(errors)).toEqual([]);
+});
 
 for (const speech of [true, false]) {
   test(`VR say a world: ${speech ? "hold the left grip and say it" : "no speech recognition (the Quest browser): the left grip opens prompt chips"}, and it builds and drops you in`, async ({ page }) => {
