@@ -287,24 +287,45 @@ export function repairDeliveries(b: WorldBundle, layout: PackLayout, bound: Map<
     const item = b.entities.find((e) => e.id === r.when.a);
     const place = b.entities.find((e) => e.id === r.when.b);
     if (!item || !place || item.kind === "npc" || !inside(item.pos, place)) continue;
+    const best = freeAnchor(item, (p) => inside(p, place));
+    if (!best) continue;
+    notes.push(`${item.id}: started inside ${place.id}, where it must be carried: moved to ${best.zone}:${best.anchor}`);
+    moveTo(item, best);
+  }
+  // something you need (a pickup, something to use) never starts inside a place you lose by entering
+  // (the only wand in the middle of the fall zone): it moves to the nearest free anchor outside them all
+  const losing = b.entities.filter((s) => s.body === "sensor" && b.rules.some((r) => r.when.t === "enter" && r.when.a === "player" && r.when.b === s.id && r.then.some((e) => e.e === "lose")));
+  for (const item of losing.length ? b.entities : []) {
+    const needed = item.kind === "pickup" || b.verbs.some((v) => v.on === item.id && verb(v.verb)?.use);
+    const zone = needed && item.kind !== "npc" && !losing.includes(item) ? losing.find((s) => inside(item.pos, s)) : undefined;
+    if (!zone) continue;
+    const best = freeAnchor(item, (p) => losing.some((s) => inside(p, s)));
+    if (!best) continue;
+    notes.push(`${item.id}: started inside ${zone.id}, where you lose: moved to ${best.zone}:${best.anchor}`);
+    moveTo(item, best);
+  }
+  return notes;
+
+  /** The free standable anchor nearest the item (never a doorway, spawn or goal) that isn't to be avoided. */
+  function freeAnchor(item: Entity, avoid: (p: Vec3) => boolean): { zone: string; anchor: string; pos: Vec3 } | null {
     const used = new Set(b.entities.map((e) => `${e.zone}/${e.anchor}`));
     let best: { zone: string; anchor: string; pos: Vec3; d: number } | null = null;
     for (const z of b.zones) {
       const spec = bound.get(z.id);
       if (!spec) continue;
       for (const [anchor, pos] of Object.entries(spec.anchors)) {
-        if (used.has(`${z.id}/${anchor}`) || /^(doorway|spawn|goal)/.test(anchor) || !standable(pos) || inside(pos, place)) continue;
+        if (used.has(`${z.id}/${anchor}`) || /^(doorway|spawn|goal)/.test(anchor) || !standable(pos) || avoid(pos)) continue;
         const d = (pos[0] - item.pos[0]) * (pos[0] - item.pos[0]) + (pos[2] - item.pos[2]) * (pos[2] - item.pos[2]);
         if (!best || d < best.d || (d === best.d && z.id + anchor < best.zone + best.anchor)) best = { zone: z.id, anchor, pos, d };
       }
     }
-    if (!best) continue;
-    notes.push(`${item.id}: started inside ${place.id}, where it must be carried: moved to ${best.zone}:${best.anchor}`);
-    item.zone = best.zone;
-    item.anchor = best.anchor;
-    item.pos = [best.pos[0], best.pos[1] + item.size[1] / 2, best.pos[2]];
+    return best;
   }
-  return notes;
+  function moveTo(item: Entity, at: { zone: string; anchor: string; pos: Vec3 }) {
+    item.zone = at.zone;
+    item.anchor = at.anchor;
+    item.pos = [at.pos[0], at.pos[1] + item.size[1] / 2, at.pos[2]];
+  }
 }
 
 /** Weapons someone holds (on a thing to pick up, not "player" or a character's own). */
@@ -359,14 +380,51 @@ export function repairCombat(b: WorldBundle): string[] {
   // something a rule wants shot (a reactor core, a training dummy) is something to aim at
   const held = heldWeapons(b);
   const guns = b.verbs.filter((v) => v.verb === SHOOT && (v.on === "player" || held.has(v.on)));
+  // (and one a rule wants worn down is something to throw the stars at)
+  const stars = b.verbs.filter((v) => v.verb === "combat_sport.throw");
   for (const r of b.rules) {
     const e = (r.when.t === "hit" || r.when.t === "health_lte") && (!r.when.b || guns.some((g) => g.on === r.when.b)) ? b.entities.find((x) => x.id === r.when.a && x.kind !== "npc") : undefined;
     if (!e) continue;
-    for (const g of guns) {
+    for (const g of [...guns, ...(r.when.t === "health_lte" ? stars : [])]) {
       const at = String(g.params.at ?? "").split(",").filter(Boolean);
       if (at.includes(e.id)) continue;
       g.params = { ...g.params, at: [...at, e.id].join(",") };
-      notes.push(`${e.id}: something to shoot at with ${g.on === "player" ? "your weapon" : g.on} (rule ${r.id} waits for it to be ${r.when.t === "hit" ? "hit" : "worn down"})`);
+      notes.push(`${e.id}: something to ${g.verb === SHOOT ? "shoot" : "throw"} at with ${g.on === "player" ? "your weapon" : g.on} (rule ${r.id} waits for it to be ${r.when.t === "hit" ? "hit" : "worn down"})`);
+    }
+  }
+  // "red scores when the player hits with gun_blue" (hit a=player b=a weapon you fire): your own shot
+  // never hits you, so a point (or a win) for your side means a rival hit (by whichever weapon you
+  // have: models mix up whose gun is whose), and one for the other side means you were hit
+  const own = new Set(guns.map((g) => g.on));
+  const them = mine === "red" ? "blue" : "red";
+  // (rivals on the other team, or none yet: the ones added for a shooting game are; else teamless ones)
+  const rivals = b.entities.some((e) => e.kind === "npc" && e.team === them) || !b.entities.some((e) => e.kind === "npc" && e.team !== mine) ? `team:${them}` : "";
+  for (const r of b.rules) {
+    const w = r.when;
+    if (w.t !== "hit" || w.a !== "player" || !own.has(w.b)) continue;
+    const ours = r.then.some((e) => (e.e === "score" && e.target === `team:${mine}`) || e.e === "win");
+    notes.push(`rule ${r.id}: the player 'hit' by ${w.b}, a weapon you fire, means ${ours ? `a rival hit by your shot (hit a=${rivals || "anyone"})` : "you hit by a rival's shot (hit a=player)"}`);
+    [w.a, w.b] = ours ? [rivals, ""] : ["player", ""];
+  }
+  // "blue scores when blue is hit" (in a shooting game, a team scoring for its own people being hit):
+  // the model swapped who hit whom; it means the other side hit, by anything
+  for (const r of guns.length ? b.rules : []) {
+    const w = r.when;
+    const side = w.t !== "hit" || (w.b && !own.has(w.b)) ? "" : w.a.startsWith("team:") ? w.a.slice(5) : (b.entities.find((e) => e.id === w.a && e.kind === "npc")?.team ?? "");
+    const pts = r.then.filter((e) => e.e === "score");
+    if (!side || !pts.length || !pts.every((e) => e.target === `team:${side}`)) continue;
+    const other = side === "red" ? "blue" : "red";
+    notes.push(`rule ${r.id}: ${side} scoring when its own are hit means ${other} hit (hit a=team:${other})`);
+    [w.a, w.b] = [`team:${other}`, ""];
+  }
+  // "IF the archer's hp is 0": it stays down (a knock-out it comes back from never meets that)
+  for (const r of b.rules) {
+    for (const c of r.if) {
+      const id = /^([a-z][a-z0-9_]*)\.hp$/.exec(c.l)?.[1];
+      const v = id && (c.op === "eq" || c.op === "lte") && Number(c.r) <= 0 ? b.verbs.find((x) => x.verb === HEALTH && x.on === id) : undefined;
+      if (!v || v.params.respawn === false || v.params.respawn === "false") continue;
+      v.params = { ...v.params, respawn: false };
+      notes.push(`${id}: rule ${r.id} needs it down (hp ${c.op} ${String(c.r)}), so it doesn't come back`);
     }
   }
   // "the player hits rival_1": rival_1 shot by the player
@@ -392,7 +450,7 @@ export function repairCombat(b: WorldBundle): string[] {
 /**
  * A throwing or shooting game with no one to throw at or shoot (a snowball fight whose fill forgot
  * the other team) gets two rivals at the rival spawn, playing the usual rival options; in a
- * shooting game they are armed (half the player's damage, half as often) and have hit points.
+ * shooting game they are armed (half the player's damage, a third as often: the two together fire less than you) and have hit points.
  * Logged.
  */
 export function addRivals(b: WorldBundle): string[] {
@@ -400,7 +458,8 @@ export function addRivals(b: WorldBundle): string[] {
   const held = heldWeapons(b);
   const guns = b.verbs.filter((v) => v.verb === SHOOT && (v.on === "player" || held.has(v.on)));
   const throws = [...b.verbs.filter((v) => v.verb === "combat_sport.throw"), ...guns];
-  if (b.mode !== "play" || !throws.length || throws.every((v) => String(v.params.at ?? ""))) return [];
+  // (a "things to hit" list counts only for things in the world: "at":"player_blue" names nobody)
+  if (b.mode !== "play" || !throws.length || throws.every((v) => String(v.params.at ?? "").split(",").some((id) => b.entities.some((e) => e.id === id)))) return [];
   const spawnOf = (t: string) => b.entities.find((e) => e.kind === "spawn" && e.team === t);
   const mine = !spawnOf("red") && spawnOf("blue") ? "blue" : "red";
   const them = mine === "red" ? "blue" : "red";
@@ -417,7 +476,7 @@ export function addRivals(b: WorldBundle): string[] {
     if (g) {
       const spec = verb(SHOOT)!.params;
       const num = (key: string) => Number(g.params[key] ?? spec[key]!.def);
-      b.verbs.push(vb(uniqueId(b, `vb_shoot_${id}`), SHOOT, id, { range: num("range"), speed: num("speed"), damage: Math.round(num("damage") / 2), cooldown: num("cooldown") * 2 }));
+      b.verbs.push(vb(uniqueId(b, `vb_shoot_${id}`), SHOOT, id, { range: num("range"), speed: num("speed"), damage: Math.round(num("damage") / 2), cooldown: Math.round(num("cooldown") * 3 * 100) / 100 }));
       b.verbs.push(vb(uniqueId(b, `vb_hp_${id}`), HEALTH, id));
     }
     added.push(id);
@@ -1165,6 +1224,16 @@ export function repairWin(b: WorldBundle): string[] {
     win.e = "lose";
     notes.push(`rule ${r.id}: ${w.a.slice(5)} reaching ${w.n} made you win → you lose (you play ${mine})`);
   }
+  // "blue wins" (a win for the other team or one of its people) is your loss
+  for (const r of b.rules) {
+    for (const e of r.then) {
+      const side = e.e !== "win" ? undefined : e.target.startsWith("team:") ? e.target.slice(5) : b.entities.find((x) => x.id === e.target && x.kind === "npc")?.team;
+      if (!side || side === mine) continue;
+      notes.push(`rule ${r.id}: a win for ${e.target} is your loss (you play ${mine})`);
+      e.e = "lose";
+      e.target = "player";
+    }
+  }
   // "when time runs out: win if all three zones are red; lose" (the same moment, one with
   // conditions): the one with conditions is the exception, so it goes first (the first win or
   // loss of a tick is the one that counts)
@@ -1229,7 +1298,17 @@ export function repairWin(b: WorldBundle): string[] {
     notes.push(`${place}: ${items.length} rules each won when a different thing was brought in (${items.join(", ")}); it takes all of them, so each one goes in and the last one wins`);
   }
   if (b.rules.some((r) => r.then.some((e) => e.e === "win"))) return notes;
-  const goal = b.entities.find((e) => e.kind === "goal" && (e.team === "red" || !e.team));
+  // a world that scores for your team is a race on points: first to the rivals' target (else 10)
+  if (b.rules.some((r) => r.then.some((e) => e.e === "score" && e.target === `team:${mine}`))) {
+    const n = b.rules.find((r) => r.when.t === "score_gte" && r.when.a !== `team:${mine}` && r.then.some((e) => e.e === "lose"))?.when.n || 10;
+    b.rules.push({ id: uniqueId(b, "r_win_score"), src: "template", layer: "gameplay", when: { t: "score_gte", a: `team:${mine}`, b: "", s: "", n, act: "" }, if: [], then: [fx("win", "player")], once: true, cooldownS: 0, prio: 0 });
+    return [...notes, `added r_win_score: no rule wins and the world scores for ${mine}, so ${mine} reaching ${n} does`];
+  }
+  // else reaching a goal, never one right by the spawn (your own base: that wins in a step)
+  const sp = b.entities.find((e) => e.kind === "spawn" && e.team === mine) ?? b.entities.find((e) => e.kind === "spawn");
+  const far = (e: Entity) => !sp || (e.pos[0] - sp.pos[0]) * (e.pos[0] - sp.pos[0]) + (e.pos[2] - sp.pos[2]) * (e.pos[2] - sp.pos[2]) > 8 * 8;
+  const goals = b.entities.filter((e) => e.kind === "goal" && (e.team === mine || !e.team));
+  const goal = goals.find(far);
   if (!goal) return notes;
   b.rules.push({ id: uniqueId(b, "r_win_goal"), src: "template", layer: "gameplay", when: { t: "enter", a: "player", b: goal.id, s: "", n: 0, act: "" }, if: [], then: [fx("win", "player")], once: true, cooldownS: 0, prio: 0 });
   return [...notes, `added r_win_goal: no rule wins, so reaching ${goal.id} does`];

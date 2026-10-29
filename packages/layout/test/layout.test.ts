@@ -321,7 +321,30 @@ describe("fights", () => {
         .replace('{"op":"law"', '{"op":"verb","id":"vb_laser","verb":"combat_sport.shoot","on":"player","params":{"damage":30,"cooldown":0.4}}\n{"op":"law"'),
     );
     expect(notes.some((n) => n.startsWith("added rival_1 and rival_2 on the blue side: a shooting game needs someone to shoot"))).toBe(true);
-    expect(bundle.verbs.find((v) => v.verb === "combat_sport.shoot" && v.on === "rival_1")!.params).toMatchObject({ damage: 15, cooldown: 0.8 });
+    expect(bundle.verbs.find((v) => v.verb === "combat_sport.shoot" && v.on === "rival_1")!.params).toMatchObject({ damage: 15, cooldown: 1.2 });
     expect(hpOf(bundle).map(([on]) => on)).toEqual(["rival_1", "rival_2"]);
+  });
+
+  it("what you need never starts where you lose; a win for blue is your loss; your gun 'hitting you' is your shot; blue scoring for blue hit means red hit", () => {
+    const { bundle, notes } = place(
+      ctf
+        .replace('{"op":"verb","id":"vb_jump"', '{"op":"ent","id":"pit","kind":"hazard","noun":"pit","zone":"z_plaza","anchor":"plinth","body":"sensor","size":[4,1,4]}\n{"op":"verb","id":"vb_jump"')
+        .replace('{"op":"law"', '{"op":"verb","id":"vb_gun","verb":"combat_sport.shoot","on":"player"}\n{"op":"law"')
+        .replace('"then":[{"e":"lose","target":"player"}],"once":true}', '"then":[{"e":"win","target":"rival_1"}],"once":true}')
+        .replace('{"op":"rule","id":"r_pickup"', [
+          '{"op":"rule","id":"r_fall","when":{"t":"enter","a":"player","b":"pit"},"then":[{"e":"lose","target":"player"}],"once":true}',
+          '{"op":"rule","id":"r_mine","when":{"t":"hit","a":"player","b":"player"},"then":[{"e":"score","target":"team:red","n":1}]}',
+          '{"op":"rule","id":"r_theirs","when":{"t":"hit","a":"team:blue"},"then":[{"e":"score","target":"team:blue","n":1}]}',
+          '{"op":"rule","id":"r_pickup"',
+        ].join("\n")),
+    );
+    const orb = bundle.entities.find((e) => e.id === "orb")!;
+    const pit = bundle.entities.find((e) => e.id === "pit")!;
+    expect(Math.abs(orb.pos[0] - pit.pos[0]) > 2 || Math.abs(orb.pos[2] - pit.pos[2]) > 2).toBe(true);
+    expect(notes.some((n) => n.startsWith("orb: started inside pit, where you lose: moved to"))).toBe(true);
+    const rule = (id: string) => bundle.rules.find((r) => r.id === id)!;
+    expect(rule("r_lose").then[0]).toMatchObject({ e: "lose", target: "player" });
+    expect(rule("r_mine").when).toMatchObject({ t: "hit", a: "team:blue", b: "" });
+    expect(rule("r_theirs").when).toMatchObject({ t: "hit", a: "team:red", b: "" });
   });
 });

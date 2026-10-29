@@ -241,6 +241,24 @@ describe("fill repairs for fights", () => {
       ["hit", 0, ["damage", "heal"]],
     ]);
   });
+
+  it("'player_red' in a rule is the player (on red), 'player_blue' anyone on blue; 'player_blue.team is blue' goes", () => {
+    const lines = [
+      '{"op":"meta","mode":"play","pack":"arena","seed":3}',
+      '{"op":"zone","id":"z_a","slot":"midfield","tag":"center"}',
+      '{"op":"spawn","id":"sp_red","zone":"z_a","team":"red"}',
+      '{"op":"ent","id":"tagger","kind":"pickup","zone":"z_a"}',
+      '{"op":"rule","id":"r_red","when":{"t":"hit","a":"player_blue","b":"tagger"},"if":[{"l":"player_blue.team","op":"eq","r":"blue"}],"then":[{"e":"score","target":"team:red","n":1}]}',
+      '{"op":"rule","id":"r_win","when":{"t":"score_gte","a":"team:red","n":10},"then":[{"e":"win","target":"player_red"}]}',
+      '{"op":"rule","id":"r_theirs","when":{"t":"score_gte","a":"team:blue","n":10},"then":[{"e":"win","target":"blue_players"}]}',
+    ].join("\n");
+    const p = parseFill(lines, { seed: 3 });
+    expect(p.notes.filter((n) => n.kind === "unresolved")).toEqual([]);
+    const r = (id: string) => p.draft.rules.find((x) => x.id === id)!;
+    expect([r("r_red").when.a, r("r_red").if]).toEqual(["team:blue", []]);
+    expect(r("r_win").then[0]!.target).toBe("player");
+    expect(r("r_theirs").then[0]!.target).toBe("team:blue"); // (the placer makes a win for blue your loss)
+  });
 });
 
 describe("glued objects", () => {

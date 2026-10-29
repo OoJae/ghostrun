@@ -409,6 +409,32 @@ export class FillParser {
       this.#note(line, "repaired", `'${op.when[side]}' in a trigger → '${t}' (anyone on that team)`);
       op.when[side] = t;
     }
+    // "player_red", "blue_players": the player (on the player's own team), else anyone on that team;
+    // anywhere a rule names one (a condition that it is on its own team is then always true)
+    const d = this.draft;
+    const spawned = (t: string) => d.entities.some((e) => e.kind === "spawn" && e.team === t);
+    const mine = !spawned("red") && spawned("blue") ? "blue" : "red";
+    const who = (ref: string): string | null => {
+      const m = /^(?:(red|blue)[_ ]?(players?)|(players?)[_ ]?(red|blue))$/.exec(ref.trim().toLowerCase());
+      if (!m || d.entities.some((e) => e.id === ref)) return null;
+      const [t, word] = [m[1] ?? m[4]!, m[2] ?? m[3]!];
+      return word === "player" && t === mine ? "player" : `team:${t}`;
+    };
+    const fix = (ref: string): string => {
+      const [head, ...rest] = ref.split(".");
+      const to = who(head!);
+      if (!to) return ref;
+      this.#note(line, "repaired", `'${head}' → '${to}'`);
+      return [to, ...rest].join(".");
+    };
+    op.when.a = fix(op.when.a);
+    op.when.b = fix(op.when.b);
+    // (a "player_blue.team is blue" condition becomes "team:blue.team is blue": always true, so it goes)
+    op.if = op.if.flatMap((c) => {
+      const l = fix(c.l);
+      return l !== c.l && c.op === "eq" && (l === `team:${String(c.r)}.team` || (l === "player.team" && c.r === mine)) ? [] : [{ ...c, l }];
+    });
+    op.then = op.then.map((e) => ({ ...e, target: fix(e.target) }));
   }
 
   #refsOk(op: FillOp): boolean {
