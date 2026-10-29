@@ -1040,13 +1040,18 @@ function perform(r: Run, st: PlanStep): "ok" | "lost" | "stuck" {
             continue;
           }
           const before = sim.tick;
-          // chased on foot while the navmesh reaches it; else (a drone across a course's pit) to where
-          // it stands now, by the hops and climbs a fixed spot gets
+          // chased on foot while the navmesh reaches it or the ground beside it; else, when heading
+          // straight for it would walk into a pit below you both (a drone on a platform across a
+          // course's gap), to where it stands now, by the hops and climbs a fixed spot gets
           const p1 = sim.pos("player");
+          const feet: Vec3 = [p1[0], p1[1] - 0.9, p1[2]];
           const q = sim.pos(t);
+          const near = nav.nearest(q, 1) ?? nav.nearest(q);
+          const onFoot = Boolean(nav.path(feet, q) ?? leapPath(feet, q) ?? (near && nav.path(feet, near)));
           const foot: Vec3 = [q[0], q[1] - (b.entities.find((e) => e.id === t)?.size[1] ?? 1.8) / 2, q[2]];
-          const onFoot = Boolean(nav.path([p1[0], p1[1] - 0.9, p1[2]], foot) ?? leapPath([p1[0], p1[1] - 0.9, p1[2]], foot));
-          go(onFoot ? () => sim.pos(t) : foot, () => done() || standing().some(inShot));
+          const ss = onFoot ? [] : surfaces(b);
+          const pit = ss.length > 0 && [0.2, 0.4, 0.6, 0.8].some((k) => (surfaceAt(ss, [feet[0] + (foot[0] - feet[0]) * k, feet[1] + 0.1, feet[2] + (foot[2] - feet[2]) * k])?.top ?? -Infinity) < Math.min(feet[1], foot[1]) - 1);
+          go(pit ? foot : () => sim.pos(t), () => done() || standing().some(inShot));
           trace?.(`  shoot: closing in on ${t} from ${v1(sim.pos("player"))}`);
           if (!standing().some(inShot) && (sim.tick === before || ++misses > 6)) return done() ? "ok" : "stuck";
           continue;
