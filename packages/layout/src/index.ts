@@ -294,8 +294,20 @@ export function repairDeliveries(b: WorldBundle, layout: PackLayout, bound: Map<
   }
   // a hazard you lose by touching (a lake bank, a spike strip) that covers a place the win needs you
   // to reach (the finish, a gate, a buoy to pass) shrinks round its centre until it no longer does
-  // (something to pick up or use is moved instead, below)
-  const needs = b.entities.filter((e) => e.kind === "goal" || e.kind === "checkpoint");
+  // (something to pick up or use is moved instead, below). What the win needs: what its rules name,
+  // then what the rules that change those name, and so on (a race's line and gates too)
+  const wanted = new Set<string>();
+  for (const v of b.verbs.filter((x) => x.verb === TRACK)) for (const id of [v.on, ...String(v.params.gates ?? "").split(",")]) wanted.add(id.trim());
+  const named = (r: Rule) => [r.when.a, r.when.b, ...r.if.map((c) => c.l.split(".")[0]!)];
+  for (const r of b.rules) if (r.then.some((e) => e.e === "win")) for (const id of named(r)) wanted.add(id);
+  for (let grew = true, k = 0; grew && k < 8; k++) {
+    grew = false;
+    for (const r of b.rules) {
+      if (!r.then.some((e) => wanted.has(e.target))) continue;
+      for (const id of named(r)) if (id && !wanted.has(id)) ((grew = true), wanted.add(id));
+    }
+  }
+  const needs = b.entities.filter((e) => (e.kind === "goal" || e.kind === "checkpoint") && wanted.has(e.id));
   for (const h of b.entities.filter((e) => e.kind === "hazard" && e.body === "sensor")) {
     if (!b.rules.some((r) => (r.when.t === "hit" || r.when.t === "enter") && r.when.b === h.id && (r.when.a === "player" || !r.when.a) && r.then.some((e) => e.e === "lose"))) continue;
     const covers = () => needs.filter((n) => n !== h && Math.abs(n.pos[0] - h.pos[0]) < (n.size[0] + h.size[0]) / 2 && Math.abs(n.pos[2] - h.pos[2]) < (n.size[2] + h.size[2]) / 2);
