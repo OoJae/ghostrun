@@ -1,0 +1,36 @@
+{"op":"meta","mode":"play","lang":"en","pack":"course","sub":[],"seed":10,"look":"space station","mood":[0.2,0.85,0.7],"timeOfDay":14,"weather":"clear"}
+{"op":"zone","id":"z_start","slot":"start","tag":"outside","name":"Docking bay"}
+{"op":"zone","id":"z_seg_1","slot":"seg_1","tag":"corridor","name":"Maintenance corridor"}
+{"op":"zone","id":"z_seg_2","slot":"seg_2","tag":"stairs","name":"Access stairs"}
+{"op":"zone","id":"z_seg_3","slot":"seg_3","tag":"hangar","name":"Hangar bay"}
+{"op":"zone","id":"z_seg_4","slot":"seg_4","tag":"walkway","name":"External walkway"}
+{"op":"zone","id":"z_seg_5","slot":"seg_5","tag":"engine","name":"Engine room"}
+{"op":"zone","id":"z_seg_6","slot":"seg_6","tag":"debris","name":"Debris field"}
+{"op":"zone","id":"z_finish","slot":"finish","tag":"exit","name":"Escape pod bay"}
+{"op":"spawn","id":"sp_red","zone":"z_start","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"pod_exit","zone":"z_finish","anchor":"goal","noun":"escape pod","hyper":"escape vessel","team":"red","body":"sensor","shape":"box"}
+{"op":"ent","id":"gun","kind":"prop","noun":"plasma rifle","hyper":"weapon","zone":"z_start","anchor":"sign","body":"dynamic","shape":"box","size":[0.3,0.2,1.0]}
+{"op":"ent","id":"ammo_pack","kind":"pickup","noun":"ammo pack","hyper":"ammo","zone":"z_seg_2","anchor":"pickup_2","body":"dynamic","shape":"box","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"drone_1","kind":"npc","noun":"security drone","hyper":"security robot","zone":"z_seg_1","anchor":"cp_1","team":"","body":"dynamic","shape":"capsule"}
+{"op":"ent","id":"drone_2","kind":"npc","noun":"security drone","hyper":"security robot","zone":"z_seg_3","anchor":"cp_3","team":"","body":"dynamic","shape":"capsule"}
+{"op":"ent","id":"drone_3","kind":"npc","noun":"security drone","hyper":"security robot","zone":"z_seg_4","anchor":"cp_4","team":"","body":"dynamic","shape":"capsule"}
+{"op":"ent","id":"drone_4","kind":"npc","noun":"security drone","hyper":"security robot","zone":"z_seg_5","anchor":"cp_5","team":"","body":"dynamic","shape":"capsule"}
+{"op":"verb","id":"vb_carry_gun","verb":"physics_props.carry","on":"gun","params":{}}
+{"op":"verb","id":"vb_carry_ammo","verb":"physics_props.carry","on":"ammo_pack","params":{}}
+{"op":"verb","id":"vb_shoot","verb":"combat_sport.shoot","on":"gun","params":{"range":20,"speed":30,"damage":50,"cooldown":0.5,"at":"drone_1,drone_2,drone_3,drone_4"}}
+{"op":"verb","id":"vb_drone_health","verb":"combat_sport.health","on":"drone_1","params":{"hp":100,"respawn":false}}
+{"op":"verb","id":"vb_drone2_health","verb":"combat_sport.health","on":"drone_2","params":{"hp":100,"respawn":false}}
+{"op":"verb","id":"vb_drone3_health","verb":"combat_sport.health","on":"drone_3","params":{"hp":100,"respawn":false}}
+{"op":"verb","id":"vb_drone4_health","verb":"combat_sport.health","on":"drone_4","params":{"hp":100,"respawn":false}}
+{"op":"verb","id":"vb_player_health","verb":"combat_sport.health","on":"player","params":{"hp":100,"respawn":false}}
+{"op":"verb","id":"vb_jump","verb":"locomotion.jump","on":"player","params":{"jumpsMax":2}}
+{"op":"rule","id":"r_drone1_dead","when":{"t":"health_lte","a":"drone_1","n":0},"then":[{"e":"destroy","target":"drone_1"},{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_drone2_dead","when":{"t":"health_lte","a":"drone_2","n":0},"then":[{"e":"destroy","target":"drone_2"},{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_drone3_dead","when":{"t":"health_lte","a":"drone_3","n":0},"then":[{"e":"destroy","target":"drone_3"},{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_drone4_dead","when":{"t":"health_lte","a":"drone_4","n":0},"then":[{"e":"destroy","target":"drone_4"},{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_win","when":{"t":"enter","a":"player","b":"pod_exit"},"if":[{"l":"team:red.score","op":"gte","r":"4"}],"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose_shot","when":{"t":"health_lte","a":"player","n":0},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"expect","id":"x_escape","prop":"win_reachable","a":"sp_red","b":"pod_exit","headline":true,"text":"Reaching the escape pod requires blasting security drones on the way"}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.5,"speed":5}}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

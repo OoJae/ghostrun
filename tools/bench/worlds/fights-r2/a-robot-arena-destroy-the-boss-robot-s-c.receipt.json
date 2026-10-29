@@ -1,0 +1,268 @@
+{
+  "prompt": "A robot arena: destroy the boss robot's core while dodging its lasers",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "action",
+    "setting": "walled arena",
+    "role": "player",
+    "goal": "Destroy the boss robot's core.",
+    "fail": "Getting hit by the boss's lasers.",
+    "mood": "exciting",
+    "pack": "arena",
+    "sub": [],
+    "safety": "arcade",
+    "headline": "Boss core is the single point of failure",
+    "nouns": [
+      {
+        "noun": "arena",
+        "hyper": "enclosure"
+      },
+      {
+        "noun": "robot",
+        "hyper": "machine"
+      },
+      {
+        "noun": "core",
+        "hyper": "part"
+      },
+      {
+        "noun": "lasers",
+        "hyper": "beams"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.8,
+      "arousal": 0.85,
+      "tension": 0.8
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "dfa72fff52d64aca093f4616d16585c0bb59c94880a712d573a92a8711051877",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "exp_core",
+      "text": "Boss core is the single point of failure",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners vs 1 bot"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 9 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_core_destroy (core down to 0 HP) ← shoot core (1 hit of 100)",
+        "src": ""
+      },
+      {
+        "id": "T1:range:r_core_destroy",
+        "tier": "T1",
+        "subject": {
+          "kind": "rule",
+          "id": "r_core_destroy"
+        },
+        "method": "line-of-sight range model (from ground the jump model reaches)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 20,
+        "status": "verified",
+        "text": "a shot reaches the core: clear lines from as far as 15 m (range 15 m)",
+        "cx": null
+      },
+      {
+        "id": "T2:r_core_destroy",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_core_destroy"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_core_destroy fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_laser_hit",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_laser_hit"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_laser_hit fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_laser_hit2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_laser_hit2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_laser_hit2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_center_n",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_center_n"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_secret_center_n fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_deck_center",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_deck_center"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_deck_center fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_deck_e",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_deck_e"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_deck_e fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_deck_e_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_deck_e_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_deck_e_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_n",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_n"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_secret_flank_n fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_s",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_s"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_secret_flank_s fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners vs 1 bot",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it vs 1 bot (AI par 8.1 s)",
+        "cx": null,
+        "src": "",
+        "ms": 261
+      }
+    ],
+    "par": {
+      "goldS": 8.1,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 595
+  }
+}

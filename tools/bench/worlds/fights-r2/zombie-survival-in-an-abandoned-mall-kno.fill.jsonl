@@ -1,0 +1,41 @@
+{"op":"meta","mode":"play","lang":"en","pack":"floor_plan","sub":[],"seed":8,"look":"abandoned mall interior","mood":[-0.7,0.7,0.8],"timeOfDay":14,"weather":"clear"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Mall entrance"}
+{"op":"zone","id":"z_main_hall","slot":"main_room","tag":"hall","name":"Main hall"}
+{"op":"zone","id":"z_room_sw","slot":"room_sw","tag":"room","name":"Southwest department"}
+{"op":"zone","id":"z_room_se","slot":"room_se","tag":"room","name":"Southeast department"}
+{"op":"zone","id":"z_room_nw","slot":"room_nw","tag":"room","name":"Northwest department"}
+{"op":"zone","id":"z_room_ne","slot":"room_ne","tag":"room","name":"Northeast department"}
+{"op":"spawn","id":"sp_red","zone":"z_entrance","anchor":"center","team":"red"}
+{"op":"goal","id":"goal_none","zone":"z_main_hall","anchor":"center","noun":"survive","hyper":"goal","team":"","body":"sensor","shape":"none"}
+{"op":"ent","id":"bat","kind":"prop","noun":"baseball bat","hyper":"bat","zone":"z_entrance","anchor":"corner_nw","body":"fixed","shape":"box","size":[1.0,0.3,0.2]}
+{"op":"ent","id":"zombie_1","kind":"npc","noun":"zombie","hyper":"walker","zone":"z_room_sw","anchor":"corner_se","body":"dynamic","shape":"capsule"}
+{"op":"ent","id":"zombie_2","kind":"npc","noun":"zombie","hyper":"walker","zone":"z_room_sw","anchor":"corner_ne","body":"dynamic","shape":"capsule"}
+{"op":"ent","id":"zombie_3","kind":"npc","noun":"zombie","hyper":"walker","zone":"z_room_se","anchor":"corner_sw","body":"dynamic","shape":"capsule"}
+{"op":"ent","id":"zombie_4","kind":"npc","noun":"zombie","hyper":"walker","zone":"z_room_se","anchor":"corner_ne","body":"dynamic","shape":"capsule"}
+{"op":"ent","id":"zombie_5","kind":"npc","noun":"zombie","hyper":"walker","zone":"z_room_nw","anchor":"corner_se","body":"dynamic","shape":"capsule"}
+{"op":"ent","id":"zombie_6","kind":"npc","noun":"zombie","hyper":"walker","zone":"z_room_nw","anchor":"corner_ne","body":"dynamic","shape":"capsule"}
+{"op":"ent","id":"zombie_7","kind":"npc","noun":"zombie","hyper":"walker","zone":"z_room_ne","anchor":"corner_sw","body":"dynamic","shape":"capsule"}
+{"op":"ent","id":"zombie_8","kind":"npc","noun":"zombie","hyper":"walker","zone":"z_room_ne","anchor":"corner_ne","body":"dynamic","shape":"capsule"}
+{"op":"verb","id":"vb_shoot","verb":"combat_sport.shoot","on":"player","params":{"range":2,"speed":10,"damage":100,"cooldown":0.5,"at":""}}
+{"op":"verb","id":"vb_health_player","verb":"combat_sport.health","on":"player","params":{"hp":100,"respawn":false}}
+{"op":"verb","id":"vb_health_z1","verb":"combat_sport.health","on":"zombie_1","params":{"hp":30,"respawn":false}}
+{"op":"verb","id":"vb_health_z2","verb":"combat_sport.health","on":"zombie_2","params":{"hp":30,"respawn":false}}
+{"op":"verb","id":"vb_health_z3","verb":"combat_sport.health","on":"zombie_3","params":{"hp":30,"respawn":false}}
+{"op":"verb","id":"vb_health_z4","verb":"combat_sport.health","on":"zombie_4","params":{"hp":30,"respawn":false}}
+{"op":"verb","id":"vb_health_z5","verb":"combat_sport.health","on":"zombie_5","params":{"hp":30,"respawn":false}}
+{"op":"verb","id":"vb_health_z6","verb":"combat_sport.health","on":"zombie_6","params":{"hp":30,"respawn":false}}
+{"op":"verb","id":"vb_health_z7","verb":"combat_sport.health","on":"zombie_7","params":{"hp":30,"respawn":false}}
+{"op":"verb","id":"vb_health_z8","verb":"combat_sport.health","on":"zombie_8","params":{"hp":30,"respawn":false}}
+{"op":"rule","id":"r_score_z1","when":{"t":"health_lte","a":"zombie_1","n":0},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_score_z2","when":{"t":"health_lte","a":"zombie_2","n":0},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_score_z3","when":{"t":"health_lte","a":"zombie_3","n":0},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_score_z4","when":{"t":"health_lte","a":"zombie_4","n":0},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_score_z5","when":{"t":"health_lte","a":"zombie_5","n":0},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_score_z6","when":{"t":"health_lte","a":"zombie_6","n":0},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_score_z7","when":{"t":"health_lte","a":"zombie_7","n":0},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_score_z8","when":{"t":"health_lte","a":"zombie_8","n":0},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_win","when":{"t":"score_gte","a":"team:red","n":8},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose","when":{"t":"health_lte","a":"player","n":0},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"expect","id":"x_survival","prop":"win_reachable","a":"sp_red","b":"goal_none","headline":true,"text":"Mall main hall gives space for melee swings while side rooms spawn zombies into the aisle"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

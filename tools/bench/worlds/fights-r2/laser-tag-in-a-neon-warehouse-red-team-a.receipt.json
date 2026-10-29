@@ -1,0 +1,178 @@
+{
+  "prompt": "Laser tag in a neon warehouse, red team against blue team, first to 10 tags",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "laser_tag_team",
+    "setting": "A dark, futuristic neon-lit warehouse filled with glowing cargo crates, metal scaffolding, and high-tech laser targets",
+    "role": "A member of the red team participating in a competitive laser tag match",
+    "goal": "Tag the blue team so your team reaches 10 elimination points first to win the match",
+    "fail": "The blue team reaches 10 elimination points first before the red team does",
+    "mood": "High-energy, competitive, neon-soaked, and tactical",
+    "pack": "arena",
+    "sub": [],
+    "safety": "arcade",
+    "headline": "Neon warehouse arena requires line-of-sight tactical play for first to 10 tags",
+    "nouns": [
+      {
+        "noun": "warehouse",
+        "hyper": "indoor facility"
+      },
+      {
+        "noun": "laser tag",
+        "hyper": "game"
+      },
+      {
+        "noun": "red team",
+        "hyper": "group"
+      },
+      {
+        "noun": "blue team",
+        "hyper": "group"
+      },
+      {
+        "noun": "tag",
+        "hyper": "point of elimination"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.8,
+      "arousal": 0.9,
+      "tension": 0.6
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "73365dbd16a62c462eed6b8574afa5963f4570f4f7db02f0b57e8ceee4ead9c5",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_tag",
+      "text": "Neon warehouse arena requires line-of-sight tactical play for first to 10 tags",
+      "status": "counterexample",
+      "method": "static goal regression over rules"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 5 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "chain",
+          "text": "win unreachable in the rule graph"
+        },
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "counterexample",
+        "method": "static goal regression over rules",
+        "text": "no rule chain lets the player trigger the win",
+        "src": ""
+      },
+      {
+        "id": "T2:r_lose_red",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_red"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_lose_red fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_deck_e",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_deck_e"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 7,
+        "status": "verified",
+        "text": "r_secret_deck_e fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_n",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_n"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 6,
+        "status": "verified",
+        "text": "r_secret_flank_n fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_flank_s",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_flank_s"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 11,
+        "status": "verified",
+        "text": "r_secret_flank_s fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win_red",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win_red"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_win_red fires exactly once",
+        "cx": null
+      }
+    ],
+    "par": null,
+    "ms": 244
+  }
+}

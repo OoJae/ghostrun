@@ -1,0 +1,300 @@
+{
+  "prompt": "A cowboy showdown in a desert town: outdraw three bandits",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "western action",
+    "setting": "dusty main street of a frontier town",
+    "role": "cowboy outlaw",
+    "goal": "outdraw and defeat three bandits in quick-draw duel",
+    "fail": "missing the quick draw or being shot first",
+    "mood": "tense, gritty showdown",
+    "pack": "city_block",
+    "sub": [],
+    "safety": "arcade",
+    "headline": "Three bandits must be outdrawn in the quick-draw showdown",
+    "nouns": [
+      {
+        "noun": "cowboy",
+        "hyper": "character"
+      },
+      {
+        "noun": "bandit",
+        "hyper": "character"
+      },
+      {
+        "noun": "desert town",
+        "hyper": "location"
+      },
+      {
+        "noun": "showdown",
+        "hyper": "event"
+      }
+    ],
+    "moodVec": {
+      "valence": -0.2,
+      "arousal": 0.8,
+      "tension": 0.85
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "31020e2dcfce63bd8b8949f41dfe97864e0599a10521eecefdeab2cc666eef16",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_showdown",
+      "text": "Three bandits must be outdrawn in the quick-draw showdown",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners vs 3 bots"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 8 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (bandit3 down to 0 HP) ← shoot bandit3 (1 hit of 100)",
+        "src": ""
+      },
+      {
+        "id": "T1:range:r_dead_b1",
+        "tier": "T1",
+        "subject": {
+          "kind": "rule",
+          "id": "r_dead_b1"
+        },
+        "method": "line-of-sight range model (from ground the jump model reaches)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 34,
+        "status": "verified",
+        "text": "a shot reaches the bandit: clear lines from as far as 7.99 m (range 8 m)",
+        "cx": null
+      },
+      {
+        "id": "T1:range:r_dead_b2",
+        "tier": "T1",
+        "subject": {
+          "kind": "rule",
+          "id": "r_dead_b2"
+        },
+        "method": "line-of-sight range model (from ground the jump model reaches)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 35,
+        "status": "verified",
+        "text": "a shot reaches the bandit: clear lines from as far as 7.99 m (range 8 m)",
+        "cx": null
+      },
+      {
+        "id": "T1:range:r_dead_b3",
+        "tier": "T1",
+        "subject": {
+          "kind": "rule",
+          "id": "r_dead_b3"
+        },
+        "method": "line-of-sight range model (from ground the jump model reaches)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 35,
+        "status": "verified",
+        "text": "a shot reaches the bandit: clear lines from as far as 7.99 m (range 8 m)",
+        "cx": null
+      },
+      {
+        "id": "T1:range:r_win",
+        "tier": "T1",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "line-of-sight range model (from ground the jump model reaches)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 36,
+        "status": "verified",
+        "text": "a shot reaches the bandit: clear lines from as far as 7.99 m (range 8 m)",
+        "cx": null
+      },
+      {
+        "id": "T2:r_dead_b1",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_dead_b1"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_dead_b1 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_dead_b2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_dead_b2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_dead_b2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_dead_b3",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_dead_b3"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_dead_b3 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lose",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_lose fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_floor_ne",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_floor_ne"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_floor_ne fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_floor_sw",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_floor_sw"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_secret_floor_sw fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_plinth",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_plinth"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_secret_plinth fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners vs 3 bots",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it vs 3 bots (AI par 9.7 s)",
+        "cx": null,
+        "src": "",
+        "ms": 328
+      }
+    ],
+    "par": {
+      "goldS": 9.7,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 587
+  }
+}

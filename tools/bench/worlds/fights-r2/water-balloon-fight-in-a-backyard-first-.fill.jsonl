@@ -1,0 +1,27 @@
+{"op":"meta","mode":"play","lang":"en","pack":"outdoor","sub":[],"seed":17,"look":"backyard arena","mood":[0.8,0.6,0.4],"timeOfDay":14,"weather":"sunny"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"outside","name":"Backyard entrance"}
+{"op":"zone","id":"z_clearing","slot":"clearing","tag":"outside","name":"Central lawn"}
+{"op":"zone","id":"z_pond","slot":"pond","tag":"outside","name":"Garden pond"}
+{"op":"zone","id":"z_camp","slot":"camp","tag":"outside","name":"Picnic area"}
+{"op":"spawn","id":"sp_red","zone":"z_entrance","anchor":"spawn_pad","team":"red"}
+{"op":"spawn","id":"sp_blue","zone":"z_clearing","anchor":"spawn_pad","team":"blue"}
+{"op":"ent","id":"balloon_red","kind":"pickup","noun":"water balloon","hyper":"ammunition","zone":"z_entrance","anchor":"sign","body":"dynamic","shape":"sphere","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"balloon_blue","kind":"pickup","noun":"water balloon","hyper":"ammunition","zone":"z_clearing","anchor":"center","body":"dynamic","shape":"sphere","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"obstacle_fence","kind":"prop","noun":"wooden fence","hyper":"fence","zone":"z_clearing","anchor":"center_n","body":"fixed","shape":"box","size":[3,1,0.2]}
+{"op":"ent","id":"obstacle_tree","kind":"prop","noun":"big tree","hyper":"tree","zone":"z_clearing","anchor":"center_s","body":"fixed","shape":"hull","size":[1,3,1]}
+{"op":"ent","id":"goal_red","kind":"goal","noun":"score zone red","hyper":"zone","zone":"z_clearing","anchor":"flank_n","body":"sensor","shape":"box"}
+{"op":"ent","id":"goal_blue","kind":"goal","noun":"score zone blue","hyper":"zone","zone":"z_clearing","anchor":"flank_s","body":"sensor","shape":"box"}
+{"op":"verb","id":"vb_carry_red","verb":"physics_props.carry","on":"balloon_red","params":{}}
+{"op":"verb","id":"vb_carry_blue","verb":"physics_props.carry","on":"balloon_blue","params":{}}
+{"op":"verb","id":"vb_throw_red","verb":"combat_sport.throw","on":"balloon_red","params":{"range":15,"damage":0,"at":"sp_blue"}}
+{"op":"verb","id":"vb_throw_blue","verb":"combat_sport.throw","on":"balloon_blue","params":{"range":15,"damage":0,"at":"sp_red"}}
+{"op":"verb","id":"vb_jump","verb":"locomotion.jump","on":"player","params":{"jumpsMax":2}}
+{"op":"rule","id":"r_score_red","when":{"t":"hit","a":"sp_blue","b":"balloon_red"},"then":[{"e":"score","target":"team:red","n":1}],"once":false}
+{"op":"rule","id":"r_score_blue","when":{"t":"hit","a":"sp_red","b":"balloon_blue"},"then":[{"e":"score","target":"team:blue","n":1}],"once":false}
+{"op":"rule","id":"r_win_red","when":{"t":"score_gte","a":"team:red","n":5},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_win_blue","when":{"t":"score_gte","a":"team:blue","n":5},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"npc","id":"npc_blue","role":"rival","zone":"z_clearing","anchor":"center","team":"blue","menu":["npc_patrol"],"dflt":"npc_patrol"}
+{"op":"expect","id":"exp_backyard","prop":"win_reachable","a":"sp_red","b":"goal_red","headline":true,"text":"Backyard arena supports 5-hit tag with water balloons"}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":6}}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

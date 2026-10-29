@@ -1,0 +1,22 @@
+{"op":"meta","mode":"play","lang":"en","pack":"arena","sub":[],"seed":18,"look":"open sea battle","mood":[0.4,0.9,0.8],"timeOfDay":14,"weather":"clear"}
+{"op":"zone","id":"z_player","slot":"west_half","tag":"base","name":"Player pirate ship"}
+{"op":"zone","id":"z_enemy","slot":"east_half","tag":"base","name":"Enemy pirate ship"}
+{"op":"spawn","id":"sp_red","zone":"z_player","anchor":"spawn_pad","team":"red"}
+{"op":"ent","id":"player_ship","kind":"prop","noun":"pirate ship","hyper":"vessel","zone":"z_player","anchor":"center","body":"fixed","shape":"box","size":[10,4,2]}
+{"op":"ent","id":"enemy_ship","kind":"prop","noun":"enemy pirate ship","hyper":"vessel","zone":"z_enemy","anchor":"center","body":"fixed","shape":"box","size":[12,5,2]}
+{"op":"ent","id":"cannon_1","kind":"pickup","noun":"cannon","hyper":"weapon","zone":"z_player","anchor":"spawn_pad","body":"dynamic","shape":"box","size":[0.5,0.5,1.5]}
+{"op":"ent","id":"cannon_2","kind":"pickup","noun":"cannon","hyper":"weapon","zone":"z_player","anchor":"spawn_pad","body":"dynamic","shape":"box","size":[0.5,0.5,1.5]}
+{"op":"ent","id":"cannon_3","kind":"pickup","noun":"cannon","hyper":"weapon","zone":"z_player","anchor":"spawn_pad","body":"dynamic","shape":"box","size":[0.5,0.5,1.5]}
+{"op":"verb","id":"vb_carry_c1","verb":"physics_props.carry","on":"cannon_1","params":{}}
+{"op":"verb","id":"vb_carry_c2","verb":"physics_props.carry","on":"cannon_2","params":{}}
+{"op":"verb","id":"vb_carry_c3","verb":"physics_props.carry","on":"cannon_3","params":{}}
+{"op":"verb","id":"vb_shoot_c1","verb":"combat_sport.shoot","on":"cannon_1","params":{"range":25,"speed":30,"damage":40,"cooldown":1,"at":"enemy_ship"}}
+{"op":"verb","id":"vb_shoot_c2","verb":"combat_sport.shoot","on":"cannon_2","params":{"range":25,"speed":30,"damage":40,"cooldown":1,"at":"enemy_ship"}}
+{"op":"verb","id":"vb_shoot_c3","verb":"combat_sport.shoot","on":"cannon_3","params":{"range":25,"speed":30,"damage":40,"cooldown":1,"at":"enemy_ship"}}
+{"op":"verb","id":"vb_health_enemy","verb":"combat_sport.health","on":"enemy_ship","params":{"hp":200,"respawn":false}}
+{"op":"verb","id":"vb_health_player","verb":"combat_sport.health","on":"player_ship","params":{"hp":200,"respawn":false}}
+{"op":"rule","id":"r_sink_enemy","when":{"t":"health_lte","a":"enemy_ship","n":0},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_sink_player","when":{"t":"health_lte","a":"player_ship","n":0},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"expect","id":"x_sink","prop":"win_reachable","a":"sp_red","b":"enemy_ship","headline":true,"text":"Cannon fire must persist until enemy ship is fully sunk"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

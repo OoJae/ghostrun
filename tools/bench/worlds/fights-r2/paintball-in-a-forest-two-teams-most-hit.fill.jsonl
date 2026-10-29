@@ -1,0 +1,23 @@
+{"op":"meta","mode":"play","lang":"en","pack":"outdoor","sub":[],"seed":13,"look":"forest clearing","mood":[0.6,0.8,0.6],"timeOfDay":14,"weather":"clear"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Forest entry"}
+{"op":"zone","id":"z_center","slot":"clearing","tag":"clearing","name":"Central clearing"}
+{"op":"zone","id":"z_base_w","slot":"clearing_w","tag":"base","name":"West team base"}
+{"op":"zone","id":"z_base_e","slot":"clearing_e","tag":"base","name":"East team base"}
+{"op":"spawn","id":"sp_red","zone":"z_base_w","anchor":"spawn_pad","team":"red"}
+{"op":"spawn","id":"sp_blue","zone":"z_base_e","anchor":"spawn_pad","team":"blue"}
+{"op":"goal","id":"match_timer","zone":"z_center","anchor":"center","noun":"timer","hyper":"timer","team":""}
+{"op":"ent","id":"paintball_gun_red","kind":"weapon","noun":"paintball gun","hyper":"projectile","zone":"z_base_w","anchor":"center","body":"fixed","shape":"box"}
+{"op":"ent","id":"paintball_gun_blue","kind":"weapon","noun":"paintball gun","hyper":"projectile","zone":"z_base_e","anchor":"center","body":"fixed","shape":"box"}
+{"op":"ent","id":"cover_tree_1","kind":"prop","noun":"tree trunk","hyper":"tree","zone":"z_center","anchor":"center_n","body":"fixed","shape":"box","size":[0.3,2,0.3]}
+{"op":"ent","id":"cover_tree_2","kind":"prop","noun":"tree trunk","hyper":"tree","zone":"z_center","anchor":"center_s","body":"fixed","shape":"box","size":[0.3,2,0.3]}
+{"op":"verb","id":"vb_shoot_red","verb":"combat_sport.shoot","on":"paintball_gun_red","params":{"range":20,"speed":30,"damage":0,"cooldown":0.5,"at":""}}
+{"op":"verb","id":"vb_shoot_blue","verb":"combat_sport.shoot","on":"paintball_gun_blue","params":{"range":20,"speed":30,"damage":0,"cooldown":0.5,"at":""}}
+{"op":"verb","id":"vb_timer","verb":"puzzle.timer","on":"match_timer","params":{"seconds":90}}
+{"op":"rule","id":"r_score_red","when":{"t":"hit","a":"player","b":"paintball_gun_blue"},"then":[{"e":"score","target":"team:red","n":1}],"once":false}
+{"op":"rule","id":"r_score_blue","when":{"t":"hit","a":"player","b":"paintball_gun_red"},"then":[{"e":"score","target":"team:blue","n":1}],"once":false}
+{"op":"rule","id":"r_end_win","when":{"t":"timer_end","a":"match_timer"},"if":[{"l":"team:red.score","op":"gt","r":"team:blue.score"}],"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_end_lose","when":{"t":"timer_end","a":"match_timer"},"if":[{"l":"team:blue.score","op":"gt","r":"team:red.score"}],"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"expect","id":"x_match","prop":"win_reachable","a":"sp_red","b":"match_timer","headline":true,"text":"90-second timer decides the paintball match"}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.2,"speed":7}}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

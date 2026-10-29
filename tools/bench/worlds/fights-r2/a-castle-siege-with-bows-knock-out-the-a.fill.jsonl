@@ -1,0 +1,27 @@
+{"op":"meta","mode":"play","lang":"en","pack":"arena","sub":["rooftop"],"seed":11,"look":"castle siege","mood":[0.3,0.7,0.8],"timeOfDay":14,"weather":"clear"}
+{"op":"zone","id":"z_midfield","slot":"midfield","tag":"ground","name":"Courtyard"}
+{"op":"zone","id":"z_west_half","slot":"west_half","tag":"wall","name":"West Battlement"}
+{"op":"zone","id":"z_east_half","slot":"east_half","tag":"wall","name":"East Battlement"}
+{"op":"zone","id":"z_north_deck","slot":"north_deck","tag":"tower","name":"North Tower"}
+{"op":"zone","id":"z_south_deck","slot":"south_deck","tag":"tower","name":"South Tower"}
+{"op":"spawn","id":"sp_red","zone":"z_midfield","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"banner","zone":"z_north_deck","anchor":"deck_center","noun":"banner","hyper":"flag","team":"","body":"sensor","shape":"box","size":[1,2,0.2]}
+{"op":"ent","id":"bow","kind":"pickup","noun":"longbow","hyper":"bow","zone":"z_midfield","anchor":"center","body":"dynamic","shape":"box","size":[0.2,0.5,0.2]}
+{"op":"ent","id":"arrow","kind":"pickup","noun":"arrow quiver","hyper":"arrow","zone":"z_midfield","anchor":"center_n","body":"dynamic","shape":"box","size":[0.3,0.1,0.1]}
+{"op":"ent","id":"archer_west","kind":"npc","noun":"archer","hyper":"archer","zone":"z_west_half","anchor":"spawn_pad","body":"kinematic","shape":"capsule","team":"blue"}
+{"op":"ent","id":"archer_east","kind":"npc","noun":"archer","hyper":"archer","zone":"z_east_half","anchor":"spawn_pad","body":"kinematic","shape":"capsule","team":"blue"}
+{"op":"verb","id":"vb_carry_bow","verb":"physics_props.carry","on":"bow","params":{}}
+{"op":"verb","id":"vb_carry_arrow","verb":"physics_props.carry","on":"arrow","params":{}}
+{"op":"verb","id":"vb_shoot","verb":"combat_sport.shoot","on":"player","params":{"range":25,"speed":30,"damage":30,"cooldown":0.5,"at":""}}
+{"op":"verb","id":"vb_archer_shoot_west","verb":"combat_sport.shoot","on":"archer_west","params":{"range":20,"speed":25,"damage":20,"cooldown":1,"at":""}}
+{"op":"verb","id":"vb_archer_shoot_east","verb":"combat_sport.shoot","on":"archer_east","params":{"range":20,"speed":25,"damage":20,"cooldown":1,"at":""}}
+{"op":"verb","id":"vb_player_health","verb":"combat_sport.health","on":"player","params":{"hp":100,"respawn":false}}
+{"op":"verb","id":"vb_archer_health_west","verb":"combat_sport.health","on":"archer_west","params":{"hp":50,"respawn":false}}
+{"op":"verb","id":"vb_archer_health_east","verb":"combat_sport.health","on":"archer_east","params":{"hp":50,"respawn":false}}
+{"op":"rule","id":"r_lose","when":{"t":"hit","a":"player","b":"archer_west"},"then":[{"e":"lose","target":"player"}],"once":false}
+{"op":"rule","id":"r_lose2","when":{"t":"hit","a":"player","b":"archer_east"},"then":[{"e":"lose","target":"player"}],"once":false}
+{"op":"rule","id":"r_win","when":{"t":"enter","a":"player","b":"banner"},"if":[{"l":"archer_west.hp","op":"eq","r":"0"},{"l":"archer_east.hp","op":"eq","r":"0"}],"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"expect","id":"x_siege","prop":"win_reachable","a":"sp_red","b":"banner","headline":true,"text":"Walls need line-of-sight to knock out archers before climbing for the banner"}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":6}}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}
