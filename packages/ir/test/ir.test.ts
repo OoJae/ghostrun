@@ -208,6 +208,41 @@ describe("fill repairs from the fourth unseen set", () => {
   });
 });
 
+describe("fill repairs for fights", () => {
+  it("spells, fireballs, blasters and bows are the shoot verb, claws reach two metres, knock-outs are health_lte", () => {
+    const lines = [
+      '{"op":"meta","mode":"play","pack":"arena","seed":3}',
+      '{"op":"zone","id":"z_a","slot":"midfield","tag":"center"}',
+      '{"op":"spawn","id":"sp","zone":"z_a","team":"red"}',
+      '{"op":"ent","id":"wand","kind":"wand","noun":"oak wand","zone":"z_a"}',
+      '{"op":"npc","id":"rival","role":"rival","zone":"z_a","team":"blue","menu":["rival.attack"]}',
+      '{"op":"verb","id":"vb_fire","verb":"magic.fireball","on":"player","params":{"damage":20}}',
+      '{"op":"verb","id":"vb_wand","verb":"wand","on":"wand"}',
+      '{"op":"verb","id":"vb_bow","verb":"combat_sport.bow","on":"player"}',
+      '{"op":"verb","id":"vb_claws","verb":"zombie.claws","on":"rival","params":{"damage":10}}',
+      '{"op":"verb","id":"vb_hp","verb":"stats.hit_points","on":"rival","params":{"hp":80}}',
+      '{"op":"verb","id":"vb_grid","verb":"motion_hazards.laser","on":"wand"}',
+      '{"op":"rule","id":"r_ko","when":{"t":"knockout","a":"rival"},"then":[{"e":"win","target":"player"}]}',
+      '{"op":"rule","id":"r_burn","when":{"t":"shot","a":"player","b":"rival"},"then":[{"e":"hurt","target":"player","n":5},{"e":"restore","target":"rival","n":5}]}',
+    ].join("\n");
+    const p = parseFill(lines, { seed: 3 });
+    expect(p.stats.invalid).toBe(0);
+    expect(p.draft.entities.find((e) => e.id === "wand")!.kind).toBe("pickup");
+    expect(p.draft.verbs.map((v) => [v.id, v.verb, v.params])).toEqual([
+      ["vb_fire", "combat_sport.shoot", { damage: 20 }],
+      ["vb_wand", "combat_sport.shoot", {}],
+      ["vb_bow", "combat_sport.shoot", {}],
+      ["vb_claws", "combat_sport.shoot", { range: 2, damage: 10 }],
+      ["vb_hp", "combat_sport.health", { hp: 80 }],
+      ["vb_grid", "motion_hazards.laser", {}], // the laser grid hazard keeps its own kit
+    ]);
+    expect(p.draft.rules.map((r) => [r.when.t, r.when.n, r.then.map((e) => e.e)])).toEqual([
+      ["health_lte", 0, ["win"]],
+      ["hit", 0, ["damage", "heal"]],
+    ]);
+  });
+});
+
 describe("glued objects", () => {
   it("a whole world on one line (no newlines) parses like one object per line; strings with braces stay whole", async () => {
     const { parseFill, splitObjects } = await import("../src");

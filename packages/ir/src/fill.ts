@@ -192,8 +192,18 @@ const SYNONYMS: Record<string, string | readonly string[]> = {
   flag: "pickup", treasure: "pickup", trap: "hazard", lava: "hazard", spikes: "hazard", laser: "hazard", fire: "hazard",
   button: "switch", lever: "switch", pad: "plate", gate: "door", exit: "goal", finish: "goal", guard: "npc",
   character: "npc", teleporter: "portal", car: "vehicle", exhibit: "prop", display: "prop", statue: "prop",
+  // weapons are things to hold (a laser stays a hazard: the laser grid)
+  wand: "pickup", staff: "pickup", blaster: "pickup", gun: "pickup", rifle: "pickup", pistol: "pickup", bow: "pickup",
+  crossbow: "pickup", slingshot: "pickup", weapon: "pickup",
   // triggers: "touch" also covers using something (the sim emits touch a=agent b=thing on USE)
   collect: "touch", interact: "touch", timeout: "timer_end", state: "state_is", state_change: "state_is",
+  // someone's hit points running out is health_lte (n 0: knocked out); being shot is a hit
+  knockout: "health_lte", knocked_out: "health_lte", ko: "health_lte", defeated: "health_lte", defeat: "health_lte", killed: "health_lte",
+  kill: "health_lte", dies: "health_lte", die: "health_lte", death: "health_lte", health_below: "health_lte", low_health: "health_lte",
+  hp_lte: "health_lte", hp: "health_lte", health: ["health_lte", "heal"], shot: "hit", struck: "hit", zapped: "hit", damaged: "hit",
+  // effects
+  hurt: "damage", harm: "damage", hit: "damage", attack: "damage", take_damage: "damage", lose_hp: "damage",
+  restore: "heal", cure: "heal", regen: "heal", regenerate: "heal", heal_hp: "heal",
   // comparison operators in the spellings models use
   neq: "ne", not_eq: "ne", not_equal: "ne", not_equals: "ne", "!=": "ne", "!==": "ne", "<>": "ne",
   "==": "eq", "===": "eq", "=": "eq", equals: "eq", equal: "eq", is: "eq",
@@ -201,6 +211,28 @@ const SYNONYMS: Record<string, string | readonly string[]> = {
   // weather adjectives
   foggy: "fog", misty: "fog", mist: "fog", rainy: "rain", snowy: "snow", stormy: "storm", thunderstorm: "storm", sunny: "clear",
 };
+/**
+ * Weapon and hit-point verbs models invent ("magic.fireball", "weapons.blaster", "bow"): the kit's
+ * own. Kits with verbs of their own keep theirs (a motion_hazards laser is the laser grid).
+ */
+const OWN_KITS = new Set(["puzzle", "motion_hazards", "locomotion", "social", "physics_props"]);
+const SHOOT_WORDS = new Set(["shoot", "shooter", "shooting", "shot", "fireball", "fireballs", "spell", "spells", "cast", "wand", "blaster", "laser", "gun", "guns", "rifle", "pistol", "bow", "arrow", "arrows", "crossbow", "slingshot", "sling", "zap", "zapper", "blast", "projectile", "ranged", "missile", "bolt"]);
+const MELEE_WORDS = new Set(["sword", "claw", "claws", "bite", "punch", "melee", "strike", "slash", "stab", "axe", "club"]);
+const HEALTH_WORDS = new Set(["health", "hp", "hitpoints", "life", "lives", "vitality"]);
+
+function canonVerb(verb: string, params: Record<string, string | number | boolean>): { verb: string; params: Record<string, string | number | boolean> } | null {
+  const dot = verb.indexOf(".");
+  const kit = dot < 0 ? "" : verb.slice(0, dot);
+  const name = dot < 0 ? verb : verb.slice(dot + 1);
+  if (OWN_KITS.has(kit) || verb === "combat_sport.shoot" || verb === "combat_sport.health") return null;
+  const words = norm(name).split("_");
+  if (words.some((w) => HEALTH_WORDS.has(w)) || name === "hit_points") return { verb: "combat_sport.health", params };
+  // a blade or claws is a weapon that reaches about two metres
+  if (words.some((w) => MELEE_WORDS.has(w))) return { verb: "combat_sport.shoot", params: { range: 2, ...params } };
+  if (words.some((w) => SHOOT_WORDS.has(w))) return { verb: "combat_sport.shoot", params };
+  return null;
+}
+
 /** Trigger words meaning "the player uses X": rewritten to touch with a = the agent, b = the thing. */
 const USE_WORDS = new Set(["use", "interact", "activate", "press", "click", "open", "inspect", "operate"]);
 
@@ -518,6 +550,13 @@ export class FillParser {
       }
       case "verb":
       case "sig": {
+        const canon = canonVerb(op.verb, op.params);
+        if (canon) {
+          this.#note(line, "repaired", `verb '${op.verb}' → ${canon.verb}`);
+          this.stats.repaired++;
+          op.verb = canon.verb;
+          op.params = canon.params;
+        }
         const vid = op.op === "verb" ? op.id : `sig_${op.verb.replace(".", "_")}`.slice(0, 32);
         if (this.#dupe(line, vid) || !this.#budget(line, "verb")) return undefined;
         if (!/^[a-z_]+\.[a-z_]+$/.test(op.verb)) {
