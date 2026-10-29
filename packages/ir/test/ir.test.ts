@@ -290,6 +290,24 @@ describe("fill repairs from the second fights bench", () => {
     expect(p.draft.cosmetic.dress).toMatchObject([{ id: "d_neon", noun: "lighting", zone: "z_a" }]);
     expect(p.draft.cosmetic.posters).toMatchObject([{ id: "p_rules", prompt: "First to 10 tags wins", zone: "z_a" }]);
   });
+
+  it("hit points written as an ent of their own ('crystal_hp', kind health) are a health verb on whose they are, and rules about them are about it", () => {
+    const lines = [
+      '{"op":"meta","mode":"play","pack":"arena","seed":3}',
+      '{"op":"zone","id":"z_a","slot":"midfield","tag":"center"}',
+      '{"op":"spawn","id":"sp","zone":"z_a","team":"red"}',
+      '{"op":"goal","id":"crystal","zone":"z_a","noun":"sacred crystal"}',
+      '{"op":"ent","id":"crystal_hp","kind":"health","noun":"crystal durability","zone":"z_a","hp":200}',
+      '{"op":"ent","id":"player_hp","kind":"health","zone":"z_a","hp":150}',
+      '{"op":"ent","id":"mana","kind":"health","zone":"z_a","hp":50}',
+      '{"op":"rule","id":"r_lose_crystal","when":{"t":"health_lte","a":"crystal_hp","n":0},"then":[{"e":"lose","target":"player"}]}',
+      '{"op":"rule","id":"r_lose_player","when":{"t":"health_lte","a":"player_hp","n":0},"then":[{"e":"lose","target":"player"}]}',
+    ].join("\n");
+    const p = parseFill(lines, { seed: 3 });
+    expect(p.draft.verbs.map((x) => [x.id, x.verb, x.on, x.params])).toEqual([["crystal_hp", "combat_sport.health", "crystal", { hp: 200 }], ["player_hp", "combat_sport.health", "player", { hp: 150 }]]);
+    expect(p.draft.rules.map((r) => r.when.a)).toEqual(["crystal", "player"]);
+    expect(p.notes.filter((n) => n.kind === "invalid").map((n) => n.id)).toEqual(["mana"]); // (whose? nobody says)
+  });
 });
 
 describe("glued objects", () => {

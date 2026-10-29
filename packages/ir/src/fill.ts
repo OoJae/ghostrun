@@ -326,6 +326,8 @@ export class FillParser {
   #cosmeticDone = false;
   #held: { line: number; op: FillOp }[] = [];
   #counts = { gameplay: 0, zone: 0, ent: 0, verb: 0, rule: 0, minded: 0, plainNpc: 0, expect: 0, dress: 0, poster: 0 };
+  /** Hit points a fill wrote as a thing of their own ("crystal_hp"), by whose they are ("crystal"). */
+  readonly #hpOf = new Map<string, string>();
   readonly draft: WorldBundle;
 
   constructor(init: FillInit) {
@@ -394,6 +396,12 @@ export class FillParser {
       this.#note(line, "invalid", "not JSON");
       return undefined;
     }
+    const hp = raw && typeof raw === "object" ? this.#hitPoints(raw as Record<string, unknown>) : null;
+    if (hp) {
+      this.stats.repaired++;
+      this.#note(line, "repaired", `'${String(hp.id)}' (kind ${String((raw as { kind: unknown }).kind)}) is ${String(hp.on)}'s hit points: combat_sport.health on ${String(hp.on)}, ${String((hp.params as { hp: number }).hp)} HP`, raw);
+      raw = hp;
+    }
     let parsed = v.safeParse(FillOp, raw);
     const filled: string[] = [];
     if (!parsed.success && raw && typeof raw === "object" && repair(raw, parsed.issues, this.draft.zones[0]?.id, filled)) {
@@ -410,6 +418,39 @@ export class FillParser {
       return undefined;
     }
     return this.#accept(line, parsed.output);
+  }
+
+  /**
+   * "crystal_hp" written as an ent of kind "health" with 200 hp: the crystal's hit points, so a
+   * health verb on the crystal (and a rule about crystal_hp is about the crystal). Null when it is
+   * no such line, or whose they are is unclear.
+   */
+  #hitPoints(raw: Record<string, unknown>): Record<string, unknown> | null {
+    if (raw.op !== "ent" || typeof raw.kind !== "string" || !HEALTH_WORDS.has(norm(raw.kind)) || typeof raw.id !== "string") return null;
+    const owner = raw.id.replace(/_(hp|health|hit_?points|life|lives)$/, "");
+    if (owner === raw.id || !(owner === "player" || this.draft.entities.some((e) => e.id === owner))) return null;
+    const props = raw.props && typeof raw.props === "object" ? (raw.props as Record<string, unknown>) : {};
+    const n = Number(raw.hp ?? props.hp ?? raw.max ?? 100);
+    this.#hpOf.set(raw.id, owner);
+    return { op: "verb", id: raw.id, verb: "combat_sport.health", on: owner, params: { hp: Number.isFinite(n) && n > 0 ? n : 100 } };
+  }
+
+  /** A rule or verb naming hit points written as their own thing names whose they are. */
+  #owners(line: number, op: FillOp) {
+    if (!this.#hpOf.size) return;
+    const to = (ref: string) => {
+      const [head, ...rest] = ref.split(".");
+      const owner = this.#hpOf.get(head!);
+      if (!owner) return ref;
+      this.#note(line, "repaired", `'${head}' is ${owner}'s hit points: ${owner}`);
+      return [owner, ...rest].join(".");
+    };
+    if (op.op === "verb" || op.op === "sig") op.on = to(op.on);
+    if (op.op !== "rule") return;
+    op.when.a = to(op.when.a);
+    op.when.b = to(op.when.b);
+    op.if = op.if.map((c) => ({ ...c, l: to(c.l) }));
+    op.then = op.then.map((e) => ({ ...e, target: to(e.target) }));
   }
 
   #budget(line: number, key: keyof FillParser["counts"], gameplay = true): boolean {
@@ -561,6 +602,7 @@ export class FillParser {
       this.#note(line, "late", "op after the cosmetic layer closed");
       return [];
     }
+    this.#owners(line, op);
     if (op.op === "rule") this.#teamRefs(line, op);
     if (!cosmeticOp && op.op !== "meta" && !this.#refsOk(op)) {
       this.#held.push({ line, op });
