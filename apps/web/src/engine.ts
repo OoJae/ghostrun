@@ -684,11 +684,16 @@ export class Engine {
       vr.after(now, dt, w);
     }
 
-    // the frame's bookkeeping runs even when drawing throws (an emulated headset's null framebuffer
-    // does on every frame), so a world loaded in VR still starts
+    // An immersive session's layer always has a framebuffer to draw into, except in an emulated
+    // headset (IWER), whose layer's is null: three would run the whole scene pass, then throw drawing
+    // it out, every frame, and with nothing ever shown nothing paces the GPU, which falls minutes
+    // behind (the next page waits for it). With nowhere to draw, the frame isn't drawn.
+    const layer = this.#vr ? this.#renderer.xr.getBaseLayer() : null;
+    const nowhere = layer !== null && "framebuffer" in layer && layer.framebuffer === null;
+    // (the frame's bookkeeping runs even when drawing throws, so a world loaded in VR still starts)
     try {
       if (this.#pipeline && !this.#vr) this.#pipeline.render();
-      else this.#renderer.render(this.#scene, this.#camera);
+      else if (!nowhere) this.#renderer.render(this.#scene, this.#camera);
     } finally {
       const pr = probe();
       this.#frames++;
