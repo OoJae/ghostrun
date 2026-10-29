@@ -428,7 +428,7 @@ async function build(req: Request, env: Env, url: URL, later: (p: Promise<unknow
         if (res.inTok > 0) intentCost = costMicroUsd(res.model, res.inTok, res.outTok);
         if (res.fellBack) await send("fallback", { job: "intent", to: res.model });
         const intent = settleIntent(prompt, v.parse(IntentOut, res.value));
-        safe = intent.safety === "ok";
+        safe = intent.safety !== "block"; // arcade games (shooters, monsters, heists) are ordinary worlds to keep
         await keep("intent", { intent, seed, ms: Date.now() - t0 });
         if (intent.safety === "block") {
           await send("refusal", { message: "That one's outside what GHOSTRUN builds. Try a game, a place or a challenge." });

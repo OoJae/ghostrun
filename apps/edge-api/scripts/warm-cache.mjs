@@ -48,7 +48,7 @@ for (const [n, prompt] of prompts.entries()) {
     if (bad) throw new Error(`${bad.event}: ${bad.data?.message ?? ""}`);
     if (!done) throw new Error("stream ended before done");
     if (cached) console.log(`${head}  already cached (built ${cached.data.at.slice(0, 16)} by ${cached.data.fillModel})`);
-    else if (safety !== "ok") console.log(`${head}  built in ${Date.now() - t0} ms, not kept: safety '${safety}' (only 'ok' builds are cached)`);
+    else if (safety === "block") console.log(`${head}  refused (safety 'block'), not kept`);
     else console.log(`${head}  built and kept in ${Date.now() - t0} ms (${done.data.lines} lines by ${done.data.fillModel || "?"})`);
   } catch (e) {
     failed++;

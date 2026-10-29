@@ -147,7 +147,7 @@ describe("the exact-repeat build cache", () => {
     expect((await on.full()).events[0]!.event).toBe("cached");
   });
 
-  it("failed builds aren't kept: an upstream error, a refusal, an arcade intent, a client that left mid-fill, an oversized stream", async () => {
+  it("failed builds aren't kept: an upstream error, a refusal, a client that left mid-fill, an oversized stream; an arcade game is", async () => {
     const failed = world({ up: { fill: { inTok: 0, outTok: 0, status: 500 } } });
     expect((await failed.full()).events.at(-1)!.event).toBe("error");
     expect(failed.entries()).toHaveLength(0);
@@ -158,7 +158,7 @@ describe("the exact-repeat build cache", () => {
 
     const arcade = world({ up: { intent: { inTok: 1000, outTok: 200, body: { ...INTENT, safety: "arcade" } } } });
     expect((await arcade.full()).events.at(-1)!.event).toBe("done");
-    expect(arcade.entries()).toHaveLength(0);
+    expect(arcade.entries()).toHaveLength(1);
 
     const left = world({ up: { fill: { inTok: 3000, outTok: 1500, paceMs: 5 } } });
     const { res, ctx } = await left.build(judge);
