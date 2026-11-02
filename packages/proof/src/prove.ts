@@ -2,12 +2,13 @@
 import { clampLaws, specHash, type WorldBundle } from "@ghostrun/ir";
 import { buildNav } from "@ghostrun/nav";
 import type { Rapier } from "@ghostrun/sim";
+import { headlineOf } from "./headline";
 import { playtest } from "./playtest";
 import { t0 } from "./t0";
 import { t1, t1Drive, t1Range } from "./t1";
 import { t2 } from "./t2";
 import { t3, tour, type Played } from "./t3";
-import type { Chip, ChipStatus, Receipt } from "./types";
+import type { Chip, Receipt } from "./types";
 
 export interface ProveOptions {
   engine: string;
@@ -59,21 +60,7 @@ export async function prove(R: Rapier, b: WorldBundle, opts: ProveOptions): Prom
       const t = tour(R, b, nav, s0.openers);
       if (t) emit([t]);
     }
-    const headlineExpect = b.expects.find((x) => x.headline);
-    let headline: Receipt["headline"] = null;
-    if (headlineExpect) {
-      const mine = chips.filter(
-        (c) => c.subject.id === headlineExpect.id || (headlineExpect.prop === "win_reachable" && c.subject.id === "win_reachable") || (b.mode === "wander" && headlineExpect.prop === "reachable" && !headlineExpect.b && c.subject.id === "tour"),
-      );
-      const status: ChipStatus = mine.some((c) => c.status === "counterexample")
-        ? "counterexample"
-        : mine.some((c) => c.status === "verified")
-          ? "verified"
-          : mine.some((c) => c.status === "played")
-            ? "played"
-            : "not_checkable";
-      headline = { expect: headlineExpect.id, text: headlineExpect.text, status, method: mine.map((c) => c.method).join(" + ") || "none" };
-    }
+    const headline = headlineOf(b, chips);
     const receipt: Receipt = {
       v: 1,
       spec: await specHash(opts.engine, b),

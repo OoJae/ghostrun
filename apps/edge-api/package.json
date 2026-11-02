@@ -18,7 +18,10 @@
   },
   "dependencies": {
     "@ghostrun/ir": "workspace:*",
+    "@ghostrun/kits": "workspace:*",
+    "@ghostrun/layout": "workspace:*",
     "@ghostrun/llm": "workspace:*",
+    "@ghostrun/proof": "workspace:*",
     "@ghostrun/registry": "workspace:*",
     "@ghostrun/sim": "workspace:*",
     "valibot": "catalog:"
