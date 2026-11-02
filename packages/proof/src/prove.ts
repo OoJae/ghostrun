@@ -6,7 +6,7 @@ import { playtest } from "./playtest";
 import { t0 } from "./t0";
 import { t1, t1Drive, t1Range } from "./t1";
 import { t2 } from "./t2";
-import { t3, tour } from "./t3";
+import { t3, tour, type Played } from "./t3";
 import type { Chip, ChipStatus, Receipt } from "./types";
 
 export interface ProveOptions {
@@ -24,6 +24,11 @@ export interface ProveOptions {
   onReceipt?: (r: Receipt) => void;
   /** Runners per lower level in the playtest (default 6; a candidate race bands with fewer). */
   skillRuns?: number;
+  /**
+   * Runs and jump attempts played elsewhere already (a cloud proof's shards: see witnesses()),
+   * awaited after T2. T3 and the playtest take each as it came and play only what is missing.
+   */
+  played?: Played | Promise<Played>;
 }
 
 export async function prove(R: Rapier, b: WorldBundle, opts: ProveOptions): Promise<Receipt> {
@@ -46,7 +51,9 @@ export async function prove(R: Rapier, b: WorldBundle, opts: ProveOptions): Prom
   emit(t2(R, b, team));
   const nav = buildNav(b);
   try {
-    const s3 = t3(R, b, nav, s0.chain, opts.runs ?? 12, team, s0.openers);
+    // (the navmesh first: built here while the shards play)
+    const played = opts.played ? await opts.played : undefined;
+    const s3 = t3(R, b, nav, s0.chain, opts.runs ?? 12, team, s0.openers, played);
     emit(s3.chips);
     if (b.mode === "wander") {
       const t = tour(R, b, nav, s0.openers);
@@ -81,7 +88,7 @@ export async function prove(R: Rapier, b: WorldBundle, opts: ProveOptions): Prom
     };
     if (!opts.playtest) return receipt;
     opts.onReceipt?.(receipt);
-    const pt = playtest(R, b, nav, s0.chain, receipt, team, s0.openers, opts.skillRuns);
+    const pt = playtest(R, b, nav, s0.chain, receipt, team, s0.openers, opts.skillRuns, played);
     return pt ? { ...receipt, playtest: pt } : receipt;
   } finally {
     nav.destroy();
