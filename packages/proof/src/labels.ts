@@ -1,5 +1,6 @@
 // The only producer of strings a receipt shows. Every number carries its method, and no
 // percentage is printed for fewer than 30 trials (honest labels are a never-cut item).
+import type { Parting } from "./redgreen";
 import type { FailSpot, Revealed } from "./revealed";
 import type { Chip, Level, Playtest, Receipt } from "./types";
 
@@ -70,4 +71,24 @@ export function failLine(f: FailSpot, runs: number): string {
 export function fightLine(f: { hits: number; kos: number; near?: string }): string {
   const what = [f.hits ? plural(f.hits, "hit") : "", f.kos ? plural(f.kos, "knock-out") : ""].filter(Boolean).join(", ");
   return f.near === undefined ? what : `${f.near ? `near the ${f.near}` : "in the open"}: ${what}`;
+}
+
+// ---- red/green: the same runner before and after a change -------------------------------------
+
+/** What a red/green pair is, plainly: "Green: before the change · red: after it · the same runner, the same seed". */
+export function pairLine(green: "before" | "after"): string {
+  return green === "before" ? "Green: before the change · red: after it · the same AI runner, the same seed" : "Red: before the repair · green: after it · the same AI runner, the same seed";
+}
+
+/**
+ * Where they part, from the runs themselves: "They part here: the second jump (green rises 2.9 m,
+ * red 1.4 m)", "They part here: the red run ends (got stuck on the way to the glowing orb)",
+ * "They part here: their ways split, near the Neon plaza". `red` is which of the parting's two runs is red.
+ */
+export function partLine(p: Parting, red: 0 | 1, near = "", why = ""): string {
+  const where = near ? `, near the ${near}` : "";
+  const m = (x: number) => `${Math.max(0, Math.round(x * 10) / 10)} m`;
+  if (p.how === "jump") return `They part here: the ${p.midair ? "second " : ""}jump${where} (green rises ${m(p.rise[1 - red]!)}, red ${m(p.rise[red]!)})`;
+  if (p.how === "end" && p.ended !== null) return `They part here: the ${p.ended === red ? "red" : "green"} run ends${why ? ` (${why})` : ""}${where}`;
+  return `They part here: their ways split${where}`;
 }
