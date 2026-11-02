@@ -5,9 +5,9 @@
 import { stream } from "@ghostrun/detmath";
 import type { Cast, Vec3, WorldBundle } from "@ghostrun/ir";
 import type { NavWorld } from "@ghostrun/nav";
-import { BTN, type Brain, type InputFrame, type SimWorld } from "@ghostrun/sim";
+import { BTN, LOOK_AWAY, type Brain, type InputFrame, type SimWorld } from "@ghostrun/sim";
 
-export type Behaviour = "attack" | "intercept" | "defend" | "follow" | "patrol" | "race" | "idle";
+export type Behaviour = "attack" | "intercept" | "defend" | "follow" | "patrol" | "race" | "look_away" | "idle";
 
 // Menu options are free-form `role.verb` strings from the fill; the verb picks the behaviour.
 const VERBS: readonly (readonly [RegExp, Behaviour])[] = [
@@ -17,7 +17,12 @@ const VERBS: readonly (readonly [RegExp, Behaviour])[] = [
   [/defend|guard|protect|hold|keep/, "defend"],
   [/follow|escort|assist|support|help|accompany|draft|slipstream/, "follow"],
   [/patrol|wander|roam|walk|sweep|circle/, "patrol"],
+  // standing still and seeing nothing (what a bribe buys): idle to everyone but a watcher
+  [/look_away|look_the_other_way|turn_away|distracted|bribed/, "look_away"],
 ];
+
+/** Standing where it is: no target, no fight, no race. */
+const still = (b: Behaviour) => b === "idle" || b === "look_away";
 
 export function behaviourOf(option: string): Behaviour {
   const verb = option.slice(option.lastIndexOf(".") + 1).toLowerCase();
@@ -130,6 +135,11 @@ export class CastBrain implements Brain {
     return true;
   }
 
+  /** Playing an option that sees nothing (its mind told it to look away). */
+  blind(id: string): boolean {
+    return this.bots.find((x) => x.id === id)?.beh === "look_away";
+  }
+
   think(w: SimWorld): ReadonlyMap<string, InputFrame> {
     const tick = w.tick + 1;
     // the weapons they were given (clamped by the sim), looked up once
@@ -141,6 +151,11 @@ export class CastBrain implements Brain {
       const e = w.entity(bot.id);
       if (!e || e.destroyed) {
         this.#out.delete(bot.id);
+        continue;
+      }
+      // bribed: while a rule has it looking away, whatever its option, it stands and looks away
+      if (e.state === LOOK_AWAY) {
+        this.#out.set(bot.id, { tick, wx: 0, wz: 0, btn: 0 });
         continue;
       }
       let frame = this.#drive(w, bot, this.#target(w, bot), tick);
@@ -159,7 +174,7 @@ export class CastBrain implements Brain {
         frame.btn |= BTN.USE;
         bot.shoveAt = tick + 50;
       }
-      if (bot.arms && bot.beh !== "patrol" && bot.beh !== "idle") frame = this.#fight(w, bot, frame, tick);
+      if (bot.arms && bot.beh !== "patrol" && !still(bot.beh)) frame = this.#fight(w, bot, frame, tick);
       // armed and written with no menu (a castle's archers, a drone on its post): a sentry that
       // fires back from where it stands, at half its weapon's rate, and holds fire on a player down
       // to a quarter of their hit points (it wears you down; it never decides the game alone)
@@ -221,7 +236,7 @@ export class CastBrain implements Brain {
     // (a racer blocks from in front, holding the player's line on the way to its gate, never by
     // driving back into them; drafting tucks in a few metres behind the player, never into them)
     const race = w.raceOf(b.id);
-    if (race && b.beh !== "patrol" && b.beh !== "idle" && (w.ride(b.id) || b.beh === "race")) {
+    if (race && b.beh !== "patrol" && !still(b.beh) && (w.ride(b.id) || b.beh === "race")) {
       const near = within("player", w.pos(b.id), b.beh === "follow" ? 14 : 8);
       const gate = w.pos(race.next);
       if (near && b.beh === "follow") {

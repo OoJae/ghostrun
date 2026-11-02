@@ -24,6 +24,8 @@ export interface SimEvent {
   v: number | string;
   rule: string; // rule id when the event came from a rule effect
   cause: number; // index of the event that caused this one, −1 if none
+  /** A spoken event's speech act (offer, book…); no other event has one. */
+  act?: string;
 }
 
 export interface Pose {
