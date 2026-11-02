@@ -22,7 +22,8 @@ export const KIND_SIZE: Partial<Record<Entity["kind"], Vec3>> = {
 
 const isDefaultSize = (s: Vec3) => s[0] === 1 && s[1] === 1 && s[2] === 1;
 
-function bindZones(zones: Zone[], layout: PackLayout): Map<string, ZoneSpec> {
+/** Which of the pack's slots each of the fill's zones stands in: its own slot, else one with its tag, else any free one. */
+export function bindZones(zones: Zone[], layout: PackLayout): Map<string, ZoneSpec> {
   const bound = new Map<string, ZoneSpec>();
   const used = new Set<string>();
   // exact slot match first, then tag match, then any unused spec
@@ -1914,3 +1915,5 @@ export function repairExpects(b: WorldBundle): string[] {
   }
   return notes;
 }
+
+export { reanchor, type Reanchored } from "./reanchor";

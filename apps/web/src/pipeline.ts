@@ -15,7 +15,7 @@ import streetFill from "../../../packages/ir/fixtures/street-race.jsonl?raw";
 import snowFill from "../../../packages/ir/fixtures/snowmobile-race.jsonl?raw";
 import { lawsUnwritten, layoutLaws, parseFill, specHash, type FillNote, type FillStats, type WorldBundle } from "@ghostrun/ir";
 import { placeWorld } from "@ghostrun/layout";
-import { packFor, PACKS } from "@ghostrun/registry";
+import { layoutOf, packFor, PACKS } from "@ghostrun/registry";
 import { cueOf, rawMeta, weatherWord, type Cue } from "./render/pick";
 
 /** The organizer's brief the fixture answers. */
@@ -111,7 +111,10 @@ export function worldFromFill(fillText: string, seed: number, live?: Intent["liv
   if (mode) draft.mode = mode; // the intent decides play vs wander (fills tend to say "play")
   const known = PACKS.some((p) => p.id === draft.pack.id);
   const pack = packFor(draft.pack.id);
-  const layout = pack.generate({ seed, params: pack.defaults, sub: draft.pack.sub, laws: layoutLaws(fillText, draft.laws), harder: false });
+  // a structural edit's layout ("layout" in the meta line); every other fill builds on the defaults
+  const shape = layoutOf(pack, fillText);
+  if (shape.custom) draft.pack = { ...draft.pack, params: shape.custom };
+  const layout = pack.generate({ seed, params: shape.params, sub: draft.pack.sub, laws: layoutLaws(fillText, draft.laws), harder: false });
   const { bundle, notes } = placeWorld({ ...draft, engine: ENGINE_HASH }, layout, { reach: lawsUnwritten(fillText) });
   const t2 = performance.now();
   if (!known) notes.unshift(`pack '${draft.pack.id}' not available, using '${pack.id}'`);

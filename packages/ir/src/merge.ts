@@ -37,6 +37,8 @@ export interface MergeStats {
   ignored: number;
   /** Expectation lines an edit tried to change (always kept as they were). */
   locked: number;
+  /** Structural edits that changed the layout (absent when there were none). */
+  layout?: number;
 }
 
 /** Meta fields an edit may change: how the world looks, never what it is (pack, mode, seed). */
@@ -55,6 +57,31 @@ function restyle(lines: Line[], patch: Line, stats: MergeStats) {
   if (raw === lines[at]!.raw) return void stats.ignored++;
   lines[at] = { ...lines[at]!, raw };
   stats.replaced++;
+}
+
+/**
+ * A structural edit, {"op":"layout","params":{"floors":2},"sub":["rooftop"]}, goes in the meta
+ * line: the pack's numbers over the ones it had, the sub-zones replaced when given. Raw here; the
+ * registry clamps them by the pack's schema (registry settleLayout), and the client re-anchors
+ * whatever stood where the old layout had an anchor the new one doesn't.
+ */
+function relayout(lines: Line[], patch: Line, stats: MergeStats) {
+  const at = lines.findIndex((l) => l.op === "meta");
+  if (at < 0) return void stats.ignored++;
+  const base = JSON.parse(lines[at]!.raw) as Record<string, unknown>;
+  const p = JSON.parse(patch.raw) as { params?: unknown; sub?: unknown };
+  const next = { ...base };
+  const nums = Object.entries(p.params && typeof p.params === "object" ? p.params : {})
+    .map(([k, x]) => [k, typeof x === "string" && x.trim() ? Number(x) : x] as const)
+    .filter((e): e is readonly [string, number] => /^[a-z][a-z_]{0,23}$/.test(e[0]) && typeof e[1] === "number" && Number.isFinite(e[1]));
+  const had = base.layout && typeof base.layout === "object" ? (base.layout as Record<string, unknown>) : {};
+  if (nums.length) next.layout = { ...had, ...Object.fromEntries(nums) };
+  if (Array.isArray(p.sub)) next.sub = p.sub.filter((s): s is string => typeof s === "string").slice(0, 3);
+  const raw = JSON.stringify(next);
+  if (raw === lines[at]!.raw) return void stats.ignored++;
+  lines[at] = { ...lines[at]!, raw };
+  stats.replaced++;
+  stats.layout = (stats.layout ?? 0) + 1;
 }
 
 const PLACED = new Set(["spawn", "goal", "ent", "npc"]);
@@ -80,6 +107,12 @@ export function mergeFill(base: string, patch: string, opts: { edit?: boolean } 
   const lines = parse(base);
   const stats: MergeStats = { replaced: 0, added: 0, deleted: 0, ignored: 0, locked: 0 };
   for (const p of parse(patch)) {
+    // only an edit reshapes the world; a repair fixes it on the geometry it has
+    if (p.op === "layout") {
+      if (opts.edit) relayout(lines, p, stats);
+      else stats.ignored++;
+      continue;
+    }
     if (opts.edit && p.op === "meta") {
       restyle(lines, p, stats);
       continue;
