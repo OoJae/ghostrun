@@ -7,7 +7,7 @@ import react from "@vitejs/plugin-react";
 import { defineConfig, type Plugin, type ViteDevServer } from "vite";
 import { rapierWasmShim } from "../../packages/sim/src/rapier/vite-plugin.ts";
 
-/** Dev only: serve /v1/* with the real edge handler, keys from the repo's gitignored .dev.vars. */
+/** Dev only: serve /v1/* and /mcp with the real edge handler, keys from the repo's gitignored .dev.vars. */
 function devEdgeApi(): Plugin {
   const varsFile = fileURLToPath(new URL("../../.dev.vars", import.meta.url));
   const env: Record<string, string> = {};
@@ -22,14 +22,18 @@ function devEdgeApi(): Plugin {
     apply: "serve",
     configureServer(server: ViteDevServer) {
       server.middlewares.use(async (req: IncomingMessage, res: ServerResponse, next: () => void) => {
-        if (!req.url?.startsWith("/v1/")) return next();
+        const isMcp = req.url === "/mcp" || req.url?.startsWith("/mcp?");
+        if (!req.url?.startsWith("/v1/") && !isMcp) return next();
         try {
           const { handle } = (await server.ssrLoadModule("/../edge-api/src/handler.ts")) as typeof import("../edge-api/src/handler");
           const chunks: Buffer[] = [];
           for await (const c of req) chunks.push(c as Buffer);
-          const request = new Request(`http://localhost${req.url}`, {
+          // MCP needs its headers (the protocol version, the method, a token) and its own host for the links it gives
+          const hop = new Set(["host", "connection", "content-length", "transfer-encoding", "keep-alive"]);
+          const headers = isMcp ? Object.fromEntries(Object.entries(req.headers).filter((kv): kv is [string, string] => typeof kv[1] === "string" && !hop.has(kv[0]))) : { "content-type": String(req.headers["content-type"] ?? "application/json") };
+          const request = new Request(`http://${isMcp ? (req.headers.host ?? "localhost") : "localhost"}${req.url}`, {
             method: req.method ?? "GET",
-            headers: { "content-type": String(req.headers["content-type"] ?? "application/json") },
+            headers,
             ...(req.method === "POST" ? { body: Buffer.concat(chunks) } : {}),
           });
           // DEV_OPEN opens the gate for localhost only; the governor and share store run in-process.

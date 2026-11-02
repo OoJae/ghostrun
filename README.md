@@ -6,6 +6,8 @@ Type any world, and GHOSTRUN turns it into a playable 3D level in the browser in
 
 **Play it:** https://play.ghostrun.workers.dev (no login; a Cloudflare Turnstile check, usually invisible, guards the live AI).
 
+**From any agent:** GHOSTRUN is an MCP server at https://play.ghostrun.workers.dev/mcp (`build_world`, `edit_world`, `explain_world`, `get_receipt`, `list_gallery`, with a judge or dev token): see [docs/MCP.md](docs/MCP.md).
+
 > Built for the Victoria VR AI Builder Hackathon 2026. Not affiliated with or endorsed by Victoria VR.
 
 ## What a session looks like

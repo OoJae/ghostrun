@@ -1,5 +1,5 @@
 // GHOSTRUN edge: one Worker on one origin. Static assets (the web app build) are served for every
-// path except /v1/*, which runs the Worker (this API). The spend governor is a SQLite-backed
+// path except /v1/* and /mcp (the MCP endpoint), which run the Worker (this API). The spend governor is a SQLite-backed
 // Durable Object (one instance, "global"). The top level is for `wrangler dev` only: always deploy
 // with an explicit env (`wrangler deploy --env staging|production`), run from apps/edge-api.
 //
@@ -21,7 +21,8 @@
 // Vars (all optional; code defaults shown): CAP_SESSION_JUDGE_USD 0.60, CAP_SESSION_PUBLIC_USD 0.15,
 // CAP_IP_DAY_USD 0.30 (public pool), CAP_POOL_{JUDGE,PUBLIC,DEV,CANARY}_USD 40/25/5/2 (lifetime),
 // BUILDS_PER_WINDOW 30 (tokenless), RATE_PER_WINDOW 60, JUDGE_FALLBACK_PER_WINDOW 10 (per isolate per 10 min),
-// GOVERNOR_TIMEOUT_MS 300, TURNSTILE_SITEKEY (echoed by /v1/health), TURNSTILE_HOSTNAMES (comma list).
+// GOVERNOR_TIMEOUT_MS 300, TURNSTILE_SITEKEY (echoed by /v1/health), TURNSTILE_HOSTNAMES (comma list),
+// MCP_PER_WINDOW 120 and MCP_BUILDS_PER_WINDOW 20 (per token per isolate per 10 min), MCP_ORIGINS (comma list).
 // Kill switch: any value at key "builds:paused" in FLAGS pauses new builds within ~60 s, no deploy.
 // Build cache: an exact repeat of a clean build replays from SHARES (keys under cache/), free; the
 // value "off" at key "ff.public_cache" in FLAGS turns it off. Warm it: `pnpm --filter @ghostrun/edge-api warm-cache`.
@@ -34,7 +35,7 @@
   "observability": { "enabled": true },
   "assets": {
     "directory": "../web/dist/app",
-    "run_worker_first": ["/v1/*"],
+    "run_worker_first": ["/v1/*", "/mcp"],
     "not_found_handling": "single-page-application"
   },
   "migrations": [{ "tag": "v1", "new_sqlite_classes": ["GovernorDO"] }],
