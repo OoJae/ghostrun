@@ -4,7 +4,7 @@
 // receipt that still says "won" would be a lie. Only worlds with one way to win get them: with two,
 // breaking one route isn't a bug.
 import type { Rule, WorldBundle } from "@ghostrun/ir";
-import { hitPoints, playerWeapons, t0 } from "./t0";
+import { hitPoints, playerWeapons, purseSupply, t0 } from "./t0";
 import type { Chip, Receipt } from "./types";
 
 export interface Planted {
@@ -80,7 +80,30 @@ export function plants(b: WorldBundle, parS: number | null, team: "red" | "blue"
   }
   out.push(...fights(b, chain, team));
   out.push(...races(b, chain));
+  out.push(...bribes(b, chain));
   return out;
+}
+
+/**
+ * A bribe nobody can pay: what an act on the way costs (offer the guard 20 coins) raised past every
+ * coin the world holds, so the guard it would turn away is never got past. Only where the plan
+ * talks its way past someone, with a price the world's coins can count.
+ */
+function bribes(b: WorldBundle, chain: NonNullable<ReturnType<typeof t0>["chain"]>): Planted[] {
+  const st = chain.steps.find((s) => s.do === "speak");
+  const rule = st?.do === "speak" ? b.rules.find((r) => r.id === st.rule) : undefined;
+  const at = rule ? rule.if.findIndex((c) => /^player\.[a-z][a-z0-9_]*$/.test(c.l) && (c.op === "gte" || c.op === "gt") && Number.isFinite(Number(c.r))) : -1;
+  if (!st || st.do !== "speak" || !rule || at < 0) return [];
+  const word = rule.if[at]!.l.slice("player.".length);
+  const have = purseSupply(b, word);
+  if (!Number.isFinite(have)) return []; // coins that can be earned again and again: any price can be met
+  const price = have + 10;
+  const w = structuredClone(b);
+  const r = w.rules.find((x) => x.id === rule.id)!;
+  r.if[at] = { ...r.if[at]!, op: "gte", r: price };
+  if (r.when.n > 0) r.when.n = price;
+  for (const e of r.then) if (e.e === "take" && String(e.v) === word) e.n = price;
+  return [{ id: "bribe_unaffordable", text: `the ${noun(b, st.to)} wants ${price} ${word}, and the world holds ${have}`, at: st.to, bundle: w }];
 }
 
 /**

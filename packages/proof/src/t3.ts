@@ -7,7 +7,7 @@ import { buildNav, lowHazards, type NavWorld } from "@ghostrun/nav";
 import { castBrain } from "@ghostrun/bots";
 import { SHOOT, verb } from "@ghostrun/kits";
 import { BTN, SimWorld, type Rapier } from "@ghostrun/sim";
-import { carryables, causeSteps, playerWeapons, producers, type PlanStep, type Want, type WinChain } from "./t0";
+import { actWords, carryables, causeSteps, playerWeapons, producers, type PlanStep, type Want, type WinChain } from "./t0";
 import { GhostRecorder, secretsOf, type Ghost } from "./ghost";
 import { clock } from "./labels";
 import { hands, SKILLS, type Skill } from "./skill";
@@ -16,6 +16,7 @@ import type { Chip, Fall, Level, Trail } from "./types";
 
 const RUN_TICKS = 120 * 60; // two minutes of play per run (a world's own timer still ends it sooner)
 const TOO_EASY_S = 3;
+const TALK_M = 2.5; // how close a runner walks up to someone before it speaks
 
 /**
  * The hazards low enough to jump (a laser grid across a doorway) and, built the first time a runner
@@ -1265,9 +1266,11 @@ function perform(r: Run, st: PlanStep): "ok" | "lost" | "stuck" {
       };
       const counts = (st.rules ?? [st.rule]).map((id) => counter(sim, id));
       const fired = () => counts.reduce((n, f) => n + f(), 0);
+      // (coins for a bribe: enough once the purse holds what it costs, however many that took)
+      const enough = () => (st.purse ? sim.purse("player", st.purse.word) >= st.purse.n : fired() >= st.times);
       // nearest first; an item it can't reach this time (a missed jump) waits for a later pass
       const skipped = new Set<string>();
-      while (live(r) && fired() < st.times) {
+      while (live(r) && !enough()) {
         const p = sim.pos("player");
         let left = st.items.filter((id) => !gone(id) && !skipped.has(id));
         if (!left.length) {
@@ -1288,7 +1291,25 @@ function perform(r: Run, st: PlanStep): "ok" | "lost" | "stuck" {
           skipped.add(it);
         }
       }
-      return fired() >= st.times ? "ok" : "stuck";
+      return enough() ? "ok" : "stuck";
+    }
+    case "speak": {
+      // what an act buys lasts a while (a guard looks away for 20 s): the way to what it is for is
+      // opened first (the vault door, its key fetched), so that time goes on the gem
+      const fired = counter(sim, st.rule);
+      const done = () => (st.want ? met(st.want) : fired() > 0);
+      if (st.then && sim.entity(st.then) && !sim.entity(st.then)!.destroyed && !sim.entity(st.then)!.carrier) clearDoors(r, sim.pos(st.then));
+      // within talking distance of them, wherever they walk
+      const near = () => !sim.entity(st.to)?.destroyed && d2h(sim.pos("player"), sim.pos(st.to)) < TALK_M * TALK_M;
+      for (let attempt = 0; attempt < 4 && live(r) && !done(); attempt++) {
+        if (!near()) go(() => sim.pos(st.to), near);
+        if (!near() || !live(r)) continue;
+        // (no mind in the proof: the runner says it as the rule wants it said, and the rule decides)
+        sim.speak({ to: st.to, act: st.act, what: st.what, n: st.n, slot: "" });
+        sim.step({ tick: sim.tick + 1, wx: 0, wz: 0, btn: 0 });
+        budget.ticks--;
+      }
+      return done() ? "ok" : "stuck";
     }
     case "wait": {
       const fired = counter(sim, st.rule);
@@ -1434,6 +1455,7 @@ function lossWords(b: WorldBundle, id: string): string {
   const name = (x: string) => nameOf(b, x);
   if (!w) return id || "a loss rule";
   if (w.t === "health_lte") return w.a === "player" || w.a.startsWith("team:") ? "knocked out" : `${name(w.a)} down`;
+  if (w.t === "seen_by") return `caught by the ${w.b ? name(w.b) : "guard"}`;
   return w.t === "hit" ? `hit the ${name(w.b)}` : w.t === "timer_end" ? "the timer ran out" : w.t === "score_gte" ? `${w.a.replace("team:", "")} reached ${w.n}` : w.t === "enter" ? `${name(w.a)} reached the ${name(w.b)}` : `${id}`;
 }
 
@@ -1469,6 +1491,8 @@ export function stepName(b: WorldBundle, st: PlanStep): string {
     }
     case "drive":
       return st.laps > 1 ? `lap ${st.laps}` : "lap 1";
+    case "speak":
+      return name(st.to);
   }
 }
 
@@ -1635,10 +1659,14 @@ function t3Runs(R: Rapier, b: WorldBundle, nav: NavWorld, chain: WinChain | null
       const outcomes = schedules.map((sch, j) => Array.from({ length: per }, (_, i) => witnessRun(R, b, nav, chain, openers, b.seed * 1000 + 500 + j * per + i, playerTeam, sch)).filter((x) => x.won).length);
       const k = outcomes.reduce((a, x) => a + x, 0);
       const worst = outcomes.indexOf(0);
+      // (a world you talk your way through says whose choices: "every choice the guard can make")
+      const roles = [...new Set(minded.map((c) => c.role))];
+      const whose = minded.length === 1 ? `the ${roles[0]}` : roles.length === 1 ? `the ${roles[0]}s` : "the cast";
+      const talks = b.rules.some((x) => x.when.t === "spoken" && minded.some((c) => c.npc === x.when.a));
       chips.push({
         id: "T3:envelope", tier: "T3", subject: { kind: "property", id: "win_reachable" }, status: worst < 0 ? "played" : "counterexample",
         method: `physics, ${schedules.length} menu schedules × ${per} runners`, n: schedules.length * per, k,
-        text: worst < 0 ? `runners still win whatever the cast's minds choose (${schedules.length} schedules)` : "a choice the cast's minds can make stops every runner",
+        text: worst < 0 ? (talks ? `holds for every choice ${whose} can make (${schedules.length} schedules)` : `runners still win whatever the cast's minds choose (${schedules.length} schedules)`) : talks ? `a choice ${whose} can make stops every runner` : "a choice the cast's minds can make stops every runner",
         cx: worst < 0 ? null : { where: null, have: 0, need: 1, unit: "wins", text: `if ${schedules[worst]!.map(([n, o]) => `${n} plays ${o}`).join(", ")}, no runner wins` },
         src: "", ms: Math.round((globalThis.performance?.now?.() ?? 0) - t1),
       });
@@ -1720,7 +1748,9 @@ export function tour(R: Rapier, b: WorldBundle, nav: NavWorld, openers: Readonly
 function tourRun(R: Rapier, b: WorldBundle, nav: NavWorld, openers: ReadonlyMap<string, PlanStep[]>): Chip | null {
   // what a visitor can always use: exhibits and switches (a lock needs its key, so it isn't a sight)
   const sights = [...new Set(b.verbs.filter((v) => (v.verb === "social.inspect" || v.verb === "puzzle.switch") && b.entities.some((e) => e.id === v.on)).map((v) => v.on))].sort();
-  if (!sights.length) return null;
+  // and what a visitor can say: each act a rule listens for (book a viewing with the guide), said once
+  const acts = b.rules.filter((x) => x.when.t === "spoken" && b.entities.some((e) => e.id === x.when.a && e.kind === "npc")).sort((x, y) => (x.id < y.id ? -1 : 1));
+  if (!sights.length && !acts.length) return null;
   const t0 = globalThis.performance?.now?.() ?? 0;
   const sim = new SimWorld(R, b, { brain: castBrain(nav, b) });
   // a visitor opens the doors on the way, as runners do
@@ -1751,14 +1781,25 @@ function tourRun(R: Rapier, b: WorldBundle, nav: NavWorld, openers: ReadonlyMap<
       used();
     }
   }
+  // then each act, walked up to and said the way its rule wants it said (no mind in the proof)
+  const said = new Set<string>();
+  for (const x of acts) {
+    if (!live(r)) break;
+    const w = x.when;
+    if (perform(r, { do: "speak", to: w.a, act: w.act || "ask", what: w.b, n: w.n, rule: x.id }) === "ok") said.add(x.id);
+  }
   sim.free();
   const k = sights.filter((s) => seen.has(s)).length;
   const missed = sights.filter((s) => !seen.has(s));
+  const unsaid = acts.filter((x) => !said.has(x.id));
+  const words = (x: (typeof acts)[number]) => actWords(x.when.act || "ask", x.when.a, x.when.b, x.when.n);
+  const also = acts.length ? `, and ${said.size} of ${acts.length} speech acts came off (${acts.map(words).join(", ")})` : "";
+  const why = [...(missed.length ? [`couldn't reach ${missed.slice(0, 4).join(", ")}${missed.length > 4 ? "…" : ""}`] : []), ...unsaid.map((x) => `couldn't ${words(x)}`)];
   return {
-    id: "T3:tour", tier: "T3", subject: { kind: "property", id: "tour" }, status: k === sights.length ? "played" : "counterexample",
-    method: "physics, an AI visitor walks to and uses each", n: sights.length, k,
-    text: `walked to and inspected ${k} of ${sights.length} things`,
-    cx: missed.length ? { where: null, have: k, need: sights.length, unit: "things", text: `couldn't reach ${missed.slice(0, 4).join(", ")}${missed.length > 4 ? "…" : ""}` } : null,
+    id: "T3:tour", tier: "T3", subject: { kind: "property", id: "tour" }, status: !missed.length && !unsaid.length ? "played" : "counterexample",
+    method: acts.length ? "physics, an AI visitor walks to and uses each, and says what the cast listens for" : "physics, an AI visitor walks to and uses each", n: sights.length + acts.length, k: k + said.size,
+    text: `walked to and inspected ${k} of ${sights.length} things${also}`,
+    cx: why.length ? { where: null, have: k + said.size, need: sights.length + acts.length, unit: "things", text: why.join("; ") } : null,
     src: "", ms: Math.round((globalThis.performance?.now?.() ?? 0) - t0),
   };
 }
