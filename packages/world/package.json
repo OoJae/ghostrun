@@ -1,0 +1,17 @@
+{
+  "name": "@ghostrun/world",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./version": "./src/version.ts"
+  },
+  "dependencies": {
+    "@ghostrun/ir": "workspace:*",
+    "@ghostrun/layout": "workspace:*",
+    "@ghostrun/registry": "workspace:*"
+  },
+  "devDependencies": {
+    "@ghostrun/sim": "workspace:*"
+  }
+}

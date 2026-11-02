@@ -20,6 +20,7 @@
     "@ghostrun/proof": "workspace:*",
     "@ghostrun/registry": "workspace:*",
     "@ghostrun/sim": "workspace:*",
+    "@ghostrun/world": "workspace:*",
     "@recast-navigation/wasm": "0.43.1",
     "react": "catalog:",
     "react-dom": "catalog:",

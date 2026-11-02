@@ -154,6 +154,9 @@ importers:
       '@ghostrun/sim':
         specifier: workspace:*
         version: link:../../packages/sim
+      '@ghostrun/world':
+        specifier: workspace:*
+        version: link:../../packages/world
       '@recast-navigation/wasm':
         specifier: 0.43.1
         version: 0.43.1
@@ -500,6 +503,22 @@ importers:
       '@ghostrun/pack-city-block':
         specifier: workspace:*
         version: link:../packs/city-block
+
+  packages/world:
+    dependencies:
+      '@ghostrun/ir':
+        specifier: workspace:*
+        version: link:../ir
+      '@ghostrun/layout':
+        specifier: workspace:*
+        version: link:../layout
+      '@ghostrun/registry':
+        specifier: workspace:*
+        version: link:../registry
+    devDependencies:
+      '@ghostrun/sim':
+        specifier: workspace:*
+        version: link:../sim
 
   tools/detcheck:
     dependencies:
