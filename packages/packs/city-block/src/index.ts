@@ -3,13 +3,19 @@
 // property the organizer's CTF brief ("Add double jump") turns into a verified headline.
 import { stream } from "@ghostrun/detmath";
 import type { Vec3 } from "@ghostrun/ir";
-import type { LayoutPack, PackLayout, PackStatic, ZoneSpec } from "@ghostrun/plugin-api";
+import type { LayoutPack, LayoutParamSpec, PackLayout, PackStatic, ZoneSpec } from "@ghostrun/plugin-api";
 
 export interface CityBlockParams {
   [k: string]: number;
   length: number; // x extent of the playable street (m)
   depth: number; // z extent (m)
 }
+
+/** What a structural edit may change: the street's length (the bases move out with it) and its depth. */
+export const CITY_BLOCK_SCHEMA: Readonly<Record<string, LayoutParamSpec>> = {
+  length: { min: 64, max: 120, step: 4, label: "map", unit: "m", line: "the street's length from base to base" },
+  depth: { min: 40, max: 60, step: 4, label: "street", unit: "m deep", line: "the depth between the two rows of buildings" },
+};
 
 /** Ledge height of the rooftop lane: above one jump's apex, well below two jumps' apex. */
 export function roofLedgeHeight(jumpH: number): number {
@@ -25,6 +31,7 @@ export const cityBlock: LayoutPack<CityBlockParams> = {
   version: "0.1.0",
   modes: ["play", "wander"],
   defaults: { length: 80, depth: 40 },
+  schema: CITY_BLOCK_SCHEMA,
   ci: { seeds: Array.from({ length: 50 }, (_, i) => i + 1) },
 
   generate({ seed, params, sub, laws }): PackLayout {
@@ -60,16 +67,18 @@ export const cityBlock: LayoutPack<CityBlockParams> = {
       statics.push(box(slot, [sx * (L - 10), 0.6, 4], [2, 1.2, 4], "wall"));
     }
 
+    // the bases start 16 m in from each end (24 m out on the default street), the side streets run to them
+    const B = L - 16;
     const zones: ZoneSpec[] = [
       { slot: "center", tag: "plaza", bounds: { min: [-12, 0, -8], max: [12, 6, 8] }, floorY: 0,
         // wall_n is on the north row's front face, above head height even from the rooftop lane
         anchors: { plinth: [0, 0, 0], wall_n: [0, 5.5, D - rowDepth - 0.15], floor_ne: [8, 0, 6], floor_sw: [-8, 0, -6] } },
-      { slot: "west_block", tag: "base", bounds: { min: [-L, 0, -8], max: [-24, 6, 8] }, floorY: 0,
+      { slot: "west_block", tag: "base", bounds: { min: [-L, 0, -8], max: [-B, 6, 8] }, floorY: 0,
         anchors: { spawn_pad: [-(L - 4), 0, 0], goal_ring: [-(L - 14), 0, 0] } },
-      { slot: "east_block", tag: "base", bounds: { min: [24, 0, -8], max: [L, 6, 8] }, floorY: 0,
+      { slot: "east_block", tag: "base", bounds: { min: [B, 0, -8], max: [L, 6, 8] }, floorY: 0,
         anchors: { spawn_pad: [L - 4, 0, 0], goal_ring: [L - 14, 0, 0] } },
-      { slot: "street_w", tag: "street", bounds: { min: [-24, 0, -8], max: [-12, 6, 8] }, floorY: 0, anchors: {} },
-      { slot: "street_e", tag: "street", bounds: { min: [12, 0, -8], max: [24, 6, 8] }, floorY: 0, anchors: {} },
+      { slot: "street_w", tag: "street", bounds: { min: [-B, 0, -8], max: [-12, 6, 8] }, floorY: 0, anchors: {} },
+      { slot: "street_e", tag: "street", bounds: { min: [12, 0, -8], max: [B, 6, 8] }, floorY: 0, anchors: {} },
     ];
 
     if (sub.includes("rooftop")) {

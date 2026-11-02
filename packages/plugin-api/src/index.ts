@@ -46,11 +46,28 @@ export interface GenerateInput<P extends Params = Params> {
   harder: boolean; // relaxes the 0.8 × max-jump gap rule
 }
 
+/**
+ * A pack parameter a structural edit may set ("make the map bigger", "add a floor"): a number,
+ * clamped into range and rounded to its step like a verb's params, never rejected.
+ */
+export interface LayoutParamSpec {
+  min: number;
+  max: number;
+  step: number;
+  /** How the change reads in an edit's diff line ("map 80 → 120 m"). */
+  label: string;
+  unit?: string;
+  /** One line for the edit model: what the number shapes. */
+  line: string;
+}
+
 export interface LayoutPack<P extends Params = Params> {
   id: string;
   version: string;
   modes: ("play" | "wander")[];
   defaults: P;
+  /** What a structural edit may change, every key of `defaults` (the defaults are always in range). */
+  schema?: Readonly<Record<keyof P & string, LayoutParamSpec>>;
   /** Pure and deterministic: same input → same layout on every runtime. No trig, no Math.random. */
   generate(input: GenerateInput<P>): PackLayout;
   ci: { seeds: number[] };
