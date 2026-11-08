@@ -1,5 +1,5 @@
-// Cloudflare Worker entry: the edge API on /v1/* (every other path is a static asset of the web
-// app, served before the Worker runs) and the spend governor's Durable Object class.
+// Cloudflare Worker entry: the edge API on /v1/* and its MCP endpoint on /mcp (every other path is
+// a static asset of the web app, served before the Worker runs) and the spend governor's Durable Object class.
 import type { WaitUntil } from "./cf";
 import { handle, type Env } from "./handler";
 

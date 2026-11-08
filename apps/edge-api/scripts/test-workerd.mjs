@@ -201,6 +201,27 @@ try {
   const afterBig = await pool("judge");
   check("a picture over the cap is turned away before any hold", tooBig.status === 413 && afterBig.held === 0 && afterBig.spent === judgeBefore + LOOK + METERED, `${tooBig.status} ${JSON.stringify(afterBig)}`);
 
+  // 9b. MCP at /mcp in the deployed bundle: the handshake, the 2026-07-28 shape, the gallery and the
+  // placer bundled in, and a build through the build route in-process, charged like any other.
+  const rpc = (method, params, headers = {}) =>
+    fetch(`${base}/mcp`, { method: "POST", headers: { authorization: `Bearer ${TOKEN}`, "content-type": "application/json", accept: "application/json, text/event-stream", "cf-connecting-ip": "198.51.100.6", ...headers }, body: JSON.stringify({ jsonrpc: "2.0", id: 1, method, params }) });
+  const modern = (method, params = {}) =>
+    rpc(method, { ...params, _meta: { "io.modelcontextprotocol/protocolVersion": "2026-07-28", "io.modelcontextprotocol/clientCapabilities": {} } }, { "mcp-protocol-version": "2026-07-28", "mcp-method": method, ...(params.name ? { "mcp-name": params.name } : {}) });
+  const init = await (await rpc("initialize", { protocolVersion: "2025-11-25", capabilities: {}, clientInfo: { name: "workerd-test", version: "1" } })).json();
+  check("MCP initialize negotiates 2025-11-25 in workerd", init.result?.protocolVersion === "2025-11-25" && init.result?.serverInfo?.name === "ghostrun", JSON.stringify(init).slice(0, 200));
+  const listed = await (await modern("tools/list")).json();
+  check("MCP tools/list (2026-07-28) lists the five tools", listed.result?.resultType === "complete" && listed.result?.tools?.map((t) => t.name).join(",") === "build_world,edit_world,explain_world,get_receipt,list_gallery", JSON.stringify(listed).slice(0, 200));
+  const gallery = (await (await modern("tools/call", { name: "list_gallery", arguments: {} })).json()).result?.structuredContent?.worlds ?? [];
+  const explained = (await (await modern("tools/call", { name: "explain_world", arguments: { world: gallery[0]?.slug ?? "" } })).json()).result?.structuredContent;
+  check("MCP explain_world places a gallery world and runs T0 and T1 in workerd", gallery.length > 50 && explained?.rules?.length > 0 && explained?.proof?.source === "edge" && explained.proof.chips.some((c) => c.tier === "T0"), `${gallery.length} worlds, ${JSON.stringify(explained?.proof?.lines?.slice(0, 2))}`);
+  const mcpBefore = (await pool("judge")).spent;
+  const built = (await (await modern("tools/call", { name: "build_world", arguments: { prompt: "mcp: capture the flag on neon rooftops", seed: 11 } })).json()).result;
+  check("MCP build_world builds through the build route (no share store here, so no link)", built?.isError === undefined && built?.structuredContent?.intent?.pack === "city_block" && built.structuredContent.link === null && /share store not configured/.test(built.structuredContent.notes.join(" ")), JSON.stringify(built).slice(0, 300));
+  const mcpJudge = await until(async () => ((await pool("judge")).spent === mcpBefore + METERED ? pool("judge") : null));
+  check("the MCP build is committed at the metered cost on the token's pool", mcpJudge?.held === 0, `${JSON.stringify(await pool("judge"))} expected ${mcpBefore + METERED}`);
+  const anonMcp = await rpc("tools/list", {}, { authorization: "" });
+  check("MCP without a token is 401 with a Bearer challenge", anonMcp.status === 401 && anonMcp.headers.get("www-authenticate") === 'Bearer realm="ghostrun"', String(anonMcp.status));
+
   // 10. The fast lane is busy for this one: the fill fails over to Claude Haiku inside workerd. Last,
   // because the isolate then tries Cerebras second for 20 s, which would move the builds above to Haiku.
   const judgeMid = (await pool("judge")).spent;

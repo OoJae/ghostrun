@@ -6,6 +6,8 @@ Type any world, and GHOSTRUN turns it into a playable 3D level in the browser in
 
 **Play it:** https://play.ghostrun.workers.dev (no login; a Cloudflare Turnstile check, usually invisible, guards the live AI).
 
+**From any agent:** GHOSTRUN is an MCP server at https://play.ghostrun.workers.dev/mcp (`build_world`, `edit_world`, `explain_world`, `get_receipt`, `list_gallery`, with a judge or dev token): see [docs/MCP.md](docs/MCP.md).
+
 > Built for the Victoria VR AI Builder Hackathon 2026. Not affiliated with or endorsed by Victoria VR.
 
 ## What a session looks like
@@ -105,6 +107,6 @@ Controls: WASD to move, Space to jump (press again in the air to double jump), F
 
 ## Licence and credits
 
-MIT (see `LICENSE`). Third-party components: three.js (MIT), Rapier (Apache-2.0), recast-navigation-js (MIT) with Recast/Detour (Zlib), React (MIT), Valibot (MIT), Vite (MIT), Playwright (Apache-2.0, tests), workerd (Apache-2.0, tests), IWER (MIT, emulated-VR tests only). The full notices file is generated from the dependency tree before release.
+MIT (see `LICENSE`). Third-party components: three.js (MIT), Rapier (Apache-2.0), recast-navigation-js (MIT) with Recast/Detour (Zlib), React (MIT), Valibot (MIT), Vite (MIT), Playwright (Apache-2.0, tests), workerd (Apache-2.0, tests), IWER (MIT, emulated-VR tests only). Every shipped component, its version and its licence text is in `THIRD_PARTY_NOTICES.md`, generated from the production dependency tree by `node tools/notices/build.mjs` (it refuses any licence outside MIT, Apache-2.0, BSD, ISC, CC0 and Zlib).
 
 3D models: characters, their animations and props from KayKit by Kay Lousberg (www.kaylousberg.com), CC0 1.0: the Adventurers and Skeletons character packs, Dungeon Remastered, Furniture Bits, Halloween Bits, Prototype Bits, City Builder Bits and the Medieval Hexagon Pack, from KayKit's own repositories. `apps/web/public/models/provenance.json` lists every file, the pack and path it came from and what was cut; `tools/models/build.mjs` rebuilds them with glTF Transform (MIT, build only). They are decoded with the meshoptimizer decoder (MIT) that ships with three.js.
