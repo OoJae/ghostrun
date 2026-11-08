@@ -581,6 +581,14 @@ kbd {
 .receipt .routes { margin: 8px 0 0; font-size: 12px; line-height: 1.45; }
 .receipt .routes p { margin: 4px 0 0; }
 .receipt .routes p.warn { color: #ffb02e; }
+.receipt .fengshui { margin: 10px 0 0; padding-top: 8px; border-top: 1px solid rgba(255, 255, 255, 0.12); }
+.receipt .fengshui .headline { margin: 0 0 6px; }
+.receipt .fengshui .fix { color: #ffb02e; }
+.receipt .fengshui .sources { font-size: 11px; opacity: 0.6; }
+.receipt .fengshui .sources a { color: inherit; }
+.receipt .fengshui > p.sources { margin: 6px 0 0; }
+.receipt .fengshui-ask { margin: 8px 0 0; font-size: 12px; }
+.receipt .fengshui-ask button { font: inherit; font-size: 12px; padding: 4px 9px; border-radius: 6px; cursor: pointer; background: rgba(25, 227, 255, 0.12); color: inherit; border: 1px solid rgba(25, 227, 255, 0.4); }
 .receipt .routes button { font: inherit; font-size: 12px; padding: 4px 9px; border-radius: 6px; cursor: pointer; background: rgba(25, 227, 255, 0.12); color: inherit; border: 1px solid rgba(25, 227, 255, 0.4); }
 .receipt .routes button[aria-pressed="true"] { background: rgba(25, 227, 255, 0.28); }
 .receipt .fooled.caught b { color: #3dffa8; }

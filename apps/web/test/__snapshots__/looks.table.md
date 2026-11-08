@@ -13,6 +13,8 @@
 | A go-kart race in a neon arena: three laps through the gates against two … | neon | arena | **neon** | night |
 | A street race through the neon city: two laps against rival cars before t… | neon | city_block | **neon** | night rain |
 | A snowmobile race on a frozen lake: two laps through the ice gates, drift… | snowy | arena | **snow** | day snow |
+| A Feng Shui handbag gallery: five wings, one for each element, and a rece… | Feng Shui handbag gallery | floor_plan | **gallery** | day |
+| A Feng Shui handbag gallery with a tall arched window in line with the fr… | Feng Shui handbag gallery | floor_plan | **gallery** | day |
 | A 3 versus 3 soccer match on a rooftop at sunset | rooftop arena at sunset | arena | **neon** | dusk |
 | a bioluminescent forest where you climb to an owl's lookout | bioluminescent | outdoor | **grove** | night |
 | A candy factory: sort the sweets into the right boxes | candy factory | floor_plan | **candy** | day |
