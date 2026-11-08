@@ -1,5 +1,5 @@
 import type { Chip, Insights, Receipt, Revealed as Report } from "@ghostrun/proof/light";
-import { useState } from "react";
+import { Fragment, useState, type ReactNode } from "react";
 import { chipLine, fraction, statusWord } from "@ghostrun/proof/light";
 import { Revealed } from "./Revealed";
 
@@ -51,7 +51,7 @@ export interface Fooled {
 }
 
 /** Play analytics in a few words: where the AI runners spent their time, and what nobody went near. */
-function Routes({ routes, runs, on, onToggle }: { routes: Insights; runs: number; on: boolean; onToggle: () => void }) {
+function Routes({ routes, runs, on, onToggle, noteAction }: { routes: Insights; runs: number; on: boolean; onToggle: () => void; noteAction?: ((key: string) => ReactNode) | undefined }) {
   const pct = (x: number) => `${Math.round(x * 100)}%`;
   const hot = routes.hot.filter((h) => h.share >= 0.03 && h.near);
   return (
@@ -64,11 +64,12 @@ function Routes({ routes, runs, on, onToggle }: { routes: Insights; runs: number
       <p className={routes.unused.length ? "warn" : ""}>
         {routes.unused.length ? <>Nobody went near: {routes.unused.slice(0, 4).map((u) => `the ${u.noun}`).join(", ")}{routes.unused.length > 4 ? ` and ${routes.unused.length - 4} more` : ""}. A design note: give players a reason to go there, or take it out.</> : "Every runner's route passed everything there is to use."}
       </p>
+      {noteAction && routes.unused.slice(0, 4).map((u) => <Fragment key={u.id}>{noteAction(`unused:${u.id}`)}</Fragment>)}
     </div>
   );
 }
 
-export function ReceiptPanel({ proof, onClose, onShare, onWrong, onExport, onTrust, onFool, fooled, reported, routes, routesOn, onRoutes, report, version }: { proof: ProofState; onClose: () => void; onShare?: () => void; onWrong?: (note: string) => void; onExport?: () => void; onTrust?: () => void; onFool?: (() => void) | undefined; fooled?: Fooled | null; reported?: string | undefined; routes?: Insights | null; routesOn?: boolean; onRoutes?: () => void; report?: Report | null; /** A remix: which version this receipt is for, and that the original's is its own. */ version?: string | null }) {
+export function ReceiptPanel({ proof, onClose, onShare, onWrong, onExport, onTrust, onFool, fooled, reported, routes, routesOn, onRoutes, report, version, chipAction, noteAction }: { proof: ProofState; onClose: () => void; onShare?: () => void; onWrong?: (note: string) => void; onExport?: () => void; onTrust?: () => void; onFool?: (() => void) | undefined; fooled?: Fooled | null; reported?: string | undefined; routes?: Insights | null; routesOn?: boolean; onRoutes?: () => void; report?: Report | null; /** A remix: which version this receipt is for, and that the original's is its own. */ version?: string | null; /** After a chip's line: its ▶ red/green, when it has one. */ chipAction?: ((c: Chip) => ReactNode) | undefined; /** After a design note (a thing nobody went near, a place runs went wrong): its Apply choices. */ noteAction?: ((key: string) => ReactNode) | undefined }) {
   const r = proof.receipt;
   const [writing, setWriting] = useState(false);
   const [note, setNote] = useState("");
@@ -92,13 +93,16 @@ export function ReceiptPanel({ proof, onClose, onShare, onWrong, onExport, onTru
       )}
       <ul>
         {proof.chips.map((c) => (
-          <li key={c.id} className={c.status}>{chipLine(c)}</li>
+          <li key={c.id} className={c.status}>
+            {chipLine(c)}
+            {chipAction?.(c)}
+          </li>
         ))}
       </ul>
       {r?.par && <p className="par">AI par {r.par.goldS} s · {r.par.won} of {r.par.runs} runners won</p>}
       {routes && r?.trails && onRoutes && (
-        <Revealed receipt={r} report={report ?? null} playing={proof.playing}>
-          <Routes routes={routes} runs={report?.runs ?? r.trails.length} on={Boolean(routesOn)} onToggle={onRoutes} />
+        <Revealed receipt={r} report={report ?? null} playing={proof.playing} noteAction={noteAction}>
+          <Routes routes={routes} runs={report?.runs ?? r.trails.length} on={Boolean(routesOn)} onToggle={onRoutes} noteAction={noteAction} />
         </Revealed>
       )}
       {fooled && (

@@ -7,7 +7,7 @@ import type { Receipt, Revealed as Report } from "@ghostrun/proof/light";
 import { bandMethod, bandSaid, failLine, fightLine, paceLine, timesLine } from "@ghostrun/proof/light";
 import "./revealed.css";
 
-export function Revealed({ receipt, report, playing, children }: { receipt: Receipt; report: Report | null; playing?: boolean | undefined; children?: ReactNode }) {
+export function Revealed({ receipt, report, playing, children, noteAction }: { receipt: Receipt; report: Report | null; playing?: boolean | undefined; children?: ReactNode; /** A place runs went wrong (by its place in the list): its Apply choices. */ noteAction?: ((key: string) => ReactNode) | undefined }) {
   const pt = receipt.playtest;
   return (
     <div className="revealed" data-testid="revealed">
@@ -27,7 +27,10 @@ export function Revealed({ receipt, report, playing, children }: { receipt: Rece
           <p>Where runs went wrong:</p>
           <ul>
             {report.fails.map((f, i) => (
-              <li key={i}>{failLine(f, report.runs)}</li>
+              <li key={i}>
+                {failLine(f, report.runs)}
+                {noteAction?.(`fail:${i}`)}
+              </li>
             ))}
           </ul>
         </div>
