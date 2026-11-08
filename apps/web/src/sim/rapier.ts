@@ -5,7 +5,7 @@
 import { castBrain, type CastBrain } from "@ghostrun/bots";
 import type { WorldBundle } from "@ghostrun/ir";
 import { buildNav, type NavWorld } from "@ghostrun/nav";
-import { BTN, SimWorld, type InputFrame as SimInput, type Rapier, type SimEvent } from "@ghostrun/sim";
+import { BTN, decodeAct, encodeAct, LOOK_AWAY, SimWorld, type InputFrame as SimInput, type Rapier, type SimEvent, type SpeechAct } from "@ghostrun/sim";
 import { BTN_JUMP, BTN_USE, PLAYER_ID, TICK_HZ, type FrameSource, type InputFrame, type Pose, type SimFrame } from "./types";
 
 const DT = 1 / TICK_HZ;
@@ -37,6 +37,7 @@ export class RapierSim implements FrameSource {
   /** Where the player went, every half second (the Director reads it between runs). */
   readonly trail: [number, number, number][] = [];
   #pendingMinds: { npc: string; option: string }[] = [];
+  #pendingActs: SpeechAct[] = [];
   #replayMinds: MindChoice[] = [];
   /** Fires when a replay ends or the player takes over. */
   onReplayEnd: (() => void) | undefined;
@@ -90,6 +91,14 @@ export class RapierSim implements FrameSource {
     this.#pendingMinds.push({ npc, option });
   }
 
+  /**
+   * A character accepted what the player said (a bribe, a booking): heard on the next tick, logged
+   * in the same choice log as an act ("act:offer:coins:20"), so a share link replays it exactly.
+   */
+  queueAct(a: SpeechAct) {
+    this.#pendingActs.push(a);
+  }
+
   /** The option an NPC is playing now. */
   optionOf(npc: string): string {
     return this.brain?.bots.find((b) => b.id === npc)?.option ?? "";
@@ -97,11 +106,21 @@ export class RapierSim implements FrameSource {
 
   #applyMinds(tick: number) {
     if (this.#replay) {
-      for (const m of this.#replayMinds) if (m.tick === tick) this.brain?.choose(m.npc, m.option);
+      for (const m of this.#replayMinds) {
+        if (m.tick !== tick) continue;
+        const a = decodeAct(m.npc, m.option);
+        if (a) this.sim.speak(a);
+        else this.brain?.choose(m.npc, m.option);
+      }
       return;
     }
     for (const m of this.#pendingMinds) if (this.brain?.choose(m.npc, m.option)) this.minds.push({ tick, npc: m.npc, option: m.option });
     this.#pendingMinds = [];
+    for (const a of this.#pendingActs) {
+      this.sim.speak(a);
+      this.minds.push({ tick, npc: a.to, option: encodeAct(a) });
+    }
+    this.#pendingActs = [];
   }
 
   get replaying(): boolean {
@@ -229,12 +248,20 @@ export class RapierSim implements FrameSource {
 
   #emit() {
     if (!this.#onFrame) return;
-    // NPCs face where they walk (cosmetic: main thread only, never fed back into the sim)
-    for (const [id, c] of this.sim.npcs) if (c.vx * c.vx + c.vz * c.vz > 0.04) this.#npcFacing.set(id, Math.atan2(-c.vx, -c.vz));
+    // NPCs face where they walk (cosmetic: main thread only, never fed back into the sim); a guard
+    // faces the way it watches, and turns its back while it looks away
+    for (const [id, c] of this.sim.npcs) {
+      if (c.vx * c.vx + c.vz * c.vz > 0.04) this.#npcFacing.set(id, Math.atan2(-c.vx, -c.vz));
+      else if (this.sim.watches(id) && !this.#npcFacing.has(id)) {
+        const [fx, fz] = this.sim.facingOf(id);
+        this.#npcFacing.set(id, Math.atan2(-fx, -fz));
+      }
+    }
     const poses = new Map<string, Pose>();
     for (const id of this.sim.order) {
       const pose = this.sim.pose(id);
-      const yaw = id === PLAYER_ID ? this.#facing : this.#npcFacing.get(id);
+      const f = id === PLAYER_ID ? this.#facing : this.#npcFacing.get(id);
+      const yaw = f === undefined || id === PLAYER_ID || this.sim.entity(id)?.state !== LOOK_AWAY ? f : f + Math.PI;
       poses.set(id, yaw === undefined ? pose : { p: pose.p, q: [0, Math.sin(yaw / 2), 0, Math.cos(yaw / 2)] });
     }
     this.#onFrame({ tick: this.sim.tick, poses });
