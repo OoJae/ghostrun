@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { buildWorld } from "../src/pipeline";
+import { fengShuiFor, fengShuiNotes } from "../src/fengshui";
+import { buildWorld, FIXTURE_PROMPTS } from "../src/pipeline";
 import { designNotes, failChanges, unusedChanges } from "../src/notes";
 
 const ctf = () => buildWorld("", "ctf").bundle;
@@ -37,6 +38,18 @@ describe("design notes as changes", () => {
   it("a timer world can have more time on the clock", () => {
     const b = buildWorld("", "coin-rush").bundle;
     expect(failChanges(b, at("the timer ran out"))).toContain("put more time on the clock");
+  });
+
+  it("a failed Feng Shui principle is a note too: its fix goes to the edit model as written, and reads on its button as the receipt words it", () => {
+    const w = buildWorld(FIXTURE_PROMPTS["fengshui-broken"]!, "fengshui-broken");
+    const fs = fengShuiFor(w, FIXTURE_PROMPTS["fengshui-broken"]!)!.section;
+    const notes = designNotes(w.bundle, null, null, fs).filter((n) => n.key.startsWith("fengshui:"));
+    expect(notes.map((n) => n.key)).toEqual(fengShuiNotes(fs).map((n) => n.id));
+    expect(notes.length).toBe(2);
+    for (const [i, n] of fengShuiNotes(fs).entries()) expect(notes[i]).toEqual({ key: n.id, changes: [n.change], said: [n.text.replace(/^Feng Shui: /, "")] });
+    // a world that holds every principle has none
+    const ok = buildWorld(FIXTURE_PROMPTS.fengshui!, "fengshui");
+    expect(designNotes(ok.bundle, null, null, fengShuiFor(ok, FIXTURE_PROMPTS.fengshui!)!.section)).toEqual([]);
   });
 
   it("the receipt's notes, in its own order, each with its key", () => {

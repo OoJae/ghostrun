@@ -2,15 +2,20 @@
 // hover platform" offers "put a neon shard on the hover platform" or "take out the hover platform";
 // "near the lava pit: hit the lava pit ×4" offers "make the lava pit jump fairer: a wider ledge".
 // Each goes through the live edit like a typed change, is re-proved on a copy of the world, and is
-// offered only if it holds (no worse a receipt, still won), as the Director's cut is.
+// offered only if it holds (no worse a receipt, still won), as the Director's cut is. A Feng Shui
+// principle that fails comes with its own fix (fengShuiNotes), offered the same way.
+import type { FengShuiSection } from "@ghostrun/layout";
 import type { WorldBundle } from "@ghostrun/ir";
 import type { FailSpot, Insights, Revealed } from "@ghostrun/proof/light";
+import { fengShuiNotes } from "./fengshui";
 
 export interface DesignNote {
   /** Which note: "unused:<entity id>" (nobody went near it), "fail:<i>" (the i-th place runs went wrong). */
   key: string;
   /** One or two concrete changes, as the person might type them. */
   changes: string[];
+  /** How each change reads on its button, where that isn't the change itself (a Feng Shui fix names things by id for the model). */
+  said?: string[];
 }
 
 const an = (noun: string) => `${/^[aeiou]/i.test(noun) ? "an" : "a"} ${noun}`;
@@ -57,8 +62,9 @@ export function failChanges(b: WorldBundle, f: Pick<FailSpot, "near" | "why">): 
 }
 
 /** Every note in the receipt a change could answer, with its changes (the receipt's own order). */
-export function designNotes(b: WorldBundle, seen: Insights | null, rv: Revealed | null): DesignNote[] {
+export function designNotes(b: WorldBundle, seen: Insights | null, rv: Revealed | null, fs: FengShuiSection | null = null): DesignNote[] {
   const out: DesignNote[] = [];
+  for (const n of fs ? fengShuiNotes(fs) : []) out.push({ key: n.id, changes: [n.change], said: [n.text.replace(/^Feng Shui: /, "")] });
   for (const u of seen?.unused.slice(0, 4) ?? []) out.push({ key: `unused:${u.id}`, changes: unusedChanges(b, u.id) });
   for (const [i, f] of (rv?.fails ?? []).entries()) out.push({ key: `fail:${i}`, changes: failChanges(b, f) });
   return out.filter((n) => n.changes.length);
