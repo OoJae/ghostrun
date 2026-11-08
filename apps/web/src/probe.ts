@@ -25,6 +25,10 @@ export interface GhostrunProbe {
   vr?: boolean;
   /** The ghost being raced (absent when there is none): where it is drawn this frame, by tick. */
   ghost?: { shown: boolean; tick: number; p: [number, number, number]; finished: boolean };
+  /** The camera taken for a shot (the Host flying to a moment): the place, where the camera is, and whether it got there. */
+  shot?: { kind: "fly"; to: [number, number, number]; cam: [number, number, number]; arrived: boolean };
+  /** Red/green playing: its clock (ticks), whether they have parted, the caption, both ghosts and the camera. */
+  redgreen?: { tick: number; parted: boolean; caption: string; green: [number, number, number]; red: [number, number, number]; cam: [number, number, number] };
   /** The runners' overview while it is shown: route ribbons and heat-map tiles drawn. */
   overview?: { routes: number; heat: number };
   /** The sound: "off" until the first gesture starts it, "disabled" with ?audio=0. */
