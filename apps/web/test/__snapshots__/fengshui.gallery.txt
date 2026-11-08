@@ -1,0 +1,10 @@
+PROMPT: A Feng Shui handbag gallery: five wings, one for each element, and a reception desk in the command position.
+✓ [T3] walked to and inspected 13 of 13 things · 13 of 13  (physics, an AI visitor walks to and uses each)
+Feng Shui (Form School): 6 of 6 principles hold
+  ✓ Command position: the walnut reception desk sits across Jade foyer from its door, its back to a wall and the door in view
+  ✓ No straight line through: the view in from the front door ends at a solid wall (Hall of the five elements)
+  ✓ No mirror facing the front door: the round silver mirror hangs out of the front door's line
+  ✓ A clear way in: nothing stands in the way in from the front door to Jade foyer
+  ✓ Uncluttered rooms: all 6 rooms have a clear way from the door to the middle; solid things cover at most 1% of a floor
+  ✓ Five elements in balance: 5 of 5 elements present: wood 6 · fire 2 · earth 3 · metal 3 · water 3
+  · reception_desk: turned to face its door (Feng Shui: the command position)

@@ -405,6 +405,8 @@ export class ModelLayer {
       const model = tpl.clone();
       // a coin stands on its edge, as the neon coins do
       if (id === "coin") model.rotation.x = Math.PI / 2;
+      // a piece turned to face somewhere (a desk to its door) is drawn turned; its box is already its turned footprint
+      else if (e.kind === "prop" && e.rotY) model.rotation.y = e.rotY;
       const own = new Box3().setFromObject(model);
       const size = own.getSize(_size);
       const holder = new Group();

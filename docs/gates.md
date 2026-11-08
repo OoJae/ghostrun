@@ -205,3 +205,16 @@ Characters and props followed (main a457063, deployed the same day): CC0 KayKit 
 Photo inspiration followed (main d621f68): a picture is read by Claude Haiku 5.5 into a short brief (setting, mood, palette, objects, layout, and a genre and goal when no words came with it) that joins the prompt; the world is labelled "inspired by your image", never a reconstruction, and the image is never stored or cached. A stock coastline photo, live: briefs named the sea stacks, the red coastal scrub and the cliff path; with no words it suggested "reach the lighthouse on the far headland before the tide cuts off the coastal path". Picture builds take 7–12.5 s (the vision step is about 4 s), against about 2 s for words alone. On staging through the Worker: brief, then a parkour race along the cliffs, 9.8 s in all. The production cache stayed warm across the deploy.
 
 VR, and the refreshed numbers, followed (main 4cad1e6). In the headset: a watch on the left wrist (the receipt's line, score, lap, HP, the ghost split, and buttons for a new world, teleport and the vignette), a result card with the Host's recap, characters' lines over their heads, controller rays, teleport walked by the sim, grab and throw through the sim's own carry and use, driving from the seat, shots aimed along the controller, and saying a world on the left grip (prompt chips where the browser can't listen). Verified in the IWER emulator only (7 VR tests); never seen on a headset, so readability, comfort and frame time are unchecked. The trust table and README now cover all eighteen sets: 231 of 239 games won and 62 of 63 places toured with today's code, 607 planted bugs of 607 caught. Production cache still warm (8 of 8).
+
+## Judges at once, and the outside uptime check (2026-11-02)
+
+Production, judge token, distinct uncached prompts started at the same moment (from Lagos, so the wall times include the trip):
+
+| Judges at once | Built | Fast lane (gpt-oss) | Fell back to Haiku | Wall p50 | Wall max |
+|---|---|---|---|---|---|
+| 5 | 5 of 5 | 5, 2.4–4.9 s | 0 | 2.8 s | 4.9 s |
+| 8 | 8 of 8 | 5, 2.0–4.5 s | 3, 9.3–12.2 s | 4.5 s | 12.2 s |
+
+The free Cerebras lane's five fills a minute is the ceiling: the sixth judge in the same minute waits on Haiku (the materialise reveal shows the world assembling meanwhile). No build failed and none was refused.
+
+Outside Cloudflare: `.github/workflows/uptime.yml` loads the app and `/v1/health` every 30 minutes from GitHub's machines (a failed run emails the owner; ntfy too when the `NTFY_TOPIC` secret is set). First run: passed in 12 s.

@@ -2,6 +2,8 @@ import type { Chip, Insights, Receipt, Revealed as Report } from "@ghostrun/proo
 import { Fragment, useState, type ReactNode } from "react";
 import { chipLine, fraction, statusWord } from "@ghostrun/proof/light";
 import { Revealed } from "./Revealed";
+import { FengShui } from "./FengShui";
+import type { FengShuiView } from "../fengshui";
 
 export interface ProofState {
   status: "idle" | "proving" | "done" | "error";
@@ -69,7 +71,7 @@ function Routes({ routes, runs, on, onToggle, noteAction }: { routes: Insights; 
   );
 }
 
-export function ReceiptPanel({ proof, onClose, onShare, onWrong, onExport, onTrust, onFool, fooled, reported, routes, routesOn, onRoutes, report, version, chipAction, noteAction }: { proof: ProofState; onClose: () => void; onShare?: () => void; onWrong?: (note: string) => void; onExport?: () => void; onTrust?: () => void; onFool?: (() => void) | undefined; fooled?: Fooled | null; reported?: string | undefined; routes?: Insights | null; routesOn?: boolean; onRoutes?: () => void; report?: Report | null; /** A remix: which version this receipt is for, and that the original's is its own. */ version?: string | null; /** After a chip's line: its ▶ red/green, when it has one. */ chipAction?: ((c: Chip) => ReactNode) | undefined; /** After a design note (a thing nobody went near, a place runs went wrong): its Apply choices. */ noteAction?: ((key: string) => ReactNode) | undefined }) {
+export function ReceiptPanel({ proof, onClose, onShare, onWrong, onExport, onTrust, onFool, fooled, reported, routes, routesOn, onRoutes, report, version, fengShui, chipAction, noteAction }: { proof: ProofState; onClose: () => void; onShare?: () => void; onWrong?: (note: string) => void; onExport?: () => void; onTrust?: () => void; onFool?: (() => void) | undefined; fooled?: Fooled | null; reported?: string | undefined; routes?: Insights | null; routesOn?: boolean; onRoutes?: () => void; report?: Report | null; /** A remix: which version this receipt is for, and that the original's is its own. */ version?: string | null; /** Feng Shui for one named school, checked on this world (asked for, or offered for an interior). */ fengShui?: FengShuiView | null; /** After a chip's line: its ▶ red/green, when it has one. */ chipAction?: ((c: Chip) => ReactNode) | undefined; /** After a design note (a thing nobody went near, a place runs went wrong): its Apply choices. */ noteAction?: ((key: string) => ReactNode) | undefined }) {
   const r = proof.receipt;
   const [writing, setWriting] = useState(false);
   const [note, setNote] = useState("");
@@ -100,6 +102,7 @@ export function ReceiptPanel({ proof, onClose, onShare, onWrong, onExport, onTru
         ))}
       </ul>
       {r?.par && <p className="par">AI par {r.par.goldS} s · {r.par.won} of {r.par.runs} runners won</p>}
+      {fengShui && <FengShui view={fengShui} noteAction={noteAction} />}
       {routes && r?.trails && onRoutes && (
         <Revealed receipt={r} report={report ?? null} playing={proof.playing} noteAction={noteAction}>
           <Routes routes={routes} runs={report?.runs ?? r.trails.length} on={Boolean(routesOn)} onToggle={onRoutes} noteAction={noteAction} />

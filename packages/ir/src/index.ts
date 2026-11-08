@@ -8,3 +8,4 @@ export { gameplayLines, mergeFill, type MergeStats } from "./merge";
 export { lawsUnwritten, layoutLaws, pinLayout } from "./fit";
 export { groupMembers } from "./groups";
 export { nickname, type Nickname } from "./nickname";
+export { logicOf, ruleText, ruleTiles, thingLabel, type RuleTiles, type Tile } from "./logic";

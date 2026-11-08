@@ -21,6 +21,7 @@ import { ANGLES, changeSummary, cutHolds, cutNotes, editedPrompt, HARDER, intent
 import { createShare, loadShare, reportWrong } from "./share";
 import { Minds } from "./minds";
 import { propose, twistWorld } from "./director";
+import { fengShuiFor } from "./fengshui";
 import { BRIEF, buildWorld, ENGINE_HASH, FIXTURE_PROMPTS, FIXTURES, hashWorld, worldFromFill, type Intent, type World } from "./pipeline";
 import { probe } from "./probe";
 import { lookSamples } from "./render/pick";
@@ -848,7 +849,8 @@ export function App() {
   const noteList = useMemo(() => {
     const w = current.current;
     const r = proof.receipt;
-    return w && r?.trails ? new Map(designNotes(w.bundle, insights(w.bundle, allRuns(r)), revealed(w.bundle, r)).map((n) => [n.key, n])) : new Map<string, never>();
+    const fs = fengShuiFor(w, w?.source?.base ?? w?.source?.prompt ?? builtPrompt.current)?.section ?? null;
+    return w && r ? new Map(designNotes(w.bundle, r.trails ? insights(w.bundle, allRuns(r)) : null, r.trails ? revealed(w.bundle, r) : null, fs).map((n) => [n.key, n])) : new Map<string, never>();
   }, [proof.receipt]);
 
   /**
@@ -1163,6 +1165,7 @@ export function App() {
             }}
             reported={reported}
             version={receiptVersion(lineageOf(remixSrc, current.current), specHash)}
+            fengShui={fengShuiFor(current.current, ownPrompt ?? builtPrompt.current)}
             chipAction={(c) => {
               const w = current.current;
               const r = proof.receipt;
@@ -1177,7 +1180,7 @@ export function App() {
             }}
             noteAction={mode === "live" ? (key) => {
               const n = noteList.get(key);
-              return n ? <NoteApply note={n} state={notes.state} onTry={(k, c) => void notes.tryChange(k, c)} onAccept={notes.accept} /> : null;
+              return n ? <NoteApply note={n} state={notes.state} onTry={(k, c, said) => void notes.tryChange(k, c, said)} onAccept={notes.accept} /> : null;
             } : undefined}
             onShare={shareRun}
             onExport={async () => {
