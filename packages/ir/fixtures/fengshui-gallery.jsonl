@@ -1,0 +1,37 @@
+{"op":"meta","mode":"wander","lang":"en","pack":"floor_plan","sub":[],"seed":9,"look":"Feng Shui handbag gallery","mood":[0.6,-0.3,-0.6],"timeOfDay":11,"weather":"clear"}
+{"op":"zone","id":"z_yard","slot":"yard","tag":"outside","name":"Garden court"}
+{"op":"zone","id":"z_foyer","slot":"entrance","tag":"entrance","name":"Jade foyer"}
+{"op":"zone","id":"z_hall","slot":"main_room","tag":"hall","name":"Hall of the five elements"}
+{"op":"zone","id":"z_wood","slot":"room_sw","tag":"room","name":"Wood wing"}
+{"op":"zone","id":"z_fire","slot":"room_se","tag":"room","name":"Fire wing"}
+{"op":"zone","id":"z_water","slot":"room_nw","tag":"room","name":"Water wing"}
+{"op":"zone","id":"z_metal","slot":"room_ne","tag":"room","name":"Metal wing"}
+{"op":"spawn","id":"sp_red","zone":"z_yard","anchor":"spawn_pad","team":"red"}
+{"op":"ent","id":"reception_desk","kind":"prop","noun":"walnut reception desk","hyper":"furniture","zone":"z_foyer","anchor":"corner_ne","body":"fixed","shape":"box","size":[1.6,1.0,0.7]}
+{"op":"ent","id":"guide_sign","kind":"sign","noun":"Feng Shui gallery guide","hyper":"sign","zone":"z_foyer","anchor":"corner_nw","body":"fixed","shape":"box","size":[1.2,1.4,0.2]}
+{"op":"ent","id":"bag_wood","kind":"prop","noun":"bamboo-handle green leather tote","hyper":"handbag","zone":"z_wood","anchor":"center","body":"fixed","shape":"box","size":[0.45,0.35,0.2]}
+{"op":"ent","id":"bag_fire","kind":"prop","noun":"red silk evening clutch","hyper":"handbag","zone":"z_fire","anchor":"wall_e","body":"fixed","shape":"box","size":[0.3,0.2,0.12]}
+{"op":"ent","id":"bag_earth","kind":"prop","noun":"yellow ochre suede satchel","hyper":"handbag","zone":"z_hall","anchor":"center","body":"fixed","shape":"box","size":[0.45,0.35,0.2]}
+{"op":"ent","id":"bag_metal","kind":"prop","noun":"silver chain-mail purse","hyper":"handbag","zone":"z_metal","anchor":"center","body":"fixed","shape":"box","size":[0.3,0.25,0.12]}
+{"op":"ent","id":"bag_water","kind":"prop","noun":"black patent leather handbag","hyper":"handbag","zone":"z_water","anchor":"center","body":"fixed","shape":"box","size":[0.4,0.3,0.18]}
+{"op":"ent","id":"lantern","kind":"prop","noun":"red paper lantern","hyper":"lamp","zone":"z_fire","anchor":"corner_ne","body":"fixed","shape":"box","size":[0.5,0.8,0.5]}
+{"op":"ent","id":"incense_bowl","kind":"prop","noun":"brass incense bowl","hyper":"bowl","zone":"z_metal","anchor":"corner_nw","body":"fixed","shape":"box","size":[0.5,0.4,0.5]}
+{"op":"ent","id":"vase","kind":"prop","noun":"terracotta floor vase","hyper":"vase","zone":"z_hall","anchor":"corner_nw","body":"fixed","shape":"box","size":[0.5,1.0,0.5]}
+{"op":"ent","id":"fountain","kind":"prop","noun":"small stone fountain","hyper":"fountain","zone":"z_water","anchor":"corner_ne","body":"fixed","shape":"box","size":[0.9,0.7,0.9]}
+{"op":"ent","id":"mirror","kind":"prop","noun":"round silver mirror","hyper":"mirror","zone":"z_water","anchor":"wall_w","body":"fixed","shape":"box","size":[0.9,0.9,0.1]}
+{"op":"ent","id":"hall_window","kind":"prop","noun":"rice-paper screened window","hyper":"window","zone":"z_hall","anchor":"wall_n","body":"fixed","shape":"box","size":[1.6,1.2,0.1]}
+{"op":"verb","id":"vb_desk","verb":"social.inspect","on":"reception_desk","params":{"text":"The reception desk sits in the command position: across the foyer from the door, its back to a wall."}}
+{"op":"verb","id":"vb_sign","verb":"social.inspect","on":"guide_sign","params":{"text":"Five wings, five elements: wood, fire, earth, metal and water, each with its bag."}}
+{"op":"verb","id":"vb_bag_wood","verb":"social.inspect","on":"bag_wood","params":{"text":"Wood: a green leather tote with a bamboo handle, for growth."}}
+{"op":"verb","id":"vb_bag_fire","verb":"social.inspect","on":"bag_fire","params":{"text":"Fire: a red silk clutch on the east wall, for passion."}}
+{"op":"verb","id":"vb_bag_earth","verb":"social.inspect","on":"bag_earth","params":{"text":"Earth: an ochre suede satchel at the centre of the gallery, for steadiness."}}
+{"op":"verb","id":"vb_bag_metal","verb":"social.inspect","on":"bag_metal","params":{"text":"Metal: a silver chain-mail purse, for clarity."}}
+{"op":"verb","id":"vb_bag_water","verb":"social.inspect","on":"bag_water","params":{"text":"Water: a black patent handbag, for calm."}}
+{"op":"verb","id":"vb_fountain","verb":"social.inspect","on":"fountain","params":{"text":"A small stone fountain keeps the water wing's qi moving."}}
+{"op":"verb","id":"vb_mirror","verb":"social.inspect","on":"mirror","params":{"text":"The mirror hangs on a side wall, never facing the front door."}}
+{"op":"npc","id":"guide_1","role":"guide","zone":"z_foyer","anchor":"corner_sw","team":"","menu":["guide.tour"],"dflt":"guide.tour"}
+{"op":"expect","id":"x_tour","prop":"reachable","a":"sp_red","b":"","headline":true,"text":"Every bag in the five-element gallery can be visited"}
+{"op":"end","layer":"gameplay"}
+{"op":"dress","id":"d_plant","noun":"potted jade plant","zone":"z_foyer","anchor":"corner_se"}
+{"op":"dress","id":"d_lotus","noun":"lotus bowl","zone":"z_water","anchor":"corner_se"}
+{"op":"end","layer":"cosmetic"}
