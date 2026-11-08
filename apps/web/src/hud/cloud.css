@@ -1,0 +1,4 @@
+/* The receipt's trust line: where it was proved, and whether the cloud and this device agree. */
+.receipt-where { margin: 0 0 8px; font-size: 12px; opacity: 0.85; }
+.receipt-where.same { color: #7dffb2; opacity: 1; }
+.receipt-where.different { color: #ffb36b; opacity: 1; }

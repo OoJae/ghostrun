@@ -6,6 +6,7 @@ import { fileURLToPath } from "node:url";
 import react from "@vitejs/plugin-react";
 import { defineConfig, type Plugin, type ViteDevServer } from "vite";
 import { rapierWasmShim } from "../../packages/sim/src/rapier/vite-plugin.ts";
+import { proofVersion } from "../../packages/world/src/version.ts";
 
 /** Dev only: serve /v1/* and /mcp with the real edge handler, keys from the repo's gitignored .dev.vars. */
 function devEdgeApi(): Plugin {
@@ -26,6 +27,8 @@ function devEdgeApi(): Plugin {
         if (!req.url?.startsWith("/v1/") && !isMcp) return next();
         try {
           const { handle } = (await server.ssrLoadModule("/../edge-api/src/handler.ts")) as typeof import("../edge-api/src/handler");
+          // the cloud proof on Node's engine (whole in this process: no shards in dev)
+          await server.ssrLoadModule("/../edge-api/src/engine-node.ts");
           const chunks: Buffer[] = [];
           for await (const c of req) chunks.push(c as Buffer);
           // MCP needs its headers (the protocol version, the method, a token) and its own host for the links it gives
@@ -62,6 +65,8 @@ const recastWasm = join(dirname(createRequire(import.meta.url).resolve("@recast-
 
 export default defineConfig({
   plugins: [rapierWasmShim(), react(), devEdgeApi()],
+  // the proof version (packages/world/src/version.ts): the edge serves and compares receipts of this proof code only
+  define: { __PROOF_VERSION__: JSON.stringify(proofVersion()) },
   resolve: { alias: [{ find: /^ghostrun-recast-wasm/, replacement: recastWasm }] },
   worker: { format: "es", plugins: () => [rapierWasmShim()] },
   build: {

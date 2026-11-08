@@ -1,7 +1,8 @@
-import type { Chip, Insights, Receipt, Revealed as Report } from "@ghostrun/proof/light";
+import type { Chip, CrossCheck, Insights, Receipt, Revealed as Report } from "@ghostrun/proof/light";
 import { useState } from "react";
-import { chipLine, fraction, statusWord } from "@ghostrun/proof/light";
+import { chipLineAt, crossLine, fraction, statusWord, whereWord } from "@ghostrun/proof/light";
 import { Revealed } from "./Revealed";
+import "./cloud.css";
 
 export interface ProofState {
   status: "idle" | "proving" | "done" | "error";
@@ -10,6 +11,8 @@ export interface ProofState {
   error?: string;
   /** The playtest's novice and average runners are still playing (the receipt is out already). */
   playing?: boolean;
+  /** Where the receipt was proved, and whether the cloud's and this device's agree (cloud.ts). */
+  cross?: CrossCheck;
 }
 
 const bad = (c: Chip) => c.status === "counterexample";
@@ -76,9 +79,14 @@ export function ReceiptPanel({ proof, onClose, onShare, onWrong, onExport, onTru
     <div className="glass receipt" role="dialog" aria-label="Proof receipt" data-testid="receipt">
       <div className="receipt-head">
         <strong>Receipt</strong>
-        {r && <span className="mono">spec {r.spec.slice(0, 8)} · {r.ms} ms · {r.host}</span>}
+        {r && <span className="mono">spec {r.spec.slice(0, 8)} · {r.ms} ms · {whereWord(r.host)}</span>}
         <button type="button" onClick={onClose} aria-label="close">×</button>
       </div>
+      {r && (
+        <p className={`receipt-where ${proof.cross?.cloud ?? "off"}`} data-testid="receipt-where">
+          {crossLine(proof.cross ?? { shown: r.host, cloud: "off", device: "done" })}
+        </p>
+      )}
       {version && (
         <p className="receipt-version" data-testid="receipt-version">
           {version}
@@ -92,7 +100,7 @@ export function ReceiptPanel({ proof, onClose, onShare, onWrong, onExport, onTru
       )}
       <ul>
         {proof.chips.map((c) => (
-          <li key={c.id} className={c.status}>{chipLine(c)}</li>
+          <li key={c.id} className={c.status}>{chipLineAt(c, r?.host ?? "device")}</li>
         ))}
       </ul>
       {r?.par && <p className="par">AI par {r.par.goldS} s · {r.par.won} of {r.par.runs} runners won</p>}
