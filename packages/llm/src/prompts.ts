@@ -219,6 +219,15 @@ function worldRules(layout: PackLayout): string[] {
   ];
 }
 
+/** The prompt asks for Feng Shui (the same words as asksFengShui in packages/layout/src/fengshui.ts). */
+const FENG_SHUI = /feng[\s-]*(shui|šuej|suej|schui)|fengshui|風水|风水/i;
+/**
+ * The Form School's room rules the built world is checked on (packages/layout/src/fengshui.ts),
+ * in the fill's terms: anchors, nouns and what not to put where.
+ */
+export const FENG_SHUI_HINT =
+  " Feng Shui (Form School), checked on the built world: a desk, counter or bed in a corner far from its room's doorway, its back to a wall; nothing within 3 m inside the front door; mirrors on side walls, never facing the front door; no uncurtained window in line with it; uncluttered rooms; nouns name materials or colours covering 3+ of wood, fire, earth, metal, water ('bamboo plant', 'red silk clutch', 'stone bench', 'brass bowl', 'small fountain').";
+
 export function fillMessages(prompt: string, intent: IntentOut, layout: PackLayout, example: string | string[], seed: number): Msg[] {
   const examples = Array.isArray(example) ? example : [example];
   const label = (i: number) => (examples.length > 1 ? `Example ${i + 1} for a different prompt (copy the style and the kinds of verbs and rules, not the content):` : "Example for a different prompt (copy the style, not the content):");
@@ -233,7 +242,7 @@ export function fillMessages(prompt: string, intent: IntentOut, layout: PackLayo
     },
     {
       role: "user",
-      content: `Prompt: ${prompt}\nIntent: ${JSON.stringify(intent)}\nUse seed ${seed}, pack "${layout.packId}", mode "${intent.mode}", sub ${JSON.stringify(intent.sub)}. Headline expect text: "${intent.headline}".${intent.mode === "wander" ? " This is a place to explore: no win or lose rules needed; make its things inspectable (social.inspect with a real one-line text each) and let NPCs guide." : ""}`,
+      content: `Prompt: ${prompt}\nIntent: ${JSON.stringify(intent)}\nUse seed ${seed}, pack "${layout.packId}", mode "${intent.mode}", sub ${JSON.stringify(intent.sub)}. Headline expect text: "${intent.headline}".${intent.mode === "wander" ? " This is a place to explore: no win or lose rules needed; make its things inspectable (social.inspect with a real one-line text each) and let NPCs guide." : ""}${FENG_SHUI.test(prompt) ? FENG_SHUI_HINT : ""}`,
     },
   ];
 }

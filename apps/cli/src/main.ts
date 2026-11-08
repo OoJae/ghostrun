@@ -4,15 +4,17 @@
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { FillParser, lawsUnwritten, layoutLaws, mergeFill, parseFill, pinLayout, splitObjects, type FillNote, type WorldBundle } from "@ghostrun/ir";
-import { placeWorld } from "@ghostrun/layout";
+import { asksFengShui, FENG_SHUI_RULES, fengShui, placeWorld, saysFengShui } from "@ghostrun/layout";
 import { directorMessages, editMessages, fillMessages, hostJsonSchema, hostMessages, IntentOut, intentJsonSchema, intentMessages, jsonLanes, lanesFor, mindJsonSchema, mindMessages, repairMessages, settleIntent, streamLanes, type JobCall, type Keys } from "@ghostrun/llm";
 import { loadNavNode } from "@ghostrun/nav/node";
-import { badness, better, caught, chipLine, insights, issuesOf, plants, prove, provedWon, reportLines, traceRunners, type Receipt } from "@ghostrun/proof";
+import { badness, better, caught, chipLine, fengShuiHead, fengShuiLine, insights, issuesOf, plants, prove, provedWon, reportLines, traceRunners, type Receipt } from "@ghostrun/proof";
 import { ALL_SUBS, layoutOf, PACKS, packFor } from "@ghostrun/registry";
 import { loadRapierNode } from "@ghostrun/sim/node";
 import * as v from "valibot";
 
 const ENGINE = "dev-engine";
+/** A pack's layout, as the placer takes it (the CLI has no direct dependency on the plugin API). */
+type PackLayout = Parameters<typeof placeWorld>[1];
 
 function loadDevVars() {
   let dir = process.cwd();
@@ -37,7 +39,7 @@ function cliKeys(): Keys {
   return keys;
 }
 
-function placeFromFill(text: string, seed: number, packId?: string, mode?: WorldBundle["mode"]): { bundle: WorldBundle; invalid: number; lines: number; notes: string[]; fillNotes: FillNote[] } {
+function placeFromFill(text: string, seed: number, packId?: string, mode?: WorldBundle["mode"]): { bundle: WorldBundle; layout: PackLayout; invalid: number; lines: number; notes: string[]; fillNotes: FillNote[] } {
   const fill = parseFill(text, { seed });
   if (packId) fill.draft.pack = { ...fill.draft.pack, id: packId };
   if (mode) fill.draft.mode = mode;
@@ -48,7 +50,16 @@ function placeFromFill(text: string, seed: number, packId?: string, mode?: World
   const layout = pack.generate({ seed, params: shape.params, sub: fill.draft.pack.sub, laws: layoutLaws(text, fill.draft.laws), harder: false });
   const placed = placeWorld({ ...fill.draft, engine: ENGINE }, layout, { reach: lawsUnwritten(text) });
   for (const n of fill.notes) console.log(`  · fill line ${n.line}: ${n.kind} — ${n.text}`);
-  return { bundle: placed.bundle, invalid: fill.stats.invalid, lines: fill.stats.lines, notes: placed.notes, fillNotes: fill.notes };
+  return { bundle: placed.bundle, layout, invalid: fill.stats.invalid, lines: fill.stats.lines, notes: placed.notes, fillNotes: fill.notes };
+}
+
+/** The receipt's Feng Shui section, for a prompt that asks for it or a world that says it is (`--fengshui`: any world). */
+function printFengShui(b: WorldBundle, layout: PackLayout, prompt: string, always = false) {
+  if (!always && !asksFengShui(prompt) && !saysFengShui(b)) return;
+  const s = fengShui(b, layout.zones);
+  const names = new Map(FENG_SHUI_RULES.map((r) => [r.id, r.name]));
+  console.log(`FENG SHUI: ${fengShuiHead(s)}`);
+  for (const f of s.findings) console.log(`  ${fengShuiLine(f, names.get(f.rule) ?? f.rule)}`);
 }
 
 function printReceipt(r: Receipt) {
@@ -182,13 +193,14 @@ async function main() {
   if (cmd === "verify") {
     const R = await loadRapierNode();
     await loadNavNode();
-    const { bundle } = placeFromFill(readFileSync(args[0]!, "utf8"), seed);
+    const { bundle, layout } = placeFromFill(readFileSync(args[0]!, "utf8"), seed);
     // --playtest: then novice and average runners too (the difficulty band, what the runners revealed)
     const t0 = performance.now();
     let out = 0;
     const play = args.includes("--playtest");
     const r = await prove(R, bundle, { engine: ENGINE, ...(play ? { playtest: true, onReceipt: () => void (out = performance.now() - t0) } : {}) });
     printReceipt(r);
+    printFengShui(bundle, layout, "", args.includes("--fengshui"));
     if (play) {
       console.log(`  the receipt was out at ${Math.round(out)} ms; the playtest took ${r.playtest?.ms ?? 0} ms more`);
       for (const l of reportLines(bundle, r)) console.log(`  ${l}`);
@@ -208,6 +220,7 @@ async function main() {
     const R = await loadRapierNode();
     await loadNavNode();
     printReceipt(await prove(R, placed.bundle, { engine: ENGINE, runs: 12 }));
+    printFengShui(placed.bundle, placed.layout, saved.prompt ?? "", args.includes("--fengshui"));
     const runs = Number(args[args.indexOf("--runs") + 1]) || 1; // trace this many runners
     const log: string[] = [];
     traceRunners((m) => void (log.length < 200 * runs && log.push(m)));

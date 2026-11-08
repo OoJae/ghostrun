@@ -23,6 +23,7 @@ import { mergeEdit } from "./structure";
 import { createShare, loadShare, reportWrong } from "./share";
 import { Minds } from "./minds";
 import { propose, twistWorld } from "./director";
+import { fengShuiFor } from "./fengshui";
 import { BRIEF, buildWorld, ENGINE_HASH, FIXTURE_PROMPTS, FIXTURES, hashWorld, worldFromFill, type Intent, type World } from "./pipeline";
 import { probe } from "./probe";
 import { LOOK_CHOICES, lookSamples, type LookPin } from "./render/pick";
@@ -1230,6 +1231,7 @@ export function App() {
             }}
             reported={reported}
             version={receiptVersion(lineageOf(remixSrc, current.current), specHash)}
+            fengShui={fengShuiFor(current.current, ownPrompt ?? builtPrompt.current)}
             onShare={shareRun}
             onExport={async () => {
               const w = current.current;

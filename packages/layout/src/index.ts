@@ -4,6 +4,12 @@ import { stream } from "@ghostrun/detmath";
 import { groupMembers, type Effect, type Entity, type Rule, type Static, type Vec3, type VerbBinding, type WorldBundle, type Zone } from "@ghostrun/ir";
 import { DRIVE, feelOf, HEALTH, SHOOT, TRACK, verb } from "@ghostrun/kits";
 import type { PackLayout, ZoneSpec } from "@ghostrun/plugin-api";
+import { repairFengShui } from "./fengshui";
+
+export {
+  ELEMENTS, FENG_SHUI_RULES, FENG_SHUI_SCHOOL, FENG_SHUI_SCHOOL_SOURCE, asksFengShui, elementsOf, fengShui, isCommanding, isMirror, repairFengShui, saysFengShui,
+  type Element, type FengShuiFinding, type FengShuiFix, type FengShuiRule, type FengShuiRuleId, type FengShuiSection, type FengShuiSource, type FengShuiVars, type FengShuiVerdict,
+} from "./fengshui";
 
 /** Default physical sizes per entity kind, used when the fill gives none (all metres). */
 export const KIND_SIZE: Partial<Record<Entity["kind"], Vec3>> = {
@@ -248,6 +254,8 @@ export function placeWorld(input: WorldBundle, layout: PackLayout, opts: { reach
       }
     }
   }
+  // a world that says it is Feng Shui follows the Form School's room rules where moving decor can
+  notes.push(...repairFengShui(b, layout.zones, bound));
   // wins first: a win rule the repairs add (reach the goal) gets the same trigger and verb repairs
   notes.push(...repairDoubleDoors(b), ...repairSpawnRefs(b), ...repairGroups(b), ...repairRingOut(b, bound), ...repairAreas(b, bound), ...repairCombat(b), ...repairSentries(b), ...repairKits(b), ...repairConditions(b), ...repairRace(b, layout), ...repairRiders(b), ...repairWin(b), ...(opts.reach ? repairReach(b) : []), ...repairTriggers(b), ...repairVerbs(b), ...repairExpects(b));
   notes.push(...addRivals(b), ...placeRace(b, layout, bound), ...repairDeliveries(b, layout, bound), ...addSecrets(b, layout, bound));
