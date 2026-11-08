@@ -512,8 +512,9 @@ export class Engine {
     if (this.#race) this.#scene.add(this.#race.root);
     this.rapierSim?.subscribe((evs) => {
       for (const ev of evs) {
-        if (ev.k === "state") view.setState(ev.a, String(ev.v));
-        else if (ev.k === "destroy") view.gone(ev.a);
+        // (the view shown now: a restyle swaps it under the running sim)
+        if (ev.k === "state") this.#view?.setState(ev.a, String(ev.v));
+        else if (ev.k === "destroy") this.#view?.gone(ev.a);
         else if (ev.k === "hit") this.#combat?.hit(ev.a);
       }
     });
@@ -577,6 +578,45 @@ export class Engine {
     const tier = this.#vr && this.#modelTier === "full" ? "lite" : this.#modelTier;
     if (tier !== "off") this.#models = new ModelLayer(world.bundle, view, this.rapierSim, { tier, night: look.night, ghost: this.#ghost.obj, role: world.intent.live?.role ?? "", compile: (o) => this.#renderer.compileAsync(o, this.#camera, this.#scene) });
     return { ttffMs, splits };
+  }
+
+  /**
+   * The same world in another look (the Intent card's look, hour or weather): the scene is rebuilt
+   * round the simulation, which keeps running and never sees it, so the run goes on where it was,
+   * with what it has changed so far (doors open, coins taken) drawn as it is. Cosmetic only: the
+   * spec and the receipt stand. False when there is nothing playing to restyle.
+   */
+  async restyle(world: World): Promise<boolean> {
+    const old = this.#view;
+    if (!old || this.#preview) return false;
+    const look = lookOf(world.bundle, world.cue);
+    probe().look = look.variant ? `${look.id}/${look.variant}` : look.id;
+    const view = buildWorldView(world.bundle, look);
+    const sim = this.rapierSim?.sim;
+    if (sim) for (const [id, e] of sim.ents) if (e.destroyed) view.gone(id);
+    else if (e.state && e.state !== e.init) view.setState(id, e.state);
+    this.#models?.dispose();
+    this.#models = null;
+    this.#scene.remove(old.root);
+    old.dispose();
+    this.#scene.add(view.root);
+    this.#view = view;
+    this.#look = look;
+    this.#lookPlace = { shelter: view.shelter, groundY: view.groundY };
+    this.#applyLook(look, this.#lookPlace);
+    this.#cutaway = look.cutaway;
+    this.#follow.setColliders(look.cutaway ? [] : view.colliders);
+    this.#compiling = true;
+    try {
+      await this.#renderer.compileAsync(this.#scene, this.#camera);
+    } catch (e) {
+      console.warn("restyle precompile failed", e);
+    } finally {
+      this.#compiling = false;
+    }
+    const tier = this.#vr && this.#modelTier === "full" ? "lite" : this.#modelTier;
+    if (tier !== "off" && this.#view === view) this.#models = new ModelLayer(world.bundle, view, this.rapierSim, { tier, night: look.night, ghost: this.#ghost.obj, role: world.intent.live?.role ?? "", compile: (o) => this.#renderer.compileAsync(o, this.#camera, this.#scene) });
+    return true;
   }
 
   dispose() {

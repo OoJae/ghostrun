@@ -18,12 +18,14 @@ import { CutChip, ProofBadge, proofBadge, ReceiptPanel, RepairChip, type CutStat
 import { liveBuild, liveDirector, liveEdit, liveHealth, liveRepair, type LiveCached, type LiveInspired, type LiveIntent } from "./live";
 import type { Picture } from "./picture";
 import { ANGLES, changeSummary, cutHolds, cutNotes, editedPrompt, HARDER, intentFor, newFailures, pickHarder, receiptDelta, suggestionsFor, SURPRISE } from "./edits";
+import { controlsFor, lawChange, layoutChangeOf, rebuiltLine, restyled, WEATHER_WORD, type CardActions, type ShapePin } from "./card";
+import { mergeEdit } from "./structure";
 import { createShare, loadShare, reportWrong } from "./share";
 import { Minds } from "./minds";
 import { propose, twistWorld } from "./director";
 import { BRIEF, buildWorld, ENGINE_HASH, FIXTURE_PROMPTS, FIXTURES, hashWorld, worldFromFill, type Intent, type World } from "./pipeline";
 import { probe } from "./probe";
-import { lookSamples } from "./render/pick";
+import { LOOK_CHOICES, lookSamples, type LookPin } from "./render/pick";
 import { askHost, clock as mmss, facts, story } from "./host";
 import { useSound } from "./audio/useSound";
 import { useSpeech } from "./audio/useSpeech";
@@ -661,30 +663,142 @@ export function App() {
     if (SURPRISE.test(change) && receiptRef.current) return void cutFor(w, receiptRef.current, true);
     if (HARDER.test(change) && w.bundle.mode === "play" && receiptRef.current) return raceHarder(w, change, receiptRef.current);
     const base = runId.current;
-    const before = receiptRef.current;
     const t0 = performance.now();
     setEdit({ status: "editing", change });
     const original = w.source?.base ?? w.source?.prompt ?? builtPrompt.current;
-    const edits = [...(w.source?.edits ?? []), change];
-    const fill0 = pinLayout(w.fill);
-    const patch = await liveEdit(editedPrompt(original, edits.slice(0, -1)), change, intentFor(w, original), fill0, w.seed);
+    const patch = await liveEdit(editedPrompt(original, w.source?.edits ?? []), change, intentFor(w, original), pinLayout(w.fill), w.seed);
     if (runId.current !== base) return;
     if (!patch) return setEdit({ status: "failed", change, message: "The live AI couldn't make that change just now. Try again, or say it differently." });
-    const { text, stats } = mergeFill(fill0, patch, { edit: true });
+    await applyEdit(w, change, patch, t0);
+  };
+
+  /**
+   * A patch on the world, the model's or the Intent card's own: merged by stable ids (a layout op
+   * settled and re-anchored), placed, re-proved, and back with how the receipt moved, and Undo.
+   */
+  const applyEdit = async (w: World, change: string, patch: string, t0: number) => {
+    const before = receiptRef.current;
+    const original = w.source?.base ?? w.source?.prompt ?? builtPrompt.current;
+    const edits = [...(w.source?.edits ?? []), change];
+    const fill0 = pinLayout(w.fill);
+    const { text, stats, layout } = mergeEdit(fill0, patch, w.seed);
     const w2 = worldFromFill(text, w.seed, w.intent.live, w.bundle.pack.id, w.bundle.mode);
-    const summary = changeSummary(w.bundle, w2.bundle);
+    const summary = [...(layout?.summary ?? []), ...changeSummary(w.bundle, w2.bundle)];
     if (!summary.length && text.trim() === fill0.trim()) return setEdit({ status: "failed", change, message: stats.locked ? "That would only change what the world promises, and the proof keeps those fixed." : "Nothing in the world changed. Try saying it differently." });
-    w2.source = { prompt: editedPrompt(original, edits), intent: intentFor(w, original), fill: w2.fill, seed: w.seed, pack: w2.bundle.pack.id, base: original, edits };
+    if (layout?.notes.length) w2.notes.unshift(...layout.notes);
+    w2.source = { prompt: editedPrompt(original, edits), intent: intentFor(w, original), fill: w2.fill, seed: w.seed, pack: w2.bundle.pack.id, base: original, edits, ...(w.source?.pinned ? { pinned: w.source.pinned } : {}) };
     history.current.push(w);
     const shown = summary.length ? summary : [`${stats.replaced + stats.added + stats.deleted} lines changed`];
-    setEdit({ status: "proving", change, summary: shown, locked: stats.locked });
+    const notes = layout?.notes ?? [];
+    setEdit({ status: "proving", change, summary: shown, locked: stats.locked, notes });
     const id = ++runId.current;
     afterProof.current.set(id, (after) => {
       const delta = before ? receiptDelta(before, after) : null;
-      setEdit({ status: "done", change, summary: shown, locked: stats.locked, delta, failures: before ? newFailures(before, after) : [] });
+      setEdit({ status: "done", change, summary: shown, locked: stats.locked, delta, failures: before ? newFailures(before, after) : [], notes });
       if (collapsedRef.current && delta?.length) setToast(`Edit re-proved: ${delta.slice(0, 2).map((d) => `${d.label} ${d.from} → ${d.to}`).join(" · ")}`);
     });
     await show(w2, id, t0, [{ label: "edit", ms: performance.now() - t0 }]);
+  };
+
+  /** Worlds that differ from the one before them only in how they look (Undo redraws them in place too). */
+  const restyledWorlds = useRef(new WeakSet<World>());
+  /**
+   * The Intent card's look, hour or weather: the same world redrawn in place around the running
+   * game (nothing the proof reads changed, so the spec and the receipt stand), with Undo.
+   */
+  const restyleWorld = async (change: LookPin, said: string, what: string) => {
+    const w = current.current;
+    const e = engine.current;
+    if (!w || !e) return;
+    const w2 = worldFromFill(restyled(w.fill, change), w.seed, w.intent.live, w.bundle.pack.id, w.bundle.mode);
+    // one of the world's changes, as a typed "make it night" is (a remix's line lists it)
+    const original = w.source?.base ?? w.source?.prompt ?? builtPrompt.current;
+    const edits = [...(w.source?.edits ?? []), said];
+    w2.source = { prompt: editedPrompt(original, edits), intent: intentFor(w, original), fill: w2.fill, seed: w.seed, pack: w2.bundle.pack.id, base: original, edits, ...(w.source?.pinned ? { pinned: w.source.pinned } : {}) };
+    history.current.push(w);
+    restyledWorlds.current.add(w2);
+    await redraw(w2);
+    setEdit({ status: "done", change: said, summary: [what, "the same spec: the receipt stands"], locked: 0, delta: null, failures: [] });
+  };
+  /** Swap in a world that only looks different: the scene restyled under the sim (a fresh load if there's none to restyle). */
+  const redraw = async (w: World) => {
+    current.current = w;
+    setIntent(w.intent);
+    if (!(await engine.current?.restyle(w))) return show(w, ++runId.current, performance.now(), []);
+    sound.world(w.bundle, engine.current?.rapierSim ?? null, w.cue); // its rain, its music
+    const h = await hashWorld(w.bundle);
+    setSpecHash(h);
+    probe().specHash = h;
+  };
+
+  /**
+   * The Intent card's pack, mode or genre: a new fill, built live with those pinned (the same words
+   * and seed; the intent model fits the rest to them), shown as "rebuilt as a maze at your request",
+   * with Undo back to the world before. Pins from an earlier rebuild stay pinned.
+   */
+  const rebuildAs = async (pin: ShapePin) => {
+    const w = current.current;
+    if (!w || modeRef.current !== "live") return;
+    const base = runId.current;
+    const t0 = performance.now();
+    const before = receiptRef.current;
+    const pinned = { ...w.source?.pinned, ...pin };
+    const change = rebuiltLine(pin);
+    const prompt = w.source?.base ?? w.source?.prompt ?? builtPrompt.current;
+    setEdit({ status: "editing", change });
+    const r = await liveBuild(prompt, {
+      intent: pinned,
+      seed: w.seed,
+      onIntent: (i, _ms, seed) => runId.current === base && (engine.current?.materialise({ pack: i.pack, sub: i.sub, seed, look: `${i.setting} ${i.mood}` }), setBuilding(0)),
+      onLine: (n, draft) => runId.current === base && (engine.current?.materialiseLine(draft), setBuilding(n)),
+    });
+    if (runId.current !== base) return;
+    if (r.kind !== "world") {
+      engine.current?.endPreview();
+      setBuilding(null);
+      return setEdit({ status: "failed", change, message: r.kind === "refused" ? r.message : "The live AI couldn't rebuild it just now. Try again in a moment." });
+    }
+    const w2 = worldFromFill(r.fill, r.seed, { genre: r.intent.genre, setting: r.intent.setting, goal: r.intent.goal, fail: r.intent.fail, role: r.intent.role }, r.intent.pack, r.intent.mode);
+    w2.source = { prompt, intent: r.intent, fill: r.fill, seed: r.seed, pack: r.intent.pack, pinned };
+    history.current.push(w);
+    const was = intentFor(w, prompt);
+    const summary = [
+      w.bundle.pack.id !== w2.bundle.pack.id ? `pack ${w.bundle.pack.id} → ${w2.bundle.pack.id}` : "",
+      w.bundle.mode !== w2.bundle.mode ? `mode ${w.bundle.mode} → ${w2.bundle.mode}` : "",
+      pin.genre && was.genre !== r.intent.genre ? `genre ${was.genre || "game"} → ${r.intent.genre}` : "",
+      `${w2.bundle.entities.length} things, ${w2.bundle.rules.length} rules`,
+    ].filter(Boolean);
+    setFellBack(r.fallback !== null);
+    setCachedFrom(r.cached);
+    setEdit({ status: "proving", change, summary, locked: 0 });
+    const id = ++runId.current;
+    afterProof.current.set(id, (after) => setEdit({ status: "done", change, summary, locked: 0, delta: before ? receiptDelta(before, after) : null, failures: [] }));
+    await show(w2, id, t0, [{ label: r.cached ? "rebuild (cached)" : "rebuild", ms: performance.now() - t0 }]);
+  };
+
+  /** The card's corrections, each the way it has to be made (card.ts). */
+  const cardActs: CardActions = {
+    onLook: (v) => {
+      const name = LOOK_CHOICES.find((c) => c.value === v)?.label ?? v;
+      void restyleWorld({ look: v }, `make it look like ${name.toLowerCase()}`, `look: ${name}`);
+    },
+    onPhase: (p) => void restyleWorld({ phase: p }, `make it ${p === "day" ? "daytime" : p}`, `now ${p}`),
+    onWeather: (x) => void restyleWorld({ weather: x as NonNullable<LookPin["weather"]> }, x === "clear" ? "clear skies" : `make it ${WEATHER_WORD[x] ?? x}`, x === "clear" ? "skies clear" : `now ${x}`),
+    onLaws: (c) => {
+      const w = current.current;
+      if (!w) return;
+      const { change, patch } = lawChange(w.bundle.laws, c);
+      setEdit({ status: "editing", change });
+      void applyEdit(w, change, patch, performance.now());
+    },
+    onLayout: (c) => {
+      const w = current.current;
+      const ch = w && layoutChangeOf(w.fill, c);
+      if (!w || !ch) return;
+      setEdit({ status: "editing", change: ch.change });
+      void applyEdit(w, ch.change, ch.patch, performance.now());
+    },
+    onShape: (pin) => void rebuildAs(pin),
   };
 
   /** "Try to fool it": the next plantable bug, proved in a copy of the world by its own worker. */
@@ -744,7 +858,7 @@ export function App() {
     const prompt = editedPrompt(original, edits.slice(0, -1));
     const patches = await Promise.all(ANGLES.map((a) => liveEdit(prompt, `${change}: ${a}`, intent, fill0, w.seed)));
     if (runId.current !== base) return;
-    const worlds = patches.map((p) => (p ? worldFromFill(mergeFill(fill0, p, { edit: true }).text, w.seed, w.intent.live, w.bundle.pack.id, w.bundle.mode) : null));
+    const worlds = patches.map((p) => (p ? worldFromFill(mergeEdit(fill0, p, w.seed).text, w.seed, w.intent.live, w.bundle.pack.id, w.bundle.mode) : null));
     if (!worlds.some(Boolean)) return setEdit({ status: "failed", change, message: "The live AI couldn't write the harder versions just now. Try again in a moment." });
     let proved = 0;
     const lanes = Math.max(1, Math.min(worlds.length, (navigator.hardwareConcurrency || 4) - 2));
@@ -791,7 +905,7 @@ export function App() {
     const patch = await liveDirector(editedPrompt(original, edits), intentFor(w, original), fill0, cutNotes(w.bundle, before), w.seed);
     if (runId.current !== base) return;
     if (!patch) return quiet("The Director's cut isn't available just now.");
-    const { text } = mergeFill(fill0, patch, { edit: true });
+    const { text } = mergeEdit(fill0, patch, w.seed);
     const w2 = worldFromFill(text, w.seed, w.intent.live, w.bundle.pack.id, w.bundle.mode);
     const summary = changeSummary(w.bundle, w2.bundle);
     if (!summary.length) return quiet("The Director's cut changed nothing in this world.");
@@ -831,6 +945,9 @@ export function App() {
     const prev = history.current.pop();
     if (!prev) return;
     setEdit({ status: "idle" });
+    // a look undone is redrawn in place, like it was changed; anything else is the old world again
+    const top = current.current;
+    if (top && restyledWorlds.current.has(top)) return void redraw(prev);
     void show(prev, ++runId.current, performance.now(), []);
   };
 
@@ -973,7 +1090,16 @@ export function App() {
           {landing && <Landing starters={STARTERS} ready={status === "playing"} onPick={pickStarter} />}
         </div>
         {notice && <div className="glass notice" role="status">{notice}</div>}
-        {!collapsed && !typing && intent && building === null && <IntentCard intent={intent} specHash={specHash} note={note} inspired={inspiredNow} />}
+        {!collapsed && !typing && intent && building === null && (
+          <IntentCard
+            intent={intent}
+            specHash={specHash}
+            note={note}
+            rebuilt={current.current?.source?.pinned ? rebuiltLine(current.current.source.pinned) : null}
+            inspired={inspiredNow}
+            controls={current.current && status === "playing" ? controlsFor(current.current, { live: mode === "live", busy: edit.status === "editing" || edit.status === "racing" || edit.status === "proving", prompt: current.current.source?.base ?? current.current.source?.prompt ?? builtPrompt.current, act: cardActs }) : undefined}
+          />
+        )}
         {current.current && status !== "booting" && !typing && (!collapsed || edit.status === "editing" || edit.status === "racing" || edit.status === "proving") && (
           <EditBox state={edit} enabled={mode === "live"} suggestions={[...suggestionsFor(current.current.bundle), "surprise me"]} canUndo={history.current.length > 0} onEdit={(c) => void editWorld(c)} onUndo={undo} focusKey={editFocus} placeholder={copied ? "Change it: make it yours…" : undefined}>
             {remixSrc && <LineagePanel source={remixSrc} line={lineageOf(remixSrc, current.current)} mine={yourChanges(current.current).length} copied={copied} spec={specHash} onRemix={remix} onShare={() => void shareRun()} />}

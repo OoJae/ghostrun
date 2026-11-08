@@ -200,7 +200,9 @@ function gallery(b: WorldBundle, look: LookStyle, c: Ctx): Scenery {
     const [x, y, z] = s.pos;
     const [w, h, d] = s.size;
     const top = y + h / 2;
-    if (s.surf !== "floor" && y - h / 2 >= floorY + CUT_H) return; // over a doorway: above the cut walls, so not floating there
+    // over a doorway: above the cut walls, so not floating there (an upper floor's walls stand on its
+    // own floor and are cut from there)
+    if (s.surf !== "floor" && h < 1.6 && y - h / 2 >= floorY + CUT_H) return;
     if (s.surf === "floor") {
       floorTops.push(top);
       if (w * d > 400 && w * d > (bounds.maxX - bounds.minX) * (bounds.maxZ - bounds.minZ) * 0.5) bounds = { minX: x - w / 2, maxX: x + w / 2, minZ: z - d / 2, maxZ: z + d / 2 };

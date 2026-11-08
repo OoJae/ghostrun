@@ -51,8 +51,11 @@ export interface World {
   seed: number;
   /** What the AI wrote about how it looks (the renderer and the sound pick its look from this). */
   cue: Cue;
-  /** For live (and edited) worlds: what the repair loop needs to ask for a patch. */
-  source?: { prompt: string; intent: unknown; fill: string; seed: number; pack: string; base?: string; edits?: string[] };
+  /**
+   * For live (and edited) worlds: what the repair loop needs to ask for a patch, and what the
+   * person pinned on the Intent card (a rebuild as a maze stays a maze through the next rebuild).
+   */
+  source?: { prompt: string; intent: unknown; fill: string; seed: number; pack: string; base?: string; edits?: string[]; pinned?: { pack?: string; mode?: "play" | "wander"; genre?: string } };
   intent: Intent;
   notes: string[];
   fillNotes: FillNote[];

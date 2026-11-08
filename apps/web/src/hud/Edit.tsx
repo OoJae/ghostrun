@@ -7,8 +7,8 @@ export type EditState =
   | { status: "idle" }
   | { status: "editing"; change: string }
   | { status: "racing"; change: string; total: number; proved: number }
-  | { status: "proving"; change: string; summary: string[]; locked: number; race?: string[] }
-  | { status: "done"; change: string; summary: string[]; locked: number; delta: Delta[] | null; failures: string[]; race?: string[] }
+  | { status: "proving"; change: string; summary: string[]; locked: number; race?: string[]; notes?: string[] }
+  | { status: "done"; change: string; summary: string[]; locked: number; delta: Delta[] | null; failures: string[]; race?: string[]; notes?: string[] }
   | { status: "failed"; change: string; message: string; race?: string[] };
 
 const SIGN = { "-1": "worse", "0": "same", "1": "better" } as const;
@@ -80,7 +80,10 @@ export function EditBox({ state, enabled, suggestions, canUndo, onEdit, onUndo, 
           {state.status === "failed" && <p className="warn">{state.message}</p>}
           {(state.status === "proving" || state.status === "done") && (
             <>
-              <p className="edit-summary">{state.summary.join(" · ")}</p>
+              {/* a structural edit's re-anchoring, move by move, on hover */}
+              <p className="edit-summary" data-testid="edit-summary" title={state.notes?.length ? state.notes.join("\n") : undefined}>
+                {state.summary.join(" · ")}
+              </p>
               {state.locked > 0 && <p className="muted">The world's promises were kept as they were; the proof re-checks them.</p>}
               {state.status === "proving" && <p className="muted">AI runners re-proving…</p>}
               {state.status === "done" && state.delta && (

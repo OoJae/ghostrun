@@ -121,6 +121,19 @@ describe("re-anchoring", () => {
     expect(w2.notes.some((n) => /laser: anchor 'corner_ne' not in slot/.test(n))).toBe(false); // nothing left for the placer to guess
   });
 
+  it("the proof plays the new geometry: with the gem moved upstairs, the AI runners climb the staircase and still steal it", async () => {
+    const vault = buildWorld("", "vault");
+    const patch = ['{"op":"layout","params":{"floors":2}}', '{"op":"zone","id":"z_upper","slot":"upper_hall","tag":"hall","name":"Upper gallery"}', '{"op":"ent","id":"gem","kind":"pickup","noun":"star sapphire","hyper":"gem","zone":"z_upper","anchor":"corner_ne","body":"dynamic","shape":"sphere","size":[0.4,0.4,0.4]}'];
+    const r = mergeEdit(pinLayout(vault.fill), patch.join("\n"), vault.seed);
+    const w2 = rebuild(r.text, vault.seed, "floor_plan");
+    const gem = w2.bundle.entities.find((e) => e.id === "gem")!;
+    expect(gem.pos[1]).toBeGreaterThan(2.9); // up a storey
+    const receipt = await prove(R, w2.bundle, { engine: ENGINE_HASH, runs: 6 });
+    expect(receipt.headline?.status).not.toBe("counterexample");
+    const win = receipt.chips.find((c) => c.id === "T3:win")!;
+    expect(win.k).toBeGreaterThanOrEqual(5);
+  }, 180_000);
+
   it("the rooftop lane removed from the CTF brief: what stood on it goes to the nearest free anchor anywhere, and the headline's broken promise shows", async () => {
     const ctf = buildWorld("", "ctf");
     const r = mergeEdit(pinLayout(ctf.fill), '{"op":"layout","sub":[]}', ctf.seed);

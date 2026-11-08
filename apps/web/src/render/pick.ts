@@ -20,6 +20,16 @@ export interface Cue {
   /** Valence, arousal, tension in [-1, 1]. */
   mood: readonly [number, number, number];
   pack: string;
+  /** What the person chose on the Intent card: it wins over every word. */
+  pin?: LookPin;
+}
+
+/** A look, a time of day and a weather the person picked (the meta line's "pin"); cosmetic only. */
+export interface LookPin {
+  /** A look id, or "id/variant" ("snow/cave"). */
+  look?: string;
+  phase?: Pick["phase"];
+  weather?: WorldBundle["cosmetic"]["weather"];
 }
 
 export interface Pick {
@@ -143,6 +153,8 @@ export function pickLook(c: Cue): Pick {
 
   let variant = VARIANTS[id]?.find(([re]) => re.test(all))?.[1] ?? "";
   if (UNDERWATER.test(words)) ((id = c.pack === "floor_plan" ? "gallery" : "desert"), (variant = "underwater"));
+  const pinned = pinnedLook(c);
+  if (pinned) [id, variant] = pinned;
 
   const w = norm(c.weather);
   const dust = /sand ?storm|dust ?storm|\bdust/.test(w) || /sand ?storm|dust ?storm/.test(words);
@@ -160,9 +172,32 @@ export function pickLook(c: Cue): Pick {
   if (id === "neon" && phase === "day") phase = "night"; // the city is a night look; at dusk it gets a sunset
   if (id === "haunted" && phase === "day") phase = "night"; // haunted means moonlight
   if (/\bcaves?\b|cavern|grotto|hohle|underground/.test(words) && id !== "space") phase = "night"; // under rock: no sun
+  if (c.pin?.phase) phase = c.pin.phase;
 
   const under = variant === "underwater";
-  return { id, variant, phase, rain: rain && !snow && !dust && !under, storm: storm && !under, snow, fog, dust, overcast: overcast || storm, indoor: c.pack === "floor_plan" };
+  const pick: Pick = { id, variant, phase, rain: rain && !snow && !dust && !under, storm: storm && !under, snow, fog, dust, overcast: overcast || storm, indoor: c.pack === "floor_plan" };
+  // a weather the person picked is the whole sky: none of the words' rain under a clear one
+  const pw = c.pin?.weather;
+  if (pw) Object.assign(pick, { rain: !under && (pw === "rain" || pw === "storm"), storm: !under && pw === "storm", snow: pw === "snow", fog: pw === "fog", dust: false, overcast: pw === "storm" });
+  return pick;
+}
+
+/** Every look and sub-style a person can pick on the Intent card, as "id" or "id/variant", with its name. */
+export const LOOK_CHOICES: readonly { value: string; label: string; rooms?: true }[] = [
+  { value: "neon", label: "Neon city" }, { value: "grove", label: "Grove" }, { value: "gallery", label: "Gallery" }, { value: "gallery/underwater", label: "Aquarium" },
+  { value: "desert", label: "Desert" }, { value: "desert/beach", label: "Beach" }, { value: "desert/underwater", label: "Seabed" },
+  { value: "snow", label: "Snow" }, { value: "snow/cave", label: "Ice cave" }, { value: "space", label: "Space station" }, { value: "space/moon", label: "Moon" },
+  { value: "haunted", label: "Haunted" }, { value: "haunted/library", label: "Haunted library" }, { value: "medieval", label: "Medieval" }, { value: "medieval/magic", label: "Wizard school" },
+  { value: "candy", label: "Candy" }, { value: "jungle", label: "Jungle" },
+  { value: "home", label: "Home", rooms: true }, { value: "home/japanese", label: "Tea house", rooms: true }, { value: "home/library", label: "Library", rooms: true },
+];
+
+/** The pinned look, if it is one this pack can wear (a home's furniture needs rooms). */
+function pinnedLook(c: Cue): [LookId, string] | null {
+  const choice = c.pin?.look ? LOOK_CHOICES.find((x) => x.value === c.pin!.look) : undefined;
+  if (!choice || (choice.rooms && !ROOMS.has(c.pack))) return null;
+  const [id, variant = ""] = choice.value.split("/") as [LookId, string?];
+  return [id, variant];
 }
 
 /** The cue a bundle carries by itself (the fill's raw meta line and the intent add to it). */
@@ -183,6 +218,7 @@ export function cueOf(b: WorldBundle, extra: { setting?: string; meta?: RawMeta 
     timeOfDay: m?.timeOfDay ?? c.timeOfDay,
     mood: m?.mood ?? c.mood,
     pack: b.pack.id,
+    ...(m?.pin ? { pin: m.pin } : {}),
   };
 }
 
@@ -193,6 +229,21 @@ export interface RawMeta {
   timeOfDay?: number;
   mood?: [number, number, number];
   setting?: string;
+  pin?: LookPin;
+}
+
+const PHASES: readonly string[] = ["day", "dusk", "night"];
+const WEATHERS: readonly string[] = ["clear", "rain", "snow", "fog", "storm"];
+
+/** The card's pin as written: only the fields it can hold, each one of its words. */
+function readPin(x: unknown): LookPin | null {
+  if (!x || typeof x !== "object") return null;
+  const p = x as Record<string, unknown>;
+  const out: LookPin = {};
+  if (typeof p.look === "string" && LOOK_CHOICES.some((c) => c.value === p.look)) out.look = p.look;
+  if (typeof p.phase === "string" && PHASES.includes(p.phase)) out.phase = p.phase as LookPin["phase"] & string;
+  if (typeof p.weather === "string" && WEATHERS.includes(p.weather)) out.weather = p.weather as LookPin["weather"] & string;
+  return Object.keys(out).length ? out : null;
 }
 
 /** Read the fill's meta line as written (null when there is none or it isn't JSON). */
@@ -207,6 +258,8 @@ export function rawMeta(fill: string): RawMeta | null {
     if (typeof m.timeOfDay === "number" && Number.isFinite(m.timeOfDay)) out.timeOfDay = m.timeOfDay;
     if (Array.isArray(m.mood) && m.mood.length === 3 && m.mood.every((x) => typeof x === "number" && Number.isFinite(x))) out.mood = m.mood as [number, number, number];
     if (typeof m.setting === "string") out.setting = m.setting;
+    const pin = readPin(m.pin);
+    if (pin) out.pin = pin;
     return out;
   } catch {
     return null;
