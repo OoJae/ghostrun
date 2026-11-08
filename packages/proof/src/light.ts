@@ -1,6 +1,6 @@
 // The proof's light half: labels and repair issues, without the simulation. The web shell imports
 // this so its first chunk stays small; the ladder itself (T0–T3) runs in the proof worker.
-export { bandLine, bandMethod, bandSaid, chipLine, clock, failLine, fengShuiFix, fengShuiHead, fengShuiLine, fengShuiWhy, fightLine, fraction, paceLine, statusWord, timesLine } from "./labels";
+export { bandLine, bandMethod, bandSaid, chipLine, chipLineIn, clock, english, failLine, fengShuiFix, fengShuiHead, fengShuiLine, fengShuiWhy, fightLine, fightLineIn, fraction, paceLine, statusWord, timesLine, type Words } from "./labels";
 export { badness, better, issuesOf } from "./issues";
 export type { Band, Chip, ChipStatus, Counterexample, Fall, Level, Playtest, Receipt, Tier, Trail } from "./types";
 export { insights, type Insights } from "./insights";
