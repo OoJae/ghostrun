@@ -1180,7 +1180,7 @@ export function App() {
             }}
             noteAction={mode === "live" ? (key) => {
               const n = noteList.get(key);
-              return n ? <NoteApply note={n} state={notes.state} onTry={(k, c, said) => void notes.tryChange(k, c, said)} onAccept={notes.accept} /> : null;
+              return n ? <NoteApply note={n} state={notes.state} onTry={(k, c, said) => void notes.tryChange(k, c, said)} onAccept={() => (setReceiptOpen(false), notes.accept())} /> : null;
             } : undefined}
             onShare={shareRun}
             onExport={async () => {

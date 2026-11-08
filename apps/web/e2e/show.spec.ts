@@ -40,14 +40,18 @@ test("red/green: an edit that breaks the headline plays the same AI runner befor
   await play.click();
   const caption = page.getByTestId("redgreen");
   await expect(caption).toContainText("Green: before the change · red: after it · the same AI runner, the same seed", { timeout: 10_000 });
-  await page.waitForFunction(() => window.__GHOSTRUN__.redgreen !== undefined, null, { timeout: 10_000 });
-  const start = (await probe(page)).redgreen!;
+  // (read in the page, in one go: the shot is short and may have played out by the next call)
+  const start = await page.waitForFunction(() => window.__GHOSTRUN__.redgreen, null, { timeout: 10_000 }).then(async (h) => (await h.jsonValue())!);
   // side by side from the start: both at the spawn, the camera on them
   expect(dist(start.green, start.red)).toBeLessThan(0.5);
   // where they part: the one-jump attempt falls short before, and clears the 2.6 m ledge after
   await expect(caption).toContainText(/They part here: the jump.*\(green rises 1\.\d m, red [23]\.\d m\)/, { timeout: 60_000 });
-  await page.waitForFunction(() => (window.__GHOSTRUN__.redgreen?.red[1] ?? 0) > (window.__GHOSTRUN__.redgreen?.green[1] ?? 0) + 1, null, { timeout: 10_000 });
-  const rg = (await probe(page)).redgreen!;
+  const rg = await page
+    .waitForFunction(() => {
+      const r = window.__GHOSTRUN__.redgreen;
+      return r && r.red[1] > r.green[1] + 1 ? r : null;
+    }, null, { timeout: 10_000 })
+    .then(async (h) => (await h.jsonValue())!);
   expect(rg.parted).toBe(true);
   // the camera frames both
   const mid = [0, 1, 2].map((k) => (rg.green[k]! + rg.red[k]!) / 2);

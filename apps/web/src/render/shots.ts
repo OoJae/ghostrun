@@ -155,7 +155,8 @@ export class RedGreenShot implements Shot {
     const part = this.#play.parting?.tick ?? Infinity;
     this.#last = this.#last < 0 ? now : this.#last;
     const rate = this.#tick < part - 90 ? FAST : 1;
-    this.#tick += ((now - this.#last) / 1000) * 60 * rate;
+    // a stalled frame (a knight's shaders compiling) is time the runs wait for, not time they skip
+    this.#tick += Math.min(0.1, (now - this.#last) / 1000) * 60 * rate;
     this.#last = now;
     if (this.#tick > this.#end) return false;
     const [g, r] = [this.#tracks[0].pose(this.#tick), this.#tracks[1].pose(this.#tick)];
