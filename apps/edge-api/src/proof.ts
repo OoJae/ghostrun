@@ -157,7 +157,7 @@ function start(ctx: ProofCtx, R: Promise<Rapier>, b: WorldBundle, world: ShardWo
  * `onStart` says the CPU is being spent (every check passed); `onReceipt` hands the receipt over as
  * soon as it is out, before the playtest's runs are in, as the device does.
  */
-export async function proveWorld(input: ProofInput, ctx: ProofCtx & { onStart?: () => void; onReceipt?: (r: Receipt) => void } ): Promise<ProofOutcome> {
+export async function proveWorld(input: ProofInput, ctx: ProofCtx & { onStart?: () => void; onReceipt?: (r: Receipt) => void }): Promise<ProofOutcome> {
   const t0ms = Date.now();
   if (input.engine !== ENGINE_HASH) return fail(409, "engine differs", false, { engine: ENGINE_HASH });
   if (input.version !== PROOF_VERSION) return fail(409, "proof version differs", false, { version: PROOF_VERSION });
