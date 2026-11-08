@@ -23,6 +23,8 @@ describe("cost", () => {
       const layout = p.impl.generate({ seed: 7, params: p.impl.defaults, sub: intent.sub, laws: DEFAULT_LAWS, harder: false });
       const bound = inputBound(fillMessages(prompt, intent, layout, EXAMPLE, 7));
       expect(bound, p.id).toBeLessThanOrEqual(FILL_MAX_IN);
+      // a Feng Shui prompt brings the Form School's rules with it
+      expect(inputBound(fillMessages(`Feng Shui ${prompt.slice(10)}`, intent, layout, EXAMPLE, 7)), `${p.id}, Feng Shui`).toBeLessThanOrEqual(FILL_MAX_IN);
     }
   });
 
