@@ -3,6 +3,8 @@ import { useState } from "react";
 import { chipLineAt, crossLine, fraction, statusWord, whereWord } from "@ghostrun/proof/light";
 import { Revealed } from "./Revealed";
 import "./cloud.css";
+import { FengShui } from "./FengShui";
+import type { FengShuiView } from "../fengshui";
 
 export interface ProofState {
   status: "idle" | "proving" | "done" | "error";
@@ -71,7 +73,7 @@ function Routes({ routes, runs, on, onToggle }: { routes: Insights; runs: number
   );
 }
 
-export function ReceiptPanel({ proof, onClose, onShare, onWrong, onExport, onTrust, onFool, fooled, reported, routes, routesOn, onRoutes, report, version }: { proof: ProofState; onClose: () => void; onShare?: () => void; onWrong?: (note: string) => void; onExport?: () => void; onTrust?: () => void; onFool?: (() => void) | undefined; fooled?: Fooled | null; reported?: string | undefined; routes?: Insights | null; routesOn?: boolean; onRoutes?: () => void; report?: Report | null; /** A remix: which version this receipt is for, and that the original's is its own. */ version?: string | null }) {
+export function ReceiptPanel({ proof, onClose, onShare, onWrong, onExport, onTrust, onFool, fooled, reported, routes, routesOn, onRoutes, report, version, fengShui }: { proof: ProofState; onClose: () => void; onShare?: () => void; onWrong?: (note: string) => void; onExport?: () => void; onTrust?: () => void; onFool?: (() => void) | undefined; fooled?: Fooled | null; reported?: string | undefined; routes?: Insights | null; routesOn?: boolean; onRoutes?: () => void; report?: Report | null; /** A remix: which version this receipt is for, and that the original's is its own. */ version?: string | null; /** Feng Shui for one named school, checked on this world (asked for, or offered for an interior). */ fengShui?: FengShuiView | null }) {
   const r = proof.receipt;
   const [writing, setWriting] = useState(false);
   const [note, setNote] = useState("");
@@ -104,6 +106,7 @@ export function ReceiptPanel({ proof, onClose, onShare, onWrong, onExport, onTru
         ))}
       </ul>
       {r?.par && <p className="par">AI par {r.par.goldS} s · {r.par.won} of {r.par.runs} runners won</p>}
+      {fengShui && <FengShui view={fengShui} />}
       {routes && r?.trails && onRoutes && (
         <Revealed receipt={r} report={report ?? null} playing={proof.playing}>
           <Routes routes={routes} runs={report?.runs ?? r.trails.length} on={Boolean(routesOn)} onToggle={onRoutes} />

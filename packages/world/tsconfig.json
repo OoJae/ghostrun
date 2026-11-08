@@ -2,5 +2,5 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": { "outDir": "dist/types", "rootDir": ".", "types": ["node"] },
   "include": ["src", "test"],
-  "references": [{ "path": "../ir" }, { "path": "../layout" }, { "path": "../registry" }, { "path": "../sim" }]
+  "references": [{ "path": "../ir" }, { "path": "../layout" }, { "path": "../plugin-api" }, { "path": "../registry" }, { "path": "../sim" }]
 }

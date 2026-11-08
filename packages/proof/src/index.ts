@@ -3,7 +3,7 @@ export { t0, type PlanStep, type WinChain } from "./t0";
 export { apex, reachAt, t1, t1Drive, t1Range } from "./t1";
 export { t2 } from "./t2";
 export { playWitnesses, skillRuns, stepName, t3, traceRunners, witnesses, witnessKey, type Played, type Witness } from "./t3";
-export { bandLine, bandMethod, bandSaid, chipLine, chipLineAt, clock, crossLine, failLine, fightLine, fraction, paceLine, statusWord, timesLine, whereWord, type CrossCheck } from "./labels";
+export { bandLine, bandMethod, bandSaid, chipLine, chipLineAt, clock, crossLine, failLine, fengShuiFix, fengShuiHead, fengShuiLine, fengShuiWhy, fightLine, fraction, paceLine, statusWord, timesLine, whereWord, type CrossCheck } from "./labels";
 export { comparable, receiptHash } from "./cross";
 export type { Band, Chip, ChipStatus, Counterexample, Fall, Level, Playtest, Receipt, Tier, Trail } from "./types";
 export { insights, type Insights } from "./insights";

@@ -4,6 +4,7 @@
 //   JSONL fill → parseFill → pack.generate → placeWorld → placed WorldBundle.
 import { lawsUnwritten, layoutLaws, parseFill, type FillNote, type FillStats, type WorldBundle } from "@ghostrun/ir";
 import { placeWorld } from "@ghostrun/layout";
+import type { PackLayout } from "@ghostrun/plugin-api";
 import { packFor, PACKS } from "@ghostrun/registry";
 
 /** Engine hash bound into the spec hash: SHA-256 of the pinned Rapier wasm build (docs/gates.md, S0). */
@@ -23,6 +24,8 @@ export interface Placed {
   bundle: WorldBundle;
   /** The pack it was placed in (a pack the fill names that isn't available falls back to another). */
   pack: string;
+  /** The pack's layout it was placed on (what the Feng Shui checks read the room from). */
+  layout: PackLayout;
   /** What the placer moved, repaired or substituted, in words. */
   notes: string[];
   fillNotes: FillNote[];
@@ -47,5 +50,5 @@ export function placeFill(fillText: string, seed: number, opts: { pack?: string 
   const { bundle, notes } = placeWorld({ ...draft, engine: opts.engine ?? ENGINE_HASH }, layout, { reach: lawsUnwritten(fillText) });
   const t2 = performance.now();
   if (!known) notes.unshift(`pack '${draft.pack.id}' not available, using '${pack.id}'`);
-  return { bundle, pack: pack.id, notes, fillNotes: fill.notes, stats: fill.stats, timings: { fillMs: t1 - t0, layoutMs: t2 - t1 } };
+  return { bundle, pack: pack.id, layout, notes, fillNotes: fill.notes, stats: fill.stats, timings: { fillMs: t1 - t0, layoutMs: t2 - t1 } };
 }

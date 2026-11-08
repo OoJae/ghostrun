@@ -533,6 +533,9 @@ importers:
       '@ghostrun/layout':
         specifier: workspace:*
         version: link:../layout
+      '@ghostrun/plugin-api':
+        specifier: workspace:*
+        version: link:../plugin-api
       '@ghostrun/registry':
         specifier: workspace:*
         version: link:../registry

@@ -9,6 +9,7 @@
   "dependencies": {
     "@ghostrun/ir": "workspace:*",
     "@ghostrun/layout": "workspace:*",
+    "@ghostrun/plugin-api": "workspace:*",
     "@ghostrun/registry": "workspace:*"
   },
   "devDependencies": {

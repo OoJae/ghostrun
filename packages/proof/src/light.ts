@@ -1,6 +1,6 @@
 // The proof's light half: labels and repair issues, without the simulation. The web shell imports
 // this so its first chunk stays small; the ladder itself (T0–T3) runs in the proof worker.
-export { bandLine, bandMethod, bandSaid, chipLine, chipLineAt, clock, crossLine, failLine, fightLine, fraction, paceLine, statusWord, timesLine, whereWord, type CrossCheck } from "./labels";
+export { bandLine, bandMethod, bandSaid, chipLine, chipLineAt, clock, crossLine, failLine, fengShuiFix, fengShuiHead, fengShuiLine, fengShuiWhy, fightLine, fraction, paceLine, statusWord, timesLine, whereWord, type CrossCheck } from "./labels";
 // a cloud receipt is checked against this device's on the main thread
 export { comparable, receiptHash } from "./cross";
 export { badness, better, issuesOf } from "./issues";

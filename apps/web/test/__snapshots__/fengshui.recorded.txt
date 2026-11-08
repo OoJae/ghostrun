@@ -1,0 +1,29 @@
+PROMPT: a Feng Shui handbag gallery where each bag sits in its proper place
+✓ [T3] walked to and inspected 6 of 6 things · 6 of 6  (physics, an AI visitor walks to and uses each)
+Feng Shui (Form School): 5 of 5 principles hold · 1 not checkable
+  – Command position: there is no bed, desk, counter or sofa here to place
+  ✓ No straight line through: the view in from the front door ends at a solid wall (Central exhibition hall)
+  ✓ No mirror facing the front door: there is no mirror
+  ✓ A clear way in: nothing stands in the way in from the front door to Main foyer
+  ✓ Uncluttered rooms: all 6 rooms have a clear way from the door to the middle; solid things cover under 1% of a floor
+  ✓ Five elements in balance: 3 of 5 elements present: wood 2 · fire 1 · earth 0 · metal 2 · water 0
+
+PROMPT: A Feng Shui living room where each object sits in its proper place
+✓ [T3] walked to and inspected 6 of 6 things · 6 of 6  (physics, an AI visitor walks to and uses each)
+Feng Shui (Form School): 4 of 6 principles hold
+  ✗ Command position: the low sofa is on the door's side of Living room, not across from it — fix: move the low sofa across Living room from its door, its back to a wall
+  ✓ No straight line through: the view in from the front door ends at a solid wall (the entrance)
+  ✓ No mirror facing the front door: there is no mirror
+  ✓ A clear way in: nothing stands in the way in from the front door to the entrance
+  ✓ Uncluttered rooms: all 6 rooms have a clear way from the door to the middle; solid things cover at most 3% of a floor
+  ✗ Five elements in balance: 2 of 5 elements present (wood 2 · fire 1 · earth 0 · metal 0 · water 0): no earth or metal or water — fix: add earth (a stone bench), metal (a brass bowl), water (a small fountain)
+
+PROMPT: a Feng Shui handbag gallery where each bag sits in its proper place
+✓ [T3] walked to and inspected 6 of 6 things · 6 of 6  (physics, an AI visitor walks to and uses each)
+Feng Shui (Form School): 5 of 5 principles hold · 1 not checkable
+  – Command position: there is no bed, desk, counter or sofa here to place
+  ✓ No straight line through: the main hall switch breaks the line in from the front door
+  ✓ No mirror facing the front door: there is no mirror
+  ✓ A clear way in: nothing stands in the way in from the front door to Gallery Entrance
+  ✓ Uncluttered rooms: all 6 rooms have a clear way from the door to the middle; solid things cover under 1% of a floor
+  ✓ Five elements in balance: 4 of 5 elements present: wood 5 · fire 1 · earth 1 · metal 0 · water 2
