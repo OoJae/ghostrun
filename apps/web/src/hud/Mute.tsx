@@ -1,4 +1,5 @@
 // The sound toggle (M does the same). It never takes focus, so Space after a click still jumps.
+import { t } from "../i18n";
 export function MuteButton({ muted, onToggle }: { muted: boolean; onToggle(): void }) {
   return (
     <button
@@ -10,8 +11,8 @@ export function MuteButton({ muted, onToggle }: { muted: boolean; onToggle(): vo
         onToggle();
       }}
       aria-pressed={muted}
-      aria-label={muted ? "Sound off: turn it on" : "Sound on: mute it"}
-      title={muted ? "Sound off (M)" : "Sound on (M)"}
+      aria-label={muted ? t("Sound off: turn it on") : t("Sound on: mute it")}
+      title={muted ? t("Sound off (M)") : t("Sound on (M)")}
       data-testid="mute"
     >
       <svg viewBox="0 0 16 16" aria-hidden="true">

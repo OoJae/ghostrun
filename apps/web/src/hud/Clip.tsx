@@ -1,5 +1,6 @@
 // The run's clip on the result card: a small preview (muted, looping) and Save clip; and a clean
 // take, which replays this run exactly with the HUD hidden and saves the replay (demo footage).
+import { num, t } from "../i18n";
 import "./clip.css";
 
 export interface ClipCard {
@@ -16,14 +17,14 @@ export function ClipPanel({ clip }: { clip: ClipCard }) {
   const s = Math.round(clip.seconds * 10) / 10;
   return (
     <div className="result-clip" data-testid="clip">
-      {clip.url ? <video src={clip.url} muted loop autoPlay playsInline aria-label="This run's clip" data-testid="clip-preview" /> : <span className="clip-wait">cutting the clip…</span>}
+      {clip.url ? <video src={clip.url} muted loop autoPlay playsInline aria-label={t("This run's clip")} data-testid="clip-preview" /> : <span className="clip-wait">{t("cutting the clip…")}</span>}
       <div className="clip-actions">
-        <button type="button" onClick={clip.onSave} disabled={!clip.url} data-testid="save-clip" title="The last seconds of this run, ending where it ended, as a video file">
-          Save clip{clip.url && <span className="muted"> · {s} s</span>}
+        <button type="button" onClick={clip.onSave} disabled={!clip.url} data-testid="save-clip" title={t("The last seconds of this run, ending where it ended, as a video file")}>
+          {t("Save clip")}{clip.url && <span className="muted"> · {num(s)} s</span>}
         </button>
         {clip.onTake && (
-          <button type="button" onClick={clip.onTake} data-testid="clip-take" title="Replays this run exactly from its inputs with the HUD hidden, and saves the replay as a video (any key calls it off)">
-            Clean replay
+          <button type="button" onClick={clip.onTake} data-testid="clip-take" title={t("Replays this run exactly from its inputs with the HUD hidden, and saves the replay as a video (any key calls it off)")}>
+            {t("Clean replay")}
           </button>
         )}
       </div>

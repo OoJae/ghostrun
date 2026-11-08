@@ -3,6 +3,7 @@
 // Where the browser has no speech recognition (Firefox, the Quest browser) the mic isn't shown.
 import { useEffect, useRef, useState } from "react";
 import { firstVoiceNote, speechApi, transcript, voiceError, type Recognition } from "./listen";
+import { t } from "../i18n";
 import "./voice.css";
 
 export function TalkBox({ name, lang, onSay, onClose, onListen }: { name: string; lang: string; onSay: (text: string) => void; onClose: () => void; onListen?: () => void }) {
@@ -66,13 +67,13 @@ export function TalkBox({ name, lang, onSay, onClose, onListen }: { name: string
         send(said);
       }}
     >
-      <input autoFocus value={said} maxLength={200} placeholder={on ? "Listening… let go to send" : `Say something to the ${name}…`} aria-label={`Talk to the ${name}`} onChange={(e) => setSaid(e.target.value)} onKeyDown={(e) => e.key === "Escape" && onClose()} />
+      <input autoFocus value={said} maxLength={200} placeholder={on ? t("Listening… let go to send") : t("Say something to the {name}…", { name })} aria-label={t("Talk to the {name}", { name })} onChange={(e) => setSaid(e.target.value)} onKeyDown={(e) => e.key === "Escape" && onClose()} />
       {Api && (
         <button
           type="button"
           className={`mic talk-mic${on ? " on" : ""}`}
-          aria-label={on ? "Listening: let go to send" : "Hold to talk"}
-          title="Hold to talk"
+          aria-label={on ? t("Listening: let go to send") : t("Hold to talk")}
+          title={t("Hold to talk")}
           data-testid="talk-mic"
           // the input keeps its focus, so typing still works after a word or two by voice
           onMouseDown={(e) => e.preventDefault()}

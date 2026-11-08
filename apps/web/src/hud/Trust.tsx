@@ -3,6 +3,7 @@
 // from the eval sets committed in tools/bench/worlds (first pass as the live lane built them, and
 // the same worlds re-proved with today's code).
 import { useEffect } from "react";
+import { k, t } from "../i18n";
 import trust from "../trust.json";
 
 interface TrustSet {
@@ -30,10 +31,10 @@ interface Fool {
 const DATA = trust as { generated: string; won: string; sets: TrustSet[]; fool?: Fool };
 
 const LIMITS = [
-  "Drivable vehicles, herding animals and aiming throws by hand aren't mechanics yet; worlds that need them say so in their receipt.",
-  "VR is tested on an emulated Quest 3, not yet on a headset.",
-  "Prompt sets are written by us. Each set's first pass was measured before anyone looked at its failures; we have fixed failures from every set since, so \"today's code\" is measured on prompts we tuned on.",
-  "A world whose model-written rules contradict themselves fails its proof and goes to the repair loop; that isn't always enough.",
+  k("Drivable vehicles, herding animals and aiming throws by hand aren't mechanics yet; worlds that need them say so in their receipt."),
+  k("VR is tested on an emulated Quest 3, not yet on a headset."),
+  k("Prompt sets are written by us. Each set's first pass was measured before anyone looked at its failures; we have fixed failures from every set since, so \"today's code\" is measured on prompts we tuned on."),
+  k("A world whose model-written rules contradict themselves fails its proof and goes to the repair loop; that isn't always enough."),
 ];
 
 export function TrustPanel({ onClose }: { onClose: () => void }) {
@@ -43,31 +44,31 @@ export function TrustPanel({ onClose }: { onClose: () => void }) {
     return () => window.removeEventListener("keydown", esc);
   }, [onClose]);
   return (
-    <div className="glass trust" role="dialog" aria-label="Why trust this?" data-testid="trust">
+    <div className="glass trust" role="dialog" aria-label={t("Why trust this?")} data-testid="trust">
       <div className="gallery-head">
-        <strong>Why trust this?</strong>
-        <button type="button" onClick={onClose} aria-label="close">
+        <strong>{t("Why trust this?")}</strong>
+        <button type="button" onClick={onClose} aria-label={t("close")}>
           ×
         </button>
       </div>
-      <h3>How a receipt is made</h3>
+      <h3>{t("How a receipt is made")}</h3>
       <ul>
-        <li><b>T0</b> static: every rule references something real, and the win regresses back through the rules to things the player can do.</li>
-        <li><b>T1</b> jump model: height and gap claims checked analytically ("apex 1.6 m &lt; ledge 2.6 m").</li>
-        <li><b>T2</b> forced state: each rule's trigger is forced and the rule must fire exactly once.</li>
-        <li><b>T3</b> physics: 12 AI runners play the real simulation against the world's own bots, through doors and over gaps; fewer than 30 trials print as "k of n".</li>
-        <li>The simulation is deterministic: the same 2,000-tick world hashes identically in Node, Cloudflare workerd, Chromium, Firefox and WebKit, so a share link replays exactly anywhere.</li>
+        <li><b>T0</b> {t("static: every rule references something real, and the win regresses back through the rules to things the player can do.")}</li>
+        <li><b>T1</b> {t('jump model: height and gap claims checked analytically ("apex 1.6 m < ledge 2.6 m").')}</li>
+        <li><b>T2</b> {t("forced state: each rule's trigger is forced and the rule must fire exactly once.")}</li>
+        <li><b>T3</b> {t('physics: 12 AI runners play the real simulation against the world\'s own bots, through doors and over gaps; fewer than 30 trials print as "k of n".')}</li>
+        <li>{t("The simulation is deterministic: the same 2,000-tick world hashes identically in Node, Cloudflare workerd, Chromium, Firefox and WebKit, so a share link replays exactly anywhere.")}</li>
       </ul>
-      <h3>How often it works</h3>
+      <h3>{t("How often it works")}</h3>
       <table className="trust-table">
         <thead>
           <tr>
-            <th>Prompt set</th>
-            <th>Games</th>
-            <th>Won, first pass</th>
-            <th>Won, today's code</th>
-            <th>Prompt → playable</th>
-            <th>Things to use</th>
+            <th>{t("Prompt set")}</th>
+            <th>{t("Games")}</th>
+            <th>{t("Won, first pass")}</th>
+            <th>{t("Won, today's code")}</th>
+            <th>{t("Prompt → playable")}</th>
+            <th>{t("Things to use")}</th>
           </tr>
         </thead>
         <tbody>
@@ -75,11 +76,11 @@ export function TrustPanel({ onClose }: { onClose: () => void }) {
             <tr key={s.name} title={s.note}>
               <td>
                 {s.name}
-                {s.places ? <span className="muted" title="places to explore: how many an AI visitor fully toured (walked to and used everything), on the first pass → with today's code"> (+{s.places} places{s.toured !== undefined ? `, fully toured ${s.touredFirst ?? "?"} → ${s.toured}` : ""})</span> : null}
+                {s.places ? <span className="muted" title={t("places to explore: how many an AI visitor fully toured (walked to and used everything), on the first pass → with today's code")}> (+{t("{n} places", { n: s.places })}{s.toured !== undefined ? `, ${t("fully toured {a} → {b}", { a: s.touredFirst ?? "?", b: s.toured })}` : ""})</span> : null}
               </td>
               <td>{s.play}</td>
-              <td>{s.firstPass} of {s.play}</td>
-              <td>{s.now} of {s.play}</td>
+              <td>{t("{k} of {n}", { k: s.firstPass, n: s.play })}</td>
+              <td>{t("{k} of {n}", { k: s.now, n: s.play })}</td>
               <td>{s.playableP50Ms === null ? "–" : `${(s.playableP50Ms / 1000).toFixed(1)} s`}</td>
               <td>{s.controlsP50 ?? "–"}</td>
             </tr>
@@ -87,21 +88,21 @@ export function TrustPanel({ onClose }: { onClose: () => void }) {
         </tbody>
       </table>
       <p className="muted">
-        "Won" means {DATA.won}. First pass is the world exactly as the live lane built it; "today's code" re-proves the same recorded world after fixes. Medians. Generated {DATA.generated}; reproduce with <code>ghostrun trust tools/bench/worlds</code>.
+        {t('"Won" means {won}. First pass is the world exactly as the live lane built it; "today\'s code" re-proves the same recorded world after fixes. Medians. Generated {at}; reproduce with', { won: DATA.won, at: DATA.generated })} <code>ghostrun trust tools/bench/worlds</code>.
       </p>
       {DATA.fool && (
         <>
-          <h3>Try to fool it</h3>
+          <h3>{t("Try to fool it")}</h3>
           <p>
-            We planted {DATA.fool.planted} bugs that break the game (the goal 40 m up, the thing the win needs gone, a condition nothing can meet, a 5-second countdown, no jumping on a course) in the {DATA.fool.worlds} committed worlds the proof says are won. It caught <b>{DATA.fool.caught} of {DATA.fool.planted}</b>
-            {Object.keys(DATA.fool.byTier).length ? ` (${Object.entries(DATA.fool.byTier).map(([t, n]) => `${n} by ${t}`).join(", ")})` : ""}. Plant one yourself from any receipt. Reproduce with <code>ghostrun fool tools/bench/worlds</code>.
+            {t("We planted {n} bugs that break the game (the goal 40 m up, the thing the win needs gone, a condition nothing can meet, a 5-second countdown, no jumping on a course) in the {worlds} committed worlds the proof says are won. It caught", { n: DATA.fool.planted, worlds: DATA.fool.worlds })} <b>{t("{k} of {n}", { k: DATA.fool.caught, n: DATA.fool.planted })}</b>
+            {Object.keys(DATA.fool.byTier).length ? ` (${Object.entries(DATA.fool.byTier).map(([tier, n]) => t("{n} by {tier}", { n, tier })).join(", ")})` : ""}. {t("Plant one yourself from any receipt. Reproduce with")} <code>ghostrun fool tools/bench/worlds</code>.
           </p>
         </>
       )}
-      <h3>What it doesn't do yet</h3>
+      <h3>{t("What it doesn't do yet")}</h3>
       <ul>
         {LIMITS.map((l) => (
-          <li key={l}>{l}</li>
+          <li key={l}>{t(l)}</li>
         ))}
       </ul>
     </div>

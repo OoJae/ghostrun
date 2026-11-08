@@ -2,6 +2,7 @@
 // this lap are behind you. Shown only in a world with a track.
 import { useEffect, useState, type RefObject } from "react";
 import type { Engine } from "../engine";
+import { t } from "../i18n";
 
 interface Standing {
   lap: number;
@@ -34,16 +35,16 @@ export function LapBoard({ engine, active }: { engine: RefObject<Engine | null>;
   }, [engine, active]);
   if (!s) return null;
   return (
-    <div className="glass" data-testid="lap" aria-label={`Lap ${s.lap} of ${s.laps}, ${ordinal(s.place)} of ${s.racers}`} style={{ position: "absolute", top: 112, left: "50%", transform: "translateX(-50%)", padding: "6px 14px", display: "flex", alignItems: "baseline", gap: 14, fontWeight: 600, fontSize: 13, fontVariantNumeric: "tabular-nums" }}>
+    <div className="glass" data-testid="lap" aria-label={t("Lap {lap} of {laps}, {place} of {racers}", { lap: s.lap, laps: s.laps, place: ordinal(s.place), racers: s.racers })} style={{ position: "absolute", top: 112, left: "50%", transform: "translateX(-50%)", padding: "6px 14px", display: "flex", alignItems: "baseline", gap: 14, fontWeight: 600, fontSize: 13, fontVariantNumeric: "tabular-nums" }}>
       <span>
-        LAP <b style={{ fontSize: 18 }}>{s.lap}</b>/{s.laps}
+        {t("LAP")} <b style={{ fontSize: 18 }}>{s.lap}</b>/{s.laps}
       </span>
       {s.racers > 1 && (
         <span style={{ color: s.place === 1 ? "#ffd23d" : undefined }}>
           <b style={{ fontSize: 18 }}>{ordinal(s.place)}</b>/{s.racers}
         </span>
       )}
-      <span style={{ display: "flex", gap: 4, alignSelf: "center" }} aria-hidden="true" title="gates this lap">
+      <span style={{ display: "flex", gap: 4, alignSelf: "center" }} aria-hidden="true" title={t("gates this lap")}>
         {Array.from({ length: s.gates }, (_, i) => (
           <span key={i} style={{ width: 8, height: 8, borderRadius: 2, background: i < s.gate ? "#ffb02e" : "rgba(255,255,255,0.18)" }} />
         ))}

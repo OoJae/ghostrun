@@ -7,6 +7,7 @@ import { useEffect } from "react";
 import { statusWord } from "@ghostrun/proof/light";
 import type { ProofState } from "./Proof";
 import "./clip.css";
+import { t } from "../i18n";
 
 /** The cursor hides after resting this long. */
 const REST_MS = 1500;
@@ -62,13 +63,13 @@ export function RecordStrip({ prompt, ttffMs, busy, source, proof, onExpand }: {
   }, []);
   const p = proofLine(proof);
   return (
-    <button type="button" className="glass record-strip" onClick={onExpand} title="Edit the prompt" data-testid="record-strip">
+    <button type="button" className="glass record-strip" onClick={onExpand} title={t("Edit the prompt")} data-testid="record-strip">
       <span className="mark" aria-hidden="true" />
       <span className="rs-prompt" title={prompt}>
         {prompt}
       </span>
       <span className="sep">·</span>
-      <span className="rs-time">{busy || ttffMs === null ? "building…" : `playable in ${(ttffMs / 1000).toFixed(1)} s`}</span>
+      <span className="rs-time">{busy || ttffMs === null ? t("building…") : t("playable in {s} s", { s: (ttffMs / 1000).toFixed(1) })}</span>
       <span className="sep">·</span>
       <span className="rs-source">{sourceLine(source)}</span>
       {p && (

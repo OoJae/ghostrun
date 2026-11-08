@@ -5,6 +5,7 @@
 import type { Chip } from "@ghostrun/proof";
 import { logicOf, ruleTiles, thingLabel, type Rule, type Tile as Said, type WorldBundle } from "@ghostrun/ir";
 import { verb } from "@ghostrun/kits";
+import { t, tn } from "../i18n";
 
 const MARK: Record<string, string> = { verified: "✓", played: "✓", modelled: "~", not_checkable: "–", counterexample: "✗" };
 
@@ -24,11 +25,11 @@ function Sentence({ r, b, chip, onFocus }: { r: Rule; b: WorldBundle; chip: Chip
   return (
     <li className={`sentence ${chip?.status ?? "none"}`}>
       <span className="proofmark" title={chip ? `${chip.status}: ${chip.text}` : "no forced-state test"}>{chip ? MARK[chip.status] : "·"}</span>
-      <span className="kw when">WHEN</span>
+      <span className="kw when">{t("WHEN")}</span>
       {tiles(s.when)}
       {s.conds.length > 0 && (
         <>
-          <span className="kw if">IF</span>
+          <span className="kw if">{t("IF")}</span>
           {s.conds.map((c, i) => (
             <span key={i} className="cond">
               {tiles(c)}
@@ -36,13 +37,13 @@ function Sentence({ r, b, chip, onFocus }: { r: Rule; b: WorldBundle; chip: Chip
           ))}
         </>
       )}
-      <span className="kw then">THEN</span>
+      <span className="kw then">{t("THEN")}</span>
       {s.effects.map((e, i) => (
         <span key={i} className="effect">
           {tiles(e)}
         </span>
       ))}
-      {s.once && <span className="once">once</span>}
+      {s.once && <span className="once">{t("once")}</span>}
     </li>
   );
 }
@@ -52,11 +53,11 @@ export function XRay({ bundle, chips, onFocus, onClose }: { bundle: WorldBundle;
   const { rules: shown, secrets: secretRules, verbs: kitVerbs, secretNoun } = logicOf(bundle);
   const secretsOk = secretRules.length > 0 && secretRules.every((r) => chips.find((c) => c.id === `T2:${r.id}`)?.status === "verified");
   return (
-    <div className="glass xray" role="dialog" aria-label="Logic X-ray" data-testid="xray">
+    <div className="glass xray" role="dialog" aria-label={t("Logic X-ray")} data-testid="xray">
       <div className="xray-head">
-        <strong>Logic X-ray</strong>
-        <span className="muted">{shown.length} rules{secretRules.length ? ` + ${secretRules.length} secrets` : ""} · {kitVerbs.length} verbs · triggers, states and rules</span>
-        <button type="button" onClick={onClose} aria-label="close">×</button>
+        <strong>{t("Logic X-ray")}</strong>
+        <span className="muted">{tn(shown.length, "{n} rule", "{n} rules")}{secretRules.length ? ` + ${tn(secretRules.length, "{n} secret", "{n} secrets")}` : ""} · {tn(kitVerbs.length, "{n} verb", "{n} verbs")} · {t("triggers, states and rules")}</span>
+        <button type="button" onClick={onClose} aria-label={t("close")}>×</button>
       </div>
       <ul className="rules">
         {shown.map((r) => (
@@ -65,13 +66,13 @@ export function XRay({ bundle, chips, onFocus, onClose }: { bundle: WorldBundle;
       </ul>
       {secretRules.length > 0 && (
         <p className="xray-secrets" data-testid="xray-secrets">
-          ★ {secretRules.length} secret {secretNoun}s: WHEN you touch one THEN it sparkles (once). They count apart from the win.
-          <span className={secretsOk ? "proofmark verified" : "proofmark"}> {secretsOk ? "✓ force-tested" : "…"}</span>
+          ★ {t("{n} secret {noun}s: WHEN you touch one THEN it sparkles (once). They count apart from the win.", { n: secretRules.length, noun: secretNoun })}
+          <span className={secretsOk ? "proofmark verified" : "proofmark"}> {secretsOk ? t("✓ force-tested") : "…"}</span>
         </p>
       )}
       {kitVerbs.length > 0 && (
         <>
-          <div className="xray-sub">Verbs</div>
+          <div className="xray-sub">{t("Verbs")}</div>
           <ul className="verbs">
             {kitVerbs.map((v) => (
               <li key={v.id}>

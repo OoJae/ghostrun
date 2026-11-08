@@ -1,5 +1,6 @@
 // The first ten seconds: what this is in one line, and worlds to start from in one click. Shown on
 // first load only; it goes once the person builds, moves or opens the gallery.
+import { t } from "../i18n";
 import { GALLERY } from "./Gallery";
 
 /**
@@ -27,11 +28,11 @@ export interface Starter {
 export function Landing({ starters, ready, onPick }: { starters: readonly Starter[]; ready: boolean; onPick(s: Starter): void }) {
   return (
     <div className="landing" data-testid="landing">
-      <p className="identity">Type any world. It's playable in seconds, and AI runners prove it's beatable.</p>
-      <div className="starters" role="group" aria-label="Start with">
+      <p className="identity">{t("Type any world. It's playable in seconds, and AI runners prove it's beatable.")}</p>
+      <div className="starters" role="group" aria-label={t("Start with")}>
         {starters.map((s) => (
-          <button type="button" key={s.label} className={`glass starter${s.kind ? ` ${s.kind}` : ""}`} disabled={!ready} title={s.prompt ?? "A random world from the suggestions"} onClick={() => onPick(s)}>
-            {s.label}
+          <button type="button" key={s.label} className={`glass starter${s.kind ? ` ${s.kind}` : ""}`} disabled={!ready} title={s.prompt ?? t("A random world from the suggestions")} onClick={() => onPick(s)}>
+            {t(s.label)}
           </button>
         ))}
       </div>

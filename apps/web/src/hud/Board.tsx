@@ -8,6 +8,7 @@ import { raceClock } from "../race";
 import { checkLabel, checkRun, type Check } from "../rivals";
 import { loadBoard, type BoardEntry } from "../share";
 import "./race.css";
+import { t } from "../i18n";
 
 type Urls = { rapier: string; recast: string };
 
@@ -78,23 +79,23 @@ export function BoardPanel({ specHash, bundle, urls, ai, mine, name0, onPost, on
   let rank = 0;
 
   return (
-    <div className="glass board" role="dialog" aria-label="Best times" data-testid="board" onKeyDown={(e) => e.key === "Escape" && onClose()}>
+    <div className="glass board" role="dialog" aria-label={t("Best times")} data-testid="board" onKeyDown={(e) => e.key === "Escape" && onClose()}>
       <div className="board-head">
-        <strong>Best times</strong>
+        <strong>{t("Best times")}</strong>
         <span className="muted">world {specHash.slice(0, 8)}</span>
-        <button type="button" onClick={onClose} aria-label="close">
+        <button type="button" onClick={onClose} aria-label={t("close")}>
           ×
         </button>
       </div>
-      {entries === "loading" && <p className="note">Loading the board…</p>}
-      {entries === "unreachable" && <p className="note warn">The board needs the live service, which isn't reachable.</p>}
+      {entries === "loading" && <p className="note">{t("Loading the board…")}</p>}
+      {entries === "unreachable" && <p className="note warn">{t("The board needs the live service, which isn't reachable.")}</p>}
       {Array.isArray(entries) && (
         <ol>
           {rows.map((r) =>
             r.kind === "ai" ? (
               <li key="ai" className="ai" data-testid="board-ai">
-                <span className="rank">AI</span>
-                <span className="name">AI par runner</span>
+                <span className="rank">{t("AI")}</span>
+                <span className="name">{t("AI par runner")}</span>
                 <span className="time">{raceClock(r.ticks)}</span>
                 <span />
                 <span className="how">{ai!.how}</span>
@@ -102,11 +103,11 @@ export function BoardPanel({ specHash, bundle, urls, ai, mine, name0, onPost, on
             ) : (
               <li key={claim(r.e)} className={held(r.e) === "verified" ? "verified" : "pending"} data-testid="board-entry">
                 <span className="rank">{held(r.e) === "verified" ? ++rank : "…"}</span>
-                <span className="name">{r.e.name || "anonymous"}</span>
+                <span className="name">{r.e.name || t("anonymous")}</span>
                 <span className="time">{raceClock(r.e.ticks)}</span>
                 {held(r.e) === "verified" ? (
                   <button type="button" onClick={() => onRace(r.e, (checks[claim(r.e)] as Extract<Check, { status: "verified" }>).ghost)} data-testid="board-race">
-                    Race
+                    {t("Race")}
                   </button>
                 ) : (
                   <span />
@@ -118,7 +119,7 @@ export function BoardPanel({ specHash, bundle, urls, ai, mine, name0, onPost, on
           {out.map((e) => (
             <li key={claim(e)} className="unverified" data-testid="board-unverified">
               <span className="rank">–</span>
-              <span className="name">{e.name || "anonymous"}</span>
+              <span className="name">{e.name || t("anonymous")}</span>
               <span className="time">{raceClock(e.ticks)}</span>
               <span />
               <span className="how">{checkLabel(checks[claim(e)])}</span>
@@ -126,19 +127,19 @@ export function BoardPanel({ specHash, bundle, urls, ai, mine, name0, onPost, on
           ))}
         </ol>
       )}
-      {Array.isArray(entries) && !list.length && <p className="note">No times yet{mine ? ": yours can be the first." : "."}</p>}
+      {Array.isArray(entries) && !list.length && <p className="note">{mine ? t("No times yet: yours can be the first.") : t("No times yet.")}</p>}
       {mine && !mine.posted && Array.isArray(entries) && post.status !== "posted" && (
         <form onSubmit={(e) => void submit(e)}>
-          <span>Post your {raceClock(mine.ticks)}:</span>
-          <input value={name} maxLength={12} placeholder="nickname (optional)" aria-label="Nickname" data-testid="board-name" onChange={(e) => setName(e.target.value)} onKeyDown={(e) => e.stopPropagation()} />
+          <span>{t("Post your {time}:", { time: raceClock(mine.ticks) })}</span>
+          <input value={name} maxLength={12} placeholder={t("nickname (optional)")} aria-label={t("Nickname")} data-testid="board-name" onChange={(e) => setName(e.target.value)} onKeyDown={(e) => e.stopPropagation()} />
           <button type="submit" disabled={post.status === "posting"} data-testid="board-post">
-            {post.status === "posting" ? "Posting…" : "Post"}
+            {post.status === "posting" ? t("Posting…") : t("Post")}
           </button>
         </form>
       )}
-      {post.status === "refused" && <p className="note warn" data-testid="board-refused">Not posted: {post.why}.</p>}
-      {post.status === "posted" && <p className="note">Posted. Your run is stored with it, so anyone can replay it.</p>}
-      <p className="note">Times are claims until this device replays them: each run is replayed here from its stored inputs and ranks only if it wins on exactly the tick it claims. The edge checks that the run exists, is of this world and ends on that tick.</p>
+      {post.status === "refused" && <p className="note warn" data-testid="board-refused">{t("Not posted: {why}.", { why: post.why })}</p>}
+      {post.status === "posted" && <p className="note">{t("Posted. Your run is stored with it, so anyone can replay it.")}</p>}
+      <p className="note">{t("Times are claims until this device replays them: each run is replayed here from its stored inputs and ranks only if it wins on exactly the tick it claims. The edge checks that the run exists, is of this world and ends on that tick.")}</p>
     </div>
   );
 }

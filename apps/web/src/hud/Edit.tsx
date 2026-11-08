@@ -2,6 +2,7 @@
 // its numbers: what changed in the world, and how the receipt moved.
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
 import type { Delta } from "../edits";
+import { t } from "../i18n";
 
 export type EditState =
   | { status: "idle" }
@@ -45,16 +46,16 @@ export function EditBox({ state, enabled, suggestions, canUndo, onEdit, onUndo, 
     <aside className={`glass editbox ${state.status}`} data-testid="edit-box">
       {children}
       <form onSubmit={submit}>
-        <span className="eyebrow">Change it</span>
+        <span className="eyebrow">{t("Change it")}</span>
         <input
           ref={input}
           value={text}
           maxLength={300}
           disabled={!enabled}
           spellCheck={false}
-          aria-label="Change this world"
+          aria-label={t("Change this world")}
           data-testid="edit-input"
-          placeholder={enabled ? (placeholder ?? "say what to change…") : "edits need the live AI lane"}
+          placeholder={enabled ? (placeholder ?? t("say what to change…")) : t("edits need the live AI lane")}
           onChange={(e) => setText(e.target.value)}
           onKeyDown={(e) => e.key === "Escape" && e.currentTarget.blur()}
         />
@@ -71,21 +72,21 @@ export function EditBox({ state, enabled, suggestions, canUndo, onEdit, onUndo, 
       {state.status !== "idle" && (
         <div className="edit-result" data-testid="edit-result">
           <p className="edit-change">“{state.change}”</p>
-          {state.status === "editing" && <p className="muted">changing the world…</p>}
+          {state.status === "editing" && <p className="muted">{t("changing the world…")}</p>}
           {state.status === "racing" && (
             <p className="muted">
-              {state.proved === 0 ? `writing ${state.total} harder versions…` : `racing ${state.total} harder versions: ${state.proved} of ${state.total} proved…`}
+              {state.proved === 0 ? t("writing {n} harder versions…", { n: state.total }) : t("racing {n} harder versions: {k} of {n} proved…", { n: state.total, k: state.proved })}
             </p>
           )}
           {state.status === "failed" && <p className="warn">{state.message}</p>}
           {(state.status === "proving" || state.status === "done") && (
             <>
               <p className="edit-summary">{state.summary.join(" · ")}</p>
-              {state.locked > 0 && <p className="muted">The world's promises were kept as they were; the proof re-checks them.</p>}
-              {state.status === "proving" && <p className="muted">AI runners re-proving…</p>}
+              {state.locked > 0 && <p className="muted">{t("The world's promises were kept as they were; the proof re-checks them.")}</p>}
+              {state.status === "proving" && <p className="muted">{t("AI runners re-proving…")}</p>}
               {state.status === "done" && state.delta && (
                 <ul className="edit-delta" data-testid="edit-delta">
-                  {state.delta.length === 0 && <li className="same">Receipt unchanged: every check came out the same.</li>}
+                  {state.delta.length === 0 && <li className="same">{t("Receipt unchanged: every check came out the same.")}</li>}
                   {state.delta.map((d) => (
                     <li key={d.label} className={SIGN[String(d.sign) as keyof typeof SIGN]}>
                       {d.label}: {d.from} → <b>{d.to}</b>
@@ -113,7 +114,7 @@ export function EditBox({ state, enabled, suggestions, canUndo, onEdit, onUndo, 
           )}
           {canUndo && !busy && (
             <button type="button" className="edit-undo" onClick={onUndo} data-testid="edit-undo">
-              Undo
+              {t("Undo")}
             </button>
           )}
         </div>

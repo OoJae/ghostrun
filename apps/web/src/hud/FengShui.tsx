@@ -1,6 +1,8 @@
 import { Fragment, useState } from "react";
 import { FENG_SHUI_RULES, FENG_SHUI_SCHOOL_SOURCE, type FengShuiVerdict } from "@ghostrun/layout";
 import { fengShuiFix, fengShuiHead, fengShuiWhy } from "@ghostrun/proof/light";
+import { t } from "../i18n";
+import { words } from "../i18n/words";
 import type { FengShuiView } from "../fengshui";
 
 const RULES = new Map(FENG_SHUI_RULES.map((r) => [r.id, r]));
@@ -16,30 +18,30 @@ export function FengShui({ view }: { view: FengShuiView }) {
     return (
       <p className="fengshui-ask">
         <button type="button" data-testid="fengshui-ask" onClick={() => setOpen(true)}>
-          Check its Feng Shui
+          {t("Check its Feng Shui")}
         </button>
-        <span className="muted"> ({section.school}: {section.findings.length} principles, each with its source)</span>
+        <span className="muted"> ({t("{school}: {n} principles, each with its source", { school: t(section.school), n: section.findings.length })})</span>
       </p>
     );
   }
   const tone = !section.checked ? "not_checkable" : section.holds === section.checked ? "verified" : "counterexample";
   return (
-    <section className="fengshui" data-testid="fengshui" aria-label="Feng Shui">
+    <section className="fengshui" data-testid="fengshui" aria-label={t("Feng Shui")}>
       <p className={`headline ${tone}`} data-testid="fengshui-head">
-        <b>{fengShuiHead(section)}</b>
-        <span className="method"> (checked on the placed world: its rooms and doorways, where things stand and what they are named)</span>
+        <b>{fengShuiHead(section, words)}</b>
+        <span className="method"> ({t("checked on the placed world: its rooms and doorways, where things stand and what they are named")})</span>
       </p>
       <ul>
         {section.findings.map((f) => {
           const rule = RULES.get(f.rule)!;
           return (
             <li key={f.rule} className={TONE[f.verdict]} data-testid={`fengshui-${f.rule}`}>
-              {MARK[f.verdict]} <b title={`${rule.principle} Checked: ${rule.check}`}>{rule.name}</b>: {fengShuiWhy(f)}.
-              {f.fix && <span className="fix"> Fix: {fengShuiFix(f.fix)}.</span>}
+              {MARK[f.verdict]} <b title={`${rule.principle} ${t("Checked:")} ${rule.check}`}>{t(rule.name)}</b>: {fengShuiWhy(f, words)}.
+              {f.fix && <span className="fix"> {t("Fix: {fix}.", { fix: fengShuiFix(f.fix, words) })}</span>}
               <span className="sources">
                 {rule.sources.map((s, i) => (
                   <Fragment key={s.url}>
-                    {i ? "; " : " Source: "}
+                    {i ? "; " : ` ${t("Source:")} `}
                     <a href={s.url} target="_blank" rel="noreferrer" title={`“${s.says}” (${s.where}, ${s.date})`}>
                       {s.by}, {s.title}
                     </a>
@@ -51,11 +53,11 @@ export function FengShui({ view }: { view: FengShuiView }) {
         })}
       </ul>
       <p className="sources">
-        The {section.school}, the oldest branch of feng shui, reads the shape of a place and how qi flows through it (
+        {t("The {school}, the oldest branch of feng shui, reads the shape of a place and how qi flows through it", { school: t(section.school) })} (
         <a href={FENG_SHUI_SCHOOL_SOURCE.url} target="_blank" rel="noreferrer">
           {FENG_SHUI_SCHOOL_SOURCE.title}, {FENG_SHUI_SCHOOL_SOURCE.where}
         </a>
-        ). A design reading, not a claim about luck.
+        ). {t("A design reading, not a claim about luck.")}
       </p>
     </section>
   );

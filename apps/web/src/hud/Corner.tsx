@@ -1,8 +1,10 @@
+import { t } from "../i18n";
+
 export function ProofBadge() {
   return (
-    <div className="glass proof" data-testid="proof-badge" title="AI runners have not proven this world yet">
+    <div className="glass proof" data-testid="proof-badge" title={t("AI runners have not proven this world yet")}>
       <span className="dot" aria-hidden="true" />
-      proof: pending
+      {t("proof: pending")}
     </div>
   );
 }
@@ -12,34 +14,34 @@ export function KeyHint({ visible, sound = false }: { visible: boolean; sound?: 
     <div className={`glass keyhint${visible ? "" : " gone"}`} aria-hidden={!visible} data-testid="key-hint">
       <kbd>WASD</kbd>
       <span className="sep">·</span>
-      <kbd>Space</kbd>
+      <kbd>{t("Space")}</kbd>
       <span className="sep">·</span>
       <kbd>F</kbd>
-      <span>use</span>
+      <span>{t("use")}</span>
       <span className="sep">·</span>
       <kbd>P</kbd>
-      <span>receipt</span>
+      <span>{t("receipt")}</span>
       <span className="sep">·</span>
       <kbd>X</kbd>
-      <span>logic</span>
+      <span>{t("logic")}</span>
       <span className="sep">·</span>
       <kbd>T</kbd>
-      <span>talk</span>
+      <span>{t("talk")}</span>
       <span className="sep">·</span>
       <kbd>G</kbd>
-      <span>gallery</span>
+      <span>{t("gallery")}</span>
       <span className="sep">·</span>
       {sound && (
         <>
           <kbd>M</kbd>
-          <span>sound</span>
+          <span>{t("sound")}</span>
           <span className="sep">·</span>
         </>
       )}
       <kbd>H</kbd>
-      <span>ghost</span>
+      <span>{t("ghost")}</span>
       <span className="sep">·</span>
-      <span>drag to orbit</span>
+      <span>{t("drag to orbit")}</span>
     </div>
   );
 }
