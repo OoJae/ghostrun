@@ -6,7 +6,6 @@ import { expect, test } from "@playwright/test";
 const CZECH = "ud-lej-mi-bludi-t-s-duchy-a-kl-em-od-v-c";
 
 test("i18n: a Czech gallery world gets a Czech HUD, and the chip switches it to English", async ({ page }) => {
-  test.setTimeout(300_000); // two worlds built and the second one proved, in software GL
   const errors: string[] = [];
   page.on("pageerror", (e) => errors.push(e.message));
   await page.goto("/?gl=webgl2&fx=0&dpr=0.5&prewarm=0");
