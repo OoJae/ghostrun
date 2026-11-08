@@ -84,7 +84,7 @@ export function allRuns(r: Receipt): Trail[] {
 }
 
 /** What a place is near: the nearest named thing within 6 m, else the zone of the ground there. */
-function placeOf(b: WorldBundle, x: number, z: number): string {
+export function placeOf(b: WorldBundle, x: number, z: number): string {
   let best = "";
   let bestD = 36;
   for (const e of b.entities) {

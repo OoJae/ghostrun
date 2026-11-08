@@ -2,7 +2,7 @@
 // percentage is printed for fewer than 30 trials (honest labels are a never-cut item).
 import type { Parting } from "./redgreen";
 import type { FailSpot, Revealed } from "./revealed";
-import type { Chip, Level, Playtest, Receipt } from "./types";
+import type { Chip, FailRun, Level, Playtest, Receipt } from "./types";
 
 export function fraction(k: number, n: number): string {
   if (n < 30) return `${k} of ${n}`;
@@ -78,6 +78,11 @@ export function fightLine(f: { hits: number; kos: number; near?: string }): stri
 /** What a red/green pair is, plainly: "Green: before the change · red: after it · the same runner, the same seed". */
 export function pairLine(green: "before" | "after"): string {
   return green === "before" ? "Green: before the change · red: after it · the same AI runner, the same seed" : "Red: before the repair · green: after it · the same AI runner, the same seed";
+}
+
+/** The failing run a receipt kept, on its own: "Red: AI runner 3 of 12, where it fails (got stuck on the way to the orb, at 1:02)". */
+export function failRunLine(f: FailRun, runs: number): string {
+  return `Red: AI runner ${f.run + 1} of ${runs}, where it fails (${f.end.why || "it stopped"}, at ${clock(f.ghost.ticks / 60)})`;
 }
 
 /**
