@@ -606,9 +606,11 @@ export class Engine {
     this.#applyLook(look, this.#lookPlace);
     this.#cutaway = look.cutaway;
     this.#follow.setColliders(look.cutaway ? [] : view.colliders);
+    // compile the new look's shaders before drawing it, but never wait long: the models still
+    // loading from the last look compile too, and a precompile behind theirs can stall for good
     this.#compiling = true;
     try {
-      await this.#renderer.compileAsync(this.#scene, this.#camera);
+      await Promise.race([this.#renderer.compileAsync(this.#scene, this.#camera), new Promise((r) => setTimeout(r, 3000))]);
     } catch (e) {
       console.warn("restyle precompile failed", e);
     } finally {

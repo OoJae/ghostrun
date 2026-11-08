@@ -46,6 +46,8 @@ import { RecordStrip } from "./hud/RecordStrip";
 import { scoreText, vrResult, type VrAction } from "./xr/model";
 
 const HINT_MS = 6000;
+/** A moment for the browser: a click returns and "changing the world…" paints before a world is rebuilt. */
+const soon = () => new Promise<void>((r) => setTimeout(r, 0));
 const FIXTURE = new URLSearchParams(window.location.search).get("fixture") ?? "ctf";
 const FIRST_PROMPT = FIXTURE_PROMPTS[FIXTURE] ?? BRIEF;
 const params0 = new URLSearchParams(window.location.search);
@@ -711,6 +713,7 @@ export function App() {
     const w = current.current;
     const e = engine.current;
     if (!w || !e) return;
+    await soon(); // the click lands (its picker closes) before the scene is rebuilt
     const w2 = worldFromFill(restyled(w.fill, change), w.seed, w.intent.live, w.bundle.pack.id, w.bundle.mode);
     // one of the world's changes, as a typed "make it night" is (a remix's line lists it)
     const original = w.source?.base ?? w.source?.prompt ?? builtPrompt.current;
@@ -790,14 +793,14 @@ export function App() {
       if (!w) return;
       const { change, patch } = lawChange(w.bundle.laws, c);
       setEdit({ status: "editing", change });
-      void applyEdit(w, change, patch, performance.now());
+      void soon().then(() => applyEdit(w, change, patch, performance.now()));
     },
     onLayout: (c) => {
       const w = current.current;
       const ch = w && layoutChangeOf(w.fill, c);
       if (!w || !ch) return;
       setEdit({ status: "editing", change: ch.change });
-      void applyEdit(w, ch.change, ch.patch, performance.now());
+      void soon().then(() => applyEdit(w, ch.change, ch.patch, performance.now()));
     },
     onShape: (pin) => void rebuildAs(pin),
   };

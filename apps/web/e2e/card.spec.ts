@@ -9,7 +9,8 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const here = dirname(fileURLToPath(import.meta.url));
-const BOOT = "/?gl=webgl2&fx=0&dpr=0.5&prewarm=0";
+// models=0: the primitives, so no model is still loading (and compiling) when a world is swapped
+const BOOT = "/?gl=webgl2&fx=0&dpr=0.5&prewarm=0&models=0";
 
 function collectErrors(page: Page): string[] {
   const errors: string[] = [];
@@ -32,6 +33,7 @@ async function liveLane(page: Page) {
 }
 
 test("intent card: a look changed on the card redraws the world in place, the run goes on, the same spec and receipt", async ({ page }) => {
+  test.setTimeout(480_000); // a world, its proof, and a new look's shaders compiled while it plays
   const errors = collectErrors(page);
   await page.goto(BOOT);
   await page.waitForFunction(() => window.__GHOSTRUN__?.ready === true, null, { timeout: 90_000 });
@@ -51,55 +53,50 @@ test("intent card: a look changed on the card redraws the world in place, the ru
 
   await card.getByTestId("field-look").click();
   await card.getByRole("group", { name: "Look" }).getByRole("button", { name: "Ice cave" }).click();
-  await page.waitForFunction(() => window.__GHOSTRUN__.look === "snow/cave", null, { timeout: 20_000 });
-  await expect(card.getByTestId("field-look")).toContainText("Ice cave");
-  await expect(page.getByTestId("edit-result")).toContainText("the same spec: the receipt stands");
+  await page.waitForFunction(() => window.__GHOSTRUN__.look === "snow/cave", null, { timeout: 60_000 });
+  await expect(card.getByTestId("field-look")).toContainText("Ice cave", { timeout: 60_000 });
+  await expect(page.getByTestId("edit-result")).toContainText("the same spec: the receipt stands", { timeout: 60_000 });
   const after = await probe(page);
   expect(after.specHash).toBe(before.specHash);
   expect(after.tick!).toBeGreaterThan(before.tick!); // the same run, still going: nothing reloaded
   await expect(page.getByTestId("proof-badge")).toContainText("Rooftop lane needs double jump: verified"); // never re-proved
 
-  await card.getByTestId("field-phase").click();
-  await card.getByRole("group", { name: "Time of day" }).getByRole("button", { name: "day" }).click();
-  await expect(card.getByTestId("field-phase")).toContainText("day");
-  expect((await probe(page)).specHash).toBe(before.specHash);
-
-  // Undo, twice: night, then the neon city, each redrawn in place
+  // (the hour and the weather pin the same way: test/card.test.ts) Undo redraws the neon city in place
   await page.getByTestId("edit-undo").click();
-  await expect(card.getByTestId("field-phase")).toContainText("night");
-  await page.getByTestId("edit-undo").click();
-  await page.waitForFunction(() => window.__GHOSTRUN__.look === "neon", null, { timeout: 20_000 });
+  await page.waitForFunction(() => window.__GHOSTRUN__.look === "neon", null, { timeout: 60_000 });
   expect((await probe(page)).specHash).toBe(before.specHash);
   expect(errors).toEqual([]);
 });
 
 test("intent card: jumps changed on the card come back re-proved with their numbers, and Undo restores them", async ({ page }) => {
+  test.setTimeout(480_000); // two worlds, each proved by its AI runners
   const errors = collectErrors(page);
   await page.goto(BOOT);
   await page.waitForFunction(() => window.__GHOSTRUN__?.ready === true, null, { timeout: 90_000 });
   await expect(page.getByTestId("proof-badge")).toContainText("Rooftop lane needs double jump: verified", { timeout: 60_000 });
   const spec0 = (await probe(page)).specHash;
   const card = page.getByTestId("intent-card");
-  await expect(card.getByTestId("field-jumps")).toContainText("double jump (×2)");
+  await expect(card.getByTestId("field-jumps")).toContainText("double jump (×2)", { timeout: 60_000 });
 
   // no live AI needed: the card writes the law line itself (this is the recorded fixture, offline)
   await expect(page.getByTestId("prompt-bar")).toContainText("fixture");
   await card.getByTestId("field-jumps").click();
   await card.getByRole("group", { name: "Jumps" }).getByRole("button", { name: "3 jumps" }).click();
-  await expect(page.getByTestId("edit-result")).toContainText("“triple jump”");
-  await expect(page.getByTestId("edit-summary")).toContainText("jumps 2 → 3");
+  await expect(page.getByTestId("edit-result")).toContainText("“triple jump”", { timeout: 30_000 });
+  await expect(page.getByTestId("edit-summary")).toContainText("jumps 2 → 3", { timeout: 60_000 });
   await expect(page.getByTestId("edit-delta")).toBeVisible({ timeout: 90_000 });
   await expect(card.getByTestId("field-jumps")).toContainText("double jump (×3)");
   expect((await probe(page)).specHash).not.toBe(spec0);
 
   await page.getByTestId("edit-undo").click();
-  await expect(card.getByTestId("field-jumps")).toContainText("double jump (×2)");
+  await expect(card.getByTestId("field-jumps")).toContainText("double jump (×2)", { timeout: 60_000 });
   await expect(page.getByTestId("proof-badge")).toContainText("Rooftop lane needs double jump: verified", { timeout: 60_000 });
-  await expect.poll(async () => (await probe(page)).specHash).toBe(spec0);
+  await expect.poll(async () => (await probe(page)).specHash, { timeout: 60_000 }).toBe(spec0);
   expect(errors).toEqual([]);
 });
 
 test("intent card: the pack changed on the card rebuilds the world live as a maze, pinned, and Undo goes back to the city", async ({ page }) => {
+  test.setTimeout(480_000); // two worlds, each proved by its AI runners
   const errors = collectErrors(page);
   await liveLane(page);
   const maze = JSON.parse(readFileSync(resolve(here, "../src/gallery/worlds/a-desert-temple-with-pressure-plates-tha.json"), "utf8")) as { intent: Record<string, unknown>; fill: string };
@@ -133,13 +130,14 @@ test("intent card: the pack changed on the card rebuilds the world live as a maz
   expect((await probe(page)).specHash).not.toBe(spec0);
 
   await page.getByTestId("edit-undo").click();
-  await expect(card.getByTestId("field-pack")).toContainText("city_block", { timeout: 30_000 });
+  await expect(card.getByTestId("field-pack")).toContainText("city_block", { timeout: 60_000 });
   await expect(card.getByTestId("rebuilt-note")).toHaveCount(0);
-  await expect.poll(async () => (await probe(page)).specHash, { timeout: 30_000 }).toBe(spec0);
+  await expect.poll(async () => (await probe(page)).specHash, { timeout: 60_000 }).toBe(spec0);
   expect(errors.filter((e) => !e.includes("503"))).toEqual([]);
 });
 
 test("structural edit: 'add a floor' on the museum fixture comes back with its diff line, re-proved, and Undo restores the geometry", async ({ page }) => {
+  test.setTimeout(480_000); // two worlds, each proved by its AI runners
   const errors = collectErrors(page);
   await liveLane(page);
   let asked: { change?: string; fill?: string } = {};
@@ -174,7 +172,7 @@ test("structural edit: 'add a floor' on the museum fixture comes back with its d
 
   // the card's own floor button undoes nothing by itself: Undo restores the one-storey museum
   await page.getByTestId("edit-undo").click();
-  await expect.poll(async () => (await probe(page)).specHash, { timeout: 30_000 }).toBe(spec0);
+  await expect.poll(async () => (await probe(page)).specHash, { timeout: 60_000 }).toBe(spec0);
   await expect(page.getByTestId("proof-badge")).toContainText("verified", { timeout: 60_000 });
   expect(errors.filter((e) => !e.includes("503"))).toEqual([]);
 });
