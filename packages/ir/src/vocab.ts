@@ -42,6 +42,9 @@ export const COND_OPS = ["eq", "ne", "lt", "lte", "gt", "gte", "has", "in"] as c
 export const ACTS = ["ask", "command", "offer", "buy", "pay", "book"] as const;
 export type Act = (typeof ACTS)[number];
 
+/** A watcher in this state sees nothing: what a bribe buys, for as long as the rule says. */
+export const LOOK_AWAY = "look_away";
+
 export const ROLES = ["guard", "merchant", "guide", "rival", "teammate", "creature", "citizen"] as const;
 export type Role = (typeof ROLES)[number];
 

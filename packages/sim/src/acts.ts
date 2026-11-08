@@ -3,7 +3,7 @@
 // act is an input like a stick move. It is queued with SimWorld.speak, takes effect on the next
 // tick as a `spoken` event the world's rules react to, and is logged with that tick, so a run with a
 // bribe in it replays exactly. Nothing an act says can do more than the rules it sets off.
-import { ACTS, type Act } from "@ghostrun/ir";
+import { ACTS, LOOK_AWAY, type Act } from "@ghostrun/ir";
 
 export interface SpeechAct {
   /** Who it is said to (an NPC's id). */
@@ -17,8 +17,7 @@ export interface SpeechAct {
   slot: string;
 }
 
-/** A guard (or anyone) in this state sees nothing: what a bribe buys, for as long as the rule says. */
-export const LOOK_AWAY = "look_away";
+export { LOOK_AWAY };
 
 const SLOT = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/;
 const WHAT = /^[a-z0-9_.]{0,48}$/;

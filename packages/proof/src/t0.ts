@@ -1,10 +1,9 @@
 // T0, static: every reference resolves, and the win condition is reachable through the rule graph
 // by goal regression (win ← score_gte ← score effect ← enter with carrier ← pickup …).
 import type { Act, Rule, WorldBundle } from "@ghostrun/ir";
-import { SPECIAL_REFS } from "@ghostrun/ir";
+import { LOOK_AWAY, SPECIAL_REFS } from "@ghostrun/ir";
 import { HEALTH, SHOOT, verb } from "@ghostrun/kits";
 import { clampParams, type Cause, type Produces } from "@ghostrun/plugin-api";
-import { LOOK_AWAY } from "@ghostrun/sim";
 import type { Chip, Counterexample } from "./types";
 
 /** One step of the abstract plan T3 executes. */
