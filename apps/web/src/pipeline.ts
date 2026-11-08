@@ -13,6 +13,8 @@ import stationFill from "../../../packages/ir/fixtures/space-station.jsonl?raw";
 import kartFill from "../../../packages/ir/fixtures/kart-race.jsonl?raw";
 import streetFill from "../../../packages/ir/fixtures/street-race.jsonl?raw";
 import snowFill from "../../../packages/ir/fixtures/snowmobile-race.jsonl?raw";
+import museumFill from "../../../packages/ir/fixtures/museum-bribe.jsonl?raw";
+import villaFill from "../../../packages/ir/fixtures/villa-viewing.jsonl?raw";
 import { lawsUnwritten, layoutLaws, parseFill, specHash, type FillNote, type FillStats, type WorldBundle } from "@ghostrun/ir";
 import { placeWorld } from "@ghostrun/layout";
 import { packFor, PACKS } from "@ghostrun/registry";
@@ -82,7 +84,7 @@ export function buildWorld(_prompt: string, fixture = "ctf"): World {
 }
 
 /** Recorded fills: the organizer's CTF brief, and a kit-verb world (?fixture=coin-rush). */
-export const FIXTURES: Record<string, string> = { ctf: fixtureFill, "coin-rush": coinRushFill, forest: forestFill, parkour: parkourFill, heist: heistFill, vault: vaultFill, duel: duelFill, zombies: zombieFill, "laser-tag": laserFill, station: stationFill, kart: kartFill, "street-race": streetFill, snowmobile: snowFill };
+export const FIXTURES: Record<string, string> = { ctf: fixtureFill, "coin-rush": coinRushFill, forest: forestFill, parkour: parkourFill, heist: heistFill, vault: vaultFill, duel: duelFill, zombies: zombieFill, "laser-tag": laserFill, station: stationFill, kart: kartFill, "street-race": streetFill, snowmobile: snowFill, museum: museumFill, villa: villaFill };
 export const FIXTURE_PROMPTS: Record<string, string> = {
   ctf: BRIEF,
   "coin-rush": "Collect five gold coins in a neon arena before the clock runs out. Mind the lava.",
@@ -97,6 +99,8 @@ export const FIXTURE_PROMPTS: Record<string, string> = {
   kart: "A go-kart race in a neon arena: three laps through the gates against two rival karts.",
   "street-race": "A street race through the neon city: two laps against rival cars before the police arrive.",
   snowmobile: "A snowmobile race on a frozen lake: two laps through the ice gates, drifting round the pines.",
+  museum: "A museum heist at night: collect coins, bribe the guard to look the other way, and carry the star sapphire out of the vault to the van.",
+  villa: "A villa tour where the guide books a viewing.",
 };
 
 /** Fill text (fixture or a live stream) → placed world, choosing the pack from the registry. */
