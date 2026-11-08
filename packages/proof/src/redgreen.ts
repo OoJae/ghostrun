@@ -60,7 +60,8 @@ const HOLD = 30;
 /** Together means closer than this (m). */
 const TOGETHER = 0.15;
 
-const dist = (p: Vec3, q: Vec3) => Math.hypot(p[0] - q[0], p[1] - q[1], p[2] - q[2]);
+// squared distances, compared with squared thresholds: no transcendental Math in the proof package (the lint)
+const d2 = (p: Vec3, q: Vec3) => (p[0] - q[0]) * (p[0] - q[0]) + (p[1] - q[1]) * (p[1] - q[1]) + (p[2] - q[2]) * (p[2] - q[2]);
 
 /**
  * Where two runs of the same runner part: the last moment they were together before they went
@@ -69,17 +70,17 @@ const dist = (p: Vec3, q: Vec3) => Math.hypot(p[0] - q[0], p[1] - q[1], p[2] - q
 export function parting(a: Ghost, b: Ghost): Parting | null {
   const step = Math.min(a.every, b.every);
   const end = Math.max(a.ticks, b.ticks);
-  const d = (t: number) => dist(ghostAt(a, t), ghostAt(b, t));
+  const d = (t: number) => d2(ghostAt(a, t), ghostAt(b, t));
   let first = -1;
   for (let t = 0; t <= end && first < 0; t += step) {
-    if (d(t) <= APART) continue;
+    if (d(t) <= APART * APART) continue;
     let held = true;
-    for (let u = t; u <= Math.min(end, t + HOLD); u += step) if (d(u) <= APART) held = false;
+    for (let u = t; u <= Math.min(end, t + HOLD); u += step) if (d(u) <= APART * APART) held = false;
     if (held) first = t;
   }
   if (first < 0) return null;
   let tick = first;
-  while (tick > 0 && d(tick) > TOGETHER) tick -= step;
+  while (tick > 0 && d(tick) > TOGETHER * TOGETHER) tick -= step;
   const at = ghostAt(a, tick);
   const peak = (g: Ghost) => {
     let top = -Infinity;
@@ -91,7 +92,8 @@ export function parting(a: Ghost, b: Ghost): Parting | null {
   const stop = (g: Ghost, o: Ghost) => g.ticks <= first + HOLD && o.ticks > g.ticks + HOLD;
   const ended = stop(a, b) ? 0 : stop(b, a) ? 1 : null;
   const [pa, pb] = [ghostAt(a, first + HOLD), ghostAt(b, first + HOLD)];
-  const up = Math.abs(pa[1] - pb[1]) >= Math.hypot(pa[0] - pb[0], pa[2] - pb[2]) && Math.abs(rise[0] - rise[1]) >= 0.5;
+  const dy = pa[1] - pb[1];
+  const up = dy * dy >= (pa[0] - pb[0]) * (pa[0] - pb[0]) + (pa[2] - pb[2]) * (pa[2] - pb[2]) && Math.abs(rise[0] - rise[1]) >= 0.5;
   // in the air already: the height changed over the moment before they parted
   const before = ghostAt(a, Math.max(0, tick - 12));
   const midair = Math.abs(at[1] - before[1]) > 0.2;
