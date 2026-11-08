@@ -40,4 +40,12 @@ export interface R2Bucket {
 
 export interface KvNamespace {
   get(key: string, options?: { cacheTtl?: number }): Promise<string | null>;
+  /** Only the canaries write (their last results); a flag is set by hand. */
+  put?(key: string, value: string, options?: { expirationTtl?: number }): Promise<void>;
+}
+
+/** What a cron trigger hands the scheduled handler. */
+export interface ScheduledController {
+  cron: string;
+  scheduledTime: number;
 }

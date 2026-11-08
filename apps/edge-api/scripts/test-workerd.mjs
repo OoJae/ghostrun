@@ -1,99 +1,34 @@
-// Real-runtime test of the spend governor under workerd 1.20261019.1 (the runtime wrangler 4.152.0
-// ships), run against the exact bundle wrangler deploys (dist/worker/index.js). The Durable Object
-// is SQLite-backed on local disk; globalOutbound points every fetch at a fake upstream (Cerebras,
-// siteverify, ntfy), so no network and no keys. Exit code 1 on any failed check.
-import { spawn } from "node:child_process";
-import { copyFileSync, existsSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
-import { createServer } from "node:net";
+// Real-runtime test of the edge under workerd 1.20261019.1 (the runtime wrangler 4.152.0 ships), run
+// against the exact bundle wrangler deploys (dist/worker/index.js and its wasm modules; see
+// scripts/workerd.mjs): the spend governor (its Durable Object SQLite-backed on local disk), the
+// build lane, and the cloud proof on real ProofShard DOs, whose receipt for the organizer's CTF brief
+// must equal the one Node proves, chip for chip; then the canaries on their crons. globalOutbound
+// points every fetch at a fake upstream (Cerebras, Claude, siteverify, ntfy), so no network and no
+// keys. Exit code 1 on any failed check.
+import { execFileSync } from "node:child_process";
 import { resolve } from "node:path";
-import { root } from "./build.mjs";
+import { nodeBundle, root } from "./build.mjs";
 import { newToken, tokenHash } from "./judge-token.mjs";
+import { serveWorkerd } from "./workerd.mjs";
 
-const dir = resolve(root, "dist/workerd-test");
-const bundle = resolve(root, "dist/worker/index.js");
-if (!existsSync(bundle)) throw new Error("dist/worker/index.js missing: run scripts/build.mjs first");
-rmSync(dir, { recursive: true, force: true });
-mkdirSync(resolve(dir, "do"), { recursive: true });
-copyFileSync(bundle, resolve(dir, "index.js"));
-for (const f of ["entry.js", "upstream.js"]) copyFileSync(resolve(root, "test/workerd", f), resolve(dir, f));
-
-const freePort = () =>
-  new Promise((ok) => {
-    const s = createServer().listen(0, "127.0.0.1", () => {
-      const { port } = s.address();
-      s.close(() => ok(port));
-    });
-  });
-const port = await freePort();
-const logPort = await freePort();
-const base = `http://127.0.0.1:${port}`;
 const JKEY = "workerd-test-judge-key-0123456789abcdef";
 const TOKEN = newToken();
+const CANARY = newToken();
 const vars = {
   CEREBRAS_API_KEY: "test-key",
   ANTHROPIC_API_KEY: "test-claude-key",
   TURNSTILE_SECRET: "1x0000000000000000000000000000000AA",
   SESSION_SECRET: "workerd-test-session-secret-0123456789",
   JUDGE_TOKEN_KEY: JKEY,
-  JUDGE_TOKEN_HASHES: tokenHash(JKEY, TOKEN), // minted by Node; verified by workerd's WebCrypto
+  JUDGE_TOKEN_HASHES: `${tokenHash(JKEY, TOKEN)},canary:${tokenHash(JKEY, CANARY)}`, // minted by Node; verified by workerd's WebCrypto
+  CANARY_TOKEN: CANARY,
   NTFY_URL: "https://ntfy.test/ghostrun-alerts",
   CAP_POOL_CANARY_USD: "0.05",
   BUILDS_PER_WINDOW: "1000",
   RATE_PER_WINDOW: "1000",
 };
-const str = (s) => JSON.stringify(s);
-writeFileSync(
-  resolve(dir, "config.capnp"),
-  `using Workerd = import "/workerd/workerd.capnp";
-const config :Workerd.Config = (
-  services = [
-    (name = "main", worker = .edge),
-    (name = "upstream", worker = .upstream),
-    (name = "do-disk", disk = (path = ${str(resolve(dir, "do"))}, writable = true))
-  ],
-  sockets = [
-    (name = "http", address = "127.0.0.1:${port}", http = (), service = "main"),
-    (name = "log", address = "127.0.0.1:${logPort}", http = (), service = "upstream")
-  ],
-);
-const edge :Workerd.Worker = (
-  modules = [
-    (name = "entry.js", esModule = embed "entry.js"),
-    (name = "index.js", esModule = embed "index.js")
-  ],
-  compatibilityDate = "2026-10-19",
-  bindings = [
-    (name = "GOVERNOR", durableObjectNamespace = (className = "GovernorDO")),
-    ${Object.entries(vars).map(([k, v]) => `(name = ${str(k)}, text = ${str(v)})`).join(",\n    ")}
-  ],
-  durableObjectNamespaces = [(className = "GovernorDO", uniqueKey = "ghostrun-governor-workerd-test", enableSql = true)],
-  durableObjectStorage = (localDisk = "do-disk"),
-  globalOutbound = "upstream",
-);
-const upstream :Workerd.Worker = (
-  modules = [(name = "upstream.js", esModule = embed "upstream.js")],
-  compatibilityDate = "2026-10-19",
-);
-`,
-);
-
+const { base, logBase, start, stop } = await serveWorkerd("workerd-test", vars);
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-let proc;
-async function start() {
-  proc = spawn(resolve(root, "node_modules/.bin/workerd"), ["serve", "config.capnp"], { cwd: dir, stdio: ["ignore", "inherit", "inherit"] });
-  for (let i = 0; i < 150; i++) {
-    const res = await fetch(`${base}/v1/health`).catch(() => null);
-    if (res?.ok) return res.json();
-    await sleep(100);
-  }
-  throw new Error("workerd did not come up");
-}
-async function stop() {
-  if (proc.exitCode !== null) return;
-  const exited = new Promise((r) => proc.once("exit", r));
-  proc.kill();
-  await exited;
-}
 
 let failures = 0;
 const check = (name, ok, detail = "") => {
@@ -131,7 +66,7 @@ try {
 
   // 3. The 50% alert went out once, from inside the DO, to NTFY_URL.
   const alerts = await until(async () => {
-    const log = await (await fetch(`http://127.0.0.1:${logPort}/__log`)).json();
+    const log = await (await fetch(`${logBase}/__log`)).json();
     const a = log.filter((l) => l.host === "ntfy.test");
     return a.length ? a : null;
   });
@@ -213,14 +148,63 @@ try {
   check("MCP tools/list (2026-07-28) lists the five tools", listed.result?.resultType === "complete" && listed.result?.tools?.map((t) => t.name).join(",") === "build_world,edit_world,explain_world,get_receipt,list_gallery", JSON.stringify(listed).slice(0, 200));
   const gallery = (await (await modern("tools/call", { name: "list_gallery", arguments: {} })).json()).result?.structuredContent?.worlds ?? [];
   const explained = (await (await modern("tools/call", { name: "explain_world", arguments: { world: gallery[0]?.slug ?? "" } })).json()).result?.structuredContent;
-  check("MCP explain_world places a gallery world and runs T0 and T1 in workerd", gallery.length > 50 && explained?.rules?.length > 0 && explained?.proof?.source === "edge" && explained.proof.chips.some((c) => c.tier === "T0"), `${gallery.length} worlds, ${JSON.stringify(explained?.proof?.lines?.slice(0, 2))}`);
+  check("MCP explain_world places a gallery world and the cloud proof answers for it in workerd", gallery.length > 50 && explained?.rules?.length > 0 && explained?.proof?.source === "cloud" && explained.proof.chips.some((c) => c.tier === "T0"), `${gallery.length} worlds, ${JSON.stringify(explained?.proof?.lines?.slice(0, 2))}`);
   const mcpBefore = (await pool("judge")).spent;
   const built = (await (await modern("tools/call", { name: "build_world", arguments: { prompt: "mcp: capture the flag on neon rooftops", seed: 11 } })).json()).result;
-  check("MCP build_world builds through the build route (no share store here, so no link)", built?.isError === undefined && built?.structuredContent?.intent?.pack === "city_block" && built.structuredContent.link === null && /share store not configured/.test(built.structuredContent.notes.join(" ")), JSON.stringify(built).slice(0, 300));
+  check("MCP build_world builds through the build route and shares it (the test entry's share store)", built?.isError === undefined && built?.structuredContent?.intent?.pack === "city_block" && /\?s=[a-z2-7]{16}$/.test(built.structuredContent.link ?? ""), JSON.stringify(built).slice(0, 300));
   const mcpJudge = await until(async () => ((await pool("judge")).spent === mcpBefore + METERED ? pool("judge") : null));
   check("the MCP build is committed at the metered cost on the token's pool", mcpJudge?.held === 0, `${JSON.stringify(await pool("judge"))} expected ${mcpBefore + METERED}`);
   const anonMcp = await rpc("tools/list", {}, { authorization: "" });
   check("MCP without a token is 401 with a Bearer challenge", anonMcp.status === 401 && anonMcp.headers.get("www-authenticate") === 'Bearer realm="ghostrun"', String(anonMcp.status));
+
+  // 11. The cloud proof of the organizer's CTF brief, on real ProofShard DOs, against Node's.
+  const nodeOut = await nodeBundle("test/workerd/node-proof.ts", "dist/node-proof", "node-proof.mjs");
+  const [mine] = JSON.parse(execFileSync(process.execPath, [nodeOut], { cwd: root, encoding: "utf8", maxBuffer: 64 * 1024 * 1024 }));
+  const ask = (headers, body = mine.input) => fetch(`${base}/v1/proof`, { method: "POST", headers: { "content-type": "application/json", ...headers }, body: JSON.stringify(body) });
+  // (once more on a reset: workerd closes the kept-alive connection while Node proves the brief)
+  const health2 = await fetch(`${base}/v1/health`).catch(() => fetch(`${base}/v1/health`));
+  check("health offers the cloud proof (the engine is wired in)", (await health2.json()).proof === true);
+  const t0 = Date.now();
+  const p1 = await ask({ "x-judge-token": TOKEN, "cf-connecting-ip": "198.51.100.20" });
+  const a1 = p1.status === 200 ? await p1.json() : { error: await p1.text() };
+  const coldMs = Date.now() - t0;
+  // everything but the timings and where it ran: every chip, the par, the headline, the trails, the ghost, the playtest
+  const still = (r) => JSON.parse(JSON.stringify({ ...r, ms: 0, host: "", chips: r.chips.map((c) => ({ ...c, ms: 0 })), ...(r.playtest ? { playtest: { ...r.playtest, ms: 0 } } : {}) }));
+  const cloud = a1.receipt ? still(a1.receipt) : null;
+  const device = still(mine.receipt);
+  const firstOff = cloud ? device.chips.findIndex((c, i) => JSON.stringify(c) !== JSON.stringify(cloud.chips[i])) : -1;
+  check("the Worker proves the CTF brief on its shards, host edge", p1.status === 200 && a1.receipt.host === "edge" && a1.shards > 0 && a1.cached === null, `${p1.status} ${a1.error ?? ""} ${a1.shards} shards, ${coldMs} ms (Node ${mine.ms} ms)`);
+  check("its receipt is Node's chip for chip", cloud !== null && firstOff === -1 && cloud.chips.length === device.chips.length, firstOff >= 0 ? `first differs: ${device.chips[firstOff].id}` : `${device.chips.length} chips`);
+  check("and in everything else: headline, par, trails, ghost, playtest", cloud !== null && JSON.stringify(cloud) === JSON.stringify(device), cloud ? ["headline", "par", "trails", "ghost", "playtest"].filter((k) => JSON.stringify(cloud[k]) !== JSON.stringify(device[k])).join(",") || "all same" : "no receipt");
+  const t1 = Date.now();
+  const p2 = await ask({ "x-judge-token": TOKEN, "cf-connecting-ip": "198.51.100.21" });
+  const a2 = await p2.json();
+  check("a repeat is answered from the store at once", p2.headers.get("x-proof") === "hit" && typeof a2.cached === "string" && JSON.stringify(still(a2.receipt)) === JSON.stringify(cloud), `${p2.headers.get("x-proof")} in ${Date.now() - t1} ms`);
+  const wrong = await ask({ "x-judge-token": TOKEN }, { ...mine.input, spec: "0".repeat(64) });
+  check("a spec hash the fill doesn't place is turned away (409)", wrong.status === 409 && (await wrong.json()).spec === mine.input.spec);
+  const anonProof = await ask({ "cf-connecting-ip": "198.51.100.22" });
+  check("tokenless without a session cookie: 401, nothing proved", anonProof.status === 401);
+  await fetch(`${base}/__flags`, { method: "POST", body: JSON.stringify({ "ff.edge_proof": "off" }) });
+  const off = await ask({ "x-judge-token": TOKEN });
+  const offHealth = await (await fetch(`${base}/v1/health`)).json();
+  check("ff.edge_proof = off: 503, and health stops offering it", off.status === 503 && offHealth.proof === false, String(off.status));
+  await fetch(`${base}/__flags`, { method: "POST", body: JSON.stringify({ "ff.edge_proof": null }) });
+
+  // 12. The canaries, as their crons run them: health and the stored brief, the fresh golden proof (twice:
+  // the second must equal the first), the live build on the canary pool. Each keeps its run in FLAGS.
+  const cron = async (c) => (await fetch(`${base}/__cron?cron=${encodeURIComponent(c)}`)).json();
+  const k15 = await cron("*/15 * * * *");
+  const run = (kv, kind) => (kv[`canary:${kind}`] ? JSON.parse(kv[`canary:${kind}`]) : null);
+  check("15-min canary: self health and the stored proof of the brief pass", run(k15, "health")?.ok === true && run(k15, "stored_proof")?.ok === true && /stored receipt/.test(run(k15, "stored_proof").detail), JSON.stringify([run(k15, "health"), run(k15, "stored_proof")]));
+  await cron("5 */2 * * *");
+  const k2 = await cron("5 */2 * * *");
+  check("2-h canary: a fresh proof of the golden world equals the one kept", run(k2, "fresh_proof")?.ok === true && /same receipt/.test(run(k2, "fresh_proof").detail), JSON.stringify(run(k2, "fresh_proof")));
+  const canaryBefore = (await pool("canary")).spent;
+  const k12 = await cron("35 */12 * * *");
+  const canaryAfter = await until(async () => ((await pool("canary")).spent > canaryBefore ? pool("canary") : null));
+  check("12-h canary: one live build on the canary pool, committed there", run(k12, "live_build")?.ok === true && canaryAfter !== null && canaryAfter.held === 0, `${JSON.stringify(run(k12, "live_build"))} spent ${canaryBefore} → ${canaryAfter?.spent}`);
+  const h = await (await fetch(`${base}/v1/health`)).json();
+  check("health shows the canaries: {at, ok}", h.canary?.ok === true && typeof h.canary.at === "string", JSON.stringify(h.canary));
 
   // 10. The fast lane is busy for this one: the fill fails over to Claude Haiku inside workerd. Last,
   // because the isolate then tries Cerebras second for 20 s, which would move the builds above to Haiku.

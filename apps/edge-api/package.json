@@ -9,10 +9,12 @@
   "scripts": {
     "build": "node scripts/build.mjs",
     "test:workerd": "node scripts/build.mjs && node scripts/test-workerd.mjs",
+    "time:proof": "node scripts/build.mjs && node scripts/time-proof.mjs",
     "judge-token": "node scripts/judge-token.mjs",
     "warm-cache": "node scripts/warm-cache.mjs",
     "secrets:staging": "node scripts/staging-secrets.mjs",
     "secrets:production": "node scripts/production-secrets.mjs",
+    "secrets:canary": "node scripts/canary-secret.mjs",
     "deploy:staging": "node scripts/deploy.mjs staging",
     "deploy:production": "node scripts/deploy.mjs production"
   },
@@ -21,12 +23,16 @@
     "@ghostrun/kits": "workspace:*",
     "@ghostrun/layout": "workspace:*",
     "@ghostrun/llm": "workspace:*",
+    "@ghostrun/nav": "workspace:*",
     "@ghostrun/proof": "workspace:*",
     "@ghostrun/registry": "workspace:*",
     "@ghostrun/sim": "workspace:*",
+    "@ghostrun/world": "workspace:*",
     "valibot": "catalog:"
   },
   "devDependencies": {
+    "@dimforge/rapier3d-deterministic": "catalog:",
+    "@recast-navigation/wasm": "0.43.1",
     "vite": "catalog:",
     "workerd": "1.20261019.1"
   }

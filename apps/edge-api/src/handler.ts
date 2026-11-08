@@ -23,11 +23,13 @@ import { capsFromEnv, doCall, Governor, governorClient, localCall, MemoryLedger,
 import { devOpen, gateMode, identify, ipKey, ipOf, mintSession, verifyTurnstile, type Caller, type GateEnv } from "./gate";
 import { json, ntfy, readJson } from "./http";
 import { MAX_IMAGE_URL, readImage } from "./image";
+import { healthMore } from "./health";
+import { proofRoute, type ProofEnv } from "./proof";
 import { getBoard, postBoard } from "./board";
 import { mcp } from "./mcp";
 import { getShare, memoryBlobs, postReport, postShare, postWrong, r2Blobs, type BlobStore, type ShareCtx } from "./share";
 
-export interface Env extends GateEnv, GovernorEnv {
+export interface Env extends GateEnv, GovernorEnv, ProofEnv {
   CEREBRAS_API_KEY: string;
   /** Claude Haiku: the fallback when the fast lane is busy or down (and the primary under route:primary). */
   ANTHROPIC_API_KEY?: string;
@@ -114,7 +116,7 @@ export async function handle(req: Request, env: Env, ctx?: WaitUntil): Promise<R
   const path = url.pathname;
   const later = (p: Promise<unknown>) => (ctx ? ctx.waitUntil(p) : void p.catch(() => undefined));
   // `vision`: a build can bring a picture (the client offers one only then)
-  if (path === "/v1/health") return json({ ok: true, packs: PACKS.map((p) => p.id), llm: hasModel(env), fallback: Boolean(env.CEREBRAS_API_KEY && env.ANTHROPIC_API_KEY), vision: lanesFor("vision", keysOf(env), { messages: [] }).length > 0, gate: gateMode(env, url), sitekey: env.TURNSTILE_SITEKEY ?? null });
+  if (path === "/v1/health") return json({ ok: true, packs: PACKS.map((p) => p.id), llm: hasModel(env), fallback: Boolean(env.CEREBRAS_API_KEY && env.ANTHROPIC_API_KEY), vision: lanesFor("vision", keysOf(env), { messages: [] }).length > 0, gate: gateMode(env, url), sitekey: env.TURNSTILE_SITEKEY ?? null, ...(await healthMore(env)) });
   // MCP for agents (mcp.ts): its tools run on the routes below, in-process, as the caller
   if (path === "/mcp") return mcp(req, env, { route: (r) => handle(r, env, ctx) });
   if (path === "/v1/session" && req.method === "POST") return session(req, env, url);
@@ -124,6 +126,7 @@ export async function handle(req: Request, env: Env, ctx?: WaitUntil): Promise<R
   if (path === "/v1/director" && req.method === "POST") return patch("director", req, env, url, later);
   if (path === "/v1/mind" && req.method === "POST") return mind(req, env, url);
   if (path === "/v1/host" && req.method === "POST") return host(req, env, url);
+  if (path === "/v1/proof" && req.method === "POST") return proofRoute(req, env, url, later);
   const shareId = /^\/v1\/share\/([a-z2-7]{16})$/.exec(path)?.[1];
   const boardOf = /^\/v1\/board\/([0-9a-f]{64})$/.exec(path)?.[1];
   const post = req.method === "POST";

@@ -1,8 +1,9 @@
 // Offline stand-ins for everything the edge API talks to: Cerebras (JSON + SSE with usage), Claude
 // (the fallback rung, and the scene brief for a request with a picture), Turnstile siteverify (behaving as Cloudflare documents its test secrets), ntfy, R2 and the
 // governor DO namespace. Tests never touch the network or real keys.
-import type { DoNamespace, R2Bucket, WaitUntil } from "../src/cf";
+import type { DoNamespace, KvNamespace, R2Bucket, WaitUntil } from "../src/cf";
 import { localCall, type Governor } from "../src/governor";
+import { ProofShardDO } from "../src/shard";
 
 // https://developers.cloudflare.com/turnstile/troubleshooting/testing/
 export const TURNSTILE = {
@@ -191,4 +192,32 @@ export async function readSse(res: Response): Promise<{ event: string; data: any
     .split("\n\n")
     .filter(Boolean)
     .map((block) => ({ event: /^event: (.+)$/m.exec(block)?.[1] ?? "", data: JSON.parse(/^data: (.+)$/m.exec(block)?.[1] ?? "null") }));
+}
+
+/** The cloud proof's shards in-process: one ProofShardDO per name, kept like a live object; `down` names fail. */
+export function shardNs(opts: { down?: (name: string) => boolean } = {}): DoNamespace & { names: Set<string>; jobs: number } {
+  const objects = new Map<string, ProofShardDO>();
+  const ns = {
+    names: new Set<string>(),
+    jobs: 0,
+    idFromName: (name: string) => name,
+    get: (id: unknown) => ({
+      fetch: async (input: string, init?: RequestInit) => {
+        const name = String(id);
+        ns.names.add(name);
+        ns.jobs++;
+        if (opts.down?.(name)) return new Response("shard down", { status: 500 });
+        let o = objects.get(name);
+        if (!o) objects.set(name, (o = new ProofShardDO()));
+        return o.fetch(new Request(input, init));
+      },
+    }),
+  };
+  return ns;
+}
+
+/** FLAGS: get and put over a map. */
+export function memKv(init: Record<string, string> = {}): KvNamespace & { map: Map<string, string> } {
+  const map = new Map(Object.entries(init));
+  return { map, get: async (k) => map.get(k) ?? null, put: async (k, v) => void map.set(k, v) };
 }

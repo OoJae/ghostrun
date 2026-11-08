@@ -3,15 +3,14 @@
 // moved, in words; and the gallery's recorded worlds. Each piece mirrors the web's own (pipeline.ts worldFromFill, edits.ts,
 // remix.ts) wherever a spec hash, a stored fill or a share's line depends on it, and
 // apps/web/test/mcp-parity.test.ts holds the two to the same answers.
-import { lawsUnwritten, layoutLaws, parseFill, specHash, splitObjects, type Entity, type WorldBundle } from "@ghostrun/ir";
-import { placeWorld } from "@ghostrun/layout";
+import { specHash, splitObjects, type Entity, type WorldBundle } from "@ghostrun/ir";
 import type { IntentOut } from "@ghostrun/llm";
 import { fraction, statusWord, type Chip, type Receipt } from "@ghostrun/proof/static";
-import { packFor, PACKS } from "@ghostrun/registry";
+import { ENGINE_HASH, placeFill as place } from "@ghostrun/world";
 import GALLERY_INDEX from "../../web/src/gallery/index.json?raw";
 
-/** The engine hash the web client binds into every spec hash and share (apps/web/src/pipeline.ts). */
-export const ENGINE_HASH = "4e9890fd2df60072f9db06a33e4030221249c1b3687b722b2388c21f09e97551";
+// the engine hash the web client binds into every spec hash and share, and the placer, are the web's own (@ghostrun/world)
+export { ENGINE_HASH };
 
 export type Mode = WorldBundle["mode"];
 
@@ -56,15 +55,8 @@ export function fillPack(fill: string): string | undefined {
 
 /** Fill text → placed world, choosing the pack from the registry (worldFromFill's spec-bearing half). */
 export async function placeFill(fillText: string, seed: number, opts: { pack?: string | undefined; mode?: Mode | undefined; setting?: string | undefined } = {}): Promise<Placed> {
-  const draft = parseFill(fillText, { seed }).draft;
-  // place into the pack the fill was written against (its meta line sometimes names another)
-  if (opts.pack && PACKS.some((p) => p.id === opts.pack)) draft.pack = { ...draft.pack, id: opts.pack };
-  if (opts.mode) draft.mode = opts.mode; // the intent decides play vs wander
-  const known = PACKS.some((p) => p.id === draft.pack.id);
-  const pack = packFor(draft.pack.id);
-  const layout = pack.generate({ seed, params: pack.defaults, sub: draft.pack.sub, laws: layoutLaws(fillText, draft.laws), harder: false });
-  const { bundle, notes } = placeWorld({ ...draft, engine: ENGINE_HASH }, layout, { reach: lawsUnwritten(fillText) });
-  if (!known) notes.unshift(`pack '${draft.pack.id}' not available, using '${pack.id}'`);
+  const { bundle, notes, pack: used } = place(fillText, seed, { pack: opts.pack, mode: opts.mode });
+  const pack = { id: used };
   // the stored fill names the pack actually used, so it always rebuilds the same world, and the
   // intent's setting, so a share link rebuilds the same look
   const lines = fillText.split("\n");

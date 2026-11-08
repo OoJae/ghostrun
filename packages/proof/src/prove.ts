@@ -30,6 +30,8 @@ export interface ProveOptions {
    * awaited after T2. T3 and the playtest take each as it came and play only what is missing.
    */
   played?: Played | Promise<Played>;
+  /** The playtest's runs played elsewhere, awaited once the receipt is out (default: played). */
+  playtestPlayed?: Played | Promise<Played>;
 }
 
 export async function prove(R: Rapier, b: WorldBundle, opts: ProveOptions): Promise<Receipt> {
@@ -75,7 +77,8 @@ export async function prove(R: Rapier, b: WorldBundle, opts: ProveOptions): Prom
     };
     if (!opts.playtest) return receipt;
     opts.onReceipt?.(receipt);
-    const pt = playtest(R, b, nav, s0.chain, receipt, team, s0.openers, opts.skillRuns, played);
+    const later = opts.playtestPlayed ? await opts.playtestPlayed : played;
+    const pt = playtest(R, b, nav, s0.chain, receipt, team, s0.openers, opts.skillRuns, later);
     return pt ? { ...receipt, playtest: pt } : receipt;
   } finally {
     nav.destroy();

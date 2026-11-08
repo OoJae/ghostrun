@@ -14,7 +14,10 @@
 //   SESSION_SECRET      ≥32 random bytes. Signs the 30-minute session cookie; keys the IP hashes.
 //   JUDGE_TOKEN_KEY     ≥32 random bytes. HMAC key for judge tokens (`pnpm --filter @ghostrun/edge-api judge-token`).
 //   JUDGE_TOKEN_HASHES  Comma list of `[judge:|dev:|canary:]hex(HMAC-SHA256(JUDGE_TOKEN_KEY, token))`.
-//   NTFY_URL            Optional ntfy topic URL (the topic name is the secret): pool alerts at 50%/80%, abuse reports.
+//   NTFY_URL            Optional ntfy topic URL (the topic name is the secret): pool alerts at 50%/80%, abuse reports,
+//                       canary failures (and recoveries).
+//   CANARY_TOKEN        The raw canary judge token (its canary: hash is in JUDGE_TOKEN_HASHES): the 12-hourly canary's
+//                       live build. `pnpm --filter @ghostrun/edge-api secrets:canary <env>` sets it from .dev.vars.
 // Local dev only (in .dev.vars, never on a deployed env): DEV_OPEN=1 opens the gate for localhost when
 // TURNSTILE_SECRET is unset. It is ignored for any other hostname.
 //
@@ -24,6 +27,12 @@
 // GOVERNOR_TIMEOUT_MS 300, TURNSTILE_SITEKEY (echoed by /v1/health), TURNSTILE_HOSTNAMES (comma list),
 // MCP_PER_WINDOW 120 and MCP_BUILDS_PER_WINDOW 20 (per token per isolate per 10 min), MCP_ORIGINS (comma list).
 // Kill switch: any value at key "builds:paused" in FLAGS pauses new builds within ~60 s, no deploy.
+// Cloud proof (POST /v1/proof, src/proof.ts): the same prove() the device runs, its T3 and playtest runs dealt to
+// ProofShard DOs, receipts kept in SHARES under proof/; "off" at key "ff.edge_proof" in FLAGS turns it off (clients
+// prove on the device only). Vars: PROOF_SHARDS 6 (shards one proof plays on at once; 0 = whole in the Worker),
+// PROOF_SHARD_TIMEOUT_MS 30000, PROOFS_PER_WINDOW 20 (proofs per session, and per IP for a cookie, per isolate
+// per 10 min; stored receipts don't count). Canaries (src/canary.ts) run on the crons below, on each env; their
+// last runs are in FLAGS under canary:<kind> and /v1/health shows {at, ok}.
 // Build cache: an exact repeat of a clean build replays from SHARES (keys under cache/), free; the
 // value "off" at key "ff.public_cache" in FLAGS turns it off. Warm it: `pnpm --filter @ghostrun/edge-api warm-cache`.
 {
@@ -33,14 +42,25 @@
   "build": { "command": "node scripts/build.mjs", "watch_dir": "src" },
   "compatibility_date": "2026-10-19",
   "observability": { "enabled": true },
+  // A cold cloud proof spends its CPU on the ProofShard DOs, a few seconds each; this is the ceiling for a
+  // proof played whole in the Worker when no shard answers (the CTF brief is about 17 s of CPU on a laptop).
+  "limits": { "cpu_ms": 120000 },
+  // no_bundle uploads dist/worker as built: index.js and, as CompiledWasm modules, the two pinned wasm builds
+  // build.mjs copies beside it (the cloud proof's engine).
+  "find_additional_modules": true,
+  "rules": [{ "type": "CompiledWasm", "globs": ["**/*.wasm"] }],
   "assets": {
     "directory": "../web/dist/app",
     "run_worker_first": ["/v1/*", "/mcp"],
     "not_found_handling": "single-page-application"
   },
-  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["GovernorDO"] }],
+  "migrations": [
+    { "tag": "v1", "new_sqlite_classes": ["GovernorDO"] },
+    // the cloud proof's shards (they store nothing)
+    { "tag": "v2", "new_sqlite_classes": ["ProofShardDO"] }
+  ],
 
-  "durable_objects": { "bindings": [{ "name": "GOVERNOR", "class_name": "GovernorDO" }] },
+  "durable_objects": { "bindings": [{ "name": "GOVERNOR", "class_name": "GovernorDO" }, { "name": "PROOF_SHARD", "class_name": "ProofShardDO" }] },
   "kv_namespaces": [{ "binding": "FLAGS", "id": "TODO(owner)" }],
   "r2_buckets": [{ "binding": "SHARES", "bucket_name": "ghostrun-shares-dev" }],
   "vars": { "TURNSTILE_SITEKEY": "1x00000000000000000000AA" },
@@ -48,7 +68,9 @@
   "env": {
     "staging": {
       "name": "ghostrun-edge-staging",
-      "durable_objects": { "bindings": [{ "name": "GOVERNOR", "class_name": "GovernorDO" }] },
+      "durable_objects": { "bindings": [{ "name": "GOVERNOR", "class_name": "GovernorDO" }, { "name": "PROOF_SHARD", "class_name": "ProofShardDO" }] },
+      // the canaries (src/canary.ts CRONS): health + the stored brief, the fresh golden proof, the live build
+      "triggers": { "crons": ["*/15 * * * *", "5 */2 * * *", "35 */12 * * *"] },
       "kv_namespaces": [{ "binding": "FLAGS", "id": "80b2558697194d9cb16ef2d9455265ec" }],
       "r2_buckets": [{ "binding": "SHARES", "bucket_name": "ghostrun-shares-staging" }],
       // Token-only for now: no TURNSTILE_SECRET on staging, so the gate is closed to everyone
@@ -64,7 +86,8 @@
     "production": {
       // Served at https://play.ghostrun.workers.dev (the account's workers.dev subdomain is "ghostrun").
       "name": "play",
-      "durable_objects": { "bindings": [{ "name": "GOVERNOR", "class_name": "GovernorDO" }] },
+      "durable_objects": { "bindings": [{ "name": "GOVERNOR", "class_name": "GovernorDO" }, { "name": "PROOF_SHARD", "class_name": "ProofShardDO" }] },
+      "triggers": { "crons": ["*/15 * * * *", "5 */2 * * *", "35 */12 * * *"] },
       "kv_namespaces": [{ "binding": "FLAGS", "id": "183af14963654b6d8ba2f7ad21d34dd0" }],
       "r2_buckets": [{ "binding": "SHARES", "bucket_name": "ghostrun-shares" }],
       // Secrets: `pnpm --filter @ghostrun/edge-api secrets:production` (run by the owner).

@@ -8,3 +8,9 @@ declare module "*?raw" {
 interface ImportMeta {
   glob<T = unknown>(pattern: string, options: { eager: true; import: "default" }): Record<string, T>;
 }
+
+/** A wasm file imported as a module: workerd hands over the compiled module (engine-workerd.ts). */
+declare module "*.wasm" {
+  const module: WebAssembly.Module;
+  export default module;
+}
