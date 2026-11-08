@@ -59,6 +59,8 @@ const secrets = {
   SESSION_SECRET: randomBytes(32).toString("base64url"),
   JUDGE_TOKEN_KEY: key,
   JUDGE_TOKEN_HASHES: `${tokenHash(key, vars.PROD_JUDGE_TOKEN)},canary:${tokenHash(key, vars.PROD_CANARY_TOKEN)}`,
+  // the 12-hourly canary's live build sends it
+  CANARY_TOKEN: vars.PROD_CANARY_TOKEN,
 };
 console.log(`setting ${Object.keys(secrets).join(", ")} on the production Worker (values not shown)`);
 const w = spawn("pnpm", ["dlx", "wrangler@4.152.0", "secret", "bulk", "--env", "production"], {
