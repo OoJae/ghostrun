@@ -207,7 +207,9 @@ export function buildWorldView(bundle: WorldBundle, look: LookStyle): WorldView 
   const ground = new Mesh(keep(new PlaneGeometry(320, 240)), keep(groundMat));
   ground.rotation.x = -Math.PI / 2;
   // a little under the floors' tops so the two never fight for the same depth (the city keeps its own)
-  ground.position.y = gy - (neonLook ? 0.012 : 0.05);
+  // (the orrery's walkways stand in space: the deck is far below them, deeper than a fall that
+  // brings you back, so a step off a walkway looks like the drop it is)
+  ground.position.y = gy - (neonLook ? 0.012 : 0.05) - (bundle.pack.id === "orrery" ? 24 : 0);
   ground.name = "ground";
   root.add(ground);
 

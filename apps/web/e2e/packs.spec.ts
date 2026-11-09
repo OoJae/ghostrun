@@ -1,6 +1,10 @@
 // The four newer layout packs in the browser: each hand-written world opens on its own pack,
 // draws, and the AI runners come back with a green receipt (12 of 12 won, or every thing toured).
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import { expect, test, type Page } from "@playwright/test";
+
+const here = dirname(fileURLToPath(import.meta.url));
 
 function collectErrors(page: Page): string[] {
   const errors: string[] = [];
@@ -26,6 +30,7 @@ for (const [fx, pack, look, headline] of [
     const badge = page.getByTestId("proof-badge");
     await expect(badge).toContainText(headline, { timeout: 120_000 });
     await expect(badge).toHaveClass(/\bgood\b/);
+    await page.screenshot({ path: resolve(here, `__screenshots__/pack-${fx}.png`) });
     expect(errors).toEqual([]);
   });
 }
