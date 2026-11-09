@@ -7,6 +7,7 @@ import type { Booking, SpeechAct } from "@ghostrun/sim";
 import { download, fileName, icsFor, slotWords, today } from "../acts";
 import type { Engine } from "../engine";
 import { probe } from "../probe";
+import { t } from "../i18n";
 
 export interface Asking {
   npc: string;
@@ -49,7 +50,10 @@ export function ActsHud({ engine, active, bundle, asking, onYes, onNo }: { engin
   const name = (id: string) => bundle.entities.find((e) => e.id === id)?.noun || id.replace(/_/g, " ");
   const { tz } = today();
   const lang = bundle.lang || "en";
-  const what = (a: SpeechAct) => (a.act === "book" ? `Book: ${bundle.rules.find((r) => r.when.t === "spoken" && r.when.a === a.to && r.when.act === "book")?.then.find((e) => e.e === "book_slot")?.v || "a booking"}, ${slotWords(a.slot, tz, lang)}?` : `${a.act === "buy" ? "Buy" : "Pay"} ${a.n ? `${a.n} ` : ""}${a.what.replace(/_/g, " ")}?`);
+  const what = (a: SpeechAct) =>
+    a.act === "book"
+      ? t("Book: {what}, {when}?", { what: String(bundle.rules.find((r) => r.when.t === "spoken" && r.when.a === a.to && r.when.act === "book")?.then.find((e) => e.e === "book_slot")?.v || t("a booking")), when: slotWords(a.slot, tz, lang) })
+      : t(a.act === "buy" ? "Buy {what}?" : "Pay {what}?", { what: `${a.n ? `${a.n} ` : ""}${a.what.replace(/_/g, " ")}` });
   return (
     <div className="acts" style={{ position: "absolute", top: 150, left: "50%", transform: "translateX(-50%)", display: "flex", flexDirection: "column", alignItems: "center", gap: 6, zIndex: 5 }}>
       {seen.purse.length > 0 && (
@@ -59,29 +63,29 @@ export function ActsHud({ engine, active, bundle, asking, onYes, onNo }: { engin
       )}
       {seen.seeing.map((id) => (
         <div key={id} className="glass" data-testid="seen" role="status" style={{ padding: "4px 10px", fontSize: 13, color: "#ffd23d" }}>
-          The {name(id)} sees you
+          {t("The {thing} sees you", { thing: name(id) })}
         </div>
       ))}
       {seen.away.map(([id, s]) => (
         <div key={id} className="glass" data-testid="looking-away" role="status" style={{ padding: "4px 10px", fontSize: 13 }}>
-          The {name(id)} looks away{s > 0 ? ` · ${s} s` : ""}
+          {t("The {thing} looks away", { thing: name(id) })}{s > 0 ? ` · ${s} s` : ""}
         </div>
       ))}
       {asking && (
-        <div className="glass" data-testid="act-confirm" role="dialog" aria-label={`${asking.name} asks`} style={{ padding: "8px 12px", display: "flex", gap: 8, alignItems: "center", fontSize: 14 }}>
+        <div className="glass" data-testid="act-confirm" role="dialog" aria-label={t("{name} asks", { name: asking.name })} style={{ padding: "8px 12px", display: "flex", gap: 8, alignItems: "center", fontSize: 14 }}>
           <span>{what(asking.act)}</span>
           <button type="button" data-testid="act-yes" onClick={onYes}>
-            {asking.act.act === "book" ? "Book it" : "Yes"}
+            {asking.act.act === "book" ? t("Book it") : t("Yes")}
           </button>
           <button type="button" data-testid="act-no" onClick={onNo}>
-            Not now
+            {t("Not now")}
           </button>
         </div>
       )}
       {seen.bookings.map((b, i) => (
         <div key={`${b.tick}-${i}`} className="glass" data-testid="booked" role="status" style={{ padding: "8px 12px", display: "flex", gap: 8, alignItems: "center", fontSize: 14 }}>
           <span>
-            Booked with the {name(b.with)}: {b.what}, {slotWords(b.slot, tz, lang)} ({tz})
+            {t("Booked with the {thing}: {what}, {when} ({tz})", { thing: name(b.with), what: b.what, when: slotWords(b.slot, tz, lang), tz })}
           </span>
           <button
             type="button"
@@ -91,7 +95,7 @@ export function ActsHud({ engine, active, bundle, asking, onYes, onNo }: { engin
               if (text) download(text, fileName(b.what));
             }}
           >
-            Add to calendar (.ics)
+            {t("Add to calendar (.ics)")}
           </button>
         </div>
       ))}

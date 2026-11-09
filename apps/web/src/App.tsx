@@ -25,6 +25,8 @@ import { createShare, loadShare, reportWrong } from "./share";
 import { Minds } from "./minds";
 import { propose, twistWorld } from "./director";
 import { fengShuiFor } from "./fengshui";
+import { chooseLocale, chosenLocale, k, pickLocale, setLocale, t, tn, type Locale } from "./i18n";
+import { LanguageChip } from "./hud/Language";
 import { BRIEF, buildWorld, ENGINE_HASH, FIXTURE_PROMPTS, FIXTURES, hashWorld, worldFromFill, type Intent, type World } from "./pipeline";
 import { probe } from "./probe";
 import { dualProof, proveInCloud } from "./cloud";
@@ -64,23 +66,23 @@ const RECORD = params0.get("record") === "1";
 
 /** One-click prompts: the organizer's brief, the recorded worlds, and live-only stretches. */
 const SUGGESTIONS: readonly { label: string; prompt: string; live?: true }[] = [
-  { label: "The organizer's CTF brief", prompt: BRIEF },
-  { label: "Museum heist", prompt: FIXTURE_PROMPTS.vault! },
-  { label: "Glowing forest climb", prompt: FIXTURE_PROMPTS.forest! },
-  { label: "Parkour time trial", prompt: FIXTURE_PROMPTS.parkour! },
-  { label: "Coin rush, mind the lava", prompt: FIXTURE_PROMPTS["coin-rush"]! },
-  { label: "Minimalist museum tour", prompt: "A minimalist white museum with five sculptures and a guide who explains each one.", live: true },
-  { label: "Wizard duel", prompt: "A wizard duel on floating islands: knock your rival off the edge before they knock you off.", live: true },
-  { label: "Bludiště s duchy (Czech)", prompt: "Bludiště s duchy: najdi klíč a uteč východem, než tě chytí.", live: true },
+  { label: k("The organizer's CTF brief"), prompt: BRIEF },
+  { label: k("Museum heist"), prompt: FIXTURE_PROMPTS.vault! },
+  { label: k("Glowing forest climb"), prompt: FIXTURE_PROMPTS.forest! },
+  { label: k("Parkour time trial"), prompt: FIXTURE_PROMPTS.parkour! },
+  { label: k("Coin rush, mind the lava"), prompt: FIXTURE_PROMPTS["coin-rush"]! },
+  { label: k("Minimalist museum tour"), prompt: "A minimalist white museum with five sculptures and a guide who explains each one.", live: true },
+  { label: k("Wizard duel"), prompt: "A wizard duel on floating islands: knock your rival off the edge before they knock you off.", live: true },
+  { label: k("Bludiště s duchy (Czech)"), prompt: "Bludiště s duchy: najdi klíč a uteč východem, než tě chytí.", live: true },
 ];
 
 /** The landing's one-click starts: the brief, a surprise, and three recorded worlds (three looks, three packs). */
 const STARTERS: readonly Starter[] = [
-  { label: "The organizer's brief", prompt: BRIEF, kind: "brief" },
-  { label: "Surprise me", prompt: null, kind: "surprise" },
-  { label: "Museum heist", prompt: FIXTURE_PROMPTS.vault! },
-  { label: "Forest climb", prompt: FIXTURE_PROMPTS.forest! },
-  { label: "Coin rush", prompt: FIXTURE_PROMPTS["coin-rush"]! },
+  { label: k("The organizer's brief"), prompt: BRIEF, kind: "brief" },
+  { label: k("Surprise me"), prompt: null, kind: "surprise" },
+  { label: k("Museum heist"), prompt: FIXTURE_PROMPTS.vault! },
+  { label: k("Forest climb"), prompt: FIXTURE_PROMPTS.forest! },
+  { label: k("Coin rush"), prompt: FIXTURE_PROMPTS["coin-rush"]! },
 ];
 
 /** The gallery's worlds, fetched one at a time when opened. */
@@ -90,12 +92,12 @@ type Status = "booting" | "building" | "playing" | "error";
 type Mode = "checking" | "live" | "fixture";
 
 const SOURCE: Record<Mode, { label: string; title: string }> = {
-  checking: { label: "…", title: "checking the live AI lane" },
-  live: { label: "live AI", title: "Intent and fill are generated live (Cerebras, with Claude Haiku as the fallback), streamed line by line" },
-  fixture: { label: "fixture", title: "Live AI unavailable: showing the recorded CTF fixture world" },
+  checking: { label: "…", title: k("checking the live AI lane") },
+  live: { label: k("live AI"), title: k("Intent and fill are generated live (Cerebras, with Claude Haiku as the fallback), streamed line by line") },
+  fixture: { label: k("fixture"), title: k("Live AI unavailable: showing the recorded CTF fixture world") },
 };
 /** A live world the fallback rung wrote: same proof, said plainly. */
-const FELL_BACK = { label: "live AI · Haiku", title: "The fast lane was busy, so Claude Haiku (Anthropic) wrote this world. It is proved the same way." };
+const FELL_BACK = { label: k("live AI · Haiku"), title: k("The fast lane was busy, so Claude Haiku (Anthropic) wrote this world. It is proved the same way.") };
 const MODEL_NAME: Record<string, string> = { "claude-haiku-5-5": "Claude Haiku", "claude-sonnet-5-5": "Claude Sonnet", "qwen-3.8-27b": "Qwen 3.8" };
 const model = (id: string) => MODEL_NAME[id] ?? (id || "the live AI");
 /** A world the edge replayed from its cache: never passed off as live, and one click from a fresh build. */
@@ -106,7 +108,7 @@ const fromCache = (c: LiveCached, fresh: () => void) => {
   return {
     label: `cached · built live ${day} by ${model(c.fillModel)}`,
     title: `Replayed from the cache, not built now: this prompt was built live on ${when} (intent by ${model(c.intentModel)}, world by ${model(c.fillModel)}), and it is proved again on your device. Build it fresh asks the AI for a new one.`,
-    action: { label: "Build it fresh", run: fresh },
+    action: { label: k("Build it fresh"), run: fresh },
   };
 };
 
@@ -176,6 +178,10 @@ export function App() {
   /** Worlds before each edit, for Undo; cleared by a new prompt. */
   const history = useRef<World[]>([]);
   const builtPrompt = useRef(FIRST_PROMPT);
+  // the HUD's language: the one chosen with the chip, else the world's (when the HUD speaks it), else the browser's
+  const browserLangs = typeof navigator === "undefined" ? [] : navigator.languages?.length ? navigator.languages : [navigator.language];
+  const [lang, setLang] = useState<Locale>(() => chosenLocale() ?? pickLocale(undefined, browserLangs));
+  setLocale(lang);
   /** Runs waiting on their receipt (an edit's before/after numbers). */
   const afterProof = useRef(new Map<number, (r: Receipt) => void>());
   const receiptRef = useRef<Receipt | null>(null);
@@ -194,6 +200,12 @@ export function App() {
   /** And its receipt (a counterexample chip's red/green sets this world beside it). */
   const repairedReceipt = useRef<Receipt | null>(null);
   const current = useRef<World | null>(null);
+  const worldLang = current.current?.bundle.lang;
+  useEffect(() => {
+    // a new world in another language brings the HUD with it, unless the chip chose one
+    // (the browser's languages don't change while the page is open)
+    if (!chosenLocale()) setLang(pickLocale(worldLang, browserLangs));
+  }, [worldLang]);
   const minds = useRef<Minds | null>(null);
   const [bark, setBark] = useState<{ npc: string; name: string; line: string; at: number } | null>(null);
   const [talking, setTalking] = useState<{ npc: string; name: string } | null>(null);
@@ -420,7 +432,7 @@ export function App() {
       setProof({ status: "idle", chips: [], receipt: null });
       delete probe().specHash;
       if (useLive) {
-        if (image) setNotice("Looking at your image…");
+        if (image) setNotice(t("Looking at your image…"));
         const r = await liveBuild(text, {
           fresh: rebuild,
           ...(image ? { image: image.url } : {}),
@@ -549,7 +561,7 @@ export function App() {
             sim.replay(shared.record.inputs, shared.record.minds ?? []);
             sim.onReplayEnd = () => setNotice(undefined);
           }
-          setNotice(shared.exact ? "Shared run: replaying exactly as played. Press any key to take over." : "Shared run from another version: the world rebuilt, but the replay may drift.");
+          setNotice(shared.exact ? t("Shared run: replaying exactly as played. Press any key to take over.") : t("Shared run from another version: the world rebuilt, but the replay may drift."));
         } else if (GALLERY.some((g) => g.slug === params.get("g")) && !disposed) {
           await openGallery(GALLERY.find((g) => g.slug === params.get("g"))!); // a remix's link to its original
         } else {
@@ -633,13 +645,13 @@ export function App() {
   const shareRun = async () => {
     const w = current.current;
     const sim = engine.current?.rapierSim;
-    if (!w || !sim || !specHash) return setToast("Nothing to share yet.");
+    if (!w || !sim || !specHash) return setToast(t("Nothing to share yet."));
     // a remix carries its line; any share says the prompt it was built from
     const line = lineageOf(remixSrc, w);
     const url = await createShare(w, specHash, sim.inputs, sim.minds, { prompt: line?.origin.prompt || w.source?.base || w.source?.prompt || builtPrompt.current, line });
-    if (!url) return setToast("Sharing needs the live service, which isn't reachable.");
+    if (!url) return setToast(t("Sharing needs the live service, which isn't reachable."));
     await navigator.clipboard?.writeText(url).catch(() => undefined);
-    setToast(`Link copied: ${url}`);
+    setToast(t("Link copied: {url}", { url }));
   };
 
   /**
@@ -692,7 +704,7 @@ export function App() {
     const original = w.source?.base ?? w.source?.prompt ?? builtPrompt.current;
     const patch = await liveEdit(editedPrompt(original, w.source?.edits ?? []), change, intentFor(w, original), pinLayout(w.fill), w.seed);
     if (runId.current !== base) return;
-    if (!patch) return setEdit({ status: "failed", change, message: "The live AI couldn't make that change just now. Try again, or say it differently." });
+    if (!patch) return setEdit({ status: "failed", change, message: t("The live AI couldn't make that change just now. Try again, or say it differently.") });
     await applyEdit(w, change, patch, t0);
   };
 
@@ -708,7 +720,7 @@ export function App() {
     const { text, stats, layout } = mergeEdit(fill0, patch, w.seed);
     const w2 = worldFromFill(text, w.seed, w.intent.live, w.bundle.pack.id, w.bundle.mode);
     const summary = [...(layout?.summary ?? []), ...changeSummary(w.bundle, w2.bundle)];
-    if (!summary.length && text.trim() === fill0.trim()) return setEdit({ status: "failed", change, message: stats.locked ? "That would only change what the world promises, and the proof keeps those fixed." : "Nothing in the world changed. Try saying it differently." });
+    if (!summary.length && text.trim() === fill0.trim()) return setEdit({ status: "failed", change, message: stats.locked ? t("That would only change what the world promises, and the proof keeps those fixed.") : t("Nothing in the world changed. Try saying it differently.") });
     if (layout?.notes.length) w2.notes.unshift(...layout.notes);
     w2.source = { prompt: editedPrompt(original, edits), intent: intentFor(w, original), fill: w2.fill, seed: w.seed, pack: w2.bundle.pack.id, base: original, edits, ...(w.source?.pinned ? { pinned: w.source.pinned } : {}) };
     history.current.push(w);
@@ -719,7 +731,7 @@ export function App() {
     afterProof.current.set(id, (after) => {
       const delta = before ? receiptDelta(before, after) : null;
       setEdit({ status: "done", change, summary: shown, locked: stats.locked, delta, failures: before ? newFailures(before, after) : [], notes });
-      if (collapsedRef.current && delta?.length) setToast(`Edit re-proved: ${delta.slice(0, 2).map((d) => `${d.label} ${d.from} → ${d.to}`).join(" · ")}`);
+      if (collapsedRef.current && delta?.length) setToast(t("Edit re-proved: {what}", { what: delta.slice(0, 2).map((d) => `${d.label} ${d.from} → ${d.to}`).join(" · ") }));
     });
     await show(w2, id, t0, [{ label: "edit", ms: performance.now() - t0 }]);
   };
@@ -743,7 +755,7 @@ export function App() {
     history.current.push(w);
     restyledWorlds.current.add(w2);
     await redraw(w2);
-    setEdit({ status: "done", change: said, summary: [what, "the same spec: the receipt stands"], locked: 0, delta: null, failures: [] });
+    setEdit({ status: "done", change: said, summary: [what, t("the same spec: the receipt stands")], locked: 0, delta: null, failures: [] });
   };
   /** Swap in a world that only looks different: the scene restyled under the sim (a fresh load if there's none to restyle). */
   const redraw = async (w: World) => {
@@ -781,7 +793,7 @@ export function App() {
     if (r.kind !== "world") {
       engine.current?.endPreview();
       setBuilding(null);
-      return setEdit({ status: "failed", change, message: r.kind === "refused" ? r.message : "The live AI couldn't rebuild it just now. Try again in a moment." });
+      return setEdit({ status: "failed", change, message: r.kind === "refused" ? r.message : t("The live AI couldn't rebuild it just now. Try again in a moment.") });
     }
     const w2 = worldFromFill(r.fill, r.seed, { genre: r.intent.genre, setting: r.intent.setting, goal: r.intent.goal, fail: r.intent.fail, role: r.intent.role }, r.intent.pack, r.intent.mode);
     w2.source = { prompt, intent: r.intent, fill: r.fill, seed: r.seed, pack: r.intent.pack, pinned };
@@ -805,10 +817,10 @@ export function App() {
   const cardActs: CardActions = {
     onLook: (v) => {
       const name = LOOK_CHOICES.find((c) => c.value === v)?.label ?? v;
-      void restyleWorld({ look: v }, `make it look like ${name.toLowerCase()}`, `look: ${name}`);
+      void restyleWorld({ look: v }, `make it look like ${name.toLowerCase()}`, t("look: {name}", { name: t(name) }));
     },
-    onPhase: (p) => void restyleWorld({ phase: p }, `make it ${p === "day" ? "daytime" : p}`, `now ${p}`),
-    onWeather: (x) => void restyleWorld({ weather: x as NonNullable<LookPin["weather"]> }, x === "clear" ? "clear skies" : `make it ${WEATHER_WORD[x] ?? x}`, x === "clear" ? "skies clear" : `now ${x}`),
+    onPhase: (p) => void restyleWorld({ phase: p }, `make it ${p === "day" ? "daytime" : p}`, t("now {what}", { what: t(p) })),
+    onWeather: (x) => void restyleWorld({ weather: x as NonNullable<LookPin["weather"]> }, x === "clear" ? "clear skies" : `make it ${WEATHER_WORD[x] ?? x}`, x === "clear" ? t("skies clear") : t("now {what}", { what: t(x) })),
     onLaws: (c) => {
       const w = current.current;
       if (!w) return;
@@ -884,7 +896,7 @@ export function App() {
     const patches = await Promise.all(ANGLES.map((a) => liveEdit(prompt, `${change}: ${a}`, intent, fill0, w.seed)));
     if (runId.current !== base) return;
     const worlds = patches.map((p) => (p ? worldFromFill(mergeEdit(fill0, p, w.seed).text, w.seed, w.intent.live, w.bundle.pack.id, w.bundle.mode) : null));
-    if (!worlds.some(Boolean)) return setEdit({ status: "failed", change, message: "The live AI couldn't write the harder versions just now. Try again in a moment." });
+    if (!worlds.some(Boolean)) return setEdit({ status: "failed", change, message: t("The live AI couldn't write the harder versions just now. Try again in a moment.") });
     let proved = 0;
     const lanes = Math.max(1, Math.min(worlds.length, (navigator.hardwareConcurrency || 4) - 2));
     const receipts: (Receipt | null)[] = worlds.map(() => null);
@@ -900,7 +912,7 @@ export function App() {
     );
     if (runId.current !== base) return;
     const { best, verdicts } = pickHarder(before, receipts);
-    if (best === null) return setEdit({ status: "failed", change, message: "None of the harder versions stayed fair, so the world is unchanged.", race: verdicts });
+    if (best === null) return setEdit({ status: "failed", change, message: t("None of the harder versions stayed fair, so the world is unchanged."), race: verdicts });
     const w2 = worlds[best]!;
     w2.source = { prompt: editedPrompt(original, edits), intent, fill: w2.fill, seed: w.seed, pack: w2.bundle.pack.id, base: original, edits };
     history.current.push(w);
@@ -929,16 +941,16 @@ export function App() {
     const fill0 = pinLayout(w.fill);
     const patch = await liveDirector(editedPrompt(original, edits), intentFor(w, original), fill0, cutNotes(w.bundle, before), w.seed);
     if (runId.current !== base) return;
-    if (!patch) return quiet("The Director's cut isn't available just now.");
+    if (!patch) return quiet(t("The Director's cut isn't available just now."));
     const { text } = mergeEdit(fill0, patch, w.seed);
     const w2 = worldFromFill(text, w.seed, w.intent.live, w.bundle.pack.id, w.bundle.mode);
     const summary = changeSummary(w.bundle, w2.bundle);
-    if (!summary.length) return quiet("The Director's cut changed nothing in this world.");
+    if (!summary.length) return quiet(t("The Director's cut changed nothing in this world."));
     w2.source = { prompt: editedPrompt(original, edits), intent: intentFor(w, original), fill: w2.fill, seed: w.seed, pack: w2.bundle.pack.id, base: original, edits };
     setCut({ status: "proving", summary });
     const after = await proveOnce(w2, 12).catch(() => null);
     if (runId.current !== base) return;
-    if (!after || !cutHolds(before, after)) return quiet("The Director's cut didn't play as well as your world, so it wasn't offered.");
+    if (!after || !cutHolds(before, after)) return quiet(t("The Director's cut didn't play as well as your world, so it wasn't offered."));
     cutWorld.current = w2;
     setCut({ status: "offer", summary });
   };
@@ -991,7 +1003,7 @@ export function App() {
       onArrive: () => {
         if (f.tick === null || engine.current?.playing !== shot) return;
         shot.keep = 1; // through the replay's rebuild of the world
-        replayMoment(f.tick, 60, "Esc or any key takes over");
+        replayMoment(f.tick, 60, k("Esc or any key takes over"));
       },
       onEnd: () => {
         const sim = engine.current?.rapierSim;
@@ -1016,7 +1028,7 @@ export function App() {
    * as logged), from four seconds before the moment (a clean take: up to half a minute); any key
    * takes over.
    */
-  const replayMoment = (tick: number, back = 240, takeOver = "Press any key to take over") => {
+  const replayMoment = (tick: number, back = 240, takeOver = k("Press any key to take over")) => {
     const w = current.current;
     const sim = engine.current?.rapierSim;
     if (!w || !sim) return;
@@ -1029,7 +1041,7 @@ export function App() {
       if (!s2) return;
       s2.replay(inputs, chosen, from);
       s2.onReplayEnd = () => setNotice(undefined);
-      setNotice(`Replaying from ${mmss(from)}, exactly as it happened. ${takeOver}.`);
+      setNotice(t("Replaying from {at}, exactly as it happened. {then}.", { at: mmss(from), then: t(takeOver) }));
     });
   };
 
@@ -1054,7 +1066,7 @@ export function App() {
     setBypassed(false);
     setRemixSrc(null);
     await show(world, ++runId.current, t0, [{ label: "gallery", ms: performance.now() - t0 }]);
-    setToast("A recorded live AI world (unedited), re-proved on your device now.");
+    setToast(t("A recorded live AI world (unedited), re-proved on your device now."));
     setRemixSrc({ ref: galleryRef(entry.slug), kind: "gallery", prompt: g.prompt, spec: await hashWorld(world.bundle), line: null });
     setCopied(asRemix);
     if (asRemix) (setCollapsed(false), setEditFocus((n) => n + 1));
@@ -1114,7 +1126,7 @@ export function App() {
       proof: proofBadge(proof),
       score: scoreText(score, teams, clock, secrets),
       hint: useHint,
-      toast: toast ?? notice ?? (status === "building" ? (building === null ? "Building the world…" : `Building… ${building} ${building === 1 ? "line" : "lines"}`) : null),
+      toast: toast ?? notice ?? (status === "building" ? (building === null ? t("Building the world…") : tn(building, "Building… {n} line", "Building… {n} lines")) : null),
       bark,
       result: result && w ? vrResult(result, w.bundle, proof.receipt?.par?.goldS ?? null, vrCard) : null,
       race: race.chip ? { rival: race.chip.rival, secrets: race.chip.secrets } : null,
@@ -1158,7 +1170,7 @@ export function App() {
         )}
         {mode === "live" && status === "playing" && !collapsed && !typing && current.current?.bundle.mode === "wander" && (
           <div className="glass tourhost" data-testid="tour-host">
-            <AskHost run={false} placeholder="Ask the Host about this place" chips={tourChips(current.current.bundle)} onAsk={(q) => askHost(q, tourFacts(current.current!.bundle, proof.receipt))} onFly={(f) => void flyTo(f)} voice={speech.enabled ? { say: speech.host, again: speech.again } : undefined} />
+            <AskHost run={false} placeholder={t("Ask the Host about this place")} chips={tourChips(current.current.bundle)} onAsk={(q) => askHost(q, tourFacts(current.current!.bundle, proof.receipt))} onFly={(f) => void flyTo(f)} voice={speech.enabled ? { say: speech.host, again: speech.again } : undefined} />
           </div>
         )}
         {!collapsed && !typing && intent && building === null && (
@@ -1180,14 +1192,14 @@ export function App() {
           <div className={`glass scoreline ${score.result ?? ""}`} data-testid="score">
             {teams ? (
               <>
-                <span className="red">RED {score.red}</span> – <span className="blue">{score.blue} BLUE</span>
+                <span className="red">{t("RED")} {score.red}</span> – <span className="blue">{score.blue} {t("BLUE")}</span>
               </>
             ) : (
-              <span className="red">SCORE {score.red}</span>
+              <span className="red">{t("SCORE")} {score.red}</span>
             )}
             {clock !== null && !score.result && <span className="clock"> · {Math.floor(clock / 60)}:{String(Math.floor(clock % 60)).padStart(2, "0")}</span>}
-            {secrets.of > 0 && secrets.found > 0 && <span className="secrets" title="Secrets found (they don't count toward the win)"> · ★ {secrets.found}/{secrets.of}</span>}
-            {score.result && <strong>{score.result === "win" ? " · You win!" : " · You lose"}</strong>}
+            {secrets.of > 0 && secrets.found > 0 && <span className="secrets" title={t("Secrets found (they don't count toward the win)")}> · ★ {secrets.found}/{secrets.of}</span>}
+            {score.result && <strong>{score.result === "win" ? ` · ${t("You win!")}` : ` · ${t("You lose")}`}</strong>}
           </div>
         )}
         <HealthBar engine={engine} active={status === "playing"} />
@@ -1262,10 +1274,10 @@ export function App() {
                   setInVr(false);
                   clearInterval(check);
                 }, 500);
-              } else setToast("Couldn't start VR on this device.");
+              } else setToast(t("Couldn't start VR on this device."));
             }}
           >
-            {params0.get("vr") === "1" ? "Tap to enter VR" : "Enter VR"}
+            {params0.get("vr") === "1" ? t("Tap to enter VR") : t("Enter VR")}
           </button>
         )}
         {xray && current.current && (
@@ -1312,7 +1324,7 @@ export function App() {
               if (!plays || !w || !r) return null;
               return (
                 <button type="button" className="chip-redgreen" data-testid="chip-redgreen" disabled={redGreen.lining === c.id} onClick={() => (setReceiptOpen(false), void redGreen.playChip(c, w, r, fix))}>
-                  {redGreen.lining === c.id ? "lining up the runs…" : plays === "alone" ? "▶ where it fails" : "▶ red/green"}
+                  {redGreen.lining === c.id ? t("lining up the runs…") : plays === "alone" ? `▶ ${t("where it fails")}` : `▶ ${t("red/green")}`}
                 </button>
               );
             }}
@@ -1323,21 +1335,30 @@ export function App() {
             onShare={shareRun}
             onExport={async () => {
               const w = current.current;
-              if (!w || !specHash) return setToast("Nothing to export yet.");
+              if (!w || !specHash) return setToast(t("Nothing to export yet."));
               const { exportWorld } = await import("./export"); // loaded on demand: the exporter is a separate three build
               await exportWorld(w.bundle, specHash, proof.receipt, prompt);
-              setToast("Exported: the scene (.glb), its logic (.logic.json) and the playtest report (.html).");
+              setToast(t("Exported: the scene (.glb), its logic (.logic.json) and the playtest report (.html)."));
             }}
             onWrong={async (note) => {
               const sim = engine.current?.rapierSim;
               if (!specHash) return;
               const ok = await reportWrong(specHash, note, undefined, sim?.inputs ?? []);
               setReported(note);
-              setToast(ok ? "Thanks: reported with your run attached." : "Couldn't send the report (the live service isn't reachable).");
+              setToast(ok ? t("Thanks: reported with your run attached.") : t("Couldn't send the report (the live service isn't reachable)."));
             }}
           />
         )}
         {sound.enabled && <MuteButton muted={sound.muted} onToggle={sound.toggle} />}
+        {!RECORD && (
+          <LanguageChip
+            lang={lang}
+            onPick={(l) => {
+              chooseLocale(l);
+              setLang(l);
+            }}
+          />
+        )}
         {!touch && <KeyHint visible={hint && status === "playing"} sound={sound.enabled} />}
         {touch && status === "playing" && (
           <TouchControls

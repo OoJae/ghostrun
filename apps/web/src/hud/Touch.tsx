@@ -2,6 +2,7 @@
 // HTML over the canvas, so their touches never reach the camera; a drag anywhere else orbits it.
 import { useRef, useState, type PointerEvent as RPointerEvent } from "react";
 import { BTN_JUMP, BTN_USE } from "../sim/types";
+import { t } from "../i18n";
 
 const RADIUS = 56;
 const capture = (e: RPointerEvent) => {
@@ -63,10 +64,10 @@ export function TouchControls({ onStick, onButton, useLabel }: { onStick(x: numb
           </div>
         )}
       </div>
-      <button type="button" className="tbtn jump" aria-label="jump" {...button(BTN_JUMP)}>
+      <button type="button" className="tbtn jump" aria-label={t("jump")} {...button(BTN_JUMP)}>
         Jump
       </button>
-      <button type="button" className={`tbtn use${useLabel ? " ready" : ""}`} aria-label={useLabel ?? "use"} {...button(BTN_USE)}>
+      <button type="button" className={`tbtn use${useLabel ? " ready" : ""}`} aria-label={useLabel ?? t("use")} {...button(BTN_USE)}>
         {useLabel ?? "Use"}
       </button>
     </div>

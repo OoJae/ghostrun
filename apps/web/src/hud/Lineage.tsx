@@ -2,28 +2,29 @@
 // copy, and once you've changed it, "Remixed from “…” · 2 changes: …" with a link to the original
 // and which receipt is for which version.
 import { lineText, receiptsLine, refLink, type Lineage, type RemixSource } from "../remix";
+import { t } from "../i18n";
 import "./remix.css";
 
 export function LineagePanel({ source, line, mine, copied, spec, onRemix, onShare }: { source: RemixSource; line: Lineage | null; mine: number; copied: boolean; spec: string | undefined; onRemix: () => void; onShare: () => void }) {
   const text = line && lineText(line);
-  const what = source.kind === "gallery" ? "Gallery world" : "Shared world";
+  const what = source.kind === "gallery" ? t("Gallery world") : t("Shared world");
   return (
     <div className="lineage" data-testid="lineage">
       {line && text ? (
         <>
           <p className="lineage-line" data-testid="lineage-line">
-            {mine > 0 && <span className="eyebrow">Your remix</span>}
+            {mine > 0 && <span className="eyebrow">{t("Your remix")}</span>}
             {text.from} · {text.changes}
           </p>
           <p className="lineage-links">
-            <a href={refLink(line.origin.id)} data-testid="lineage-original" title="Open the original (it is proved on your device when it opens)">
-              the original
+            <a href={refLink(line.origin.id)} data-testid="lineage-original" title={t("Open the original (it is proved on your device when it opens)")}>
+              {t("the original")}
             </a>
             {line.remixOf !== line.origin.id && (
               <>
                 {" · "}
                 <a href={refLink(line.remixOf)} data-testid="lineage-parent">
-                  the remix it came from
+                  {t("the remix it came from")}
                 </a>
               </>
             )}
@@ -35,18 +36,18 @@ export function LineagePanel({ source, line, mine, copied, spec, onRemix, onShar
       ) : (
         <p className="lineage-line" data-testid="lineage-line">
           <span className="eyebrow">{what}</span>
-          {copied ? "Your copy: your first change makes it a remix." : source.prompt ? `“${source.prompt.length > 90 ? `${source.prompt.slice(0, 89)}…` : source.prompt}”` : "Remix it to make it yours."}
+          {copied ? t("Your copy: your first change makes it a remix.") : source.prompt ? `“${source.prompt.length > 90 ? `${source.prompt.slice(0, 89)}…` : source.prompt}”` : t("Remix it to make it yours.")}
         </p>
       )}
       <div className="lineage-actions">
         {!copied && (
-          <button type="button" onClick={onRemix} data-testid="remix" title="Open this world as your own copy and change it">
-            Remix
+          <button type="button" onClick={onRemix} data-testid="remix" title={t("Open this world as your own copy and change it")}>
+            {t("Remix")}
           </button>
         )}
         {mine > 0 && (
-          <button type="button" onClick={onShare} data-testid="share-remix" title="A link to your remix, with where it came from">
-            Share your remix
+          <button type="button" onClick={onShare} data-testid="share-remix" title={t("A link to your remix, with where it came from")}>
+            {t("Share your remix")}
           </button>
         )}
       </div>

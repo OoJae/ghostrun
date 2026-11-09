@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type DragEvent, type FormEvent } from "react";
 import type { LoadResult } from "../engine";
+import { locale, num, t } from "../i18n";
 import { imageIn, preparePicture, type Picture } from "../picture";
 import { firstVoiceNote, speechApi, transcript, voiceError, type Recognition } from "./listen";
 import "./picture.css";
@@ -64,7 +65,7 @@ function useExample(examples: readonly string[], idle: boolean): { full: string;
 }
 
 function Stopwatch({ timing, busy }: { timing: LoadResult | null; busy: boolean }) {
-  const title = timing ? timing.splits.map((s) => `${s.label} ${Math.round(s.ms)} ms`).join(" · ") : "measuring";
+  const title = timing ? timing.splits.map((s) => `${t(s.label)} ${num(Math.round(s.ms))} ms`).join(" · ") : t("measuring");
   return (
     <span className="stopwatch" title={title} data-testid="stopwatch">
       <svg viewBox="0 0 16 16" aria-hidden="true">
@@ -75,11 +76,11 @@ function Stopwatch({ timing, busy }: { timing: LoadResult | null; busy: boolean 
         <span className="stopwatch-val muted">…</span>
       ) : (
         <span className="stopwatch-val">
-          {Math.round(timing.ttffMs).toLocaleString("en-US")}
+          {locale() === "en" ? Math.round(timing.ttffMs).toLocaleString("en-US") : num(Math.round(timing.ttffMs))}
           <small> ms</small>
         </span>
       )}
-      <span className="stopwatch-label">to first frame</span>
+      <span className="stopwatch-label">{t("to first frame")}</span>
     </span>
   );
 }
@@ -114,7 +115,7 @@ function Mic({ onText, onDone }: { onText: (t: string) => void; onDone: (t: stri
   };
   return (
     <>
-      <button type="button" className={`mic${on ? " on" : ""}`} onClick={toggle} aria-label={on ? "Stop listening" : "Speak a world"} title={on ? "Listening… click to stop" : "Speak a world"} data-testid="mic">
+      <button type="button" className={`mic${on ? " on" : ""}`} onClick={toggle} aria-label={on ? t("Stop listening") : t("Speak a world")} title={on ? t("Listening… click to stop") : t("Speak a world")} data-testid="mic">
         <svg viewBox="0 0 16 16" aria-hidden="true">
           <rect x="5.5" y="1.5" width="5" height="8.5" rx="2.5" />
           <path d="M3 8a5 5 0 0 0 10 0M8 13v2" />
@@ -167,9 +168,9 @@ function PictureButtons({ take }: { take: (f: File | null | undefined) => void }
         type="button"
         className="mic picture-btn"
         onClick={() => (phone ? setMenu((m) => !m) : open(file.current))}
-        aria-label="Build from a photo or sketch"
+        aria-label={t("Build from a photo or sketch")}
         aria-expanded={phone ? menu : undefined}
-        title="Build from a photo or sketch (or paste or drop one on the bar): the world is inspired by it"
+        title={t("Build from a photo or sketch (or paste or drop one on the bar): the world is inspired by it")}
         data-testid="picture-button"
       >
         <svg viewBox="0 0 16 16" aria-hidden="true">
@@ -183,10 +184,10 @@ function PictureButtons({ take }: { take: (f: File | null | undefined) => void }
       {menu && (
         <span className="picture-menu" role="menu" data-testid="picture-menu">
           <button type="button" role="menuitem" onClick={() => open(camera.current)} data-testid="camera-button">
-            Take a photo
+            {t("Take a photo")}
           </button>
           <button type="button" role="menuitem" onClick={() => open(file.current)}>
-            Choose an image
+            {t("Choose an image")}
           </button>
         </span>
       )}
@@ -224,7 +225,7 @@ export function PromptBar({ prompt, onPrompt, onSubmit, collapsed, onExpand, onC
 
   if (collapsed) {
     return (
-      <button className="glass pill" onClick={onExpand} title="Edit prompt" data-testid="prompt-pill">
+      <button className="glass pill" onClick={onExpand} title={t("Edit prompt")} data-testid="prompt-pill">
         <span className="mark" aria-hidden="true" />
         {picture && <img className="pill-picture" src={picture.url} alt="" />}
         <span className="pill-text">{prompt || playing}</span>
@@ -254,10 +255,10 @@ export function PromptBar({ prompt, onPrompt, onSubmit, collapsed, onExpand, onC
       <span className="mark" aria-hidden="true" />
       <span className="brand">GHOSTRUN</span>
       {(picture || pic.reading) && (
-        <span className="picture-chip" data-testid="picture-chip" title={picture ? `Your image, ${picture.width}×${picture.height}, ${Math.round(picture.bytes / 1024)} KB with its metadata removed. The world takes ideas from it (the place, colours, things); it doesn't rebuild it.` : "Making the image small…"}>
-          {picture ? <img src={picture.url} alt="Your image" /> : <span className="picture-reading" aria-label="Making the image small" />}
+        <span className="picture-chip" data-testid="picture-chip" title={picture ? t("Your image, {w}×{h}, {kb} KB with its metadata removed. The world takes ideas from it (the place, colours, things); it doesn't rebuild it.", { w: picture.width, h: picture.height, kb: Math.round(picture.bytes / 1024) }) : t("Making the image small…")}>
+          {picture ? <img src={picture.url} alt={t("Your image")} /> : <span className="picture-reading" aria-label={t("Making the image small")} />}
           {picture && (
-            <button type="button" onClick={() => onPicture?.(null)} aria-label="Remove the image" data-testid="picture-remove">
+            <button type="button" onClick={() => onPicture?.(null)} aria-label={t("Remove the image")} data-testid="picture-remove">
               ×
             </button>
           )}
@@ -279,8 +280,8 @@ export function PromptBar({ prompt, onPrompt, onSubmit, collapsed, onExpand, onC
           void pic.take(f);
         }}
         spellCheck={false}
-        aria-label="Describe a world"
-        placeholder={picture ? "Add words (“a heist here”), or press Enter to build from the image" : example.full ? `Try: ${example.shown}` : "Describe a world…"}
+        aria-label={t("Describe a world")}
+        placeholder={picture ? t("Add words (“a heist here”), or press Enter to build from the image") : example.full ? t("Try: {example}", { example: example.shown }) : t("Describe a world…")}
       />
       {onPicture && <PictureButtons take={(f) => void pic.take(f)} />}
       {pic.note && (
@@ -289,18 +290,18 @@ export function PromptBar({ prompt, onPrompt, onSubmit, collapsed, onExpand, onC
         </span>
       )}
       <Mic onText={onPrompt} onDone={onSubmit} />
-      <span className={`chip${source.action ? " cached" : ""}`} title={source.title} data-testid="source-chip">
-        {source.label}
+      <span className={`chip${source.action ? " cached" : ""}`} title={t(source.title)} data-testid="source-chip">
+        {t(source.label)}
       </span>
       {source.action && (
         <button type="button" className="chip-action" onClick={source.action.run} title={source.title} data-testid="build-fresh">
-          {source.action.label}
+          {t(source.action.label)}
         </button>
       )}
       <Stopwatch timing={timing} busy={busy} />
       {focused && suggestions.length > 0 && (
         <div className="glass suggest" data-testid="suggest">
-          <span className="eyebrow">Try one</span>
+          <span className="eyebrow">{t("Try one")}</span>
           {suggestions.map((s) => (
             <button
               type="button"
@@ -314,7 +315,7 @@ export function PromptBar({ prompt, onPrompt, onSubmit, collapsed, onExpand, onC
                 onSubmit(s.prompt);
               }}
             >
-              {s.label}
+              {t(s.label)}
             </button>
           ))}
           {onGallery && (
@@ -328,7 +329,7 @@ export function PromptBar({ prompt, onPrompt, onSubmit, collapsed, onExpand, onC
                 onGallery();
               }}
             >
-              Gallery: {galleryCount} recorded worlds <kbd>G</kbd>
+              {t("Gallery: {n} recorded worlds", { n: galleryCount ?? 0 })} <kbd>G</kbd>
             </button>
           )}
         </div>

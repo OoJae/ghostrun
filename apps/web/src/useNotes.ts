@@ -5,6 +5,7 @@
 import { useCallback, useRef, useState } from "react";
 import { mergeFill, pinLayout } from "@ghostrun/ir";
 import type { Receipt } from "@ghostrun/proof/light";
+import { t } from "./i18n";
 import { changeSummary, cutHolds, editedPrompt, intentFor, receiptDelta, type Delta } from "./edits";
 import { liveEdit } from "./live";
 import { worldFromFill, type World } from "./pipeline";
@@ -44,16 +45,16 @@ export function useNotes(d: {
     const fill0 = pinLayout(w.fill);
     const patch = await liveEdit(editedPrompt(original, edits.slice(0, -1)), change, intentFor(w, original), fill0, w.seed);
     if (stale()) return;
-    if (!patch) return setState({ status: "held", key, change: said, why: "The live AI couldn't make that change just now." });
+    if (!patch) return setState({ status: "held", key, change: said, why: t("The live AI couldn't make that change just now.") });
     const { text } = mergeFill(fill0, patch, { edit: true });
     const w2 = worldFromFill(text, w.seed, w.intent.live, w.bundle.pack.id, w.bundle.mode);
     const summary = changeSummary(w.bundle, w2.bundle);
-    if (!summary.length) return setState({ status: "held", key, change: said, why: "Nothing in the world changed." });
+    if (!summary.length) return setState({ status: "held", key, change: said, why: t("Nothing in the world changed.") });
     w2.source = { prompt: editedPrompt(original, edits), intent: intentFor(w, original), fill: w2.fill, seed: w.seed, pack: w2.bundle.pack.id, base: original, edits };
     setState({ status: "working", key, change: said, step: "proving" });
     const after = await d.proveOnce(w2, 12).catch(() => null);
     if (stale()) return;
-    if (!after || !cutHolds(before, after)) return setState({ status: "held", key, change: said, why: `Re-proved on a copy, it didn't hold up (${after ? receiptDelta(before, after).map((x) => `${x.label} ${x.from} → ${x.to}`).join(" · ") || "no runner won" : "the proof failed"}), so it isn't offered.` });
+    if (!after || !cutHolds(before, after)) return setState({ status: "held", key, change: said, why: t("Re-proved on a copy, it didn't hold up ({why}), so it isn't offered.", { why: after ? receiptDelta(before, after).map((x) => `${x.label} ${x.from} → ${x.to}`).join(" · ") || t("no runner won") : t("the proof failed") }) });
     offered.current = { world: w2, base: w };
     setState({ status: "offer", key, change: said, summary, delta: receiptDelta(before, after) });
   }, []);

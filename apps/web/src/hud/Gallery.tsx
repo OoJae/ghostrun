@@ -3,6 +3,7 @@
 // demo even when the live lane is slow or down.
 import { useEffect } from "react";
 import index from "../gallery/index.json";
+import { t } from "../i18n";
 import "./remix.css";
 
 export interface GalleryEntry {
@@ -22,11 +23,11 @@ export function Gallery({ onOpen, onClose, onRemix }: { onOpen: (e: GalleryEntry
     return () => window.removeEventListener("keydown", esc);
   }, [onClose]);
   return (
-    <div className="glass gallery" role="dialog" aria-label="Gallery" data-testid="gallery">
+    <div className="glass gallery" role="dialog" aria-label={t("Gallery")} data-testid="gallery">
       <div className="gallery-head">
-        <strong>Gallery</strong>
-        <span className="muted">{GALLERY.length} worlds the live AI built from prompts, recorded unedited; each is re-proved on your device when you open it</span>
-        <button type="button" onClick={onClose} aria-label="close">
+        <strong>{t("Gallery")}</strong>
+        <span className="muted">{t("{n} worlds the live AI built from prompts, recorded unedited; each is re-proved on your device when you open it", { n: GALLERY.length })}</span>
+        <button type="button" onClick={onClose} aria-label={t("close")}>
           ×
         </button>
       </div>
@@ -36,13 +37,13 @@ export function Gallery({ onOpen, onClose, onRemix }: { onOpen: (e: GalleryEntry
             <button type="button" onClick={() => onOpen(e)} data-testid={`gallery-${e.slug}`}>
               <span className="gallery-prompt">{e.prompt.charAt(0).toUpperCase() + e.prompt.slice(1)}</span>
               <span className="gallery-meta">
-                {e.pack.replace("_", " ")} · {e.mode === "wander" ? "place to explore" : "game"}
-                {e.honest && <span className="gallery-honest" title="AI runners win, but the world's own headline claim fails, and the receipt says so"> · honest receipt</span>}
+                {e.pack.replace("_", " ")} · {e.mode === "wander" ? t("place to explore") : t("game")}
+                {e.honest && <span className="gallery-honest" title={t("AI runners win, but the world's own headline claim fails, and the receipt says so")}> · {t("honest receipt")}</span>}
               </span>
             </button>
             {onRemix && (
-              <button type="button" className="gallery-remix" onClick={() => onRemix(e)} data-testid={`gallery-remix-${e.slug}`} title="Open it as your own copy and change it">
-                Remix
+              <button type="button" className="gallery-remix" onClick={() => onRemix(e)} data-testid={`gallery-remix-${e.slug}`} title={t("Open it as your own copy and change it")}>
+                {t("Remix")}
               </button>
             )}
           </li>

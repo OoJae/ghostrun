@@ -5,6 +5,7 @@ import type { WorldBundle } from "@ghostrun/ir";
 import { firstSentences, recap } from "../audio/lines";
 import { clock, why, type Fact, type Story } from "../host";
 import { flyTarget, whyChips } from "../why";
+import { k, num, t } from "../i18n";
 import { raceClock, split } from "../race";
 import { ClipPanel, type ClipCard } from "./Clip";
 import "./race.css";
@@ -48,7 +49,7 @@ export interface RunResult {
  * Ask the Host about this run (or this place): the answer cites its facts, a cited moment replays,
  * and the camera flies to the first cited fact that has a place (`onFly`). `chips` ask a question in one tap.
  */
-export function AskHost({ onAsk, onReplay, onFly, voice, chips = [], placeholder = "Ask the Host: why did I lose?", run = true }: { onAsk: (q: string) => Promise<{ answer: string; cites: Fact[] } | null>; onReplay?: ((tick: number) => void) | undefined; onFly?: ((f: Fact) => void) | undefined; voice?: HostVoice | undefined; chips?: string[]; placeholder?: string; /** A run's facts (a moment replays) rather than a place's. */ run?: boolean }) {
+export function AskHost({ onAsk, onReplay, onFly, voice, chips = [], placeholder = k("Ask the Host: why did I lose?"), run = true }: { onAsk: (q: string) => Promise<{ answer: string; cites: Fact[] } | null>; onReplay?: ((tick: number) => void) | undefined; onFly?: ((f: Fact) => void) | undefined; voice?: HostVoice | undefined; chips?: string[]; placeholder?: string; /** A run's facts (a moment replays) rather than a place's. */ run?: boolean }) {
   const [q, setQ] = useState("");
   const [a, setA] = useState<{ answer: string; cites: Fact[] } | "asking" | "failed" | null>(null);
   const ask = async (t: string) => {
@@ -69,27 +70,27 @@ export function AskHost({ onAsk, onReplay, onFly, voice, chips = [], placeholder
   return (
     <div className="host" data-testid="host">
       <form onSubmit={submit}>
-        <input value={q} maxLength={200} placeholder={placeholder} aria-label="Ask the Host" data-testid="host-input" onChange={(e) => setQ(e.target.value)} onKeyDown={(e) => e.stopPropagation()} />
+        <input value={q} maxLength={200} placeholder={t(placeholder)} aria-label={t("Ask the Host")} data-testid="host-input" onChange={(e) => setQ(e.target.value)} onKeyDown={(e) => e.stopPropagation()} />
       </form>
       {chips.length > 0 && (
         <div className="host-chips" data-testid="why-chips">
           {chips.map((c) => (
-            <button type="button" key={c} disabled={a === "asking"} onClick={() => (setQ(c), void ask(c))}>
-              {c}
+            <button type="button" key={c} disabled={a === "asking"} onClick={() => (setQ(t(c)), void ask(t(c)))}>
+              {t(c)}
             </button>
           ))}
         </div>
       )}
-      {a === "asking" && <p className="muted">the Host is looking at your run…</p>}
-      {a === "failed" && <p className="muted">The Host couldn't answer just now.</p>}
+      {a === "asking" && <p className="muted">{t("the Host is looking at your run…")}</p>}
+      {a === "failed" && <p className="muted">{t("The Host couldn't answer just now.")}</p>}
       {a && typeof a === "object" && (
         <p className="host-answer" data-testid="host-answer">
-          <b>Host:</b> {a.answer}{" "}
+          <b>{t("Host:")}</b> {a.answer}{" "}
           {a.cites
             .filter((f) => f.tick !== null || (f.at && onFly))
             .map((f) => (
               <button key={f.text} type="button" title={f.text} onClick={() => (f.at && onFly ? onFly(f) : f.tick !== null && onReplay?.(f.tick))}>
-                {f.tick !== null ? `▶ ${clock(f.tick)}` : "▶ show me"}
+                {f.tick !== null ? `▶ ${clock(f.tick)}` : `▶ ${t("show me")}`}
               </button>
             ))}
         </p>
@@ -99,7 +100,7 @@ export function AskHost({ onAsk, onReplay, onFly, voice, chips = [], placeholder
 }
 
 export function ResultCard({ result, bundle, par, onAgain, onShare, director, onTwist, onReplay, onAsk, onFly, race, voice, clip }: { result: RunResult; bundle: WorldBundle; par: number | null; onAgain: () => void; onShare: () => void; director?: { line: string; label: string; status: "proving" | "ready" } | null; onTwist?: () => void; onReplay?: (tick: number) => void; onAsk?: ((q: string) => Promise<{ answer: string; cites: Fact[] } | null>) | undefined; /** The camera to a cited moment's place, then its replay from a second before. */ onFly?: ((f: Fact) => void) | undefined; race?: RaceCard | undefined; voice?: HostVoice | undefined; clip?: ClipCard | undefined }) {
-  const t = Math.round((result.tick / 60) * 10) / 10;
+  const s = Math.round((result.tick / 60) * 10) / 10;
   const reason = why(bundle, result.rule);
   const said = recap(result, bundle);
   useEffect(() => {
@@ -107,14 +108,14 @@ export function ResultCard({ result, bundle, par, onAgain, onShare, director, on
     const at = setTimeout(() => voice.say(said), RECAP_DELAY_MS);
     return () => clearTimeout(at);
   }, [result]); // once per run's end (the card re-renders as the race line and Director land)
-  const vsPar = par === null ? null : result.k === "win" ? (t <= par ? `You beat the AI par of ${par} s by ${Math.round((par - t) * 10) / 10} s.` : `AI runners do it in ${par} s: there's a faster route.`) : null;
+  const vsPar = par === null ? null : result.k === "win" ? (s <= par ? t("You beat the AI par of {par} s by {by} s.", { par, by: Math.round((par - s) * 10) / 10 }) : t("AI runners do it in {par} s: there's a faster route.", { par })) : null;
   return (
-    <div className={`glass result ${result.k}`} role="dialog" aria-label="Run result" data-testid="result">
-      <div className="result-head">{result.k === "win" ? "You win" : "You lose"}</div>
+    <div className={`glass result ${result.k}`} role="dialog" aria-label={t("Run result")} data-testid="result">
+      <div className="result-head">{result.k === "win" ? t("You win") : t("You lose")}</div>
       <div className="result-time">
-        {t} s{reason && <span className="muted"> · {reason}</span>}
+        {num(s)} s{reason && <span className="muted"> · {reason}</span>}
         {voice && (
-          <button type="button" className="host-voice" onClick={voice.again} aria-label="The Host says it again" title={`The Host: “${said}”`} data-testid="host-voice">
+          <button type="button" className="host-voice" onClick={voice.again} aria-label={t("The Host says it again")} title={t("The Host: “{said}”", { said })} data-testid="host-voice">
             <svg viewBox="0 0 16 16" aria-hidden="true">
               <path d="M2.5 6h2.2L8 3.2v9.6L4.7 10H2.5z" />
               <path d="M10.6 5.6a3.4 3.4 0 0 1 0 4.8M12.4 3.9a5.8 5.8 0 0 1 0 8.2" />
@@ -125,16 +126,16 @@ export function ResultCard({ result, bundle, par, onAgain, onShare, director, on
       {vsPar && <p className="result-note">{vsPar}</p>}
       {race?.vs && result.k === "win" && (
         <p className="result-race" data-testid="result-race">
-          vs {race.vs.name} {raceClock(race.vs.ticks)}: you {raceClock(result.tick)}{" "}
+          {t("vs {name} {time}: you {mine}", { name: race.vs.name, time: raceClock(race.vs.ticks), mine: raceClock(result.tick) })}{" "}
           <span className={result.tick <= race.vs.ticks ? "ahead" : "behind"}>({split((result.tick - race.vs.ticks) / 60)})</span>
         </p>
       )}
       {result.story && result.story.moments.length > 0 && (
-        <ol className="result-story" data-testid="story" aria-label="What happened">
+        <ol className="result-story" data-testid="story" aria-label={t("What happened")}>
           {result.story.moments.map((m) => (
             <li key={`${m.tick}:${m.text}`}>
               {onReplay ? (
-                <button type="button" onClick={() => onReplay(m.tick)} title="Replay this moment exactly as it happened">
+                <button type="button" onClick={() => onReplay(m.tick)} title={t("Replay this moment exactly as it happened")}>
                   ▶ {clock(m.tick)}
                 </button>
               ) : (
@@ -148,36 +149,36 @@ export function ResultCard({ result, bundle, par, onAgain, onShare, director, on
       {onAsk && <AskHost onAsk={onAsk} onReplay={onReplay} onFly={onFly} voice={voice} chips={whyChips(result.k)} />}
       {director && (
         <p className="result-director" data-testid="director">
-          <b>Director:</b> {director.line} <span className="muted">({director.label}; {director.status === "ready" ? "re-proved ✓" : "re-proving…"})</span>
+          <b>{t("Director:")}</b> {director.line} <span className="muted">({director.label}; {director.status === "ready" ? t("re-proved ✓") : t("re-proving…")})</span>
         </p>
       )}
       <div className="result-actions">
         <button type="button" onClick={onAgain} data-testid="again">
-          Play again <kbd>R</kbd>
+          {t("Play again")} <kbd>R</kbd>
         </button>
         {director?.status === "ready" && onTwist && (
           <button type="button" onClick={onTwist} data-testid="twist">
-            Play with the twist
+            {t("Play with the twist")}
           </button>
         )}
         {race?.onRaceMe && (
-          <button type="button" onClick={race.onRaceMe} data-testid="race-me" title="A link that opens this world with your run as the ghost to beat">
-            Race me
+          <button type="button" onClick={race.onRaceMe} data-testid="race-me" title={t("A link that opens this world with your run as the ghost to beat")}>
+            {t("Race me")}
           </button>
         )}
         {race?.onBoard && (
           <button type="button" onClick={race.onBoard} data-testid="best-times">
-            Best times
+            {t("Best times")}
           </button>
         )}
-        <button type="button" onClick={onShare}>Share this run</button>
+        <button type="button" onClick={onShare}>{t("Share this run")}</button>
       </div>
       {clip && <ClipPanel clip={clip} />}
       {race && (
         <div className="result-card">
-          <output data-testid="result-card" aria-label="Your result, to paste anywhere">{race.text}</output>
+          <output data-testid="result-card" aria-label={t("Your result, to paste anywhere")}>{race.text}</output>
           <button type="button" onClick={race.onCopy} data-testid="copy-card">
-            {race.copied ?? "Copy"}
+            {race.copied ?? t("Copy")}
           </button>
         </div>
       )}

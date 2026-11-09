@@ -4,6 +4,7 @@
 // runs are the proof's own runners replayed exactly in a worker (pairRuns), never new ones.
 import type { WorldBundle } from "@ghostrun/ir";
 import { failRunLine, pairLine, partLine, parting, placeOf, type Chip, type FailRun, type Ghost, type KeptRun, type Pair, type PairAsk, type Parting, type Receipt } from "@ghostrun/proof/light";
+import { words } from "./i18n/words";
 import { ENGINE_HASH } from "./pipeline";
 
 export interface PairPlan {
@@ -65,12 +66,12 @@ export function redGreenOf(pair: Pair, plan: PairPlan, b: WorldBundle): RedGreen
   const p = parting(green.ghost, red.ghost);
   if (!p) return null;
   const near = placeOf(b, p.at[0], p.at[2]);
-  return { green: green.ghost, red: red.ghost, parting: p, caption: { before: pairLine(plan.green), parted: partLine(p, 1, near, red.end?.why ?? "") }, chips: plan.chips };
+  return { green: green.ghost, red: red.ghost, parting: p, caption: { before: pairLine(plan.green, words), parted: partLine(p, 1, near, red.end?.why ?? "", words) }, chips: plan.chips };
 }
 
 /** A receipt's own failing run, alone (no other version of the world to set it beside). */
 export function failingOnly(f: FailRun, runs: number): RedGreen {
-  const line = failRunLine(f, runs);
+  const line = failRunLine(f, runs, words);
   return { green: null, red: f.ghost, parting: null, caption: { before: line, parted: line }, chips: ["T3:win"] };
 }
 

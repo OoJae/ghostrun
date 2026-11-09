@@ -1,6 +1,8 @@
 import type { Chip, CrossCheck, Insights, Receipt, Revealed as Report } from "@ghostrun/proof/light";
 import { Fragment, useState, type ReactNode } from "react";
 import { chipLineAt, crossLine, fraction, statusWord, whereWord } from "@ghostrun/proof/light";
+import { t, tn } from "../i18n";
+import { proofText, words } from "../i18n/words";
 import { Revealed } from "./Revealed";
 import "./cloud.css";
 import { FengShui } from "./FengShui";
@@ -24,12 +26,12 @@ export function proofBadge(proof: ProofState): { text: string; tone: "good" | "b
   const { status, chips, receipt } = proof;
   const fails = chips.filter(bad).length;
   const win = chips.find((c) => c.id === "T3:win");
-  if (status === "proving") return { text: `AI runners playing… ${chips.length} checks`, tone: "pending" };
-  if (status === "error") return { text: "proof unavailable", tone: "warn" };
-  if (status !== "done" || !receipt) return { text: "proof: pending", tone: "pending" };
+  if (status === "proving") return { text: tn(chips.length, "AI runners playing… {n} check", "AI runners playing… {n} checks"), tone: "pending" };
+  if (status === "error") return { text: t("proof unavailable"), tone: "warn" };
+  if (status !== "done" || !receipt) return { text: t("proof: pending"), tone: "pending" };
   const head = receipt.headline;
-  if (fails) return { text: `${fails} counterexample${fails > 1 ? "s" : ""}`, tone: "bad" };
-  return { text: `${head ? `${head.text}: ${statusWord(head.status)}` : "no counterexamples"}${win ? ` · ${fraction(win.k, win.n)} AI runners won` : ""}`, tone: head && head.status !== "verified" && head.status !== "played" ? "pending" : "good" };
+  if (fails) return { text: tn(fails, "{n} counterexample", "{n} counterexamples"), tone: "bad" };
+  return { text: `${head ? `${head.text}: ${statusWord(head.status, words)}` : t("no counterexamples")}${win ? ` · ${t("{k} AI runners won", { k: fraction(win.k, win.n, words) })}` : ""}`, tone: head && head.status !== "verified" && head.status !== "played" ? "pending" : "good" };
 }
 
 /** At most one line, always with its method on hover; turns green only on evidence. */
@@ -37,9 +39,9 @@ export function ProofBadge({ proof, onOpen }: { proof: ProofState; onOpen: () =>
   const { receipt } = proof;
   const { text, tone } = proofBadge(proof);
   return (
-    <button type="button" className={`glass proof ${tone}`} data-testid="proof-badge" onClick={onOpen} title={receipt ? `spec ${receipt.spec.slice(0, 8)} · ${receipt.ms} ms · press P` : "AI runners have not played this world yet"}>
+    <button type="button" className={`glass proof ${tone}`} data-testid="proof-badge" onClick={onOpen} title={receipt ? t("spec {spec} · {ms} ms · press P", { spec: receipt.spec.slice(0, 8), ms: receipt.ms }) : t("AI runners have not played this world yet")}>
       <span className="dot" aria-hidden="true" />
-      {tone === "bad" ? `${text} · tap for details` : text}
+      {tone === "bad" ? `${text} · ${t("tap for details")}` : text}
     </button>
   );
 }
@@ -62,12 +64,12 @@ function Routes({ routes, runs, on, onToggle, noteAction }: { routes: Insights; 
   return (
     <div className="routes" data-testid="routes">
       <button type="button" onClick={onToggle} data-testid="routes-toggle" aria-pressed={on}>
-        {on ? "Hide the runners' routes" : "Where the runners went"}
+        {on ? t("Hide the runners' routes") : t("Where the runners went")}
       </button>
-      <span className="muted"> ({runs} AI runs, {routes.samples} positions)</span>
-      {hot.length > 0 && <p>Most time: {hot.map((h) => `near the ${h.near} (${pct(h.share)})`).join(", ")}.</p>}
+      <span className="muted"> ({t("{runs} AI runs, {samples} positions", { runs, samples: routes.samples })})</span>
+      {hot.length > 0 && <p>{t("Most time: {where}.", { where: hot.map((h) => t("near the {thing} ({pct})", { thing: h.near, pct: pct(h.share) })).join(", ") })}</p>}
       <p className={routes.unused.length ? "warn" : ""}>
-        {routes.unused.length ? <>Nobody went near: {routes.unused.slice(0, 4).map((u) => `the ${u.noun}`).join(", ")}{routes.unused.length > 4 ? ` and ${routes.unused.length - 4} more` : ""}. A design note: give players a reason to go there, or take it out.</> : "Every runner's route passed everything there is to use."}
+        {routes.unused.length ? <>{t("Nobody went near: {things}.", { things: `${routes.unused.slice(0, 4).map((u) => t("the {thing}", { thing: u.noun })).join(", ")}${routes.unused.length > 4 ? t(" and {n} more", { n: routes.unused.length - 4 }) : ""}` })} {t("A design note: give players a reason to go there, or take it out.")}</> : t("Every runner's route passed everything there is to use.")}
       </p>
       {noteAction && routes.unused.slice(0, 4).map((u) => <Fragment key={u.id}>{noteAction(`unused:${u.id}`)}</Fragment>)}
     </div>
@@ -79,15 +81,15 @@ export function ReceiptPanel({ proof, onClose, onShare, onWrong, onExport, onTru
   const [writing, setWriting] = useState(false);
   const [note, setNote] = useState("");
   return (
-    <div className="glass receipt" role="dialog" aria-label="Proof receipt" data-testid="receipt">
+    <div className="glass receipt" role="dialog" aria-label={t("Proof receipt")} data-testid="receipt">
       <div className="receipt-head">
-        <strong>Receipt</strong>
-        {r && <span className="mono">spec {r.spec.slice(0, 8)} · {r.ms} ms · {whereWord(r.host)}</span>}
-        <button type="button" onClick={onClose} aria-label="close">×</button>
+        <strong>{t("Receipt")}</strong>
+        {r && <span className="mono">spec {r.spec.slice(0, 8)} · {r.ms} ms · {whereWord(r.host, words)}</span>}
+        <button type="button" onClick={onClose} aria-label={t("close")}>×</button>
       </div>
       {r && (
         <p className={`receipt-where ${proof.cross?.cloud ?? "off"}`} data-testid="receipt-where">
-          {crossLine(proof.cross ?? { shown: r.host, cloud: "off", device: "done" })}
+          {crossLine(proof.cross ?? { shown: r.host, cloud: "off", device: "done" }, words)}
         </p>
       )}
       {version && (
@@ -97,19 +99,19 @@ export function ReceiptPanel({ proof, onClose, onShare, onWrong, onExport, onTru
       )}
       {r?.headline && (
         <p className={`headline ${r.headline.status}`}>
-          {r.headline.text}: <b>{r.headline.status.replace("_", " ")}</b>
-          <span className="method"> ({r.headline.method})</span>
+          {r.headline.text}: <b>{t(r.headline.status.replace("_", " "))}</b>
+          <span className="method"> ({r.headline.method.split(" + ").map(proofText).join(" + ")})</span>
         </p>
       )}
       <ul>
         {proof.chips.map((c) => (
           <li key={c.id} className={c.status}>
-            {chipLineAt(c, r?.host ?? "device")}
+            {chipLineAt(c, r?.host ?? "device", words, proofText)}
             {chipAction?.(c)}
           </li>
         ))}
       </ul>
-      {r?.par && <p className="par">AI par {r.par.goldS} s · {r.par.won} of {r.par.runs} runners won</p>}
+      {r?.par && <p className="par">{t("AI par {s} s · {k} of {n} runners won", { s: r.par.goldS, k: r.par.won, n: r.par.runs })}</p>}
       {fengShui && <FengShui view={fengShui} noteAction={noteAction} />}
       {routes && r?.trails && onRoutes && (
         <Revealed receipt={r} report={report ?? null} playing={proof.playing} noteAction={noteAction}>
@@ -118,28 +120,28 @@ export function ReceiptPanel({ proof, onClose, onShare, onWrong, onExport, onTru
       )}
       {fooled && (
         <p className={`fooled ${fooled.status === "done" ? (fooled.caught ? "caught" : "missed") : ""}`} data-testid="fooled">
-          {fooled.status === "planting" && "Planting a bug in a copy of this world; AI runners are playing it…"}
-          {fooled.status === "none" && "Nothing to plant: this world has more than one way to win (breaking one route isn't a bug)."}
+          {fooled.status === "planting" && t("Planting a bug in a copy of this world; AI runners are playing it…")}
+          {fooled.status === "none" && t("Nothing to plant: this world has more than one way to win (breaking one route isn't a bug).")}
           {fooled.status === "done" && (
             <>
-              Planted{fooled.of && fooled.of > 1 ? ` (${(fooled.k ?? 0) % fooled.of + 1} of ${fooled.of})` : ""}: <b>{fooled.text}</b>.{" "}
-              {fooled.caught ? <>Caught: {fooled.by ?? "it no longer proves won"}.</> : <>Not caught: the proof still says it's won. That's a hole in the proof; please press "This is wrong".</>}
+              {t("Planted")}{fooled.of && fooled.of > 1 ? ` (${t("{k} of {n}", { k: ((fooled.k ?? 0) % fooled.of) + 1, n: fooled.of })})` : ""}: <b>{fooled.text}</b>.{" "}
+              {fooled.caught ? <>{t("Caught: {by}.", { by: fooled.by ?? t("it no longer proves won") })}</> : <>{t('Not caught: the proof still says it\'s won. That\'s a hole in the proof; please press "This is wrong".')}</>}
             </>
           )}
         </p>
       )}
-      {reported && <p className="reported">⚑ Judge-reported: {reported}</p>}
+      {reported && <p className="reported">⚑ {t("Judge-reported:")} {reported}</p>}
       {proof.error && <p className="warn">{proof.error}</p>}
       <div className="receipt-actions">
-        {onShare && <button type="button" onClick={onShare} data-testid="share">Share this run</button>}
-        {onExport && <button type="button" onClick={onExport} data-testid="export" title="glTF scene + logic.json (triggers, states, rules) + playtest report">Export</button>}
-        {onTrust && <button type="button" onClick={onTrust} data-testid="why-trust">Why trust this?</button>}
+        {onShare && <button type="button" onClick={onShare} data-testid="share">{t("Share this run")}</button>}
+        {onExport && <button type="button" onClick={onExport} data-testid="export" title={t("glTF scene + logic.json (triggers, states, rules) + playtest report")}>{t("Export")}</button>}
+        {onTrust && <button type="button" onClick={onTrust} data-testid="why-trust">{t("Why trust this?")}</button>}
         {onFool && (
-          <button type="button" onClick={onFool} disabled={fooled?.status === "planting"} data-testid="fool" title="Plant a bug that breaks this world in a copy of it, and see whether the proof notices">
-            {fooled?.status === "done" ? "Plant another bug" : "Try to fool it"}
+          <button type="button" onClick={onFool} disabled={fooled?.status === "planting"} data-testid="fool" title={t("Plant a bug that breaks this world in a copy of it, and see whether the proof notices")}>
+            {fooled?.status === "done" ? t("Plant another bug") : t("Try to fool it")}
           </button>
         )}
-        {onWrong && !writing && <button type="button" onClick={() => setWriting(true)} data-testid="wrong">This is wrong</button>}
+        {onWrong && !writing && <button type="button" onClick={() => setWriting(true)} data-testid="wrong">{t("This is wrong")}</button>}
       </div>
       {writing && onWrong && (
         <form
@@ -151,8 +153,8 @@ export function ReceiptPanel({ proof, onClose, onShare, onWrong, onExport, onTru
             setNote("");
           }}
         >
-          <textarea value={note} maxLength={500} placeholder="What's wrong? (the run so far is attached)" onChange={(e) => setNote(e.target.value)} autoFocus />
-          <button type="submit" disabled={!note.trim()}>Send</button>
+          <textarea value={note} maxLength={500} placeholder={t("What's wrong? (the run so far is attached)")} onChange={(e) => setNote(e.target.value)} autoFocus />
+          <button type="submit" disabled={!note.trim()}>{t("Send")}</button>
         </form>
       )}
     </div>
@@ -180,14 +182,14 @@ export function CutChip({ cut, onApply }: { cut: CutState; onApply: () => void }
     return (
       <div className="glass repair cut working" data-testid="cut-chip">
         <span className="dot" aria-hidden="true" />
-        {cut.status === "working" ? "Director's cut: Claude Sonnet is reworking this world…" : `Director's cut: AI runners are playing it (${cut.summary.slice(0, 3).join(", ")})…`}
+        {cut.status === "working" ? t("Director's cut: Claude Sonnet is reworking this world…") : t("Director's cut: AI runners are playing it ({what})…", { what: cut.summary.slice(0, 3).join(", ") })}
       </div>
     );
   }
   return (
-    <button type="button" className="glass repair cut offer" data-testid="cut-chip" onClick={onApply} title="Claude Sonnet's version of this world, re-proved on this device: it plays at least as well as the one you have">
+    <button type="button" className="glass repair cut offer" data-testid="cut-chip" onClick={onApply} title={t("Claude Sonnet's version of this world, re-proved on this device: it plays at least as well as the one you have")}>
       <span className="dot" aria-hidden="true" />
-      Director's cut ready: {cut.summary.slice(0, 4).join(", ")} · re-proved · <strong>Apply</strong>
+      {t("Director's cut ready: {what} · re-proved", { what: cut.summary.slice(0, 4).join(", ") })} · <strong>{t("Apply")}</strong>
     </button>
   );
 }
@@ -199,15 +201,15 @@ export function RepairChip({ repair, onApply }: { repair: RepairState; onApply: 
     return (
       <div className="glass repair working" data-testid="repair-chip">
         <span className="dot" aria-hidden="true" />
-        {repair.hard ? "Claude Sonnet taking a harder look at" : "AI repairing"} {repair.issues} issue{repair.issues > 1 ? "s" : ""} the proof found{!repair.hard && repair.round && repair.round > 1 ? ` (round ${repair.round} of 3)` : ""}…
+        {repair.hard ? tn(repair.issues, "Claude Sonnet taking a harder look at {n} issue the proof found", "Claude Sonnet taking a harder look at {n} issues the proof found") : tn(repair.issues, "AI repairing {n} issue the proof found", "AI repairing {n} issues the proof found")}{!repair.hard && repair.round && repair.round > 1 ? ` ${t("(round {k} of 3)", { k: repair.round })}` : ""}…
       </div>
     );
   }
   return (
-    <button type="button" className="glass repair offer" data-testid="repair-chip" onClick={onApply} title="The repaired world was re-proved on this device and beats the original receipt">
+    <button type="button" className="glass repair offer" data-testid="repair-chip" onClick={onApply} title={t("The repaired world was re-proved on this device and beats the original receipt")}>
       <span className="dot" aria-hidden="true" />
-      {repair.left ? `${repair.hard ? "Claude Sonnet" : "AI"} improved it (${repair.left} issue${repair.left > 1 ? "s" : ""} left)` : `${repair.hard ? "Claude Sonnet" : "AI"} repaired it`}
-      {repair.headline ? `: ${repair.headline}` : ""} · re-proved{repair.round && repair.round > 1 ? ` · ${repair.round} rounds` : ""} · <strong>Apply</strong>
+      {repair.left ? tn(repair.left, "{who} improved it ({n} issue left)", "{who} improved it ({n} issues left)", { who: repair.hard ? "Claude Sonnet" : t("AI") }) : t("{who} repaired it", { who: repair.hard ? "Claude Sonnet" : t("AI") })}
+      {repair.headline ? `: ${repair.headline}` : ""} · {t("re-proved")}{repair.round && repair.round > 1 ? ` · ${tn(repair.round, "{n} round", "{n} rounds")}` : ""} · <strong>{t("Apply")}</strong>
     </button>
   );
 }

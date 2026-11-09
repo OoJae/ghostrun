@@ -4,7 +4,9 @@
 // and when runners reached each step of the win. Every number comes from the proof's labels.
 import type { ReactNode } from "react";
 import type { Receipt, Revealed as Report } from "@ghostrun/proof/light";
-import { bandMethod, bandSaid, failLine, fightLine, paceLine, timesLine } from "@ghostrun/proof/light";
+import { bandMethod, bandSaid, failLine, fightLineIn, paceLine, timesLine } from "@ghostrun/proof/light";
+import { t } from "../i18n";
+import { words } from "../i18n/words";
 import "./revealed.css";
 
 export function Revealed({ receipt, report, playing, children, noteAction }: { receipt: Receipt; report: Report | null; playing?: boolean | undefined; children?: ReactNode; /** A place runs went wrong (by its place in the list): its Apply choices. */ noteAction?: ((key: string) => ReactNode) | undefined }) {
@@ -12,23 +14,23 @@ export function Revealed({ receipt, report, playing, children, noteAction }: { r
   return (
     <div className="revealed" data-testid="revealed">
       {pt ? (
-        <p className={`band band-${pt.band.toLowerCase().replace(/\s+/g, "-")}`} data-testid="band" title={bandMethod(pt)}>
-          Difficulty: <b>{pt.band}</b>
-          {bandSaid(pt, receipt).slice(pt.band.length)}
+        <p className={`band band-${pt.band.toLowerCase().replace(/\s+/g, "-")}`} data-testid="band" title={bandMethod(pt, words)}>
+          {t("Difficulty:")} <b>{t(pt.band)}</b>
+          {bandSaid(pt, receipt, words).slice(t(pt.band).length)}
         </p>
       ) : playing ? (
-        <p className="band muted" data-testid="band">Novice and average AI runners are playing it now, for the difficulty…</p>
+        <p className="band muted" data-testid="band">{t("Novice and average AI runners are playing it now, for the difficulty…")}</p>
       ) : null}
-      {pt && report?.times && <p className="times">{timesLine(report.times)}</p>}
-      <h4>What the AI runners revealed</h4>
+      {pt && report?.times && <p className="times">{timesLine(report.times, words)}</p>}
+      <h4>{t("What the AI runners revealed")}</h4>
       {children}
       {report && report.fails.length > 0 && (
         <div data-testid="fails">
-          <p>Where runs went wrong:</p>
+          <p>{t("Where runs went wrong:")}</p>
           <ul>
             {report.fails.map((f, i) => (
               <li key={i}>
-                {failLine(f, report.runs)}
+                {failLine(f, report.runs, words)}
                 {noteAction?.(`fail:${i}`)}
               </li>
             ))}
@@ -37,12 +39,12 @@ export function Revealed({ receipt, report, playing, children, noteAction }: { r
       )}
       {report?.fights && (
         <p data-testid="fights">
-          Fights: {report.fights.spots.map((f) => fightLine(f)).join("; ")} <span className="muted">({fightLine(report.fights)} in all)</span>
+          {t("Fights:")} {report.fights.spots.map((f) => fightLineIn(f, words)).join("; ")} <span className="muted">({t("{what} in all", { what: fightLineIn(report.fights, words) })})</span>
         </p>
       )}
       {report && report.pace.length > 0 && (
         <p data-testid="pace">
-          Pacing <span className="muted">(median first times)</span>: {paceLine(report.pace, report.runs)}
+          {t("Pacing")} <span className="muted">({t("median first times")})</span>: {paceLine(report.pace, report.runs, words)}
         </p>
       )}
     </div>

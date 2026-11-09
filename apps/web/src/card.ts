@@ -8,6 +8,7 @@ import { PACKS } from "@ghostrun/registry";
 import type { CardControls } from "./hud/IntentCard";
 import type { World } from "./pipeline";
 import { LOOK_CHOICES, norm, pickLook, type LookPin, type Pick as LookPick } from "./render/pick";
+import { k, locale, t } from "./i18n";
 import { layoutOptions, layoutPatch } from "./structure";
 
 /** What the card can pin on a rebuild (the edge checks it against the intent schema: llm/pin.ts). */
@@ -71,13 +72,15 @@ export function lawPatch(laws: Laws, change: Partial<Pick<Laws, "jumpsMax" | "gr
 
 /** How a rebuild reads on the world it made: "rebuilt as a maze at your request". */
 export function rebuiltLine(pin: ShapePin): string {
-  const parts = [pin.pack ? `as ${PACK_NAME[pin.pack] ?? pin.pack}` : "", pin.mode ? (pin.mode === "wander" ? "as a place to explore" : "as a game") : "", pin.genre ? `as ${article(pin.genre)}` : ""].filter(Boolean);
-  return `rebuilt ${parts.join(", ") || "as you asked"} at your request`;
+  // (in the HUD's language; a genre keeps its English article only in English)
+  const genre = (g: string) => (locale() === "en" ? article(g) : t(g));
+  const parts = [pin.pack ? t("as {what}", { what: t(PACK_NAME[pin.pack] ?? pin.pack) }) : "", pin.mode ? (pin.mode === "wander" ? t("as a place to explore") : t("as a game")) : "", pin.genre ? t("as {what}", { what: genre(pin.genre) }) : ""].filter(Boolean);
+  return t("rebuilt {how} at your request", { how: parts.join(", ") || t("as you asked") });
 }
 
 const article = (w: string) => `${/^[aeiou]/i.test(w) ? "an" : "a"} ${w}`;
 /** Each pack as a person would say it. */
-export const PACK_NAME: Record<string, string> = { city_block: "a city block", floor_plan: "rooms", arena: "an arena", maze: "a maze", outdoor: "the outdoors", course: "an obstacle course" };
+export const PACK_NAME: Record<string, string> = { city_block: k("a city block"), floor_plan: k("rooms"), arena: k("an arena"), maze: k("a maze"), outdoor: k("the outdoors"), course: k("an obstacle course") };
 export const PACK_IDS = PACKS.map((p) => p.id);
 
 /** One "did you mean" the card can offer: the words that suggest it, its question, its button, what it pins. */
@@ -93,13 +96,13 @@ interface Alt {
 // Matched on the prompt, lowercased with accents stripped. A world built on another pack than these
 // words name, or as a place when they name a game (or a game when they name a place), was a close call.
 const ALTS: readonly Alt[] = [
-  { words: /\brac(e|es|ing)\b|grand prix|\bkarts?\b|go-?kart|\brally\b|\blaps?\b|zavod|carrera|course de/, ask: "Did you mean a race?", label: "Make it a race", pin: { genre: "race" }, is: (i) => /rac/.test(i.genre) },
-  { words: /\bmaze|labyrinth|bludist|laberint|labirynt|irrgarten/, ask: "Did you mean a maze?", label: "Make it a maze", pin: { pack: "maze" }, is: (i) => i.pack === "maze" },
-  { words: /parkour|obstacle|\bobby\b|platformer|time trial|\bjump(ing)? course/, ask: "Did you mean an obstacle course?", label: "Make it a course", pin: { pack: "course" }, is: (i) => i.pack === "course" },
-  { words: /museum|galler|mansion|\bhouse\b|\bhome\b|\bvilla|apartment|office|\bhotel|\bschool|library|\bshop\b|\bstore\b|interior|indoors?|\brooms?\b|castle hall/, ask: "Did you mean indoors?", label: "Build it as rooms", pin: { pack: "floor_plan" }, is: (i) => i.pack === "floor_plan" },
-  { words: /forest|\bwoods?\b|\bpark\b|garden|island|beach|meadow|\bcamp|jungle|countryside|outdoors?|\blake\b|mountain/, ask: "Did you mean outdoors?", label: "Make it outdoors", pin: { pack: "outdoor" }, is: (i) => i.pack === "outdoor" },
-  { words: /\barena|stadium|\bduel|\bsumo|dodgeball|football|soccer|basketball|colosseum|\bring\b/, ask: "Did you mean an arena?", label: "Make it an arena", pin: { pack: "arena" }, is: (i) => i.pack === "arena" },
-  { words: /\bcity\b|street|rooftop|downtown|\balley|neon/, ask: "Did you mean city streets?", label: "Make it a city", pin: { pack: "city_block" }, is: (i) => i.pack === "city_block" },
+  { words: /\brac(e|es|ing)\b|grand prix|\bkarts?\b|go-?kart|\brally\b|\blaps?\b|zavod|carrera|course de/, ask: k("Did you mean a race?"), label: k("Make it a race"), pin: { genre: "race" }, is: (i) => /rac/.test(i.genre) },
+  { words: /\bmaze|labyrinth|bludist|laberint|labirynt|irrgarten/, ask: k("Did you mean a maze?"), label: k("Make it a maze"), pin: { pack: "maze" }, is: (i) => i.pack === "maze" },
+  { words: /parkour|obstacle|\bobby\b|platformer|time trial|\bjump(ing)? course/, ask: k("Did you mean an obstacle course?"), label: k("Make it a course"), pin: { pack: "course" }, is: (i) => i.pack === "course" },
+  { words: /museum|galler|mansion|\bhouse\b|\bhome\b|\bvilla|apartment|office|\bhotel|\bschool|library|\bshop\b|\bstore\b|interior|indoors?|\brooms?\b|castle hall/, ask: k("Did you mean indoors?"), label: k("Build it as rooms"), pin: { pack: "floor_plan" }, is: (i) => i.pack === "floor_plan" },
+  { words: /forest|\bwoods?\b|\bpark\b|garden|island|beach|meadow|\bcamp|jungle|countryside|outdoors?|\blake\b|mountain/, ask: k("Did you mean outdoors?"), label: k("Make it outdoors"), pin: { pack: "outdoor" }, is: (i) => i.pack === "outdoor" },
+  { words: /\barena|stadium|\bduel|\bsumo|dodgeball|football|soccer|basketball|colosseum|\bring\b/, ask: k("Did you mean an arena?"), label: k("Make it an arena"), pin: { pack: "arena" }, is: (i) => i.pack === "arena" },
+  { words: /\bcity\b|street|rooftop|downtown|\balley|neon/, ask: k("Did you mean city streets?"), label: k("Make it a city"), pin: { pack: "city_block" }, is: (i) => i.pack === "city_block" },
 ];
 const PLACE = /\b(tour|explore|exploring|visit|stroll|wander|walk around|look around|sightsee|showroom)\b/;
 const GAME = /\b(win|score|race|collect|escape|steal|catch|capture|defeat|beat|survive|reach|find)\b/;
@@ -116,8 +119,8 @@ export function ambiguity(prompt: string, i: { pack: string; mode: string; genre
   const ownHits = own ? hits(own) : 0;
   const best = ALTS.filter((a) => !a.is(i) && hits(a) > 0 && (a.pin.pack === undefined || hits(a) >= ownHits)).sort((a, b) => hits(b) - hits(a))[0];
   if (best) return { ask: best.ask, label: best.label, pin: best.pin };
-  if (i.mode === "play" && PLACE.test(p) && !GAME.test(p)) return { ask: "Just explore it?", label: "Make it a place to wander", pin: { mode: "wander" } };
-  if (i.mode === "wander" && GAME.test(p)) return { ask: "Did you mean a game?", label: "Make it a game", pin: { mode: "play" } };
+  if (i.mode === "play" && PLACE.test(p) && !GAME.test(p)) return { ask: k("Just explore it?"), label: k("Make it a place to wander"), pin: { mode: "wander" } };
+  if (i.mode === "wander" && GAME.test(p)) return { ask: k("Did you mean a game?"), label: k("Make it a game"), pin: { mode: "play" } };
   return null;
 }
 

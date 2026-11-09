@@ -6,14 +6,15 @@ import type { Vec3, WorldBundle } from "@ghostrun/ir";
 import { fraction, type Receipt } from "@ghostrun/proof/light";
 import type { SimEvent } from "@ghostrun/sim";
 import { clock, zoneAt, type Fact } from "./host";
+import { k, t } from "./i18n";
 
 /** The three "why" chips on a result card. */
-export const whyChips = (k: "win" | "lose") => [k === "lose" ? "Why did I lose?" : "How did I win?", "Where did I waste time?", "What did the AI do differently?"];
+export const whyChips = (end: "win" | "lose") => [end === "lose" ? k("Why did I lose?") : k("How did I win?"), k("Where did I waste time?"), k("What did the AI do differently?")];
 
 /** The three chips in a place to explore. */
 export const tourChips = (b: WorldBundle) => {
   const first = exhibits(b)[0];
-  return ["What's in each room?", "What's worth seeing first?", ...(first ? [`Where is the ${first.noun}?`] : [])];
+  return [k("What's in each room?"), k("What's worth seeing first?"), ...(first ? [t("Where is the {thing}?", { thing: first.noun })] : [])];
 };
 
 const zoneName = (b: WorldBundle, id: string | null) => {

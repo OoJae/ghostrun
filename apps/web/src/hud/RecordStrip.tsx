@@ -7,6 +7,8 @@ import { useEffect } from "react";
 import { statusWord } from "@ghostrun/proof/light";
 import type { ProofState } from "./Proof";
 import "./clip.css";
+import { t, tn } from "../i18n";
+import { words } from "../i18n/words";
 
 /** The cursor hides after resting this long. */
 const REST_MS = 1500;
@@ -34,12 +36,12 @@ export function sourceLine(s: StripSource): string {
 }
 
 function proofLine(p: ProofState): { text: string; tone: string } | null {
-  if (p.status === "proving") return { text: "AI runners playing…", tone: "pending" };
+  if (p.status === "proving") return { text: t("AI runners playing…"), tone: "pending" };
   if (p.status !== "done" || !p.receipt) return null;
   const fails = p.chips.filter((c) => c.status === "counterexample").length;
   const head = p.receipt.headline;
-  if (head) return { text: `${head.text}: ${statusWord(head.status)}`, tone: head.status === "counterexample" ? "bad" : head.status === "verified" || head.status === "played" ? "good" : "pending" };
-  return fails ? { text: `${fails} counterexample${fails > 1 ? "s" : ""}`, tone: "bad" } : { text: "no counterexamples", tone: "good" };
+  if (head) return { text: `${head.text}: ${statusWord(head.status, words)}`, tone: head.status === "counterexample" ? "bad" : head.status === "verified" || head.status === "played" ? "good" : "pending" };
+  return fails ? { text: tn(fails, "{n} counterexample", "{n} counterexamples"), tone: "bad" } : { text: t("no counterexamples"), tone: "good" };
 }
 
 export function RecordStrip({ prompt, ttffMs, busy, source, proof, onExpand }: { prompt: string; ttffMs: number | null; busy: boolean; source: StripSource; proof: ProofState; onExpand: () => void }) {
@@ -62,13 +64,13 @@ export function RecordStrip({ prompt, ttffMs, busy, source, proof, onExpand }: {
   }, []);
   const p = proofLine(proof);
   return (
-    <button type="button" className="glass record-strip" onClick={onExpand} title="Edit the prompt" data-testid="record-strip">
+    <button type="button" className="glass record-strip" onClick={onExpand} title={t("Edit the prompt")} data-testid="record-strip">
       <span className="mark" aria-hidden="true" />
       <span className="rs-prompt" title={prompt}>
         {prompt}
       </span>
       <span className="sep">·</span>
-      <span className="rs-time">{busy || ttffMs === null ? "building…" : `playable in ${(ttffMs / 1000).toFixed(1)} s`}</span>
+      <span className="rs-time">{busy || ttffMs === null ? t("building…") : t("playable in {s} s", { s: (ttffMs / 1000).toFixed(1) })}</span>
       <span className="sep">·</span>
       <span className="rs-source">{sourceLine(source)}</span>
       {p && (

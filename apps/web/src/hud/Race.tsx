@@ -6,6 +6,7 @@ import { GhostTrack, RaceTracker, raceClock, split, type Rival } from "../race";
 import type { RapierSim } from "../sim/rapier";
 import type { RunResult } from "./Result";
 import "./race.css";
+import { t } from "../i18n";
 
 export function RaceChip({ rival, getSim, secrets, result, hidden, onToggle, onBoard }: { rival: Rival; getSim: () => RapierSim | null; secrets: ReadonlySet<string>; result: RunResult | null; hidden: boolean; onToggle: () => void; onBoard?: (() => void) | undefined }) {
   /** undefined: nothing to compare with yet (or the stub simulation plays); null: off the ghost's route. */
@@ -28,15 +29,15 @@ export function RaceChip({ rival, getSim, secrets, result, hidden, onToggle, onB
   let you: ReactNode;
   if (result?.k === "win") {
     const d = (result.tick - theirs) / 60;
-    you = <span className={d <= 0 ? "ahead" : "behind"} data-testid="race-final">you {raceClock(result.tick)} ({split(d)})</span>;
+    you = <span className={d <= 0 ? "ahead" : "behind"} data-testid="race-final">{t("you {time}", { time: raceClock(result.tick) })} ({split(d)})</span>;
   } else if (result?.k === "lose") {
-    you = <span className="behind">you didn't finish</span>;
+    you = <span className="behind">{t("you didn't finish")}</span>;
   } else if (delta === undefined) {
     you = null;
   } else if (delta === null) {
-    you = <span className="muted" title="Too far from where the ghost was at your stage of the win to compare">you: off its route</span>;
+    you = <span className="muted" title={t("Too far from where the ghost was at your stage of the win to compare")}>{t("you: off its route")}</span>;
   } else {
-    you = <span className={delta <= 0 ? "ahead" : "behind"} title={delta <= 0 ? "Ahead of the ghost at this point of the win" : "Behind the ghost at this point of the win"} data-testid="race-delta">you {split(delta)}</span>;
+    you = <span className={delta <= 0 ? "ahead" : "behind"} title={delta <= 0 ? t("Ahead of the ghost at this point of the win") : t("Behind the ghost at this point of the win")} data-testid="race-delta">{t("you {time}", { time: split(delta) })}</span>;
   }
   return (
     <div className={`glass race ${rival.kind}`} data-testid="race">
@@ -46,12 +47,12 @@ export function RaceChip({ rival, getSim, secrets, result, hidden, onToggle, onB
       </span>
       {you && <span className="sep">·</span>}
       {you}
-      <button type="button" onClick={onToggle} aria-pressed={!hidden} title="Show or hide the ghost (H)" data-testid="ghost-toggle">
-        {hidden ? "show ghost" : "hide ghost"}
+      <button type="button" onClick={onToggle} aria-pressed={!hidden} title={t("Show or hide the ghost (H)")} data-testid="ghost-toggle">
+        {hidden ? t("show ghost") : t("hide ghost")}
       </button>
       {onBoard && (
         <button type="button" onClick={onBoard} data-testid="race-board">
-          best times
+          {t("best times")}
         </button>
       )}
     </div>
