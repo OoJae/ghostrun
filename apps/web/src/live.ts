@@ -77,17 +77,21 @@ export interface BuildHooks {
   image?: string;
   /** The edge has read the picture: its brief, and the prompt the world will be built from. */
   onInspired?(i: LiveInspired): void;
+  /** What the person pinned on the Intent card (a pack, a mode, a genre): the intent model's choices give way to it. */
+  intent?: { pack?: string; mode?: "play" | "wander"; genre?: string };
+  /** The world's seed (a rebuild keeps the one it had). */
+  seed?: number;
 }
 
 export async function liveBuild(prompt: string, hooks: BuildHooks = {}): Promise<LiveResult> {
-  const { onIntent, onLine, onInspired, fresh, image } = hooks;
+  const { onIntent, onLine, onInspired, fresh, image, intent: pin, seed: seed0 } = hooks;
   const t0 = performance.now();
   const ctl = new AbortController();
   let res: Response;
   try {
     // the engine hash keys the edge's cache: a world is only replayed to the engine it was built for
     // (a build from a picture is never cached; the picture is read once and not kept)
-    res = await api("/v1/build", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ prompt, engine: ENGINE_HASH, ...(fresh ? { fresh: true } : {}), ...(image ? { image } : {}) }), signal: ctl.signal });
+    res = await api("/v1/build", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ prompt, engine: ENGINE_HASH, ...(fresh ? { fresh: true } : {}), ...(image ? { image } : {}), ...(pin ? { intent: pin } : {}), ...(seed0 !== undefined ? { seed: seed0 } : {}) }), signal: ctl.signal });
   } catch (e) {
     return { kind: "unavailable", reason: String(e) };
   }

@@ -1,10 +1,10 @@
 // T0, static: every reference resolves, and the win condition is reachable through the rule graph
 // by goal regression (win ← score_gte ← score effect ← enter with carrier ← pickup …).
-import type { Rule, WorldBundle } from "@ghostrun/ir";
-import { SPECIAL_REFS } from "@ghostrun/ir";
+import type { Act, Rule, WorldBundle } from "@ghostrun/ir";
+import { LOOK_AWAY, SPECIAL_REFS } from "@ghostrun/ir";
 import { HEALTH, SHOOT, verb } from "@ghostrun/kits";
 import { clampParams, type Cause, type Produces } from "@ghostrun/plugin-api";
-import type { Chip } from "./types";
+import type { Chip, Counterexample } from "./types";
 
 /** One step of the abstract plan T3 executes. */
 export type PlanStep =
@@ -12,7 +12,8 @@ export type PlanStep =
   | { do: "deliver"; item: string; sensor: string; rule: string; times: number; want?: Want } // bring `item` (or the player) into `sensor`
   | { do: "use"; at: string; rule: string; want?: Want } // stand by `at` and press USE
   | { do: "touch"; at: string; rule: string; want?: Want } // touch `at`
-  | { do: "collect"; items: string[]; rule: string; times: number; rules?: string[] } // touch `items` until the rule(s) fired `times` in all
+  | { do: "collect"; items: string[]; rule: string; times: number; rules?: string[]; purse?: { word: string; n: number } } // touch `items` until the rule(s) fired `times` in all (or, with purse, until the player holds n of that word)
+  | { do: "speak"; to: string; act: Act; what: string; n: number; rule: string; then?: string; want?: Want } // walk up to `to` and say the act (offer n of `what`) as the rule wants it said; `then`: what the act buys time for (the way to it is opened first)
   | { do: "wait"; rule: string; want?: Want } // let time run (a timer)
   | { do: "throw"; item: string; rule: string; times?: number; want?: Want } // carrying `item`, get a rival in range and press USE
   | { do: "shove"; at: string; from: string; into?: string; rule: string; times?: number; want?: Want } // knock `at` (out of `from`, or into `into`)
@@ -91,6 +92,34 @@ const anyGun = (c: Extract<Cause, { do: "shoot" }>, w: Rule["when"]): Cause => (
 /** A cause in a few words, for a chain's explanation. */
 const said = (c: Cause) => (c.do === "throw" ? `throw ${c.item}` : c.do === "shoot" ? `shoot ${c.at || "a rival"}` : c.do === "drive" ? `drive ${c.track}` : `${c.do} ${c.at}`);
 
+/** A speech act in a few words: "offer guard 20 coins", "book with guide", "ask guide". */
+export const actWords = (act: string, to: string, what: string, n: number) => (act === "book" ? `book with ${to}` : !what ? `${act} ${to}` : `${act} ${to} ${n > 0 ? `${n} ` : ""}${what}`);
+
+/** The words a world counts rather than carries ("coins"): what give and take hand over that is no thing in it, and what acts offer. */
+export function purseWords(b: WorldBundle): Set<string> {
+  const ids = new Set(b.entities.map((e) => e.id));
+  const out = new Set<string>();
+  for (const r of b.rules) {
+    for (const e of r.then) if ((e.e === "give" || e.e === "take") && String(e.v) && !ids.has(String(e.v))) out.add(String(e.v));
+    if (r.when.t === "spoken" && r.when.b && !ids.has(r.when.b)) out.add(r.when.b);
+  }
+  return out;
+}
+
+/** How many of a counted word the world can give the player in all (Infinity when a way to earn it repeats). */
+export function purseSupply(b: WorldBundle, word: string): number {
+  let n = 0;
+  for (const r of b.rules) {
+    const k = r.then.filter((e) => e.e === "give" && e.target === "player" && String(e.v) === word).reduce((s, e) => s + (e.n || 1), 0);
+    if (!k) continue;
+    // a collectible goes once (it vanishes), as does a once-only rule; anything else can be done again
+    const once = r.once || (r.when.t === "touch" && b.verbs.some((v) => v.verb === "puzzle.collect" && v.on === r.when.b));
+    if (!once) return Infinity;
+    n += k;
+  }
+  return n;
+}
+
 /** Hit points by id (combat_sport.health, clamped), for everything that has them. */
 export function hitPoints(b: WorldBundle): Map<string, number> {
   const spec = verb(HEALTH)!.params;
@@ -143,10 +172,13 @@ export function t0(b: WorldBundle, playerTeam: "red" | "blue" = "red"): { chips:
   const healthy = (ref: string): string[] =>
     ref === "" ? [...hp.keys()] : ref.startsWith("team:") ? [...hp.keys()].filter((id) => (id === "player" ? playerTeam : ents.get(id)?.team) === ref.slice(5)) : hp.has(ref) ? [ref] : [];
 
+  // what is counted ("coins"): an act may offer it, and "player.coins" reads it
+  const words = purseWords(b);
+
   // 1. references (hit points included: a knock-out rule on something with none can never fire)
   let bad = 0;
   for (const r of b.rules) {
-    const refs = [r.when.a, r.when.b, ...r.if.map((c) => c.l), ...r.then.map((e) => e.target)];
+    const refs = [r.when.a, r.when.t === "spoken" && words.has(r.when.b) ? "" : r.when.b, ...r.if.map((c) => c.l), ...r.then.map((e) => e.target)];
     const missing = refs.filter((x) => !ok(x));
     const noHp = [
       ...(r.when.t === "health_lte" && ok(r.when.a) && !healthy(r.when.a).length ? [`${r.when.a || "anyone"} (health_lte)`] : []),
@@ -186,6 +218,24 @@ export function t0(b: WorldBundle, playerTeam: "red" | "blue" = "red"): { chips:
       if (held && c.op === "eq" && held !== w.a && carryable.has(held) && !pre.some((x) => x.do === "pickup" && x.item === held)) {
         pre.push({ do: "pickup", item: held, rule: "" });
         preWhy.push(`holding ${held}`);
+        continue;
+      }
+      // "player.carrying is the gem" (an offer of it): holding it first
+      if (c.l === "player.carrying" && c.op === "eq" && carryable.has(String(c.r))) {
+        if (!pre.some((x) => x.do === "pickup" && x.item === String(c.r))) pre.push({ do: "pickup", item: String(c.r), rule: "" });
+        preWhy.push(`holding ${String(c.r)}`);
+        continue;
+      }
+      // "player.coins at least 20": that many come by first (coins to pick up, a sale)
+      const word = /^player\.([a-z][a-z0-9_]*)$/.exec(c.l)?.[1];
+      if (word && words.has(word) && (c.op === "gte" || c.op === "gt")) {
+        const n = Number(c.r);
+        const need = Number.isFinite(n) ? (c.op === "gt" ? n + 1 : n) : 1;
+        if (need <= 0) continue;
+        const sub = satPurse(r, word, need, depth + 1, s2);
+        if (!sub) return null;
+        pre.push(...sub.steps);
+        preWhy.push(`${need} ${word}`);
         continue;
       }
       // "red ahead of blue" or "red has more than N" on the player's team: score that much first
@@ -371,10 +421,106 @@ export function t0(b: WorldBundle, playerTeam: "red" | "blue" = "red"): { chips:
         const ride = b.verbs.find((v) => v.verb === "vehicle.drive" && v.params.driver === "player")?.on ?? b.verbs.find((v) => v.verb === "vehicle.drive")?.on;
         return { steps: [{ do: "drive", track: t.on, rule: r.id, laps }], explain: `${r.id} (lap ${laps} done) ← ${ride ? `drive ${ride}` : "run"} through ${gates.length} gate${gates.length === 1 ? "" : "s"} and ${t.on} ×${laps}` };
       }
+      case "spoken": {
+        // said to someone in the world, the way the rule wants it said (no mind in the proof: the
+        // world's own rule is what accepts it); a thing offered is offered in hand
+        const npc = ents.get(w.a);
+        if (!npc || npc.kind !== "npc") return null;
+        const act: Act = w.act || "ask";
+        const hold: PlanStep[] = carryable.has(w.b) ? [{ do: "pickup", item: w.b, rule: "" }] : [];
+        return { steps: [...hold, { do: "speak", to: w.a, act, what: w.b, n: w.n, rule: r.id }], explain: `${r.id} (${actWords(act, w.a, w.b, w.n)})` };
+      }
       default:
         return null;
     }
   };
+  /** Why the last purse fell short: what was needed and what the world can give. */
+  const short: { last: { word: string; need: number; have: number } | null } = { last: null };
+  /**
+   * "player.coins at least n": the rules that give the player that word, done until it adds up.
+   * Things to pick up are one collect step (as many as the smallest of them take); a repeatable way
+   * to earn it is done again. Null when the world can't give that many.
+   */
+  const satPurse = (r: Rule, word: string, need: number, depth: number, s2: Set<string>): { steps: PlanStep[]; explain: string } | null => {
+    const gives = (r2: Rule) => r2.then.filter((e) => e.e === "give" && e.target === "player" && String(e.v) === word).reduce((s, e) => s + (e.n || 1), 0);
+    const givers = rules.filter((r2) => r2.id !== r.id && gives(r2) > 0);
+    const have = purseSupply(b, word);
+    if (have < need) {
+      short.last = { word, need, have };
+      return null;
+    }
+    const items = givers.map((r2) => (r2.when.t === "touch" && (!r2.when.a || r2.when.a === "player") && collectedSet.has(r2.when.b) ? r2.when.b : "")).filter(Boolean);
+    if (givers.length && items.length === givers.length) {
+      let sum = 0;
+      let times = 0;
+      for (const k of givers.map(gives).sort((x, y) => x - y)) if (sum < need) ((sum += k), times++);
+      return { steps: [{ do: "collect", items, rule: givers[0]!.id, rules: givers.map((x) => x.id), times, purse: { word, n: need } }], explain: `collect ${need} ${word} (${items.length} to pick up)` };
+    }
+    const steps: PlanStep[] = [];
+    const why: string[] = [];
+    let got = 0;
+    for (const r2 of givers) {
+      if (got >= need) break;
+      const sub = sat(r2, depth + 1, s2);
+      if (!sub) continue;
+      // (one that can be done again is done until it adds up, ten times at most)
+      const k = r2.once ? 1 : Math.min(10, Math.ceil((need - got) / gives(r2)));
+      for (let i = 0; i < k; i++) steps.push(...sub.steps);
+      why.push(`${sub.explain}${k > 1 ? ` ×${k}` : ""}`);
+      got += k * gives(r2);
+    }
+    if (got < need) {
+      short.last = { word, need, have: got };
+      return null;
+    }
+    return { steps, explain: why.join(" + ") };
+  };
+
+  // Watchers: a rule that loses the game when someone sees you holding X stands in the plan's way
+  // from the step that picks X up. When the world has a way to make that watcher look away (a
+  // bribe), the plan does it just before; when its only ways can't be done (the bribe costs more
+  // than the world holds), no plan gets past. A watcher nothing can turn away is left to the
+  // runners: getting by unseen is geometry, not rules.
+  const nameOf = (id: string) => ents.get(id)?.noun || id.replace(/_/g, " ");
+  const catches = rules.filter((r) => r.when.t === "seen_by" && r.then.some((e) => e.e === "lose"));
+  const pastWatchers = (steps: PlanStep[]): { steps: PlanStep[]; notes: string[] } | { fail: { text: string; cx: Counterexample } } => {
+    let out = steps;
+    const notes: string[] = [];
+    for (const c of catches) {
+      const held = c.if.map((x) => (x.l === "player.carrying" && x.op === "eq" ? String(x.r) : /^([a-z][a-z0-9_]*)\.carrier(?:\.team)?$/.exec(x.l)?.[1])).find((x) => x !== undefined);
+      const at = held ? out.findIndex((s) => s.do === "pickup" && s.item === held) : c.if.length ? -1 : 0;
+      if (at < 0) continue;
+      const who = c.when.b ? [c.when.b] : b.cast.filter((k) => k.role === "guard").map((k) => k.npc);
+      const blinders = rules.filter((r2) => r2.then.some((e) => e.e === "set_state" && who.includes(e.target) && String(e.v) === LOOK_AWAY));
+      if (!blinders.length || !who.length) continue;
+      short.last = null;
+      const sub = blinders.map((r2) => sat(r2, 1, new Set())).find((x) => x !== null) ?? null;
+      if (!sub) {
+        const s = short.last as { word: string; need: number; have: number } | null;
+        const text = `the ${nameOf(who[0]!)} catches you${held ? ` holding the ${nameOf(held)}` : ""}, and nothing it accepts can be done${s ? `: it wants ${s.need} ${s.word}, and ${s.have} can be had` : ""}`;
+        return { fail: { text, cx: { where: null, have: s?.have ?? 0, need: s?.need ?? 1, unit: s?.word ?? "ways past", text } } };
+      }
+      // the act buys a while: the runner opens the way to what it is for before it speaks
+      out = [...out.slice(0, at), ...sub.steps.map((s) => (s.do === "speak" && held ? { ...s, then: held } : s)), ...out.slice(at)];
+      notes.push(`past ${c.id} ← ${sub.explain}`);
+    }
+    return { steps: out, notes };
+  };
+
+  // what an act costs, against what the world can give ("the bribe needs 20 coins; 60 to be had")
+  for (const r of rules) {
+    if (r.when.t !== "spoken") continue;
+    for (const c of r.if) {
+      const word = /^player\.([a-z][a-z0-9_]*)$/.exec(c.l)?.[1];
+      const n = Number(c.r);
+      if (!word || !words.has(word) || (c.op !== "gte" && c.op !== "gt") || !Number.isFinite(n)) continue;
+      const need = c.op === "gt" ? n + 1 : n;
+      const have = purseSupply(b, word);
+      const ok = have >= need;
+      const text = ok ? `${r.id} can be paid: ${need} ${word} needed, ${have === Infinity ? "more to be earned" : `${have} to be had`}` : `${r.id} can never be paid: it needs ${need} ${word}, and the world gives ${have}`;
+      chips.push(chip({ id: `T0:afford:${r.id}`, subject: { kind: "rule", id: r.id }, status: ok ? "verified" : "counterexample", method: "static count of what the world gives", text, src: r.src, ...(ok ? {} : { cx: { where: null, have, need, unit: word, text } }) }));
+    }
+  }
 
   // How to open each door, for runners whose path it blocks: its lock, or any rule that opens it.
   const openers = new Map<string, PlanStep[]>();
@@ -395,19 +541,26 @@ export function t0(b: WorldBundle, playerTeam: "red" | "blue" = "red"): { chips:
   }
 
   let chain: WinChain | null = null;
+  let caught: { text: string; cx: Counterexample } | null = null;
   const wins = rules.filter((r) => r.then.some((e) => e.e === "win"));
   for (const r of wins) {
     const s = sat(r, 0, new Set());
-    if (s) {
-      chain = { winRule: r.id, steps: s.steps, explain: `win ← ${s.explain}` };
+    const past = s && pastWatchers(s.steps);
+    if (past && "fail" in past) {
+      caught ??= past.fail;
+      continue;
+    }
+    if (s && past) {
+      chain = { winRule: r.id, steps: past.steps, explain: `win ← ${s.explain}${past.notes.length ? ` [${past.notes.join("; ")}]` : ""}` };
       break;
     }
   }
   if (b.mode === "play") {
+    const no = caught ? { text: caught.text, cx: caught.cx } : { text: wins.length ? "no rule chain lets the player trigger the win" : "no rule ever wins the game", cx: { where: null, have: 0, need: 1, unit: "chain", text: "win unreachable in the rule graph" } };
     chips.push(
       chain
         ? chip({ id: "T0:win_chain", subject: { kind: "property", id: "win_reachable" }, status: "verified", method: "static goal regression over rules", text: chain.explain, src: "" })
-        : chip({ id: "T0:win_chain", subject: { kind: "property", id: "win_reachable" }, status: "counterexample", method: "static goal regression over rules", text: wins.length ? "no rule chain lets the player trigger the win" : "no rule ever wins the game", src: "", cx: { where: null, have: 0, need: 1, unit: "chain", text: "win unreachable in the rule graph" } }),
+        : chip({ id: "T0:win_chain", subject: { kind: "property", id: "win_reachable" }, status: "counterexample", method: "static goal regression over rules", text: no.text, src: "", cx: no.cx }),
     );
   }
   for (const c of chips) c.ms = Math.round(performanceNow() - t);

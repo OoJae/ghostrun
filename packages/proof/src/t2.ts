@@ -258,6 +258,26 @@ function plan(sim: SimWorld, b: WorldBundle, r: Rule, playerTeam: string, presse
       v.bound.mem.end = 2; // forced: the timer runs out on the next tick
       return null;
     }
+    case "spoken": {
+      // beside them, saying it the way the rule wants it said (a thing offered is in hand)
+      if (!w.a || !sim.npcs.has(w.a)) return `${w.a || "nobody"} to say it to`;
+      const q = sim.pos(w.a);
+      const spot = AROUND.map(([dx, dz]): Vec3 => [q[0] + dx * 1.4, q[1], q[2] + dz * 1.4]).find((p) => clear(b, p));
+      sim.teleport("player", spot ?? [q[0] + 1.4, q[1], q[2]]);
+      if (w.b && sim.entity(w.b) && !sim.npcs.has(w.b)) sim.attach(w.b, "player");
+      sim.speak({ to: w.a, act: w.act || "ask", what: w.b, n: w.n, slot: "" });
+      return null;
+    }
+    case "seen_by": {
+      // in the watcher's sight: a few metres in front of it with a clear line, and it facing the player
+      const who = w.b || b.cast.find((k) => k.role === "guard" && sim.watches(k.npc))?.npc || "";
+      if (!who || !sim.watches(who)) return `${w.b || "no guard"} watches for no one`;
+      const why = lineUp(sim, b, "player", who, 2.5);
+      if (why) return why;
+      const [p, q] = [sim.pos("player"), sim.pos(who)];
+      sim.face(who, p[0] - q[0], p[2] - q[2]);
+      return null;
+    }
     case "lap_done": {
       // on the lap before, every gate passed, at the line: the racer crosses it on the next tick
       const t = sim.verbs.find((x) => x.plugin.id === "racing.track" && (!w.b || x.bound.on === w.b));
@@ -286,7 +306,8 @@ function valueOf(sim: SimWorld, path: string): string | number | boolean | undef
   const e = sim.entity(id!);
   if (!e) return undefined;
   const f = rest.join(".");
-  return f === "hp" ? (sim.hp(id!) ?? undefined) : f === "state" ? e.state : f === "team" ? e.team : f === "carrier" ? e.carrier : f === "carrier.team" ? (sim.entity(e.carrier)?.team ?? "") : undefined;
+  if (sim.words.includes(f)) return sim.purse(id!, f); // "player.coins"
+  return f === "hp" ? (sim.hp(id!) ?? undefined) : f === "state" ? e.state : f === "team" ? e.team : f === "carrier" ? e.carrier : f === "carrying" ? e.carrying : f === "carrier.team" ? (sim.entity(e.carrier)?.team ?? "") : undefined;
 }
 
 /**
@@ -343,6 +364,12 @@ export function t2(R: Rapier, b: WorldBundle, playerTeam: "red" | "blue" = "red"
     for (const c of r.if) {
       const held = /^([a-z][a-z0-9_]*)\.carrier\.team$/.exec(c.l)?.[1];
       if (held && c.op === "eq" && c.r === playerTeam && held !== r.when.a && b.entities.some((e) => e.id === held && e.kind !== "npc")) sim.attach(held, "player");
+      // "the player holds the gem" (a guard catching you with it): in hand
+      if (c.l === "player.carrying" && c.op === "eq" && b.entities.some((e) => e.id === String(c.r) && e.kind !== "npc")) sim.attach(String(c.r), "player");
+      // "player.coins at least 20" (what a bribe costs): that many in the purse
+      const word = /^player\.([a-z][a-z0-9_]*)$/.exec(c.l)?.[1];
+      const n = Number(c.r);
+      if (word && sim.words.includes(word) && Number.isFinite(n)) sim.forcePurse("player", word, c.op === "gt" ? n + 1 : c.op === "lt" ? n - 1 : n);
     }
     // a heal has room to show itself: whoever it heals starts low
     const hp = hitPoints(b);

@@ -36,6 +36,40 @@ describe("floor_plan pack", () => {
     }
   });
 
+  it("a second floor: the upper rooms are reachable on foot up the staircase, at every size a structural edit allows (50 seeds)", () => {
+    const sizes = [{ width: 28, depth: 20 }, { width: 24, depth: 16 }, { width: 40, depth: 28 }];
+    for (const seed of floorPlan.ci.seeds) {
+      const size = sizes[seed % sizes.length]!;
+      const layout = floorPlan.generate({ seed, params: { ...size, floors: 2 }, sub: [], laws: DEFAULT_LAWS, harder: false });
+      const slots = layout.zones.map((z) => z.slot);
+      expect(slots).toEqual(expect.arrayContaining(["upper_hall", "upper_room"]));
+      const { bundle } = placeWorld(emptyWorld(seed, slots.map((s) => ({ id: `z_${s}`, slot: s }))), layout);
+      const nav = buildNav(bundle);
+      const yard = layout.zones.find((z) => z.slot === "yard")!.anchors.spawn_pad!;
+      for (const z of layout.zones) {
+        for (const [name, a] of Object.entries(z.anchors)) {
+          if (a[1] > z.floorY + 0.5) continue; // wall-height anchors
+          expect(nav.path(yard, a), `seed ${seed}: ${z.slot}.${name} unreachable`).not.toBeNull();
+        }
+      }
+      nav.destroy();
+    }
+  });
+
+  it("a second floor leaves the floor below as it was (its own seed stream), only the stair's anchors go", () => {
+    for (const seed of [1, 7, 33]) {
+      const one = floorPlan.generate({ seed, params: floorPlan.defaults, sub: [], laws: DEFAULT_LAWS, harder: false });
+      const two = floorPlan.generate({ seed, params: { ...floorPlan.defaults, floors: 2 }, sub: [], laws: DEFAULT_LAWS, harder: false });
+      expect(two.statics.slice(0, one.statics.length)).toEqual(one.statics);
+      for (const z of one.zones) {
+        const after = two.zones.find((x) => x.slot === z.slot)!;
+        const gone = Object.keys(z.anchors).filter((k) => !after.anchors[k]);
+        expect(gone).toEqual(z.slot === "main_room" ? ["corner_ne", "wall_n"] : []);
+        for (const [k, p] of Object.entries(after.anchors)) expect(p).toEqual(z.anchors[k]);
+      }
+    }
+  });
+
   it("uses real-scale doorways", () => {
     const layout = floorPlan.generate({ seed: 3, params: floorPlan.defaults, sub: [], laws: DEFAULT_LAWS, harder: false });
     const lintels = layout.statics.filter((s) => s.surf === "wall" && s.pos[1] - s.size[1] / 2 > 2);

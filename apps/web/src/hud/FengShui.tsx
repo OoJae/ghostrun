@@ -1,4 +1,4 @@
-import { Fragment, useState } from "react";
+import { Fragment, useState, type ReactNode } from "react";
 import { FENG_SHUI_RULES, FENG_SHUI_SCHOOL_SOURCE, type FengShuiVerdict } from "@ghostrun/layout";
 import { fengShuiFix, fengShuiHead, fengShuiWhy } from "@ghostrun/proof/light";
 import { t } from "../i18n";
@@ -11,7 +11,7 @@ const MARK: Record<FengShuiVerdict, string> = { holds: "✓", fails: "✗", not_
 const TONE: Record<FengShuiVerdict, string> = { holds: "verified", fails: "counterexample", not_checkable: "not_checkable" };
 
 /** One named school's principles, checked on this world: each verdict with its reason, its fix and its source. */
-export function FengShui({ view }: { view: FengShuiView }) {
+export function FengShui({ view, noteAction }: { view: FengShuiView; /** A failed principle's Apply (its fix, re-proved on a copy first). */ noteAction?: ((key: string) => ReactNode) | undefined }) {
   const [open, setOpen] = useState(view.asked);
   const { section } = view;
   if (!open) {
@@ -38,6 +38,7 @@ export function FengShui({ view }: { view: FengShuiView }) {
             <li key={f.rule} className={TONE[f.verdict]} data-testid={`fengshui-${f.rule}`}>
               {MARK[f.verdict]} <b title={`${rule.principle} ${t("Checked:")} ${rule.check}`}>{t(rule.name)}</b>: {fengShuiWhy(f, words)}.
               {f.fix && <span className="fix"> {t("Fix: {fix}.", { fix: fengShuiFix(f.fix, words) })}</span>}
+              {f.fix && noteAction?.(`fengshui:${f.rule}`)}
               <span className="sources">
                 {rule.sources.map((s, i) => (
                   <Fragment key={s.url}>

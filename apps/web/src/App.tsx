@@ -1,14 +1,15 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { mergeFill, pinLayout, splitObjects } from "@ghostrun/ir";
 import { allRuns, better, insights, issuesOf, revealed, statusWord, type Chip, type Playtest, type Receipt } from "@ghostrun/proof/light";
 // the engine stack (three, physics, navmesh, bots) is a second chunk, fetched as the shell paints
 import type { Engine, LoadResult } from "./engine";
 import { KeyHint } from "./hud/Corner";
+import { ActsHud, type Asking } from "./hud/Acts";
 import { HealthBar } from "./hud/Health";
 import { LapBoard } from "./hud/Lap";
 import { TouchControls } from "./hud/Touch";
 import { XRay } from "./hud/XRay";
-import { ResultCard, type RunResult } from "./hud/Result";
+import { AskHost, ResultCard, type RunResult } from "./hud/Result";
 import { IntentCard } from "./hud/IntentCard";
 import { PromptBar } from "./hud/PromptBar";
 import { EditBox, type EditState } from "./hud/Edit";
@@ -18,6 +19,8 @@ import { CutChip, ProofBadge, proofBadge, ReceiptPanel, RepairChip, type CutStat
 import { liveBuild, liveDirector, liveEdit, liveHealth, liveRepair, type LiveCached, type LiveInspired, type LiveIntent } from "./live";
 import type { Picture } from "./picture";
 import { ANGLES, changeSummary, cutHolds, cutNotes, editedPrompt, HARDER, intentFor, newFailures, pickHarder, receiptDelta, suggestionsFor, SURPRISE } from "./edits";
+import { controlsFor, lawChange, layoutChangeOf, rebuiltLine, restyled, WEATHER_WORD, type CardActions, type ShapePin } from "./card";
+import { mergeEdit } from "./structure";
 import { createShare, loadShare, reportWrong } from "./share";
 import { Minds } from "./minds";
 import { propose, twistWorld } from "./director";
@@ -26,8 +29,13 @@ import { chooseLocale, chosenLocale, k, pickLocale, setLocale, t, tn, type Local
 import { LanguageChip } from "./hud/Language";
 import { BRIEF, buildWorld, ENGINE_HASH, FIXTURE_PROMPTS, FIXTURES, hashWorld, worldFromFill, type Intent, type World } from "./pipeline";
 import { probe } from "./probe";
-import { lookSamples } from "./render/pick";
-import { askHost, clock as mmss, facts, story } from "./host";
+import { LOOK_CHOICES, lookSamples, type LookPin } from "./render/pick";
+import { askHost, clock as mmss, facts, story, type Fact } from "./host";
+import { tourChips, tourFacts, whyFacts } from "./why";
+import { useRedGreen } from "./useRedGreen";
+import { useNotes } from "./useNotes";
+import { designNotes } from "./notes";
+import { NoteApply } from "./hud/Notes";
 import { useSound } from "./audio/useSound";
 import { useSpeech } from "./audio/useSpeech";
 import { TalkBox } from "./hud/Talk";
@@ -46,6 +54,8 @@ import { RecordStrip } from "./hud/RecordStrip";
 import { scoreText, vrResult, type VrAction } from "./xr/model";
 
 const HINT_MS = 6000;
+/** A moment for the browser: a click returns and "changing the world…" paints before a world is rebuilt. */
+const soon = () => new Promise<void>((r) => setTimeout(r, 0));
 const FIXTURE = new URLSearchParams(window.location.search).get("fixture") ?? "ctf";
 const FIRST_PROMPT = FIXTURE_PROMPTS[FIXTURE] ?? BRIEF;
 const params0 = new URLSearchParams(window.location.search);
@@ -186,6 +196,8 @@ export function App() {
     return () => window.removeEventListener("pointerdown", on);
   }, [touch]);
   const repaired = useRef<World | null>(null);
+  /** And its receipt (a counterexample chip's red/green sets this world beside it). */
+  const repairedReceipt = useRef<Receipt | null>(null);
   const current = useRef<World | null>(null);
   const worldLang = current.current?.bundle.lang;
   useEffect(() => {
@@ -201,6 +213,9 @@ export function App() {
     setBark({ npc, name, line, at: Date.now() });
     speech.npc(npc, line, reply);
   };
+  // a speech act that spends money or books a time waits for the player's yes (hud/Acts.tsx)
+  const [asking, setAsking] = useState<Asking | null>(null);
+  const actHooks = { onConfirm: (npc: string, name: string, act: Asking["act"]) => setAsking({ npc, name, act }), onNote: (t: string) => setToast(t) };
   const [result, setResult] = useState<RunResult | null>(null);
   const [director, setDirector] = useState<{ line: string; label: string; status: "proving" | "ready"; world?: World } | null>(null);
   const [reported, setReported] = useState<string>();
@@ -209,6 +224,8 @@ export function App() {
   modeRef.current = mode;
   // racing: the proof's par runner (or a run someone sent) as a ghost beside the player
   const race = useRace({ engine, world: current.current, loaded: timing, result, receipt: proof.receipt, specHash, prompt, urls: wasmUrls, toast: setToast, again: () => againRef.current() });
+  // red/green: the same AI runner before and after a change, side by side
+  const redGreen = useRedGreen({ engine, urls: wasmUrls });
   // the run's clip: the last seconds of it, cut where it ended, or a clean replay of it for a demo
   const clip = useClip({
     canvas,
@@ -308,6 +325,7 @@ export function App() {
     }
     if (!best) return setRepair({ status: "failed", issues: first.length });
     repaired.current = best.world;
+    repairedReceipt.current = best.receipt;
     const left = best.receipt.chips.filter((c) => c.status === "counterexample").length;
     setRepair({ status: "offer", issues: first.length, left, round: best.round, hard, ...(best.receipt.headline ? { headline: `${best.receipt.headline.text} (${statusWord(best.receipt.headline.status)})` } : {}) });
   }, [proveOnDevice]);
@@ -326,6 +344,7 @@ export function App() {
         if (id !== runId.current) return;
         setProof((p) => ({ ...p, status: "done", receipt, playing: true }));
         race.proved(world, receipt);
+        void redGreen.landed(world, receipt);
         probe().proof = { headline: receipt.headline?.status ?? "none", chips: receipt.chips.length };
         afterProof.current.get(id)?.(receipt);
         afterProof.current.delete(id);
@@ -344,10 +363,13 @@ export function App() {
       setScore({ red: 0, blue: 0, result: null });
       const bonus = new Set(world.bundle.entities.filter((e) => e.tags.includes("bonus")).map((e) => e.id));
       setSecrets({ found: 0, of: bonus.size });
+      redGreen.leaving(current.current, receiptRef.current, world);
+      if (current.current !== world) notes.reset();
       current.current = world;
       setReported(undefined);
       setResult(null);
       setDirector(null);
+      setAsking(null); // (a yes asked in the world before)
       setCut({ status: "idle" });
       cutWorld.current = null;
       const result = await e.load(world, startedAt);
@@ -362,14 +384,14 @@ export function App() {
       setToast(null);
       if (sim) {
         minds.current?.stop();
-        minds.current = modeRef.current === "live" ? new Minds(world, sim, barked) : null;
+        minds.current = modeRef.current === "live" ? new Minds(world, sim, barked, actHooks) : null;
         sim.onEvents = (evs) => {
           minds.current?.observe(evs);
           for (const ev of evs) {
             if (ev.k === "score") setScore((s) => ({ ...s, [ev.a === "team:blue" ? "blue" : "red"]: Number(ev.v) }));
             if (ev.k === "win" || ev.k === "lose") {
               setScore((s) => ({ ...s, result: ev.k }));
-              const res: RunResult = { k: ev.k, tick: ev.tick, rule: ev.rule, story: story(world.bundle, sim.sim.log, sim.trail), facts: facts(world.bundle, sim.sim.log, sim.trail) };
+              const res: RunResult = { k: ev.k, tick: ev.tick, rule: ev.rule, story: story(world.bundle, sim.sim.log, sim.trail), facts: [...facts(world.bundle, sim.sim.log, sim.trail), ...whyFacts(world.bundle, sim.sim.log, sim.trail, receiptRef.current)].slice(0, 40) };
               setResult(res);
               void directorFor(world, sim.trail, res, id);
             }
@@ -586,7 +608,7 @@ export function App() {
     if (mode !== "live" || minds.current) return;
     const sim = engine.current?.rapierSim;
     const w = current.current;
-    if (sim && w) minds.current = new Minds(w, sim, barked);
+    if (sim && w) minds.current = new Minds(w, sim, barked, actHooks);
   }, [mode, status]);
 
   useEffect(() => {
@@ -674,30 +696,143 @@ export function App() {
     if (SURPRISE.test(change) && receiptRef.current) return void cutFor(w, receiptRef.current, true);
     if (HARDER.test(change) && w.bundle.mode === "play" && receiptRef.current) return raceHarder(w, change, receiptRef.current);
     const base = runId.current;
-    const before = receiptRef.current;
     const t0 = performance.now();
     setEdit({ status: "editing", change });
     const original = w.source?.base ?? w.source?.prompt ?? builtPrompt.current;
-    const edits = [...(w.source?.edits ?? []), change];
-    const fill0 = pinLayout(w.fill);
-    const patch = await liveEdit(editedPrompt(original, edits.slice(0, -1)), change, intentFor(w, original), fill0, w.seed);
+    const patch = await liveEdit(editedPrompt(original, w.source?.edits ?? []), change, intentFor(w, original), pinLayout(w.fill), w.seed);
     if (runId.current !== base) return;
     if (!patch) return setEdit({ status: "failed", change, message: t("The live AI couldn't make that change just now. Try again, or say it differently.") });
-    const { text, stats } = mergeFill(fill0, patch, { edit: true });
+    await applyEdit(w, change, patch, t0);
+  };
+
+  /**
+   * A patch on the world, the model's or the Intent card's own: merged by stable ids (a layout op
+   * settled and re-anchored), placed, re-proved, and back with how the receipt moved, and Undo.
+   */
+  const applyEdit = async (w: World, change: string, patch: string, t0: number) => {
+    const before = receiptRef.current;
+    const original = w.source?.base ?? w.source?.prompt ?? builtPrompt.current;
+    const edits = [...(w.source?.edits ?? []), change];
+    const fill0 = pinLayout(w.fill);
+    const { text, stats, layout } = mergeEdit(fill0, patch, w.seed);
     const w2 = worldFromFill(text, w.seed, w.intent.live, w.bundle.pack.id, w.bundle.mode);
-    const summary = changeSummary(w.bundle, w2.bundle);
+    const summary = [...(layout?.summary ?? []), ...changeSummary(w.bundle, w2.bundle)];
     if (!summary.length && text.trim() === fill0.trim()) return setEdit({ status: "failed", change, message: stats.locked ? t("That would only change what the world promises, and the proof keeps those fixed.") : t("Nothing in the world changed. Try saying it differently.") });
-    w2.source = { prompt: editedPrompt(original, edits), intent: intentFor(w, original), fill: w2.fill, seed: w.seed, pack: w2.bundle.pack.id, base: original, edits };
+    if (layout?.notes.length) w2.notes.unshift(...layout.notes);
+    w2.source = { prompt: editedPrompt(original, edits), intent: intentFor(w, original), fill: w2.fill, seed: w.seed, pack: w2.bundle.pack.id, base: original, edits, ...(w.source?.pinned ? { pinned: w.source.pinned } : {}) };
     history.current.push(w);
     const shown = summary.length ? summary : [`${stats.replaced + stats.added + stats.deleted} lines changed`];
-    setEdit({ status: "proving", change, summary: shown, locked: stats.locked });
+    const notes = layout?.notes ?? [];
+    setEdit({ status: "proving", change, summary: shown, locked: stats.locked, notes });
     const id = ++runId.current;
     afterProof.current.set(id, (after) => {
       const delta = before ? receiptDelta(before, after) : null;
-      setEdit({ status: "done", change, summary: shown, locked: stats.locked, delta, failures: before ? newFailures(before, after) : [] });
+      setEdit({ status: "done", change, summary: shown, locked: stats.locked, delta, failures: before ? newFailures(before, after) : [], notes });
       if (collapsedRef.current && delta?.length) setToast(t("Edit re-proved: {what}", { what: delta.slice(0, 2).map((d) => `${d.label} ${d.from} → ${d.to}`).join(" · ") }));
     });
     await show(w2, id, t0, [{ label: "edit", ms: performance.now() - t0 }]);
+  };
+
+  /** Worlds that differ from the one before them only in how they look (Undo redraws them in place too). */
+  const restyledWorlds = useRef(new WeakSet<World>());
+  /**
+   * The Intent card's look, hour or weather: the same world redrawn in place around the running
+   * game (nothing the proof reads changed, so the spec and the receipt stand), with Undo.
+   */
+  const restyleWorld = async (change: LookPin, said: string, what: string) => {
+    const w = current.current;
+    const e = engine.current;
+    if (!w || !e) return;
+    await soon(); // the click lands (its picker closes) before the scene is rebuilt
+    const w2 = worldFromFill(restyled(w.fill, change), w.seed, w.intent.live, w.bundle.pack.id, w.bundle.mode);
+    // one of the world's changes, as a typed "make it night" is (a remix's line lists it)
+    const original = w.source?.base ?? w.source?.prompt ?? builtPrompt.current;
+    const edits = [...(w.source?.edits ?? []), said];
+    w2.source = { prompt: editedPrompt(original, edits), intent: intentFor(w, original), fill: w2.fill, seed: w.seed, pack: w2.bundle.pack.id, base: original, edits, ...(w.source?.pinned ? { pinned: w.source.pinned } : {}) };
+    history.current.push(w);
+    restyledWorlds.current.add(w2);
+    await redraw(w2);
+    setEdit({ status: "done", change: said, summary: [what, t("the same spec: the receipt stands")], locked: 0, delta: null, failures: [] });
+  };
+  /** Swap in a world that only looks different: the scene restyled under the sim (a fresh load if there's none to restyle). */
+  const redraw = async (w: World) => {
+    current.current = w;
+    setIntent(w.intent);
+    if (!(await engine.current?.restyle(w))) return show(w, ++runId.current, performance.now(), []);
+    sound.world(w.bundle, engine.current?.rapierSim ?? null, w.cue); // its rain, its music
+    const h = await hashWorld(w.bundle);
+    setSpecHash(h);
+    probe().specHash = h;
+  };
+
+  /**
+   * The Intent card's pack, mode or genre: a new fill, built live with those pinned (the same words
+   * and seed; the intent model fits the rest to them), shown as "rebuilt as a maze at your request",
+   * with Undo back to the world before. Pins from an earlier rebuild stay pinned.
+   */
+  const rebuildAs = async (pin: ShapePin) => {
+    const w = current.current;
+    if (!w || modeRef.current !== "live") return;
+    const base = runId.current;
+    const t0 = performance.now();
+    const before = receiptRef.current;
+    const pinned = { ...w.source?.pinned, ...pin };
+    const change = rebuiltLine(pin);
+    const prompt = w.source?.base ?? w.source?.prompt ?? builtPrompt.current;
+    setEdit({ status: "editing", change });
+    const r = await liveBuild(prompt, {
+      intent: pinned,
+      seed: w.seed,
+      onIntent: (i, _ms, seed) => runId.current === base && (engine.current?.materialise({ pack: i.pack, sub: i.sub, seed, look: `${i.setting} ${i.mood}` }), setBuilding(0)),
+      onLine: (n, draft) => runId.current === base && (engine.current?.materialiseLine(draft), setBuilding(n)),
+    });
+    if (runId.current !== base) return;
+    if (r.kind !== "world") {
+      engine.current?.endPreview();
+      setBuilding(null);
+      return setEdit({ status: "failed", change, message: r.kind === "refused" ? r.message : t("The live AI couldn't rebuild it just now. Try again in a moment.") });
+    }
+    const w2 = worldFromFill(r.fill, r.seed, { genre: r.intent.genre, setting: r.intent.setting, goal: r.intent.goal, fail: r.intent.fail, role: r.intent.role }, r.intent.pack, r.intent.mode);
+    w2.source = { prompt, intent: r.intent, fill: r.fill, seed: r.seed, pack: r.intent.pack, pinned };
+    history.current.push(w);
+    const was = intentFor(w, prompt);
+    const summary = [
+      w.bundle.pack.id !== w2.bundle.pack.id ? `pack ${w.bundle.pack.id} → ${w2.bundle.pack.id}` : "",
+      w.bundle.mode !== w2.bundle.mode ? `mode ${w.bundle.mode} → ${w2.bundle.mode}` : "",
+      pin.genre && was.genre !== r.intent.genre ? `genre ${was.genre || "game"} → ${r.intent.genre}` : "",
+      `${w2.bundle.entities.length} things, ${w2.bundle.rules.length} rules`,
+    ].filter(Boolean);
+    setFellBack(r.fallback !== null);
+    setCachedFrom(r.cached);
+    setEdit({ status: "proving", change, summary, locked: 0 });
+    const id = ++runId.current;
+    afterProof.current.set(id, (after) => setEdit({ status: "done", change, summary, locked: 0, delta: before ? receiptDelta(before, after) : null, failures: [] }));
+    await show(w2, id, t0, [{ label: r.cached ? "rebuild (cached)" : "rebuild", ms: performance.now() - t0 }]);
+  };
+
+  /** The card's corrections, each the way it has to be made (card.ts). */
+  const cardActs: CardActions = {
+    onLook: (v) => {
+      const name = LOOK_CHOICES.find((c) => c.value === v)?.label ?? v;
+      void restyleWorld({ look: v }, `make it look like ${name.toLowerCase()}`, t("look: {name}", { name: t(name) }));
+    },
+    onPhase: (p) => void restyleWorld({ phase: p }, `make it ${p === "day" ? "daytime" : p}`, t("now {what}", { what: t(p) })),
+    onWeather: (x) => void restyleWorld({ weather: x as NonNullable<LookPin["weather"]> }, x === "clear" ? "clear skies" : `make it ${WEATHER_WORD[x] ?? x}`, x === "clear" ? t("skies clear") : t("now {what}", { what: t(x) })),
+    onLaws: (c) => {
+      const w = current.current;
+      if (!w) return;
+      const { change, patch } = lawChange(w.bundle.laws, c);
+      setEdit({ status: "editing", change });
+      void soon().then(() => applyEdit(w, change, patch, performance.now()));
+    },
+    onLayout: (c) => {
+      const w = current.current;
+      const ch = w && layoutChangeOf(w.fill, c);
+      if (!w || !ch) return;
+      setEdit({ status: "editing", change: ch.change });
+      void soon().then(() => applyEdit(w, ch.change, ch.patch, performance.now()));
+    },
+    onShape: (pin) => void rebuildAs(pin),
   };
 
   /** "Try to fool it": the next plantable bug, proved in a copy of the world by its own worker. */
@@ -757,7 +892,7 @@ export function App() {
     const prompt = editedPrompt(original, edits.slice(0, -1));
     const patches = await Promise.all(ANGLES.map((a) => liveEdit(prompt, `${change}: ${a}`, intent, fill0, w.seed)));
     if (runId.current !== base) return;
-    const worlds = patches.map((p) => (p ? worldFromFill(mergeFill(fill0, p, { edit: true }).text, w.seed, w.intent.live, w.bundle.pack.id, w.bundle.mode) : null));
+    const worlds = patches.map((p) => (p ? worldFromFill(mergeEdit(fill0, p, w.seed).text, w.seed, w.intent.live, w.bundle.pack.id, w.bundle.mode) : null));
     if (!worlds.some(Boolean)) return setEdit({ status: "failed", change, message: t("The live AI couldn't write the harder versions just now. Try again in a moment.") });
     let proved = 0;
     const lanes = Math.max(1, Math.min(worlds.length, (navigator.hardwareConcurrency || 4) - 2));
@@ -804,7 +939,7 @@ export function App() {
     const patch = await liveDirector(editedPrompt(original, edits), intentFor(w, original), fill0, cutNotes(w.bundle, before), w.seed);
     if (runId.current !== base) return;
     if (!patch) return quiet(t("The Director's cut isn't available just now."));
-    const { text } = mergeFill(fill0, patch, { edit: true });
+    const { text } = mergeEdit(fill0, patch, w.seed);
     const w2 = worldFromFill(text, w.seed, w.intent.live, w.bundle.pack.id, w.bundle.mode);
     const summary = changeSummary(w.bundle, w2.bundle);
     if (!summary.length) return quiet(t("The Director's cut changed nothing in this world."));
@@ -826,13 +961,17 @@ export function App() {
   /** Apply the Director's cut between runs: shown like an edit (what changed, how the receipt moved), with Undo. */
   const applyCut = () => {
     const w2 = cutWorld.current;
-    const w = current.current;
-    const before = receiptRef.current;
-    if (!w2 || !w) return;
+    if (!w2 || !current.current) return;
     cutWorld.current = null;
     setCut({ status: "idle" });
+    applyChange(w2, "Director's cut (Claude Sonnet)", receiptRef.current);
+  };
+
+  /** A re-proved change on offer (the Director's cut, a design note) swapped in like an edit, with Undo. */
+  const applyChange = (w2: World, change: string, before: Receipt | null) => {
+    const w = current.current;
+    if (!w) return;
     history.current.push(w);
-    const change = "Director's cut (Claude Sonnet)";
     const summary = changeSummary(w.bundle, w2.bundle);
     setEdit({ status: "proving", change, summary, locked: 0 });
     const id = ++runId.current;
@@ -840,10 +979,44 @@ export function App() {
     void show(w2, id, performance.now(), []);
   };
 
+  const notes = useNotes({ world: () => current.current, receipt: () => receiptRef.current, prompt: () => builtPrompt.current, proveOnce, apply: (w2, change, before) => applyChange(w2, change, before) });
+  const noteList = useMemo(() => {
+    const w = current.current;
+    const r = proof.receipt;
+    const fs = fengShuiFor(w, w?.source?.base ?? w?.source?.prompt ?? builtPrompt.current)?.section ?? null;
+    return w && r ? new Map(designNotes(w.bundle, r.trails ? insights(w.bundle, allRuns(r)) : null, r.trails ? revealed(w.bundle, r) : null, fs).map((n) => [n.key, n])) : new Map<string, never>();
+  }, [proof.receipt]);
+
+  /**
+   * The Host's fly-to: the camera to the place a cited fact names (over the walls, about 1.2 s),
+   * and for a moment of the run, its replay from a second before it, under the held shot. Esc or
+   * any input hands the camera (and the run, from where the replay got to) back.
+   */
+  const flyTo = async (f: Fact) => {
+    const e = engine.current;
+    if (!e || !f.at) return;
+    const { FlyShot } = await import("./render/shots");
+    const shot: InstanceType<typeof FlyShot> = new FlyShot(e.stage, f.at, {
+      onArrive: () => {
+        if (f.tick === null || engine.current?.playing !== shot) return;
+        shot.keep = 1; // through the replay's rebuild of the world
+        replayMoment(f.tick, 60, k("Esc or any key takes over"));
+      },
+      onEnd: () => {
+        const sim = engine.current?.rapierSim;
+        if (sim?.replaying) sim.takeOver();
+      },
+    });
+    e.play(shot);
+  };
+
   const undo = () => {
     const prev = history.current.pop();
     if (!prev) return;
     setEdit({ status: "idle" });
+    // a look undone is redrawn in place, like it was changed; anything else is the old world again
+    const top = current.current;
+    if (top && restyledWorlds.current.has(top)) return void redraw(prev);
     void show(prev, ++runId.current, performance.now(), []);
   };
 
@@ -852,7 +1025,7 @@ export function App() {
    * as logged), from four seconds before the moment (a clean take: up to half a minute); any key
    * takes over.
    */
-  const replayMoment = (tick: number, back = 240) => {
+  const replayMoment = (tick: number, back = 240, takeOver = k("Press any key to take over")) => {
     const w = current.current;
     const sim = engine.current?.rapierSim;
     if (!w || !sim) return;
@@ -865,7 +1038,7 @@ export function App() {
       if (!s2) return;
       s2.replay(inputs, chosen, from);
       s2.onReplayEnd = () => setNotice(undefined);
-      setNotice(`Replaying from ${mmss(from)}, exactly as it happened. Press any key to take over.`);
+      setNotice(t("Replaying from {at}, exactly as it happened. {then}.", { at: mmss(from), then: t(takeOver) }));
     });
   };
 
@@ -986,9 +1159,29 @@ export function App() {
           {landing && <Landing starters={STARTERS} ready={status === "playing"} onPick={pickStarter} />}
         </div>
         {notice && <div className="glass notice" role="status">{notice}</div>}
-        {!collapsed && !typing && intent && building === null && <IntentCard intent={intent} specHash={specHash} note={note} inspired={inspiredNow} />}
+        {redGreen.caption && (
+          <div className="glass notice redgreen" role="status" data-testid="redgreen">
+            {redGreen.caption}
+            <span className="muted"> · Esc to stop</span>
+          </div>
+        )}
+        {mode === "live" && status === "playing" && !collapsed && !typing && current.current?.bundle.mode === "wander" && (
+          <div className="glass tourhost" data-testid="tour-host">
+            <AskHost run={false} placeholder={t("Ask the Host about this place")} chips={tourChips(current.current.bundle)} onAsk={(q) => askHost(q, tourFacts(current.current!.bundle, proof.receipt))} onFly={(f) => void flyTo(f)} voice={speech.enabled ? { say: speech.host, again: speech.again } : undefined} />
+          </div>
+        )}
+        {!collapsed && !typing && intent && building === null && (
+          <IntentCard
+            intent={intent}
+            specHash={specHash}
+            note={note}
+            rebuilt={current.current?.source?.pinned ? rebuiltLine(current.current.source.pinned) : null}
+            inspired={inspiredNow}
+            controls={current.current && status === "playing" ? controlsFor(current.current, { live: mode === "live", busy: edit.status === "editing" || edit.status === "racing" || edit.status === "proving", prompt: current.current.source?.base ?? current.current.source?.prompt ?? builtPrompt.current, act: cardActs }) : undefined}
+          />
+        )}
         {current.current && status !== "booting" && !typing && (!collapsed || edit.status === "editing" || edit.status === "racing" || edit.status === "proving") && (
-          <EditBox state={edit} enabled={mode === "live"} suggestions={[...suggestionsFor(current.current.bundle), "surprise me"]} canUndo={history.current.length > 0} onEdit={(c) => void editWorld(c)} onUndo={undo} focusKey={editFocus} placeholder={copied ? "Change it: make it yours…" : undefined}>
+          <EditBox state={edit} enabled={mode === "live"} suggestions={[...suggestionsFor(current.current.bundle), "surprise me"]} canUndo={history.current.length > 0} onEdit={(c) => void editWorld(c)} onUndo={undo} focusKey={editFocus} placeholder={copied ? "Change it: make it yours…" : undefined} onRedGreen={redGreen.pair ? () => void redGreen.play(redGreen.pair!) : undefined}>
             {remixSrc && <LineagePanel source={remixSrc} line={lineageOf(remixSrc, current.current)} mine={yourChanges(current.current).length} copied={copied} spec={specHash} onRemix={remix} onShare={() => void shareRun()} />}
           </EditBox>
         )}
@@ -1007,6 +1200,7 @@ export function App() {
           </div>
         )}
         <HealthBar engine={engine} active={status === "playing"} />
+        <ActsHud engine={engine} active={status === "playing"} bundle={current.current?.bundle ?? null} asking={asking} onYes={() => (asking && engine.current?.rapierSim?.queueAct(asking.act), setAsking(null))} onNo={() => setAsking(null)} />
         <LapBoard engine={engine} active={status === "playing"} />
         {useHint && status === "playing" && !touch && (
           <div className="glass usehint" data-testid="use-hint">
@@ -1022,6 +1216,7 @@ export function App() {
             onAgain={again}
             onShare={() => void shareRun()}
             onReplay={replayMoment}
+            onFly={(f) => void flyTo(f)}
             onAsk={mode === "live" && result.facts?.length ? (q) => askHost(q, result.facts!) : undefined}
             director={director}
             onTwist={() => {
@@ -1118,6 +1313,22 @@ export function App() {
             reported={reported}
             version={receiptVersion(lineageOf(remixSrc, current.current), specHash)}
             fengShui={fengShuiFor(current.current, ownPrompt ?? builtPrompt.current)}
+            chipAction={(c) => {
+              const w = current.current;
+              const r = proof.receipt;
+              const fix = repair.status === "offer" && repaired.current && repairedReceipt.current ? { world: repaired.current, receipt: repairedReceipt.current } : null;
+              const plays = redGreen.chipPlays(c, w, r, fix);
+              if (!plays || !w || !r) return null;
+              return (
+                <button type="button" className="chip-redgreen" data-testid="chip-redgreen" disabled={redGreen.lining === c.id} onClick={() => (setReceiptOpen(false), void redGreen.playChip(c, w, r, fix))}>
+                  {redGreen.lining === c.id ? t("lining up the runs…") : plays === "alone" ? `▶ ${t("where it fails")}` : `▶ ${t("red/green")}`}
+                </button>
+              );
+            }}
+            noteAction={mode === "live" ? (key) => {
+              const n = noteList.get(key);
+              return n ? <NoteApply note={n} state={notes.state} onTry={(k, c, said) => void notes.tryChange(k, c, said)} onAccept={() => (setReceiptOpen(false), notes.accept())} /> : null;
+            } : undefined}
             onShare={shareRun}
             onExport={async () => {
               const w = current.current;

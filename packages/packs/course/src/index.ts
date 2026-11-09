@@ -7,7 +7,7 @@
 // never a softlock.
 import { stream } from "@ghostrun/detmath";
 import { clampLaws, type Laws, type Vec3 } from "@ghostrun/ir";
-import type { LayoutPack, PackLayout, PackStatic, ZoneSpec } from "@ghostrun/plugin-api";
+import type { LayoutPack, LayoutParamSpec, PackLayout, PackStatic, ZoneSpec } from "@ghostrun/plugin-api";
 
 export interface CourseParams {
   [k: string]: number;
@@ -102,11 +102,17 @@ interface Plat {
 const r2 = (v: number) => Math.round(v * 100) / 100;
 const box = (zoneSlot: string, pos: Vec3, size: Vec3, surf: PackStatic["surf"]): PackStatic => ({ zoneSlot, shape: "box", pos, rotY: 0, size, surf });
 
+/** What a structural edit may change: how many segments (a longer course, a shorter one). */
+export const COURSE_SCHEMA: Readonly<Record<string, LayoutParamSpec>> = {
+  segments: { min: 6, max: 8, step: 1, label: "course", unit: "segments", line: "segments from start to finish, the opening wall included (each new one is a fresh obstacle)" },
+};
+
 export const course: LayoutPack<CourseParams> = {
   id: "course",
   version: "0.1.0",
   modes: ["play", "wander"],
   defaults: { segments: 6 },
+  schema: COURSE_SCHEMA,
   ci: { seeds: Array.from({ length: 50 }, (_, i) => i + 1) },
 
   generate({ seed, params, laws, harder }): PackLayout {

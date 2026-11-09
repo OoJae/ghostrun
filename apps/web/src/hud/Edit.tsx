@@ -8,8 +8,8 @@ export type EditState =
   | { status: "idle" }
   | { status: "editing"; change: string }
   | { status: "racing"; change: string; total: number; proved: number }
-  | { status: "proving"; change: string; summary: string[]; locked: number; race?: string[] }
-  | { status: "done"; change: string; summary: string[]; locked: number; delta: Delta[] | null; failures: string[]; race?: string[] }
+  | { status: "proving"; change: string; summary: string[]; locked: number; race?: string[]; notes?: string[] }
+  | { status: "done"; change: string; summary: string[]; locked: number; delta: Delta[] | null; failures: string[]; race?: string[]; notes?: string[] }
   | { status: "failed"; change: string; message: string; race?: string[] };
 
 const SIGN = { "-1": "worse", "0": "same", "1": "better" } as const;
@@ -26,9 +26,11 @@ interface Props {
   placeholder?: string | undefined;
   /** Shown above it: where a shared or gallery world came from. */
   children?: ReactNode;
+  /** The change moved a check between holding and failing: the same AI runner before and after it, side by side. */
+  onRedGreen?: (() => void) | undefined;
 }
 
-export function EditBox({ state, enabled, suggestions, canUndo, onEdit, onUndo, focusKey = 0, placeholder, children }: Props) {
+export function EditBox({ state, enabled, suggestions, canUndo, onEdit, onUndo, focusKey = 0, placeholder, children, onRedGreen }: Props) {
   const [text, setText] = useState("");
   const input = useRef<HTMLInputElement>(null);
   useEffect(() => {
@@ -81,7 +83,10 @@ export function EditBox({ state, enabled, suggestions, canUndo, onEdit, onUndo, 
           {state.status === "failed" && <p className="warn">{state.message}</p>}
           {(state.status === "proving" || state.status === "done") && (
             <>
-              <p className="edit-summary">{state.summary.join(" · ")}</p>
+              {/* a structural edit's re-anchoring, move by move, on hover */}
+              <p className="edit-summary" data-testid="edit-summary" title={state.notes?.length ? state.notes.join("\n") : undefined}>
+                {state.summary.join(" · ")}
+              </p>
               {state.locked > 0 && <p className="muted">{t("The world's promises were kept as they were; the proof re-checks them.")}</p>}
               {state.status === "proving" && <p className="muted">{t("AI runners re-proving…")}</p>}
               {state.status === "done" && state.delta && (
@@ -111,6 +116,11 @@ export function EditBox({ state, enabled, suggestions, canUndo, onEdit, onUndo, 
                 </li>
               ))}
             </ul>
+          )}
+          {state.status === "done" && onRedGreen && (
+            <button type="button" className="edit-redgreen" onClick={onRedGreen} data-testid="edit-redgreen" title={t("The same AI runner on the same seed, before the change (green) and after it (red), side by side")}>
+              ▶ {t("red/green")}
+            </button>
           )}
           {canUndo && !busy && (
             <button type="button" className="edit-undo" onClick={onUndo} data-testid="edit-undo">

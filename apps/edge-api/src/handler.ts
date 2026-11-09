@@ -8,13 +8,14 @@
 // Every route but health sits behind the gate (gate.ts). A build reserves its worst-case cost with
 // the governor before any model call and commits the metered cost when it ends (governor.ts).
 // Each model call runs on the fast lane with Claude Haiku as the rung below it (llm/lanes.ts).
-import { DEFAULT_LAWS, gameplayLines } from "@ghostrun/ir";
-import { BRIEF_MAX_CHARS, BriefOut, briefJsonSchema, directorMessages, editMessages, fillMessages, hostJsonSchema, hostMessages, inspiredPrompt, IntentOut, intentJsonSchema, intentMessages, jsonLanes, lanesFor, LlmError, mindJsonSchema, mindMessages, repairMessages, settleBrief, settleIntent, streamLanes, visionMessages, type ChatMessage, type Job, type Keys, type Provider } from "@ghostrun/llm";
-import { ALL_SUBS, PACKS, packFor } from "@ghostrun/registry";
+import { DEFAULT_LAWS, gameplayLines, jcs } from "@ghostrun/ir";
+import { BRIEF_MAX_CHARS, BriefOut, briefJsonSchema, directorMessages, editMessages, fillMessages, hostJsonSchema, hostMessages, inspiredPrompt, IntentOut, intentJsonSchema, intentMessages, jsonLanes, lanesFor, LlmError, mindJsonSchema, mindMessages, pinIntent, pinLine, readPin, repairMessages, settleBrief, settleIntent, streamLanes, visionMessages, type ChatMessage, type Job, type Keys, type Provider } from "@ghostrun/llm";
+import { ALL_SUBS, layoutLine, layoutOf, PACKS, packFor } from "@ghostrun/registry";
 import * as v from "valibot";
 // the vault heist teaches goal-dependent wins, doorway doors, keys and inspectable exhibits (an A/B
 // on six live prompts: 5 of 5 headlines verified vs 1 of 6 with the CTF example, which got copied)
 import EXAMPLE from "../../../packages/ir/fixtures/vault-heist.jsonl?raw";
+import { readActs, readFacts, readToday, readZone, settleAct } from "./acts";
 import { Buckets, intVar, WINDOW_MS } from "./buckets";
 import { cacheKey, closesGameplay, ENGINE_RE, promptSeed, readCache, replayBody, templateHash, writeCache, type CachedEvent } from "./cache";
 import type { DoNamespace, KvNamespace, R2Bucket, WaitUntil } from "./cf";
@@ -202,6 +203,8 @@ function sseStream() {
 
 const OPTION = /^[\w.:-]{1,48}$/;
 const str = (x: unknown, max: number) => (typeof x === "string" ? x.slice(0, max) : "");
+/** A pack's sub-zones (undefined: no such pack), for checking what an Intent card pinned. */
+const subsOf = (id: string) => PACKS.find((p) => p.id === id)?.subs;
 
 /**
  * POST /v1/mind: one NPC picks an option from its typed menu and says a line, in about a second
@@ -221,21 +224,28 @@ async function mind(req: Request, env: Env, url: URL): Promise<Response> {
   const menu = Array.isArray(i.menu) ? i.menu.filter((x): x is string => typeof x === "string" && OPTION.test(x)).slice(0, 8) : [];
   const current = str(i.current, 48);
   if (!menu.length || !str(i.npc, 32)) return json({ error: "bad mind request" }, 400);
+  // the speech acts it accepts (from the world's rules) and the facts it answers from (acts.ts)
+  const acts = readActs(i.acts, menu);
+  const facts = readFacts(i.facts);
+  const today = readToday(i.today);
+  const tz = readZone(i.tz);
+  const [inTok, outTok] = [acts.length || facts.length ? 2500 : 1500, acts.length ? 160 : 120];
   const sw = await switches(env);
   if (sw.paused) return json({ error: "builds paused", retryable: true }, 503);
-  const held = await reserveFor(env, url, caller, ip, costMicroUsd(INTENT_MODEL, 1500, 120));
+  const held = await reserveFor(env, url, caller, ip, costMicroUsd(INTENT_MODEL, inTok, outTok));
   if (held instanceof Response) return held;
-  let cost = costMicroUsd(INTENT_MODEL, 1500, 120);
+  let cost = costMicroUsd(INTENT_MODEL, inTok, outTok);
   try {
-    const r = await jsonLanes<{ option?: unknown; line?: unknown }>(
+    const r = await jsonLanes<Record<string, unknown>>(
       lanesFor("mind", keysOf(env), {
         primary: sw.primary,
-        maxTokens: 120,
-        jsonSchema: { name: "mind", schema: mindJsonSchema(menu) },
-        messages: mindMessages({ npc: str(i.npc, 32), role: str(i.role, 32), persona: str(i.persona, 400), menu, current, situation: str(i.situation, 600), event: str(i.event, 200), ...(typeof i.said === "string" ? { said: str(i.said, 200) } : {}) }),
+        maxTokens: outTok,
+        jsonSchema: { name: "mind", schema: mindJsonSchema(menu, acts) },
+        messages: mindMessages({ npc: str(i.npc, 32), role: str(i.role, 32), persona: str(i.persona, 400), menu, current, situation: str(i.situation, 600), event: str(i.event, 200), ...(typeof i.said === "string" ? { said: str(i.said, 200) } : {}), ...(acts.length ? { acts } : {}), ...(facts.length ? { facts } : {}), ...(today ? { today } : {}), ...(tz ? { tz } : {}) }),
       }),
     );
     if (r.inTok > 0) cost = costMicroUsd(r.model, r.inTok, r.outTok);
+    if (acts.length) return json({ ...settleAct(r.value, acts, menu, current, today), line: str(r.value.line, 120), ms: r.ms });
     const option = typeof r.value.option === "string" && menu.includes(r.value.option) ? r.value.option : menu.includes(current) ? current : menu[0]!;
     return json({ option, line: str(r.value.line, 120), ms: r.ms });
   } catch (e) {
@@ -317,11 +327,13 @@ async function patch(kind: "repair" | "edit" | "director", req: Request, env: En
   let messages: ChatMessage[];
   try {
     const pack = packFor(intent.output.pack);
-    const layout = pack.generate({ seed: input.seed as number, params: pack.defaults, sub: intent.output.sub, laws: DEFAULT_LAWS, harder: false });
+    // the layout the world stands on now: a structural edit's numbers and sub-zones are in its fill
+    const shape = layoutOf(pack, fill);
+    const layout = pack.generate({ seed: input.seed as number, params: shape.params, sub: shape.sub, laws: DEFAULT_LAWS, harder: false });
     const lines = gameplayLines(fill);
     messages =
       kind === "repair" ? repairMessages(prompt, intent.output, layout, lines, issues)
-      : kind === "edit" ? editMessages(prompt, change, intent.output, layout, lines)
+      : kind === "edit" ? editMessages(prompt, change, intent.output, layout, lines, layoutLine(layout.packId, shape.params, shape.sub))
       : directorMessages(prompt, intent.output, layout, lines, notes);
   } catch {
     return json({ error: `bad ${kind} request` }, 400);
@@ -375,8 +387,13 @@ async function build(req: Request, env: Env, url: URL, later: (p: Promise<unknow
 
   const body = await readJson(req, MAX_BUILD_BODY);
   if (!body.ok) return json({ error: body.error }, body.status);
-  const input = (body.value ?? {}) as { prompt?: unknown; seed?: unknown; engine?: unknown; fresh?: unknown; image?: unknown };
+  const input = (body.value ?? {}) as { prompt?: unknown; seed?: unknown; engine?: unknown; fresh?: unknown; image?: unknown; intent?: unknown };
   const said = typeof input.prompt === "string" ? input.prompt.trim().slice(0, MAX_PROMPT) : "";
+  // what the person pinned on the Intent card (a pack, a mode, a genre): checked before anything is spent
+  const pinned = readPin(input.intent, subsOf);
+  if (!pinned.ok) return json({ error: pinned.error }, 400);
+  const pin = pinned.pin;
+  const hasPin = Object.keys(pin).length > 0;
   // A picture is checked (its type, its bytes, its size) before anything is spent; with one, the words are optional.
   const pic = input.image == null ? undefined : readImage(input.image);
   if (pic && !pic.ok) return json({ error: pic.error }, pic.status);
@@ -394,7 +411,8 @@ async function build(req: Request, env: Env, url: URL, later: (p: Promise<unknow
   // before any hold or model call; `fresh` skips the lookup, and its build overwrites the entry.
   // A build from a picture is never looked up or kept: its key would be the picture, which is kept nowhere.
   const store = !image && caching && typeof input.engine === "string" && ENGINE_RE.test(input.engine) ? blobsFor(env, url) : undefined;
-  const key = store ? await cacheKey(said, seed, await templateHash(EXAMPLE), input.engine as string) : undefined;
+  // a pinned rebuild is its own entry: the same words built as a maze are another world
+  const key = store ? await cacheKey(hasPin ? `${said}\n#pinned ${jcs(pin)}` : said, seed, await templateHash(EXAMPLE), input.engine as string) : undefined;
   if (store && key && input.fresh !== true) {
     const hit = await readCache(store, key);
     if (hit) return new Response(replayBody(hit), { headers: SSE_HEADERS });
@@ -457,7 +475,7 @@ async function build(req: Request, env: Env, url: URL, later: (p: Promise<unknow
           await send("inspired", { brief, prompt, ms: seen.ms, model: seen.model });
           phase = "intent";
         }
-        const intentMsgs = intentMessages(prompt, PACKS);
+        const intentMsgs = intentMessages(prompt, PACKS, hasPin ? pinLine(pin) : undefined);
         if (image) intentCost = buildEstimate(intentMsgs).intent;
         const res = await jsonLanes<unknown>(
           lanesFor("intent", keys, { primary: sw.primary, messages: intentMsgs, jsonSchema: { name: "intent", schema: intentJsonSchema(PACKS.map((p) => p.id), ALL_SUBS) }, maxTokens: INTENT_MAX_OUT, signal: upstream.signal }),
@@ -465,7 +483,8 @@ async function build(req: Request, env: Env, url: URL, later: (p: Promise<unknow
         intentRes = res;
         if (res.inTok > 0) intentCost = costMicroUsd(res.model, res.inTok, res.outTok);
         if (res.fellBack) await send("fallback", { job: "intent", to: res.model });
-        const intent = settleIntent(prompt, v.parse(IntentOut, res.value));
+        // the pins win over the model (and over a goal phrase's "it's a game"): the person chose them
+        const intent = pinIntent(settleIntent(prompt, v.parse(IntentOut, res.value)), pin, subsOf);
         safe = intent.safety !== "block"; // arcade games (shooters, monsters, heists) are ordinary worlds to keep
         await keep("intent", { intent, seed, ms: Date.now() - t0 });
         if (intent.safety === "block") {

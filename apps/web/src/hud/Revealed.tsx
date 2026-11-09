@@ -9,7 +9,7 @@ import { t } from "../i18n";
 import { words } from "../i18n/words";
 import "./revealed.css";
 
-export function Revealed({ receipt, report, playing, children }: { receipt: Receipt; report: Report | null; playing?: boolean | undefined; children?: ReactNode }) {
+export function Revealed({ receipt, report, playing, children, noteAction }: { receipt: Receipt; report: Report | null; playing?: boolean | undefined; children?: ReactNode; /** A place runs went wrong (by its place in the list): its Apply choices. */ noteAction?: ((key: string) => ReactNode) | undefined }) {
   const pt = receipt.playtest;
   return (
     <div className="revealed" data-testid="revealed">
@@ -29,7 +29,10 @@ export function Revealed({ receipt, report, playing, children }: { receipt: Rece
           <p>{t("Where runs went wrong:")}</p>
           <ul>
             {report.fails.map((f, i) => (
-              <li key={i}>{failLine(f, report.runs, words)}</li>
+              <li key={i}>
+                {failLine(f, report.runs, words)}
+                {noteAction?.(`fail:${i}`)}
+              </li>
             ))}
           </ul>
         </div>

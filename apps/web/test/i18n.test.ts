@@ -12,7 +12,7 @@ import { chipLineT, proofText, words } from "../src/i18n/words";
 const SRC = fileURLToPath(new URL("../src/", import.meta.url));
 const LABELS = fileURLToPath(new URL("../../../packages/proof/src/labels.ts", import.meta.url));
 const STR = String.raw`("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')`;
-const ONE = new RegExp(String.raw`(?<![\w.])(?:t|k|w)\(\s*` + STR, "g");
+const ONE = new RegExp(String.raw`(?<![\w.])(?:t|k|key|w)\(\s*` + STR, "g");
 const PLURAL = new RegExp(String.raw`(?<![\w.])(?:tn|w\.n)\(\s*[^,()]+(?:\([^()]*\))?[^,()]*,\s*` + STR + String.raw`\s*,\s*` + STR, "g");
 const unq = (s: string) => s.slice(1, -1).replace(/\\(.)/g, "$1");
 

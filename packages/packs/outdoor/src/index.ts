@@ -7,7 +7,7 @@
 // it is ≤ 0.8 × the T1 ballistic reach (0.95 × when `harder`). The map flips east–west by seed.
 import { stream } from "@ghostrun/detmath";
 import { clampLaws, type Laws, type Vec3 } from "@ghostrun/ir";
-import type { LayoutPack, PackLayout, PackStatic, ZoneSpec } from "@ghostrun/plugin-api";
+import type { LayoutPack, LayoutParamSpec, PackLayout, PackStatic, ZoneSpec } from "@ghostrun/plugin-api";
 
 export interface OutdoorParams {
   [k: string]: number;
@@ -82,11 +82,19 @@ function segDist(x: number, z: number, a: [number, number], b: [number, number])
   return Math.sqrt(px * px + pz * pz);
 }
 
+/** What a structural edit may change: how wooded and rocky the land is (the map stays 52 × 52 m). */
+export const OUTDOOR_SCHEMA: Readonly<Record<string, LayoutParamSpec>> = {
+  trees: { min: 0, max: 80, step: 1, label: "trees", line: "trees off the paths (too tall to climb)" },
+  rocks: { min: 0, max: 30, step: 1, label: "rocks", line: "rocks to hop on or hide behind" },
+  bushes: { min: 0, max: 40, step: 1, label: "bushes", line: "low bushes" },
+};
+
 export const outdoor: LayoutPack<OutdoorParams> = {
   id: "outdoor",
   version: "0.1.0",
   modes: ["play", "wander"],
   defaults: { trees: 44, rocks: 12, bushes: 16 },
+  schema: OUTDOOR_SCHEMA,
   ci: { seeds: Array.from({ length: 50 }, (_, i) => i + 1) },
 
   generate({ seed, params, laws, harder }): PackLayout {

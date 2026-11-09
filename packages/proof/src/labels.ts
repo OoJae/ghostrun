@@ -3,9 +3,10 @@
 // is worded from English templates through `Words`: English by default (proof output, the CLI and
 // the tests read exactly that), and the web client passes its own to show them in the player's
 // language. Nothing here formats for a locale: the client does (no Intl on the simulation path).
+import type { Parting } from "./redgreen";
 import type { Element, FengShuiFinding, FengShuiFix, FengShuiSection } from "@ghostrun/layout";
 import type { FailSpot, Revealed } from "./revealed";
-import type { Chip, Level, Playtest, Receipt } from "./types";
+import type { Chip, FailRun, Level, Playtest, Receipt } from "./types";
 
 export type WordVars = Readonly<Record<string, string | number>>;
 /** How a label is worded: a template with {placeholders}, and a count with its singular and plural. */
@@ -175,4 +176,35 @@ export function fengShuiFix(x: FengShuiFix, w: Words = english): string {
 export function fengShuiLine(f: FengShuiFinding, name: string, w: Words = english): string {
   const mark = { holds: "✓", fails: "✗", not_checkable: "–" }[f.verdict];
   return `${mark} ${w(name)}: ${fengShuiWhy(f, w)}${f.fix ? ` — ${w("fix: {fix}", { fix: fengShuiFix(f.fix, w) })}` : ""}`;
+}
+
+// ---- red/green: the same runner before and after a change -------------------------------------
+
+/** What a red/green pair is, plainly: "Green: before the change · red: after it · the same runner, the same seed". */
+export function pairLine(green: "before" | "after", w: Words = english): string {
+  return green === "before" ? w("Green: before the change · red: after it · the same AI runner, the same seed") : w("Red: before the repair · green: after it · the same AI runner, the same seed");
+}
+
+/** The failing run a receipt kept, on its own: "Red: AI runner 3 of 12, where it fails (got stuck on the way to the orb, at 1:02)". */
+export function failRunLine(f: FailRun, runs: number, w: Words = english): string {
+  return w("Red: AI runner {k} of {n}, where it fails ({why}, at {t})", { k: f.run + 1, n: runs, why: f.end.why || w("it stopped"), t: clock(f.ghost.ticks / 60) });
+}
+
+/**
+ * Where they part, from the runs themselves: "They part here: the second jump (green rises 2.9 m,
+ * red 1.4 m)", "They part here: the red run ends (got stuck on the way to the glowing orb)",
+ * "They part here: their ways split, near the Neon plaza". `red` is which of the parting's two runs is red.
+ */
+export function partLine(p: Parting, red: 0 | 1, near = "", why = "", w: Words = english): string {
+  const where = near ? w(", near the {thing}", { thing: near }) : "";
+  const m = (x: number) => `${Math.max(0, Math.round(x * 10) / 10)} m`;
+  if (p.how === "jump") {
+    const rise = { where, green: m(p.rise[1 - red]!), red: m(p.rise[red]!) };
+    return p.midair ? w("They part here: the second jump{where} (green rises {green}, red {red})", rise) : w("They part here: the jump{where} (green rises {green}, red {red})", rise);
+  }
+  if (p.how === "end" && p.ended !== null) {
+    const which = p.ended === red ? w("They part here: the red run ends") : w("They part here: the green run ends");
+    return `${which}${why ? ` (${why})` : ""}${where}`;
+  }
+  return w("They part here: their ways split{where}", { where });
 }

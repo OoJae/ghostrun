@@ -20,6 +20,8 @@ import { Materialise, type MaterialiseSpec } from "./render/materialise";
 import { beamMaterial, PALETTE } from "./render/materials";
 import { Atmosphere } from "./render/atmosphere";
 import { ModelLayer, modelTier } from "./render/models";
+import type { Shot, Stage } from "./render/shots";
+import { isTyping } from "./render/camera";
 import { buildWorldView, type WorldView } from "./render/world";
 import { StubSim } from "./sim/stub";
 import type { RapierSim } from "./sim/rapier";
@@ -131,6 +133,13 @@ export class Engine {
   /** And where its weather stays out (a cut-away building) and its floor is. */
   #lookPlace: { shelter: WorldView["shelter"]; groundY: number } | null = null;
   #warmPreview: Materialise | null = null;
+  /** A shot has the camera (red/green, the Host's fly-to) until it ends, any input, or Esc. */
+  #shot: Shot | null = null;
+  /** A shot ended (played out, or handed back by input or Esc). */
+  onShotEnd: ((s: Shot) => void) | undefined;
+  #onEsc = (e: KeyboardEvent) => {
+    if (e.code === "Escape" && this.#shot && !isTyping(e.target)) this.endShot();
+  };
 
   private constructor(canvas: HTMLCanvasElement, renderer: WebGPURenderer, opts: EngineOptions, initMs: number) {
     this.#canvas = canvas;
@@ -166,10 +175,12 @@ export class Engine {
 
     this.#follow = new FollowCamera(this.#camera, canvas);
     this.#follow.onUserOrbit = () => this.#input.markInput();
-    this.#input.onInput = () => this.onInput?.();
+    // any input hands a shot's camera back
+    this.#input.onInput = () => (this.endShot(), this.onInput?.());
     this.#input.onChange = () => this.#pushInput();
 
     window.addEventListener("resize", this.#onResize);
+    window.addEventListener("keydown", this.#onEsc);
     this.#resize();
 
     const pr = probe();
@@ -356,6 +367,37 @@ export class Engine {
     pr.ghost = { shown: this.#ghostShown, tick: Math.round(tick), p: [round2(p[0]), round2(p[1]), round2(p[2])], finished: tick >= track.ticks };
   }
 
+  /** What a shot can use: the world's walls, the models' knight for a ghost, a compile off the frame. */
+  get stage(): Stage {
+    return {
+      colliders: this.#view?.colliders ?? [],
+      dress: (o, key) => this.#models?.dressGhost(o, key) ?? (() => undefined),
+      compile: (o) => this.#renderer.compileAsync(o, this.#camera, this.#scene),
+    };
+  }
+
+  /** Give the camera to a shot (not in VR: first person keeps your own eyes); null ends the one playing. */
+  play(shot: Shot | null) {
+    this.endShot();
+    if (!shot || this.#vr) return void shot?.dispose();
+    this.#shot = shot;
+    if (shot.root) this.#scene.add(shot.root);
+  }
+
+  get playing(): Shot | null {
+    return this.#shot;
+  }
+
+  /** The camera back to the player (the follow camera picks up from where the shot left it). */
+  endShot() {
+    const s = this.#shot;
+    if (!s) return;
+    this.#shot = null;
+    if (s.root) this.#scene.remove(s.root);
+    s.dispose();
+    this.onShotEnd?.(s);
+  }
+
   /** Light up one thing (Logic X-ray hover); null puts the beam away. */
   highlight(id: string | null) {
     this.#focus = id;
@@ -483,6 +525,8 @@ export class Engine {
     ];
     const pr = probe();
     pr.ready = false;
+    // a shot ends with its world, unless it was made to last through this load (the Host's replay)
+    if (this.#shot && this.#shot.keep-- <= 0) this.endShot();
     this.#stopPreview(); // the real world is here: the preview of it goes, whatever it had got to
     this.#unload();
     // Frames rendered while the new world compiles must not apply the old world's poses.
@@ -512,8 +556,9 @@ export class Engine {
     if (this.#race) this.#scene.add(this.#race.root);
     this.rapierSim?.subscribe((evs) => {
       for (const ev of evs) {
-        if (ev.k === "state") view.setState(ev.a, String(ev.v));
-        else if (ev.k === "destroy") view.gone(ev.a);
+        // (the view shown now: a restyle swaps it under the running sim)
+        if (ev.k === "state") this.#view?.setState(ev.a, String(ev.v));
+        else if (ev.k === "destroy") this.#view?.gone(ev.a);
         else if (ev.k === "hit") this.#combat?.hit(ev.a);
       }
     });
@@ -579,6 +624,47 @@ export class Engine {
     return { ttffMs, splits };
   }
 
+  /**
+   * The same world in another look (the Intent card's look, hour or weather): the scene is rebuilt
+   * round the simulation, which keeps running and never sees it, so the run goes on where it was,
+   * with what it has changed so far (doors open, coins taken) drawn as it is. Cosmetic only: the
+   * spec and the receipt stand. False when there is nothing playing to restyle.
+   */
+  async restyle(world: World): Promise<boolean> {
+    const old = this.#view;
+    if (!old || this.#preview) return false;
+    const look = lookOf(world.bundle, world.cue);
+    probe().look = look.variant ? `${look.id}/${look.variant}` : look.id;
+    const view = buildWorldView(world.bundle, look);
+    const sim = this.rapierSim?.sim;
+    if (sim) for (const [id, e] of sim.ents) if (e.destroyed) view.gone(id);
+    else if (e.state && e.state !== e.init) view.setState(id, e.state);
+    this.#models?.dispose();
+    this.#models = null;
+    this.#scene.remove(old.root);
+    old.dispose();
+    this.#scene.add(view.root);
+    this.#view = view;
+    this.#look = look;
+    this.#lookPlace = { shelter: view.shelter, groundY: view.groundY };
+    this.#applyLook(look, this.#lookPlace);
+    this.#cutaway = look.cutaway;
+    this.#follow.setColliders(look.cutaway ? [] : view.colliders);
+    // compile the new look's shaders before drawing it, but never wait long: the models still
+    // loading from the last look compile too, and a precompile behind theirs can stall for good
+    this.#compiling = true;
+    try {
+      await Promise.race([this.#renderer.compileAsync(this.#scene, this.#camera), new Promise((r) => setTimeout(r, 3000))]);
+    } catch (e) {
+      console.warn("restyle precompile failed", e);
+    } finally {
+      this.#compiling = false;
+    }
+    const tier = this.#vr && this.#modelTier === "full" ? "lite" : this.#modelTier;
+    if (tier !== "off" && this.#view === view) this.#models = new ModelLayer(world.bundle, view, this.rapierSim, { tier, night: look.night, ghost: this.#ghost.obj, role: world.intent.live?.role ?? "", compile: (o) => this.#renderer.compileAsync(o, this.#camera, this.#scene) });
+    return true;
+  }
+
   dispose() {
     void this.#renderer.setAnimationLoop(null);
     this.#stopPreview();
@@ -588,7 +674,9 @@ export class Engine {
     this.#input.dispose();
     this.#air.dispose();
     this.#ghost.dispose();
+    this.endShot();
     window.removeEventListener("resize", this.#onResize);
+    window.removeEventListener("keydown", this.#onEsc);
     this.#renderer.dispose();
     probe().ready = false;
   }
@@ -668,7 +756,10 @@ export class Engine {
       this.#air.follow(vr ? vr.eye.position : this.#camera.position);
     } else if (player && vr) {
       this.#air.follow(player.position);
+    } else if (this.#shot && this.#shot.frame(now, dt, this.#camera)) {
+      this.#air.follow(this.#camera.position);
     } else if (player) {
+      if (this.#shot) this.endShot(); // played out: the camera is yours again
       this.#follow.update(dt, player.position);
       this.#air.follow(this.#camera.position);
     }

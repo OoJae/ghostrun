@@ -4,11 +4,13 @@ import { useEffect, useState, type FormEvent } from "react";
 import type { WorldBundle } from "@ghostrun/ir";
 import { firstSentences, recap } from "../audio/lines";
 import { clock, why, type Fact, type Story } from "../host";
-import { num, t } from "../i18n";
+import { flyTarget, whyChips } from "../why";
+import { k, num, t } from "../i18n";
 import { raceClock, split } from "../race";
 import { ClipPanel, type ClipCard } from "./Clip";
 import "./race.css";
 import "./voice.css";
+import "./show.css";
 
 /** The Host's voice on the card: it says the recap (and each answer), and says the last line again. */
 export interface HostVoice {
@@ -43,35 +45,52 @@ export interface RunResult {
   facts?: Fact[];
 }
 
-/** Ask the Host about this run: the answer cites its facts, and a cited moment replays. */
-function AskHost({ onAsk, onReplay, voice }: { onAsk: (q: string) => Promise<{ answer: string; cites: Fact[] } | null>; onReplay?: ((tick: number) => void) | undefined; voice?: HostVoice | undefined }) {
+/**
+ * Ask the Host about this run (or this place): the answer cites its facts, a cited moment replays,
+ * and the camera flies to the first cited fact that has a place (`onFly`). `chips` ask a question in one tap.
+ */
+export function AskHost({ onAsk, onReplay, onFly, voice, chips = [], placeholder = k("Ask the Host: why did I lose?"), run = true }: { onAsk: (q: string) => Promise<{ answer: string; cites: Fact[] } | null>; onReplay?: ((tick: number) => void) | undefined; onFly?: ((f: Fact) => void) | undefined; voice?: HostVoice | undefined; chips?: string[]; placeholder?: string; /** A run's facts (a moment replays) rather than a place's. */ run?: boolean }) {
   const [q, setQ] = useState("");
   const [a, setA] = useState<{ answer: string; cites: Fact[] } | "asking" | "failed" | null>(null);
-  const submit = async (e: FormEvent) => {
-    e.preventDefault();
-    const t = q.trim();
+  const ask = async (t: string) => {
     if (!t || a === "asking") return;
     setA("asking");
     const got = await onAsk(t);
     setA(got ?? "failed");
     // the gist out loud; the whole answer and its replayable moments stay on the card
     if (got) voice?.say(firstSentences(got.answer, 2));
+    // and the camera goes to what it cites
+    const to = got && flyTarget(got.cites, run);
+    if (to) onFly?.(to);
+  };
+  const submit = (e: FormEvent) => {
+    e.preventDefault();
+    void ask(q.trim());
   };
   return (
     <div className="host" data-testid="host">
       <form onSubmit={submit}>
-        <input value={q} maxLength={200} placeholder={t("Ask the Host: why did I lose?")} aria-label={t("Ask the Host")} data-testid="host-input" onChange={(e) => setQ(e.target.value)} onKeyDown={(e) => e.stopPropagation()} />
+        <input value={q} maxLength={200} placeholder={t(placeholder)} aria-label={t("Ask the Host")} data-testid="host-input" onChange={(e) => setQ(e.target.value)} onKeyDown={(e) => e.stopPropagation()} />
       </form>
+      {chips.length > 0 && (
+        <div className="host-chips" data-testid="why-chips">
+          {chips.map((c) => (
+            <button type="button" key={c} disabled={a === "asking"} onClick={() => (setQ(t(c)), void ask(t(c)))}>
+              {t(c)}
+            </button>
+          ))}
+        </div>
+      )}
       {a === "asking" && <p className="muted">{t("the Host is looking at your run…")}</p>}
       {a === "failed" && <p className="muted">{t("The Host couldn't answer just now.")}</p>}
       {a && typeof a === "object" && (
         <p className="host-answer" data-testid="host-answer">
           <b>{t("Host:")}</b> {a.answer}{" "}
           {a.cites
-            .filter((f) => f.tick !== null)
+            .filter((f) => f.tick !== null || (f.at && onFly))
             .map((f) => (
-              <button key={f.text} type="button" title={f.text} onClick={() => onReplay?.(f.tick!)}>
-                ▶ {clock(f.tick!)}
+              <button key={f.text} type="button" title={f.text} onClick={() => (f.at && onFly ? onFly(f) : f.tick !== null && onReplay?.(f.tick))}>
+                {f.tick !== null ? `▶ ${clock(f.tick)}` : `▶ ${t("show me")}`}
               </button>
             ))}
         </p>
@@ -80,7 +99,7 @@ function AskHost({ onAsk, onReplay, voice }: { onAsk: (q: string) => Promise<{ a
   );
 }
 
-export function ResultCard({ result, bundle, par, onAgain, onShare, director, onTwist, onReplay, onAsk, race, voice, clip }: { result: RunResult; bundle: WorldBundle; par: number | null; onAgain: () => void; onShare: () => void; director?: { line: string; label: string; status: "proving" | "ready" } | null; onTwist?: () => void; onReplay?: (tick: number) => void; onAsk?: ((q: string) => Promise<{ answer: string; cites: Fact[] } | null>) | undefined; race?: RaceCard | undefined; voice?: HostVoice | undefined; clip?: ClipCard | undefined }) {
+export function ResultCard({ result, bundle, par, onAgain, onShare, director, onTwist, onReplay, onAsk, onFly, race, voice, clip }: { result: RunResult; bundle: WorldBundle; par: number | null; onAgain: () => void; onShare: () => void; director?: { line: string; label: string; status: "proving" | "ready" } | null; onTwist?: () => void; onReplay?: (tick: number) => void; onAsk?: ((q: string) => Promise<{ answer: string; cites: Fact[] } | null>) | undefined; /** The camera to a cited moment's place, then its replay from a second before. */ onFly?: ((f: Fact) => void) | undefined; race?: RaceCard | undefined; voice?: HostVoice | undefined; clip?: ClipCard | undefined }) {
   const s = Math.round((result.tick / 60) * 10) / 10;
   const reason = why(bundle, result.rule);
   const said = recap(result, bundle);
@@ -127,7 +146,7 @@ export function ResultCard({ result, bundle, par, onAgain, onShare, director, on
           ))}
         </ol>
       )}
-      {onAsk && <AskHost onAsk={onAsk} onReplay={onReplay} voice={voice} />}
+      {onAsk && <AskHost onAsk={onAsk} onReplay={onReplay} onFly={onFly} voice={voice} chips={whyChips(result.k)} />}
       {director && (
         <p className="result-director" data-testid="director">
           <b>{t("Director:")}</b> {director.line} <span className="muted">({director.label}; {director.status === "ready" ? t("re-proved ✓") : t("re-proving…")})</span>

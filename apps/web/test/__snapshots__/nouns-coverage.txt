@@ -1,5 +1,5 @@
-things (pickup, prop, switch, door): 85 of 206 distinct nouns drawn as a prop, 388 of 557 entities
-characters (npc): 37 of 40 distinct nouns given a body, 65 of 69 entities
+things (pickup, prop, switch, door): 89 of 216 distinct nouns drawn as a prop, 397 of 573 entities
+characters (npc): 39 of 42 distinct nouns given a body, 67 of 71 entities
 props used: 23 of 36 (barrel, flag, chair, pumpkin, gravestone, skull, target, tree, sword, wand, crossbow, shield, bomb unused here)
 
 kind     n  noun → prop
@@ -30,7 +30,7 @@ door     1  southwest door → door
 door     1  steel door → -
 door     1  stone door → -
 door     1  tower gate → gate
-door     4  vault door → -
+door     5  vault door → -
 door     1  wooden door → door
 door     1  zamek vychodu → -
 pickup   1  ancient secret book → book
@@ -50,6 +50,7 @@ pickup   1  diamond → gem
 pickup   3  dodgeball → -
 pickup   7  domino → -
 pickup   1  dragon scale → -
+pickup   1  dropped coin purse → sack
 pickup   1  elf root → -
 pickup   4  energy cell → -
 pickup   1  first aid kit → -
@@ -98,7 +99,8 @@ pickup   2  silver key → key
 pickup   2  snowball → -
 pickup   4  soccer ball → -
 pickup   1  speed boost → -
-pickup   1  star sapphire → gem
+pickup   4  stack of coins → coin
+pickup   2  star sapphire → gem
 pickup  77  star token → coin
 pickup   1  storm crystal → gem
 pickup   1  tennis ball → -
@@ -106,7 +108,7 @@ pickup  27  time gem → gem
 pickup   1  tool kit → -
 pickup   1  train ticket → -
 pickup   1  treasure chest → chest
-pickup   1  vault key → key
+pickup   2  vault key → key
 pickup   1  vault loot → coins
 pickup   1  yellow balloon → -
 pickup   1  yellow silk handbag → sack
@@ -136,15 +138,19 @@ prop     1  desk → table
 prop     1  dinosaur skeleton → -
 prop     1  flickering gaslight → lamp
 prop     1  glowing mushroom ring → -
+prop     1  grand piano → -
 prop     1  great white shark → -
 prop     1  historic microscope → -
 prop     1  incense burner → -
 prop     1  jellyfish → -
 prop     1  jump pad → -
+prop     1  kitchen island → -
 prop     1  landscape → -
 prop     1  large rock → rock
 prop     1  lever → -
 prop     1  manta ray → -
+prop     1  marble fireplace → -
+prop     1  marble statue → -
 prop     3  marked shelf slot → bookcase
 prop     1  match timer → -
 prop     1  menu board → -
@@ -159,6 +165,7 @@ prop     1  paper lantern → lantern
 prop     1  planetarium star dome → -
 prop     1  police siren → -
 prop     1  portrait → -
+prop     1  portrait of the founder → -
 prop     1  potted plant → bush
 prop     1  rain soaked window → -
 prop     1  reactor core → -
@@ -167,6 +174,7 @@ prop     2  red silk evening clutch → -
 prop     1  rice paper screened window → -
 prop     2  round silver mirror → -
 prop     1  scale rocket model → -
+prop     1  sea view window → -
 prop     1  shelf of dragon scales → bookcase
 prop     1  shelf of elf roots → bookcase
 prop     1  shelf of moon leaves → bookcase
@@ -176,11 +184,13 @@ prop     2  silver chain mail purse → sack
 prop     1  sled → -
 prop     2  small stone fountain → rock
 prop     2  snow fence → -
+prop     1  stone fountain → rock
 prop     1  tall arched window → -
 prop     2  tatami mat → -
 prop     2  terracotta floor vase → -
 prop     1  tide timer → -
 prop     2  timer → -
+prop     1  walnut bookcase → bookcase
 prop     2  walnut reception desk → table
 prop     2  yellow ochre suede satchel → sack
 switch   1  blue wire → -
@@ -223,6 +233,7 @@ npc      1  coach → rogue
 npc      1  creature 1 → skeleton
 npc      2  duch → skeleton
 npc      1  enemy boarding party → barbarian
+npc      1  estate agent → rogue
 npc      3  ghost → skeleton
 npc      1  goalkeeper → knight
 npc      1  groaning zombie → skeleton
@@ -234,6 +245,7 @@ npc      2  librarian → mage
 npc      1  mate 1 → rogue
 npc      1  minotaur → barbarian
 npc      1  museum guide → rogue
+npc      1  night guard → knight
 npc      1  owl guide → capsule
 npc      1  owl keeper → capsule
 npc      1  referee → rogue

@@ -5,8 +5,11 @@ import { AdditiveBlending, CapsuleGeometry, Color, ConeGeometry, DoubleSide, Gro
 import { abs, normalView, oneMinus, positionViewDirection, uniform } from "three/tsl";
 import { lin, PALETTE } from "./materials";
 
-/** The AI par runner glows magenta (the neon pair to the player's cyan); a person's run, amber. */
-export const GHOST_HEX = { ai: PALETTE.magenta, run: "#ffc24a" } as const;
+/**
+ * The AI par runner glows magenta (the neon pair to the player's cyan); a person's run, amber. Red
+ * and green are the same runner after and before a change (red/green), side by side.
+ */
+export const GHOST_HEX = { ai: PALETTE.magenta, run: "#ffc24a", red: "#ff2a3c", green: "#2bff74" } as const;
 
 export interface GhostActor {
   obj: Group;

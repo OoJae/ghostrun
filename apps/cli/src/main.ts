@@ -8,7 +8,7 @@ import { asksFengShui, FENG_SHUI_RULES, fengShui, placeWorld, saysFengShui } fro
 import { directorMessages, editMessages, fillMessages, hostJsonSchema, hostMessages, IntentOut, intentJsonSchema, intentMessages, jsonLanes, lanesFor, mindJsonSchema, mindMessages, repairMessages, settleIntent, streamLanes, type JobCall, type Keys } from "@ghostrun/llm";
 import { loadNavNode } from "@ghostrun/nav/node";
 import { badness, better, caught, chipLine, fengShuiHead, fengShuiLine, insights, issuesOf, plants, prove, provedWon, reportLines, traceRunners, type Receipt } from "@ghostrun/proof";
-import { ALL_SUBS, PACKS, packFor } from "@ghostrun/registry";
+import { ALL_SUBS, layoutOf, PACKS, packFor } from "@ghostrun/registry";
 import { loadRapierNode } from "@ghostrun/sim/node";
 import * as v from "valibot";
 
@@ -44,7 +44,10 @@ function placeFromFill(text: string, seed: number, packId?: string, mode?: World
   if (packId) fill.draft.pack = { ...fill.draft.pack, id: packId };
   if (mode) fill.draft.mode = mode;
   const pack = packFor(fill.draft.pack.id);
-  const layout = pack.generate({ seed, params: pack.defaults, sub: fill.draft.pack.sub, laws: layoutLaws(text, fill.draft.laws), harder: false });
+  // a structural edit's layout, as the client builds it (every other fill: the pack's defaults)
+  const shape = layoutOf(pack, text);
+  if (shape.custom) fill.draft.pack = { ...fill.draft.pack, params: shape.custom };
+  const layout = pack.generate({ seed, params: shape.params, sub: fill.draft.pack.sub, laws: layoutLaws(text, fill.draft.laws), harder: false });
   const placed = placeWorld({ ...fill.draft, engine: ENGINE }, layout, { reach: lawsUnwritten(text) });
   for (const n of fill.notes) console.log(`  · fill line ${n.line}: ${n.kind} — ${n.text}`);
   return { bundle: placed.bundle, layout, invalid: fill.stats.invalid, lines: fill.stats.lines, notes: placed.notes, fillNotes: fill.notes };

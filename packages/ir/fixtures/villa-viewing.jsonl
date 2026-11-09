@@ -1,0 +1,26 @@
+{"op":"meta","mode":"wander","lang":"en","pack":"floor_plan","sub":[],"seed":12,"look":"luxury villa","mood":[0.6,0.2,-0.3],"timeOfDay":16,"weather":"clear"}
+{"op":"zone","id":"z_garden","slot":"yard","tag":"outside","name":"Olive garden"}
+{"op":"zone","id":"z_hall","slot":"entrance","tag":"entrance","name":"Entrance hall"}
+{"op":"zone","id":"z_living","slot":"room_sw","tag":"room","name":"Living room"}
+{"op":"zone","id":"z_kitchen","slot":"room_se","tag":"room","name":"Kitchen"}
+{"op":"zone","id":"z_library","slot":"room_nw","tag":"room","name":"Library"}
+{"op":"zone","id":"z_salon","slot":"main_room","tag":"hall","name":"Salon"}
+{"op":"zone","id":"z_master","slot":"room_ne","tag":"room","name":"Master bedroom"}
+{"op":"spawn","id":"sp_red","zone":"z_garden","anchor":"spawn_pad","team":"red"}
+{"op":"ent","id":"fountain","kind":"prop","noun":"stone fountain","hyper":"fountain","zone":"z_garden","anchor":"corner_e","body":"fixed","shape":"box","size":[1.6,1,1.6]}
+{"op":"ent","id":"fireplace","kind":"prop","noun":"marble fireplace","hyper":"fireplace","zone":"z_living","anchor":"corner_sw","body":"fixed","shape":"box","size":[1.6,1.2,0.4]}
+{"op":"ent","id":"island","kind":"prop","noun":"kitchen island","hyper":"counter","zone":"z_kitchen","anchor":"center","body":"fixed","shape":"box","size":[2,0.9,1]}
+{"op":"ent","id":"bookcase","kind":"prop","noun":"walnut bookcase","hyper":"bookcase","zone":"z_library","anchor":"corner_nw","body":"fixed","shape":"box","size":[2,2,0.4]}
+{"op":"ent","id":"piano","kind":"prop","noun":"grand piano","hyper":"piano","zone":"z_salon","anchor":"center","body":"fixed","shape":"box","size":[1.5,1,1.8]}
+{"op":"ent","id":"sea_window","kind":"prop","noun":"sea-view window","hyper":"window","zone":"z_master","anchor":"wall_e","body":"fixed","shape":"box","size":[0.2,1.6,2]}
+{"op":"verb","id":"vb_look_fountain","verb":"social.inspect","on":"fountain","params":{"text":"A 19th-century fountain, restored in 2024. The garden has 40 olive trees."}}
+{"op":"verb","id":"vb_look_fireplace","verb":"social.inspect","on":"fireplace","params":{"text":"Carrara marble fireplace. The living room is 48 m², south-facing."}}
+{"op":"verb","id":"vb_look_island","verb":"social.inspect","on":"island","params":{"text":"Kitchen island in honed travertine, with a wine fridge for 60 bottles."}}
+{"op":"verb","id":"vb_look_bookcase","verb":"social.inspect","on":"bookcase","params":{"text":"Floor-to-ceiling walnut shelves: the library stays with the house."}}
+{"op":"verb","id":"vb_look_piano","verb":"social.inspect","on":"piano","params":{"text":"The salon seats twelve under a 4.5 m ceiling."}}
+{"op":"verb","id":"vb_look_window","verb":"social.inspect","on":"sea_window","params":{"text":"The master bedroom (32 m²) looks over the bay, with its own terrace."}}
+{"op":"rule","id":"r_book","when":{"t":"spoken","a":"guide","act":"book"},"then":[{"e":"book_slot","target":"guide","v":"Viewing at Villa Aurelia"},{"e":"emit","target":"guide","fx":"chime"}]}
+{"op":"npc","id":"guide","role":"guide","zone":"z_garden","anchor":"spawn_pad","noun":"estate agent","team":"","minded":true,"persona":{"identity":"Marta, the estate agent showing Villa Aurelia","personality":"warm, unhurried, proud of the house","knowledge":"Villa Aurelia: four bedrooms, 320 m², a sea-view terrace off the master bedroom, an olive garden of 40 trees; viewings Monday to Saturday, 10:00 to 18:00, an hour each","replyStyle":"brief and friendly","tools":[],"safety":"family-friendly; never asks for a name, phone number or email"},"menu":["guide.welcome","guide.wander"],"dflt":"guide.welcome"}
+{"op":"expect","id":"x_tour","prop":"reachable","a":"sp_red","b":"","headline":true,"text":"Every room can be visited, and the agent books a viewing"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

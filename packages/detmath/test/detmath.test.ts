@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { stream, xxh32 } from "../src";
+import { cosDeg, stream, xxh32 } from "../src";
 
 const utf8 = (s: string) => new TextEncoder().encode(s);
 
@@ -20,5 +20,13 @@ describe("stream", () => {
     expect([a2(), a2(), a2()]).toEqual(xs);
     expect(b()).not.toBe(xs[0]);
     for (const x of xs) expect(x >= 0 && x < 1).toBe(true);
+  });
+});
+
+describe("cosDeg", () => {
+  it("is the cosine to 1e-14 over a whole turn, without Math.cos in the simulation", () => {
+    for (let d = -360; d <= 720; d += 7.5) expect(Math.abs(cosDeg(d) - Math.cos((d * Math.PI) / 180)), `${d}°`).toBeLessThan(1e-14);
+    expect(cosDeg(0)).toBe(1);
+    expect(cosDeg(180)).toBe(-1);
   });
 });

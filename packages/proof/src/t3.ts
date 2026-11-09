@@ -7,15 +7,17 @@ import { buildNav, lowHazards, type NavWorld } from "@ghostrun/nav";
 import { castBrain } from "@ghostrun/bots";
 import { SHOOT, verb } from "@ghostrun/kits";
 import { BTN, SimWorld, type Rapier } from "@ghostrun/sim";
-import { carryables, causeSteps, playerWeapons, producers, type PlanStep, type Want, type WinChain } from "./t0";
-import { GhostRecorder, secretsOf, type Ghost } from "./ghost";
+import { actWords, carryables, causeSteps, playerWeapons, producers, type PlanStep, type Want, type WinChain } from "./t0";
+import { GhostRecorder, secretsOf, thin, type Ghost } from "./ghost";
 import { clock } from "./labels";
 import { hands, SKILLS, type Skill } from "./skill";
 import { apex, gap, hopOk, hopRoute, reachAt, surfaceUnder as surfaceAt, surfaces, type Surface } from "./t1";
-import type { Chip, Fall, Level, Trail } from "./types";
+import { pickFailing } from "./redgreen";
+import type { Chip, Fall, FailRun, Level, Trail } from "./types";
 
 const RUN_TICKS = 120 * 60; // two minutes of play per run (a world's own timer still ends it sooner)
 const TOO_EASY_S = 3;
+const TALK_M = 2.5; // how close a runner walks up to someone before it speaks
 
 /**
  * The hazards low enough to jump (a laser grid across a doorway) and, built the first time a runner
@@ -179,8 +181,8 @@ interface RunResult {
   stuckOn: string;
   /** Its feet every 20 ticks (x, y, z triples at 0.1 m). */
   trail: number[];
-  /** The run sampled for racing, when it won. */
-  ghost: Ghost | null;
+  /** The run sampled as a ghost: for racing, when it won; for showing where it failed, when not. */
+  ghost: Ghost;
   /** The tick each chain step was first done (−1: never). */
   at: number[];
   /** Where it went wrong, and why. */
@@ -290,7 +292,11 @@ function walkTo(sim: SimWorld, nav: NavWorld, goal: Target, rng: () => number, s
     // a corner beside something deadly is turned on the spot, not cut (cutting it is half a metre in)
     const route = pts;
     const turn = (k: number) => (jumps.has(k) ? 0.12 : b && deadly(b).some((h) => inBox(route[k]![0], route[k]![2], h, 1.0)) ? 0.15 : 0.45);
-    while (i < pts.length && d2h(p, pts[i]!) < turn(i) * turn(i)) {
+    // a waypoint is passed early only when the straight line on to the next one is clear of walls:
+    // the two corners a doorway puts in a path are often closer together than the turn, and skipping
+    // both aims the runner across the jamb
+    const onward = (k: number) => k + 1 >= route.length || jumps.has(k) || !b || d2h(p, route[k]!) < 0.15 * 0.15 || clearOfWalls(b, p, route[k + 1]!);
+    while (i < pts.length && d2h(p, pts[i]!) < turn(i) * turn(i) && onward(i)) {
       if (jumps.has(i)) leapNow = true; // on the run-up spot: jump, straight for the landing point
       i++;
       best = Infinity;
@@ -670,13 +676,13 @@ function counter(sim: SimWorld, rule: string): () => number {
 }
 
 /** Does the segment a→b cross the box (grown by the capsule radius) on the ground plane? */
-function crosses(a: Vec3, b: Vec3, c: Vec3, size: Vec3): boolean {
+function crosses(a: Vec3, b: Vec3, c: Vec3, size: Vec3, grow = 0.35): boolean {
   let lo = 0;
   let hi = 1;
   for (const k of [0, 2] as const) {
     const d = b[k] - a[k];
-    const min = c[k] - size[k] / 2 - 0.35;
-    const max = c[k] + size[k] / 2 + 0.35;
+    const min = c[k] - size[k] / 2 - grow;
+    const max = c[k] + size[k] / 2 + grow;
     if (Math.abs(d) < 1e-9) {
       if (a[k] < min || a[k] > max) return false;
       continue;
@@ -687,6 +693,18 @@ function crosses(a: Vec3, b: Vec3, c: Vec3, size: Vec3): boolean {
     lo = Math.max(lo, u);
     hi = Math.min(hi, v);
     if (lo > hi) return false;
+  }
+  return true;
+}
+
+/** Can a runner walk the straight line a→b without its body meeting a wall (a lintel overhead doesn't count)? */
+function clearOfWalls(b: WorldBundle, a: Vec3, c: Vec3): boolean {
+  for (const st of b.statics) {
+    if (st.surf !== "wall") continue;
+    const lo = st.pos[1] - st.size[1] / 2;
+    const hi = st.pos[1] + st.size[1] / 2;
+    if (lo > a[1] + 0.5 || hi < a[1] - 0.5) continue;
+    if (crosses(a, c, st.pos, st.size, 0.3)) return false;
   }
   return true;
 }
@@ -1265,9 +1283,11 @@ function perform(r: Run, st: PlanStep): "ok" | "lost" | "stuck" {
       };
       const counts = (st.rules ?? [st.rule]).map((id) => counter(sim, id));
       const fired = () => counts.reduce((n, f) => n + f(), 0);
+      // (coins for a bribe: enough once the purse holds what it costs, however many that took)
+      const enough = () => (st.purse ? sim.purse("player", st.purse.word) >= st.purse.n : fired() >= st.times);
       // nearest first; an item it can't reach this time (a missed jump) waits for a later pass
       const skipped = new Set<string>();
-      while (live(r) && fired() < st.times) {
+      while (live(r) && !enough()) {
         const p = sim.pos("player");
         let left = st.items.filter((id) => !gone(id) && !skipped.has(id));
         if (!left.length) {
@@ -1288,7 +1308,25 @@ function perform(r: Run, st: PlanStep): "ok" | "lost" | "stuck" {
           skipped.add(it);
         }
       }
-      return fired() >= st.times ? "ok" : "stuck";
+      return enough() ? "ok" : "stuck";
+    }
+    case "speak": {
+      // what an act buys lasts a while (a guard looks away for 20 s): the way to what it is for is
+      // opened first (the vault door, its key fetched), so that time goes on the gem
+      const fired = counter(sim, st.rule);
+      const done = () => (st.want ? met(st.want) : fired() > 0);
+      if (st.then && sim.entity(st.then) && !sim.entity(st.then)!.destroyed && !sim.entity(st.then)!.carrier) clearDoors(r, sim.pos(st.then));
+      // within talking distance of them, wherever they walk
+      const near = () => !sim.entity(st.to)?.destroyed && d2h(sim.pos("player"), sim.pos(st.to)) < TALK_M * TALK_M;
+      for (let attempt = 0; attempt < 4 && live(r) && !done(); attempt++) {
+        if (!near()) go(() => sim.pos(st.to), near);
+        if (!near() || !live(r)) continue;
+        // (no mind in the proof: the runner says it as the rule wants it said, and the rule decides)
+        sim.speak({ to: st.to, act: st.act, what: st.what, n: st.n, slot: "" });
+        sim.step({ tick: sim.tick + 1, wx: 0, wz: 0, btn: 0 });
+        budget.ticks--;
+      }
+      return done() ? "ok" : "stuck";
     }
     case "wait": {
       const fired = counter(sim, st.rule);
@@ -1408,7 +1446,7 @@ function witnessRun(R: Rapier, b: WorldBundle, nav: NavWorld, chain: WinChain, o
     if (lostBy !== null && fellAt === sim.tick && falls.length) falls.at(-1)!.end = true;
     else falls.push({ x: r1(p[0]), z: r1(p[2]), why, end: true });
   }
-  const out = { won, ticks: sim.tick, stuck, lostBy, stuckAt: sim.result ? null : stuckAt, lostTo, stuckOn: sim.result ? "" : stuckOn, trail, ghost: won ? ghost.finish(sim) : null, at, falls, fights };
+  const out = { won, ticks: sim.tick, stuck, lostBy, stuckAt: sim.result ? null : stuckAt, lostTo, stuckOn: sim.result ? "" : stuckOn, trail, ghost: ghost.finish(sim), at, falls, fights };
   sim.free();
   return out;
 }
@@ -1434,6 +1472,7 @@ function lossWords(b: WorldBundle, id: string): string {
   const name = (x: string) => nameOf(b, x);
   if (!w) return id || "a loss rule";
   if (w.t === "health_lte") return w.a === "player" || w.a.startsWith("team:") ? "knocked out" : `${name(w.a)} down`;
+  if (w.t === "seen_by") return `caught by the ${w.b ? name(w.b) : "guard"}`;
   return w.t === "hit" ? `hit the ${name(w.b)}` : w.t === "timer_end" ? "the timer ran out" : w.t === "score_gte" ? `${w.a.replace("team:", "")} reached ${w.n}` : w.t === "enter" ? `${name(w.a)} reached the ${name(w.b)}` : `${id}`;
 }
 
@@ -1469,6 +1508,8 @@ export function stepName(b: WorldBundle, st: PlanStep): string {
     }
     case "drive":
       return st.laps > 1 ? `lap ${st.laps}` : "lap 1";
+    case "speak":
+      return name(st.to);
   }
 }
 
@@ -1510,7 +1551,7 @@ function endings(b: WorldBundle, results: readonly RunResult[]): string {
 }
 
 /** Physics check of a "requires jumps>=k" expectation: approach the target's ledge and jump. */
-function jumpWitness(R: Rapier, b: WorldBundle, nav: NavWorld, x: Expect, jumps: number, attempt: number, playerTeam: "red" | "blue"): boolean {
+function jumpWitness(R: Rapier, b: WorldBundle, nav: NavWorld, x: Expect, jumps: number, attempt: number, playerTeam: "red" | "blue", keep?: (g: Ghost) => void): boolean {
   const targets = b.statics.filter((s) => s.zone === x.b);
   if (!targets.length) return false;
   const seg = targets[attempt % targets.length]!;
@@ -1518,6 +1559,18 @@ function jumpWitness(R: Rapier, b: WorldBundle, nav: NavWorld, x: Expect, jumps:
   const faceZ = seg.pos[2] - seg.size[2] / 2;
   const xs = seg.pos[0] + ((attempt % 3) - 1) * seg.size[0] * 0.25;
   const sim = new SimWorld(R, b, { playerTeam, laws: { jumpsMax: jumps } });
+  // red/green keeps the attempt as a ghost (reading positions only: the attempt is unchanged)
+  if (keep) {
+    const rec = new GhostRecorder(sim);
+    const step = sim.step.bind(sim);
+    sim.step = (input) => {
+      const evs = step(input);
+      rec.step(sim, input);
+      return evs;
+    };
+    const free = sim.free.bind(sim);
+    sim.free = () => (keep(rec.finish(sim)), free());
+  }
   const budget = { ticks: RUN_TICKS };
   walkTo(sim, nav, [xs, 0, faceZ - 0.7], stream(attempt, "t3:jump"), 1, budget, () => false);
   // One attempt: jump, air-jump at each apex, keep pushing toward the face; stop on landing.
@@ -1582,6 +1635,8 @@ export interface T3Out {
   trails: Trail[];
   /** The par runner's run, for racing it (null when no runner won). */
   ghost: Ghost | null;
+  /** A representative failing run, when no runner won (null otherwise). */
+  failRun: FailRun | null;
 }
 
 export function t3(R: Rapier, b: WorldBundle, nav: NavWorld, chain: WinChain | null, runs: number, playerTeam: "red" | "blue" = "red", openers: ReadonlyMap<string, PlanStep[]> = new Map()): T3Out {
@@ -1600,6 +1655,7 @@ function t3Runs(R: Rapier, b: WorldBundle, nav: NavWorld, chain: WinChain | null
   let par: { goldS: number; runs: number; won: number } | null = null;
   let trails: Trail[] = [];
   let ghost: Ghost | null = null;
+  let failRun: FailRun | null = null;
   if (chain && b.mode === "play") {
     const t0 = globalThis.performance?.now?.() ?? 0;
     const results = Array.from({ length: runs }, (_, i) => witnessRun(R, b, nav, chain, openers, b.seed * 1000 + i, playerTeam));
@@ -1611,6 +1667,8 @@ function t3Runs(R: Rapier, b: WorldBundle, nav: NavWorld, chain: WinChain | null
     par = won.length ? { goldS: Math.round(gold * 10) / 10, runs, won: won.length } : null;
     // the par runner itself (the first of equals) is the one a player races
     ghost = won.find((r) => r.ticks / 60 === gold)?.ghost ?? null;
+    // nobody won: one failing run is kept whole, to show where it fails
+    if (!won.length && results.length) failRun = failRunOf(results);
     chips.push({
       id: "T3:win",
       tier: "T3",
@@ -1635,10 +1693,14 @@ function t3Runs(R: Rapier, b: WorldBundle, nav: NavWorld, chain: WinChain | null
       const outcomes = schedules.map((sch, j) => Array.from({ length: per }, (_, i) => witnessRun(R, b, nav, chain, openers, b.seed * 1000 + 500 + j * per + i, playerTeam, sch)).filter((x) => x.won).length);
       const k = outcomes.reduce((a, x) => a + x, 0);
       const worst = outcomes.indexOf(0);
+      // (a world you talk your way through says whose choices: "every choice the guard can make")
+      const roles = [...new Set(minded.map((c) => c.role))];
+      const whose = minded.length === 1 ? `the ${roles[0]}` : roles.length === 1 ? `the ${roles[0]}s` : "the cast";
+      const talks = b.rules.some((x) => x.when.t === "spoken" && minded.some((c) => c.npc === x.when.a));
       chips.push({
         id: "T3:envelope", tier: "T3", subject: { kind: "property", id: "win_reachable" }, status: worst < 0 ? "played" : "counterexample",
         method: `physics, ${schedules.length} menu schedules × ${per} runners`, n: schedules.length * per, k,
-        text: worst < 0 ? `runners still win whatever the cast's minds choose (${schedules.length} schedules)` : "a choice the cast's minds can make stops every runner",
+        text: worst < 0 ? (talks ? `holds for every choice ${whose} can make (${schedules.length} schedules)` : `runners still win whatever the cast's minds choose (${schedules.length} schedules)`) : talks ? `a choice ${whose} can make stops every runner` : "a choice the cast's minds can make stops every runner",
         cx: worst < 0 ? null : { where: null, have: 0, need: 1, unit: "wins", text: `if ${schedules[worst]!.map(([n, o]) => `${n} plays ${o}`).join(", ")}, no runner wins` },
         src: "", ms: Math.round((globalThis.performance?.now?.() ?? 0) - t1),
       });
@@ -1675,7 +1737,17 @@ function t3Runs(R: Rapier, b: WorldBundle, nav: NavWorld, chain: WinChain | null
       ms: Math.round((globalThis.performance?.now?.() ?? 0) - t0),
     });
   }
-  return { chips, par, trails, ghost };
+  return { chips, par, trails, ghost, failRun };
+}
+
+/** A failing run's ghost keeps at most this many samples (two minutes at 15 a second). */
+const FAIL_SAMPLES = 1801;
+
+/** The failing run a receipt keeps (see pickFailing), with how it ended. */
+function failRunOf(results: readonly RunResult[]): FailRun {
+  const endOf = (r: RunResult) => r.falls.findLast((f) => f.end) ?? { x: 0, z: 0, why: "", end: true };
+  const run = pickFailing(results.map((r) => ({ why: endOf(r).why, prog: r.ghost.prog.at(-1) ?? 0 })));
+  return { run, ghost: thin(results[run]!.ghost, FAIL_SAMPLES), end: endOf(results[run]!) };
 }
 
 /** A run as the receipt keeps it: its route, and what the playtest report reads off it. */
@@ -1720,7 +1792,9 @@ export function tour(R: Rapier, b: WorldBundle, nav: NavWorld, openers: Readonly
 function tourRun(R: Rapier, b: WorldBundle, nav: NavWorld, openers: ReadonlyMap<string, PlanStep[]>): Chip | null {
   // what a visitor can always use: exhibits and switches (a lock needs its key, so it isn't a sight)
   const sights = [...new Set(b.verbs.filter((v) => (v.verb === "social.inspect" || v.verb === "puzzle.switch") && b.entities.some((e) => e.id === v.on)).map((v) => v.on))].sort();
-  if (!sights.length) return null;
+  // and what a visitor can say: each act a rule listens for (book a viewing with the guide), said once
+  const acts = b.rules.filter((x) => x.when.t === "spoken" && b.entities.some((e) => e.id === x.when.a && e.kind === "npc")).sort((x, y) => (x.id < y.id ? -1 : 1));
+  if (!sights.length && !acts.length) return null;
   const t0 = globalThis.performance?.now?.() ?? 0;
   const sim = new SimWorld(R, b, { brain: castBrain(nav, b) });
   // a visitor opens the doors on the way, as runners do
@@ -1751,14 +1825,66 @@ function tourRun(R: Rapier, b: WorldBundle, nav: NavWorld, openers: ReadonlyMap<
       used();
     }
   }
+  // then each act, walked up to and said the way its rule wants it said (no mind in the proof)
+  const said = new Set<string>();
+  for (const x of acts) {
+    if (!live(r)) break;
+    const w = x.when;
+    if (perform(r, { do: "speak", to: w.a, act: w.act || "ask", what: w.b, n: w.n, rule: x.id }) === "ok") said.add(x.id);
+  }
   sim.free();
   const k = sights.filter((s) => seen.has(s)).length;
   const missed = sights.filter((s) => !seen.has(s));
+  const unsaid = acts.filter((x) => !said.has(x.id));
+  const words = (x: (typeof acts)[number]) => actWords(x.when.act || "ask", x.when.a, x.when.b, x.when.n);
+  const also = acts.length ? `, and ${said.size} of ${acts.length} speech acts came off (${acts.map(words).join(", ")})` : "";
+  const why = [...(missed.length ? [`couldn't reach ${missed.slice(0, 4).join(", ")}${missed.length > 4 ? "…" : ""}`] : []), ...unsaid.map((x) => `couldn't ${words(x)}`)];
   return {
-    id: "T3:tour", tier: "T3", subject: { kind: "property", id: "tour" }, status: k === sights.length ? "played" : "counterexample",
-    method: "physics, an AI visitor walks to and uses each", n: sights.length, k,
-    text: `walked to and inspected ${k} of ${sights.length} things`,
-    cx: missed.length ? { where: null, have: k, need: sights.length, unit: "things", text: `couldn't reach ${missed.slice(0, 4).join(", ")}${missed.length > 4 ? "…" : ""}` } : null,
+    id: "T3:tour", tier: "T3", subject: { kind: "property", id: "tour" }, status: !missed.length && !unsaid.length ? "played" : "counterexample",
+    method: acts.length ? "physics, an AI visitor walks to and uses each, and says what the cast listens for" : "physics, an AI visitor walks to and uses each", n: sights.length + acts.length, k: k + said.size,
+    text: `walked to and inspected ${k} of ${sights.length} things${also}`,
+    cx: why.length ? { where: null, have: k + said.size, need: sights.length + acts.length, unit: "things", text: why.join("; ") } : null,
     src: "", ms: Math.round((globalThis.performance?.now?.() ?? 0) - t0),
   };
+}
+
+/** One run kept whole for red/green: its ghost, whether it did what it set out to, and how it ended. */
+export interface KeptRun {
+  /** It won (a runner), or reached the top (a jump attempt). */
+  ok: boolean;
+  ghost: Ghost;
+  /** Where and how a runner's run ended when it didn't win (null for a win, or a jump attempt). */
+  end: Fall | null;
+}
+
+/**
+ * Exactly the run T3 plays as runner `run` (seed: the world's seed × 1000 + run), kept whole
+ * whether it won or not: red/green plays the same runner on the same seed before and after a change.
+ */
+export function runnerRun(R: Rapier, b: WorldBundle, nav: NavWorld, chain: WinChain, run: number, playerTeam: "red" | "blue" = "red", openers: ReadonlyMap<string, PlanStep[]> = new Map()): KeptRun {
+  leap = leapFor(b);
+  try {
+    const r = witnessRun(R, b, nav, chain, openers, b.seed * 1000 + run, playerTeam);
+    return { ok: r.won, ghost: thin(r.ghost, FAIL_SAMPLES), end: r.won ? null : (r.falls.findLast((f) => f.end) ?? null) };
+  } finally {
+    leap?.free();
+    leap = null;
+    freeShut();
+  }
+}
+
+/** The physics jump witness's attempt `attempt` at a "requires jumps" expectation with `jumps` jumps, kept whole (null: no such expectation). */
+export function jumpRun(R: Rapier, b: WorldBundle, nav: NavWorld, expect: string, jumps: number, attempt: number, playerTeam: "red" | "blue" = "red"): KeptRun | null {
+  const x = b.expects.find((e) => e.id === expect && e.prop === "requires");
+  if (!x) return null;
+  leap = leapFor(b);
+  try {
+    const kept: { ghost: Ghost | null } = { ghost: null };
+    const ok = jumpWitness(R, b, nav, x, jumps, attempt, playerTeam, (g) => (kept.ghost = g));
+    return kept.ghost ? { ok, ghost: kept.ghost, end: null } : null;
+  } finally {
+    leap?.free();
+    leap = null;
+    freeShut();
+  }
 }

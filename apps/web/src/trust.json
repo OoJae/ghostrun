@@ -1,5 +1,5 @@
 {
- "generated": "2026-10-29",
+ "generated": "2026-11-09",
  "won": "at least 10 of 12 AI runners win in physics",
  "sets": [
   {
@@ -152,7 +152,7 @@
    "play": 20,
    "places": 8,
    "touredFirst": 3,
-   "toured": 7,
+   "toured": 8,
    "firstPass": 15,
    "now": 18,
    "playableP50Ms": 2564,

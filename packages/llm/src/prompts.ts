@@ -63,7 +63,8 @@ export function intentJsonSchema(packs: string[], subs: string[]): Record<string
   };
 }
 
-export function intentMessages(prompt: string, packs: { id: string; blurb: string }[]): { role: "system" | "user"; content: string }[] {
+/** `pinned`: what the person chose on the Intent card (pin.ts), to keep and to fit the rest to. */
+export function intentMessages(prompt: string, packs: { id: string; blurb: string }[], pinned?: string): { role: "system" | "user"; content: string }[] {
   return [
     {
       role: "system",
@@ -75,6 +76,7 @@ export function intentMessages(prompt: string, packs: { id: string; blurb: strin
         "lang: ISO code of the prompt's language. moodVec values are in [-1, 1].",
         "Rewrite trademarked names as generic homages in setting/goal (never output brand names).",
         `Available packs: ${packs.map((p) => `${p.id} (${p.blurb})`).join("; ")}. Pick the closest pack. sub may include 'rooftop' when vertical lanes or jumping matter.`,
+        ...(pinned ? [pinned] : []),
       ].join("\n"),
     },
     { role: "user", content: prompt },
@@ -178,9 +180,11 @@ export const SUPPORTED = {
     "lap_done (a='player' or 'team:blue', b=the track's line, n=laps done; no n = every lap)",
     "score_gte (a='team:red'|'team:blue', n=threshold)",
     "every (n=seconds)",
+    "spoken (a=npc, act=offer|pay|buy|book|ask|command, b=coins|item, n=min)",
+    "seen_by (a='player', b=npc that sees you)",
   ],
-  effects: ["score (target 'team:red'|'team:blue', n=points)", "win (target 'player')", "lose (target 'player')", "reset (target=entity: back to its start)", "set_state (target, v=state)", "emit (target, fx=visual effect name)", "destroy (target)", "open/close (target door)", "teleport (target, v=destination entity id)", "damage/heal (target, n=hit points)"],
-  conditions: "if: [{\"l\":\"orb.carrier.team\",\"op\":\"eq\",\"r\":\"red\"}] — paths: <id>.team, <id>.state, <id>.carrier.team, <id>.hp, team:red.score",
+  effects: ["score (target 'team:red'|'team:blue', n=points)", "win (target 'player')", "lose (target 'player')", "reset (target=entity: back to its start)", "set_state (target, v=state, n=seconds, 0=for good)", "emit (target, fx=visual effect name)", "destroy (target)", "open/close (target door)", "teleport (target, v=destination entity id)", "damage/heal (target, n=hit points)", "give/take (target 'player', v=coins|item, n)", "book_slot (target=npc, v='Viewing at <place>')"],
+  conditions: "if: [{\"l\":\"orb.carrier.team\",\"op\":\"eq\",\"r\":\"red\"}] — paths: <id>.team, <id>.state, <id>.carrier.team, <id>.hp, team:red.score, player.coins, player.carrying",
 };
 
 type Msg = { role: "system" | "user"; content: string };
@@ -217,6 +221,11 @@ function worldRules(layout: PackLayout): string[] {
   ];
 }
 
+/** The prompt is about talking someone round: a bribe, a purchase, a booking, a guard or a guide. */
+const TALKS = /brib|pay[\s-]*off|look the other way|guard|merchant|shop|buy|sell|trade|haggl|book|reserv|schedul|viewing|appointment|guide|estate agent|bestech|soborn|uplat|rezerv/i;
+/** How the act rules fit together, for a prompt that needs them (the language itself is always sent). */
+export const TALK_HINT = " A bribe: spoken a=guard_1 act=offer b=coins n=20, if player.coins gte 20: take player coins 20, set_state guard_1 look_away n 20 (menu has guard.look_away). Caught: seen_by b=guard_1 if player.carrying eq the loot: lose. Touch rules give coins. A guide: spoken act=book: book_slot.";
+
 /** The prompt asks for Feng Shui (the same words as asksFengShui in packages/layout/src/fengshui.ts). */
 const FENG_SHUI = /feng[\s-]*(shui|šuej|suej|schui)|fengshui|風水|风水/i;
 /**
@@ -240,7 +249,7 @@ export function fillMessages(prompt: string, intent: IntentOut, layout: PackLayo
     },
     {
       role: "user",
-      content: `Prompt: ${prompt}\nIntent: ${JSON.stringify(intent)}\nUse seed ${seed}, pack "${layout.packId}", mode "${intent.mode}", sub ${JSON.stringify(intent.sub)}. Headline expect text: "${intent.headline}".${intent.mode === "wander" ? " This is a place to explore: no win or lose rules needed; make its things inspectable (social.inspect with a real one-line text each) and let NPCs guide." : ""}${FENG_SHUI.test(prompt) ? FENG_SHUI_HINT : ""}`,
+      content: `Prompt: ${prompt}\nIntent: ${JSON.stringify(intent)}\nUse seed ${seed}, pack "${layout.packId}", mode "${intent.mode}", sub ${JSON.stringify(intent.sub)}. Headline expect text: "${intent.headline}".${intent.mode === "wander" ? " This is a place to explore: no win or lose rules needed; make its things inspectable (social.inspect with a real one-line text each) and let NPCs guide." : ""}${FENG_SHUI.test(prompt) ? FENG_SHUI_HINT : ""}${TALKS.test(prompt) ? TALK_HINT : ""}`,
     },
   ];
 }
@@ -274,8 +283,9 @@ export function repairMessages(prompt: string, intent: IntentOut, layout: PackLa
  * The person's own change to a world ("only one jump", "add three more coins", "make it night"):
  * a patch in the repair format. Expectations are off limits (the merge locks them too), so the
  * proof keeps checking what the world promised and a change that breaks a promise shows up.
+ * `structure`: what this pack's layout op may set (registry layoutLine), for changes to the map itself.
  */
-export function editMessages(prompt: string, change: string, intent: IntentOut, layout: PackLayout, fill: string): Msg[] {
+export function editMessages(prompt: string, change: string, intent: IntentOut, layout: PackLayout, fill: string, structure?: string): Msg[] {
   return [
     {
       role: "system",
@@ -287,6 +297,11 @@ export function editMessages(prompt: string, change: string, intent: IntentOut, 
         "Do exactly what the change asks and keep everything else. New things must work: bind their verbs and wire their rules.",
         "Movement (jumps, jump height, speed, gravity) is the law line: {\"op\":\"law\",\"player\":{\"jumpsMax\":1,\"jumpH\":1.6,\"speed\":6,\"gravityScale\":1}}.",
         "Looks are one meta line with only the fields that change: {\"op\":\"meta\",\"look\":\"neon city\",\"timeOfDay\":22,\"weather\":\"rain\"}. timeOfDay is 0-24; weather is clear|rain|snow|fog|storm.",
+        ...(structure
+          ? [
+              `The map itself (bigger, smaller, tighter, a floor, a room, a lane) is one layout line with only what changes, e.g. {"op":"layout","params":{"floors":2}} or {"op":"layout","sub":[]}. This pack: ${structure}. Things whose anchor the new layout lacks move on their own; a new slot may get a zone line and things.`,
+            ]
+          : []),
         "The world's expectations stay as they are: the proof re-checks them after your change, so never try to make a check pass by editing it.",
         "If the change asks for something the world language can't express, make the closest change it can.",
         ...worldRules(layout),
@@ -370,23 +385,62 @@ export interface MindInput {
   situation: string;
   event: string;
   said?: string;
+  /** The speech acts this character answers, as the world's rules accept them (none: it only picks options). */
+  acts?: MindAct[];
+  /** What it can answer a question from: the world's own facts, a few short lines. */
+  facts?: string[];
+  /** For a booking: today's date ("2026-11-02, Monday") and the visitor's time zone, so "Saturday at 3" is a date. */
+  today?: string;
+  tz?: string;
 }
 
-/** Strict schema: the option must be one of the menu's own strings (typed menus, never free actions). */
-export function mindJsonSchema(menu: string[]): Record<string, unknown> {
-  return {
-    type: "object",
-    additionalProperties: false,
-    required: ["option", "line"],
-    properties: { option: { type: "string", enum: menu }, line: { type: "string", maxLength: 120 } },
-  };
+/** One act a character accepts: offer 20 coins (and the option it earns: look away), book, ask, command. */
+export interface MindAct {
+  act: string;
+  /** What is handed over or bought ("coins", an item); "" for anything. */
+  what: string;
+  /** The least it takes (coins); 0 for no price. */
+  n: number;
+  /** The menu option accepting it earns (guard.look_away), "" for none. */
+  gives: string;
 }
 
 /**
+ * Strict schema: the option must be one of the menu's own strings (typed menus, never free actions),
+ * and an act one of the closed set this character accepts ("none" when it accepts nothing).
+ */
+export function mindJsonSchema(menu: string[], acts: readonly MindAct[] = []): Record<string, unknown> {
+  const base = { option: { type: "string", enum: menu }, line: { type: "string", maxLength: 120 } };
+  if (!acts.length) return { type: "object", additionalProperties: false, required: ["option", "line"], properties: base };
+  return {
+    type: "object",
+    additionalProperties: false,
+    required: ["option", "line", "act", "what", "n", "slot"],
+    properties: {
+      ...base,
+      act: { type: "string", enum: ["none", ...new Set(acts.map((a) => a.act))] },
+      what: { type: "string", maxLength: 48 },
+      n: { type: "integer", minimum: 0, maximum: 9999 },
+      slot: { type: "string", maxLength: 16 },
+    },
+  };
+}
+
+/** An act as the mind is told it ("offer: coins, at least 20 (you then play guard.look_away)"). */
+const actLine = (a: MindAct) =>
+  a.act === "book" ? "book: a time to come (a viewing, a table)"
+  : a.act === "ask" ? "ask: a question you answer from what you know"
+  : a.act === "command" ? "command: an order to play one of your menu options (put it in what)"
+  : `${a.act}: ${a.what || "anything"}${a.n > 0 ? `, at least ${a.n}` : ""}${a.gives ? ` (you then play ${a.gives})` : ""}`;
+
+/**
  * An NPC's mind: picks one option from its typed menu and says one short line in character. The
- * simulation then plays the option deterministically; the line is cosmetic.
+ * simulation then plays the option deterministically; the line is cosmetic. A character the world
+ * lets you talk your way past also answers a speech act: it accepts one (and the act enters the
+ * simulation, where the world's rule decides what it does) or refuses it in character.
  */
 export function mindMessages(m: MindInput): Msg[] {
+  const acts = m.acts ?? [];
   return [
     {
       role: "system",
@@ -395,6 +449,15 @@ export function mindMessages(m: MindInput): Msg[] {
         "Choose exactly ONE option from your menu that fits the situation, and say one short line in character (at most 12 words, family-friendly, no names of real people or brands).",
         "If the player speaks to you, answer them in that line, and follow a reasonable request when your menu allows it (a teammate told to follow, follows).",
         `Menu: ${m.menu.join(", ")}. Current option: ${m.current}.`,
+        ...(acts.length
+          ? [
+              `What the player says may be a speech act you can accept: ${acts.map(actLine).join("; ")}.`,
+              "Accept one only when the player really makes it: set act, what and n to what they actually offered (n = the amount). Never accept less than your price or an offer they didn't make.",
+              "Refusing or haggling: act 'none', and say it in character ('Twenty? Make it fifty.'). With no act: act 'none', what '', n 0, slot ''.",
+              ...(acts.some((a) => a.act === "book") ? [`A booking: act 'book', slot the local date and time asked for as YYYY-MM-DDTHH:MM (today is ${m.today ?? "unknown"}, time zone ${m.tz ?? "unknown"}), only within the hours you know; if it doesn't work, act 'none' and offer another time. Never ask for a name, email or phone.`] : []),
+            ]
+          : []),
+        ...(m.facts?.length ? ["Answer questions only from these facts (say you don't know otherwise):", ...m.facts.map((f) => `- ${f}`)] : []),
       ].join("\n"),
     },
     { role: "user", content: `Situation: ${m.situation}\nWhat just happened: ${m.event}${m.said ? `\nThe player says to you: "${m.said}"` : ""}` },

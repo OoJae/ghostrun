@@ -4,9 +4,11 @@
 // and the same words for what an edit changed, what /v1/edit is told, and how a receipt moved.
 import { describe, expect, it } from "vitest";
 import { staticReceipt, type Chip, type Receipt } from "@ghostrun/proof/static";
-import { changeSummary as edgeSummary, editIntent, ENGINE_HASH as EDGE_ENGINE, fillPack, fillSeed, GALLERY, galleryWorld, newFailures as edgeFailures, placeFill, receiptDelta as edgeDelta } from "../../edge-api/src/world";
+import { pinLayout } from "@ghostrun/ir";
+import { changeSummary as edgeSummary, editIntent, ENGINE_HASH as EDGE_ENGINE, fillPack, fillSeed, GALLERY, galleryWorld, mergeEdit as edgeMerge, newFailures as edgeFailures, placeFill, receiptDelta as edgeDelta } from "../../edge-api/src/world";
 import { changeSummary, intentFor, newFailures, receiptDelta } from "../src/edits";
-import { ENGINE_HASH, hashWorld, worldFromFill } from "../src/pipeline";
+import { buildWorld, ENGINE_HASH, hashWorld, worldFromFill } from "../src/pipeline";
+import { mergeEdit } from "../src/structure";
 
 const worlds = GALLERY.map((e) => ({ e, g: galleryWorld(e.slug)! }));
 
@@ -39,6 +41,19 @@ describe("the edge's world pipeline matches the web's", () => {
       expect(editIntent(wa.bundle, "a shared world")).toEqual(intentFor(wa, "a shared world"));
       // a gallery world keeps its own
       expect(editIntent(wa.bundle, a.prompt, a.intent)).toEqual(intentFor({ ...wa, source: { prompt: a.prompt, intent: a.intent, fill: wa.fill, seed: wa.seed, pack: wa.bundle.pack.id } }, a.prompt));
+    }
+  });
+
+  it("a structural edit: the same settled, re-anchored fill, the same diff line, the same world", async () => {
+    for (const [k, patch] of [["vault", '{"op":"layout","params":{"floors":2}}'], ["ctf", '{"op":"layout","sub":[]}'], ["ctf", '{"op":"layout","params":{"length":120}}']] as const) {
+      const w = buildWorld("", k);
+      const fill0 = pinLayout(w.fill);
+      const web = mergeEdit(fill0, patch, w.seed);
+      const edge = edgeMerge(fill0, patch, w.seed);
+      expect(edge.text).toBe(web.text);
+      expect(edge.layout).toEqual({ summary: web.layout!.summary, notes: web.layout!.notes });
+      const placed = await placeFill(edge.text, w.seed, { pack: w.bundle.pack.id, mode: w.bundle.mode });
+      expect(placed.spec).toBe(await hashWorld(worldFromFill(web.text, w.seed, undefined, w.bundle.pack.id, w.bundle.mode).bundle));
     }
   });
 

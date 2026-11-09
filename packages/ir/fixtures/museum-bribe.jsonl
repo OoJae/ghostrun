@@ -1,0 +1,40 @@
+{"op":"meta","mode":"play","lang":"en","pack":"floor_plan","sub":[],"seed":2,"look":"museum night","mood":[0.1,0.6,0.8],"timeOfDay":23,"weather":"clear"}
+{"op":"zone","id":"z_steps","slot":"yard","tag":"outside","name":"Museum steps"}
+{"op":"zone","id":"z_lobby","slot":"entrance","tag":"entrance","name":"Lobby"}
+{"op":"zone","id":"z_west","slot":"room_sw","tag":"room","name":"West gallery"}
+{"op":"zone","id":"z_vault","slot":"room_se","tag":"room","name":"Vault"}
+{"op":"zone","id":"z_north","slot":"room_nw","tag":"room","name":"North gallery"}
+{"op":"zone","id":"z_hall","slot":"main_room","tag":"hall","name":"Great hall"}
+{"op":"spawn","id":"sp_red","zone":"z_steps","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"van","zone":"z_steps","anchor":"corner_w","noun":"getaway van","hyper":"vehicle","team":"red"}
+{"op":"ent","id":"purse","kind":"pickup","noun":"dropped coin purse","hyper":"coin","zone":"z_steps","anchor":"gate","body":"sensor","shape":"sphere"}
+{"op":"ent","id":"coins_1","kind":"pickup","noun":"stack of coins","hyper":"coin","zone":"z_west","anchor":"center","body":"sensor","shape":"sphere"}
+{"op":"ent","id":"coins_2","kind":"pickup","noun":"stack of coins","hyper":"coin","zone":"z_north","anchor":"center","body":"sensor","shape":"sphere"}
+{"op":"ent","id":"coins_3","kind":"pickup","noun":"stack of coins","hyper":"coin","zone":"z_hall","anchor":"center","body":"sensor","shape":"sphere"}
+{"op":"ent","id":"coins_4","kind":"pickup","noun":"stack of coins","hyper":"coin","zone":"z_lobby","anchor":"corner_sw","body":"sensor","shape":"sphere"}
+{"op":"ent","id":"key","kind":"pickup","noun":"vault key","hyper":"key","zone":"z_west","anchor":"corner_sw","body":"dynamic","shape":"box","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"vault_door","kind":"door","noun":"vault door","hyper":"door","zone":"z_vault","anchor":"doorway_w","body":"fixed","shape":"box"}
+{"op":"ent","id":"gem","kind":"pickup","noun":"star sapphire","hyper":"gem","zone":"z_vault","anchor":"center","body":"dynamic","shape":"sphere","size":[0.4,0.4,0.4]}
+{"op":"ent","id":"portrait","kind":"prop","noun":"portrait of the founder","hyper":"painting","zone":"z_north","anchor":"wall_n","body":"fixed","shape":"box","size":[1.2,1.6,0.3]}
+{"op":"ent","id":"statue","kind":"prop","noun":"marble statue","hyper":"statue","zone":"z_hall","anchor":"corner_ne","body":"fixed","shape":"box","size":[0.8,1.8,0.8]}
+{"op":"verb","id":"vb_purse","verb":"puzzle.collect","on":"purse","params":{}}
+{"op":"verb","id":"vb_c1","verb":"puzzle.collect","on":"coins_1","params":{}}
+{"op":"verb","id":"vb_c2","verb":"puzzle.collect","on":"coins_2","params":{}}
+{"op":"verb","id":"vb_c3","verb":"puzzle.collect","on":"coins_3","params":{}}
+{"op":"verb","id":"vb_c4","verb":"puzzle.collect","on":"coins_4","params":{}}
+{"op":"verb","id":"vb_carry_key","verb":"physics_props.carry","on":"key","params":{}}
+{"op":"verb","id":"vb_carry_gem","verb":"physics_props.carry","on":"gem","params":{}}
+{"op":"verb","id":"vb_lock","verb":"puzzle.lock","on":"vault_door","params":{"key":"key"}}
+{"op":"verb","id":"vb_look_portrait","verb":"social.inspect","on":"portrait","params":{"text":"The founder, 1891. Her guards were never paid enough, either."}}
+{"op":"verb","id":"vb_look_statue","verb":"social.inspect","on":"statue","params":{"text":"A marble runner, mid-stride. Even she couldn't outpace the alarm."}}
+{"op":"verb","id":"vb_alarm","verb":"puzzle.timer","on":"player","params":{"seconds":240}}
+{"op":"rule","id":"r_purse","when":{"t":"touch","a":"player","b":"purse"},"then":[{"e":"give","target":"player","v":"coins","n":20}]}
+{"op":"rule","id":"r_coins","when":{"t":"touch","a":"player","b":"coins"},"then":[{"e":"give","target":"player","v":"coins","n":10}]}
+{"op":"rule","id":"r_bribe","when":{"t":"spoken","a":"guard","act":"offer","b":"coins","n":20},"if":[{"l":"player.coins","op":"gte","r":20}],"then":[{"e":"take","target":"player","v":"coins","n":20},{"e":"set_state","target":"guard","v":"look_away","n":20}]}
+{"op":"rule","id":"r_caught","when":{"t":"seen_by","a":"player","b":"guard"},"if":[{"l":"player.carrying","op":"eq","r":"gem"}],"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_escape","when":{"t":"enter","a":"gem","b":"van"},"if":[{"l":"gem.carrier.team","op":"eq","r":"red"}],"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_alarm","when":{"t":"timer_end","a":"player"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"npc","id":"guard","role":"guard","zone":"z_lobby","anchor":"corner_ne","noun":"night guard","team":"","minded":true,"persona":{"identity":"the museum's night guard, on his fourth coffee","personality":"bored and greedy, pretends to be strict","knowledge":"the vault is off the lobby, behind the east door; its key is kept in the West gallery; he catches anyone he sees carrying the star sapphire","replyStyle":"short and gruff","tools":[],"safety":"family-friendly"},"menu":["guard.watch","guard.patrol","guard.look_away"],"dflt":"guard.watch","coneDeg":120,"rangeM":9}
+{"op":"expect","id":"x_bribe","prop":"win_reachable","a":"sp_red","b":"van","headline":true,"text":"The guard can be bribed to look away while you carry the star sapphire out"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}
