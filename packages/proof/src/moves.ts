@@ -177,7 +177,7 @@ export function t1Fly(b: WorldBundle, laws: Laws, chain: WinChain | null, player
 }
 
 /** How deep the head must go to get to a target in water (0: it's reached from the surface). */
-function depthFor(b: WorldBundle, w: Water, id: string): number {
+export function depthFor(b: WorldBundle, w: Water, id: string): number {
   const e = b.entities.find((x) => x.id === id)!;
   const sensor = e.body === "sensor";
   // the centre as high as still counts (inside a sensor; within 1.4 m of a thing), the floor permitting

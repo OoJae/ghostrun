@@ -4,8 +4,9 @@
 // receipt that still says "won" would be a lie. Only worlds with one way to win get them: with two,
 // breaking one route isn't a bug.
 import { clampLaws, type Rule, type WorldBundle } from "@ghostrun/ir";
-import { diveNeed, flightOf, HEAD_UP, SWIM, SWIM_DOWN, waterAt, watersOf, zeroG } from "@ghostrun/kits";
+import { flightOf, SWIM, SWIM_DOWN, waterAt, watersOf, zeroG } from "@ghostrun/kits";
 import { hitPoints, playerWeapons, purseSupply, t0 } from "./t0";
+import { depthFor } from "./moves";
 import type { Chip, Receipt } from "./types";
 
 export interface Planted {
@@ -52,15 +53,16 @@ export function plants(b: WorldBundle, parS: number | null, team: "red" | "blue"
 
   // under water: a breath too short to get down to what the win needs there (3 m down or more)
   const waters = watersOf(b);
+  // (as deep as T1's dive model says the head must go: a sensor is entered from its top)
   const deep = waters.length ? chain.steps.flatMap((st) => (st.do === "pickup" ? [st.item] : st.do === "deliver" ? [st.sensor] : st.do === "use" || st.do === "touch" ? [st.at] : [])).map((id) => b.entities.find((e) => e.id === id)).find((e) => {
     const wa = e && waterAt(waters, e.pos);
-    return e && wa && wa.max[1] - (Math.max(wa.min[1] + HEAD_UP, e.pos[1] - 1.2) + HEAD_UP) >= 3;
+    return e && wa && depthFor(b, wa, e.id) >= 3;
   }) : undefined;
   if (deep) {
     const wa = waterAt(waters, deep.pos)!;
-    const depth = Math.round((wa.max[1] - (Math.max(wa.min[1] + HEAD_UP, deep.pos[1] - 1.2) + HEAD_UP)) * 10) / 10;
+    const depth = Math.round(depthFor(b, wa, deep.id) * 10) / 10;
     const breath = Math.max(1, Math.floor((depth / SWIM_DOWN) * 0.4));
-    if (breath < diveNeed(depth)) {
+    if (breath < depth / SWIM_DOWN) { // (it can't even get down there)
       const w = copy();
       for (const v of w.verbs) if (v.verb === SWIM && v.on === wa.id) v.params = { ...v.params, breath };
       out.push({ id: "breath_too_short", text: `a breath lasts ${breath} s, and the ${noun(b, deep.id)} lies ${depth} m down`, at: deep.id, bundle: w });
