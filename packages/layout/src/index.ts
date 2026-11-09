@@ -231,8 +231,9 @@ export function placeWorld(input: WorldBundle, layout: PackLayout, opts: { reach
     // Sensors and spawns sit on the floor; bodies rest with their centre half their height up.
     const lift = e.kind === "spawn" ? 0 : e.size[1] / 2;
     e.pos = alongZ ? [base[0], base[1] + lift, base[2] + offset] : [base[0] + offset, base[1] + lift, base[2]];
-    // a door in an east/west wall's doorway turns to fill the gap across z
-    if (e.kind === "door" && /^doorway_[ew]$/.test(e.anchor) && e.size[0] > e.size[2]) e.size = [e.size[2], e.size[1], e.size[0]];
+    // a door in an east/west wall's doorway turns to fill the gap across z (a doorway named for its
+    // way, not its side, as the puzzle rooms' doorway_in and doorway_out: its lintel says which way the wall runs)
+    if (e.kind === "door" && e.size[0] > e.size[2] && (/^doorway_[ew]$/.test(e.anchor) || (!/^doorway_[ns]$/.test(e.anchor) && e.anchor.startsWith("doorway_") && lintelAlongZ(layout, base)))) e.size = [e.size[2], e.size[1], e.size[0]];
     // a place you walk (or carry things) into stands clear of walls and ledges: a goal anchored
     // to a scoreboard hangs half in the wall beside a deck, and the only ground "in" it is the deck
     // top, too high to carry a flag in. It moves toward the zone's middle until nothing solid
@@ -573,6 +574,12 @@ export function addRivals(b: WorldBundle): string[] {
   return [`added ${added.join(" and ")} on the ${them} side: a ${guns.length ? "shooting" : "throwing"} game needs someone to ${guns.length ? "shoot" : "throw at"}`];
 }
 
+/** Does the wall over a doorway at `p` run along z (a lintel there longer across z than x)? */
+function lintelAlongZ(layout: PackLayout, p: Vec3): boolean {
+  const lintel = layout.statics.find((s) => s.surf === "wall" && s.pos[1] - s.size[1] / 2 > p[1] + 1.5 && Math.abs(p[0] - s.pos[0]) <= s.size[0] / 2 + 0.01 && Math.abs(p[2] - s.pos[2]) <= s.size[2] / 2 + 0.01);
+  return !!lintel && lintel.size[2] > lintel.size[0];
+}
+
 /** What a race clears off its road: low cover and small things (a kiosk, a crate stack, a tree, a rock), never a wall or a ledge. */
 export function clearedByRace(s: { surf: string; size: Vec3 }): boolean {
   const foot = Math.max(s.size[0], s.size[2]);
@@ -901,7 +908,7 @@ export function placeRace(b: WorldBundle, layout: PackLayout, bound: Map<string,
 }
 
 /** What a secret is called in each pack (cosmetic: the rule and the count are the same everywhere). */
-const SECRET_NOUN: Record<string, string> = { city_block: "neon shard", outdoor: "glow seed", floor_plan: "gold coin", arena: "star token", maze: "rune stone", course: "time gem" };
+const SECRET_NOUN: Record<string, string> = { city_block: "neon shard", outdoor: "glow seed", floor_plan: "gold coin", arena: "star token", maze: "rune stone", course: "time gem", service_venue: "lucky coin", puzzle_rooms: "rune stone", stage: "gold ticket", orrery: "star fragment" };
 
 /**
  * A play world with few things to touch gets secrets: themed bonus collectibles on anchors nothing

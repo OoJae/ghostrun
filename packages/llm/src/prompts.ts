@@ -76,6 +76,9 @@ export function intentMessages(prompt: string, packs: { id: string; blurb: strin
         "lang: ISO code of the prompt's language. moodVec values are in [-1, 1].",
         "Rewrite trademarked names as generic homages in setting/goal (never output brand names).",
         `Available packs: ${packs.map((p) => `${p.id} (${p.blurb})`).join("; ")}. Pick the closest pack. sub may include 'rooftop' when vertical lanes or jumping matter.`,
+        ...(packs.some((p) => p.id === "service_venue")
+          ? ["A place with a counter (a café, restaurant, bar, shop or bank) is service_venue, while a museum, gallery, showroom or home is floor_plan; an escape room or a chain of puzzle rooms is puzzle_rooms, a maze is maze; a concert, show or play is stage; the solar system or a planetarium is orrery."]
+          : []),
         ...(pinned ? [pinned] : []),
       ].join("\n"),
     },
@@ -189,16 +192,33 @@ export const SUPPORTED = {
 
 type Msg = { role: "system" | "user"; content: string };
 
+/**
+ * How a newer pack's rooms fit together, for the fill (the six older packs' slots speak for
+ * themselves, and their prompts stay as they were).
+ */
+export const PACK_HINTS: Readonly<Record<string, string>> = {
+  service_venue:
+    "Layout: entrance, seating (order at counter_front), counter (till on top, staff behind_counter, flap: way behind), back_room, storeroom (via back_room).",
+  puzzle_rooms:
+    "Layout: a chain yard → room_1 → … → exit; doorway_in joins the room before, doorway_out the next. Gates and locked doors go on doorway_out; what opens one (switch, plate, lever, key) stands in that room or an earlier one.",
+  stage:
+    "Layout: foyer, seating, pit (a step down), stairs up to the wings, stage, backstage. rig_* hang over the stage (body none).",
+  orrery:
+    "Layout: walkways in space from the entrance to the Sun's hub; each planet on the anchor named after it; the asteroid belt ring between Mars and Jupiter. Distances are scaled, not true: say so on a sign at scale_note.",
+};
+
 /** The world language: shared by the fill and the repair calls so both speak exactly the same IR. */
 function worldRules(layout: PackLayout): string[] {
   const slots = layout.zones
     .map((z) => `- slot "${z.slot}" (${z.tag})${Object.keys(z.anchors).length ? `: anchors ${Object.keys(z.anchors).join(", ")}` : ": no anchors (omit anchor to scatter)"}`)
     .join("\n");
+  const hint = PACK_HINTS[layout.packId];
   return [
         "Order is fixed: meta, zone+, spawn+, goal*, ent*, verb*, law?, state*, rule*, npc*, expect+, {\"op\":\"end\",\"layer\":\"gameplay\"}, dress*, poster{0,2}, {\"op\":\"end\",\"layer\":\"cosmetic\"}.",
         "ids: lower_snake_case, ≤32 chars, unique across the whole world. Every line ≤ 1 KB.",
         `Pack "${layout.packId}" slots (zones must use these slot names; entities name an anchor of their zone):`,
         slots,
+        ...(hint ? [hint] : []),
         "Use EXACTLY these enum values (anything else is rejected):",
         "- kind: prop | pickup | goal | spawn | checkpoint | door | switch | plate | hazard | platform | vehicle | npc | portal | sign",
         "- body: none | fixed | kinematic | dynamic | sensor   (immovable scenery = fixed, never 'static')",

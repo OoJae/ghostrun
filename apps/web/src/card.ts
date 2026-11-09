@@ -7,7 +7,7 @@ import type { Laws, WorldBundle } from "@ghostrun/ir";
 import { PACKS } from "@ghostrun/registry";
 import type { CardControls } from "./hud/IntentCard";
 import type { World } from "./pipeline";
-import { LOOK_CHOICES, norm, pickLook, type LookPin, type Pick as LookPick } from "./render/pick";
+import { LOOK_CHOICES, norm, pickLook, ROOM_PACKS, type LookPin, type Pick as LookPick } from "./render/pick";
 import { k, locale, t } from "./i18n";
 import { layoutOptions, layoutPatch } from "./structure";
 
@@ -22,7 +22,7 @@ export const PHASE_HOUR: Record<LookPick["phase"], number> = { day: 12, dusk: 18
 export const WEATHERS = ["clear", "rain", "snow", "fog", "storm"] as const satisfies readonly WorldBundle["cosmetic"]["weather"][];
 
 /** The looks this pack can wear (a home's furniture needs rooms). */
-export const looksFor = (pack: string) => LOOK_CHOICES.filter((c) => !c.rooms || pack === "floor_plan" || pack === "maze");
+export const looksFor = (pack: string) => LOOK_CHOICES.filter((c) => !c.rooms || ROOM_PACKS.has(pack));
 /** A look's name on the card ("snow/cave" → "Ice cave"). */
 export const lookName = (id: string, variant: string) => LOOK_CHOICES.find((c) => c.value === (variant ? `${id}/${variant}` : id))?.label ?? LOOK_CHOICES.find((c) => c.value === id)?.label ?? id;
 /** A weather as a change is said: "make it rain", "make it foggy". */
@@ -80,7 +80,7 @@ export function rebuiltLine(pin: ShapePin): string {
 
 const article = (w: string) => `${/^[aeiou]/i.test(w) ? "an" : "a"} ${w}`;
 /** Each pack as a person would say it. */
-export const PACK_NAME: Record<string, string> = { city_block: k("a city block"), floor_plan: k("rooms"), arena: k("an arena"), maze: k("a maze"), outdoor: k("the outdoors"), course: k("an obstacle course") };
+export const PACK_NAME: Record<string, string> = { city_block: k("a city block"), floor_plan: k("rooms"), arena: k("an arena"), maze: k("a maze"), outdoor: k("the outdoors"), course: k("an obstacle course"), service_venue: k("a café or shop"), puzzle_rooms: k("puzzle rooms"), stage: k("a stage"), orrery: k("the solar system") };
 export const PACK_IDS = PACKS.map((p) => p.id);
 
 /** One "did you mean" the card can offer: the words that suggest it, its question, its button, what it pins. */
@@ -103,6 +103,10 @@ const ALTS: readonly Alt[] = [
   { words: /forest|\bwoods?\b|\bpark\b|garden|island|beach|meadow|\bcamp|jungle|countryside|outdoors?|\blake\b|mountain/, ask: k("Did you mean outdoors?"), label: k("Make it outdoors"), pin: { pack: "outdoor" }, is: (i) => i.pack === "outdoor" },
   { words: /\barena|stadium|\bduel|\bsumo|dodgeball|football|soccer|basketball|colosseum|\bring\b/, ask: k("Did you mean an arena?"), label: k("Make it an arena"), pin: { pack: "arena" }, is: (i) => i.pack === "arena" },
   { words: /\bcity\b|street|rooftop|downtown|\balley|neon/, ask: k("Did you mean city streets?"), label: k("Make it a city"), pin: { pack: "city_block" }, is: (i) => i.pack === "city_block" },
+  { words: /\bcafes?\b|coffee|restaurant|\bdiner\b|bakery|sushi|pizzeria|\bbank\b|\bcounter\b|\btill\b|barista|waiter|waitress|take (the )?orders?/, ask: k("Did you mean a café or shop?"), label: k("Make it a café or shop"), pin: { pack: "service_venue" }, is: (i) => i.pack === "service_venue" },
+  { words: /escape room|puzzle|riddle|\blevers?\b|pressure plates?|locked doors?/, ask: k("Did you mean puzzle rooms?"), label: k("Make it puzzle rooms"), pin: { pack: "puzzle_rooms" }, is: (i) => i.pack === "puzzle_rooms" },
+  { words: /\bconcert|\bgig\b|\bstage\b|theat(re|er)|magic show|ballet|\bopera\b|musical|talent show/, ask: k("Did you mean a stage?"), label: k("Put it on a stage"), pin: { pack: "stage" }, is: (i) => i.pack === "stage" },
+  { words: /solar system|planetarium|orrery|\bplanets\b/, ask: k("Did you mean the solar system?"), label: k("Make it the solar system"), pin: { pack: "orrery" }, is: (i) => i.pack === "orrery" },
 ];
 const PLACE = /\b(tour|explore|exploring|visit|stroll|wander|walk around|look around|sightsee|showroom)\b/;
 const GAME = /\b(win|score|race|collect|escape|steal|catch|capture|defeat|beat|survive|reach|find)\b/;

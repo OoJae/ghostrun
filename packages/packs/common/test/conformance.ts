@@ -124,7 +124,7 @@ export function conformance(packId: string, layout: PackLayout, seed: number, op
       for (const [name, a] of Object.entries(z.anchors)) {
         const where = `${z.slot}.${name}`;
         if (opts.hanging?.(z.slot, name)) continue;
-        const raised = a[1] > z.floorY + 0.5;
+        const raised = a[1] > z.floorY + 0.35;
         if (raised) {
           // (5) a wall-height anchor sits against a wall; anything else stands on a surface
           const onWall = name.startsWith("wall_") || layout.statics.some((s) => s.surf === "wall" && Math.abs(a[0] - s.pos[0]) <= s.size[0] / 2 + 0.35 && Math.abs(a[2] - s.pos[2]) <= s.size[2] / 2 + 0.35 && Math.abs(a[1] - s.pos[1]) <= s.size[1] / 2);

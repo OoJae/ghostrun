@@ -138,7 +138,6 @@ export const serviceVenue: LayoutPack<ServiceVenueParams> = {
         pass: [r2(kitchenDoor + (kitchenDoor - x0 > xB - kitchenDoor ? 1.6 : -1.6)), 0, r2(zR - 0.5)],
         doorway_n: [kitchenDoor, 0, zR],
         back_bar: [backBar, 0, r2(zR - 0.5)],
-        menu: [backBar, 1.6, r2(zR - T / 2 - 0.12)],
         corner_w: [r2(x0 + (flapEast ? m : 2.6)), 0, staffMid],
         corner_e: [r2(x3 - (flapEast ? 2.6 : m)), 0, staffMid],
       } as Record<string, Vec3>,

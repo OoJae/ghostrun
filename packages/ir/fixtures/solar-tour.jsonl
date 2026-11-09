@@ -1,0 +1,43 @@
+{"op":"meta","mode":"play","lang":"en","pack":"orrery","sub":[],"seed":7,"look":"planetarium in space","mood":[0.6,0.4,0.3],"timeOfDay":22,"weather":"clear"}
+{"op":"zone","id":"z_lobby","slot":"entrance","tag":"entrance","name":"Planetarium lobby"}
+{"op":"zone","id":"z_sun","slot":"sun","tag":"center","name":"The Sun"}
+{"op":"zone","id":"z_inner","slot":"inner","tag":"planet","name":"Inner planets"}
+{"op":"zone","id":"z_belt","slot":"belt","tag":"ring","name":"Asteroid belt"}
+{"op":"zone","id":"z_jupiter","slot":"jupiter","tag":"planet","name":"Jupiter"}
+{"op":"zone","id":"z_saturn","slot":"saturn","tag":"planet","name":"Saturn"}
+{"op":"zone","id":"z_uranus","slot":"uranus","tag":"planet","name":"Uranus"}
+{"op":"zone","id":"z_neptune","slot":"neptune","tag":"planet","name":"Neptune"}
+{"op":"spawn","id":"sp_red","zone":"z_lobby","anchor":"spawn_pad","team":"red"}
+{"op":"ent","id":"scale_sign","kind":"sign","noun":"sign: distances are scaled","hyper":"sign","zone":"z_lobby","anchor":"scale_note","body":"fixed","shape":"box","size":[1.2,1.4,0.2]}
+{"op":"ent","id":"sun","kind":"prop","noun":"the Sun","hyper":"star","zone":"z_sun","anchor":"sun","body":"fixed","shape":"sphere","size":[1.8,1.8,1.8]}
+{"op":"ent","id":"mercury","kind":"prop","noun":"Mercury","hyper":"planet","zone":"z_inner","anchor":"mercury","body":"fixed","shape":"sphere","size":[0.5,0.5,0.5]}
+{"op":"ent","id":"venus","kind":"prop","noun":"Venus","hyper":"planet","zone":"z_inner","anchor":"venus","body":"fixed","shape":"sphere","size":[0.8,0.8,0.8]}
+{"op":"ent","id":"earth","kind":"prop","noun":"Earth","hyper":"planet","zone":"z_inner","anchor":"earth","body":"fixed","shape":"sphere","size":[0.8,0.8,0.8]}
+{"op":"ent","id":"mars","kind":"prop","noun":"Mars","hyper":"planet","zone":"z_inner","anchor":"mars","body":"fixed","shape":"sphere","size":[0.6,0.6,0.6]}
+{"op":"ent","id":"jupiter","kind":"prop","noun":"Jupiter","hyper":"planet","zone":"z_jupiter","anchor":"jupiter","body":"fixed","shape":"sphere","size":[2,2,2]}
+{"op":"ent","id":"saturn","kind":"prop","noun":"Saturn","hyper":"planet","zone":"z_saturn","anchor":"saturn","body":"fixed","shape":"sphere","size":[1.8,1.8,1.8]}
+{"op":"ent","id":"uranus","kind":"prop","noun":"Uranus","hyper":"planet","zone":"z_uranus","anchor":"uranus","body":"fixed","shape":"sphere","size":[1.2,1.2,1.2]}
+{"op":"ent","id":"neptune","kind":"prop","noun":"Neptune","hyper":"planet","zone":"z_neptune","anchor":"neptune","body":"fixed","shape":"sphere","size":[1.2,1.2,1.2]}
+{"op":"verb","id":"vb_sign","verb":"social.inspect","on":"scale_sign","params":{"text":"Distances here are scaled: the square root of each distance in AU, times 6 m. True to scale, Neptune would be 180 m away."}}
+{"op":"verb","id":"vb_mercury","verb":"social.inspect","on":"mercury","params":{"text":"Mercury: 0.39 AU from the Sun, a year of 88 days."}}
+{"op":"verb","id":"vb_venus","verb":"social.inspect","on":"venus","params":{"text":"Venus: 0.72 AU, the hottest planet, under clouds of acid."}}
+{"op":"verb","id":"vb_earth","verb":"social.inspect","on":"earth","params":{"text":"Earth: 1 AU, the only planet known to have life."}}
+{"op":"verb","id":"vb_mars","verb":"social.inspect","on":"mars","params":{"text":"Mars: 1.52 AU, home of the tallest volcano in the solar system."}}
+{"op":"verb","id":"vb_jupiter","verb":"social.inspect","on":"jupiter","params":{"text":"Jupiter: 5.2 AU, more massive than all the other planets together."}}
+{"op":"verb","id":"vb_saturn","verb":"social.inspect","on":"saturn","params":{"text":"Saturn: 9.5 AU, its rings mostly water ice."}}
+{"op":"verb","id":"vb_uranus","verb":"social.inspect","on":"uranus","params":{"text":"Uranus: 19.2 AU, it spins on its side."}}
+{"op":"verb","id":"vb_neptune","verb":"social.inspect","on":"neptune","params":{"text":"Neptune: 30.1 AU, a year of 165 Earth years."}}
+{"op":"verb","id":"vb_clock","verb":"puzzle.timer","on":"player","params":{"seconds":240}}
+{"op":"rule","id":"r_stamp_mercury","when":{"t":"touch","a":"player","b":"mercury"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_stamp_venus","when":{"t":"touch","a":"player","b":"venus"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_stamp_earth","when":{"t":"touch","a":"player","b":"earth"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_stamp_mars","when":{"t":"touch","a":"player","b":"mars"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_stamp_jupiter","when":{"t":"touch","a":"player","b":"jupiter"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_stamp_saturn","when":{"t":"touch","a":"player","b":"saturn"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_stamp_uranus","when":{"t":"touch","a":"player","b":"uranus"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_stamp_neptune","when":{"t":"touch","a":"player","b":"neptune"},"then":[{"e":"score","target":"team:red","n":1},{"e":"emit","target":"neptune","fx":"chime"}],"once":true}
+{"op":"rule","id":"r_all","when":{"t":"score_gte","a":"team:red","n":8},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_late","when":{"t":"timer_end","a":"player"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"expect","id":"x_tour","prop":"win_reachable","a":"sp_red","b":"z_neptune","headline":true,"text":"Every planet's stamp, out to Neptune, before the planetarium closes"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

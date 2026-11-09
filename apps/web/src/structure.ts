@@ -56,7 +56,7 @@ export function mergeEdit(fill0: string, patch: string, seed: number): { text: s
 }
 
 /** How big a world is, by pack: the numbers "bigger" and "smaller" scale (the outdoor map has a fixed size). */
-const SIZE: Record<string, readonly string[]> = { city_block: ["length", "depth"], floor_plan: ["width", "depth"], arena: ["length", "width"], maze: ["cols", "rows"], course: ["segments"] };
+const SIZE: Record<string, readonly string[]> = { city_block: ["length", "depth"], floor_plan: ["width", "depth"], arena: ["length", "width"], maze: ["cols", "rows"], course: ["segments"], service_venue: ["width", "depth"], puzzle_rooms: ["size"], stage: ["width", "depth"], orrery: ["scale"] };
 
 /** The card's one-click layout changes, as the layout op an edit would write (null: this pack can't). */
 export function layoutPatch(fill: string, change: { scale?: number; set?: Params; sub?: string[] }): string | null {

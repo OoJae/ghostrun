@@ -1,0 +1,29 @@
+{"op":"meta","mode":"wander","lang":"en","pack":"stage","sub":[],"seed":6,"look":"rock concert hall","mood":[0.6,0.8,0.2],"timeOfDay":21,"weather":"clear"}
+{"op":"zone","id":"z_street","slot":"yard","tag":"outside","name":"Street"}
+{"op":"zone","id":"z_foyer","slot":"foyer","tag":"entrance","name":"Foyer"}
+{"op":"zone","id":"z_house","slot":"seating","tag":"hall","name":"Auditorium"}
+{"op":"zone","id":"z_pit","slot":"pit","tag":"pit","name":"Mosh pit"}
+{"op":"zone","id":"z_stage","slot":"stage","tag":"stage","name":"Main stage"}
+{"op":"zone","id":"z_left","slot":"wing_w","tag":"wing","name":"Stage left"}
+{"op":"zone","id":"z_right","slot":"wing_e","tag":"wing","name":"Stage right"}
+{"op":"zone","id":"z_back","slot":"backstage","tag":"room","name":"Backstage"}
+{"op":"spawn","id":"sp_red","zone":"z_street","anchor":"spawn_pad","team":"red"}
+{"op":"ent","id":"merch","kind":"prop","noun":"merch stand","hyper":"stall","zone":"z_foyer","anchor":"bar","body":"fixed","shape":"box","size":[1.6,1,0.8]}
+{"op":"ent","id":"desk","kind":"prop","noun":"mixing desk","hyper":"desk","zone":"z_house","anchor":"booth","body":"fixed","shape":"box","size":[1.6,1,0.8]}
+{"op":"ent","id":"barrier","kind":"prop","noun":"crowd barrier","hyper":"fence","zone":"z_pit","anchor":"podium","body":"fixed","shape":"box","size":[1.2,1,0.3]}
+{"op":"ent","id":"guitar","kind":"prop","noun":"electric guitar on a stand","hyper":"guitar","zone":"z_stage","anchor":"downstage","body":"fixed","shape":"box","size":[0.5,1.1,0.4]}
+{"op":"ent","id":"drums","kind":"prop","noun":"drum kit","hyper":"drums","zone":"z_stage","anchor":"upstage","body":"fixed","shape":"box","size":[1.8,1.2,1.4]}
+{"op":"ent","id":"spotlight","kind":"prop","noun":"spotlight","hyper":"lamp","zone":"z_stage","anchor":"rig_c","body":"none","shape":"box","size":[0.6,0.6,0.6]}
+{"op":"ent","id":"amp","kind":"prop","noun":"amp stack","hyper":"speaker","zone":"z_left","anchor":"rack","body":"fixed","shape":"box","size":[0.8,1.6,0.6]}
+{"op":"ent","id":"setlist","kind":"prop","noun":"setlist taped to a road case","hyper":"case","zone":"z_back","anchor":"rack","body":"fixed","shape":"box","size":[1,0.9,0.6]}
+{"op":"verb","id":"vb_merch","verb":"social.inspect","on":"merch","params":{"text":"Tour shirts, 25 each. The poster is signed by the whole band."}}
+{"op":"verb","id":"vb_desk","verb":"social.inspect","on":"desk","params":{"text":"48 channels. The engineer runs the whole show from here."}}
+{"op":"verb","id":"vb_barrier","verb":"social.inspect","on":"barrier","params":{"text":"The pit sits one step down: front row for the loudest fans."}}
+{"op":"verb","id":"vb_guitar","verb":"social.inspect","on":"guitar","params":{"text":"A sunburst guitar, tuned half a step down for the encore."}}
+{"op":"verb","id":"vb_drums","verb":"social.inspect","on":"drums","params":{"text":"Five drums and four cymbals on a riser at the back of the stage."}}
+{"op":"verb","id":"vb_amp","verb":"social.inspect","on":"amp","params":{"text":"Two cabinets, one head: stage left belongs to the bass."}}
+{"op":"verb","id":"vb_setlist","verb":"social.inspect","on":"setlist","params":{"text":"Fourteen songs tonight, and the encore is a surprise."}}
+{"op":"npc","id":"manager","role":"guide","zone":"z_foyer","anchor":"center","noun":"tour manager","team":"","menu":["guide.welcome","guide.wander"],"dflt":"guide.welcome"}
+{"op":"expect","id":"x_tour","prop":"reachable","a":"sp_red","b":"z_back","headline":true,"text":"From the street to backstage, up the stage stairs, every corner can be visited"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

@@ -131,7 +131,7 @@ export const stage: LayoutPack<StageParams> = {
       booth: [0, 0, r2(zFoy + 1.2)],
       corner_nw: [r2(x0 + m), 0, r2(zSF - m)], corner_ne: [r2(x3 - m), 0, r2(zSF - m)],
     });
-    delete seating.anchors.wall_n; // that is the stage
+    for (const k of ["wall_n", "wall_e", "wall_w"]) delete seating.anchors[k]; // north is the stage; the side walls stay bare (the fill prompt's size budget)
     const pit: ZoneSpec = {
       slot: "pit", tag: "pit",
       bounds: { min: [-xp, -PIT_DROP, zPit], max: [xp, WALL_H, zSF] },
@@ -155,12 +155,12 @@ export const stage: LayoutPack<StageParams> = {
       },
     };
     const wing = (slot: string, ax: number, bx: number, outer: "w" | "e"): ZoneSpec => {
-      const z = s.room(slot, "wing", ax, bx, zP, zBs, y, { rack: [outer === "w" ? r2(ax + 0.8) : r2(bx - 0.8), y, mid] });
+      const z = s.room(slot, "wing", ax, bx, zP, zBs, y, { rack: [outer === "w" ? r2(ax + 0.8) : r2(bx - 0.8), y, mid] }, { walls: false });
       // the inner corners stand in the ways onto the stage
-      for (const k of outer === "w" ? ["corner_ne", "corner_se", "wall_e"] : ["corner_nw", "corner_sw", "wall_w"]) delete z.anchors[k];
+      for (const k of outer === "w" ? ["corner_ne", "corner_se"] : ["corner_nw", "corner_sw"]) delete z.anchors[k];
       return z;
     };
-    const backstage = s.room("backstage", "room", x0, x3, zBs, zBack, y, { rack: [r2(-3), y, r2(zBack - 0.8)], crates: [3, y, r2(zBack - 0.8)] });
+    const backstage = s.room("backstage", "room", x0, x3, zBs, zBack, y, { rack: [r2(-3), y, r2(zBack - 0.8)], crates: [3, y, r2(zBack - 0.8)] }, { walls: false });
     const zones: ZoneSpec[] = [yard, foyer, seating, pit, stageZone, wing("wing_w", x0, -xs, "w"), wing("wing_e", xs, x3, "e"), backstage];
     return {
       packId: this.id,

@@ -44,7 +44,7 @@ export interface Pick {
   dust: boolean;
   /** A grey sky: the sun behind cloud. */
   overcast: boolean;
-  /** Walls are cut away and the weather stays outside them (the floor-plan pack). */
+  /** Walls are cut away and the weather stays outside them (the floor plan and the newer interiors). */
   indoor: boolean;
 }
 
@@ -118,10 +118,17 @@ const VARIANTS: Partial<Record<LookId, readonly (readonly [RegExp, string])[]>> 
   haunted: [[/librar|bookcase|bookshel|archive/, "library"]],
 };
 
-/** Outdoor packs default to the grove, floor plans to the gallery, the rest to the neon city. */
-const PACK_LOOK: Record<string, LookId> = { outdoor: "grove", floor_plan: "gallery" };
+/**
+ * Outdoor packs default to the grove, floor plans to the gallery, the rest to the neon city; of
+ * the newer packs a café or shop to a home, puzzle rooms to stone (a dungeon, a temple), a stage
+ * to the gallery's clean hall, the solar system to space.
+ */
+const PACK_LOOK: Record<string, LookId> = { outdoor: "grove", floor_plan: "gallery", service_venue: "home", puzzle_rooms: "medieval", stage: "gallery", orrery: "space" };
 /** Packs with rooms: the only ones a home's furniture fits in. */
-const ROOMS = new Set(["floor_plan", "maze"]);
+export const ROOM_PACKS: ReadonlySet<string> = new Set(["floor_plan", "maze", "service_venue", "puzzle_rooms"]);
+const ROOMS = ROOM_PACKS;
+/** Interiors: their walls are cut away and the weather stays outside them. */
+export const INDOOR_PACKS: ReadonlySet<string> = new Set(["floor_plan", "service_venue", "puzzle_rooms", "stage"]);
 
 export const norm = (s: string) => s.toLowerCase().normalize("NFD").replace(/\p{M}/gu, "");
 
@@ -152,7 +159,7 @@ export function pickLook(c: Cue): Pick {
   if (WORDS.haunted[0]![0].test(words)) id = "haunted";
 
   let variant = VARIANTS[id]?.find(([re]) => re.test(all))?.[1] ?? "";
-  if (UNDERWATER.test(words)) ((id = c.pack === "floor_plan" ? "gallery" : "desert"), (variant = "underwater"));
+  if (UNDERWATER.test(words)) ((id = INDOOR_PACKS.has(c.pack) ? "gallery" : "desert"), (variant = "underwater"));
   const pinned = pinnedLook(c);
   if (pinned) [id, variant] = pinned;
 
@@ -175,7 +182,7 @@ export function pickLook(c: Cue): Pick {
   if (c.pin?.phase) phase = c.pin.phase;
 
   const under = variant === "underwater";
-  const pick: Pick = { id, variant, phase, rain: rain && !snow && !dust && !under, storm: storm && !under, snow, fog, dust, overcast: overcast || storm, indoor: c.pack === "floor_plan" };
+  const pick: Pick = { id, variant, phase, rain: rain && !snow && !dust && !under, storm: storm && !under, snow, fog, dust, overcast: overcast || storm, indoor: INDOOR_PACKS.has(c.pack) };
   // a weather the person picked is the whole sky: none of the words' rain under a clear one
   const pw = c.pin?.weather;
   if (pw) Object.assign(pick, { rain: !under && (pw === "rain" || pw === "storm"), storm: !under && pw === "storm", snow: pw === "snow", fog: pw === "fog", dust: false, overcast: pw === "storm" });

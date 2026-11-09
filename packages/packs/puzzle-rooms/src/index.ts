@@ -21,6 +21,8 @@ export interface PuzzleRoomsParams {
 export const EXIT_D = 5;
 /** Doorways keep this far from a wall's ends, clear of what stands in the corners. */
 const KEEP = 2.2;
+/** A switch is on a wall at hip height (low enough that whoever flips it stands on the floor below it). */
+export const SWITCH_Y = 0.5;
 
 /** What a structural edit may change: how many rooms, and how big each is. */
 export const PUZZLE_ROOMS_SCHEMA: Readonly<Record<string, LayoutParamSpec>> = {
@@ -128,7 +130,7 @@ export const puzzleRooms: LayoutPack<PuzzleRoomsParams> = {
         s.room(`room_${k}`, "room", ax, bx, az, bz, 0, {
           doorway_in: w.in![1],
           doorway_out: w.out![1],
-          switch: pt(A, h - T / 2 - 0.12, 0, 1.2),
+          switch: pt(A, h - T / 2 - 0.12, 0, SWITCH_Y),
           plate: pt(A, h - 2, 0),
           key: pt(A, h - 0.9, h - 0.9),
           lever: pt(B, h - 0.7, -1.2),

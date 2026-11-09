@@ -7,6 +7,7 @@ import { BufferGeometry, ConeGeometry, CylinderGeometry, Float32BufferAttribute,
 import { abs, float, hash, instanceIndex, length, mix, oneMinus, positionWorld, sin, smoothstep, step, time, uv, vec3 } from "three/tsl";
 import { BoxBatch } from "../boxes";
 import type { LookStyle } from "../looks";
+import { INDOOR_PACKS } from "../pick";
 import { lin } from "../materials";
 import { books, CLS, grain, groundMaterial, hex3, is, liquidMaterial, masonry, noise01, planks, staticsMaterial } from "../surfaces";
 import { batchMesh, classify, clear, cutWall, instances, lamps, merged, ring, rnd, style, type Ctx, type Dressed, type Item, type V3 } from "./common";
@@ -216,7 +217,7 @@ export function dressHaunted(b: WorldBundle, look: LookStyle, c: Ctx): Dressed {
   if (sheet) sheet.renderOrder = 5;
 
   // bats circling over the place, animated on the CPU (a dozen is nothing)
-  if (!cut || b.pack.id !== "floor_plan") {
+  if (!cut || !INDOOR_PACKS.has(b.pack.id)) {
     const n = 12;
     const bats = new InstancedMesh(c.keep(bat()), c.keep(new MeshBasicNodeMaterial({ color: "#06050a", side: DoubleSide })), n);
     const o = new Object3D();

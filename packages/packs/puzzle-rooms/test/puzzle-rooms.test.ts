@@ -4,7 +4,7 @@ import { buildNav } from "@ghostrun/nav";
 import { loadNavNode } from "@ghostrun/nav/node";
 import { conformance, placeShell } from "@ghostrun/pack-common/conformance";
 import type { PackLayout } from "@ghostrun/plugin-api";
-import { puzzleRooms, PUZZLE_ROOMS_SCHEMA } from "../src";
+import { puzzleRooms, PUZZLE_ROOMS_SCHEMA, SWITCH_Y } from "../src";
 
 beforeAll(async () => {
   await loadNavNode();
@@ -70,7 +70,7 @@ describe("puzzle_rooms pack", () => {
       const l = gen(seed, { ...puzzleRooms.defaults, rooms: 3 + (seed % 4) });
       for (const z of l.zones.filter((x) => x.tag === "room")) {
         const a = z.anchors;
-        expect(a.switch![1]).toBeCloseTo(1.2);
+        expect(a.switch![1]).toBe(SWITCH_Y);
         for (const k of PUZZLE.slice(1)) expect(a[k]![1]).toBe(0);
         const spots = [...PUZZLE, "doorway_in", "doorway_out"].map((k) => [k, a[k]!] as const);
         for (const [i, [p, pa]] of spots.entries()) {

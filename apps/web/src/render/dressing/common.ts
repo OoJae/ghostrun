@@ -8,6 +8,7 @@ import {
 } from "three/webgpu";
 import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
 import { BoxBatch } from "../boxes";
+import { INDOOR_PACKS } from "../pick";
 import { CLS } from "../surfaces";
 
 export interface Ctx {
@@ -41,7 +42,7 @@ export const CUT_H = 1.25;
 
 /** Each static, named for what its shape is. */
 export function classify(b: WorldBundle): { pieces: Piece[]; bounds: Box2; groundY: number } {
-  const rooms = b.pack.id === "floor_plan" || b.pack.id === "maze";
+  const rooms = INDOOR_PACKS.has(b.pack.id) || b.pack.id === "maze";
   let main = { area: -1, top: 0, bounds: { minX: -30, maxX: 30, minZ: -30, maxZ: 30 } };
   for (const s of b.statics) {
     const area = s.size[0] * s.size[2];
