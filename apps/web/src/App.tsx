@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { mergeFill, pinLayout, splitObjects } from "@ghostrun/ir";
 import { allRuns, better, insights, issuesOf, revealed, statusWord, type Chip, type Playtest, type Receipt } from "@ghostrun/proof/light";
 // the engine stack (three, physics, navmesh, bots) is a second chunk, fetched as the shell paints
@@ -8,7 +8,7 @@ import { HealthBar } from "./hud/Health";
 import { LapBoard } from "./hud/Lap";
 import { TouchControls } from "./hud/Touch";
 import { XRay } from "./hud/XRay";
-import { ResultCard, type RunResult } from "./hud/Result";
+import { AskHost, ResultCard, type RunResult } from "./hud/Result";
 import { IntentCard } from "./hud/IntentCard";
 import { PromptBar } from "./hud/PromptBar";
 import { EditBox, type EditState } from "./hud/Edit";
@@ -25,7 +25,12 @@ import { fengShuiFor } from "./fengshui";
 import { BRIEF, buildWorld, ENGINE_HASH, FIXTURE_PROMPTS, FIXTURES, hashWorld, worldFromFill, type Intent, type World } from "./pipeline";
 import { probe } from "./probe";
 import { lookSamples } from "./render/pick";
-import { askHost, clock as mmss, facts, story } from "./host";
+import { askHost, clock as mmss, facts, story, type Fact } from "./host";
+import { tourChips, tourFacts, whyFacts } from "./why";
+import { useRedGreen } from "./useRedGreen";
+import { useNotes } from "./useNotes";
+import { designNotes } from "./notes";
+import { NoteApply } from "./hud/Notes";
 import { useSound } from "./audio/useSound";
 import { useSpeech } from "./audio/useSpeech";
 import { TalkBox } from "./hud/Talk";
@@ -180,6 +185,8 @@ export function App() {
     return () => window.removeEventListener("pointerdown", on);
   }, [touch]);
   const repaired = useRef<World | null>(null);
+  /** And its receipt (a counterexample chip's red/green sets this world beside it). */
+  const repairedReceipt = useRef<Receipt | null>(null);
   const current = useRef<World | null>(null);
   const minds = useRef<Minds | null>(null);
   const [bark, setBark] = useState<{ npc: string; name: string; line: string; at: number } | null>(null);
@@ -197,6 +204,8 @@ export function App() {
   modeRef.current = mode;
   // racing: the proof's par runner (or a run someone sent) as a ghost beside the player
   const race = useRace({ engine, world: current.current, loaded: timing, result, receipt: proof.receipt, specHash, prompt, urls: wasmUrls, toast: setToast, again: () => againRef.current() });
+  // red/green: the same AI runner before and after a change, side by side
+  const redGreen = useRedGreen({ engine, urls: wasmUrls });
   // the run's clip: the last seconds of it, cut where it ended, or a clean replay of it for a demo
   const clip = useClip({
     canvas,
@@ -296,6 +305,7 @@ export function App() {
     }
     if (!best) return setRepair({ status: "failed", issues: first.length });
     repaired.current = best.world;
+    repairedReceipt.current = best.receipt;
     const left = best.receipt.chips.filter((c) => c.status === "counterexample").length;
     setRepair({ status: "offer", issues: first.length, left, round: best.round, hard, ...(best.receipt.headline ? { headline: `${best.receipt.headline.text} (${statusWord(best.receipt.headline.status)})` } : {}) });
   }, [proveOnDevice]);
@@ -314,6 +324,7 @@ export function App() {
         if (id !== runId.current) return;
         setProof((p) => ({ ...p, status: "done", receipt, playing: true }));
         race.proved(world, receipt);
+        void redGreen.landed(world, receipt);
         probe().proof = { headline: receipt.headline?.status ?? "none", chips: receipt.chips.length };
         afterProof.current.get(id)?.(receipt);
         afterProof.current.delete(id);
@@ -332,6 +343,8 @@ export function App() {
       setScore({ red: 0, blue: 0, result: null });
       const bonus = new Set(world.bundle.entities.filter((e) => e.tags.includes("bonus")).map((e) => e.id));
       setSecrets({ found: 0, of: bonus.size });
+      redGreen.leaving(current.current, receiptRef.current, world);
+      if (current.current !== world) notes.reset();
       current.current = world;
       setReported(undefined);
       setResult(null);
@@ -357,7 +370,7 @@ export function App() {
             if (ev.k === "score") setScore((s) => ({ ...s, [ev.a === "team:blue" ? "blue" : "red"]: Number(ev.v) }));
             if (ev.k === "win" || ev.k === "lose") {
               setScore((s) => ({ ...s, result: ev.k }));
-              const res: RunResult = { k: ev.k, tick: ev.tick, rule: ev.rule, story: story(world.bundle, sim.sim.log, sim.trail), facts: facts(world.bundle, sim.sim.log, sim.trail) };
+              const res: RunResult = { k: ev.k, tick: ev.tick, rule: ev.rule, story: story(world.bundle, sim.sim.log, sim.trail), facts: [...facts(world.bundle, sim.sim.log, sim.trail), ...whyFacts(world.bundle, sim.sim.log, sim.trail, receiptRef.current)].slice(0, 40) };
               setResult(res);
               void directorFor(world, sim.trail, res, id);
             }
@@ -814,18 +827,53 @@ export function App() {
   /** Apply the Director's cut between runs: shown like an edit (what changed, how the receipt moved), with Undo. */
   const applyCut = () => {
     const w2 = cutWorld.current;
-    const w = current.current;
-    const before = receiptRef.current;
-    if (!w2 || !w) return;
+    if (!w2 || !current.current) return;
     cutWorld.current = null;
     setCut({ status: "idle" });
+    applyChange(w2, "Director's cut (Claude Sonnet)", receiptRef.current);
+  };
+
+  /** A re-proved change on offer (the Director's cut, a design note) swapped in like an edit, with Undo. */
+  const applyChange = (w2: World, change: string, before: Receipt | null) => {
+    const w = current.current;
+    if (!w) return;
     history.current.push(w);
-    const change = "Director's cut (Claude Sonnet)";
     const summary = changeSummary(w.bundle, w2.bundle);
     setEdit({ status: "proving", change, summary, locked: 0 });
     const id = ++runId.current;
     afterProof.current.set(id, (after) => setEdit({ status: "done", change, summary, locked: 0, delta: before ? receiptDelta(before, after) : null, failures: before ? newFailures(before, after) : [] }));
     void show(w2, id, performance.now(), []);
+  };
+
+  const notes = useNotes({ world: () => current.current, receipt: () => receiptRef.current, prompt: () => builtPrompt.current, proveOnce, apply: (w2, change, before) => applyChange(w2, change, before) });
+  const noteList = useMemo(() => {
+    const w = current.current;
+    const r = proof.receipt;
+    const fs = fengShuiFor(w, w?.source?.base ?? w?.source?.prompt ?? builtPrompt.current)?.section ?? null;
+    return w && r ? new Map(designNotes(w.bundle, r.trails ? insights(w.bundle, allRuns(r)) : null, r.trails ? revealed(w.bundle, r) : null, fs).map((n) => [n.key, n])) : new Map<string, never>();
+  }, [proof.receipt]);
+
+  /**
+   * The Host's fly-to: the camera to the place a cited fact names (over the walls, about 1.2 s),
+   * and for a moment of the run, its replay from a second before it, under the held shot. Esc or
+   * any input hands the camera (and the run, from where the replay got to) back.
+   */
+  const flyTo = async (f: Fact) => {
+    const e = engine.current;
+    if (!e || !f.at) return;
+    const { FlyShot } = await import("./render/shots");
+    const shot: InstanceType<typeof FlyShot> = new FlyShot(e.stage, f.at, {
+      onArrive: () => {
+        if (f.tick === null || engine.current?.playing !== shot) return;
+        shot.keep = 1; // through the replay's rebuild of the world
+        replayMoment(f.tick, 60, "Esc or any key takes over");
+      },
+      onEnd: () => {
+        const sim = engine.current?.rapierSim;
+        if (sim?.replaying) sim.takeOver();
+      },
+    });
+    e.play(shot);
   };
 
   const undo = () => {
@@ -840,7 +888,7 @@ export function App() {
    * as logged), from four seconds before the moment (a clean take: up to half a minute); any key
    * takes over.
    */
-  const replayMoment = (tick: number, back = 240) => {
+  const replayMoment = (tick: number, back = 240, takeOver = "Press any key to take over") => {
     const w = current.current;
     const sim = engine.current?.rapierSim;
     if (!w || !sim) return;
@@ -853,7 +901,7 @@ export function App() {
       if (!s2) return;
       s2.replay(inputs, chosen, from);
       s2.onReplayEnd = () => setNotice(undefined);
-      setNotice(`Replaying from ${mmss(from)}, exactly as it happened. Press any key to take over.`);
+      setNotice(`Replaying from ${mmss(from)}, exactly as it happened. ${takeOver}.`);
     });
   };
 
@@ -974,9 +1022,20 @@ export function App() {
           {landing && <Landing starters={STARTERS} ready={status === "playing"} onPick={pickStarter} />}
         </div>
         {notice && <div className="glass notice" role="status">{notice}</div>}
+        {redGreen.caption && (
+          <div className="glass notice redgreen" role="status" data-testid="redgreen">
+            {redGreen.caption}
+            <span className="muted"> · Esc to stop</span>
+          </div>
+        )}
+        {mode === "live" && status === "playing" && !collapsed && !typing && current.current?.bundle.mode === "wander" && (
+          <div className="glass tourhost" data-testid="tour-host">
+            <AskHost run={false} placeholder="Ask the Host about this place" chips={tourChips(current.current.bundle)} onAsk={(q) => askHost(q, tourFacts(current.current!.bundle, proof.receipt))} onFly={(f) => void flyTo(f)} voice={speech.enabled ? { say: speech.host, again: speech.again } : undefined} />
+          </div>
+        )}
         {!collapsed && !typing && intent && building === null && <IntentCard intent={intent} specHash={specHash} note={note} inspired={inspiredNow} />}
         {current.current && status !== "booting" && !typing && (!collapsed || edit.status === "editing" || edit.status === "racing" || edit.status === "proving") && (
-          <EditBox state={edit} enabled={mode === "live"} suggestions={[...suggestionsFor(current.current.bundle), "surprise me"]} canUndo={history.current.length > 0} onEdit={(c) => void editWorld(c)} onUndo={undo} focusKey={editFocus} placeholder={copied ? "Change it: make it yours…" : undefined}>
+          <EditBox state={edit} enabled={mode === "live"} suggestions={[...suggestionsFor(current.current.bundle), "surprise me"]} canUndo={history.current.length > 0} onEdit={(c) => void editWorld(c)} onUndo={undo} focusKey={editFocus} placeholder={copied ? "Change it: make it yours…" : undefined} onRedGreen={redGreen.pair ? () => void redGreen.play(redGreen.pair!) : undefined}>
             {remixSrc && <LineagePanel source={remixSrc} line={lineageOf(remixSrc, current.current)} mine={yourChanges(current.current).length} copied={copied} spec={specHash} onRemix={remix} onShare={() => void shareRun()} />}
           </EditBox>
         )}
@@ -1010,6 +1069,7 @@ export function App() {
             onAgain={again}
             onShare={() => void shareRun()}
             onReplay={replayMoment}
+            onFly={(f) => void flyTo(f)}
             onAsk={mode === "live" && result.facts?.length ? (q) => askHost(q, result.facts!) : undefined}
             director={director}
             onTwist={() => {
@@ -1106,6 +1166,22 @@ export function App() {
             reported={reported}
             version={receiptVersion(lineageOf(remixSrc, current.current), specHash)}
             fengShui={fengShuiFor(current.current, ownPrompt ?? builtPrompt.current)}
+            chipAction={(c) => {
+              const w = current.current;
+              const r = proof.receipt;
+              const fix = repair.status === "offer" && repaired.current && repairedReceipt.current ? { world: repaired.current, receipt: repairedReceipt.current } : null;
+              const plays = redGreen.chipPlays(c, w, r, fix);
+              if (!plays || !w || !r) return null;
+              return (
+                <button type="button" className="chip-redgreen" data-testid="chip-redgreen" disabled={redGreen.lining === c.id} onClick={() => (setReceiptOpen(false), void redGreen.playChip(c, w, r, fix))}>
+                  {redGreen.lining === c.id ? "lining up the runs…" : plays === "alone" ? "▶ where it fails" : "▶ red/green"}
+                </button>
+              );
+            }}
+            noteAction={mode === "live" ? (key) => {
+              const n = noteList.get(key);
+              return n ? <NoteApply note={n} state={notes.state} onTry={(k, c, said) => void notes.tryChange(k, c, said)} onAccept={() => (setReceiptOpen(false), notes.accept())} /> : null;
+            } : undefined}
             onShare={shareRun}
             onExport={async () => {
               const w = current.current;

@@ -25,9 +25,11 @@ interface Props {
   placeholder?: string | undefined;
   /** Shown above it: where a shared or gallery world came from. */
   children?: ReactNode;
+  /** The change moved a check between holding and failing: the same AI runner before and after it, side by side. */
+  onRedGreen?: (() => void) | undefined;
 }
 
-export function EditBox({ state, enabled, suggestions, canUndo, onEdit, onUndo, focusKey = 0, placeholder, children }: Props) {
+export function EditBox({ state, enabled, suggestions, canUndo, onEdit, onUndo, focusKey = 0, placeholder, children, onRedGreen }: Props) {
   const [text, setText] = useState("");
   const input = useRef<HTMLInputElement>(null);
   useEffect(() => {
@@ -110,6 +112,11 @@ export function EditBox({ state, enabled, suggestions, canUndo, onEdit, onUndo, 
                 </li>
               ))}
             </ul>
+          )}
+          {state.status === "done" && onRedGreen && (
+            <button type="button" className="edit-redgreen" onClick={onRedGreen} data-testid="edit-redgreen" title="The same AI runner on the same seed, before the change (green) and after it (red), side by side">
+              ▶ red/green
+            </button>
           )}
           {canUndo && !busy && (
             <button type="button" className="edit-undo" onClick={onUndo} data-testid="edit-undo">

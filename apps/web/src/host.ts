@@ -195,10 +195,12 @@ export interface Fact {
   text: string;
   /** The run tick it happened at (replayable), or null for a fact about the world. */
   tick: number | null;
+  /** Where it happened, when the log can say (the camera flies there when the Host cites it). */
+  at?: Vec3;
 }
 
 /** The zone a point stands in: the zone of the highest floor under it. */
-function zoneAt(b: WorldBundle, p: Vec3): string | null {
+export function zoneAt(b: WorldBundle, p: Vec3): string | null {
   let best: { top: number; zone: string } | null = null;
   for (const s of b.statics) {
     if (s.surf === "wall" || Math.abs(p[0] - s.pos[0]) > s.size[0] / 2 || Math.abs(p[2] - s.pos[2]) > s.size[2] / 2) continue;
@@ -218,22 +220,30 @@ export function facts(b: WorldBundle, log: readonly SimEvent[], trail: readonly 
   if (s) out.push({ text: s.ending.replace(/\.$/, ""), tick: log.findLast((e) => e.k === "win" || e.k === "lose")?.tick ?? null });
   const carried = new Set(b.verbs.filter((v) => v.verb.endsWith(".carry")).map((v) => v.on));
   const shooter = (id: string) => shooterOf(b, id);
+  // where a moment happened, when the log can say: you (your trail), something that stays put, or
+  // a carried thing still waiting where it started (none of it moves the camera if it can't)
+  const posOf = (id: string): Vec3 | undefined => b.entities.find((x) => x.id === id && x.body !== "dynamic")?.pos;
+  const playerAt = (tick: number): Vec3 | undefined => trail[Math.min(trail.length - 1, Math.floor(tick / 30))];
+  const home = new Set(carried);
   const run: Fact[] = [];
+  const push = (text: string, tick: number, at: Vec3 | undefined) => run.push(at ? { text, tick, at } : { text, tick });
   for (const e of log) {
     const t = clock(e.tick);
     const who = (id: string) => cap(nameOf(b, id));
-    if (e.k === "tag") run.push({ text: `${t} ${who(e.a)} tagged ${nameOf(b, e.b)}`, tick: e.tick });
-    else if (e.k === "pickup" && carried.has(e.a)) run.push({ text: `${t} ${who(e.b)} picked up ${nameOf(b, e.a)}`, tick: e.tick });
-    else if (e.k === "drop") run.push({ text: `${t} ${who(e.b)} dropped ${nameOf(b, e.a)}`, tick: e.tick });
-    else if (e.k === "hit" && e.a === "player") run.push({ text: `${t} ${shooter(e.b) ? `${who(e.b)} hit you` : `You ran into ${nameOf(b, e.b)}`}`, tick: e.tick });
-    else if (e.k === "knockout") run.push({ text: `${t} ${e.a === "player" ? "You were knocked out" : `${who(e.a)} was knocked out`}`, tick: e.tick });
-    else if (e.k === "touch" && e.a === "player" && !carried.has(e.b)) run.push({ text: `${t} You touched ${nameOf(b, e.b)}`, tick: e.tick });
-    else if (e.k === "state" && b.entities.some((x) => x.id === e.a && ["door", "switch", "plate", "checkpoint"].includes(x.kind))) run.push({ text: `${t} ${who(e.a)} became ${String(e.v)}`, tick: e.tick });
-    else if (e.k === "score") run.push({ text: `${t} ${who(e.a)} scored (now ${String(e.v)})`, tick: e.tick });
-    else if (e.k === "timer_end") run.push({ text: `${t} The timer ran out`, tick: e.tick });
+    const mine = (id: string) => (id === "player" ? playerAt(e.tick) : undefined);
+    if (e.k === "tag") push(`${t} ${who(e.a)} tagged ${nameOf(b, e.b)}`, e.tick, mine(e.a) ?? mine(e.b));
+    else if (e.k === "pickup" && carried.has(e.a)) push(`${t} ${who(e.b)} picked up ${nameOf(b, e.a)}`, e.tick, mine(e.b) ?? (home.delete(e.a) ? b.entities.find((x) => x.id === e.a)?.pos : undefined));
+    else if (e.k === "drop") push(`${t} ${who(e.b)} dropped ${nameOf(b, e.a)}`, e.tick, mine(e.b));
+    else if (e.k === "hit" && e.a === "player") push(`${t} ${shooter(e.b) ? `${who(e.b)} hit you` : `You ran into ${nameOf(b, e.b)}`}`, e.tick, playerAt(e.tick));
+    else if (e.k === "knockout") push(`${t} ${e.a === "player" ? "You were knocked out" : `${who(e.a)} was knocked out`}`, e.tick, mine(e.a));
+    else if (e.k === "touch" && e.a === "player" && !carried.has(e.b)) push(`${t} You touched ${nameOf(b, e.b)}`, e.tick, posOf(e.b) ?? playerAt(e.tick));
+    else if (e.k === "state" && b.entities.some((x) => x.id === e.a && ["door", "switch", "plate", "checkpoint"].includes(x.kind))) push(`${t} ${who(e.a)} became ${String(e.v)}`, e.tick, posOf(e.a));
+    else if (e.k === "score") push(`${t} ${who(e.a)} scored (now ${String(e.v)})`, e.tick, undefined);
+    else if (e.k === "timer_end") push(`${t} The timer ran out`, e.tick, undefined);
+    if (e.k === "reset" && carried.has(e.a)) home.add(e.a); // back where it started
   }
   // the story's moments say why; the raw events fill in the rest (most recent first if too many)
-  for (const m of s?.moments ?? []) out.push({ text: `${clock(m.tick)} ${m.text}`, tick: m.tick });
+  for (const m of s?.moments ?? []) out.push(m.at ? { text: `${clock(m.tick)} ${m.text}`, tick: m.tick, at: m.at } : { text: `${clock(m.tick)} ${m.text}`, tick: m.tick });
   const room = Math.max(0, max - out.length - 8);
   out.push(...run.slice(-room));
   const bonus = b.entities.filter((e) => e.tags.includes("bonus"));

@@ -1,7 +1,8 @@
-// Ghosts: one run sampled for racing (the best winning AI runner, or a person's shared run). Where
-// the runner was every few ticks, the way it was pushing, and how far along the win it was, so a
-// client can draw it beside the player and say who is ahead. Recording only reads the simulation;
-// nothing goes back in, so a proof with a ghost proves exactly what it proved without one.
+// Ghosts: one run sampled for racing (the best winning AI runner, or a person's shared run), or for
+// showing where a run went wrong (red/green). Where the runner was every few ticks, the way it was
+// pushing, and how far along the win it was, so a client can draw it beside the player and say who
+// is ahead. Recording only reads the simulation; nothing goes back in, so a proof with a ghost
+// proves exactly what it proved without one.
 // No runtime imports: the web shell's light chunk reads progress with this too.
 import type { InputFrame, SimEvent } from "@ghostrun/sim";
 
@@ -9,9 +10,9 @@ import type { InputFrame, SimEvent } from "@ghostrun/sim";
 export const GHOST_EVERY = 4;
 
 export interface Ghost {
-  /** Ticks between samples: sample i is tick i × every (the last one is the winning moment). */
+  /** Ticks between samples: sample i is tick i × every (the last one is the moment it ended). */
   every: number;
-  /** The tick the run won on. */
+  /** The tick the run won on (or, for a run that didn't win, where it ended). */
   ticks: number;
   /** The capsule centre per sample: x, y, z triples (0.01 m), the same point the player's pose is. */
   xyz: number[];
@@ -79,7 +80,7 @@ export class GhostRecorder {
     if (sim.tick % GHOST_EVERY === 0) this.#sample(sim);
   }
 
-  /** The ghost of a run that won on this tick (the sim as it stands is the winning moment). */
+  /** The ghost of a run that ended on this tick (the sim as it stands is the winning moment, or where it stopped). */
   finish(sim: ProgressSim): Ghost {
     if (sim.tick % GHOST_EVERY !== 0) this.#sample(sim);
     return { ...this.#g, ticks: sim.tick };
@@ -91,4 +92,23 @@ export class GhostRecorder {
     this.#g.dir.push(this.#wx, this.#wz);
     this.#g.prog.push(this.#progress.read(sim));
   }
+}
+
+/**
+ * A long ghost with at most `max` samples (every k-th one, and the last): a failing run can play
+ * the whole of a ten-minute countdown, and the receipt keeps it small. A ghost that fits is returned as it is.
+ */
+export function thin(g: Ghost, max: number): Ghost {
+  const n = g.prog.length;
+  if (n <= max) return g;
+  const k = Math.ceil((n - 1) / Math.max(1, max - 1));
+  const keep = Array.from({ length: Math.floor((n - 2) / k) + 1 }, (_, j) => j * k);
+  keep.push(n - 1);
+  return {
+    every: g.every * k,
+    ticks: g.ticks,
+    xyz: keep.flatMap((i) => [g.xyz[i * 3]!, g.xyz[i * 3 + 1]!, g.xyz[i * 3 + 2]!]),
+    dir: keep.flatMap((i) => [g.dir[i * 2]!, g.dir[i * 2 + 1]!]),
+    prog: keep.map((i) => g.prog[i]!),
+  };
 }

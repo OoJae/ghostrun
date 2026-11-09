@@ -108,6 +108,11 @@ export class RapierSim implements FrameSource {
     return this.#replay !== null;
   }
 
+  /** Stop a replay where it is and hand the run to the player from this moment (Esc on the Host's fly-to). */
+  takeOver() {
+    if (this.#replay) this.#endReplay();
+  }
+
   #endReplay() {
     this.#replay = null;
     this.onReplayEnd?.();

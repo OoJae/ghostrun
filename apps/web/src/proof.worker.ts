@@ -3,7 +3,7 @@
 // edge, so the chips are identical (docs/gates.md, S0c).
 import type { WorldBundle } from "@ghostrun/ir";
 import { initNav } from "@ghostrun/nav";
-import { caught, chipLine, plants, prove } from "@ghostrun/proof";
+import { caught, chipLine, pairRuns, plants, prove, type PairAsk } from "@ghostrun/proof";
 import { initRapier, type Rapier } from "@ghostrun/sim";
 
 interface Job {
@@ -23,12 +23,14 @@ interface Job {
   playtest?: boolean;
   /** Runners per lower level in the playtest (a candidate race bands with fewer). */
   skillRuns?: number;
+  /** Red/green: the same runner (or jump attempt) on this world and on `other`, each kept whole. */
+  pair?: { other: WorldBundle; ask: PairAsk };
 }
 
 let ready: Promise<Rapier> | undefined;
 
 self.onmessage = async (e: MessageEvent<Job>) => {
-  const { id, bundle, engine, urls, runs, fool, playtest, skillRuns } = e.data;
+  const { id, bundle, engine, urls, runs, fool, playtest, skillRuns, pair } = e.data;
   let sent = false;
   try {
     ready ??= (async () => {
@@ -37,6 +39,7 @@ self.onmessage = async (e: MessageEvent<Job>) => {
       return initRapier(rm);
     })();
     const R = await ready;
+    if (pair) return void self.postMessage({ id, pair: pairRuns(R, bundle, pair.other, pair.ask) });
     if (fool) {
       const ps = plants(bundle, fool.parS);
       const p = ps[fool.k % Math.max(1, ps.length)];

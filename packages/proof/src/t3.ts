@@ -8,11 +8,12 @@ import { castBrain } from "@ghostrun/bots";
 import { SHOOT, verb } from "@ghostrun/kits";
 import { BTN, SimWorld, type Rapier } from "@ghostrun/sim";
 import { carryables, causeSteps, playerWeapons, producers, type PlanStep, type Want, type WinChain } from "./t0";
-import { GhostRecorder, secretsOf, type Ghost } from "./ghost";
+import { GhostRecorder, secretsOf, thin, type Ghost } from "./ghost";
 import { clock } from "./labels";
 import { hands, SKILLS, type Skill } from "./skill";
 import { apex, gap, hopOk, hopRoute, reachAt, surfaceUnder as surfaceAt, surfaces, type Surface } from "./t1";
-import type { Chip, Fall, Level, Trail } from "./types";
+import { pickFailing } from "./redgreen";
+import type { Chip, Fall, FailRun, Level, Trail } from "./types";
 
 const RUN_TICKS = 120 * 60; // two minutes of play per run (a world's own timer still ends it sooner)
 const TOO_EASY_S = 3;
@@ -179,8 +180,8 @@ interface RunResult {
   stuckOn: string;
   /** Its feet every 20 ticks (x, y, z triples at 0.1 m). */
   trail: number[];
-  /** The run sampled for racing, when it won. */
-  ghost: Ghost | null;
+  /** The run sampled as a ghost: for racing, when it won; for showing where it failed, when not. */
+  ghost: Ghost;
   /** The tick each chain step was first done (−1: never). */
   at: number[];
   /** Where it went wrong, and why. */
@@ -1424,7 +1425,7 @@ function witnessRun(R: Rapier, b: WorldBundle, nav: NavWorld, chain: WinChain, o
     if (lostBy !== null && fellAt === sim.tick && falls.length) falls.at(-1)!.end = true;
     else falls.push({ x: r1(p[0]), z: r1(p[2]), why, end: true });
   }
-  const out = { won, ticks: sim.tick, stuck, lostBy, stuckAt: sim.result ? null : stuckAt, lostTo, stuckOn: sim.result ? "" : stuckOn, trail, ghost: won ? ghost.finish(sim) : null, at, falls, fights };
+  const out = { won, ticks: sim.tick, stuck, lostBy, stuckAt: sim.result ? null : stuckAt, lostTo, stuckOn: sim.result ? "" : stuckOn, trail, ghost: ghost.finish(sim), at, falls, fights };
   sim.free();
   return out;
 }
@@ -1526,7 +1527,7 @@ function endings(b: WorldBundle, results: readonly RunResult[]): string {
 }
 
 /** Physics check of a "requires jumps>=k" expectation: approach the target's ledge and jump. */
-function jumpWitness(R: Rapier, b: WorldBundle, nav: NavWorld, x: Expect, jumps: number, attempt: number, playerTeam: "red" | "blue"): boolean {
+function jumpWitness(R: Rapier, b: WorldBundle, nav: NavWorld, x: Expect, jumps: number, attempt: number, playerTeam: "red" | "blue", keep?: (g: Ghost) => void): boolean {
   const targets = b.statics.filter((s) => s.zone === x.b);
   if (!targets.length) return false;
   const seg = targets[attempt % targets.length]!;
@@ -1534,6 +1535,18 @@ function jumpWitness(R: Rapier, b: WorldBundle, nav: NavWorld, x: Expect, jumps:
   const faceZ = seg.pos[2] - seg.size[2] / 2;
   const xs = seg.pos[0] + ((attempt % 3) - 1) * seg.size[0] * 0.25;
   const sim = new SimWorld(R, b, { playerTeam, laws: { jumpsMax: jumps } });
+  // red/green keeps the attempt as a ghost (reading positions only: the attempt is unchanged)
+  if (keep) {
+    const rec = new GhostRecorder(sim);
+    const step = sim.step.bind(sim);
+    sim.step = (input) => {
+      const evs = step(input);
+      rec.step(sim, input);
+      return evs;
+    };
+    const free = sim.free.bind(sim);
+    sim.free = () => (keep(rec.finish(sim)), free());
+  }
   const budget = { ticks: RUN_TICKS };
   walkTo(sim, nav, [xs, 0, faceZ - 0.7], stream(attempt, "t3:jump"), 1, budget, () => false);
   // One attempt: jump, air-jump at each apex, keep pushing toward the face; stop on landing.
@@ -1598,6 +1611,8 @@ export interface T3Out {
   trails: Trail[];
   /** The par runner's run, for racing it (null when no runner won). */
   ghost: Ghost | null;
+  /** A representative failing run, when no runner won (null otherwise). */
+  failRun: FailRun | null;
 }
 
 export function t3(R: Rapier, b: WorldBundle, nav: NavWorld, chain: WinChain | null, runs: number, playerTeam: "red" | "blue" = "red", openers: ReadonlyMap<string, PlanStep[]> = new Map()): T3Out {
@@ -1616,6 +1631,7 @@ function t3Runs(R: Rapier, b: WorldBundle, nav: NavWorld, chain: WinChain | null
   let par: { goldS: number; runs: number; won: number } | null = null;
   let trails: Trail[] = [];
   let ghost: Ghost | null = null;
+  let failRun: FailRun | null = null;
   if (chain && b.mode === "play") {
     const t0 = globalThis.performance?.now?.() ?? 0;
     const results = Array.from({ length: runs }, (_, i) => witnessRun(R, b, nav, chain, openers, b.seed * 1000 + i, playerTeam));
@@ -1627,6 +1643,8 @@ function t3Runs(R: Rapier, b: WorldBundle, nav: NavWorld, chain: WinChain | null
     par = won.length ? { goldS: Math.round(gold * 10) / 10, runs, won: won.length } : null;
     // the par runner itself (the first of equals) is the one a player races
     ghost = won.find((r) => r.ticks / 60 === gold)?.ghost ?? null;
+    // nobody won: one failing run is kept whole, to show where it fails
+    if (!won.length && results.length) failRun = failRunOf(results);
     chips.push({
       id: "T3:win",
       tier: "T3",
@@ -1691,7 +1709,17 @@ function t3Runs(R: Rapier, b: WorldBundle, nav: NavWorld, chain: WinChain | null
       ms: Math.round((globalThis.performance?.now?.() ?? 0) - t0),
     });
   }
-  return { chips, par, trails, ghost };
+  return { chips, par, trails, ghost, failRun };
+}
+
+/** A failing run's ghost keeps at most this many samples (two minutes at 15 a second). */
+const FAIL_SAMPLES = 1801;
+
+/** The failing run a receipt keeps (see pickFailing), with how it ended. */
+function failRunOf(results: readonly RunResult[]): FailRun {
+  const endOf = (r: RunResult) => r.falls.findLast((f) => f.end) ?? { x: 0, z: 0, why: "", end: true };
+  const run = pickFailing(results.map((r) => ({ why: endOf(r).why, prog: r.ghost.prog.at(-1) ?? 0 })));
+  return { run, ghost: thin(results[run]!.ghost, FAIL_SAMPLES), end: endOf(results[run]!) };
 }
 
 /** A run as the receipt keeps it: its route, and what the playtest report reads off it. */
@@ -1777,4 +1805,45 @@ function tourRun(R: Rapier, b: WorldBundle, nav: NavWorld, openers: ReadonlyMap<
     cx: missed.length ? { where: null, have: k, need: sights.length, unit: "things", text: `couldn't reach ${missed.slice(0, 4).join(", ")}${missed.length > 4 ? "…" : ""}` } : null,
     src: "", ms: Math.round((globalThis.performance?.now?.() ?? 0) - t0),
   };
+}
+
+/** One run kept whole for red/green: its ghost, whether it did what it set out to, and how it ended. */
+export interface KeptRun {
+  /** It won (a runner), or reached the top (a jump attempt). */
+  ok: boolean;
+  ghost: Ghost;
+  /** Where and how a runner's run ended when it didn't win (null for a win, or a jump attempt). */
+  end: Fall | null;
+}
+
+/**
+ * Exactly the run T3 plays as runner `run` (seed: the world's seed × 1000 + run), kept whole
+ * whether it won or not: red/green plays the same runner on the same seed before and after a change.
+ */
+export function runnerRun(R: Rapier, b: WorldBundle, nav: NavWorld, chain: WinChain, run: number, playerTeam: "red" | "blue" = "red", openers: ReadonlyMap<string, PlanStep[]> = new Map()): KeptRun {
+  leap = leapFor(b);
+  try {
+    const r = witnessRun(R, b, nav, chain, openers, b.seed * 1000 + run, playerTeam);
+    return { ok: r.won, ghost: thin(r.ghost, FAIL_SAMPLES), end: r.won ? null : (r.falls.findLast((f) => f.end) ?? null) };
+  } finally {
+    leap?.free();
+    leap = null;
+    freeShut();
+  }
+}
+
+/** The physics jump witness's attempt `attempt` at a "requires jumps" expectation with `jumps` jumps, kept whole (null: no such expectation). */
+export function jumpRun(R: Rapier, b: WorldBundle, nav: NavWorld, expect: string, jumps: number, attempt: number, playerTeam: "red" | "blue" = "red"): KeptRun | null {
+  const x = b.expects.find((e) => e.id === expect && e.prop === "requires");
+  if (!x) return null;
+  leap = leapFor(b);
+  try {
+    const kept: { ghost: Ghost | null } = { ghost: null };
+    const ok = jumpWitness(R, b, nav, x, jumps, attempt, playerTeam, (g) => (kept.ghost = g));
+    return kept.ghost ? { ok, ghost: kept.ghost, end: null } : null;
+  } finally {
+    leap?.free();
+    leap = null;
+    freeShut();
+  }
 }

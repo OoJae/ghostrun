@@ -55,6 +55,19 @@ export interface Fall {
   end: boolean;
 }
 
+/**
+ * A failing run kept whole (when no AI runner won): which runner it was, the run sampled as a ghost
+ * is, from the spawn to where it ended, and how it ended. The same runner plays the same seed on a
+ * changed world, so red/green can play it beside its run there.
+ */
+export interface FailRun {
+  /** Which of T3's runners (0-based; its seed is the world's seed × 1000 + run). */
+  run: number;
+  ghost: Ghost;
+  /** Where and how it ended, as the playtest report says it ("got stuck on the way to the orb"). */
+  end: Fall;
+}
+
 /** The playtest: runners at lower skill levels play the world after the proof's own (experts). */
 export interface Playtest {
   /** Runs and wins at each level, novices first; the experts are the proof's T3 runners. */
@@ -82,6 +95,8 @@ export interface Receipt {
   trails?: Trail[];
   /** The par runner's run, sampled for racing it (present when a runner won). */
   ghost?: Ghost;
+  /** A representative failing run, kept whole (present when no runner won): where it fails. */
+  failRun?: FailRun;
   /** Novice and average runners after the proof's own: the difficulty band and the playtest report. */
   playtest?: Playtest;
 }
