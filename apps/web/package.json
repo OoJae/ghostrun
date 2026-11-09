@@ -15,6 +15,7 @@
     "@ghostrun/ir": "workspace:*",
     "@ghostrun/kits": "workspace:*",
     "@ghostrun/layout": "workspace:*",
+    "@ghostrun/llm": "workspace:*",
     "@ghostrun/nav": "workspace:*",
     "@ghostrun/plugin-api": "workspace:*",
     "@ghostrun/proof": "workspace:*",

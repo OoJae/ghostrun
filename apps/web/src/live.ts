@@ -3,7 +3,9 @@
 // (the cosmetic tail never blocks play). An exact repeat comes back from the edge's cache behind a
 // `cached` event (when and by which models it was built live); `fresh` asks for a new build. A
 // build with a picture opens with `inspired`: the brief the edge read from it, and the prompt it made.
+// Trademarked names in the prompt are sent as generic homages (@ghostrun/llm/homage).
 import { FillParser, splitObjects, type WorldBundle } from "@ghostrun/ir";
+import { homage } from "@ghostrun/llm/homage";
 import { api } from "./api";
 import { ENGINE_HASH } from "./pipeline";
 
@@ -91,7 +93,8 @@ export async function liveBuild(prompt: string, hooks: BuildHooks = {}): Promise
   try {
     // the engine hash keys the edge's cache: a world is only replayed to the engine it was built for
     // (a build from a picture is never cached; the picture is read once and not kept)
-    res = await api("/v1/build", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ prompt, engine: ENGINE_HASH, ...(fresh ? { fresh: true } : {}), ...(image ? { image } : {}), ...(pin ? { intent: pin } : {}), ...(seed0 !== undefined ? { seed: seed0 } : {}) }), signal: ctl.signal });
+    // trademarked names go out as generic homages (the edge rewrites again with the same function: a no-op)
+    res = await api("/v1/build", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ prompt: homage(prompt).text, engine: ENGINE_HASH, ...(fresh ? { fresh: true } : {}), ...(image ? { image } : {}), ...(pin ? { intent: pin } : {}), ...(seed0 !== undefined ? { seed: seed0 } : {}) }), signal: ctl.signal });
   } catch (e) {
     return { kind: "unavailable", reason: String(e) };
   }

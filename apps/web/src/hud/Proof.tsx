@@ -7,6 +7,7 @@ import { Revealed } from "./Revealed";
 import "./cloud.css";
 import { FengShui } from "./FengShui";
 import type { FengShuiView } from "../fengshui";
+import type { ExportKind } from "../export";
 
 export interface ProofState {
   status: "idle" | "proving" | "done" | "error";
@@ -76,10 +77,12 @@ function Routes({ routes, runs, on, onToggle, noteAction }: { routes: Insights; 
   );
 }
 
-export function ReceiptPanel({ proof, onClose, onShare, onWrong, onExport, onTrust, onFool, fooled, reported, routes, routesOn, onRoutes, report, version, fengShui, chipAction, noteAction }: { proof: ProofState; onClose: () => void; onShare?: () => void; onWrong?: (note: string) => void; onExport?: () => void; onTrust?: () => void; onFool?: (() => void) | undefined; fooled?: Fooled | null; reported?: string | undefined; routes?: Insights | null; routesOn?: boolean; onRoutes?: () => void; report?: Report | null; /** A remix: which version this receipt is for, and that the original's is its own. */ version?: string | null; /** Feng Shui for one named school, checked on this world (asked for, or offered for an interior). */ fengShui?: FengShuiView | null; /** After a chip's line: its ▶ red/green, when it has one. */ chipAction?: ((c: Chip) => ReactNode) | undefined; /** After a design note (a thing nobody went near, a place runs went wrong): its Apply choices. */ noteAction?: ((key: string) => ReactNode) | undefined }) {
+export function ReceiptPanel({ proof, onClose, onShare, onWrong, onExport, onTrust, onFool, fooled, reported, routes, routesOn, onRoutes, report, version, fengShui, chipAction, noteAction }: { proof: ProofState; onClose: () => void; onShare?: () => void; onWrong?: (note: string) => void; onExport?: (kind: ExportKind) => void; onTrust?: () => void; onFool?: (() => void) | undefined; fooled?: Fooled | null; reported?: string | undefined; routes?: Insights | null; routesOn?: boolean; onRoutes?: () => void; report?: Report | null; /** A remix: which version this receipt is for, and that the original's is its own. */ version?: string | null; /** Feng Shui for one named school, checked on this world (asked for, or offered for an interior). */ fengShui?: FengShuiView | null; /** After a chip's line: its ▶ red/green, when it has one. */ chipAction?: ((c: Chip) => ReactNode) | undefined; /** After a design note (a thing nobody went near, a place runs went wrong): its Apply choices. */ noteAction?: ((key: string) => ReactNode) | undefined }) {
   const r = proof.receipt;
   const [writing, setWriting] = useState(false);
   const [note, setNote] = useState("");
+  const [exporting, setExporting] = useState(false);
+  const pick = (kind: ExportKind) => (setExporting(false), onExport?.(kind));
   return (
     <div className="glass receipt" role="dialog" aria-label={t("Proof receipt")} data-testid="receipt">
       <div className="receipt-head">
@@ -134,7 +137,11 @@ export function ReceiptPanel({ proof, onClose, onShare, onWrong, onExport, onTru
       {proof.error && <p className="warn">{proof.error}</p>}
       <div className="receipt-actions">
         {onShare && <button type="button" onClick={onShare} data-testid="share">{t("Share this run")}</button>}
-        {onExport && <button type="button" onClick={onExport} data-testid="export" title={t("glTF scene + logic.json (triggers, states, rules) + playtest report")}>{t("Export")}</button>}
+        {onExport && (
+          <button type="button" onClick={() => setExporting((o) => !o)} data-testid="export" aria-expanded={exporting} aria-controls="export-menu" title={t("glTF scene + logic.json (triggers, states, rules) + playtest report")}>
+            {t("Export")} <span aria-hidden="true">▾</span>
+          </button>
+        )}
         {onTrust && <button type="button" onClick={onTrust} data-testid="why-trust">{t("Why trust this?")}</button>}
         {onFool && (
           <button type="button" onClick={onFool} disabled={fooled?.status === "planting"} data-testid="fool" title={t("Plant a bug that breaks this world in a copy of it, and see whether the proof notices")}>
@@ -143,6 +150,16 @@ export function ReceiptPanel({ proof, onClose, onShare, onWrong, onExport, onTru
         )}
         {onWrong && !writing && <button type="button" onClick={() => setWriting(true)} data-testid="wrong">{t("This is wrong")}</button>}
       </div>
+      {exporting && onExport && (
+        <div className="export-menu" id="export-menu" role="group" aria-label={t("Export")} data-testid="export-menu">
+          <button type="button" onClick={() => pick("report")} data-testid="export-report" title={t("One HTML file, nothing to fetch: the receipt, the difficulty, the heat map and what the AI runners revealed, the hashes and the share link")}>
+            {t("Playtest report (.html)")}
+          </button>
+          <button type="button" onClick={() => pick("glb")} data-testid="export-glb">{t("Scene (.glb)")}</button>
+          <button type="button" onClick={() => pick("logic")} data-testid="export-logic" title={t("Triggers, states and rules, each rule as a sentence and as data, with its proof")}>{t("Logic (.logic.json)")}</button>
+          <button type="button" onClick={() => pick("all")} data-testid="export-all">{t("All three")}</button>
+        </div>
+      )}
       {writing && onWrong && (
         <form
           className="wrong-form"

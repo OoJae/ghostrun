@@ -574,6 +574,8 @@ kbd {
   font: inherit; font-size: 12px; padding: 5px 10px; border-radius: 6px; cursor: pointer;
   background: rgba(255, 255, 255, 0.08); color: inherit; border: 1px solid rgba(255, 255, 255, 0.18);
 }
+.export-menu { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.export-menu button { font: inherit; font-size: 12px; padding: 5px 10px; border-radius: 6px; cursor: pointer; background: rgba(25, 227, 255, 0.08); color: inherit; border: 1px solid rgba(25, 227, 255, 0.3); }
 .wrong-form { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
 .wrong-form textarea { font: inherit; font-size: 12px; min-height: 56px; resize: vertical; background: rgba(0, 0, 0, 0.25); color: inherit; border: 1px solid rgba(255, 255, 255, 0.18); border-radius: 6px; padding: 6px; }
 .receipt .reported { color: #ffb02e; margin: 8px 0 0; }

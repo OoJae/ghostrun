@@ -41,6 +41,9 @@
       "path": "../../packages/layout"
     },
     {
+      "path": "../../packages/llm"
+    },
+    {
       "path": "../../packages/sim"
     },
     {

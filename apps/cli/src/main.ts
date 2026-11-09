@@ -5,7 +5,7 @@ import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 
 import { dirname, join, resolve } from "node:path";
 import { FillParser, lawsUnwritten, layoutLaws, mergeFill, parseFill, pinLayout, splitObjects, type FillNote, type WorldBundle } from "@ghostrun/ir";
 import { asksFengShui, FENG_SHUI_RULES, fengShui, placeWorld, saysFengShui } from "@ghostrun/layout";
-import { directorMessages, editMessages, fillMessages, hostJsonSchema, hostMessages, IntentOut, intentJsonSchema, intentMessages, jsonLanes, lanesFor, mindJsonSchema, mindMessages, repairMessages, settleIntent, streamLanes, type JobCall, type Keys } from "@ghostrun/llm";
+import { directorMessages, editMessages, fillMessages, homage, homageNote, hostJsonSchema, hostMessages, IntentOut, intentJsonSchema, intentMessages, jsonLanes, lanesFor, mindJsonSchema, mindMessages, repairMessages, settleIntent, streamLanes, type JobCall, type Keys } from "@ghostrun/llm";
 import { loadNavNode } from "@ghostrun/nav/node";
 import { badness, better, caught, chipLine, fengShuiHead, fengShuiLine, insights, issuesOf, plants, prove, provedWon, reportLines, traceRunners, type Receipt } from "@ghostrun/proof";
 import { ALL_SUBS, layoutOf, PACKS, packFor } from "@ghostrun/registry";
@@ -121,8 +121,12 @@ function controlsOf(b: WorldBundle): number {
   return on.size;
 }
 
-async function build(prompt: string, seed: number, outDir: string | null): Promise<{ timings: BuildTimings; receipt: Receipt; intent: IntentOut; fill: string; controls: number }> {
+async function build(typed: string, seed: number, outDir: string | null): Promise<{ timings: BuildTimings; receipt: Receipt; intent: IntentOut; fill: string; controls: number }> {
   const keys = cliKeys();
+  // trademarked names as generic homages, as the edge and the web send them
+  const named = homage(typed);
+  const prompt = named.text;
+  if (named.homages.length) console.error(homageNote(named.homages));
   const now = () => performance.now();
   const t0 = now();
 
@@ -164,19 +168,19 @@ async function build(prompt: string, seed: number, outDir: string | null): Promi
   // 3. place + prove
   const { bundle, invalid, lines } = placeFromFill(fillText, seed, layout.packId, intent.mode);
   const playableMs = Math.round(now() - t0); // gameplay layer final + placed
-  const slug = prompt.toLowerCase().replace(/[^a-z0-9]+/g, "-").slice(0, 40);
+  const slug = typed.toLowerCase().replace(/[^a-z0-9]+/g, "-").slice(0, 40);
   if (outDir) {
     // recorded before the proof runs, so a world that crashes it is kept to reproduce
     mkdirSync(outDir, { recursive: true });
     writeFileSync(join(outDir, `${slug}.fill.jsonl`), fillText);
-    writeFileSync(join(outDir, `${slug}.receipt.json`), JSON.stringify({ prompt, intent, receipt: null }, null, 2));
+    writeFileSync(join(outDir, `${slug}.receipt.json`), JSON.stringify({ prompt: typed, intent, receipt: null }, null, 2));
   }
   const R = await loadRapierNode();
   await loadNavNode();
   const receipt = await prove(R, bundle, { engine: ENGINE, runs: 12 });
   const proofMs = receipt.ms;
   // (the runners' routes and the par runner's ghost stay out of the recorded receipt: they're for the app, and large)
-  if (outDir) writeFileSync(join(outDir, `${slug}.receipt.json`), JSON.stringify({ prompt, intent, receipt: { ...receipt, trails: undefined, ghost: undefined } }, null, 2));
+  if (outDir) writeFileSync(join(outDir, `${slug}.receipt.json`), JSON.stringify({ prompt: typed, intent, receipt: { ...receipt, trails: undefined, ghost: undefined } }, null, 2));
   return {
     timings: { intentMs, fillFirstTokenMs, firstEntityMs, gameplayEndMs, fillDoneMs, playableMs, proofMs, outTok, invalid, lines, intentModel: intentRes.model, fillModel },
     receipt,

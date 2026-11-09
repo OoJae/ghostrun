@@ -33,3 +33,6 @@
 @media (max-width: 720px) {
   .intent.editable { max-height: 46vh; }
 }
+
+/* the homage note: trademarked names in the prompt, and the generic homages built instead */
+.intent .homage { margin: -2px 0 10px; padding: 6px 10px; border-radius: 9px; font-size: 12px; color: #e6dcff; background: rgba(160, 120, 255, 0.1); border: 1px solid rgba(160, 120, 255, 0.32); }

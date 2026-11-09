@@ -1,4 +1,5 @@
 import { useState, type KeyboardEvent, type ReactNode } from "react";
+import type { Homage } from "@ghostrun/llm/homage";
 import type { Intent } from "../pipeline";
 import { k as key, t, tn } from "../i18n";
 import "./picture.css";
@@ -85,7 +86,7 @@ function Options<T>({ id, label, choices, now, onPick }: { id: string; label: st
   );
 }
 
-export function IntentCard({ intent, specHash, note, inspired, rebuilt, controls: k }: { intent: Intent; specHash: string | undefined; note?: string | null; inspired?: Inspired | null; rebuilt?: string | null; controls?: CardControls | undefined }) {
+export function IntentCard({ intent, specHash, note, inspired, rebuilt, homages, controls: k }: { intent: Intent; specHash: string | undefined; note?: string | null; inspired?: Inspired | null; rebuilt?: string | null; /** Trademarked names in the prompt, and the generic homages the world was built from instead. */ homages?: readonly Homage[] | undefined; controls?: CardControls | undefined }) {
   const [open, setOpen] = useState<string | null>(null);
   const toggle = (id: string) => setOpen((o) => (o === id ? null : id));
   const pick =
@@ -129,6 +130,11 @@ export function IntentCard({ intent, specHash, note, inspired, rebuilt, controls
         <p className="inspired" data-testid="inspired-note" title={t("Your image suggested the place, the mood, the colours and the things in it; the world was written from those words, so it is inspired by the image, not a copy of it")}>
           {t("Inspired by your image:")} {inspired.setting}
           {inspired.objects.length > 0 && <span className="dim"> · {inspired.objects.join(", ")}</span>}
+        </p>
+      )}
+      {homages && homages.length > 0 && (
+        <p className="homage" data-testid="homage-note" title={t("Trademarked names in the prompt were rewritten as generic homages before any AI saw it; the world was built from the rewritten words")}>
+          {t("Homage: {names}; we don't use trademarked names", { names: homages.map((h) => `'${h.from}' → '${h.to}'`).join(", ") })}
         </p>
       )}
       {note && (

@@ -1,6 +1,6 @@
 import { createHmac } from "node:crypto";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { resetLaneHealth } from "@ghostrun/llm";
+import { homage, resetLaneHealth } from "@ghostrun/llm";
 import EXAMPLE from "../../../packages/ir/fixtures/vault-heist.jsonl?raw";
 import { cacheKey, closesGameplay, MAX_CACHE_BYTES, normalisePrompt, promptSeed, templateHash, templateParts, type CacheEntry } from "../src/cache";
 import type { DoNamespace } from "../src/cf";
@@ -87,6 +87,32 @@ describe("the exact-repeat build cache", () => {
     expect(seedOf(a.events)).toBe(await promptSeed("a maze with ghosts"));
     expect(seedOf(b.events)).toBe(seedOf(a.events));
     expect((await w.full(judge, { prompt: "A maze with ghosts", seed: 11 })).events.find((e) => e.event === "intent")!.data.seed).toBe(11);
+  });
+
+  it("trademarked names become homages before anything sees the prompt: the models get the homage, and it is the homage that is seeded and cached", async () => {
+    const w = world();
+    const ip = "A Mario Kart race around Hogwarts";
+    const said = homage(ip).text;
+    expect(said).toBe("A kart race with a plumber hero race around a wizard school castle");
+    const first = await w.full(judge, { prompt: ip });
+    const sent = w.f.to("api.cerebras.ai").map((h) => h.body);
+    expect(sent).toHaveLength(2); // the intent and the fill
+    for (const body of sent) {
+      expect(body).not.toMatch(/mario|hogwarts/i);
+      expect(body).toContain("kart race with a plumber hero race around a wizard school castle");
+    }
+    expect(first.events.find((e) => e.event === "intent")!.data.seed).toBe(await promptSeed(said));
+    expect(w.entries()).toEqual([await keyFor(said)]);
+    // the homage's own words, typed as they are, are the same entry
+    expect((await w.full(judge, { prompt: said })).events[0]!.event).toBe("cached");
+    // the patch routes rewrite the world's prompt and the change too
+    const ctx = waiter();
+    const res = await handle(new Request("https://g.example/v1/edit", { method: "POST", headers: { "cf-connecting-ip": freshIp(), ...judge }, body: JSON.stringify({ prompt: ip, change: "add a Ferrari by the goal", intent: INTENT, fill: '{"op":"meta","v":1}\n{"op":"end","layer":"gameplay"}', seed: 7 }) }), w.env, ctx);
+    await readSse(res);
+    await ctx.settled();
+    const edit = w.f.to("api.cerebras.ai").at(-1)!.body;
+    expect(edit).not.toMatch(/mario|hogwarts|ferrari/i);
+    expect(edit).toContain("a red sports car");
   });
 
   it("fresh: true bypasses the cache, and its build overwrites the entry", async () => {

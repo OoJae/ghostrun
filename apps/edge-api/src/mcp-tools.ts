@@ -6,7 +6,7 @@
 // doesn't (off, rate limited), the share link is where the AI runners prove the rest, on whoever opens it.
 import { FillParser, logicOf, mergeFill, pinLayout, ruleText, splitObjects, thingLabel, type WorldBundle } from "@ghostrun/ir";
 import { verb } from "@ghostrun/kits";
-import type { IntentOut } from "@ghostrun/llm";
+import { homage, homageNote, type IntentOut } from "@ghostrun/llm";
 import { bandLine, chipLine, fraction, staticReceipt, statusWord, type Chip, type Receipt } from "@ghostrun/proof/static";
 import { PROOF_VERSION } from "@ghostrun/world";
 import * as v from "valibot";
@@ -372,7 +372,9 @@ export const TOOLS: Tool[] = [
     async run(args, ctx) {
       const a = args as v.InferOutput<(typeof Args)["build_world"]>;
       if (!ctx.spend()) return fail(SPENT);
-      const b = await liveBuild(ctx, a.prompt, a.seed);
+      // trademarked names as generic homages, as the web sends them (the edge rewrites again: the same function, so a no-op)
+      const named = homage(a.prompt);
+      const b = await liveBuild(ctx, named.text, a.seed);
       if (isFail(b)) return b;
       const w = await placeFill(b.fill, b.seed, { pack: b.intent.pack, mode: b.intent.mode, setting: b.intent.setting });
       const [proof, share] = await Promise.all([proofOf(ctx, w), shareOf(ctx, w, a.prompt, null)]);
@@ -380,7 +382,8 @@ export const TOOLS: Tool[] = [
       const i = b.intent;
       const intent = { genre: i.genre, setting: i.setting, goal: i.goal, fail: i.fail, role: i.role, mood: i.mood, pack: w.bundle.pack.id, sub: w.bundle.pack.sub, mode: w.bundle.mode, headline: i.headline };
       const link = "id" in share ? share : null;
-      const notes = [...(b.cached ? [`Replayed from the build cache: built live ${b.cached.at.slice(0, 10)} by ${b.cached.intentModel} and ${b.cached.fillModel}.`] : []), ...(b.fallback ? [`The fast lane was busy; ${b.fallback} wrote it.`] : []), ...("error" in share ? [share.error] : [])];
+      const said = homageNote(named.homages);
+      const notes = [...(said ? [said] : []), ...(b.cached ? [`Replayed from the build cache: built live ${b.cached.at.slice(0, 10)} by ${b.cached.intentModel} and ${b.cached.fillModel}.`] : []), ...(b.fallback ? [`The fast lane was busy; ${b.fallback} wrote it.`] : []), ...("error" in share ? [share.error] : [])];
       const text = [
         `Built: ${i.headline || i.goal || a.prompt} (${i.genre || "world"} · ${w.bundle.pack.id} · ${w.bundle.mode === "wander" ? "a place to explore" : "a game"}, seed ${w.seed}).`,
         `Intent: ${i.setting}${i.goal ? `. Goal: ${i.goal}` : ""}${i.fail ? `. Fail: ${i.fail}` : ""}${i.role ? `. You play: ${i.role}` : ""}.`,

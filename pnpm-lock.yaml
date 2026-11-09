@@ -160,6 +160,9 @@ importers:
       '@ghostrun/layout':
         specifier: workspace:*
         version: link:../../packages/layout
+      '@ghostrun/llm':
+        specifier: workspace:*
+        version: link:../../packages/llm
       '@ghostrun/nav':
         specifier: workspace:*
         version: link:../../packages/nav

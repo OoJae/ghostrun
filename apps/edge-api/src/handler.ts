@@ -9,7 +9,7 @@
 // the governor before any model call and commits the metered cost when it ends (governor.ts).
 // Each model call runs on the fast lane with Claude Haiku as the rung below it (llm/lanes.ts).
 import { DEFAULT_LAWS, gameplayLines, jcs } from "@ghostrun/ir";
-import { BRIEF_MAX_CHARS, BriefOut, briefJsonSchema, directorMessages, editMessages, fillMessages, hostJsonSchema, hostMessages, inspiredPrompt, IntentOut, intentJsonSchema, intentMessages, jsonLanes, lanesFor, LlmError, mindJsonSchema, mindMessages, pinIntent, pinLine, readPin, repairMessages, settleBrief, settleIntent, streamLanes, visionMessages, type ChatMessage, type Job, type Keys, type Provider } from "@ghostrun/llm";
+import { BRIEF_MAX_CHARS, BriefOut, briefJsonSchema, directorMessages, editMessages, fillMessages, homage, hostJsonSchema, hostMessages, inspiredPrompt, IntentOut, intentJsonSchema, intentMessages, jsonLanes, lanesFor, LlmError, mindJsonSchema, mindMessages, pinIntent, pinLine, readPin, repairMessages, settleBrief, settleIntent, streamLanes, visionMessages, type ChatMessage, type Job, type Keys, type Provider } from "@ghostrun/llm";
 import { ALL_SUBS, layoutLine, layoutOf, PACKS, packFor } from "@ghostrun/registry";
 import * as v from "valibot";
 // the vault heist teaches goal-dependent wins, doorway doors, keys and inspectable exhibits (an A/B
@@ -314,10 +314,11 @@ async function patch(kind: "repair" | "edit" | "director", req: Request, env: En
   const body = await readJson(req, 96 * 1024);
   if (!body.ok) return json({ error: body.error }, body.status);
   const input = (body.value ?? {}) as { prompt?: unknown; change?: unknown; intent?: unknown; fill?: unknown; issues?: unknown; seed?: unknown; notes?: unknown; hard?: unknown };
-  const prompt = typeof input.prompt === "string" ? input.prompt.trim().slice(0, MAX_PROMPT * 2) : "";
+  // the world's prompt and the person's change, with trademarked names as homages (as /v1/build does)
+  const prompt = typeof input.prompt === "string" ? homage(input.prompt.trim().slice(0, MAX_PROMPT * 2)).text : "";
   const fill = typeof input.fill === "string" && input.fill.length <= 64 * 1024 ? input.fill : "";
   const issues = Array.isArray(input.issues) ? input.issues.filter((x): x is string => typeof x === "string").slice(0, 10).map((x) => x.slice(0, 600)) : [];
-  const change = typeof input.change === "string" ? input.change.trim().slice(0, MAX_PROMPT) : "";
+  const change = typeof input.change === "string" ? homage(input.change.trim().slice(0, MAX_PROMPT)).text : "";
   const notes = Array.isArray(input.notes) ? input.notes.filter((x): x is string => typeof x === "string").slice(0, 8).map((x) => x.slice(0, 300)) : [];
   const intent = v.safeParse(IntentOut, input.intent);
   if (!prompt || !fill || !intent.success || !Number.isInteger(input.seed) || (kind === "repair" && !issues.length) || (kind === "edit" && !change)) return json({ error: `bad ${kind} request` }, 400);
@@ -391,7 +392,9 @@ async function build(req: Request, env: Env, url: URL, later: (p: Promise<unknow
   const body = await readJson(req, MAX_BUILD_BODY);
   if (!body.ok) return json({ error: body.error }, body.status);
   const input = (body.value ?? {}) as { prompt?: unknown; seed?: unknown; engine?: unknown; fresh?: unknown; image?: unknown; intent?: unknown };
-  const said = typeof input.prompt === "string" ? input.prompt.trim().slice(0, MAX_PROMPT) : "";
+  // trademarked names become generic homages before anything else sees the prompt: the rewritten
+  // words are what is built, seeded and cached (the client shows the note from the same function)
+  const said = typeof input.prompt === "string" ? homage(input.prompt.trim().slice(0, MAX_PROMPT)).text : "";
   // what the person pinned on the Intent card (a pack, a mode, a genre): checked before anything is spent
   const pinned = readPin(input.intent, subsOf);
   if (!pinned.ok) return json({ error: pinned.error }, 400);
@@ -473,7 +476,7 @@ async function build(req: Request, env: Env, url: URL, later: (p: Promise<unknow
             return;
           }
           const brief = settleBrief(out);
-          prompt = inspiredPrompt(said, brief);
+          prompt = homage(inspiredPrompt(said, brief)).text; // the brief is the model's words: no brand names in them either
           if (asked === undefined) seed = await promptSeed(prompt);
           await send("inspired", { brief, prompt, ms: seen.ms, model: seen.model });
           phase = "intent";

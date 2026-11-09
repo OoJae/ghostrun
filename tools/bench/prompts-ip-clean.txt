@@ -1,0 +1,55 @@
+# Ordinary prompts the homage table must leave alone (internal; written by us, 9 Nov). Many hold a
+# trap: a brand's name inside another word ("marionette", "scenario"), or an ordinary word that a
+# brand also uses ("apple", "jaguar", "mustang", "halo", "portal", "doom", "sonic boom", "frozen",
+# "minions", "a call of duty", "a street fighter", "among us"). packages/llm/test/homage.test.ts
+# asserts each comes back exactly as written. See packages/llm/src/homage.ts for what is left out and why.
+A marionette theatre where the puppets come alive at midnight
+Pick every apple in the orchard before the frost
+A jaguar stalks the jungle temple: reach the altar without being seen
+Ride a mustang across the prairie to the ranch before dusk
+A chapel with a golden halo of light over the altar
+Step through the glowing portal and find the lost key
+Doom and gloom in a rainy castle: light the five candles
+A sonic boom shakes the canyon: climb out before the rocks fall
+A frozen lake: skate to the far shore without falling through the ice
+The dark lord's minions guard the bridge: sneak past them
+Answer the call of duty and defend the fort until dawn
+A street fighter tournament in a back alley, first to three knockouts
+There is a traitor among us on the space station: find the saboteur
+A worst-case scenario drill in a flooded subway
+An animal crossing on a forest road: help the deer get across
+A hollow knight statue in the crypt holds the key
+A silent hill at night with an abandoned chapel
+Answer the riddle of the sphinx to enter the pyramid
+A shell collection on the beach: find five rare shells
+A puma prowls the canyon: climb to the eagle's nest
+A beetle race in a garden, first to the watering can
+A mini golf course on a rooftop with nine holes
+A coke furnace in an old steel mill: shut down the boilers
+A monopoly on spice: smuggle the crates past the guards
+An uno dos tres countdown at a Spanish fiesta
+A twister tears through the farm: get to the storm cellar
+A tesla coil laboratory with sparking pylons
+Ford the river and reach the castle before nightfall
+A jumbo jet hangar with a mechanic who explains each engine
+A marvel of engineering: a clockwork tower you climb gear by gear
+Thor's hammer rests in a Norse longhouse museum
+A joker card hidden in a casino: find it before the dealer does
+A toad hops across the lily pads to the far bank
+A temple run through the jungle to the golden idol
+A tomb raider's camp at the edge of the desert dig
+A flappy bird mobile on a nursery ceiling
+Space invaders land in the cornfield: defend the farm
+A blade runner in a rainy alley chases a thief
+A black panther sleeps in the zoo enclosure: feed it without waking it
+A wolverine den in the snowy forest
+A mystery machine in an escape room: solve its five dials
+A road runner bird darts across the desert highway
+A green hill with loops of flowers and a windmill
+Bludiště s duchy: najdi klíč a uteč východem, než tě chytí.
+Une forêt enchantée la nuit : trouve la lanterne et rentre au village
+Ein Labyrinth aus Hecken: finde den goldenen Schlüssel
+Un mercado nocturno con puestos de comida y farolillos
+A pizzeria where you bake five pizzas before closing time
+A dog named Max chases a ball through the park
+A Nemo-style submarine voyage to the bottom of the sea

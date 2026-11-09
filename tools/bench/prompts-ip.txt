@@ -1,0 +1,54 @@
+# IP-laden prompts (internal; written by us, 9 Nov): each line is a prompt, then after " || " the
+# trademarked names in it. packages/llm/test/homage.test.ts asserts that none of those names (nor
+# any name in the homage table) survives into what is sent to the models, and that the rewrite is
+# stable. Lowercase, plural and other-language spellings are deliberate.
+Build a Mario Kart race in a neon arena with three laps || Mario Kart; Mario
+Play as Mario and jump on mushrooms to reach Princess Peach's castle || Mario; Princess Peach
+A Pac-Man maze: eat every dot and dodge the four ghosts || Pac-Man
+pacman in a haunted mansion, collect the pellets before the ghosts catch you || pacman
+Escape Hogwarts at night before the prefects catch you || Hogwarts
+A Quidditch match above the Hogwarts lake: catch the golden ball || Quidditch; Hogwarts
+Race a red Ferrari against two Lamborghinis through the city || Ferrari; Lamborghini
+A Porsche showroom with five cars on turntables || Porsche
+Pokémon gym battle: beat three trainers and win the badge || Pokémon
+Catch Pikachu in a tall-grass meadow before sunset || Pikachu
+A Minecraft world: mine diamonds and escape the cave before the Creeper explodes || Minecraft; Creeper
+A Fortnite-style battle royale on a floating island || Fortnite
+Capture the flag on the Death Star with lightsabers || Death Star; lightsaber
+Fly the Millennium Falcon through an asteroid field and dock at the station || Millennium Falcon
+Darth Vader guards the reactor: sneak past him and shut it down || Darth Vader
+A Jedi training temple where you deflect blasts || Jedi
+A Lord of the Rings quest: carry the ring through Mordor to the volcano || Lord of the Rings; Mordor
+Gandalf's tower on a hill: climb to the top before the storm || Gandalf
+A Batman rooftop chase across Gotham City || Batman; Gotham
+Spider-Man swings between towers to rescue the hostages || Spider-Man
+A Superman flight over Metropolis rooftops, catch the falling satellite || Superman
+Build a LEGO city and drive the fire truck to the burning tower || LEGO
+A Barbie Dreamhouse tour with five rooms || Barbie
+Sonic the Hedgehog speed run through loops collecting rings || Sonic the Hedgehog
+A level from Super Mario Bros with pipes and a flagpole || Super Mario; Mario
+Zelda dungeon: find the boss key and open the big chest || Zelda
+Explore Hyrule castle and pull the Master Sword from its stone || Hyrule; Master Sword
+A Tetris tower: climb the falling blocks to the top || Tetris
+Jurassic Park escape: get to the helicopter before the raptors || Jurassic Park
+Ghostbusters in a haunted library: trap five ghosts || Ghostbusters
+An Indiana Jones temple run: grab the idol and outrun the boulder || Indiana Jones
+A James Bond casino heist on a yacht || James Bond
+A Star Wars cantina where you hire a smuggler || Star Wars
+Among the ruins of Westeros, take the Iron Throne || Westeros; Iron Throne
+A Shrek swamp: rescue the princess from the dragon's castle || Shrek
+Toy Story bedroom: help Buzz Lightyear get back to the toy box || Toy Story; Buzz Lightyear
+A Mickey Mouse clubhouse with balloons to pop || Mickey Mouse
+Disneyland at night: ride every attraction before the fireworks || Disneyland
+A SpongeBob burger shop under the sea: serve ten burgers || SpongeBob
+A Nerf gun battle in an office, red team against blue team || Nerf gun
+A Formula 1 race on a street circuit at night || Formula 1
+A NASCAR oval race with three rivals || NASCAR
+A Nike sneakers showroom with limited editions on pedestals || Nike sneakers
+An Olympics stadium: win the hundred-metre sprint || Olympics
+Závod Mario Kart v Bradavicích: tři kola kolem hradu || Mario Kart; Bradavic
+Une course de Pokémon à Poudlard || Pokémon; Poudlard
+Ein Wettrennen mit einem Ferrari durch Hogwarts || Ferrari; Hogwarts
+Wyścig w Hogwarcie na miotłach jak w Quidditchu || Hogwarcie; Quidditchu
+マリオのレースゲーム、ネオンの街で || マリオ
+在乐高城市里驾驶法拉利 || 乐高; 法拉利

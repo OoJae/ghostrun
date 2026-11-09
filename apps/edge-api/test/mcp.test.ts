@@ -260,6 +260,21 @@ describe("build_world", () => {
     expect(w.pool("judge")).toMatchObject({ spent: metered, held: 0 });
   });
 
+  it("trademarked names go to the models as homages, the note says so, and the share keeps the words as typed", async () => {
+    const w = world({ up: { fill: { inTok: 3000, outTok: 1500, lines: CTF } } });
+    const typed = "Capture the flag at Hogwarts with a Pac-Man maze";
+    const r = await w.tool("build_world", { prompt: typed, seed: 7 });
+    expect(r.isError).toBeUndefined();
+    const sent = w.hits().filter((h) => new URL(h.url).hostname === "api.cerebras.ai").map((h) => h.body);
+    expect(sent.length).toBeGreaterThan(0);
+    for (const body of sent) expect(body).not.toMatch(/hogwarts|pac-?man/i);
+    const note = "Homage: 'Hogwarts' → 'a wizard school castle', 'Pac-Man' → 'a dot-eating maze runner'; we don't use trademarked names";
+    expect(r.structuredContent.notes[0]).toBe(note);
+    expect(r.content[0]!.text).toContain(`Note: ${note}`);
+    const stored = JSON.parse(w.r2.objects.get(`shares/${r.structuredContent.world}.json`)!) as { prompt: string };
+    expect(stored.prompt).toBe(typed);
+  });
+
   it("an exact repeat replays from the build cache, for free, and says so", async () => {
     const w = world({ up: { fill: { inTok: 3000, outTok: 1500, lines: CTF } } });
     const first = await w.tool("build_world", { prompt: "capture the flag on neon rooftops", seed: 7 });

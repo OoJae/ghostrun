@@ -271,6 +271,8 @@ test("result card: a win shows the time against the AI par, and R plays again", 
 
 test("export: the scene as glTF, the logic as logic.json, and the playtest report", async ({ page }) => {
   const errors = collectErrors(page);
+  // the report links back to a share of the world (export.spec.ts tests the report itself)
+  await page.route("**/v1/share", (r) => r.fulfill({ json: { id: "abcdefghijklmnop" } }));
   await page.goto("/?gl=webgl2&fx=0&dpr=0.5&prewarm=0");
   await page.waitForFunction(() => window.__GHOSTRUN__?.ready === true, null, { timeout: 90_000 });
   await expect(page.getByTestId("proof-badge")).toContainText("verified", { timeout: 60_000 });
@@ -282,6 +284,7 @@ test("export: the scene as glTF, the logic as logic.json, and the playtest repor
     files[d.suggestedFilename()] = (await import("node:fs")).readFileSync(path);
   });
   await page.getByTestId("export").click();
+  await page.getByTestId("export-all").click(); // the menu's "All three"
   await expect.poll(() => Object.keys(files).length, { timeout: 20_000 }).toBe(3);
   const glb = Object.entries(files).find(([n]) => n.endsWith(".glb"))![1];
   expect(glb.subarray(0, 4).toString("ascii")).toBe("glTF");

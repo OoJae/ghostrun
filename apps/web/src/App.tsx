@@ -41,10 +41,11 @@ import { useSound } from "./audio/useSound";
 import { useSpeech } from "./audio/useSpeech";
 import { TalkBox } from "./hud/Talk";
 import { LineagePanel } from "./hud/Lineage";
-import { contextPrompt, galleryRef, lineageOf, receiptVersion, shareSource, yourChanges, type RemixSource } from "./remix";
+import { contextPrompt, galleryRef, lineageOf, receiptVersion, refLink, shareSource, yourChanges, type RemixSource } from "./remix";
 import { MuteButton } from "./hud/Mute";
 import { EXAMPLES, Landing, type Starter } from "./hud/Landing";
 import { substitution } from "./substitutions";
+import { homage } from "@ghostrun/llm/homage";
 import { RaceChip } from "./hud/Race";
 import { BoardPanel } from "./hud/Board";
 import { loadRace, RACE_PROMPT, useRace } from "./useRace";
@@ -178,6 +179,8 @@ export function App() {
   /** Worlds before each edit, for Undo; cleared by a new prompt. */
   const history = useRef<World[]>([]);
   const builtPrompt = useRef(FIRST_PROMPT);
+  /** The words this page has built live (the Intent card's homage note is for those worlds alone). */
+  const builtLive = useRef(new Set<string>());
   // the HUD's language: the one chosen with the chip, else the world's (when the HUD speaks it), else the browser's
   const browserLangs = typeof navigator === "undefined" ? [] : navigator.languages?.length ? navigator.languages : [navigator.language];
   const [lang, setLang] = useState<Locale>(() => chosenLocale() ?? pickLocale(undefined, browserLangs));
@@ -433,6 +436,7 @@ export function App() {
       delete probe().specHash;
       if (useLive) {
         if (image) setNotice(t("Looking at your image…"));
+        builtLive.current.add(text);
         const r = await liveBuild(text, {
           fresh: rebuild,
           ...(image ? { image: image.url } : {}),
@@ -1114,6 +1118,8 @@ export function App() {
   // the card says "inspired by your image" for the world that image made, and the edits and repairs of it
   const ownPrompt = current.current?.source?.base ?? current.current?.source?.prompt;
   const inspiredNow = inspired && ownPrompt === inspired.prompt ? inspired.brief : null;
+  // the homage note, for a world this page built live from words with trademarked names in them (and its edits)
+  const homagesNow = ownPrompt && builtLive.current.has(ownPrompt) ? homage(ownPrompt).homages : undefined;
 
   // the HUD can't be seen in a headset: its facts go to the in-headset panels as words
   const vrCard = race.card?.vs ?? null;
@@ -1180,6 +1186,7 @@ export function App() {
             note={note}
             rebuilt={current.current?.source?.pinned ? rebuiltLine(current.current.source.pinned) : null}
             inspired={inspiredNow}
+            homages={homagesNow}
             controls={current.current && status === "playing" ? controlsFor(current.current, { live: mode === "live", busy: edit.status === "editing" || edit.status === "racing" || edit.status === "proving", prompt: current.current.source?.base ?? current.current.source?.prompt ?? builtPrompt.current, act: cardActs }) : undefined}
           />
         )}
@@ -1333,12 +1340,21 @@ export function App() {
               return n ? <NoteApply note={n} state={notes.state} onTry={(k, c, said) => void notes.tryChange(k, c, said)} onAccept={() => (setReceiptOpen(false), notes.accept())} /> : null;
             } : undefined}
             onShare={shareRun}
-            onExport={async () => {
+            onExport={async (kind) => {
               const w = current.current;
               if (!w || !specHash) return setToast(t("Nothing to export yet."));
               const { exportWorld } = await import("./export"); // loaded on demand: the exporter is a separate three build
-              await exportWorld(w.bundle, specHash, proof.receipt, prompt);
-              setToast(t("Exported: the scene (.glb), its logic (.logic.json) and the playtest report (.html)."));
+              const line = lineageOf(remixSrc, w);
+              const said = line?.origin.prompt || w.source?.base || w.source?.prompt || builtPrompt.current;
+              // the report links back to the world: the share or gallery entry it was opened from, else a new share of it (from the top, no run)
+              const link = kind === "all" || kind === "report" ? (remixSrc && remixSrc.spec === specHash ? `${window.location.origin}${refLink(remixSrc.ref)}` : await createShare(w, specHash, [], [], { prompt: said, line })) : null;
+              await exportWorld(kind, w.bundle, specHash, proof.receipt, { prompt: said, engine: ENGINE_HASH, link, homages: homagesNow ?? [], fengShui: fengShuiFor(w, ownPrompt ?? builtPrompt.current)?.section ?? null, ...(proof.cross ? { cross: proof.cross } : {}), at: new Date().toISOString() });
+              setToast(
+                kind === "report" ? t("Exported: the playtest report (.html).")
+                : kind === "glb" ? t("Exported: the scene (.glb).")
+                : kind === "logic" ? t("Exported: its logic (.logic.json).")
+                : t("Exported: the scene (.glb), its logic (.logic.json) and the playtest report (.html)."),
+              );
             }}
             onWrong={async (note) => {
               const sim = engine.current?.rapierSim;
