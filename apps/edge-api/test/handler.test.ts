@@ -183,6 +183,10 @@ describe("edge API", () => {
     const dev: Env = { CEREBRAS_API_KEY: "k", DEV_OPEN: "1" };
     const h = await handle(new Request("http://localhost/v1/health"), dev);
     expect(await h.json()).toMatchObject({ ok: true, llm: true, gate: "dev", sitekey: null });
+    // what is deployed: the commit (stamped at build; "dev" here) and the hashes it proves and prompts with
+    const ver = (await (await handle(new Request("http://localhost/v1/version"), dev)).json()) as Record<string, string>;
+    expect(ver).toMatchObject({ commit: "dev", engine: expect.stringMatching(/^[0-9a-f]{64}$/), template: expect.stringMatching(/^[0-9a-f]{64}$/) });
+    expect(typeof ver.proof).toBe("string");
     const empty = await handle(new Request("http://localhost/v1/build", { method: "POST", body: JSON.stringify({ prompt: "  " }) }), dev);
     expect(empty.status).toBe(400);
     const bad = await handle(new Request("http://localhost/v1/build", { method: "POST", body: "{" }), dev);

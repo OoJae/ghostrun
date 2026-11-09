@@ -633,4 +633,6 @@ export const ja: Table = {
   "Exported: the playtest report (.html).": "エクスポートしました：プレイテストレポート (.html)。",
   "Exported: the scene (.glb).": "エクスポートしました：シーン (.glb)。",
   "Exported: its logic (.logic.json).": "エクスポートしました：ロジック (.logic.json)。",
+  "AI-made": "AI 生成",
+  "Worlds, characters and answers here are made by AI, then checked by a proof. Privacy and AI: what we keep.": "ここのワールド、キャラクター、回答は AI が作り、証明で確認しています。プライバシーと AI：保存する内容。",
 };

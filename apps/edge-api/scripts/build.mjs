@@ -4,6 +4,7 @@
 // The cloud proof's two pinned wasm builds stay out of the bundle: they are copied beside it and
 // imported as modules (workerd instantiates only pre-compiled ones), and wrangler uploads them as
 // CompiledWasm modules. The bundle is stamped with the proof version (packages/world/src/version.ts).
+import { execFileSync } from "node:child_process";
 import { copyFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { dirname, resolve } from "node:path";
@@ -15,6 +16,17 @@ const require = createRequire(import.meta.url);
 const conditions = ["workerd", "worker", "browser", "import", "module", "default"];
 const { rapierWasmShim } = await import("../../../packages/sim/src/rapier/vite-plugin.ts");
 const { proofVersion } = await import("../../../packages/world/src/version.ts");
+
+/** The commit being built ("-dirty" with uncommitted changes), for /v1/version. */
+function gitCommit() {
+  try {
+    const head = execFileSync("git", ["rev-parse", "HEAD"], { cwd: root, encoding: "utf8" }).trim();
+    const dirty = execFileSync("git", ["status", "--porcelain"], { cwd: root, encoding: "utf8" }).trim() !== "";
+    return head + (dirty ? "-dirty" : "");
+  } catch {
+    return "unknown";
+  }
+}
 
 /** The pinned wasm binaries the Worker imports as modules (published name → source path). */
 export const WASM = {
@@ -28,7 +40,7 @@ export async function bundle(entry, outDir, fileName) {
     configFile: false,
     logLevel: "warn",
     plugins: [rapierWasmShim()],
-    define: { __PROOF_VERSION__: JSON.stringify(proofVersion()) },
+    define: { __PROOF_VERSION__: JSON.stringify(proofVersion()), __GIT_COMMIT__: JSON.stringify(gitCommit()) },
     resolve: { conditions },
     ssr: { noExternal: true, target: "webworker", resolve: { conditions } },
     build: {

@@ -633,4 +633,6 @@ export const zh: Table = {
   "Exported: the playtest report (.html).": "已导出：试玩报告 (.html)。",
   "Exported: the scene (.glb).": "已导出：场景 (.glb)。",
   "Exported: its logic (.logic.json).": "已导出：其逻辑 (.logic.json)。",
+  "AI-made": "AI 生成",
+  "Worlds, characters and answers here are made by AI, then checked by a proof. Privacy and AI: what we keep.": "这里的世界、角色和回答由 AI 生成，再经证明核对。隐私与 AI：我们保留什么。",
 };

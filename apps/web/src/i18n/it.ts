@@ -633,4 +633,6 @@ export const it: Table = {
   "Exported: the playtest report (.html).": "Esportato: il rapporto di playtest (.html).",
   "Exported: the scene (.glb).": "Esportato: la scena (.glb).",
   "Exported: its logic (.logic.json).": "Esportato: la sua logica (.logic.json).",
+  "AI-made": "Creato dall'IA",
+  "Worlds, characters and answers here are made by AI, then checked by a proof. Privacy and AI: what we keep.": "Mondi, personaggi e risposte qui sono creati dall'IA, poi verificati da una prova. Privacy e IA: cosa conserviamo.",
 };

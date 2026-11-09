@@ -633,4 +633,6 @@ export const cs: Table = {
   "Exported: the playtest report (.html).": "Exportováno: zpráva z testování (.html).",
   "Exported: the scene (.glb).": "Exportováno: scéna (.glb).",
   "Exported: its logic (.logic.json).": "Exportováno: její logika (.logic.json).",
+  "AI-made": "Vytvořeno AI",
+  "Worlds, characters and answers here are made by AI, then checked by a proof. Privacy and AI: what we keep.": "Světy, postavy a odpovědi zde vytváří AI a poté je kontroluje důkaz. Soukromí a AI: co uchováváme.",
 };
