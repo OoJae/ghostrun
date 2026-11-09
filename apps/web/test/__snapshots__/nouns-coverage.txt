@@ -1,5 +1,5 @@
-things (pickup, prop, switch, door): 83 of 202 distinct nouns drawn as a prop, 385 of 548 entities
-characters (npc): 39 of 42 distinct nouns given a body, 65 of 69 entities
+things (pickup, prop, switch, door): 89 of 216 distinct nouns drawn as a prop, 397 of 573 entities
+characters (npc): 39 of 42 distinct nouns given a body, 67 of 71 entities
 props used: 23 of 36 (barrel, flag, chair, pumpkin, gravestone, skull, target, tree, sword, wand, crossbow, shield, bomb unused here)
 
 kind     n  noun → prop
@@ -117,10 +117,14 @@ prop     2  alarm timer → -
 prop     1  ambient rain sound → -
 prop     1  ancient statue → -
 prop     1  art piece → -
+prop     2  bamboo handle green leather tote → -
 prop     1  battle banner → banner
+prop     2  black patent leather handbag → sack
 prop     1  boarding plank → -
 prop     1  bookshelf → bookcase
+prop     2  brass incense bowl → -
 prop     1  brass telescope → -
+prop     1  bronze incense burner → -
 prop     1  buzzer timer → -
 prop     1  capture timer → -
 prop     1  catapult → -
@@ -165,6 +169,10 @@ prop     1  portrait of the founder → -
 prop     1  potted plant → bush
 prop     1  rain soaked window → -
 prop     1  reactor core → -
+prop     2  red paper lantern → lantern
+prop     2  red silk evening clutch → -
+prop     1  rice paper screened window → -
+prop     2  round silver mirror → -
 prop     1  scale rocket model → -
 prop     1  sea view window → -
 prop     1  shelf of dragon scales → bookcase
@@ -172,13 +180,19 @@ prop     1  shelf of elf roots → bookcase
 prop     1  shelf of moon leaves → bookcase
 prop     1  shoji screen → -
 prop     1  siege ladder → -
+prop     2  silver chain mail purse → sack
 prop     1  sled → -
+prop     2  small stone fountain → rock
 prop     2  snow fence → -
 prop     1  stone fountain → rock
+prop     1  tall arched window → -
 prop     2  tatami mat → -
+prop     2  terracotta floor vase → -
 prop     1  tide timer → -
 prop     2  timer → -
 prop     1  walnut bookcase → bookcase
+prop     2  walnut reception desk → table
+prop     2  yellow ochre suede satchel → sack
 switch   1  blue wire → -
 switch   3  breaker → -
 switch   1  breaker a → -
@@ -225,7 +239,7 @@ npc      1  goalkeeper → knight
 npc      1  groaning zombie → skeleton
 npc      2  guard 1 → knight
 npc      1  guard 2 → knight
-npc      6  guide 1 → rogue
+npc      8  guide 1 → rogue
 npc      1  judge → rogue
 npc      2  librarian → mage
 npc      1  mate 1 → rogue
