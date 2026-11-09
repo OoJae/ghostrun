@@ -50,23 +50,36 @@ const PROBE_INTENT: IntentOut = {
   pack: "probe", sub: [], safety: "ok", headline: "probe", nouns: [], moodVec: { valence: 0, arousal: 0, tension: 0 },
 };
 
+// A probe prompt that turns on every line the fill prompt adds only for some prompts (the Feng Shui
+// rules today), so a change to any of those lines changes the hash too. Rendered in both modes,
+// since a place to explore gets its own line.
+const PROBE_PROMPTS: { prompt: string; mode: IntentOut["mode"] }[] = [
+  { prompt: "", mode: "play" },
+  { prompt: "probe feng shui", mode: "wander" },
+];
+
 let template: Promise<string> | undefined;
 
 /**
- * Everything a build sends the models besides the prompt and seed, hashed: the intent prompt and
- * its schema, each pack's fill prompt (world rules, the pack's layout, the example), the output
- * budgets and the model ids of both jobs. Computed once per isolate.
+ * What templateHash hashes: the intent prompt and its schema, each pack's fill prompt (world rules,
+ * the pack's layout, the example, and every conditional line), the output budgets and the model ids.
  */
-export function templateHash(example: string): Promise<string> {
-  template ??= sha256Hex(
-    jcs({
-      routes: { intent: ROUTES.intent, fill: ROUTES.fill },
-      intent: intentMessages("", PACKS),
-      schema: intentJsonSchema(PACKS.map((p) => p.id), ALL_SUBS),
-      fill: PACKS.map((p) => fillMessages("", { ...PROBE_INTENT, pack: p.id }, p.impl.generate({ seed: 1, params: p.impl.defaults, sub: [], laws: DEFAULT_LAWS, harder: false }), example, 1)),
-      maxOut: [INTENT_MAX_OUT, FILL_MAX_OUT],
+export function templateParts(example: string): unknown {
+  return {
+    routes: { intent: ROUTES.intent, fill: ROUTES.fill },
+    intent: intentMessages("", PACKS),
+    schema: intentJsonSchema(PACKS.map((p) => p.id), ALL_SUBS),
+    fill: PACKS.map((p) => {
+      const layout = p.impl.generate({ seed: 1, params: p.impl.defaults, sub: [], laws: DEFAULT_LAWS, harder: false });
+      return PROBE_PROMPTS.map(({ prompt, mode }) => fillMessages(prompt, { ...PROBE_INTENT, pack: p.id, mode }, layout, example, 1));
     }),
-  );
+    maxOut: [INTENT_MAX_OUT, FILL_MAX_OUT],
+  };
+}
+
+/** Everything a build sends the models besides the prompt and seed, hashed. Computed once per isolate. */
+export function templateHash(example: string): Promise<string> {
+  template ??= sha256Hex(jcs(templateParts(example)));
   return template;
 }
 

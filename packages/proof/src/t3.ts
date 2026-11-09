@@ -290,7 +290,11 @@ function walkTo(sim: SimWorld, nav: NavWorld, goal: Target, rng: () => number, s
     // a corner beside something deadly is turned on the spot, not cut (cutting it is half a metre in)
     const route = pts;
     const turn = (k: number) => (jumps.has(k) ? 0.12 : b && deadly(b).some((h) => inBox(route[k]![0], route[k]![2], h, 1.0)) ? 0.15 : 0.45);
-    while (i < pts.length && d2h(p, pts[i]!) < turn(i) * turn(i)) {
+    // a waypoint is passed early only when the straight line on to the next one is clear of walls:
+    // the two corners a doorway puts in a path are often closer together than the turn, and skipping
+    // both aims the runner across the jamb
+    const onward = (k: number) => k + 1 >= route.length || jumps.has(k) || !b || d2h(p, route[k]!) < 0.15 * 0.15 || clearOfWalls(b, p, route[k + 1]!);
+    while (i < pts.length && d2h(p, pts[i]!) < turn(i) * turn(i) && onward(i)) {
       if (jumps.has(i)) leapNow = true; // on the run-up spot: jump, straight for the landing point
       i++;
       best = Infinity;
@@ -670,13 +674,13 @@ function counter(sim: SimWorld, rule: string): () => number {
 }
 
 /** Does the segment a→b cross the box (grown by the capsule radius) on the ground plane? */
-function crosses(a: Vec3, b: Vec3, c: Vec3, size: Vec3): boolean {
+function crosses(a: Vec3, b: Vec3, c: Vec3, size: Vec3, grow = 0.35): boolean {
   let lo = 0;
   let hi = 1;
   for (const k of [0, 2] as const) {
     const d = b[k] - a[k];
-    const min = c[k] - size[k] / 2 - 0.35;
-    const max = c[k] + size[k] / 2 + 0.35;
+    const min = c[k] - size[k] / 2 - grow;
+    const max = c[k] + size[k] / 2 + grow;
     if (Math.abs(d) < 1e-9) {
       if (a[k] < min || a[k] > max) return false;
       continue;
@@ -687,6 +691,18 @@ function crosses(a: Vec3, b: Vec3, c: Vec3, size: Vec3): boolean {
     lo = Math.max(lo, u);
     hi = Math.min(hi, v);
     if (lo > hi) return false;
+  }
+  return true;
+}
+
+/** Can a runner walk the straight line a→b without its body meeting a wall (a lintel overhead doesn't count)? */
+function clearOfWalls(b: WorldBundle, a: Vec3, c: Vec3): boolean {
+  for (const st of b.statics) {
+    if (st.surf !== "wall") continue;
+    const lo = st.pos[1] - st.size[1] / 2;
+    const hi = st.pos[1] + st.size[1] / 2;
+    if (lo > a[1] + 0.5 || hi < a[1] - 0.5) continue;
+    if (crosses(a, c, st.pos, st.size, 0.3)) return false;
   }
   return true;
 }
