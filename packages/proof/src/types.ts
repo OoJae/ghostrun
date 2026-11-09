@@ -4,7 +4,7 @@ import type { Ghost } from "./ghost";
 /** How well an AI runner plays: experts are the proof's own runners, the others the playtest's. */
 export type Level = "novice" | "average" | "expert";
 
-export type Tier = "T0" | "T1" | "T2" | "T3";
+export type Tier = "T0" | "T1" | "T2" | "T3" | "T3h" | "T4";
 export type ChipStatus = "verified" | "played" | "modelled" | "not_checkable" | "counterexample";
 
 export interface Counterexample {
@@ -77,6 +77,32 @@ export interface Playtest {
   trails: Trail[];
   /** The win chain's steps, named, in order: what the pacing strip times. */
   steps: string[];
+  ms: number;
+  /** T3h: the experts' plan through the player's keys and camera (camera, stuck frames, capsule traps). */
+  human?: Chip[];
+  /** T4: the route model, calibrated on these runs; every number in it is modelled, never played. */
+  model?: Model;
+}
+
+/**
+ * T4, the route model (t4.ts): modelled, never played. Each number carries its calibration error
+ * (measured on the bench: t4-fit.ts) and, where this world has one, its physics check.
+ */
+export interface Model {
+  /** Modelled runs in all (an equal share at each level). */
+  runs: number;
+  /** Each level's modelled win rate (0…1), its ± (bench), and this world's physics runs at that level. */
+  levels: { level: Level; p: number; err: number; physics: { runs: number; won: number } }[];
+  /** Modelled clear times (s): median, 10th to 90th percentile, the relative ± (bench), and physics' median here. */
+  times: { median: number; lo: number; hi: number; err: number; physics: number } | null;
+  /** Where modelled runners spend their time: the busiest places and their shares, the ± (bench) and the gap to physics here. */
+  heat: { near: string; share: number }[];
+  heatErr: number;
+  heatGap: number;
+  /** A team map: the share of modelled matches red wins from its spawn, and its ±. */
+  teams: { red: number; err: number; matches: number } | null;
+  /** The anchors from this world's experts (time scale, risk): candidates of it are screened on these. */
+  anchor: { scale: number; risk: number };
   ms: number;
 }
 

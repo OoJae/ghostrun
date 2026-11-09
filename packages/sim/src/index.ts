@@ -4,3 +4,4 @@ export { BTN, DT, type InputFrame, type Pose, type Result, type SimEvent } from 
 export { SimWorld, type Booking, type Brain, type Flying, type SimOptions } from "./world";
 export { decodeAct, encodeAct, LOOK_AWAY, type SpeechAct } from "./acts";
 export { steerTo, type Waypoint } from "./motor";
+export { aimPush, boomLength, CAM, collidersOf, groundBelow, q8, rayBox, stickToWorld, type Box } from "./rig";

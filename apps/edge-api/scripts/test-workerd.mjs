@@ -170,12 +170,15 @@ try {
   const a1 = p1.status === 200 ? await p1.json() : { error: await p1.text() };
   const coldMs = Date.now() - t0;
   // everything but the timings and where it ran: every chip, the par, the headline, the trails, the ghost, the playtest
-  const still = (r) => JSON.parse(JSON.stringify({ ...r, ms: 0, host: "", chips: r.chips.map((c) => ({ ...c, ms: 0 })), ...(r.playtest ? { playtest: { ...r.playtest, ms: 0 } } : {}) }));
+  // (with T3h's chips and T4's model on it, their timings left out too)
+  const stillPt = (p) => ({ ...p, ms: 0, ...(p.human ? { human: p.human.map((c) => ({ ...c, ms: 0 })) } : {}), ...(p.model ? { model: { ...p.model, ms: 0 } } : {}) });
+  const still = (r) => JSON.parse(JSON.stringify({ ...r, ms: 0, host: "", chips: r.chips.map((c) => ({ ...c, ms: 0 })), ...(r.playtest ? { playtest: stillPt(r.playtest) } : {}) }));
   const cloud = a1.receipt ? still(a1.receipt) : null;
   const device = still(mine.receipt);
   const firstOff = cloud ? device.chips.findIndex((c, i) => JSON.stringify(c) !== JSON.stringify(cloud.chips[i])) : -1;
   check("the Worker proves the CTF brief on its shards, host edge", p1.status === 200 && a1.receipt.host === "edge" && a1.shards > 0 && a1.cached === null, `${p1.status} ${a1.error ?? ""} ${a1.shards} shards, ${coldMs} ms (Node ${mine.ms} ms)`);
   check("its receipt is Node's chip for chip", cloud !== null && firstOff === -1 && cloud.chips.length === device.chips.length, firstOff >= 0 ? `first differs: ${device.chips[firstOff].id}` : `${device.chips.length} chips`);
+  check("its T3h chips and T4 model came with the playtest", Boolean(cloud?.playtest?.human?.length && cloud?.playtest?.model), cloud?.playtest ? `${cloud.playtest.human?.length ?? 0} T3h chips, T4 ${cloud.playtest.model ? "yes" : "no"}` : "no playtest");
   check("and in everything else: headline, par, trails, ghost, playtest", cloud !== null && JSON.stringify(cloud) === JSON.stringify(device), cloud ? ["headline", "par", "trails", "ghost", "playtest"].filter((k) => JSON.stringify(cloud[k]) !== JSON.stringify(device[k])).join(",") || "all same" : "no receipt");
   const t1 = Date.now();
   const p2 = await ask({ "x-judge-token": TOKEN, "cf-connecting-ip": "198.51.100.21" });

@@ -36,7 +36,7 @@ export async function canaryHealth(env: { FLAGS?: KvNamespace }): Promise<{ at: 
   return { at: runs.map((r) => r.at).sort().at(-1)!, ok: runs.every((r) => r.ok) };
 }
 
-export async function healthMore(env: ProofEnv): Promise<{ proof: boolean; canary: { at: string; ok: boolean } | null }> {
+export async function healthMore(env: ProofEnv): Promise<{ proof: boolean; tiers: { t3h: boolean; t4: boolean }; canary: { at: string; ok: boolean } | null }> {
   const [p, canary] = await Promise.all([proofHealth(env), canaryHealth(env)]);
   return { ...p, canary };
 }

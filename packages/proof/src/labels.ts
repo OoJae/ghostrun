@@ -6,7 +6,7 @@
 import type { Parting } from "./redgreen";
 import type { Element, FengShuiFinding, FengShuiFix, FengShuiSection } from "@ghostrun/layout";
 import type { FailSpot, Revealed } from "./revealed";
-import type { Chip, FailRun, Level, Playtest, Receipt } from "./types";
+import type { Chip, FailRun, Level, Model, Playtest, Receipt } from "./types";
 
 export type WordVars = Readonly<Record<string, string | number>>;
 /** How a label is worded: a template with {placeholders}, and a count with its singular and plural. */
@@ -123,6 +123,35 @@ export function fightLineIn(f: { hits: number; kos: number; near?: string }, w: 
   const what = [f.hits ? w.n(f.hits, "{n} hit", "{n} hits") : "", f.kos ? w.n(f.kos, "{n} knock-out", "{n} knock-outs") : ""].filter(Boolean).join(", ");
   return f.near === undefined ? what : `${nearWords(f.near, w)}: ${what}`;
 }
+
+// ---- T4, the route model: every number modelled, with its ± ------------------------------------
+
+/** A modelled share with its calibration error: "41% ±20" (modelled runs are many; the ± is what to trust). */
+const modelPct = (p: number, err: number) => `${Math.round(p * 100)}% ±${Math.round(err * 100)}`;
+
+/** How T4's numbers were made. */
+export function modelMethod(m: Model, w: Words = english): string {
+  return w("route model, {n} modelled runs, anchored on this world's expert runs; ± is the calibration error on the bench", { n: m.runs });
+}
+
+/**
+ * The route model's lines, each marked modelled (never played): win rates by level beside this
+ * world's physics runs, clear times, where the time goes, and red against blue on a team map.
+ */
+export function modelLines(m: Model, w: Words = english): string[] {
+  const out: string[] = [];
+  out.push(`${w("Win rate, modelled:")} ${m.levels.map((l) => `${levelWord(l.level, w)} ${modelPct(l.p, l.err)} (${w("physics {k}", { k: fraction(l.physics.won, l.physics.runs, w) })})`).join(" · ")}`);
+  if (m.times) {
+    const range = clock(m.times.lo) !== clock(m.times.hi) ? w(", {lo} to {hi}", { lo: clock(m.times.lo), hi: clock(m.times.hi) }) : "";
+    out.push(`${w("Clear times, modelled: median {t} ±{e}%", { t: clock(m.times.median), e: Math.round(m.times.err * 100) })}${range} (${w("physics median {t}", { t: clock(m.times.physics) })})`);
+  }
+  if (m.heat.length) out.push(`${w("Most time, modelled:")} ${m.heat.map((h) => w("near the {thing} ({pct})", { thing: h.near, pct: modelPct(h.share, m.heatErr) })).join(", ")}`);
+  if (m.teams) out.push(w("Red vs blue from the spawns, modelled: red wins {pct} of {n} modelled matches", { pct: modelPct(m.teams.red, m.teams.err), n: m.teams.matches }));
+  return out;
+}
+
+/** T4 for the CLI and the tests: each line marked "~ [T4]", the method after. */
+export const modelBlock = (m: Model, w: Words = english): string[] => [...modelLines(m, w).map((l) => `~ [T4] ${l}`), `  (${modelMethod(m, w)})`];
 
 // ---- Feng Shui: one named school's principles, checked on the placed world ----------------------
 

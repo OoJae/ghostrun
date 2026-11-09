@@ -1,6 +1,6 @@
 import type { Chip, CrossCheck, Insights, Receipt, Revealed as Report } from "@ghostrun/proof/light";
 import { Fragment, useState, type ReactNode } from "react";
-import { chipLineAt, crossLine, fraction, statusWord, whereWord } from "@ghostrun/proof/light";
+import { chipLineAt, crossLine, fraction, modelLines, modelMethod, statusWord, whereWord } from "@ghostrun/proof/light";
 import { t, tn } from "../i18n";
 import { proofText, words } from "../i18n/words";
 import { Revealed } from "./Revealed";
@@ -118,6 +118,29 @@ export function ReceiptPanel({ proof, onClose, onShare, onWrong, onExport, onTru
           <Routes routes={routes} runs={report?.runs ?? r.trails.length} on={Boolean(routesOn)} onToggle={onRoutes} noteAction={noteAction} />
         </Revealed>
       )}
+      {r?.playtest?.human?.length ? (
+        // T3h: the experts' plan through the player's keys and camera, its own chips
+        <div className="tier-block" data-testid="t3h">
+          <p><b>{t("The player's controls and camera (T3h)")}</b></p>
+          <ul>
+            {r.playtest.human.map((c) => (
+              <li key={c.id} className={c.status}>{chipLineAt(c, r.host, words, proofText)}</li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+      {r?.playtest?.model ? (
+        // T4: the route model, every number modelled (never played), each with its ±
+        <div className="tier-block" data-testid="t4" title={modelMethod(r.playtest.model, words)}>
+          <p><b>{t("Route model (T4): modelled, not played")}</b></p>
+          <ul>
+            {modelLines(r.playtest.model, words).map((l, i) => (
+              <li key={i} className="modelled">~ {l}</li>
+            ))}
+          </ul>
+          <p className="muted method">{modelMethod(r.playtest.model, words)}</p>
+        </div>
+      ) : null}
       {fooled && (
         <p className={`fooled ${fooled.status === "done" ? (fooled.caught ? "caught" : "missed") : ""}`} data-testid="fooled">
           {fooled.status === "planting" && t("Planting a bug in a copy of this world; AI runners are playing it…")}

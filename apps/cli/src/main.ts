@@ -6,8 +6,10 @@ import { dirname, join, resolve } from "node:path";
 import { FillParser, lawsUnwritten, layoutLaws, mergeFill, parseFill, pinLayout, splitObjects, type FillNote, type WorldBundle } from "@ghostrun/ir";
 import { asksFengShui, FENG_SHUI_RULES, fengShui, placeWorld, saysFengShui } from "@ghostrun/layout";
 import { directorMessages, editMessages, fillMessages, hostJsonSchema, hostMessages, IntentOut, intentJsonSchema, intentMessages, jsonLanes, lanesFor, mindJsonSchema, mindMessages, repairMessages, settleIntent, streamLanes, type JobCall, type Keys } from "@ghostrun/llm";
+import { buildNav } from "@ghostrun/nav";
 import { loadNavNode } from "@ghostrun/nav/node";
-import { badness, better, caught, chipLine, fengShuiHead, fengShuiLine, insights, issuesOf, plants, prove, provedWon, reportLines, traceRunners, type Receipt } from "@ghostrun/proof";
+import { fit, measure, type Row } from "./calibrate";
+import { allRuns, badness, better, caught, chipLine, debugRig, modelBlock, PARAMS, physicsOf, routeOf, t0, fengShuiHead, fengShuiLine, insights, issuesOf, plants, prove, provedWon, reportLines, traceRunners, type Receipt } from "@ghostrun/proof";
 import { ALL_SUBS, layoutOf, PACKS, packFor } from "@ghostrun/registry";
 import { loadRapierNode } from "@ghostrun/sim/node";
 import * as v from "valibot";
@@ -196,16 +198,24 @@ async function main() {
     // --pack/--mode: the intent's, as the app places a live fill (its meta line sometimes names another)
     const flag = (name: string) => (args.includes(name) ? args[args.indexOf(name) + 1] : undefined);
     const { bundle, layout } = placeFromFill(readFileSync(args[0]!, "utf8"), seed, flag("--pack"), flag("--mode") as WorldBundle["mode"] | undefined);
-    // --playtest: then novice and average runners too (the difficulty band, what the runners revealed)
+    // --playtest: then novice and average runners too (the difficulty band, what the runners
+    // revealed), T3h (the player's controls and camera) and T4 (the route model); --no-t3h and
+    // --no-t4 leave either out
     const t0 = performance.now();
     let out = 0;
     const play = args.includes("--playtest");
-    const r = await prove(R, bundle, { engine: ENGINE, ...(play ? { playtest: true, onReceipt: () => void (out = performance.now() - t0) } : {}) });
+    const r = await prove(R, bundle, { engine: ENGINE, ...(play ? { playtest: true, t3h: !args.includes("--no-t3h"), t4: !args.includes("--no-t4"), onReceipt: () => void (out = performance.now() - t0) } : {}) });
     printReceipt(r);
     printFengShui(bundle, layout, "", args.includes("--fengshui"));
     if (play) {
       console.log(`  the receipt was out at ${Math.round(out)} ms; the playtest took ${r.playtest?.ms ?? 0} ms more`);
       for (const l of reportLines(bundle, r)) console.log(`  ${l}`);
+      const human = r.playtest?.human ?? [];
+      if (human.length) console.log(`  The player's controls and camera (T3h, ${human[0]!.ms} ms):`);
+      for (const c of human) console.log(`  ${chipLine(c)}`);
+      const m = r.playtest?.model;
+      if (m) console.log(`  The route model (T4, ${m.ms} ms; modelled, not played):`);
+      if (m) for (const l of modelBlock(m)) console.log(`  ${l}`);
     }
   } else if (cmd === "diagnose") {
     // one recorded world, taken apart: what the placer repaired, the receipt, and what one AI
@@ -384,8 +394,10 @@ async function main() {
       console.log(`${name}: ${play} play worlds, first pass ${firstPass}, now ${now}; ${places} places, fully toured ${touredFirst} first pass, ${toured} now`);
     }
     // the planted-bug results (ghostrun fool) are kept until that is run again
-    const fool = existsSync(out) ? (JSON.parse(readFileSync(out, "utf8")) as { fool?: unknown }).fool : undefined;
-    writeFileSync(out, `${JSON.stringify({ generated: new Date().toISOString().slice(0, 10), won: "at least 10 of 12 AI runners win in physics", sets, ...(fool ? { fool } : {}) }, null, 1)}\n`);
+    // (and T3h's gate, `ghostrun human --gate 20 --trust`, until that is run again)
+    const kept = existsSync(out) ? (JSON.parse(readFileSync(out, "utf8")) as { fool?: unknown; t3h?: unknown }) : {};
+    const { fool, t3h } = kept;
+    writeFileSync(out, `${JSON.stringify({ generated: new Date().toISOString().slice(0, 10), won: "at least 10 of 12 AI runners win in physics", sets, ...(fool ? { fool } : {}), ...(t3h ? { t3h } : {}) }, null, 1)}\n`);
   } else if (cmd === "gallery-add") {
     // recorded live worlds into the web gallery, unedited: each is proved first and only a won one
     // goes in ("honest receipt" when runners win but the world's own headline claim fails)
@@ -415,6 +427,122 @@ async function main() {
       console.log(`  added${honest ? " (honest receipt)" : ""}: ${saved.prompt}`);
     }
     writeFileSync(join(dir, "index.json"), `${JSON.stringify(index, null, 1)}\n`);
+  } else if (cmd === "human") {
+    // T3h over committed worlds: each play world's experts, then its human-controller runs. A world
+    // is clean when its receipt is (no counterexample, at least 10 of 12 experts win): --gate n
+    // takes the first n clean worlds in name order (chosen before T3h says anything) and counts
+    // T3h's flags on them. --shard i/n takes every n-th world.
+    const root = args[0]!;
+    const gate = args.includes("--gate") ? Number(args[args.indexOf("--gate") + 1]) : 0;
+    const [k, n] = (args.includes("--shard") ? args[args.indexOf("--shard") + 1]! : "0/1").split("/").map(Number) as [number, number];
+    const R = await loadRapierNode();
+    await loadNavNode();
+    let i = 0;
+    let clean = 0;
+    let flagged = 0;
+    for (const name of readdirSync(root).filter((d) => existsSync(join(root, d, "bench.json"))).sort()) {
+      const dir = join(root, name);
+      for (const f of readdirSync(dir).filter((x) => x.endsWith(".fill.jsonl")).sort()) {
+        if (gate && clean >= gate) break;
+        const text = readFileSync(join(dir, f), "utf8");
+        const saved = JSON.parse(readFileSync(join(dir, f.replace(".fill.jsonl", ".receipt.json")), "utf8")) as { intent: IntentOut };
+        if (saved.intent.mode === "wander" || i++ % n !== k) continue;
+        const seed = (JSON.parse(splitObjects(text.split("\n", 1)[0] ?? "{}")[0] ?? "{}") as { seed?: number }).seed ?? 7;
+        const { bundle } = placeFromFill(text, seed, saved.intent.pack, saved.intent.mode);
+        if (bundle.mode !== "play") continue;
+        const lines: string[] = [];
+        if (args.includes("--trace")) traceRunners((m) => void (lines.length < 20000 && lines.push(m)));
+        if (args.includes("--rig")) debugRig((m) => void (lines.length < 20000 && lines.push(m)));
+        const r = await prove(R, bundle, { engine: ENGINE, runs: 12, playtest: true, skillRuns: 1, t3h: true }).catch(() => null);
+        traceRunners(null);
+        debugRig(null);
+        if (!r) continue;
+        // --trace: the first human-controller run's moves (its seed: the world's × 1000 + 900)
+        const from = lines.findIndex((l) => l.startsWith(`run ${bundle.seed * 1000 + 900}`));
+        if (from >= 0) console.log(lines.slice(from, from + 600).join("\n"));
+        for (const l of lines) if (l.startsWith("REPORT")) console.log(l);
+        if (args.includes("--rig")) console.log(lines.filter((l) => l.startsWith("t")).slice(0, 70).join("\n"));
+        const won = r.chips.find((c) => c.id === "T3:win")?.k ?? 0;
+        const isClean = won >= 10 && !r.chips.some((c) => c.status === "counterexample");
+        if (gate && !isClean) continue;
+        if (isClean) clean++;
+        const human = r.playtest?.human ?? [];
+        const bad = human.filter((c) => c.status === "counterexample");
+        if (bad.length) flagged++;
+        console.log(`${isClean ? "clean" : "     "} ${name}/${f.replace(".fill.jsonl", "")} [${bundle.pack.id}] · experts ${won}/12 · T3h ${bad.length ? bad.map((c) => `${c.id}: ${c.cx?.text}`).join("; ") : `clean (${human.map((c) => `${c.k}/${c.n}`).join(" ")})`} · ${human[0]?.ms ?? 0} ms`);
+      }
+    }
+    if (gate) console.log(`T3h on the first ${clean} clean worlds: ${flagged} flagged`);
+    // --trust file: the gate's numbers into "Why trust this?" (trust.json keeps them)
+    if (gate && args.includes("--trust")) {
+      const file = args[args.indexOf("--trust") + 1]!;
+      const was = JSON.parse(readFileSync(file, "utf8")) as Record<string, unknown>;
+      writeFileSync(file, `${JSON.stringify({ ...was, t3h: { worlds: clean, flagged } }, null, 1)}\n`);
+    }
+  } else if (cmd === "calibrate") {
+    // T4's calibration: collect (prove every play world with its playtest and T3h; --shard i/n
+    // takes every n-th, --data where to keep them), then --fit: fit on half, measure on the rest
+    const root = args[0]!;
+    const data = args.includes("--data") ? args[args.indexOf("--data") + 1]! : "t4-data.json";
+    if (args.includes("--fit")) {
+      const rows = data.split(",").flatMap((f) => JSON.parse(readFileSync(f, "utf8")) as Row[]).sort((a, b) => (a.id < b.id ? -1 : 1));
+      const fitted = rows.filter((_, i) => i % 2 === 0);
+      const held = rows.filter((_, i) => i % 2 === 1);
+      console.log(`${rows.length} play worlds: fitting on ${fitted.length}, measuring on ${held.length} held out`);
+      const p = fit(fitted, (s) => console.log(s));
+      const before = measure(held, PARAMS);
+      const after = measure(held, p);
+      const inSample = measure(fitted, p);
+      const say = (m: ReturnType<typeof measure>) => `win-rate gap novices ${m.win.novice.toFixed(3)} (physics' own k-of-6 noise ${m.sampling.novice.toFixed(3)}), average ${m.win.average.toFixed(3)} (${m.sampling.average.toFixed(3)}), experts ${m.win.expert.toFixed(3)} (${m.sampling.expert.toFixed(3)}); clear time ${(m.times * 100).toFixed(1)}%; heat ${(m.heat * 100).toFixed(1)} points`;
+      console.log(`held out, start params: ${say(before)}`);
+      console.log(`held out, fitted:       ${say(after)}`);
+      console.log(`fitted on (in-sample):  ${say(inSample)}`);
+      console.log(`PARAMS ${JSON.stringify(p)}`);
+      if (args.includes("--out")) writeFileSync(args[args.indexOf("--out") + 1]!, `${JSON.stringify({ params: p, held: after, start: before, inSample, fitted: fitted.length, heldOut: held.length }, null, 1)}\n`);
+    } else {
+      const [k, n] = (args.includes("--shard") ? args[args.indexOf("--shard") + 1]! : "0/1").split("/").map(Number) as [number, number];
+      const R = await loadRapierNode();
+      await loadNavNode();
+      const rows: Row[] = [];
+      let i = 0;
+      for (const name of readdirSync(root).filter((d) => existsSync(join(root, d, "bench.json"))).sort()) {
+        const dir = join(root, name);
+        for (const f of readdirSync(dir).filter((x) => x.endsWith(".fill.jsonl")).sort()) {
+          const text = readFileSync(join(dir, f), "utf8");
+          const saved = JSON.parse(readFileSync(join(dir, f.replace(".fill.jsonl", ".receipt.json")), "utf8")) as { intent: IntentOut };
+          if (saved.intent.mode === "wander" || i++ % n !== k) continue;
+          const seed = (JSON.parse(splitObjects(text.split("\n", 1)[0] ?? "{}")[0] ?? "{}") as { seed?: number }).seed ?? 7;
+          const { bundle } = placeFromFill(text, seed, saved.intent.pack, saved.intent.mode);
+          if (bundle.mode !== "play") continue;
+          const r = await prove(R, bundle, { engine: ENGINE, runs: 12, playtest: true, t3h: true, t4: true }).catch(() => null);
+          const pt = r?.playtest;
+          const chain = t0(bundle, "red").chain;
+          if (!r || !pt || !chain) continue;
+          const nav = buildNav(bundle);
+          try {
+            const route = routeOf(bundle, nav, chain, "red");
+            const physics = physicsOf(r, pt);
+            if (!route || !physics.expert.won) continue;
+            const id = `${name}/${f.replace(".fill.jsonl", "")}`;
+            rows.push({
+              id, seed: bundle.seed, pack: bundle.pack.id,
+              route: { ...route, legs: route.legs.map(({ pts: _p, ...l }) => l) },
+              physics,
+              heat: insights(bundle, allRuns(r)).hot.filter((h) => h.near).map((h) => ({ near: h.near, share: h.share })),
+              modelHeat: pt.model?.heat ?? [],
+              human: (pt.human ?? []).map((c) => ({ id: c.id, status: c.status, k: c.k, n: c.n, cx: c.cx?.text ?? "" })),
+              ms: { playtest: pt.ms, t3h: pt.human?.[0]?.ms ?? 0, t4: pt.model?.ms ?? 0 },
+            });
+            const bad = (pt.human ?? []).filter((c) => c.status === "counterexample");
+            console.log(`${id}: ${physics.novice.won}/${physics.novice.runs} ${physics.average.won}/${physics.average.runs} ${physics.expert.won}/${physics.expert.runs} · T3h ${bad.length ? bad.map((c) => `${c.id} ${c.cx?.text}`).join("; ") : "clean"} · T4 ${pt.model?.ms ?? "-"} ms`);
+          } finally {
+            nav.destroy();
+          }
+        }
+      }
+      writeFileSync(data, JSON.stringify(rows));
+      console.log(`kept ${rows.length} worlds in ${data}`);
+    }
   } else if (cmd === "fool") {
     // "Try to fool it", at scale: plant every bug that applies (the goal 40 m up, the key gone, a
     // condition nothing meets, a 5 s countdown, no jumping on a course) in every committed world the

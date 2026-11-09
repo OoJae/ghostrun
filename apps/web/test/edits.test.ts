@@ -5,7 +5,8 @@ import { prove } from "@ghostrun/proof";
 import type { Rapier } from "@ghostrun/sim";
 import { loadRapierNode } from "@ghostrun/sim/node";
 import type { Band, Chip, Receipt } from "@ghostrun/proof";
-import { changeSummary, editedPrompt, HARDER, intentFor, pickHarder, receiptDelta } from "../src/edits";
+import { changeSummary, editedPrompt, HARDER, intentFor, pickHarder, receiptDelta, screenRace, screenScore, type Screened } from "../src/edits";
+import type { Model } from "@ghostrun/proof";
 import { buildWorld, ENGINE_HASH, worldFromFill } from "../src/pipeline";
 
 let R: Rapier;
@@ -102,5 +103,47 @@ describe("harder but fair: the race's judge", () => {
     expect(pickHarder(before, [banded(12, 20.4, "Hard")]).best).toBe(0);
     // no band for the world itself (its playtest hadn't landed): the numbers decide, as before
     expect(pickHarder(receipt(12, 20), [banded(12, 32, "Expert only"), banded(11, 24, "Hard")]).best).toBe(0);
+  });
+});
+
+describe("harder but fair, screened on T4 first", () => {
+  // the world's own route model: novices 80%, average 95%, experts 100% (each ± its bench error), median 0:30
+  const base: Model = {
+    runs: 1200,
+    levels: [
+      { level: "novice", p: 0.8, err: 0.24, physics: { runs: 6, won: 5 } },
+      { level: "average", p: 0.95, err: 0.15, physics: { runs: 6, won: 6 } },
+      { level: "expert", p: 1, err: 0.04, physics: { runs: 12, won: 12 } },
+    ],
+    times: { median: 30, lo: 24, hi: 40, err: 0.11, physics: 30 },
+    heat: [],
+    heatErr: 0.1,
+    heatGap: 0,
+    teams: null,
+    anchor: { scale: 1, risk: 1 },
+    ms: 5,
+  };
+  const s = (novice: number, average: number, expert: number, median = 30): Screened => ({ levels: { novice, average, expert }, median });
+
+  it("calls a candidate fair while modelled experts still win half the time, harder as novices and average players win less", () => {
+    expect(screenScore(base, s(0.5, 0.8, 0.95)).fair).toBe(true);
+    expect(screenScore(base, s(0.1, 0.2, 0.4)).fair).toBe(false);
+    expect(screenScore(base, s(0.5, 0.8, 0.95)).score).toBeGreaterThan(screenScore(base, s(0.7, 0.9, 1)).score);
+    expect(screenScore(base, s(0.5, 0.8, 0.95, 45)).score).toBeGreaterThan(screenScore(base, s(0.5, 0.8, 0.95, 30)).score);
+    expect(screenScore(base, s(0.5, 0.8, 0.95)).line).toBe("modelled: novices 80% → 50% ±24, average 95% → 80% ±15, experts 100% → 95% ±4");
+    expect(screenScore(base, null)).toMatchObject({ fair: false, line: "no route to model" });
+  });
+
+  it("halves the field each round with four times the modelled runs, and hands physics the pick first, the rest in screened order", async () => {
+    const asked: [number, number][] = [];
+    const reads = [s(0.75, 0.9, 1), s(0.4, 0.7, 0.9), s(0.1, 0.1, 0.3), s(0.6, 0.85, 1)];
+    const { order, notes } = await screenRace(base, [0, 1, 2, 3], async (i, n) => (asked.push([i, n]), reads[i]!));
+    // round 1: all four at 150 runs (C unfair, out); round 2: the better two (B, D) at 600; then B alone
+    expect(asked).toEqual([[0, 150], [1, 150], [2, 150], [3, 150], [1, 600], [3, 600]]);
+    expect(order).toEqual([1, 3, 0, 2]);
+    expect(notes.get(2)).toMatch(/^screened out on T4 \(unfair\) with 150 modelled runs at each level, modelled: /);
+    expect(notes.get(1)).toMatch(/^screened on T4 with 600 modelled runs at each level/);
+    // nothing fair on the model: physics proves them all, as before
+    expect((await screenRace(base, [0, 1], async () => s(0, 0, 0.2))).order).toEqual([0, 1]);
   });
 });

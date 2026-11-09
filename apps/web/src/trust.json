@@ -268,5 +268,13 @@
     "caught": 18
    }
   }
+ },
+ "t3h": {
+  "worlds": 20,
+  "flagged": 0,
+  "all": {
+   "worlds": 191,
+   "flagged": 8
+  }
  }
 }

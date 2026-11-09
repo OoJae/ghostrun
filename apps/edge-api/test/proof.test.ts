@@ -8,7 +8,7 @@ import { createHmac } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { loadNavNode } from "@ghostrun/nav/node";
-import { comparable, prove, receiptHash, type Receipt } from "@ghostrun/proof";
+import { comparable, prove, receiptHash, TIERS, type Receipt } from "@ghostrun/proof";
 import type { Rapier } from "@ghostrun/sim";
 import { loadRapierNode } from "@ghostrun/sim/node";
 import { PROOF_VERSION } from "@ghostrun/world";
@@ -44,10 +44,10 @@ async function input(name: string): Promise<ProofInput> {
   return { v: 1, fill: p.fill, seed: p.seed, engine: ENGINE_HASH, spec: p.spec, version: PROOF_VERSION };
 }
 
-/** The device's own receipt for a fixture: prove() as proof.worker.ts runs it. */
+/** The device's own receipt for a fixture: prove() as proof.worker.ts runs it (the later tiers as /v1/health says: the defaults here). */
 async function device(name: string): Promise<Receipt> {
   const fill = fixture(name);
-  return prove(R, (await placeFill(fill, seedOf(fill))).bundle, { engine: ENGINE_HASH, host: "device", playtest: true });
+  return prove(R, (await placeFill(fill, seedOf(fill))).bundle, { engine: ENGINE_HASH, host: "device", playtest: true, ...TIERS });
 }
 
 function edge(env: Partial<Env> = {}) {

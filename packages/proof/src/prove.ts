@@ -7,7 +7,9 @@ import { playtest } from "./playtest";
 import { t0 } from "./t0";
 import { t1, t1Drive, t1Range } from "./t1";
 import { t2 } from "./t2";
-import { t3, tour, type Played } from "./t3";
+import { humanRuns, t3, tour, type Played } from "./t3";
+import { HUMAN_RUNS } from "./t3h";
+import { t4 } from "./t4";
 import type { Chip, Receipt } from "./types";
 
 export interface ProveOptions {
@@ -32,6 +34,13 @@ export interface ProveOptions {
   played?: Played | Promise<Played>;
   /** The playtest's runs played elsewhere, awaited once the receipt is out (default: played). */
   playtestPlayed?: Played | Promise<Played>;
+  /**
+   * With the playtest: T3h, the experts' plan through the player's keys and camera (its chips on
+   * the playtest, `human`), and T4, the route model calibrated on the playtest's runs (`model`).
+   * Both are off unless asked for (the flags ff.t3h and ff.t4 decide where they are asked for).
+   */
+  t3h?: boolean;
+  t4?: boolean;
 }
 
 export async function prove(R: Rapier, b: WorldBundle, opts: ProveOptions): Promise<Receipt> {
@@ -80,7 +89,18 @@ export async function prove(R: Rapier, b: WorldBundle, opts: ProveOptions): Prom
     opts.onReceipt?.(receipt);
     const later = opts.playtestPlayed ? await opts.playtestPlayed : played;
     const pt = playtest(R, b, nav, s0.chain, receipt, team, s0.openers, opts.skillRuns, later);
-    return pt ? { ...receipt, playtest: pt } : receipt;
+    if (!pt) return receipt;
+    // T3h on the experts' routes (as the playtest, only once one of them won: on a world nobody
+    // won, every run would play out the clock)
+    if (opts.t3h && s0.chain && b.mode === "play" && (receipt.par?.won ?? 0) > 0) {
+      const human = humanRuns(R, b, nav, s0.chain, s3.stalls, HUMAN_RUNS, team, s0.openers, later);
+      if (human.length) pt.human = human;
+    }
+    if (opts.t4 && s0.chain) {
+      const m = t4(b, nav, s0.chain, receipt, pt, team);
+      if (m) pt.model = m;
+    }
+    return { ...receipt, playtest: pt };
   } finally {
     nav.destroy();
   }

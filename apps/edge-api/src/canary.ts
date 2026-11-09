@@ -19,7 +19,7 @@ import { doCall, governorClient } from "./governor";
 import { handle, type Env } from "./handler";
 import { canaryKey, lastRun, type CanaryKind, type CanaryRun } from "./health";
 import { ntfy } from "./http";
-import { proofKey, proofOn, proveWorld, readKept, type ProofInput } from "./proof";
+import { proofKey, proofOn, proveWorld, readKept, tiersOn, type ProofInput } from "./proof";
 import { r2Blobs } from "./share";
 import { placeFill } from "./world";
 
@@ -70,7 +70,7 @@ async function storedProof(env: Env, ctx: WaitUntil): Promise<Outcome> {
 async function freshProof(env: Env): Promise<Outcome> {
   if (!(await proofOn(env))) return { ok: true, detail: "skipped: ff.edge_proof is off" };
   const input = await golden(COINS);
-  const kept = env.SHARES ? await readKept(r2Blobs(env.SHARES), proofKey(input.spec)) : null;
+  const kept = env.SHARES ? await readKept(r2Blobs(env.SHARES), proofKey(input.spec, ENGINE_HASH, PROOF_VERSION, await tiersOn(env))) : null;
   // the first fresh proof for a version is kept; after that the kept one is what a fresh one must equal
   const r = await proveWorld(input, { env, fresh: true, keep: kept === null });
   if (!r.ok) return { ok: false, detail: `coin rush: ${r.status} ${r.error}` };

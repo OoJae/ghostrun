@@ -82,7 +82,7 @@ export class ProofShardDO {
  * jump attempts last, to fill in round the long ones.
  */
 export function dealOrder(jobs: readonly Witness[]): Witness[] {
-  const rank = (w: Witness) => (w.kind === "jump" ? 4 : w.level === "novice" ? 0 : w.level === "average" ? 1 : w.schedule?.length ? 2 : 3);
+  const rank = (w: Witness) => (w.kind === "jump" ? 4 : w.kind === "human" ? 1 : w.level === "novice" ? 0 : w.level === "average" ? 1 : w.schedule?.length ? 2 : 3);
   return [...jobs].map((w, i) => ({ w, i })).sort((a, b) => rank(a.w) - rank(b.w) || a.i - b.i).map((x) => x.w);
 }
 

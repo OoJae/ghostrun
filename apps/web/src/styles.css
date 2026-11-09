@@ -498,6 +498,9 @@ kbd {
 .receipt ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
 .receipt li.counterexample { color: #ff8095; }
 .receipt li.not_checkable { opacity: 0.6; }
+.receipt li.modelled { color: #b9c7ff; }
+.receipt .tier-block { margin-top: 10px; }
+.receipt .tier-block p { margin: 0 0 4px; }
 .receipt .headline.verified b, .receipt .headline.played b { color: #3dffa8; }
 .receipt .headline.counterexample b { color: #ff3b5c; }
 .receipt .method { opacity: 0.6; }

@@ -18,7 +18,7 @@ import { TrustPanel } from "./hud/Trust";
 import { CutChip, ProofBadge, proofBadge, ReceiptPanel, RepairChip, type CutState, type Fooled, type ProofState, type RepairState } from "./hud/Proof";
 import { liveBuild, liveDirector, liveEdit, liveHealth, liveRepair, type LiveCached, type LiveInspired, type LiveIntent } from "./live";
 import type { Picture } from "./picture";
-import { ANGLES, changeSummary, cutHolds, cutNotes, editedPrompt, HARDER, intentFor, newFailures, pickHarder, receiptDelta, suggestionsFor, SURPRISE } from "./edits";
+import { ANGLES, changeSummary, cutHolds, cutNotes, editedPrompt, HARDER, intentFor, newFailures, pickHarder, receiptDelta, screenRace, suggestionsFor, SURPRISE, type Screened } from "./edits";
 import { controlsFor, lawChange, layoutChangeOf, rebuiltLine, restyled, WEATHER_WORD, type CardActions, type ShapePin } from "./card";
 import { mergeEdit } from "./structure";
 import { createShare, loadShare, reportWrong } from "./share";
@@ -29,7 +29,7 @@ import { chooseLocale, chosenLocale, k, pickLocale, setLocale, t, tn, type Local
 import { LanguageChip } from "./hud/Language";
 import { BRIEF, buildWorld, ENGINE_HASH, FIXTURE_PROMPTS, FIXTURES, hashWorld, worldFromFill, type Intent, type World } from "./pipeline";
 import { probe } from "./probe";
-import { dualProof, proveInCloud } from "./cloud";
+import { dualProof, proofTiers, proveInCloud } from "./cloud";
 import { LOOK_CHOICES, lookSamples, type LookPin } from "./render/pick";
 import { askHost, clock as mmss, facts, story, type Fact } from "./host";
 import { tourChips, tourFacts, whyFacts } from "./why";
@@ -267,7 +267,8 @@ export function App() {
     const w = worker.current;
     return new Promise((resolve, reject) => {
       pending.current.set(id, { ...(onChip ? { onChip } : {}), ...(onPlaytest ? { onPlaytest } : {}), resolve, reject });
-      w.postMessage({ id, bundle: world.bundle, engine: ENGINE_HASH, urls: wasmUrls.current, ...(onPlaytest ? { playtest: true } : {}) });
+      // (the playtest's later tiers, T3h and T4, as the edge runs them: cloud.ts)
+      void proofTiers().then((tiers) => w.postMessage({ id, bundle: world.bundle, engine: ENGINE_HASH, urls: wasmUrls.current, ...(onPlaytest ? { playtest: true, ...tiers } : {}) }));
     });
   }, []);
 
@@ -879,6 +880,19 @@ export function App() {
       wk.postMessage({ id: 1, bundle: world.bundle, engine: ENGINE_HASH, urls: wasmUrls.current, runs, ...(skill ? { playtest: true, skillRuns: skill } : {}) });
     });
 
+  /** T4's screen of a candidate world in its own worker: modelled runs on the anchors of the world it came from (no physics). */
+  const screenOnce = (world: World, anchor: { scale: number; risk: number }, n: number) =>
+    new Promise<Screened | null>((resolve, reject) => {
+      const wk = new Worker(new URL("./proof.worker.ts", import.meta.url), { type: "module" });
+      const done = (f: () => void) => (wk.terminate(), f());
+      wk.onmessage = (e: MessageEvent<{ screened?: Screened | null; error?: string }>) => {
+        if (e.data.screened !== undefined) done(() => resolve(e.data.screened ?? null));
+        if (e.data.error) done(() => reject(new Error(e.data.error)));
+      };
+      wk.onerror = (e) => done(() => reject(new Error(e.message)));
+      wk.postMessage({ id: 1, bundle: world.bundle, engine: ENGINE_HASH, urls: wasmUrls.current, screen: { anchor, n } });
+    });
+
   /**
    * "Make it harder but fair": one candidate per angle (obstacles, pressure, a longer route), each
    * proved by AI runners in parallel; the hardest candidate that is still fair is kept, and every
@@ -900,7 +914,23 @@ export function App() {
     let proved = 0;
     const lanes = Math.max(1, Math.min(worlds.length, (navigator.hardwareConcurrency || 4) - 2));
     const receipts: (Receipt | null)[] = worlds.map(() => null);
-    const queue = worlds.map((c, i) => [c, i] as const).filter(([c]) => c);
+    const alive = worlds.flatMap((c, i) => (c ? [i] : []));
+    // T4 first (ff.t4, and the world has its route model): the candidates screened on modelled runs
+    // by successive halving, the pick proved in physics, and the rest only if it doesn't hold up
+    const model = before.playtest?.model;
+    let order = alive;
+    let notes = new Map<number, string>();
+    let settled = false;
+    if (model && alive.length > 1 && (await proofTiers()).t4) {
+      ({ order, notes } = await screenRace(model, alive, (i, n) => screenOnce(worlds[i]!, model.anchor, n).catch(() => null)));
+      if (runId.current !== base) return;
+      const first = order[0]!;
+      receipts[first] = await proveOnce(worlds[first]!, 6, before.playtest ? 3 : 0).catch(() => null);
+      if (runId.current !== base) return;
+      setEdit({ status: "racing", change, total: ANGLES.length, proved: ++proved });
+      settled = pickHarder(before, receipts).best === first;
+    }
+    const queue = settled ? [] : order.filter((i) => !receipts[i]).map((i) => [worlds[i], i] as const);
     await Promise.all(
       Array.from({ length: lanes }, async () => {
         for (let job = queue.shift(); job; job = queue.shift()) {
@@ -911,7 +941,10 @@ export function App() {
       }),
     );
     if (runId.current !== base) return;
-    const { best, verdicts } = pickHarder(before, receipts);
+    const picked = pickHarder(before, receipts);
+    const best = picked.best;
+    // each verdict with its T4 screen; one the screen's pick made unnecessary to prove says so
+    const verdicts = picked.verdicts.map((v, i) => (!notes.has(i) ? v : settled && !receipts[i] && worlds[i] ? `${v.slice(0, 2)} not proved: the screen's pick held up (${notes.get(i)})` : `${v} · ${notes.get(i)}`));
     if (best === null) return setEdit({ status: "failed", change, message: t("None of the harder versions stayed fair, so the world is unchanged."), race: verdicts });
     const w2 = worlds[best]!;
     w2.source = { prompt: editedPrompt(original, edits), intent, fill: w2.fill, seed: w.seed, pack: w2.bundle.pack.id, base: original, edits };

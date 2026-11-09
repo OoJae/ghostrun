@@ -10,7 +10,9 @@ import type { Receipt } from "./types";
  */
 export function comparable(r: Receipt): unknown {
   const { host: _host, ms: _ms, playtest, ...rest } = r;
-  const same = { ...rest, chips: r.chips.map(({ ms: _c, ...c }) => c), ...(playtest ? { playtest: { ...playtest, ms: 0 } } : {}) };
+  // (T3h's chips and T4's model, on the playtest, carry timings too)
+  const pt = playtest ? { ...playtest, ms: 0, ...(playtest.human ? { human: playtest.human.map(({ ms: _h, ...c }) => c) } : {}), ...(playtest.model ? { model: { ...playtest.model, ms: 0 } } : {}) } : null;
+  const same = { ...rest, chips: r.chips.map(({ ms: _c, ...c }) => c), ...(pt ? { playtest: pt } : {}) };
   return JSON.parse(JSON.stringify(same)) as unknown;
 }
 

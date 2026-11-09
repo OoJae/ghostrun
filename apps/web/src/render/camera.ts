@@ -2,18 +2,18 @@
 // (deltaX → yaw), Q/E or ←/→ (yaw), ↑/↓ (pitch); pinch or wheel zooms. Pulls in when a static
 // would block the view.
 import { MathUtils, Vector3, type PerspectiveCamera } from "three/webgpu";
-import { rayBox, type Box } from "../sim/aabb";
+import { boomLength, CAM, type Box } from "@ghostrun/sim/rig";
 
 const PITCH_MIN = -0.15;
 const PITCH_MAX = 1.05;
 const DIST_MIN = 2.5;
 const DIST_MAX = 14;
-const LOOK_H = 0.9; // look at a point above the capsule centre
+const LOOK_H = CAM.LOOK_H; // look at a point above the capsule centre
 
 export class FollowCamera {
   yaw = 0;
-  pitch = 0.36;
-  dist = 7;
+  pitch: number = CAM.PITCH;
+  dist: number = CAM.DIST;
   readonly #cam: PerspectiveCamera;
   readonly #el: HTMLElement;
   readonly #target = new Vector3();
@@ -58,10 +58,10 @@ export class FollowCamera {
   }
 
   /** Jump straight to the target next update (new world / respawn). */
-  reset(yaw: number, pitch = 0.36) {
+  reset(yaw: number, pitch: number = CAM.PITCH) {
     this.yaw = yaw;
     this.pitch = pitch;
-    this.dist = 7;
+    this.dist = CAM.DIST;
     this.#extra = 0;
     this.#chase = null;
     this.#snap = true;
@@ -88,15 +88,12 @@ export class FollowCamera {
     const dir = new Vector3(Math.sin(this.yaw) * cp, Math.sin(this.pitch), Math.cos(this.yaw) * cp);
     // (the chase's pull eases both ways: only a wall in the way pulls in at once)
     this.#extra += ((c ? 1 + 3.5 * c.k : 0) - this.#extra) * (1 - Math.exp(-dt * 2.5));
-    let d = this.dist + this.#extra;
-    for (const b of this.#colliders) {
-      const t = rayBox([this.#target.x, this.#target.y, this.#target.z], [dir.x, dir.y, dir.z], b, d);
-      if (t < d) d = Math.max(0.8, t - 0.25);
-    }
+    // (the pull-in is the rig's own arithmetic, shared with the proof's T3h: @ghostrun/sim rig.ts)
+    const d = boomLength([this.#target.x, this.#target.y, this.#target.z], [dir.x, dir.y, dir.z], this.dist + this.#extra, this.#colliders);
     // Pull in instantly, ease back out.
     this.#pulled = this.#snap || d < this.#pulled ? d : this.#pulled + (d - this.#pulled) * (1 - Math.exp(-dt * 4));
     this.#pos.copy(this.#target).addScaledVector(dir, this.#pulled);
-    this.#pos.y = Math.max(this.#pos.y, 0.35);
+    this.#pos.y = Math.max(this.#pos.y, CAM.FLOOR_Y);
     this.#cam.position.copy(this.#pos);
     this.#cam.lookAt(this.#target);
     this.#snap = false;
