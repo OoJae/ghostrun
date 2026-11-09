@@ -3,7 +3,7 @@
 // the pack tags "lagoon" fills with a swimmable volume), and space has no gravity (the zero-g
 // thrust law). Only for the volume pack; logged like every other placer repair.
 import type { Entity, VerbBinding, WorldBundle } from "@ghostrun/ir";
-import { FLY, SWIM } from "@ghostrun/kits";
+import { DRIVE, FLY, SWIM } from "@ghostrun/kits";
 import type { PackLayout, ZoneSpec } from "@ghostrun/plugin-api";
 
 const MEDIA = ["sky", "water", "space"] as const;
@@ -28,11 +28,35 @@ export function repairVolume(b: WorldBundle, layout: PackLayout, bound: Map<stri
     b.verbs.push(v);
     notes.push(`player: a jetpack (${FLY}: no gap between the islands can be jumped)`);
   }
+  // nobody drives here: a vehicle a fill brought (a "jetpack" at the wheel, a boat) is scenery, and a
+  // race is flown or swum (on foot, through its gates)
+  const wheels = b.verbs.filter((v) => v.verb === DRIVE);
+  if (wheels.length) {
+    b.verbs = b.verbs.filter((v) => v.verb !== DRIVE);
+    for (const e of b.entities) if (e.kind === "vehicle") ((e.kind = "prop"), (e.body = "none"));
+    notes.push(`${wheels.map((v) => v.on).join(", ")}: no ${DRIVE} in the ${medium} (you ${medium === "water" ? "swim" : "fly"} the race yourself)`);
+  }
+  // a "requires jumps" promise means nothing where you fly or swim: it is a place to reach
+  for (const x of b.expects.filter((e) => e.prop === "requires")) {
+    notes.push(`${x.id}: requires ${x.need.join(", ") || "jumps"} → reachable (the ${medium} is crossed by ${medium === "water" ? "swimming" : "flying"}, not jumping)`);
+    x.prop = "reachable";
+    x.need = [];
+  }
   if (medium === "water") {
     for (const spec of layout.zones.filter((z) => z.tag === "lagoon")) {
       const { min, max } = spec.bounds;
       const centre: [number, number, number] = [(min[0] + max[0]) / 2, (min[1] + max[1]) / 2, (min[2] + max[2]) / 2];
-      const wet = b.entities.some((e) => has(SWIM, e.id) && Math.abs(e.pos[0] - centre[0]) < (max[0] - min[0]) / 2 && Math.abs(e.pos[2] - centre[2]) < (max[2] - min[2]) / 2);
+      const size: [number, number, number] = [max[0] - min[0], max[1] - min[1], max[2] - min[2]];
+      // water a fill laid over the lagoon (on its surface anchor, any size): it is the lagoon's water, exactly
+      let wet = false;
+      for (const e of b.entities) {
+        if (!has(SWIM, e.id) || Math.abs(e.pos[0] - centre[0]) > size[0] / 2 + 2 || Math.abs(e.pos[2] - centre[2]) > size[2] / 2 + 2) continue;
+        if (e.pos.some((x, i) => Math.abs(x - centre[i]!) > 1e-6) || e.size.some((x, i) => Math.abs(x - size[i]!) > 1e-6)) notes.push(`${e.id}: the water fills the ${spec.slot} (${size.join("×")} m, its surface level with the shore)`);
+        e.pos = centre;
+        e.size = size;
+        e.body = "sensor";
+        wet = true;
+      }
       if (wet) continue;
       const zone = [...bound].find(([, s]) => s.slot === spec.slot)?.[0] ?? b.zones[0]?.id ?? "";
       const e: Entity = {

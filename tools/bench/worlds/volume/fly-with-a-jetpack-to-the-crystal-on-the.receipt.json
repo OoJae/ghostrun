@@ -1,0 +1,270 @@
+{
+  "prompt": "Fly with a jetpack to the crystal on the highest sky island before the storm hits",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "sky race",
+    "setting": "floating sky islands above a stormy sky",
+    "role": "jetpack flyer",
+    "goal": "reach the crystal on the highest sky island",
+    "fail": "the storm hits before you reach the crystal",
+    "mood": "tense and urgent",
+    "pack": "volume",
+    "sub": [
+      "sky"
+    ],
+    "safety": "ok",
+    "headline": "Crystal sits on the highest island, so the jetpack climb must beat the storm timer.",
+    "nouns": [
+      {
+        "noun": "jetpack",
+        "hyper": "a rocket pack that lets the player hover and fly upward"
+      },
+      {
+        "noun": "crystal",
+        "hyper": "a glowing crystal placed on the highest floating island as the goal"
+      },
+      {
+        "noun": "sky island",
+        "hyper": "a floating island of rock and grass drifting in the clouds"
+      },
+      {
+        "noun": "storm",
+        "hyper": "a rising storm that counts down and ends the run when it arrives"
+      }
+    ],
+    "moodVec": {
+      "valence": -0.2,
+      "arousal": 0.8,
+      "tension": 0.85
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "b0b20a1c07c2897ca946e4ea5bced0dfb3d01f671534a18cd7e536295f10a02a",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_climb",
+      "text": "Crystal sits on the highest island, so the jetpack climb must beat the storm timer.",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 1,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 6 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 1,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (touch crystal)",
+        "src": ""
+      },
+      {
+        "id": "T1:x_fuel",
+        "tier": "T1",
+        "subject": {
+          "kind": "property",
+          "id": "x_fuel"
+        },
+        "method": "kinematic reachability (flight model: thrust-limited straight lines)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "Refuel pads let the jetpack reach the peak",
+        "cx": null
+      },
+      {
+        "id": "T1:x_gap",
+        "tier": "T1",
+        "subject": {
+          "kind": "property",
+          "id": "x_gap"
+        },
+        "method": "kinematic reachability (jump apex model)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "Gaps between islands need the jetpack: needs fly, no checker for that yet",
+        "cx": null
+      },
+      {
+        "id": "T1:fly",
+        "tier": "T1",
+        "subject": {
+          "kind": "world",
+          "id": "vb_fly"
+        },
+        "n": 0,
+        "k": 0,
+        "src": "",
+        "ms": 0,
+        "method": "flight model (thrust-limited straight lines: climb 3 m/s, 6 s of fuel from each landing)",
+        "status": "verified",
+        "text": "the jetpack reaches every place the win needs (the longest flight, on the way to the glowing crystal: 4.8 s of 6 s)",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lightning",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lightning"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 18,
+        "status": "verified",
+        "text": "r_lightning fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_ring",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_ring"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 10,
+        "status": "verified",
+        "text": "r_ring fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_center",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_center"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 9,
+        "status": "verified",
+        "text": "r_secret_center fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_center_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_center_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_secret_center_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_storm",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_storm"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_storm fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:fly",
+        "tier": "T2",
+        "subject": {
+          "kind": "world",
+          "id": "vb_fly"
+        },
+        "n": 1,
+        "k": 1,
+        "src": "",
+        "ms": 28,
+        "method": "forced state (jump held from the spawn for the 6 s of fuel, then let go)",
+        "status": "verified",
+        "text": "the jetpack's fuel lasts 6 s and climbs at least the model's 16.2 m, then you fall, and landing refuels it",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it (AI par 11.2 s)",
+        "cx": null,
+        "src": "",
+        "ms": 383
+      }
+    ],
+    "par": {
+      "goldS": 11.2,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 475
+  }
+}

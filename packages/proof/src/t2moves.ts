@@ -27,11 +27,13 @@ export function t2Moves(R: Rapier, b: WorldBundle, playerTeam: "red" | "blue" = 
   const at = spawnFeet(b, playerTeam);
   if (!at) return chips;
   const free = (sim: SimWorld) => sim.free();
+  // the law alone: no rule may end the world mid-test (held under in a goal's sensor wins it)
+  const still: WorldBundle = { ...b, rules: [] };
   const f = flightOf({ verbs: b.verbs, laws: { ...b.laws, gravityScale: 1 } });
   const zg = zeroG(clampLaws(b.laws));
   if (f && !zg) {
     const t0 = now();
-    const sim = new SimWorld(R, b, { playerTeam, brain: { think: () => new Map() } });
+    const sim = new SimWorld(R, still, { playerTeam, brain: { think: () => new Map() } });
     for (let i = 0; i < 10; i++) sim.step(null);
     const y0 = sim.pos("player")[1];
     const ticks = Math.round(f.fuel * 60);
@@ -65,7 +67,7 @@ export function t2Moves(R: Rapier, b: WorldBundle, playerTeam: "red" | "blue" = 
   }
   if (zg) {
     const t0 = now();
-    const sim = new SimWorld(R, b, { playerTeam, brain: { think: () => new Map() } });
+    const sim = new SimWorld(R, still, { playerTeam, brain: { think: () => new Map() } });
     const laws = sim.laws;
     const up = Math.round((laws.speed / Math.max(1, laws.thrust)) * 60);
     let vy = 0;
@@ -91,7 +93,7 @@ export function t2Moves(R: Rapier, b: WorldBundle, playerTeam: "red" | "blue" = 
   }
   for (const w of watersOf(b)) {
     const t0 = now();
-    const sim = new SimWorld(R, b, { playerTeam, brain: { think: () => new Map() } });
+    const sim = new SimWorld(R, still, { playerTeam, brain: { think: () => new Map() } });
     const x = (w.min[0] + w.max[0]) / 2;
     const z = (w.min[2] + w.max[2]) / 2;
     // the middle of the water, head two metres under (or as deep as it goes)

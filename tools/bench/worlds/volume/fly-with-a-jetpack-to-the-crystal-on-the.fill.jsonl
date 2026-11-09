@@ -1,0 +1,37 @@
+{"op":"meta","mode":"play","lang":"en","pack":"volume","sub":["sky"],"seed":8,"look":"stormy sky islands","mood":[-0.2,0.8,0.85],"timeOfDay":17,"weather":"storm"}
+{"op":"zone","id":"z_start","slot":"start","tag":"island","name":"Launch island"}
+{"op":"zone","id":"z_isle1","slot":"isle_1","tag":"island","name":"First floating isle"}
+{"op":"zone","id":"z_isle2","slot":"isle_2","tag":"island","name":"Second floating isle"}
+{"op":"zone","id":"z_isle3","slot":"isle_3","tag":"island","name":"Third floating isle"}
+{"op":"zone","id":"z_peak","slot":"peak","tag":"peak","name":"Highest sky island"}
+{"op":"zone","id":"z_sky","slot":"open_sky","tag":"air","name":"Open sky"}
+{"op":"spawn","id":"sp_red","zone":"z_start","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"crystal","zone":"z_peak","anchor":"treasure","noun":"glowing crystal","hyper":"crystal","team":"red"}
+{"op":"ent","id":"jetpack","kind":"pickup","noun":"jetpack","hyper":"jetpack","zone":"z_start","anchor":"sign","body":"dynamic","shape":"box","size":[0.5,0.5,0.4]}
+{"op":"ent","id":"cp_1","kind":"checkpoint","noun":"sky gate one","hyper":"gate","zone":"z_isle1","anchor":"cp","body":"sensor","shape":"sphere","size":[2,2,2]}
+{"op":"ent","id":"cp_2","kind":"checkpoint","noun":"sky gate two","hyper":"gate","zone":"z_isle2","anchor":"cp","body":"sensor","shape":"sphere","size":[2,2,2]}
+{"op":"ent","id":"cp_3","kind":"checkpoint","noun":"sky gate three","hyper":"gate","zone":"z_isle3","anchor":"cp","body":"sensor","shape":"sphere","size":[2,2,2]}
+{"op":"ent","id":"ring_1","kind":"goal","noun":"updraft ring","hyper":"ring","zone":"z_sky","anchor":"ring_1","body":"sensor","shape":"sphere","size":[3,3,3]}
+{"op":"ent","id":"ring_2","kind":"goal","noun":"updraft ring","hyper":"ring","zone":"z_sky","anchor":"ring_2","body":"sensor","shape":"sphere","size":[3,3,3]}
+{"op":"ent","id":"lightning","kind":"hazard","noun":"lightning strike","hyper":"lightning","zone":"z_sky","anchor":"ring_2","body":"sensor","shape":"sphere","size":[1.5,1.5,1.5]}
+{"op":"ent","id":"refuel_1","kind":"plate","noun":"landing pad","hyper":"pad","zone":"z_isle1","anchor":"pickup","body":"sensor","shape":"box","size":[2,0.2,2]}
+{"op":"ent","id":"refuel_2","kind":"plate","noun":"landing pad","hyper":"pad","zone":"z_isle2","anchor":"pickup","body":"sensor","shape":"box","size":[2,0.2,2]}
+{"op":"ent","id":"refuel_3","kind":"plate","noun":"landing pad","hyper":"pad","zone":"z_isle3","anchor":"pickup","body":"sensor","shape":"box","size":[2,0.2,2]}
+{"op":"verb","id":"vb_fly","verb":"locomotion.fly","on":"player","params":{"kind":"jetpack","climb":3,"fuel":6}}
+{"op":"verb","id":"vb_jump","verb":"locomotion.jump","on":"player","params":{"jumpsMax":1}}
+{"op":"verb","id":"vb_storm","verb":"puzzle.timer","on":"player","params":{"seconds":180}}
+{"op":"verb","id":"vb_hazard","verb":"motion_hazards.hazard","on":"lightning","params":{"respawn":true}}
+{"op":"verb","id":"vb_cp1","verb":"puzzle.checkpoint","on":"cp_1","params":{}}
+{"op":"verb","id":"vb_cp2","verb":"puzzle.checkpoint","on":"cp_2","params":{}}
+{"op":"verb","id":"vb_cp3","verb":"puzzle.checkpoint","on":"cp_3","params":{}}
+{"op":"verb","id":"vb_crystal","verb":"puzzle.collect","on":"crystal","params":{}}
+{"op":"law","player":{"jumpsMax":1,"jumpH":1.2,"speed":6}}
+{"op":"rule","id":"r_win","when":{"t":"touch","a":"player","b":"crystal"},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_storm","when":{"t":"timer_end","a":"player"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_lightning","when":{"t":"hit","a":"player","b":"lightning"},"then":[{"e":"emit","target":"player","fx":"spark"}]}
+{"op":"rule","id":"r_ring","when":{"t":"enter","a":"player","b":"ring_1"},"then":[{"e":"emit","target":"ring_1","fx":"boost_ring"}]}
+{"op":"expect","id":"x_climb","prop":"win_reachable","a":"sp_red","b":"crystal","headline":true,"text":"Crystal sits on the highest island, so the jetpack climb must beat the storm timer."}
+{"op":"expect","id":"x_fuel","prop":"reachable","a":"sp_red","b":"z_peak","text":"Refuel pads let the jetpack reach the peak"}
+{"op":"expect","id":"x_gap","prop":"requires","a":"sp_red","b":"z_peak","need":["fly"],"text":"Gaps between islands need the jetpack"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

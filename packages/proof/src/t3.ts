@@ -5,7 +5,7 @@ import { stream } from "@ghostrun/detmath";
 import { clampLaws, type Expect, type Laws, type Vec3, type WorldBundle } from "@ghostrun/ir";
 import { buildNav, lowHazards, type NavWorld } from "@ghostrun/nav";
 import { castBrain } from "@ghostrun/bots";
-import { flightOf, SHOOT, verb, waterAt, watersOf, zeroG, type Flight, type Water } from "@ghostrun/kits";
+import { flightNeed, flightOf, SHOOT, verb, waterAt, watersOf, zeroG, type Flight, type Water } from "@ghostrun/kits";
 import { BTN, SimWorld, type Rapier } from "@ghostrun/sim";
 import { actWords, carryables, causeSteps, playerWeapons, producers, type PlanStep, type Want, type WinChain } from "./t0";
 import { GhostRecorder, secretsOf, thin, type Ghost } from "./ghost";
@@ -817,7 +817,18 @@ function flyTo(sim: SimWorld, b: WorldBundle, target: Vec3, budget: { ticks: num
   const legs: { to: Vec3; land: boolean }[] = [];
   const p = sim.pos("player");
   const on = surfaceAt(ss, [p[0], p[1] - 0.8, p[2]]);
-  const from = on && p[1] - 0.9 - on.top < 3 ? on : undefined; // on it, or just over it (spawned, or landing)
+  let from = on && p[1] - 0.9 - on.top < 3 ? on : undefined; // on it, or just over it (spawned, or landing)
+  // up in the open (through a ring, back at a checkpoint in the sky): the ground the fuel reaches soonest, landing there first
+  if (!from && !zg && fly.fuel !== Infinity && !sim.player.grounded) {
+    let best = Infinity;
+    for (const x of ss) {
+      if (x.launch) continue;
+      const dx = Math.max(0, x.min[0] - p[0], p[0] - x.max[0]);
+      const dz = Math.max(0, x.min[1] - p[2], p[2] - x.max[1]);
+      const need = flightNeed(fly, sim.laws, Math.sqrt(dx * dx + dz * dz), x.top - (p[1] - 0.9));
+      if (need < best) ((best = need), (from = x));
+    }
+  }
   // still in the air (picked something up on the way down): land first, for a full tank
   if (!zg && from && !sim.player.grounded) legs.push({ to: [clampTo(p[0], from.min[0] + 0.3, from.max[0] - 0.3), from.top, clampTo(p[2], from.min[1] + 0.3, from.max[1] - 0.3)], land: true });
   if (!zg && from && ground && from.id !== ground.id) {
@@ -873,12 +884,22 @@ function swimTo(sim: SimWorld, b: WorldBundle, target: Vec3, budget: { ticks: nu
     const aimY = wet && d < 1.6 ? Math.max(w.min[1] + 0.95, target[1]) : float;
     if (wet && d < 0.5 && Math.abs(q[1] - aimY) < 0.5) return true;
     if (d < best - 0.05) ((best = d), (since = sim.tick));
-    const k = (Math.min(1, d * 2) * 127) / (d || 1);
+    // (bound for dry land: up to the surface first, clear of what lies on the bottom, then across)
+    const k = !wet && q[1] < float - 1 ? 0 : (Math.min(1, d * 2) * 127) / (d || 1);
     const e = aimY - q[1];
     let btn = e > 0.25 ? BTN.JUMP : e < -0.25 ? BTN.DOWN : 0;
     // at the edge (no way on along the surface for a third of a second): jump out, a fresh press at a time
     if (!wet && sim.tick - since > 20 && q[1] > float - 0.35) btn = (sim.tick - since) % 24 < 2 ? BTN.JUMP : 0;
-    sim.step({ tick: sim.tick + 1, wx: Math.round(dx * k), wz: Math.round(dz * k), btn });
+    // held up on the way to something under water (an islet, a hull in the way): up and over it,
+    // veering round its side the while
+    let [sx, sz] = [dx * k, dz * k];
+    if (wet && sim.tick - since > 30) {
+      const turn = Math.floor((sim.tick - since) / 90) % 2 ? 1 : -1;
+      [sx, sz] = [(dx - dz * turn) * k * 0.7, (dz + dx * turn) * k * 0.7];
+      if (q[1] > float - 0.35) btn = (sim.tick - since) % 24 < 2 ? BTN.JUMP : 0;
+      if (sim.tick - since > 400) return false;
+    }
+    sim.step({ tick: sim.tick + 1, wx: Math.max(-127, Math.min(127, Math.round(sx))), wz: Math.max(-127, Math.min(127, Math.round(sz))), btn });
     budget.ticks--;
   }
   return false;

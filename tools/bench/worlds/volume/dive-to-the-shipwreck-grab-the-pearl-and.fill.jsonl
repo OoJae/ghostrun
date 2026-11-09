@@ -1,0 +1,24 @@
+{"op":"meta","mode":"play","lang":"en","pack":"volume","sub":["water"],"seed":13,"look":"tropical lagoon at midday","mood":[0.2,0.7,0.8],"timeOfDay":12,"weather":"clear"}
+{"op":"zone","id":"z_beach","slot":"beach","tag":"shore","name":"Sandy beach"}
+{"op":"zone","id":"z_lagoon","slot":"lagoon","tag":"water","name":"Lagoon"}
+{"op":"zone","id":"z_wreck","slot":"wreck","tag":"ship","name":"Sunken ship"}
+{"op":"spawn","id":"sp_red","zone":"z_beach","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"shore_goal","zone":"z_beach","anchor":"goal","noun":"beach landing","hyper":"goal","team":"red"}
+{"op":"ent","id":"water_body","kind":"prop","noun":"lagoon water","hyper":"water","zone":"z_lagoon","anchor":"surface","body":"sensor","shape":"box","size":[40,6,30]}
+{"op":"ent","id":"pearl","kind":"pickup","noun":"pearl","hyper":"gem","zone":"z_wreck","anchor":"hold","body":"dynamic","shape":"sphere","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"wreck_hull","kind":"prop","noun":"shipwreck","hyper":"sunken ship","zone":"z_wreck","anchor":"deck","body":"fixed","shape":"box","size":[8,3,4]}
+{"op":"ent","id":"reef_hazard","kind":"hazard","noun":"sharp reef","hyper":"reef","zone":"z_lagoon","anchor":"reef","body":"sensor","shape":"box","size":[3,1,3]}
+{"op":"ent","id":"air_pocket","kind":"checkpoint","noun":"air pocket","hyper":"checkpoint","zone":"z_wreck","anchor":"bow","body":"sensor","shape":"sphere","size":[1.5,1.5,1.5]}
+{"op":"verb","id":"vb_swim","verb":"locomotion.swim","on":"water_body","params":{"breath":20}}
+{"op":"verb","id":"vb_carry_pearl","verb":"physics_props.carry","on":"pearl","params":{}}
+{"op":"verb","id":"vb_jump","verb":"locomotion.jump","on":"player","params":{"jumpsMax":1}}
+{"op":"verb","id":"vb_reef","verb":"motion_hazards.hazard","on":"reef_hazard","params":{"respawn":true}}
+{"op":"verb","id":"vb_air","verb":"puzzle.checkpoint","on":"air_pocket","params":{}}
+{"op":"law","player":{"jumpsMax":1,"jumpH":1.2,"speed":5}}
+{"op":"rule","id":"r_escape","when":{"t":"enter","a":"pearl","b":"shore_goal"},"if":[{"l":"pearl.carrier.team","op":"eq","r":"red"}],"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_drown","when":{"t":"timer_end","a":"player"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_reef","when":{"t":"hit","a":"player","b":"reef_hazard"},"then":[{"e":"emit","target":"reef_hazard","fx":"splash"}]}
+{"op":"expect","id":"x_dive","prop":"win_reachable","a":"sp_red","b":"shore_goal","headline":true,"text":"Air meter must drain on the dive so the swim back is a real timed risk."}
+{"op":"expect","id":"x_wreck","prop":"reachable","a":"sp_red","b":"z_wreck","text":"The wreck can be reached by diving through the lagoon"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

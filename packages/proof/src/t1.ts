@@ -2,8 +2,8 @@
 // abstraction (k jumps lift the feet k × jumpH), with analytic counterexamples
 // ("apex 1.6 m < ledge 2.6 m").
 import type { Expect, Laws, Rule, Vec3, WorldBundle } from "@ghostrun/ir";
-import { DRIVE, feelOf, flightOf, MUZZLE_UP, segBox, TRACK, verb } from "@ghostrun/kits";
-import { flyReach } from "./moves";
+import { DRIVE, feelOf, flightOf, MUZZLE_UP, segBox, TRACK, verb, watersOf } from "@ghostrun/kits";
+import { flyReach, swimReach } from "./moves";
 import { clampParams } from "@ghostrun/plugin-api";
 import { hitPoints, playerWeapons } from "./t0";
 import type { Chip } from "./types";
@@ -209,9 +209,12 @@ export function t1(b: WorldBundle, laws: Laws): Chip[] {
       }
     } else {
       // a world that flies is reached by the flight model (walking, dropping and flying within the fuel)
+      // (and one with water by the dive model too: down within a breath)
       const fl = flightOf({ verbs: b.verbs, laws });
-      const set = fl ? new Set(flyReach(ss, start, fl, laws).keys()) : reachable(ss, start, laws, laws.jumpsMax);
+      const ws = watersOf(b);
+      const set = ws.length ? swimReach(ss, start, laws, ws, fl) : fl ? new Set(flyReach(ss, start, fl, laws).keys()) : reachable(ss, start, laws, laws.jumpsMax);
       if (fl) base.method = "kinematic reachability (flight model: thrust-limited straight lines)";
+      if (ws.length) base.method = `kinematic reachability (${fl ? "flight" : "jump"} model, and swimming within a breath)`;
       const hit = targets.some((t) => set.has(t.id));
       const good = x.prop === "reachable" ? hit : !hit;
       chips.push({ ...base, status: good ? "verified" : "counterexample", text: label(x), cx: good ? null : { where: null, have: hit ? 1 : 0, need: hit ? 0 : 1, unit: "route", text: hit ? "reachable after all" : "no route found" } });

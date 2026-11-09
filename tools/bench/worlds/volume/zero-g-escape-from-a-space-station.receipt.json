@@ -1,0 +1,278 @@
+{
+  "prompt": "Zero-g escape from a space station",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "sci-fi escape",
+    "setting": "a derelict space station in zero gravity",
+    "role": "stranded engineer",
+    "goal": "reach the escape pod before the station breaches",
+    "fail": "caught by the breach or drifting out of reach",
+    "mood": "tense and urgent",
+    "pack": "volume",
+    "sub": [
+      "space"
+    ],
+    "safety": "arcade",
+    "headline": "Zero-g thrust must reach the escape pod before the breach timer ends.",
+    "nouns": [
+      {
+        "noun": "station",
+        "hyper": "space station"
+      },
+      {
+        "noun": "escape pod",
+        "hyper": "emergency vehicle"
+      },
+      {
+        "noun": "asteroid",
+        "hyper": "space rock"
+      }
+    ],
+    "moodVec": {
+      "valence": -0.4,
+      "arousal": 0.8,
+      "tension": 0.9
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "73382dae3d5ee31bb897ccf783abd0e022376cf44311fa21291eb837dbcf7a4c",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_escape",
+      "text": "Zero-g thrust must reach the escape pod before the breach timer ends.",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 1,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 5 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 1,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_escape (fuel_cell into exit, carried by red) ← pick up fuel_cell",
+        "src": ""
+      },
+      {
+        "id": "T1:x_card",
+        "tier": "T1",
+        "subject": {
+          "kind": "property",
+          "id": "x_card"
+        },
+        "method": "kinematic reachability (flight model: thrust-limited straight lines)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "Keycard can be reached in the far module",
+        "cx": null
+      },
+      {
+        "id": "T1:x_field",
+        "tier": "T1",
+        "subject": {
+          "kind": "property",
+          "id": "x_field"
+        },
+        "method": "kinematic reachability (jump apex model)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "counterexample",
+        "text": "Debris field needs a second thrust burst",
+        "cx": {
+          "where": null,
+          "have": 1.5,
+          "need": 3,
+          "unit": "m",
+          "text": "reachable with 1 jump by way of a ledge: highest step 3 m, apex 1.5 m"
+        }
+      },
+      {
+        "id": "T1:fly",
+        "tier": "T1",
+        "subject": {
+          "kind": "world",
+          "id": "laws"
+        },
+        "n": 0,
+        "k": 0,
+        "src": "",
+        "ms": 0,
+        "method": "flight model (zero-g thrust law: straight lines at 6 m/s, 4 m/s²)",
+        "status": "verified",
+        "text": "the zero-g thrust law reaches every place the win needs (the longest flight, on the way to the escape pod: 2.7 s)",
+        "cx": null
+      },
+      {
+        "id": "T2:r_bay_open",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_bay_open"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 14,
+        "status": "verified",
+        "text": "r_bay_open fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_breach",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_breach"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_breach fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_escape",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_escape"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_escape fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lift_on",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lift_on"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 7,
+        "status": "verified",
+        "text": "r_lift_on fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_rock_hit",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_rock_hit"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 6,
+        "status": "verified",
+        "text": "r_rock_hit fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:zero_g",
+        "tier": "T2",
+        "subject": {
+          "kind": "world",
+          "id": "laws"
+        },
+        "n": 1,
+        "k": 1,
+        "src": "",
+        "ms": 7,
+        "method": "forced state (thrust held up from the spawn for 1.5 s, then let go)",
+        "status": "verified",
+        "text": "the thrust law reaches 6 m/s in 1.5 s and stops you again",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it (AI par 11.9 s)",
+        "cx": null,
+        "src": "",
+        "ms": 620
+      },
+      {
+        "id": "T3:x_field",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "x_field"
+        },
+        "status": "counterexample",
+        "method": "physics jump witness, 4 attempts per jump count",
+        "n": 4,
+        "k": 0,
+        "text": "Debris field needs a second thrust burst: reached with 2 jumps 0 of 4, with 1 0 of 4",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 0,
+          "unit": "attempts",
+          "text": "never reached with 2 jumps"
+        },
+        "src": "ai",
+        "ms": 177
+      }
+    ],
+    "par": {
+      "goldS": 11.9,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 856
+  }
+}

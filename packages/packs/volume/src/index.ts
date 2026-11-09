@@ -95,7 +95,7 @@ function water(seed: number, k: number): PackLayout {
   // an islet with a palm in the shallows west of the wreck
   const ix = r2(-W * 0.55 + j(1));
   const iz = r2(D * 0.35 + j(1.5));
-  statics.push(box("islet", [ix, -depth / 2 + 0.25, iz], [4, depth + 0.5, 4], "floor"));
+  statics.push(box("islet", [ix, -depth / 2, iz], [4, depth, 4], "floor")); // level with the water: a swimmer climbs out onto it
   const zones: ZoneSpec[] = [
     { slot: "beach", tag: "shore", bounds: { min: [-W - 8, 0, -18], max: [W + 8, 4, -1] }, floorY: 0,
       anchors: { spawn_pad: [-4, 0, -12], goal: [4, 0, -6], hut: [-W + 2, 0, -14], sign: [0, 0, -3], center: [0, 0, -9] } },
@@ -103,7 +103,7 @@ function water(seed: number, k: number): PackLayout {
       anchors: { shallows: [r2(-W * 0.3), -depth, 3], reef: [r2(W * 0.6), -depth, r2(D * 0.3)], deep: [r2(-W * 0.2), -depth, r2(D * 0.8)], surface: [0, 0, r2(D * 0.5)] } },
     { slot: "wreck", tag: "ship", bounds: { min: [sx - 4, -depth, sz - 3], max: [sx + 4, -depth + 6, sz + 3] }, floorY: -depth + 3,
       anchors: { deck: [r2(sx - 2), -depth + 3, sz], hold: [r2(sx + 1.5), -depth, r2(sz + 2.6)], bow: [r2(sx - 5.2), -depth, sz] } },
-    { slot: "islet", tag: "island", bounds: { min: [ix - 2, 0.5, iz - 2], max: [ix + 2, 4, iz + 2] }, floorY: 0.5, anchors: { palm: [ix, 0.5, iz] } },
+    { slot: "islet", tag: "island", bounds: { min: [ix - 2, 0, iz - 2], max: [ix + 2, 4, iz + 2] }, floorY: 0, anchors: { palm: [ix, 0, iz] } },
   ];
   return {
     packId: "volume", version: VERSION, zones, statics,

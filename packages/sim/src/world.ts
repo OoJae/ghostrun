@@ -670,6 +670,9 @@ export class SimWorld {
       this.#emit("reset", item.id);
     }
     this.teleport(id, this.#checkpoint.get(id) ?? e.home);
+    // (back with a full tank: a checkpoint hung in the sky is somewhere to fly on from)
+    const f = this.#flights.get(id);
+    if (f) (id === "player" ? this.player : this.npcs.get(id)!).fuel = f.fuel;
     this.#emit("respawn", id);
   }
 

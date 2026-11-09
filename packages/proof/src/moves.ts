@@ -25,6 +25,7 @@ export function flyNeed(s: Surface, t: Surface, f: Flight, laws: Laws): number {
 /** Walking, dropping or jumping as on foot, or flying within the fuel. */
 export function flyOk(s: Surface, t: Surface, f: Flight, laws: Laws, margin = 0): boolean {
   if (hopOk(s, t, { ...laws, jumpsMax: 0 }, 0, margin)) return true;
+  if (t.launch) return false; // a jump pad is nowhere to land a flight (it throws you up again)
   return flyNeed(s, t, f, laws) <= f.fuel - margin;
 }
 
@@ -41,6 +42,32 @@ export function flyReach(ss: Surface[], start: Surface, f: Flight, laws: Laws): 
     }
   }
   return parent;
+}
+
+/**
+ * Can a swimmer get from s to t through water W: both touch it (a footprint over or beside it, a top
+ * no higher than a jump out of it), and t's top lies within a breath's dive (down and back up)?
+ */
+export function swimOk(s: Surface, t: Surface, ws: readonly Water[], laws: Laws): boolean {
+  const out = Math.min(1.4, laws.jumpsMax > 0 ? laws.jumpH * 0.94 : 0.3);
+  const touches = (x: Surface, w: Water) => x.max[0] >= w.min[0] - 1.5 && x.min[0] <= w.max[0] + 1.5 && x.max[1] >= w.min[2] - 1.5 && x.min[1] <= w.max[2] + 1.5 && x.top >= w.min[1] - 0.1 && x.top <= w.max[1] + out;
+  return ws.some((w) => touches(s, w) && touches(t, w) && (w.breath <= 0 || diveNeed(Math.max(0, w.max[1] - 0.05 - (t.top + 2 * HEAD_UP))) <= w.breath));
+}
+
+/** Every surface reached from `start` on foot (or by the flight model) and by swimming the world's water. */
+export function swimReach(ss: Surface[], start: Surface, laws: Laws, ws: readonly Water[], f: Flight | null): Set<string> {
+  const seen = new Set([start.id]);
+  const queue = [start];
+  while (queue.length) {
+    const s = queue.shift()!;
+    for (const t of ss) {
+      if (seen.has(t.id)) continue;
+      if (!(f ? flyOk(s, t, f, laws) : hopOk(s, t, laws, laws.jumpsMax)) && !swimOk(s, t, ws, laws)) continue;
+      seen.add(t.id);
+      queue.push(t);
+    }
+  }
+  return seen;
 }
 
 /** Fewest-hop flight route between two surfaces (with fuel to spare first, then exactly). */
