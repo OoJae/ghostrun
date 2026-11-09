@@ -1,7 +1,9 @@
-// Phone controls: a floating stick under the left thumb, Jump and Use under the right. They are
-// HTML over the canvas, so their touches never reach the camera; a drag anywhere else orbits it.
+// Phone controls: a floating stick under the left thumb, Jump and Use under the right (and Dive, in
+// a world you fly, swim or float in: held Jump goes up there). They are HTML over the canvas, so
+// their touches never reach the camera; a drag anywhere else orbits it.
 import { useRef, useState, type PointerEvent as RPointerEvent } from "react";
-import { BTN_JUMP, BTN_USE } from "../sim/types";
+import { upDown, type WorldMoves } from "../moves";
+import { BTN_DOWN, BTN_JUMP, BTN_USE } from "../sim/types";
 import { t } from "../i18n";
 
 const RADIUS = 56;
@@ -13,7 +15,8 @@ const capture = (e: RPointerEvent) => {
   }
 };
 
-export function TouchControls({ onStick, onButton, useLabel }: { onStick(x: number, y: number): void; onButton(bit: number, down: boolean): void; useLabel: string | null }) {
+export function TouchControls({ onStick, onButton, useLabel, moves = null }: { onStick(x: number, y: number): void; onButton(bit: number, down: boolean): void; useLabel: string | null; moves?: WorldMoves | null }) {
+  const keys = moves ? upDown(moves) : null;
   const id = useRef<number | null>(null);
   const [base, setBase] = useState<{ x: number; y: number } | null>(null);
   const [knob, setKnob] = useState({ x: 0, y: 0 });
@@ -64,12 +67,17 @@ export function TouchControls({ onStick, onButton, useLabel }: { onStick(x: numb
           </div>
         )}
       </div>
-      <button type="button" className="tbtn jump" aria-label={t("jump")} {...button(BTN_JUMP)}>
+      <button type="button" className="tbtn jump" aria-label={keys ? `${t("jump")} · ${t(keys.up)}` : t("jump")} {...button(BTN_JUMP)}>
         Jump
       </button>
       <button type="button" className={`tbtn use${useLabel ? " ready" : ""}`} aria-label={useLabel ?? t("use")} {...button(BTN_USE)}>
         {useLabel ?? "Use"}
       </button>
+      {keys && (
+        <button type="button" className="tbtn dive" data-testid="touch-dive" aria-label={t(keys.down)} {...button(BTN_DOWN)}>
+          {t(keys.down)}
+        </button>
+      )}
     </div>
   );
 }

@@ -10,7 +10,7 @@
 // Each model call runs on the fast lane with Claude Haiku as the rung below it (llm/lanes.ts).
 import { DEFAULT_LAWS, gameplayLines, jcs } from "@ghostrun/ir";
 import { BRIEF_MAX_CHARS, BriefOut, briefJsonSchema, directorMessages, editMessages, fillMessages, hostJsonSchema, hostMessages, inspiredPrompt, IntentOut, intentJsonSchema, intentMessages, jsonLanes, lanesFor, LlmError, mindJsonSchema, mindMessages, pinIntent, pinLine, readPin, repairMessages, settleBrief, settleIntent, streamLanes, visionMessages, type ChatMessage, type Job, type Keys, type Provider } from "@ghostrun/llm";
-import { ALL_SUBS, layoutLine, layoutOf, PACKS, packFor } from "@ghostrun/registry";
+import { layoutLine, layoutOf, PACKS, packFor } from "@ghostrun/registry";
 import * as v from "valibot";
 // the vault heist teaches goal-dependent wins, doorway doors, keys and inspectable exhibits (an A/B
 // on six live prompts: 5 of 5 headlines verified vs 1 of 6 with the CTF example, which got copied)
@@ -64,6 +64,8 @@ export const PRIMARY_FLAG = "route:primary";
 export const SONNET_FLAG = "ff.sonnet_lane";
 /** KV key in FLAGS: "off" turns the exact-repeat build cache off (no lookups, no writes), deploy-free. */
 export const CACHE_FLAG = "ff.public_cache";
+/** KV key in FLAGS: "off" takes flight, zero-g and swimming out of new builds (no volume pack, no fly or swim verbs), deploy-free. */
+export const FLIGHT_FLAG = "ff.kit_flight";
 
 const SSE_HEADERS = { "content-type": "text/event-stream", "cache-control": "no-store", "x-accel-buffering": "no" };
 
@@ -99,13 +101,17 @@ const keysOf = (env: Env): Keys => ({ cerebras: env.CEREBRAS_API_KEY || undefine
 const hasModel = (env: Env) => Boolean(env.CEREBRAS_API_KEY || env.ANTHROPIC_API_KEY);
 
 /** The pause switch and the provider to put first, read together (both cached at the edge for a minute). */
-async function switches(env: Env): Promise<{ paused: boolean; primary: Provider | undefined }> {
-  const [stop, primary] = await Promise.all([
+async function switches(env: Env): Promise<{ paused: boolean; primary: Provider | undefined; flight: boolean }> {
+  const [stop, primary, flight] = await Promise.all([
     paused(env),
     env.FLAGS?.get(PRIMARY_FLAG, { cacheTtl: 60 }).catch(() => null),
+    env.FLAGS?.get(FLIGHT_FLAG, { cacheTtl: 60 }).catch(() => null),
   ]);
-  return { paused: stop, primary: primary === "anthropic" || primary === "cerebras" ? primary : undefined };
+  return { paused: stop, primary: primary === "anthropic" || primary === "cerebras" ? primary : undefined, flight: flight !== "off" };
 }
+
+/** The packs a new build may pick: all of them, less the volume pack while ff.kit_flight is off. */
+const packsFor = (flight: boolean) => (flight ? PACKS : PACKS.filter((p) => p.id !== "volume"));
 
 /** Is the exact-repeat cache on? Unless FLAGS says "off" (read at the edge once a minute). */
 async function cacheOn(env: Env): Promise<boolean> {
@@ -117,7 +123,7 @@ export async function handle(req: Request, env: Env, ctx?: WaitUntil): Promise<R
   const path = url.pathname;
   const later = (p: Promise<unknown>) => (ctx ? ctx.waitUntil(p) : void p.catch(() => undefined));
   // `vision`: a build can bring a picture (the client offers one only then)
-  if (path === "/v1/health") return json({ ok: true, packs: PACKS.map((p) => p.id), llm: hasModel(env), fallback: Boolean(env.CEREBRAS_API_KEY && env.ANTHROPIC_API_KEY), vision: lanesFor("vision", keysOf(env), { messages: [] }).length > 0, gate: gateMode(env, url), sitekey: env.TURNSTILE_SITEKEY ?? null, ...(await healthMore(env)) });
+  if (path === "/v1/health") return json({ ok: true, packs: PACKS.map((p) => p.id), kits: { flight: (await switches(env)).flight }, llm: hasModel(env), fallback: Boolean(env.CEREBRAS_API_KEY && env.ANTHROPIC_API_KEY), vision: lanesFor("vision", keysOf(env), { messages: [] }).length > 0, gate: gateMode(env, url), sitekey: env.TURNSTILE_SITEKEY ?? null, ...(await healthMore(env)) });
   // MCP for agents (mcp.ts): its tools run on the routes below, in-process, as the caller
   if (path === "/mcp") return mcp(req, env, { route: (r) => handle(r, env, ctx) });
   if (path === "/v1/session" && req.method === "POST") return session(req, env, url);
@@ -415,7 +421,7 @@ async function build(req: Request, env: Env, url: URL, later: (p: Promise<unknow
   // A build from a picture is never looked up or kept: its key would be the picture, which is kept nowhere.
   const store = !image && caching && typeof input.engine === "string" && ENGINE_RE.test(input.engine) ? blobsFor(env, url) : undefined;
   // a pinned rebuild is its own entry: the same words built as a maze are another world
-  const key = store ? await cacheKey(hasPin ? `${said}\n#pinned ${jcs(pin)}` : said, seed, await templateHash(EXAMPLE), input.engine as string) : undefined;
+  const key = store ? await cacheKey(hasPin ? `${said}\n#pinned ${jcs(pin)}` : said, seed, await templateHash(sw.flight ? EXAMPLE : `${EXAMPLE}\n#${FLIGHT_FLAG}=off`), input.engine as string) : undefined;
   if (store && key && input.fresh !== true) {
     const hit = await readCache(store, key);
     if (hit) return new Response(replayBody(hit), { headers: SSE_HEADERS });
@@ -478,10 +484,11 @@ async function build(req: Request, env: Env, url: URL, later: (p: Promise<unknow
           await send("inspired", { brief, prompt, ms: seen.ms, model: seen.model });
           phase = "intent";
         }
-        const intentMsgs = intentMessages(prompt, PACKS, hasPin ? pinLine(pin) : undefined);
+        const packs = packsFor(sw.flight);
+        const intentMsgs = intentMessages(prompt, packs, hasPin ? pinLine(pin) : undefined);
         if (image) intentCost = buildEstimate(intentMsgs).intent;
         const res = await jsonLanes<unknown>(
-          lanesFor("intent", keys, { primary: sw.primary, messages: intentMsgs, jsonSchema: { name: "intent", schema: intentJsonSchema(PACKS.map((p) => p.id), ALL_SUBS) }, maxTokens: INTENT_MAX_OUT, signal: upstream.signal }),
+          lanesFor("intent", keys, { primary: sw.primary, messages: intentMsgs, jsonSchema: { name: "intent", schema: intentJsonSchema(packs.map((p) => p.id), [...new Set(packs.flatMap((p) => p.subs))]) }, maxTokens: INTENT_MAX_OUT, signal: upstream.signal }),
         );
         intentRes = res;
         if (res.inTok > 0) intentCost = costMicroUsd(res.model, res.inTok, res.outTok);
@@ -500,7 +507,7 @@ async function build(req: Request, env: Env, url: URL, later: (p: Promise<unknow
         fillCost = est.fill;
         let buf = "";
         let fillModel = "";
-        const fillLanes = lanesFor("fill", keys, { primary: sw.primary, maxTokens: FILL_MAX_OUT, messages: fillMessages(prompt, intent, layout, EXAMPLE, seed), signal: upstream.signal });
+        const fillLanes = lanesFor("fill", keys, { primary: sw.primary, maxTokens: FILL_MAX_OUT, messages: fillMessages(prompt, intent, layout, EXAMPLE, seed, { flight: sw.flight }), signal: upstream.signal });
         writer = fillLanes[0]?.model ?? "";
         const line = async (text: string) => {
           await keep("op", { i: lines++, line: text });

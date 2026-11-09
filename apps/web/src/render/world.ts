@@ -17,7 +17,9 @@ import { buildScenery, type Scenery } from "./scenery";
 import { SIGN_STYLE, signMaterial, signText } from "./sign";
 import { sunDirection } from "./sky";
 import { vehicleActor } from "./vehicles";
-import { verb } from "@ghostrun/kits";
+import { dressVolume, waterActor } from "./volume";
+import { volumeMedium } from "./pick";
+import { SWIM, verb } from "@ghostrun/kits";
 
 export interface WorldView {
   root: Group;
@@ -68,6 +70,8 @@ function fixLights(root: Group) {
 export function buildWorldView(bundle: WorldBundle, look: LookStyle): WorldView {
   const neonLook = look.id === "neon";
   const city = neonLook && bundle.pack.id === "city_block";
+  // islands in the sky, a lagoon, a space station: dressed for their medium, with no ground under them
+  const medium = volumeMedium(bundle);
   // entity glow lights were tuned for dark streets; pale rooms and daylight need far less
   const lightK = neonLook ? 1 : look.night ? 0.45 : look.phase === "dusk" ? 0.3 : 0.15;
   const root = new Group();
@@ -91,7 +95,7 @@ export function buildWorldView(bundle: WorldBundle, look: LookStyle): WorldView 
   let base = { area: -1, top: 0 };
   for (const s of bundle.statics) if (s.surf === "floor" && s.size[0] * s.size[2] > base.area) base = { area: s.size[0] * s.size[2], top: s.pos[1] + s.size[1] / 2 };
 
-  if (neonLook) bundle.statics.forEach((s, i) => {
+  if (neonLook && !medium) bundle.statics.forEach((s, i) => {
     const [x, y, z] = s.pos;
     const [w, h, d] = s.size;
     const min: V3 = [x - w / 2, y - h / 2, z - d / 2];
@@ -175,7 +179,10 @@ export function buildWorldView(bundle: WorldBundle, look: LookStyle): WorldView 
   }
 
   let scenery: Scenery | null = null;
-  if (!neonLook) {
+  if (medium) {
+    scenery = dressVolume(bundle, look, medium, { keep, animated, root });
+    arena = scenery.bounds;
+  } else if (!neonLook) {
     scenery = buildScenery(bundle, look, { keep, animated, root });
     arena = scenery.bounds;
   }
@@ -201,15 +208,17 @@ export function buildWorldView(bundle: WorldBundle, look: LookStyle): WorldView 
   solidMesh.name = "statics";
   const neonMesh = new Mesh(keep(neon.build()), keep(stripMaterial()));
   neonMesh.name = "neon";
-  if (neonLook) root.add(solidMesh, neonMesh);
+  if (neonLook && !medium) root.add(solidMesh, neonMesh);
 
-  const groundMat = neonLook ? groundMaterial() : (scenery!.ground ?? new MeshStandardNodeMaterial({ color: new Color(scenery!.groundHex), roughness: 0.95, metalness: 0 }));
-  const ground = new Mesh(keep(new PlaneGeometry(320, 240)), keep(groundMat));
-  ground.rotation.x = -Math.PI / 2;
-  // a little under the floors' tops so the two never fight for the same depth (the city keeps its own)
-  ground.position.y = gy - (neonLook ? 0.012 : 0.05);
-  ground.name = "ground";
-  root.add(ground);
+  if (!medium) {
+    const groundMat = neonLook ? groundMaterial() : (scenery!.ground ?? new MeshStandardNodeMaterial({ color: new Color(scenery!.groundHex), roughness: 0.95, metalness: 0 }));
+    const ground = new Mesh(keep(new PlaneGeometry(320, 240)), keep(groundMat));
+    ground.rotation.x = -Math.PI / 2;
+    // a little under the floors' tops so the two never fight for the same depth (the city keeps its own)
+    ground.position.y = gy - (neonLook ? 0.012 : 0.05);
+    ground.name = "ground";
+    root.add(ground);
+  }
 
   // Plaza rings around the orb's plinth.
   const plaza = new Mesh(keep(new RingGeometry(6.7, 6.85, 128)), keep(glowMaterial(PALETTE.cyan, 1.6)));
@@ -284,6 +293,14 @@ export function buildWorldView(bundle: WorldBundle, look: LookStyle): WorldView 
     if (e.tags.includes("area")) continue; // an invisible sensor covering a zone ("when you enter the vault")
     const team = TEAM_HEX[e.team] ?? PALETTE.cyan;
     let obj: Object3D | undefined;
+    if (verbsOn.get(e.id)?.includes(SWIM)) {
+      // water you swim in: its box is the water, drawn as water (in any world, any look)
+      const w = waterActor(e, { keep }, look.night);
+      w.name = e.id;
+      root.add(w);
+      actors.set(e.id, w);
+      continue;
+    }
     const kit = kitActor(e, verbsOn.get(e.id) ?? [], keys.has(e.id), { keep, animated });
     if (kit) {
       kits.set(e.id, kit);

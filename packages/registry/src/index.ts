@@ -5,6 +5,7 @@ import { course } from "@ghostrun/pack-course";
 import { floorPlan } from "@ghostrun/pack-floor-plan";
 import { maze } from "@ghostrun/pack-maze";
 import { outdoor } from "@ghostrun/pack-outdoor";
+import { volume } from "@ghostrun/pack-volume";
 import type { LayoutPack } from "@ghostrun/plugin-api";
 import type { LayoutSchema } from "./layout";
 
@@ -24,6 +25,7 @@ export const PACKS: PackEntry[] = [
   { id: "maze", blurb: "seeded maze with a start pad, an exit and dead ends: mazes, labyrinths, escape and chase games", subs: [], impl: maze as unknown as LayoutPack },
   { id: "outdoor", blurb: "open nature terrain with paths from an entrance to a central clearing, a pond, a grove on a knoll, a camp, two side clearings (team bases) and a lookout reached only by jumping: forests (also glowing or bioluminescent), parks, gardens, islands, beaches, campsites, outdoor markets and fairs; exploring, nature walks, find-and-deliver quests, hide and seek, outdoor team games", subs: [], impl: outdoor as unknown as LayoutPack },
   { id: "course", blurb: "linear obstacle course from a start pad through 6 segments (a wall needing every jump, gaps, rising steps, narrow beams, a pit over lava) with checkpoints to a finish pad: parkour, platformers, obbies, obstacle courses, time trials, races against the clock", subs: [], impl: course as unknown as LayoutPack },
+  { id: "volume", blurb: "worlds crossed through the air or water, not on foot; sub picks the medium: sky (floating islands and clouds, a jetpack), water (a beach, a lagoon and a sunken ship, swimming and diving), space (a station and asteroids in zero-g): flying, jetpacks, soaring, sky races, swimming, diving, underwater treasure, zero-g, spacewalks", subs: ["sky", "water", "space"], impl: volume as unknown as LayoutPack },
 ];
 
 export function packFor(id: string): LayoutPack {

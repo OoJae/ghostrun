@@ -1,0 +1,22 @@
+{"op":"meta","mode":"play","lang":"en","pack":"volume","sub":["space"],"seed":25,"look":"space station","mood":[-0.1,0.7,0.7],"timeOfDay":0,"weather":"clear"}
+{"op":"zone","id":"z_airlock","slot":"airlock","tag":"module","name":"Airlock"}
+{"op":"zone","id":"z_hub","slot":"hub","tag":"module","name":"Hub"}
+{"op":"zone","id":"z_far","slot":"far_module","tag":"module","name":"Lab module"}
+{"op":"zone","id":"z_field","slot":"field","tag":"asteroids","name":"Debris field"}
+{"op":"zone","id":"z_pod","slot":"pod","tag":"air","name":"Escape pod"}
+{"op":"spawn","id":"sp_red","zone":"z_airlock","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"pod","zone":"z_pod","anchor":"pod","noun":"escape pod","hyper":"pod","team":"red","size":[3,3,3]}
+{"op":"ent","id":"keycard","kind":"pickup","noun":"launch keycard","hyper":"card","zone":"z_far","anchor":"keycard","body":"dynamic","shape":"box","size":[0.4,0.1,0.3]}
+{"op":"ent","id":"panel","kind":"switch","noun":"hub console","hyper":"console","zone":"z_hub","anchor":"console","body":"fixed"}
+{"op":"ent","id":"sign_lock","kind":"sign","noun":"airlock placard","hyper":"sign","zone":"z_airlock","anchor":"sign","body":"none"}
+{"op":"verb","id":"vb_carry","verb":"physics_props.carry","on":"keycard","params":{}}
+{"op":"verb","id":"vb_panel","verb":"puzzle.switch","on":"panel","params":{}}
+{"op":"verb","id":"vb_sign","verb":"social.inspect","on":"sign_lock","params":{"text":"Zero-g: the stick and jump/crouch fire your thrusters. Let go to stop."}}
+{"op":"verb","id":"vb_clock","verb":"puzzle.timer","on":"player","params":{"seconds":150}}
+{"op":"law","player":{"gravityScale":0,"thrust":4,"speed":6}}
+{"op":"rule","id":"r_win","when":{"t":"enter","a":"keycard","b":"pod"},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_late","when":{"t":"timer_end","a":"player"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_panel","when":{"t":"state_is","a":"panel","s":"on"},"then":[{"e":"emit","target":"panel","fx":"lights"}]}
+{"op":"expect","id":"x_win","prop":"win_reachable","a":"sp_red","b":"z_pod","headline":true,"text":"The keycard can be floated from the lab to the escape pod in zero-g"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

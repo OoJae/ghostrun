@@ -1,0 +1,22 @@
+{"op":"meta","mode":"play","lang":"en","pack":"volume","sub":["water"],"seed":23,"look":"tropical lagoon","mood":[0.6,0.5,0.4],"timeOfDay":13,"weather":"clear"}
+{"op":"zone","id":"z_beach","slot":"beach","tag":"shore","name":"White beach"}
+{"op":"zone","id":"z_lagoon","slot":"lagoon","tag":"lagoon","name":"Blue lagoon"}
+{"op":"zone","id":"z_wreck","slot":"wreck","tag":"ship","name":"The sunken brig"}
+{"op":"zone","id":"z_islet","slot":"islet","tag":"island","name":"Palm islet"}
+{"op":"spawn","id":"sp_red","zone":"z_beach","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"goal_beach","zone":"z_beach","anchor":"goal","noun":"treasure mat","hyper":"mat","team":"red"}
+{"op":"ent","id":"chest","kind":"pickup","noun":"treasure chest","hyper":"chest","zone":"z_wreck","anchor":"hold","body":"dynamic","shape":"box","size":[0.7,0.5,0.5]}
+{"op":"ent","id":"pearl_1","kind":"pickup","noun":"pearl","hyper":"pearl","zone":"z_lagoon","anchor":"reef","body":"sensor","shape":"sphere","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"pearl_2","kind":"pickup","noun":"pearl","hyper":"pearl","zone":"z_wreck","anchor":"deck","body":"sensor","shape":"sphere","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"sign_hut","kind":"sign","noun":"dive shack sign","hyper":"sign","zone":"z_beach","anchor":"sign","body":"none"}
+{"op":"verb","id":"vb_carry","verb":"physics_props.carry","on":"chest","params":{}}
+{"op":"verb","id":"vb_p1","verb":"puzzle.collect","on":"pearl_1","params":{}}
+{"op":"verb","id":"vb_p2","verb":"puzzle.collect","on":"pearl_2","params":{}}
+{"op":"verb","id":"vb_sign","verb":"social.inspect","on":"sign_hut","params":{"text":"Jump to rise, crouch to dive. A breath lasts 20 seconds."}}
+{"op":"verb","id":"vb_clock","verb":"puzzle.timer","on":"player","params":{"seconds":180}}
+{"op":"rule","id":"r_win","when":{"t":"enter","a":"chest","b":"goal_beach"},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_late","when":{"t":"timer_end","a":"player"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_pearl","when":{"t":"touch","a":"player"},"then":[{"e":"emit","target":"player","fx":"chime"}]}
+{"op":"expect","id":"x_win","prop":"win_reachable","a":"sp_red","b":"z_beach","headline":true,"text":"The chest can be dived for at the wreck and brought back to the beach"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

@@ -1,7 +1,7 @@
 // Prompt builders for the fast lane. Wire schemas stay constant across worlds (warm grammar
 // cache): flat, every field required, no unions, no field named reasoning/thinking/trace.
 import * as v from "valibot";
-import { VERBS } from "@ghostrun/kits";
+import { FLIGHT, VERBS } from "@ghostrun/kits";
 import type { PackLayout } from "@ghostrun/plugin-api";
 import type { ChatMessage, ImageIn } from "./wire";
 
@@ -75,7 +75,7 @@ export function intentMessages(prompt: string, packs: { id: string; blurb: strin
         "headline: one short sentence naming the property that makes THIS prompt specific and that a playtest could check (e.g. 'Rooftop lane needs double jump').",
         "lang: ISO code of the prompt's language. moodVec values are in [-1, 1].",
         "Rewrite trademarked names as generic homages in setting/goal (never output brand names).",
-        `Available packs: ${packs.map((p) => `${p.id} (${p.blurb})`).join("; ")}. Pick the closest pack. sub may include 'rooftop' when vertical lanes or jumping matter.`,
+        `Available packs: ${packs.map((p) => `${p.id} (${p.blurb})`).join("; ")}. Pick the closest pack. sub may include 'rooftop' when vertical lanes or jumping matter.${packs.some((p) => p.id === "volume") ? " For volume, sub is exactly one medium: ['sky'] (flying, jetpacks, wings, floating islands, sky races), ['water'] (swimming, diving, underwater, sunken ships, lagoons) or ['space'] (zero-g, spacewalks, asteroids, outside a station)." : ""}`,
         ...(pinned ? [pinned] : []),
       ].join("\n"),
     },
@@ -190,7 +190,10 @@ export const SUPPORTED = {
 type Msg = { role: "system" | "user"; content: string };
 
 /** The world language: shared by the fill and the repair calls so both speak exactly the same IR. */
-function worldRules(layout: PackLayout): string[] {
+/** Flight and swimming verbs: only a volume world's language has them (every other pack's prompt stays as it was), and none while ff.kit_flight is "off". */
+const FLIGHT_IDS = new Set(FLIGHT.map((v) => v.id));
+
+function worldRules(layout: PackLayout, flight = true): string[] {
   const slots = layout.zones
     .map((z) => `- slot "${z.slot}" (${z.tag})${Object.keys(z.anchors).length ? `: anchors ${Object.keys(z.anchors).join(", ")}` : ": no anchors (omit anchor to scatter)"}`)
     .join("\n");
@@ -209,7 +212,7 @@ function worldRules(layout: PackLayout): string[] {
         "Make it interactive: 10-20 things the player can use, collect, step on or dodge (switches, plates, locked doors and keys, coins, hazards, jump pads, portals, exhibits to inspect), each bound to its verb and wired with rules so it matters.",
         "Fights (duels, shooters, zombies, laser tag): combat_sport.shoot on the player and on each npc that fights back (claws or a sword: range 2), combat_sport.health on whoever can be knocked out; win or score on health_lte of the rivals (n 0), lose on health_lte of the player. The player is always 'player' (never player_red); red scoring a tag is {\"t\":\"hit\",\"a\":\"team:blue\",\"b\":\"\"}.",
         "Races (karts, cars, boats, snowmobiles): a vehicle ent with vehicle.drive (\"driver\":\"player\") at the red spawn, checkpoint ents as gates, racing.track on the finish line; win on lap_done a=player n=laps, lose on lap_done a=team:blue n=laps; rival npcs drive themselves with menu [\"racer.race\",\"racer.block\"].",
-        `Verbs:\n${SUPPORTED.verbs.map((x) => `- ${x.id}: ${x.line}`).join("\n")}`,
+        `Verbs:\n${SUPPORTED.verbs.filter((x) => (flight && layout.packId === "volume") || !FLIGHT_IDS.has(x.id)).map((x) => `- ${x.id}: ${x.line}`).join("\n")}`,
         `Rule triggers: ${SUPPORTED.triggers.join("; ")}.`,
         `Rule effects: ${SUPPORTED.effects.join("; ")}.`,
         `Conditions: ${SUPPORTED.conditions}.`,
@@ -241,7 +244,18 @@ const FENG_SHUI = /feng[\s-]*(shui|šuej|suej|schui)|fengshui|風水|风水/i;
 export const FENG_SHUI_HINT =
   " Feng Shui (Form School), checked on the built world: a desk, counter or bed in a corner far from its room's doorway, its back to a wall; nothing within 3 m inside the front door; mirrors on side walls, never facing the front door; no uncurtained window in line with it; uncluttered rooms; nouns name materials or colours covering 3+ of wood, fire, earth, metal, water ('bamboo plant', 'red silk clutch', 'stone bench', 'brass bowl', 'small fountain').";
 
-export function fillMessages(prompt: string, intent: IntentOut, layout: PackLayout, example: string | string[], seed: number): Msg[] {
+/**
+ * How a volume world moves, by its medium (the pack's sub): what to bind and where things go, so the
+ * win needs the flight or the dive the prompt is about.
+ */
+export function volumeHint(sub: readonly string[]): string {
+  const m = sub.includes("water") ? "water" : sub.includes("space") ? "space" : "sky";
+  if (m === "water") return " Water world: the lagoon zone is water you swim in (the placer fills it; to set the breath, an ent kind prop body sensor on the lagoon's surface anchor with locomotion.swim {\"breath\":20}). Put what the win needs under water (the wreck's hold or deck, the reef, the deep) and the goal on the beach; jump rises, crouch dives.";
+  if (m === "space") return " Space world: zero gravity, law {\"op\":\"law\",\"player\":{\"gravityScale\":0,\"thrust\":4,\"speed\":6}}; the player floats with suit thrusters (the stick, jump up, crouch down). Things float where their anchors are: modules, asteroid rocks, the pod out in the open.";
+  return " Sky world: bind locomotion.fly on player ({\"kind\":\"jetpack\",\"climb\":3,\"fuel\":6}; wings or a suit fit other prompts); no gap between the islands can be jumped, landing refuels. Put what the win needs on the islands (the peak is the highest) and rings or checkpoints in the open sky.";
+}
+
+export function fillMessages(prompt: string, intent: IntentOut, layout: PackLayout, example: string | string[], seed: number, opts: { flight?: boolean } = {}): Msg[] {
   const examples = Array.isArray(example) ? example : [example];
   const label = (i: number) => (examples.length > 1 ? `Example ${i + 1} for a different prompt (copy the style and the kinds of verbs and rules, not the content):` : "Example for a different prompt (copy the style, not the content):");
   return [
@@ -249,13 +263,13 @@ export function fillMessages(prompt: string, intent: IntentOut, layout: PackLayo
       role: "system",
       content: [
         "You compile a game description into GHOSTRUN world ops. Output ONLY JSON Lines: one JSON object per line, no prose, no code fences.",
-        ...worldRules(layout),
+        ...worldRules(layout, opts.flight !== false),
         ...examples.flatMap((e, i) => [label(i), e.trim()]),
       ].join("\n"),
     },
     {
       role: "user",
-      content: `Prompt: ${prompt}\nIntent: ${JSON.stringify(intent)}\nUse seed ${seed}, pack "${layout.packId}", mode "${intent.mode}", sub ${JSON.stringify(intent.sub)}. Headline expect text: "${intent.headline}".${intent.mode === "wander" ? " This is a place to explore: no win or lose rules needed; make its things inspectable (social.inspect with a real one-line text each) and let NPCs guide." : ""}${FENG_SHUI.test(prompt) ? FENG_SHUI_HINT : ""}${DEALS.test(prompt) ? DEAL_HINT : ""}${BOOKS.test(prompt) ? BOOK_HINT : ""}`,
+      content: `Prompt: ${prompt}\nIntent: ${JSON.stringify(intent)}\nUse seed ${seed}, pack "${layout.packId}", mode "${intent.mode}", sub ${JSON.stringify(intent.sub)}. Headline expect text: "${intent.headline}".${intent.mode === "wander" ? " This is a place to explore: no win or lose rules needed; make its things inspectable (social.inspect with a real one-line text each) and let NPCs guide." : ""}${FENG_SHUI.test(prompt) ? FENG_SHUI_HINT : ""}${DEALS.test(prompt) ? DEAL_HINT : ""}${BOOKS.test(prompt) ? BOOK_HINT : ""}${intent.pack === "volume" && opts.flight !== false ? volumeHint(intent.sub) : ""}`,
     },
   ];
 }

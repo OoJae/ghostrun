@@ -622,4 +622,13 @@ export const it: Table = {
   "proved in the cloud · this device is checking it…": "provato nel cloud · questo dispositivo lo sta verificando…",
   "proved on your device · the cloud is proving it too": "provato sul tuo dispositivo · anche il cloud lo sta provando",
   "proved {where}": "provato {where}",
+  "Fuel": "Carburante",
+  "Breath": "Respiro",
+  "Jetpack fuel left": "Carburante rimasto nel jetpack",
+  "Breath left under water": "Respiro rimasto sott'acqua",
+  "up": "su",
+  "down": "giù",
+  "fly up": "vola su",
+  "swim up": "nuota su",
+  "dive": "immergiti",
 };

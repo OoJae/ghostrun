@@ -1,9 +1,10 @@
-// Keyboard → InputFrame. WASD moves relative to the camera yaw, Space jumps, F uses. Presses are
+// Keyboard → InputFrame. WASD moves relative to the camera yaw, Space jumps (held: flies up, swims
+// up), C dives (held: down while flying, swimming or floating in zero-g), F uses. Presses are
 // latched until the next sample so a tap between two frames is never lost.
 import { isTyping } from "./render/camera";
-import { BTN_JUMP, BTN_USE, type InputFrame } from "./sim/types";
+import { BTN_DOWN, BTN_JUMP, BTN_USE, type InputFrame } from "./sim/types";
 
-const GAME_KEYS = new Set(["KeyW", "KeyA", "KeyS", "KeyD", "Space", "KeyF", "KeyQ", "KeyE", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"]);
+const GAME_KEYS = new Set(["KeyW", "KeyA", "KeyS", "KeyD", "Space", "KeyF", "KeyC", "KeyQ", "KeyE", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"]);
 
 export class InputCollector {
   readonly #down = new Set<string>();
@@ -29,6 +30,7 @@ export class InputCollector {
     let btn = this.#latched | this.#held;
     if (d.has("Space")) btn |= BTN_JUMP;
     if (d.has("KeyF")) btn |= BTN_USE;
+    if (d.has("KeyC")) btn |= BTN_DOWN;
     this.#latched = 0;
     return { tick, mx, my, yaw, btn };
   }
@@ -67,6 +69,7 @@ export class InputCollector {
     if (!e.repeat) {
       if (e.code === "Space") this.#latched |= BTN_JUMP;
       if (e.code === "KeyF") this.#latched |= BTN_USE;
+      if (e.code === "KeyC") this.#latched |= BTN_DOWN;
     }
     const fresh = !this.#down.has(e.code);
     this.#down.add(e.code);

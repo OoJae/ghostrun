@@ -44,10 +44,10 @@ Phones get on-screen controls. Browsers with WebXR get **Enter VR**: first perso
 | Part | What it does |
 |---|---|
 | `packages/ir` | IR v1: the typed world document (Valibot), spec hash (SHA-256 over canonical JSON, cosmetics stripped), streaming JSONL fill parser with repairs and synonyms, patch merge |
-| `packages/sim` | Deterministic 60 Hz simulation on `@dimforge/rapier3d-deterministic`: character controllers, carry, tags, triggers, rule cascades, kit verbs, respawns |
-| `packages/kits` | Verb plugins: switch, pressure plate, lock and key, collectible, checkpoint, portal, timer, hazard, crumbling floor, wind, jump pad, inspect, throw, shove, shoot (spells, blasters, bows, claws) and hit points (plus jump, carry, oscillate, tag) |
+| `packages/sim` | Deterministic 60 Hz simulation on `@dimforge/rapier3d-deterministic`: character controllers (on foot, at the wheel, a jetpack's thrust-limited flight, the zero-g thrust law below 0.05 g, swimming with a breath), carry, tags, triggers, rule cascades, kit verbs, respawns |
+| `packages/kits` | Verb plugins: switch, pressure plate, lock and key, collectible, checkpoint, portal, timer, hazard, crumbling floor, wind, jump pad, inspect, throw, shove, shoot (spells, blasters, bows, claws), hit points, fly (a jetpack, wings or a suit: hold jump to climb, C to dive, landing refuels) and swim (water volumes, one breath) (plus jump, carry, oscillate, tag) |
 | `packages/bots` | NPCs that play their typed menu options (attack, defend, intercept, follow, patrol) on navmesh paths |
-| `packages/packs/*` | Layout packs: city block, floor plan (with doorways), arena, maze, outdoor, obstacle course; each tested over 50 seeds |
+| `packages/packs/*` | Layout packs: city block, floor plan (with doorways), arena, maze, outdoor, obstacle course, and volume (floating sky islands crossed with a jetpack, a lagoon with a sunken ship to dive to, a space station in zero-g); each tested over 50 seeds |
 | `packages/layout` | The placer and its logged repairs (verbs implied by kinds, collections, door placement, footprints, win fallbacks…) |
 | `packages/proof` | The proof ladder T0–T3, the tour proof for places, issues for the repair loop, planted bugs for "Try to fool it" |
 | `packages/llm` | Prompts and a streaming client for the intent and fill models |

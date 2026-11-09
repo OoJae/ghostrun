@@ -1,4 +1,4 @@
-things (pickup, prop, switch, door): 89 of 216 distinct nouns drawn as a prop, 397 of 573 entities
+things (pickup, prop, switch, door): 91 of 222 distinct nouns drawn as a prop, 410 of 591 entities
 characters (npc): 39 of 42 distinct nouns given a body, 67 of 71 entities
 props used: 23 of 36 (barrel, flag, chair, pumpkin, gravestone, skull, target, tree, sword, wand, crossbow, shield, bomb unused here)
 
@@ -40,6 +40,7 @@ pickup   1  blue balloon → -
 pickup   1  blue candy → -
 pickup   1  blue silk handbag → sack
 pickup   1  body module → -
+pickup  11  bonus gem → gem
 pickup   1  bowling ball → -
 pickup   1  branch key → key
 pickup   1  brass key → key
@@ -75,12 +76,14 @@ pickup   1  keycard → -
 pickup   1  klic k vychodu → key
 pickup   5  kristall → gem
 pickup   1  latte cup → mug
+pickup   1  launch keycard → -
 pickup   1  legs module → -
 pickup   1  med kit → -
 pickup   1  moon leaf → -
 pickup   6  neon shard → gem
 pickup  10  neon token → coin
 pickup   1  old map → -
+pickup   2  pearl → -
 pickup   1  priceless gem → gem
 pickup   1  principal key → key
 pickup   1  purple balloon → -
@@ -96,6 +99,7 @@ pickup   5  seashell → -
 pickup   1  shimmering coin → coin
 pickup   2  silver coin → coin
 pickup   2  silver key → key
+pickup   1  sky crystal → gem
 pickup   2  snowball → -
 pickup   4  soccer ball → -
 pickup   1  speed boost → -
@@ -107,7 +111,7 @@ pickup   1  tennis ball → -
 pickup  27  time gem → gem
 pickup   1  tool kit → -
 pickup   1  train ticket → -
-pickup   1  treasure chest → chest
+pickup   2  treasure chest → chest
 pickup   2  vault key → key
 pickup   1  vault loot → coins
 pickup   1  yellow balloon → -
@@ -145,6 +149,7 @@ prop     1  incense burner → -
 prop     1  jellyfish → -
 prop     1  jump pad → -
 prop     1  kitchen island → -
+prop     1  lagoon water → -
 prop     1  landscape → -
 prop     1  large rock → rock
 prop     1  lever → -
@@ -210,6 +215,7 @@ switch   1  control switch → -
 switch   1  dig spot → -
 switch   1  floodlight switch → lamp
 switch   1  green wire → -
+switch   1  hub console → -
 switch   1  ignition lever → -
 switch   1  lever → -
 switch   1  lever switch → -

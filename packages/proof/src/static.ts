@@ -6,6 +6,7 @@ import { clampLaws, specHash, type WorldBundle } from "@ghostrun/ir";
 import { headlineOf } from "./headline";
 import { t0 } from "./t0";
 import { t1, t1Drive, t1Range } from "./t1";
+import { t1Fly, t1Swim } from "./moves";
 import type { Chip, Receipt } from "./types";
 
 export { headlineOf } from "./headline";
@@ -18,7 +19,8 @@ export const STATIC_TIERS = ["T0", "T1"] as const;
 /** T0 and T1's chips, in the order the full ladder emits them. */
 export function staticChips(b: WorldBundle, playerTeam: "red" | "blue" = "red"): Chip[] {
   const laws = clampLaws(b.laws);
-  return [...t0(b, playerTeam).chips, ...t1(b, laws), ...t1Range(b, laws, playerTeam), ...t1Drive(b, laws, playerTeam)];
+  const s0 = t0(b, playerTeam);
+  return [...s0.chips, ...t1(b, laws), ...t1Range(b, laws, playerTeam), ...t1Drive(b, laws, playerTeam), ...t1Fly(b, laws, s0.chain, playerTeam), ...t1Swim(b, s0.chain)];
 }
 
 export async function staticReceipt(b: WorldBundle, opts: { engine: string; playerTeam?: "red" | "blue"; host?: Receipt["host"] }): Promise<Receipt> {

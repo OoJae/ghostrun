@@ -1,6 +1,7 @@
 // Player movement: Rapier's KinematicCharacterController driven by the world's laws, with the
 // game-feel the plan requires (coyote time, jump buffer, air jumps on fresh presses only).
 import type { Laws } from "@ghostrun/ir";
+import { DIVE, FLOAT_DEPTH, FLY_K, SINK, SWIM_DOWN, SWIM_K, SWIM_SPEED, SWIM_UP } from "@ghostrun/kits";
 import type { Rapier } from "./rapier/load";
 import { BTN, DT, type InputFrame } from "./types";
 
@@ -203,6 +204,160 @@ export class PlayerController {
     const p = this.body.translation();
     this.body.setNextKinematicTranslation({ x: p.x + mv.x, y: p.y + mv.y, z: p.z + mv.z });
     return { jumped: false, airJumped: false, landed: this.grounded && !wasGrounded };
+  }
+
+  /** Powered flight left, in ticks (a jetpack's fuel); ticks the head has been under water. */
+  fuel = 0;
+  under = 0;
+
+  /** The stick as a unit-or-less vector (x, z). */
+  #stick(input: InputFrame | null): [number, number] {
+    let mx = (input?.wx ?? 0) / 127;
+    let mz = (input?.wz ?? 0) / 127;
+    const len = Math.sqrt(mx * mx + mz * mz);
+    if (len > 1) ((mx /= len), (mz /= len));
+    return [mx, mz];
+  }
+
+  /** Move by this tick's velocity through the KCC; grounded and ceiling handled as on foot. Returns the movement made. */
+  #slide(exclude: (c: Collider) => boolean, ceiling: ((headY: number, up: number) => boolean) | null): { x: number; y: number; z: number } {
+    const want = { x: this.vx * DT, y: this.vy * DT, z: this.vz * DT };
+    if (this.shoveX !== 0 || this.shoveZ !== 0) {
+      want.x += this.shoveX * DT;
+      want.z += this.shoveZ * DT;
+      this.shoveX = 0;
+      this.shoveZ = 0;
+    }
+    this.kcc.computeColliderMovement(this.collider, want, undefined, undefined, (c) => !exclude(c));
+    const mv = this.kcc.computedMovement();
+    this.grounded = this.kcc.computedGrounded() && this.vy <= 0;
+    if (this.grounded && this.vy < 0) this.vy = 0;
+    if (ceiling && this.vy > 0 && mv.y < want.y - 1e-6) {
+      const p0 = this.body.translation();
+      if (ceiling(p0.y + PLAYER_HALF_HEIGHT + PLAYER_RADIUS, want.y + 0.02)) this.vy = 0;
+    }
+    const p = this.body.translation();
+    this.body.setNextKinematicTranslation({ x: p.x + mv.x, y: p.y + mv.y, z: p.z + mv.z });
+    return { x: mv.x, y: mv.y, z: mv.z };
+  }
+
+  /**
+   * One tick with a jetpack (wings, a suit) in gravity: on the ground you walk, and holding jump
+   * takes off; in the air under power, jump climbs at `climb` m/s, crouch dives, neither sinks
+   * slowly, and the stick flies at full speed; every powered tick in the air burns one tick of
+   * fuel, and landing fills it again. Out of fuel you fall as from a jump. Only + − × ÷ and sqrt.
+   */
+  fly(input: InputFrame | null, climb: number, fuelTicks: number, exclude: (c: Collider) => boolean, ceiling: (headY: number, up: number) => boolean): ControllerEvents {
+    const btn = input?.btn ?? 0;
+    this.#prevBtn = btn;
+    const up = (btn & BTN.JUMP) !== 0;
+    const down = (btn & BTN.DOWN) !== 0;
+    const ev: ControllerEvents = { jumped: false, airJumped: false, landed: false };
+    if (this.grounded) this.fuel = fuelTicks;
+    const [mx, mz] = this.#stick(input);
+    const tx = mx * this.laws.speed;
+    const tz = mz * this.laws.speed;
+    const powered = this.fuel > 0 && (!this.grounded || up);
+    if (powered) {
+      if (this.grounded) ((ev.jumped = true), (this.grounded = false), (this.jumpsUsed = 1));
+      this.fuel--;
+      const ty = up ? climb : down ? -Math.max(climb, DIVE) : -SINK;
+      this.vy += (ty - this.vy) * FLY_K;
+      this.vx += (tx - this.vx) * FLY_K;
+      this.vz += (tz - this.vz) * FLY_K;
+    } else if (this.grounded) {
+      this.vx = tx;
+      this.vz = tz;
+    } else {
+      const k = Math.min(1, this.laws.airControl * 0.15);
+      this.vx += (tx - this.vx) * k;
+      this.vz += (tz - this.vz) * k;
+    }
+    if (!powered && (!this.grounded || this.vy > 0)) this.vy = Math.max(-50, this.vy - this.#g * DT);
+    const was = this.grounded;
+    this.#slide(exclude, ceiling);
+    if (this.grounded && !was) ev.landed = true;
+    if (this.grounded) this.fuel = fuelTicks; // landed: full again
+    return ev;
+  }
+
+  /**
+   * The zero-g thrust law: no gravity; the velocity closes on where the stick, jump (up) and crouch
+   * (down) point, at `speed`, by at most `thrust` m/s each second, so every course is a straight
+   * line that speeds up and slows down. A suit with fuel (fuelTicks > 0) burns a tick of it for
+   * each tick of thrust and fills up on landing; out of it, you drift. Bumping a wall stops you.
+   */
+  float(input: InputFrame | null, fuelTicks: number, exclude: (c: Collider) => boolean): ControllerEvents {
+    const btn = input?.btn ?? 0;
+    this.#prevBtn = btn;
+    const ev: ControllerEvents = { jumped: false, airJumped: false, landed: false };
+    if (this.grounded && fuelTicks > 0) this.fuel = fuelTicks;
+    const [mx, mz] = this.#stick(input);
+    const my = ((btn & BTN.JUMP) !== 0 ? 1 : 0) - ((btn & BTN.DOWN) !== 0 ? 1 : 0);
+    let tx = mx * this.laws.speed;
+    let ty = my * this.laws.speed;
+    let tz = mz * this.laws.speed;
+    const tl = Math.sqrt(tx * tx + ty * ty + tz * tz);
+    if (tl > this.laws.speed) ((tx = (tx / tl) * this.laws.speed), (ty = (ty / tl) * this.laws.speed), (tz = (tz / tl) * this.laws.speed));
+    let dx = tx - this.vx;
+    let dy = ty - this.vy;
+    let dz = tz - this.vz;
+    const dl = Math.sqrt(dx * dx + dy * dy + dz * dz);
+    const most = Math.max(1, this.laws.thrust) * DT;
+    if (dl > most) ((dx = (dx / dl) * most), (dy = (dy / dl) * most), (dz = (dz / dl) * most));
+    const burns = dl > 1e-6 && fuelTicks > 0;
+    if (!burns || this.fuel > 0) {
+      if (burns) this.fuel--;
+      this.vx += dx;
+      this.vy += dy;
+      this.vz += dz;
+    }
+    const was = this.grounded;
+    const want = { x: this.vx * DT, y: this.vy * DT, z: this.vz * DT };
+    const mv = this.#slide(exclude, null);
+    // a wall takes the velocity it stopped (no bouncing off into space)
+    if (Math.abs(mv.x - want.x) > 1e-6) this.vx = mv.x / DT;
+    if (Math.abs(mv.y - want.y) > 1e-6) this.vy = mv.y / DT;
+    if (Math.abs(mv.z - want.z) > 1e-6) this.vz = mv.z / DT;
+    if (this.grounded && !was) ev.landed = true;
+    return ev;
+  }
+
+  /**
+   * One tick in water whose surface is at `surface`: the stick swims at 60 % speed, jump rises,
+   * crouch dives, and with neither you float up to the surface (your centre FLOAT_DEPTH under it);
+   * a fresh jump press at the surface jumps out. Water drag closes the velocity gently, so a dive
+   * from a height slows in the water. Breath is the world's to count (it knows the surface).
+   */
+  swim(input: InputFrame | null, surface: number, exclude: (c: Collider) => boolean, ceiling: (headY: number, up: number) => boolean): ControllerEvents {
+    const btn = input?.btn ?? 0;
+    const pressed = (btn & BTN.JUMP) !== 0 && (this.#prevBtn & BTN.JUMP) === 0;
+    this.#prevBtn = btn;
+    const up = (btn & BTN.JUMP) !== 0;
+    const down = (btn & BTN.DOWN) !== 0;
+    const ev: ControllerEvents = { jumped: false, airJumped: false, landed: false };
+    const y = this.body.translation().y;
+    const float = surface - FLOAT_DEPTH;
+    const [mx, mz] = this.#stick(input);
+    const s = this.laws.speed * SWIM_SPEED;
+    this.vx += (mx * s - this.vx) * SWIM_K;
+    this.vz += (mz * s - this.vz) * SWIM_K;
+    if (pressed && y >= float - 0.3 && this.laws.jumpsMax > 0) {
+      this.vy = this.#vJump;
+      this.jumpsUsed = 1;
+      ev.jumped = true;
+    } else if (this.vy > SWIM_UP + 0.1) {
+      this.vy -= this.#g * DT; // still flying up out of a jump
+    } else {
+      // (holding jump at the surface keeps you there: you swim, not fly)
+      const rise = Math.min(1, Math.max(-1, (float - y) * 3));
+      const ty = down ? -SWIM_DOWN : up ? Math.min(SWIM_UP, Math.max(rise, (float - y) * 6)) : rise;
+      this.vy += (ty - this.vy) * SWIM_K;
+    }
+    const was = this.grounded;
+    this.#slide(exclude, ceiling);
+    if (this.grounded && !was) ev.landed = true;
+    return ev;
   }
 
   /** Feet height above the capsule centre's floor contact. */

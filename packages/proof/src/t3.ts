@@ -5,7 +5,7 @@ import { stream } from "@ghostrun/detmath";
 import { clampLaws, type Expect, type Laws, type Vec3, type WorldBundle } from "@ghostrun/ir";
 import { buildNav, lowHazards, type NavWorld } from "@ghostrun/nav";
 import { castBrain } from "@ghostrun/bots";
-import { SHOOT, verb } from "@ghostrun/kits";
+import { flightOf, SHOOT, verb, waterAt, watersOf, zeroG, type Flight, type Water } from "@ghostrun/kits";
 import { BTN, SimWorld, type Rapier } from "@ghostrun/sim";
 import { actWords, carryables, causeSteps, playerWeapons, producers, type PlanStep, type Want, type WinChain } from "./t0";
 import { GhostRecorder, secretsOf, thin, type Ghost } from "./ghost";
@@ -13,6 +13,7 @@ import { clock } from "./labels";
 import { hands, SKILLS, type Skill } from "./skill";
 import { apex, gap, hopOk, hopRoute, reachAt, surfaceUnder as surfaceAt, surfaces, type Surface } from "./t1";
 import { pickFailing } from "./redgreen";
+import { flyOk, flyRoute } from "./moves";
 import type { Chip, Fall, FailRun, Level, Trail } from "./types";
 
 const RUN_TICKS = 120 * 60; // two minutes of play per run (a world's own timer still ends it sooner)
@@ -721,10 +722,173 @@ function hopTo(sim: SimWorld, nav: NavWorld, b: WorldBundle, target: Vec3, budge
   return false;
 }
 
+/** What the player flies with here and the water there is (null and none in most worlds). */
+const movesCache = new WeakMap<WorldBundle, { fly: Flight | null; zg: boolean; waters: Water[] }>();
+function movesOf(b: WorldBundle) {
+  let m = movesCache.get(b);
+  if (!m) {
+    const laws = clampLaws(b.laws);
+    movesCache.set(b, (m = { fly: flightOf({ verbs: b.verbs, laws }), zg: zeroG(laws), waters: watersOf(b) }));
+  }
+  return m;
+}
+
+/** Boxes a flight goes over or round: the statics and anything fixed (islands, hulls, modules). */
+const solidCache = new WeakMap<WorldBundle, { pos: Vec3; size: Vec3 }[]>();
+function solidsOf(b: WorldBundle) {
+  let out = solidCache.get(b);
+  if (!out) solidCache.set(b, (out = [...b.statics, ...b.entities.filter((e) => e.body === "fixed" && e.kind !== "npc")].map((x) => ({ pos: x.pos, size: x.size }))));
+  return out;
+}
+
+/**
+ * One leg of a flight, the bot's motor: toward a landing spot `to` (feet), over anything on the
+ * way (cruising a metre above the highest top that crosses the line within the next few metres,
+ * climbing on the spot when one rises ahead), then down onto it. With gravity, jump climbs and
+ * nothing held sinks; in zero-g, jump and crouch are thrust up and down, eased in by the stopping
+ * distance at the thrust (v² ÷ 2a), and the stick slows on the way in. Landed (or, for a spot in
+ * the air, there): true.
+ */
+function flyLeg(sim: SimWorld, b: WorldBundle, to: Vec3, land: boolean, budget: { ticks: number }, stop: () => boolean): boolean {
+  const laws = sim.laws;
+  const zg = movesOf(b).zg;
+  const solid = solidsOf(b);
+  const thrust = Math.max(1, laws.thrust);
+  for (let t = 0; t < 2400 && budget.ticks > 0 && !sim.result; t++) {
+    if (stop()) return true;
+    const q = sim.pos("player");
+    const feet = q[1] - 0.9;
+    const dx = to[0] - q[0];
+    const dz = to[2] - q[2];
+    const d = Math.sqrt(dx * dx + dz * dz);
+    if (land ? t > 0 && sim.player.grounded && d < 1 && Math.abs(feet - to[1]) < 0.35 : d < 0.45 && Math.abs(feet - to[1]) < 0.45) return true;
+    if (feet < -18) {
+      // fell: down to where the world sends the fallen back (the last checkpoint), then plan again
+      for (let k = 0; k < 120 && budget.ticks > 0 && !sim.result && sim.pos("player")[1] < q[1] + 1; k++, budget.ticks--) sim.step(null);
+      return false;
+    }
+    // the highest thing on the way over the next few metres (and the spot's own ground)
+    const ahead = Math.min(d, 4 + Math.sqrt(sim.player.vx * sim.player.vx + sim.player.vz * sim.player.vz));
+    const ux = d > 1e-6 ? dx / d : 0;
+    const uz = d > 1e-6 ? dz / d : 0;
+    const far: Vec3 = [q[0] + ux * ahead, feet, q[2] + uz * ahead];
+    let over = land ? to[1] + 0.6 : to[1];
+    let wall = false;
+    for (const o of solid) {
+      const top = o.pos[1] + o.size[1] / 2;
+      const bottom = o.pos[1] - o.size[1] / 2;
+      if (top <= feet - 0.3 || bottom > Math.max(feet, to[1]) + 1.9) continue; // under us, or a ceiling far above
+      if (!crosses(q, far, o.pos, o.size, 0.5)) continue;
+      over = Math.max(over, top + 1);
+      if (top > feet - 0.1 && !inBox(q[0], q[2], o, 0.3)) wall = true;
+    }
+    const above = d < 1.2;
+    const aimY = above ? to[1] : over;
+    // the stick: full ahead, easing in (a zero-g suit has to slow down in time); still while climbing past a wall
+    const vh = zg ? Math.min(laws.speed, Math.sqrt(2 * thrust * 0.7 * d)) : Math.min(laws.speed, d * 3);
+    const k = wall && feet < over - 0.4 ? 0 : (vh / laws.speed) * 127;
+    const wx = Math.max(-127, Math.min(127, Math.round(ux * k)));
+    const wz = Math.max(-127, Math.min(127, Math.round(uz * k)));
+    let btn = 0;
+    const e = aimY - feet;
+    if (zg) {
+      const brake = (sim.player.vy * sim.player.vy) / (2 * thrust) + 0.12;
+      btn = e > brake ? BTN.JUMP : e < -brake ? BTN.DOWN : 0;
+    } else if (above) btn = e > 0.1 ? BTN.JUMP : e < -3 ? BTN.DOWN : 0;
+    else btn = e > 0 ? BTN.JUMP : e < -3 ? BTN.DOWN : 0;
+    sim.step({ tick: sim.tick + 1, wx, wz, btn });
+    budget.ticks--;
+  }
+  return false;
+}
+
+/**
+ * Fly to a target the navmesh can't walk to: by the flight model's own route over the level's
+ * surfaces when one flight won't do it on the fuel (landing on each to refuel), then onto the
+ * ground under the target beside it, or, with no ground under it, to the target itself in the air.
+ */
+function flyTo(sim: SimWorld, b: WorldBundle, target: Vec3, budget: { ticks: number }, stop: () => boolean): boolean {
+  const { fly, zg } = movesOf(b);
+  if (!fly) return false;
+  const ss = surfaces(b).filter((x) => !b.statics.some((st) => st.id === x.id && st.surf === "wall"));
+  const under = surfaceAt(ss, [target[0], target[1] + 0.1, target[2]]);
+  const ground = under && target[1] - under.top < 2.6 ? under : null;
+  const final: Vec3 = ground ? [clampTo(target[0], ground.min[0] + 0.4, ground.max[0] - 0.4), ground.top, clampTo(target[2], ground.min[1] + 0.4, ground.max[1] - 0.4)] : [target[0], target[1] - 0.9, target[2]];
+  const legs: { to: Vec3; land: boolean }[] = [];
+  const p = sim.pos("player");
+  const on = surfaceAt(ss, [p[0], p[1] - 0.8, p[2]]);
+  const from = on && p[1] - 0.9 - on.top < 3 ? on : undefined; // on it, or just over it (spawned, or landing)
+  // still in the air (picked something up on the way down): land first, for a full tank
+  if (!zg && from && !sim.player.grounded) legs.push({ to: [clampTo(p[0], from.min[0] + 0.3, from.max[0] - 0.3), from.top, clampTo(p[2], from.min[1] + 0.3, from.max[1] - 0.3)], land: true });
+  if (!zg && from && ground && from.id !== ground.id) {
+    const route = flyRoute(ss, from, ground, fly, sim.laws);
+    trace?.(`  fly route ${route ? route.map((x) => x.id).join(">") : "none"}`);
+    // each stop on the way: the point of it nearest the last, a metre in
+    let last: Vec3 = [p[0], from.top, p[2]];
+    for (const n of route?.slice(1, -1) ?? []) {
+      const hx = Math.min(1, (n.max[0] - n.min[0]) / 2);
+      const hz = Math.min(1, (n.max[1] - n.min[1]) / 2);
+      const stop1: Vec3 = [clampTo(last[0], n.min[0] + hx, n.max[0] - hx), n.top, clampTo(last[2], n.min[1] + hz, n.max[1] - hz)];
+      legs.push({ to: stop1, land: true });
+      last = stop1;
+    }
+  }
+  legs.push({ to: final, land: Boolean(ground) && !zg });
+  trace?.(`  fly to ${v1(final)} from ${v1(p)} in ${legs.length} leg${legs.length === 1 ? "" : "s"}`);
+  for (const leg of legs) if (!flyLeg(sim, b, leg.to, leg.land, budget, stop)) return stop();
+  return true;
+}
+
+/**
+ * Swim: to a target in the water, along the surface (breathing) until above it, then straight down
+ * (crouch) to it; to a target on land, along the surface toward it and, at the water's edge, a jump
+ * out. Done when stopped, at it, or out on dry ground.
+ */
+function swimTo(sim: SimWorld, b: WorldBundle, target: Vec3, budget: { ticks: number }, stop: () => boolean): boolean {
+  const ws = movesOf(b).waters;
+  const wet = waterAt(ws, target);
+  let best = Infinity;
+  let since = sim.tick;
+  for (let t = 0; t < 2400 && budget.ticks > 0 && !sim.result; t++) {
+    if (stop()) return true;
+    const q = sim.pos("player");
+    const w = waterAt(ws, q);
+    if (!w && wet) {
+      // on the shore: straight for it, off the edge and into the water
+      const dx = target[0] - q[0];
+      const dz = target[2] - q[2];
+      const d = Math.sqrt(dx * dx + dz * dz) || 1;
+      if (d < best - 0.05) ((best = d), (since = sim.tick));
+      if (sim.tick - since > 90) return false;
+      sim.step({ tick: sim.tick + 1, wx: Math.round((dx / d) * 127), wz: Math.round((dz / d) * 127), btn: 0 });
+      budget.ticks--;
+      continue;
+    }
+    if (!w) return !wet || stop(); // out of the water (onto the shore, or never in it)
+    const dx = target[0] - q[0];
+    const dz = target[2] - q[2];
+    const d = Math.sqrt(dx * dx + dz * dz);
+    const float = w.max[1] - 0.3;
+    // the target's own height once above it (as low as the floor lets the centre go), else the surface
+    const aimY = wet && d < 1.6 ? Math.max(w.min[1] + 0.95, target[1]) : float;
+    if (wet && d < 0.5 && Math.abs(q[1] - aimY) < 0.5) return true;
+    if (d < best - 0.05) ((best = d), (since = sim.tick));
+    const k = (Math.min(1, d * 2) * 127) / (d || 1);
+    const e = aimY - q[1];
+    let btn = e > 0.25 ? BTN.JUMP : e < -0.25 ? BTN.DOWN : 0;
+    // at the edge (no way on along the surface for a third of a second): jump out, a fresh press at a time
+    if (!wet && sim.tick - since > 20 && q[1] > float - 0.35) btn = (sim.tick - since) % 24 < 2 ? BTN.JUMP : 0;
+    sim.step({ tick: sim.tick + 1, wx: Math.round(dx * k), wz: Math.round(dz * k), btn });
+    budget.ticks--;
+  }
+  return false;
+}
+
 /**
  * Walk there; when the navmesh can't, get onto the target's surface first: drop down when it is
  * below, otherwise hop across or climb (walking off a platform toward a target on another one
- * only lands on the floor below, which on a course is where the lava is).
+ * only lands on the floor below, which on a course is where the lava is). In a world that flies,
+ * fly there instead (in zero-g, always: nobody walks); in water, swim.
  */
 function goTo(sim: SimWorld, nav: NavWorld, b: WorldBundle, target: Target, rng: () => number, speed: number, budget: { ticks: number }, stop: () => boolean): boolean {
   const p = sim.pos("player");
@@ -734,6 +898,18 @@ function goTo(sim: SimWorld, nav: NavWorld, b: WorldBundle, target: Target, rng:
     const feet: Vec3 = [q[0], q[1] - 0.9, q[2]];
     return Boolean(nav.path(feet, t) ?? leapPath(feet, t));
   };
+  const mv = movesOf(b);
+  if (mv.waters.length && !stop() && (waterAt(mv.waters, p) || waterAt(mv.waters, t))) {
+    trace?.(`swimTo ${v1(t)} from ${v1(p)}`);
+    if (!swimTo(sim, b, t, budget, stop)) return stop();
+    if (stop() || waterAt(mv.waters, t)) return true;
+  }
+  if (mv.fly && !stop() && (mv.zg || !walkable())) {
+    trace?.(`flyTo ${v1(t)} from ${v1(p)}`);
+    // (a fall sends you back to the last checkpoint: from there, once more)
+    if (!flyTo(sim, b, t, budget, stop) && !flyTo(sim, b, t, budget, stop)) return stop();
+    if (mv.zg || stop()) return true;
+  }
   if (typeof target !== "function" && !walkable() && !stop()) {
     const below = t[1] < p[1] - 0.9 - 1;
     trace?.(`goTo ${v1(t)} from ${v1(p)}${below ? " (below)" : ""}`);
@@ -1693,6 +1869,9 @@ function jumpWitness(R: Rapier, b: WorldBundle, nav: NavWorld, x: Expect, jumps:
 function outOfReach(b: WorldBundle, chain: WinChain, playerTeam: "red" | "blue", navw?: NavWorld): string | null {
   if (b.verbs.some((v) => /portal/.test(v.verb))) return null;
   const laws = clampLaws(b.laws);
+  const fl = movesOf(b).fly;
+  if (fl && fl.fuel === Infinity) return null; // in zero-g nothing is out of reach (the thrust law goes anywhere)
+  // (a world that flies: what is out of the flight model's reach; the T1 flight chip says how far)
   const ss = surfaces(b).filter((x) => !b.statics.some((st) => st.id === x.id && st.surf === "wall"));
   const spawn = b.entities.find((e) => e.kind === "spawn" && e.team === playerTeam) ?? b.entities.find((e) => e.kind === "spawn");
   const from = spawn && surfaceAt(ss, [spawn.pos[0], spawn.pos[1] + 0.2, spawn.pos[2]]);
@@ -1700,7 +1879,7 @@ function outOfReach(b: WorldBundle, chain: WinChain, playerTeam: "red" | "blue",
   const reached = new Set([from.id]);
   for (const queue = [from]; queue.length; ) {
     const s0 = queue.shift()!;
-    for (const n of ss) if (!reached.has(n.id) && hopOk(s0, n, laws, laws.jumpsMax)) (reached.add(n.id), queue.push(n));
+    for (const n of ss) if (!reached.has(n.id) && (fl ? flyOk(s0, n, fl, laws) : hopOk(s0, n, laws, laws.jumpsMax))) (reached.add(n.id), queue.push(n));
   }
   const mid = (x: Surface): Vec3 => [(x.min[0] + x.max[0]) / 2, x.top, (x.min[1] + x.max[1]) / 2];
   const ids = chain.steps.flatMap((st) => (st.do === "pickup" ? [st.item] : st.do === "deliver" ? [st.sensor] : st.do === "use" || st.do === "touch" ? [st.at] : st.do === "collect" ? st.items : []));

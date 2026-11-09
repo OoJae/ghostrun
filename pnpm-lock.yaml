@@ -433,6 +433,34 @@ importers:
         specifier: workspace:*
         version: link:../../sim
 
+  packages/packs/volume:
+    dependencies:
+      '@ghostrun/detmath':
+        specifier: workspace:*
+        version: link:../../detmath
+      '@ghostrun/ir':
+        specifier: workspace:*
+        version: link:../../ir
+      '@ghostrun/plugin-api':
+        specifier: workspace:*
+        version: link:../../plugin-api
+    devDependencies:
+      '@ghostrun/kits':
+        specifier: workspace:*
+        version: link:../../kits
+      '@ghostrun/layout':
+        specifier: workspace:*
+        version: link:../../layout
+      '@ghostrun/nav':
+        specifier: workspace:*
+        version: link:../../nav
+      '@ghostrun/proof':
+        specifier: workspace:*
+        version: link:../../proof
+      '@ghostrun/sim':
+        specifier: workspace:*
+        version: link:../../sim
+
   packages/plugin-api:
     dependencies:
       '@ghostrun/ir':
@@ -496,6 +524,9 @@ importers:
       '@ghostrun/pack-outdoor':
         specifier: workspace:*
         version: link:../packs/outdoor
+      '@ghostrun/pack-volume':
+        specifier: workspace:*
+        version: link:../packs/volume
       '@ghostrun/plugin-api':
         specifier: workspace:*
         version: link:../plugin-api
@@ -570,6 +601,9 @@ importers:
       '@ghostrun/pack-city-block':
         specifier: workspace:*
         version: link:../../packages/packs/city-block
+      '@ghostrun/pack-volume':
+        specifier: workspace:*
+        version: link:../../packages/packs/volume
       '@ghostrun/sim':
         specifier: workspace:*
         version: link:../../packages/sim

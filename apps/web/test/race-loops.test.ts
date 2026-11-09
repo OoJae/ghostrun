@@ -9,7 +9,8 @@ import { PACKS } from "@ghostrun/registry";
 const NO_JUMP = { ...DEFAULT_LAWS, jumpsMax: 0, jumpH: 0 };
 
 describe("race loops", () => {
-  it.each(PACKS.map((p) => [p.id, p.impl] as const))("%s: a car can drive the race loop on every seed", (_id, pack) => {
+  // (the volume pack is crossed through the air or the water: there is no ground to drive a loop on)
+  it.each(PACKS.filter((p) => p.id !== "volume").map((p) => [p.id, p.impl] as const))("%s: a car can drive the race loop on every seed", (_id, pack) => {
     const bad: string[] = [];
     for (const seed of pack.ci.seeds) {
       for (const laws of [DEFAULT_LAWS, NO_JUMP]) {

@@ -6,6 +6,8 @@ import type { Engine, LoadResult } from "./engine";
 import { KeyHint } from "./hud/Corner";
 import { ActsHud, type Asking } from "./hud/Acts";
 import { HealthBar } from "./hud/Health";
+import { MovesHud } from "./hud/Moves";
+import { movesOf } from "./moves";
 import { LapBoard } from "./hud/Lap";
 import { TouchControls } from "./hud/Touch";
 import { XRay } from "./hud/XRay";
@@ -29,7 +31,7 @@ import { chooseLocale, chosenLocale, k, pickLocale, setLocale, t, tn, type Local
 import { LanguageChip } from "./hud/Language";
 import { BRIEF, buildWorld, ENGINE_HASH, FIXTURE_PROMPTS, FIXTURES, hashWorld, worldFromFill, type Intent, type World } from "./pipeline";
 import { probe } from "./probe";
-import { dualProof, proveInCloud } from "./cloud";
+import { dualProof, kitsOffered, proveInCloud } from "./cloud";
 import { LOOK_CHOICES, lookSamples, type LookPin } from "./render/pick";
 import { askHost, clock as mmss, facts, story, type Fact } from "./host";
 import { tourChips, tourFacts, whyFacts } from "./why";
@@ -44,7 +46,7 @@ import { LineagePanel } from "./hud/Lineage";
 import { contextPrompt, galleryRef, lineageOf, receiptVersion, shareSource, yourChanges, type RemixSource } from "./remix";
 import { MuteButton } from "./hud/Mute";
 import { EXAMPLES, Landing, type Starter } from "./hud/Landing";
-import { substitution } from "./substitutions";
+import { substitution, type Kits } from "./substitutions";
 import { RaceChip } from "./hud/Race";
 import { BoardPanel } from "./hud/Board";
 import { loadRace, RACE_PROMPT, useRace } from "./useRace";
@@ -178,6 +180,9 @@ export function App() {
   /** Worlds before each edit, for Undo; cleared by a new prompt. */
   const history = useRef<World[]>([]);
   const builtPrompt = useRef(FIRST_PROMPT);
+  // the kits the edge has on (flying and swimming retire their "not yet" notes), asked once
+  const kits = useRef<Kits>({});
+  useEffect(() => void kitsOffered().then((k) => void (kits.current = k)), []);
   // the HUD's language: the one chosen with the chip, else the world's (when the HUD speaks it), else the browser's
   const browserLangs = typeof navigator === "undefined" ? [] : navigator.languages?.length ? navigator.languages : [navigator.language];
   const [lang, setLang] = useState<Locale>(() => chosenLocale() ?? pickLocale(undefined, browserLangs));
@@ -362,7 +367,7 @@ export function App() {
       const e = engine.current;
       if (!e) return;
       setIntent(world.intent);
-      setNote(substitution(world.source?.base ?? world.source?.prompt ?? builtPrompt.current, world.bundle));
+      setNote(substitution(world.source?.base ?? world.source?.prompt ?? builtPrompt.current, world.bundle, kits.current));
       setScore({ red: 0, blue: 0, result: null });
       const bonus = new Set(world.bundle.entities.filter((e) => e.tags.includes("bonus")).map((e) => e.id));
       setSecrets({ found: 0, of: bonus.size });
@@ -1203,6 +1208,7 @@ export function App() {
           </div>
         )}
         <HealthBar engine={engine} active={status === "playing"} />
+        <MovesHud engine={engine} active={status === "playing"} bundle={current.current?.bundle ?? null} touch={touch} />
         <ActsHud engine={engine} active={status === "playing"} bundle={current.current?.bundle ?? null} asking={asking} onYes={() => (asking && engine.current?.rapierSim?.queueAct(asking.act), setAsking(null))} onNo={() => setAsking(null)} />
         <LapBoard engine={engine} active={status === "playing"} />
         {useHint && status === "playing" && !touch && (
@@ -1365,6 +1371,7 @@ export function App() {
             onStick={(x, y) => engine.current?.touchStick(x, y)}
             onButton={(bit, down) => engine.current?.touchButton(bit, down)}
             useLabel={useHint}
+            moves={movesOf(current.current?.bundle)}
           />
         )}
         {RECORD && (

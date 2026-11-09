@@ -622,4 +622,13 @@ export const ja: Table = {
   "proved in the cloud · this device is checking it…": "クラウドで証明 · このデバイスで確認中…",
   "proved on your device · the cloud is proving it too": "このデバイスで証明 · クラウドでも証明中",
   "proved {where}": "{where}証明済み",
+  "Fuel": "燃料",
+  "Breath": "息",
+  "Jetpack fuel left": "ジェットパックの残り燃料",
+  "Breath left under water": "水中で残っている息",
+  "up": "上昇",
+  "down": "下降",
+  "fly up": "上へ飛ぶ",
+  "swim up": "上へ泳ぐ",
+  "dive": "潜る",
 };

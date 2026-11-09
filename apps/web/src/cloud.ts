@@ -14,14 +14,18 @@ import { probe } from "./probe";
 import { reportWrong } from "./share";
 
 let offered: Promise<boolean> | null = null;
+let health: Promise<{ proof?: unknown; kits?: { flight?: unknown } } | null> | null = null;
+const healthOnce = () => (health ??= fetch("/v1/health", { cache: "no-store" }).then((r) => (r.ok ? (r.json() as Promise<{ proof?: unknown; kits?: { flight?: unknown } }>) : null)).catch(() => null));
 
 /** Does the edge offer the cloud proof? Asked once a page (/v1/health); a refusal of it as off says no from then on. */
 export function cloudOffered(): Promise<boolean> {
-  offered ??= fetch("/v1/health", { cache: "no-store" })
-    .then((r) => (r.ok ? (r.json() as Promise<{ proof?: unknown }>) : null))
-    .then((h) => h?.proof === true)
-    .catch(() => false);
+  offered ??= healthOnce().then((h) => h?.proof === true);
   return offered;
+}
+
+/** The kits the edge has on (ff.kit_flight): read from the same /v1/health, all off when it can't be asked. */
+export function kitsOffered(): Promise<{ flight: boolean }> {
+  return healthOnce().then((h) => ({ flight: h?.kits?.flight === true }));
 }
 
 export interface CloudHooks {

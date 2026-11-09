@@ -3,7 +3,7 @@
 // id order, rules in (prio desc, id) order — so the same bundle + seed + inputs give bit-identical
 // event logs and state hashes everywhere.
 import { cosDeg, hex32, xxh32 } from "@ghostrun/detmath";
-import { DRIVE, feelOf, gatesOf, HEALTH, MUZZLE_UP, SHOOT, SHOT_RADIUS, segBody, segBox, TRACK, verb as kitVerb } from "@ghostrun/kits";
+import { DRIVE, feelOf, flightOf, gatesOf, HEAD_UP, HEALTH, MUZZLE_UP, SHOOT, SHOT_RADIUS, segBody, segBox, TRACK, verb as kitVerb, waterAt, watersOf, zeroG, type Water } from "@ghostrun/kits";
 import { clampParams, type Bound, type Shot, type VerbCtx, type VerbPlugin } from "@ghostrun/plugin-api";
 import type { Effect, Entity, Laws, Rule, Vec3, WorldBundle } from "@ghostrun/ir";
 import { clampLaws } from "@ghostrun/ir";
@@ -156,6 +156,13 @@ export class SimWorld {
   readonly #watchFacing = new Map<string, [number, number]>();
   /** Watchers that see the player now, and the tick each last said so. */
   readonly #seenAt = new Map<string, number>();
+  /** Who flies with what (a jetpack's climb and fuel, in ticks; 0 fuel: the zero-g law without a suit's). */
+  readonly #flights = new Map<string, { kind: string; climb: number; fuel: number }>();
+  /** The water volumes, in binding-id order. */
+  readonly #waters: Water[];
+  readonly #zeroG: boolean;
+  /** A world that flies, floats or swims: fuel and breath go into the state hash (others hash as they always did). */
+  readonly #moves: boolean;
 
   constructor(R: Rapier, bundle: WorldBundle, opts: SimOptions = {}) {
     this.R = R;
@@ -261,6 +268,28 @@ export class SimWorld {
         if (d > 0.5) this.#watchFacing.set(id, [dx / d, dz / d]);
       }
     }
+    // flight and water: a jetpack per character that binds one, the zero-g law for all, the water volumes
+    this.#zeroG = zeroG(this.laws);
+    for (const id of this.#agents) {
+      const f = flightOf({ verbs: bundle.verbs, laws: { ...this.laws, gravityScale: 1 } }, id);
+      if (f) this.#flights.set(id, { kind: f.kind, climb: f.climb, fuel: Math.round(f.fuel * 60) });
+    }
+    this.#waters = watersOf(bundle);
+    this.#moves = this.#zeroG || this.#flights.size > 0 || this.#waters.length > 0;
+    for (const [id, f] of this.#flights) (id === "player" ? this.player : this.npcs.get(id)!).fuel = f.fuel;
+  }
+
+  /** How a character moves right now and what it has left: fuel for its jetpack, breath under water (seconds). Null in a world without either. */
+  moves(id = "player"): { mode: "walk" | "fly" | "float" | "swim"; kind: string; fuel: number; fuelMax: number; breath: number; breathMax: number } | null {
+    if (!this.#moves) return null;
+    const c = id === "player" ? this.player : this.npcs.get(id);
+    if (!c) return null;
+    const f = this.#flights.get(id);
+    const w = this.#waters.length ? waterAt(this.#waters, this.pos(id)) : null;
+    const mode = w ? "swim" : this.#zeroG ? "float" : f && !c.grounded ? "fly" : "walk";
+    const fuelMax = f ? f.fuel / 60 : 0;
+    const breathMax = w ? w.breath : 0;
+    return { mode, kind: f?.kind ?? (this.#zeroG ? "suit" : ""), fuel: f ? c.fuel / 60 : 0, fuelMax, breath: breathMax > 0 ? Math.max(0, breathMax - c.under / 60) : 0, breathMax };
   }
 
   #makeCtx(): VerbCtx {
@@ -839,6 +868,22 @@ export class SimWorld {
 
     // 3b. anyone who fell out of the world comes back (a pit, or off the edge of a platform)
     for (const id of this.#agents) if (!this.ents.get(id)!.destroyed && this.pos(id)[1] < -20) this.#respawn(id);
+    // 3b'. a breath held under water runs out: back at the last checkpoint, breathing again
+    if (this.#waters.length) {
+      for (const id of this.#agents) {
+        const c = id === "player" ? this.player : this.npcs.get(id)!;
+        const p = this.pos(id);
+        const w = this.ents.get(id)!.destroyed ? null : waterAt(this.#waters, p);
+        if (!w || p[1] + HEAD_UP >= w.max[1] - 0.05 || w.breath <= 0) {
+          c.under = 0;
+          continue;
+        }
+        if (++c.under < Math.round(w.breath * 60)) continue;
+        push("breath_out", id, w.id);
+        c.under = 0;
+        this.#respawn(id);
+      }
+    }
 
     // 3c. USE: a fresh press runs the nearest usable verb in reach; held for HOLD_TO_DROP ticks, it
     // puts down what you carry (a weapon in hand always has a use: firing it)
@@ -974,7 +1019,7 @@ export class SimWorld {
     for (let i = scoredFrom; i < evs.length && i < 512 && !this.result; i++) if (evs[i]!.k !== "score_gte") this.#fire(evs[i]!, i, push);
 
     // 6. state hash over everything that moves or counts
-    const buf = new Float64Array(this.order.length * 3 + 4 + (this.#combat ? this.#hp.size + this.shots.length * 3 : 0) + (this.#wheels ? this.#rides.size * 3 : 0) + (this.#economy ? this.#agents.length * this.#words.length + 1 : 0));
+    const buf = new Float64Array(this.order.length * 3 + 4 + (this.#combat ? this.#hp.size + this.shots.length * 3 : 0) + (this.#wheels ? this.#rides.size * 3 : 0) + (this.#economy ? this.#agents.length * this.#words.length + 1 : 0) + (this.#moves ? this.#agents.length * 5 : 0));
     let o = 0;
     for (const id of this.order) {
       const p = this.pos(id);
@@ -1003,6 +1048,12 @@ export class SimWorld {
       for (const id of this.#agents) for (const w of this.#words) buf[o++] = this.purse(id, w);
       buf[o++] = this.bookings.length;
     }
+    if (this.#moves) {
+      for (const id of this.#agents) {
+        const c = id === "player" ? this.player : this.npcs.get(id)!;
+        for (const x of [c.fuel, c.under, c.vx, c.vy, c.vz]) buf[o++] = x === 0 ? 0 : x;
+      }
+    }
     this.hash = xxh32(new Uint8Array(buf.buffer), this.hash);
 
     this.log.push(...evs);
@@ -1016,6 +1067,19 @@ export class SimWorld {
     // at the wheel: the arcade vehicle model drives the same capsule through the same KCC
     const ride = this.#rides.get(id);
     if (ride) return ctrl.drive(input, ride, this.tick, (col) => col.handle === carriedHandle);
+    if (this.#moves) {
+      const exclude = (col: Collider) => col.handle === carriedHandle;
+      const ceiling = (headY: number, up: number) => {
+        const p = ctrl.body.translation();
+        const ray = new this.R.Ray({ x: p.x, y: headY + 0.001, z: p.z }, { x: 0, y: 1, z: 0 });
+        return this.world.castRay(ray, up, true, undefined, undefined, ctrl.collider, undefined, (col) => col.handle !== carriedHandle) !== null;
+      };
+      const w = this.#waters.length ? waterAt(this.#waters, this.pos(id)) : null;
+      if (w) return ctrl.swim(input, w.max[1], exclude, ceiling);
+      const f = this.#flights.get(id);
+      if (this.#zeroG) return ctrl.float(input, f?.fuel ?? 0, exclude);
+      if (f) return ctrl.fly(input, f.climb, f.fuel, exclude, ceiling);
+    }
     // Compare handles only: calling collider methods here would re-borrow Rapier's collider set
     // while the KCC holds it. Sensors have no physics colliders in this world.
     return ctrl.step(

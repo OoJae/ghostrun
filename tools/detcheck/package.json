@@ -17,6 +17,7 @@
     "@ghostrun/nav": "workspace:*",
     "@ghostrun/pack-arena": "workspace:*",
     "@ghostrun/pack-city-block": "workspace:*",
+    "@ghostrun/pack-volume": "workspace:*",
     "@ghostrun/sim": "workspace:*",
     "@jitl/quickjs-wasmfile-release-sync": "0.32.0",
     "@recast-navigation/core": "0.43.1",

@@ -333,6 +333,7 @@ export class ModelLayer {
     // props by noun
     for (const e of bundle.entities) {
       if (e.tags.includes("area")) continue;
+      if (bundle.verbs.some((v) => v.verb === "locomotion.swim" && v.on === e.id)) continue; // water stays water, whatever it is called
       const id = propFor(e.noun, e.kind);
       const actor = view.actors.get(e.id);
       if (id && actor) void this.#furnish(e, id, actor);

@@ -622,4 +622,13 @@ export const zh: Table = {
   "proved in the cloud · this device is checking it…": "已在云端证明 · 本设备正在核对…",
   "proved on your device · the cloud is proving it too": "已在你的设备上证明 · 云端也在证明",
   "proved {where}": "已证明（{where}）",
+  "Fuel": "燃料",
+  "Breath": "气息",
+  "Jetpack fuel left": "喷气背包剩余燃料",
+  "Breath left under water": "水下剩余气息",
+  "up": "上升",
+  "down": "下降",
+  "fly up": "向上飞",
+  "swim up": "向上游",
+  "dive": "下潜",
 };

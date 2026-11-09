@@ -3,6 +3,7 @@
 // sim and have no hooks here.
 import type { VerbPlugin } from "@ghostrun/plugin-api";
 import { COMBAT } from "./combat";
+import { FLIGHT } from "./flight";
 import { HAZARDS } from "./hazards";
 import { MOVEMENT } from "./movement";
 import { PUZZLE } from "./puzzle";
@@ -15,7 +16,7 @@ const CORE: VerbPlugin[] = [
   { id: "combat_sport.tag_drop", line: 'on "player": touching an enemy carrier knocks the item loose; params {"radius":0.5-3}', on: ["player"], params: { radius: { def: 1.2, min: 0.5, max: 3 } } },
 ];
 
-export const VERBS: readonly VerbPlugin[] = [...CORE, ...PUZZLE, ...HAZARDS, ...MOVEMENT, ...COMBAT, ...VEHICLES];
+export const VERBS: readonly VerbPlugin[] = [...CORE, ...PUZZLE, ...HAZARDS, ...MOVEMENT, ...COMBAT, ...VEHICLES, ...FLIGHT];
 
 const byId = new Map(VERBS.map((v) => [v.id, v]));
 
@@ -23,6 +24,7 @@ export function verb(id: string): VerbPlugin | undefined {
   return byId.get(id);
 }
 
-export { COMBAT, HAZARDS, MOVEMENT, PUZZLE, VEHICLES };
+export { COMBAT, FLIGHT, HAZARDS, MOVEMENT, PUZZLE, VEHICLES };
+export { DIVE, diveNeed, FLOAT_DEPTH, flightNeed, flightOf, FLY, FLY_K, HEAD_UP, SINK, SWIM, SWIM_DOWN, SWIM_K, SWIM_SPEED, SWIM_UP, waterAt, watersOf, zeroG, type Flight, type Water } from "./flight";
 export { DRIVE, FEEL, feelOf, gatesOf, progress, TRACK, VEHICLE_KINDS, type Feel, type VehicleKind } from "./vehicles";
 export { aim, BODY_HALF, BODY_RADIUS, HEALTH, MUZZLE_UP, segBody, segBox, SHOOT, SHOT_RADIUS } from "./combat";

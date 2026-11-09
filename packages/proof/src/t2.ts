@@ -2,6 +2,7 @@
 // precondition, step at most 120 ticks, and assert the rule fired exactly once.
 import type { Rule, Vec3, WorldBundle } from "@ghostrun/ir";
 import type { Cause } from "@ghostrun/plugin-api";
+import { waterAt, watersOf } from "@ghostrun/kits";
 import { BTN, SimWorld, type InputFrame, type Rapier } from "@ghostrun/sim";
 import { hitPoints, playerWeapons, producers } from "./t0";
 import type { Chip } from "./types";
@@ -24,7 +25,9 @@ function force(sim: SimWorld, b: WorldBundle, c: Cause): string | boolean {
   if (!e) return `${c.at} not found`;
   const floor = e.pos[1] - e.size[1] / 2;
   if (c.do === "enter" || c.do === "touch") {
-    sim.teleport("player", [e.pos[0], Math.max(floor, 0) + 0.95, e.pos[2]]);
+    // (under water it is reached where it lies: the swimmer goes down to it)
+    const wet = waterAt(watersOf(b), e.pos) !== null;
+    sim.teleport("player", [e.pos[0], (wet ? floor : Math.max(floor, 0)) + 0.95, e.pos[2]]);
     return false;
   }
   if (c.holding) sim.attach(c.holding, "player");

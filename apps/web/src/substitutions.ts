@@ -8,6 +8,14 @@ export interface Substitution {
   /** A verb id that would do it for real (once a kit has one, the note goes away by itself). */
   has: RegExp;
   note: string | ((prompt: string, verbs: ReadonlySet<string>) => string);
+  /** The kit that does it for real now: with it on (the edge says so), the note is retired. */
+  kit?: keyof Kits;
+}
+
+/** The kits the edge has switched on (/v1/health "kits"): off when it can't be asked. */
+export interface Kits {
+  /** Flight, zero-g and swimming (ff.kit_flight): the volume pack and the fly and swim verbs. */
+  flight?: boolean;
 }
 
 export const SUBSTITUTIONS: readonly Substitution[] = [
@@ -20,11 +28,13 @@ export const SUBSTITUTIONS: readonly Substitution[] = [
     ask: /\b(fly|flies|flying|soar(s|ing)?|jetpacks?)\b/i,
     has: /\.(fly|glide|jetpack|hover)$/,
     note: "No flying yet: you get up high by jumping",
+    kit: "flight",
   },
   {
     ask: /\b(swim(s|ming)?|div(e|es|ing)|underwater|scuba|snorkel(s|ling)?)\b/i,
     has: /\.(swim|dive)$/,
     note: "No swimming yet: water is scenery, you stay on foot",
+    kit: "flight",
   },
   {
     // a basketball's "shoot five hoops" is a throw, not a gun
@@ -34,11 +44,15 @@ export const SUBSTITUTIONS: readonly Substitution[] = [
   },
 ];
 
-/** The note for this prompt and world, or null when the world does what was asked. */
-export function substitution(prompt: string, bundle: Pick<WorldBundle, "verbs">): string | null {
+/**
+ * The note for this prompt and world, or null when the world does what was asked. A note whose kit
+ * is on is retired: flying and swimming are real now (the volume pack), so a world on foot isn't
+ * "no flying yet".
+ */
+export function substitution(prompt: string, bundle: Pick<WorldBundle, "verbs">, kits: Kits = {}): string | null {
   const verbs = new Set(bundle.verbs.map((v) => v.verb));
   for (const s of SUBSTITUTIONS) {
-    if (!s.ask.test(prompt) || [...verbs].some((v) => s.has.test(v))) continue;
+    if (!s.ask.test(prompt) || [...verbs].some((v) => s.has.test(v)) || (s.kit && kits[s.kit])) continue;
     return typeof s.note === "string" ? s.note : s.note(prompt, verbs);
   }
   return null;

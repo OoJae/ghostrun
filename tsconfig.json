@@ -32,6 +32,9 @@
       "path": "packages/packs/course"
     },
     {
+      "path": "packages/packs/volume"
+    },
+    {
       "path": "packages/sim"
     },
     {
