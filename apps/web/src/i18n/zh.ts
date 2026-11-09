@@ -638,4 +638,6 @@ export const zh: Table = {
   "the player's controls: the experts' plan played again through the keys and the follow camera as a player has them (eight directions, the camera turned by hand, a tenth of a second to react). It flags the camera inside walls, stuck frames over 0.5 s and capsule traps.": "玩家的操作:用玩家拥有的按键和跟随镜头重新执行专家的计划(八个方向、手动转动镜头、十分之一秒的反应时间)。它会标出镜头进入墙体、超过 0.5 秒的卡住和胶囊体被困。",
   "On the first {n} clean bench worlds it flagged {k}, on all {all} of them {f}; its test plants a low ceiling, a narrow gap and a corner, and catches all three.": "在基准集的前 {n} 个干净世界上它标出了 {k} 个,在全部 {all} 个上标出了 {f} 个;它的测试布置了低天花板、窄缝和墙角,三个都能抓到。",
   "route model: the world's route as a graph plays {n} modelled runs in milliseconds, for where the time goes, screening harder versions and red against blue. Never shown as played: each number says modelled, with its error measured against physics on {held} held-out bench worlds (win rate ±{nov} novices, ±{avg} average players; clear time ±{t}%).": "路线模型:把世界的路线作为图,在几毫秒内跑 {n} 次模拟,用于看时间花在哪里、筛选更难的版本以及红对蓝。从不显示为已游玩:每个数字都标明模拟,并附上在 {held} 个保留的基准世界上对照物理测得的误差(胜率 新手 ±{nov},普通玩家 ±{avg};通关时间 ±{t}%)。",
+  "AI-made": "AI 生成",
+  "Worlds, characters and answers here are made by AI, then checked by a proof. Privacy and AI: what we keep.": "这里的世界、角色和回答由 AI 生成，再经证明核对。隐私与 AI：我们保留什么。",
 };
