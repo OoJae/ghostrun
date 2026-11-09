@@ -29,9 +29,9 @@ const token = process.env.GR_TOKEN;
 if (!token) throw new Error("set GR_TOKEN to a judge or dev token (pnpm --filter @ghostrun/edge-api judge-token dev)");
 
 // the engine hash the web app sends: a cached build only ever serves the engine it was built for
-const pipeline = readFileSync(resolve(here, "../../web/src/pipeline.ts"), "utf8");
-const engine = /ENGINE_HASH = "([0-9a-f]{64})"/.exec(pipeline)?.[1];
-if (!engine) throw new Error("ENGINE_HASH not found in apps/web/src/pipeline.ts");
+const world = readFileSync(resolve(here, "../../../packages/world/src/index.ts"), "utf8");
+const engine = /ENGINE_HASH = "([0-9a-f]{64})"/.exec(world)?.[1];
+if (!engine) throw new Error("ENGINE_HASH not found in packages/world/src/index.ts");
 
 const prompts = readFileSync(file, "utf8").split("\n").map((l) => l.trim()).filter((l) => l && !l.startsWith("#"));
 const events = (text) =>

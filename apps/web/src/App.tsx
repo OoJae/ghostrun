@@ -27,6 +27,7 @@ import { propose, twistWorld } from "./director";
 import { fengShuiFor } from "./fengshui";
 import { BRIEF, buildWorld, ENGINE_HASH, FIXTURE_PROMPTS, FIXTURES, hashWorld, worldFromFill, type Intent, type World } from "./pipeline";
 import { probe } from "./probe";
+import { dualProof, proveInCloud } from "./cloud";
 import { LOOK_CHOICES, lookSamples, type LookPin } from "./render/pick";
 import { askHost, clock as mmss, facts, story, type Fact } from "./host";
 import { tourChips, tourFacts, whyFacts } from "./why";
@@ -318,7 +319,7 @@ export function App() {
     setRepair({ status: "offer", issues: first.length, left, round: best.round, hard, ...(best.receipt.headline ? { headline: `${best.receipt.headline.text} (${statusWord(best.receipt.headline.status)})` } : {}) });
   }, [proveOnDevice]);
 
-  /** Prove the world on the device worker (until the edge proof service is deployed). */
+  /** Prove the world on the device worker and in the cloud at once (cloud.ts): the first receipt out fills it, then the two are compared. */
   const startProof = useCallback((world: World, id: number) => {
     setProof({ status: "proving", chips: [], receipt: null });
     setRepair({ status: "idle", issues: 0 });
@@ -326,11 +327,13 @@ export function App() {
     setRoutesOn(false);
     // the receipt turns green as soon as it is out; the playtest (the difficulty band, what the
     // runners revealed) lands on it after
-    const played = (pt: Playtest | null) => id === runId.current && setProof((p) => ({ ...p, playing: false, ...(pt && p.receipt ? { receipt: { ...p.receipt, playtest: pt } } : {}) }));
-    proveOnDevice(world, id, (chip) => id === runId.current && setProof((p) => ({ ...p, chips: [...p.chips, chip] })), played)
-      .then((receipt) => {
-        if (id !== runId.current) return;
-        setProof((p) => ({ ...p, status: "done", receipt, playing: true }));
+    dualProof({
+      device: (onChip, onPlaytest) => proveOnDevice(world, id, onChip, onPlaytest),
+      cloud: (on, signal) => proveInCloud(world, on, signal),
+      set: setProof,
+      live: () => id === runId.current,
+      spec: () => hashWorld(world.bundle),
+      landed: (receipt) => {
         race.proved(world, receipt);
         void redGreen.landed(world, receipt);
         probe().proof = { headline: receipt.headline?.status ?? "none", chips: receipt.chips.length };
@@ -338,8 +341,8 @@ export function App() {
         afterProof.current.delete(id);
         void maybeRepair(world, receipt, id);
         autoCut.current(world, receipt);
-      })
-      .catch((err: Error) => id === runId.current && setProof((p) => ({ ...p, status: "error", error: err.message })));
+      },
+    });
   }, [proveOnDevice, maybeRepair]);
 
   const show = useCallback(

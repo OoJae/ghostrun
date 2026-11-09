@@ -6,14 +6,14 @@ import type { WorldBundle } from "@ghostrun/ir";
 import type { NavWorld } from "@ghostrun/nav";
 import type { Rapier } from "@ghostrun/sim";
 import { bandOf } from "./revealed";
-import { skillRuns, stepName } from "./t3";
+import { skillRuns, stepName, type Played } from "./t3";
 import type { PlanStep, WinChain } from "./t0";
 import type { Playtest, Receipt } from "./types";
 
 /** Runners per lower level: 6 novices and 6 average players beside the 12 experts. */
 export const SKILL_RUNS = 6;
 
-export function playtest(R: Rapier, b: WorldBundle, nav: NavWorld, chain: WinChain | null, receipt: Receipt, playerTeam: "red" | "blue" = "red", openers: ReadonlyMap<string, PlanStep[]> = new Map(), runs = SKILL_RUNS): Playtest | null {
+export function playtest(R: Rapier, b: WorldBundle, nav: NavWorld, chain: WinChain | null, receipt: Receipt, playerTeam: "red" | "blue" = "red", openers: ReadonlyMap<string, PlanStep[]> = new Map(), runs = SKILL_RUNS, played?: Played): Playtest | null {
   const win = receipt.chips.find((c) => c.id === "T3:win");
   if (!chain || !win || b.mode !== "play") return null;
   const t0 = globalThis.performance?.now?.() ?? 0;
@@ -25,8 +25,8 @@ export function playtest(R: Rapier, b: WorldBundle, nav: NavWorld, chain: WinCha
     const levels = [{ level: "expert" as const, runs: win.n, won: 0 }];
     return { levels, band: bandOf(levels, tooEasy), trails: [], steps, ms: 0 };
   }
-  const novices = skillRuns(R, b, nav, chain, "novice", runs, playerTeam, openers);
-  const average = skillRuns(R, b, nav, chain, "average", runs, playerTeam, openers);
+  const novices = skillRuns(R, b, nav, chain, "novice", runs, playerTeam, openers, played);
+  const average = skillRuns(R, b, nav, chain, "average", runs, playerTeam, openers, played);
   const levels = [
     { level: "novice" as const, runs, won: novices.filter((t) => t.won).length },
     { level: "average" as const, runs, won: average.filter((t) => t.won).length },

@@ -2,12 +2,13 @@
 // edge's own routes, in-process (the build, edit and share routes gate the caller, spend against
 // the governor and use the build cache exactly as they do for the web app), places the world as the
 // web client does (world.ts) and proves what can be proved without physics: T0 (the rule graph) and
-// T1 (the kinematic models). A cloud proof (POST /v1/proof) answers for the whole ladder once it is
-// wired; until then the share link is where the AI runners prove the rest, on whoever opens it.
+// T1 (the kinematic models). The cloud proof (POST /v1/proof) answers for the whole ladder; when it
+// doesn't (off, rate limited), the share link is where the AI runners prove the rest, on whoever opens it.
 import { FillParser, logicOf, mergeFill, pinLayout, ruleText, splitObjects, thingLabel, type WorldBundle } from "@ghostrun/ir";
 import { verb } from "@ghostrun/kits";
 import type { IntentOut } from "@ghostrun/llm";
 import { bandLine, chipLine, fraction, staticReceipt, statusWord, type Chip, type Receipt } from "@ghostrun/proof/static";
+import { PROOF_VERSION } from "@ghostrun/world";
 import * as v from "valibot";
 import { SHARE_ID } from "./share";
 import { changeSummary, contextPrompt, editIntent, ENGINE_HASH, fillPack, fillSeed, GALLERY, galleryRef, galleryWorld, lineageOf, mergeEdit, newFailures, placeFill, receiptDelta, type Lineage, type Placed } from "./world";
@@ -44,15 +45,16 @@ export interface Tool {
 }
 
 /**
- * The cloud proof's seam: POST /v1/proof with the world as a share stores it ({v, engine,
- * specHash, seed, fill}), answered with its receipt, bare or as {receipt}. Until that route lands
- * it answers 404, and anything that isn't a receipt for this very spec counts as no receipt.
+ * The cloud proof: POST /v1/proof (proof.ts) with the world as a share stores it ({v, fill, seed,
+ * engine, spec, version}), answered as JSON with its receipt (playtest and all), stored or proved
+ * on the shards now. A refusal (switched off, rate limited, another proof version) or anything that
+ * isn't a receipt for this very spec counts as no receipt, and the tool says what T0 and T1 found.
  */
 export function cloudProver(call: ToolCtx["call"]): Prover {
   return {
     async prove(w) {
       try {
-        const r = await call("/v1/proof", { v: 1, engine: ENGINE_HASH, specHash: w.spec, seed: w.seed, fill: w.fill });
+        const r = await call("/v1/proof", { v: 1, fill: w.fill, seed: w.seed, engine: ENGINE_HASH, spec: w.spec, version: PROOF_VERSION });
         if (!r.ok || !(r.headers.get("content-type") ?? "").includes("application/json")) return null;
         const j = (await r.json()) as { receipt?: unknown } | null;
         const rc = (j && typeof j === "object" && "receipt" in j ? j.receipt : j) as Partial<Receipt> | null;

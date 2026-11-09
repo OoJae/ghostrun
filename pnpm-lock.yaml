@@ -111,6 +111,9 @@ importers:
       '@ghostrun/llm':
         specifier: workspace:*
         version: link:../../packages/llm
+      '@ghostrun/nav':
+        specifier: workspace:*
+        version: link:../../packages/nav
       '@ghostrun/proof':
         specifier: workspace:*
         version: link:../../packages/proof
@@ -120,10 +123,19 @@ importers:
       '@ghostrun/sim':
         specifier: workspace:*
         version: link:../../packages/sim
+      '@ghostrun/world':
+        specifier: workspace:*
+        version: link:../../packages/world
       valibot:
         specifier: 'catalog:'
         version: 1.5.0(typescript@6.0.3)
     devDependencies:
+      '@dimforge/rapier3d-deterministic':
+        specifier: 'catalog:'
+        version: 0.21.0
+      '@recast-navigation/wasm':
+        specifier: 0.43.1
+        version: 0.43.1
       vite:
         specifier: 'catalog:'
         version: 8.3.5(@types/node@26.6.5)
@@ -163,6 +175,9 @@ importers:
       '@ghostrun/sim':
         specifier: workspace:*
         version: link:../../packages/sim
+      '@ghostrun/world':
+        specifier: workspace:*
+        version: link:../../packages/world
       '@recast-navigation/wasm':
         specifier: 0.43.1
         version: 0.43.1
@@ -509,6 +524,25 @@ importers:
       '@ghostrun/pack-city-block':
         specifier: workspace:*
         version: link:../packs/city-block
+
+  packages/world:
+    dependencies:
+      '@ghostrun/ir':
+        specifier: workspace:*
+        version: link:../ir
+      '@ghostrun/layout':
+        specifier: workspace:*
+        version: link:../layout
+      '@ghostrun/plugin-api':
+        specifier: workspace:*
+        version: link:../plugin-api
+      '@ghostrun/registry':
+        specifier: workspace:*
+        version: link:../registry
+    devDependencies:
+      '@ghostrun/sim':
+        specifier: workspace:*
+        version: link:../sim
 
   tools/detcheck:
     dependencies:

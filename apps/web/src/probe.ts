@@ -15,6 +15,10 @@ export interface GhostrunProbe {
   splits?: Record<string, number>;
   sim?: "rapier" | "stub";
   proof?: { headline: string; chips: number };
+  /** The cloud proof against this device's, once both are in: the same or not, and both receipts' hashes. */
+  cloud?: { verdict: string; device: string; cloud: string };
+  /** The last receipt this device proved, playtest and all (the e2e suite answers a mocked cloud proof with it). */
+  deviceReceipt?: unknown;
   /** NPC ground positions [x, z], refreshed twice a second. */
   cast?: Record<string, [number, number]>;
   /** The current world's look (and variant). */

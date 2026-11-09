@@ -17,20 +17,16 @@ import fengShuiFill from "../../../packages/ir/fixtures/fengshui-gallery.jsonl?r
 import fengShuiBrokenFill from "../../../packages/ir/fixtures/fengshui-gallery-broken.jsonl?raw";
 import museumFill from "../../../packages/ir/fixtures/museum-bribe.jsonl?raw";
 import villaFill from "../../../packages/ir/fixtures/villa-viewing.jsonl?raw";
-import { lawsUnwritten, layoutLaws, parseFill, specHash, type FillNote, type FillStats, type WorldBundle } from "@ghostrun/ir";
-import { placeWorld } from "@ghostrun/layout";
+import { specHash, type FillNote, type FillStats, type WorldBundle } from "@ghostrun/ir";
 import type { PackLayout } from "@ghostrun/plugin-api";
-import { layoutOf, packFor, PACKS } from "@ghostrun/registry";
+import { ENGINE_HASH, placeFill } from "@ghostrun/world";
 import { cueOf, rawMeta, weatherWord, type Cue } from "./render/pick";
+
+// the engine hash lives with the placer the edge shares (@ghostrun/world)
+export { ENGINE_HASH };
 
 /** The organizer's brief the fixture answers. */
 export const BRIEF = "Create a capture-the-flag game in a neon city. Add double jump. Score when the orb reaches the goal.";
-
-/**
- * Engine hash bound into the spec hash: SHA-256 of the pinned Rapier wasm build (docs/gates.md, S0).
- * The sim package will own this constant once it lands.
- */
-export const ENGINE_HASH = "4e9890fd2df60072f9db06a33e4030221249c1b3687b722b2388c21f09e97551";
 
 
 export interface Intent {
@@ -115,23 +111,9 @@ export const FIXTURE_PROMPTS: Record<string, string> = {
 
 /** Fill text (fixture or a live stream) → placed world, choosing the pack from the registry. */
 export function worldFromFill(fillText: string, seed: number, live?: Intent["live"], packId?: string, mode?: WorldBundle["mode"]): World {
-  const t0 = performance.now();
-  const fill = parseFill(fillText, { seed });
-  const t1 = performance.now();
-
-  const draft = fill.draft;
-  // place into the pack the fill was written against (its meta line sometimes names another)
-  if (packId && PACKS.some((p) => p.id === packId)) draft.pack = { ...draft.pack, id: packId };
-  if (mode) draft.mode = mode; // the intent decides play vs wander (fills tend to say "play")
-  const known = PACKS.some((p) => p.id === draft.pack.id);
-  const pack = packFor(draft.pack.id);
-  // a structural edit's layout ("layout" in the meta line); every other fill builds on the defaults
-  const shape = layoutOf(pack, fillText);
-  if (shape.custom) draft.pack = { ...draft.pack, params: shape.custom };
-  const layout = pack.generate({ seed, params: shape.params, sub: draft.pack.sub, laws: layoutLaws(fillText, draft.laws), harder: false });
-  const { bundle, notes } = placeWorld({ ...draft, engine: ENGINE_HASH }, layout, { reach: lawsUnwritten(fillText) });
-  const t2 = performance.now();
-  if (!known) notes.unshift(`pack '${draft.pack.id}' not available, using '${pack.id}'`);
+  // placed into the pack the fill was written against, in the mode the intent decided
+  const placed = placeFill(fillText, seed, { pack: packId, mode });
+  const { bundle, notes } = placed;
 
   const headline = bundle.expects.find((x) => x.headline) ?? bundle.expects[0];
   const intent: Intent = {
@@ -156,7 +138,7 @@ export function worldFromFill(fillText: string, seed: number, live?: Intent["liv
   const setting = live?.setting ? live.setting.slice(0, 240) : (raw?.setting ?? "");
   try {
     const meta = JSON.parse(lines[0] ?? "") as { op?: string; pack?: string; mode?: string; setting?: string };
-    if (meta.op === "meta" && (meta.pack !== pack.id || meta.mode !== bundle.mode || (setting && meta.setting !== setting))) lines[0] = JSON.stringify({ ...meta, pack: pack.id, mode: bundle.mode, ...(setting ? { setting } : {}) });
+    if (meta.op === "meta" && (meta.pack !== placed.pack || meta.mode !== bundle.mode || (setting && meta.setting !== setting))) lines[0] = JSON.stringify({ ...meta, pack: placed.pack, mode: bundle.mode, ...(setting ? { setting } : {}) });
   } catch {
     // no meta line: the parser already defaulted it
   }
@@ -174,10 +156,10 @@ export function worldFromFill(fillText: string, seed: number, live?: Intent["liv
     cue: cueOf(bundle, { setting, meta: raw }),
     intent,
     notes,
-    layout,
-    fillNotes: fill.notes,
-    stats: fill.stats,
-    timings: { fillMs: t1 - t0, layoutMs: t2 - t1 },
+    layout: placed.layout,
+    fillNotes: placed.fillNotes,
+    stats: placed.stats,
+    timings: placed.timings,
   };
 }
 

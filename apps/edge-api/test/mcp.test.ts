@@ -11,6 +11,7 @@ import { capsFromEnv, Governor, MemoryLedger, type Caps } from "../src/governor"
 import { handle, PAUSE_FLAG } from "../src/handler";
 import { mcp, SUPPORTED, type McpEnv } from "../src/mcp";
 import { cloudProver, TOOLS, type Prover } from "../src/mcp-tools";
+import { PROOF_VERSION } from "@ghostrun/world";
 import { ENGINE_HASH, GALLERY, placeFill } from "../src/world";
 import { fakeFetch, governorNs, memR2, TURNSTILE, waiter, type Upstream } from "./fakes";
 
@@ -378,7 +379,7 @@ describe("edit_world, explain_world, get_receipt, list_gallery", () => {
     expect(conforms(outputOf("get_receipt"), edge.structuredContent)).toEqual([]);
     expect(edge.structuredContent.proof).toMatchObject({ source: "edge", par: null, band: null });
     expect(edge.content[0]!.text).toMatch(/Not proved here: T2/);
-    // a cloud proof (lane E's route) answers: its receipt is used, labels and all
+    // a cloud proof answers: its receipt is used, labels and all
     const prover: Prover = {
       prove: async (p) => ({ v: 1, spec: p.spec, engine: "e", host: "edge", headline: { expect: "x", text: "Rooftop lane needs double jump", status: "verified", method: "jump model + AI runners" }, chips: [{ id: "T3:win", tier: "T3", subject: { kind: "world", id: "win" }, status: "played", method: "physics, 12 AI runners", n: 12, k: 11, text: "AI runners won", cx: null, src: "", ms: 0 }], par: { goldS: 31, runs: 12, won: 11 }, ms: 900 }) satisfies Receipt,
     };
@@ -393,11 +394,12 @@ describe("edit_world, explain_world, get_receipt, list_gallery", () => {
     const answer = (body: unknown, status = 200) => async (path: string, json?: unknown) => (sent.push([path, json]), Response.json(body, { status }));
     const receipt = { v: 1, spec: p.spec, engine: "e", host: "edge", headline: null, chips: [], par: null, ms: 1 };
     expect(await cloudProver(answer({ receipt })).prove(p)).toEqual(receipt);
-    expect(sent[0]).toEqual(["/v1/proof", { v: 1, engine: ENGINE_HASH, specHash: p.spec, seed: 7, fill: p.fill }]);
+    expect(sent[0]).toEqual(["/v1/proof", { v: 1, fill: p.fill, seed: 7, engine: ENGINE_HASH, spec: p.spec, version: PROOF_VERSION }]);
     expect(await cloudProver(answer(receipt)).prove(p)).toEqual(receipt); // bare works too
     expect(await cloudProver(answer({ ...receipt, spec: "f".repeat(64) })).prove(p)).toBeNull();
     expect(await cloudProver(answer({ error: "not found" }, 404)).prove(p)).toBeNull();
-    // today the route isn't there: the default seam asks the real handler and falls back to the static proof
+    // with no proof engine in this runtime the route says so (503): the default seam falls back to the static proof
+    // (test/proof.test.ts has the engine, and the tools get the cloud's full receipt through the real route)
     expect((await world().tool("get_receipt", { world: slug })).structuredContent.proof.source).toBe("edge");
   });
 

@@ -53,6 +53,9 @@
       "path": "../../packages/registry"
     },
     {
+      "path": "../../packages/world"
+    },
+    {
       "path": "../edge-api"
     }
   ]

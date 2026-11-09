@@ -191,6 +191,96 @@ interface RunResult {
   fights: number[];
 }
 
+/** What a mind-locked run plays against: each NPC locked to one option of its menu. */
+type Schedule = readonly (readonly [string, string])[];
+
+/**
+ * One AI runner's run or one jump attempt, seeded as the ladder seeds it. Each is a fresh
+ * simulation of its own, so a cloud proof can play them on shards, in any order, and hand the
+ * results back: t3() and skillRuns() then take a played one as it came and play only the rest.
+ */
+export type Witness =
+  | { kind: "run"; seed: number; team: "red" | "blue"; level?: Exclude<Level, "expert">; schedule?: Schedule }
+  | { kind: "jump"; expect: string; jumps: number; attempt: number; team: "red" | "blue" };
+
+/** Witnesses already played, by witnessKey: a run's result or whether a jump attempt reached (plain data). */
+export type Played = ReadonlyMap<string, unknown>;
+
+export function witnessKey(w: Witness): string {
+  if (w.kind === "jump") return `jump:${w.expect}:${w.jumps}:${w.attempt}:${w.team}`;
+  return `run:${w.seed}:${w.team}:${w.level ?? "expert"}:${(w.schedule ?? []).map(([npc, o]) => `${npc}=${o}`).join(",")}`;
+}
+
+// the seeds, by run: the experts' from 0, the envelope's from 500, novices' from 700, average players' from 800
+const expertSeed = (b: WorldBundle, i: number) => b.seed * 1000 + i;
+const envelopeSeed = (b: WorldBundle, j: number, per: number, i: number) => b.seed * 1000 + 500 + j * per + i;
+const skillSeed = (b: WorldBundle, level: Exclude<Level, "expert">, i: number) => b.seed * 1000 + (level === "novice" ? 700 : 800) + i;
+const JUMP_ATTEMPTS = 4;
+
+/**
+ * The envelope: minds may switch an NPC to any option on its typed menu at any time, so the whole
+ * cast is locked to each option index in turn (null when no NPC has a choice to make).
+ */
+function envelope(b: WorldBundle): { schedules: Schedule[]; per: number; minded: WorldBundle["cast"] } | null {
+  const minded = b.cast.filter((c) => c.menu.length > 1 && b.entities.some((e) => e.id === c.npc));
+  if (!minded.length) return null;
+  const width = Math.max(...minded.map((c) => c.menu.length));
+  return { schedules: Array.from({ length: width }, (_, j) => minded.map((c) => [c.npc, c.menu[j] ?? c.dflt] as const)), per: 3, minded };
+}
+
+/** The "requires jumps>=k" expectations, each with its k. */
+function jumpNeeds(b: WorldBundle): { x: Expect; k: number }[] {
+  return b.expects
+    .filter((e) => e.prop === "requires")
+    .flatMap((x) => {
+      const m = x.need.map((n) => /^jumps>=(\d+)$/.exec(n.replace(/\s/g, ""))).find(Boolean);
+      return m ? [{ x, k: Number(m[1]) }] : [];
+    });
+}
+
+/**
+ * Every run and jump attempt this world's T3 asks for, then (with `skill` per lower level) the
+ * playtest's: what a cloud proof plays on shards. The playtest's are asked for whether or not the
+ * experts win (when none does, the playtest never reads them).
+ */
+export function witnesses(b: WorldBundle, chain: WinChain | null, runs: number, playerTeam: "red" | "blue" = "red", skill = 0): Witness[] {
+  const out: Witness[] = [];
+  if (chain && b.mode === "play") {
+    for (let i = 0; i < runs; i++) out.push({ kind: "run", seed: expertSeed(b, i), team: playerTeam });
+    const env = envelope(b);
+    env?.schedules.forEach((schedule, j) => {
+      for (let i = 0; i < env.per; i++) out.push({ kind: "run", seed: envelopeSeed(b, j, env.per, i), team: playerTeam, schedule });
+    });
+    for (const level of ["novice", "average"] as const) for (let i = 0; i < skill; i++) out.push({ kind: "run", seed: skillSeed(b, level, i), team: playerTeam, level });
+  }
+  for (const { x, k } of jumpNeeds(b)) for (const jumps of [k, k - 1]) for (let attempt = 0; attempt < JUMP_ATTEMPTS; attempt++) out.push({ kind: "jump", expect: x.id, jumps, attempt, team: playerTeam });
+  return out;
+}
+
+/** Play these witnesses here (a shard of a cloud proof): each one's result by its key, plain data. */
+export function playWitnesses(R: Rapier, b: WorldBundle, nav: NavWorld, chain: WinChain | null, openers: ReadonlyMap<string, PlanStep[]>, ws: readonly Witness[]): [string, unknown][] {
+  leap = leapFor(b);
+  try {
+    return ws.flatMap((w): [string, unknown][] => {
+      if (w.kind === "jump") {
+        const x = b.expects.find((e) => e.id === w.expect);
+        return x ? [[witnessKey(w), jumpWitness(R, b, nav, x, w.jumps, w.attempt, w.team)]] : [];
+      }
+      if (!chain) return [];
+      slack = w.level ? SKILLS[w.level] : null;
+      try {
+        return [[witnessKey(w), witnessRun(R, b, nav, chain, openers, w.seed, w.team, w.schedule)]];
+      } finally {
+        slack = null;
+      }
+    });
+  } finally {
+    leap?.free();
+    leap = null;
+    freeShut();
+  }
+}
+
 type Target = Vec3 | (() => Vec3);
 const at = (t: Target) => (typeof t === "function" ? t() : t);
 const d2h = (a: Vec3, b: Vec3) => (a[0] - b[0]) * (a[0] - b[0]) + (a[2] - b[2]) * (a[2] - b[2]); // never **: not bit-identical across engines
@@ -1639,10 +1729,10 @@ export interface T3Out {
   failRun: FailRun | null;
 }
 
-export function t3(R: Rapier, b: WorldBundle, nav: NavWorld, chain: WinChain | null, runs: number, playerTeam: "red" | "blue" = "red", openers: ReadonlyMap<string, PlanStep[]> = new Map()): T3Out {
+export function t3(R: Rapier, b: WorldBundle, nav: NavWorld, chain: WinChain | null, runs: number, playerTeam: "red" | "blue" = "red", openers: ReadonlyMap<string, PlanStep[]> = new Map(), played?: Played): T3Out {
   leap = leapFor(b);
   try {
-    return t3Runs(R, b, nav, chain, runs, playerTeam, openers);
+    return t3Runs(R, b, nav, chain, runs, playerTeam, openers, played);
   } finally {
     leap?.free();
     leap = null;
@@ -1650,7 +1740,7 @@ export function t3(R: Rapier, b: WorldBundle, nav: NavWorld, chain: WinChain | n
   }
 }
 
-function t3Runs(R: Rapier, b: WorldBundle, nav: NavWorld, chain: WinChain | null, runs: number, playerTeam: "red" | "blue", openers: ReadonlyMap<string, PlanStep[]>): T3Out {
+function t3Runs(R: Rapier, b: WorldBundle, nav: NavWorld, chain: WinChain | null, runs: number, playerTeam: "red" | "blue", openers: ReadonlyMap<string, PlanStep[]>, played?: Played): T3Out {
   const chips: Chip[] = [];
   let par: { goldS: number; runs: number; won: number } | null = null;
   let trails: Trail[] = [];
@@ -1658,7 +1748,9 @@ function t3Runs(R: Rapier, b: WorldBundle, nav: NavWorld, chain: WinChain | null
   let failRun: FailRun | null = null;
   if (chain && b.mode === "play") {
     const t0 = globalThis.performance?.now?.() ?? 0;
-    const results = Array.from({ length: runs }, (_, i) => witnessRun(R, b, nav, chain, openers, b.seed * 1000 + i, playerTeam));
+    // a run a shard played already is taken as it came back; the rest are played here
+    const run = (seed: number, schedule?: Schedule) => (played?.get(witnessKey({ kind: "run", seed, team: playerTeam, ...(schedule ? { schedule } : {}) })) as RunResult | undefined) ?? witnessRun(R, b, nav, chain, openers, seed, playerTeam, schedule);
+    const results = Array.from({ length: runs }, (_, i) => run(expertSeed(b, i)));
     const bots = b.entities.filter((e) => e.kind === "npc" && e.body !== "none" && e.body !== "sensor").length;
     const vs = bots ? ` vs ${bots} bot${bots > 1 ? "s" : ""}` : "";
     const won = results.filter((r) => r.won);
@@ -1682,15 +1774,12 @@ function t3Runs(R: Rapier, b: WorldBundle, nav: NavWorld, chain: WinChain | null
       src: "",
       ms: Math.round((globalThis.performance?.now?.() ?? 0) - t0),
     });
-    // the envelope: minds may switch an NPC to any option on its typed menu at any time; lock the
-    // whole cast to each option index in turn and check runners still win
-    const minded = b.cast.filter((c) => c.menu.length > 1 && b.entities.some((e) => e.id === c.npc));
-    if (minded.length) {
+    // the envelope (see envelope()): with the cast locked to each option in turn, runners must still win
+    const env = envelope(b);
+    if (env) {
       const t1 = globalThis.performance?.now?.() ?? 0;
-      const width = Math.max(...minded.map((c) => c.menu.length));
-      const schedules = Array.from({ length: width }, (_, j) => minded.map((c) => [c.npc, c.menu[j] ?? c.dflt] as const));
-      const per = 3;
-      const outcomes = schedules.map((sch, j) => Array.from({ length: per }, (_, i) => witnessRun(R, b, nav, chain, openers, b.seed * 1000 + 500 + j * per + i, playerTeam, sch)).filter((x) => x.won).length);
+      const { schedules, per, minded } = env;
+      const outcomes = schedules.map((sch, j) => Array.from({ length: per }, (_, i) => run(envelopeSeed(b, j, per, i), sch)).filter((x) => x.won).length);
       const k = outcomes.reduce((a, x) => a + x, 0);
       const worst = outcomes.indexOf(0);
       // (a world you talk your way through says whose choices: "every choice the guard can make")
@@ -1714,14 +1803,12 @@ function t3Runs(R: Rapier, b: WorldBundle, nav: NavWorld, chain: WinChain | null
       });
     }
   }
-  for (const x of b.expects.filter((e) => e.prop === "requires")) {
-    const m = x.need.map((n) => /^jumps>=(\d+)$/.exec(n.replace(/\s/g, ""))).find(Boolean);
-    if (!m) continue;
-    const k = Number(m[1]);
+  for (const { x, k } of jumpNeeds(b)) {
     const t0 = globalThis.performance?.now?.() ?? 0;
-    const n = 4;
-    const withK = Array.from({ length: n }, (_, i) => jumpWitness(R, b, nav, x, k, i, playerTeam)).filter(Boolean).length;
-    const withFewer = Array.from({ length: n }, (_, i) => jumpWitness(R, b, nav, x, k - 1, i, playerTeam)).filter(Boolean).length;
+    const n = JUMP_ATTEMPTS;
+    const jump = (jumps: number, attempt: number) => (played?.get(witnessKey({ kind: "jump", expect: x.id, jumps, attempt, team: playerTeam })) as boolean | undefined) ?? jumpWitness(R, b, nav, x, jumps, attempt, playerTeam);
+    const withK = Array.from({ length: n }, (_, i) => jump(k, i)).filter(Boolean).length;
+    const withFewer = Array.from({ length: n }, (_, i) => jump(k - 1, i)).filter(Boolean).length;
     const good = withK > 0 && withFewer === 0;
     chips.push({
       id: `T3:${x.id}`,
@@ -1759,12 +1846,14 @@ function noteOf(r: RunResult, level?: Level): Trail {
  * The playtest's runners: `n` at a lower skill level play the same win chain against the same
  * cast, through human hands (see skill.ts). Seeded by the world and the run, as T3's own are.
  */
-export function skillRuns(R: Rapier, b: WorldBundle, nav: NavWorld, chain: WinChain, level: Exclude<Level, "expert">, n: number, playerTeam: "red" | "blue" = "red", openers: ReadonlyMap<string, PlanStep[]> = new Map()): Trail[] {
+export function skillRuns(R: Rapier, b: WorldBundle, nav: NavWorld, chain: WinChain, level: Exclude<Level, "expert">, n: number, playerTeam: "red" | "blue" = "red", openers: ReadonlyMap<string, PlanStep[]> = new Map(), played?: Played): Trail[] {
   leap = leapFor(b);
   slack = SKILLS[level];
   try {
-    const base = b.seed * 1000 + (level === "novice" ? 700 : 800);
-    return Array.from({ length: n }, (_, i) => noteOf(witnessRun(R, b, nav, chain, openers, base + i, playerTeam), level));
+    return Array.from({ length: n }, (_, i) => {
+      const seed = skillSeed(b, level, i);
+      return noteOf((played?.get(witnessKey({ kind: "run", seed, team: playerTeam, level })) as RunResult | undefined) ?? witnessRun(R, b, nav, chain, openers, seed, playerTeam), level);
+    });
   } finally {
     slack = null;
     leap?.free();

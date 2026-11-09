@@ -10,11 +10,41 @@ export function fraction(k: number, n: number): string {
   return `${Math.round((k / n) * 100)}% (n=${n})`;
 }
 
-export function chipLine(c: Chip): string {
+export const chipLine = (c: Chip): string => line(c);
+
+/** A chip in words with its method and where it was proved: "(physics, 12 AI runners, in the cloud)". */
+export const chipLineAt = (c: Chip, host: Receipt["host"]): string => line(c, host);
+
+function line(c: Chip, where?: Receipt["host"]): string {
   const mark = { verified: "✓", played: "✓", modelled: "~", not_checkable: "–", counterexample: "✗" }[c.status];
   const count = c.n > 0 ? ` · ${fraction(c.k, c.n)}` : "";
   const cx = c.cx ? ` — ${c.cx.text}` : "";
-  return `${mark} [${c.tier}] ${c.text}${count}${cx}  (${c.method}${c.src === "ai" ? ", AI-written rule" : c.src === "template" ? ", template rule" : ""})`;
+  return `${mark} [${c.tier}] ${c.text}${count}${cx}  (${c.method}${c.src === "ai" ? ", AI-written rule" : c.src === "template" ? ", template rule" : ""}${where ? `, ${whereWord(where)}` : ""})`;
+}
+
+/** Where a proof ran, as a receipt says it. */
+export function whereWord(host: Receipt["host"]): string {
+  return { device: "on your device", edge: "in the cloud", node: "in Node" }[host];
+}
+
+/** One world proved in the cloud and on this device at once: where each proof stands. */
+export interface CrossCheck {
+  /** Where the receipt on show was proved. */
+  shown: Receipt["host"];
+  /** The cloud's proof: not asked (offline, or switched off), under way, failed, or in and compared. */
+  cloud: "off" | "asked" | "failed" | "same" | "different";
+  device: "proving" | "done" | "failed";
+  /** Both receipts' hashes (timings left out: see receiptHash), once both are in. */
+  hashes?: { device: string; cloud: string };
+}
+
+/** The receipt's trust line: where it was proved, and whether the other proof got the same. */
+export function crossLine(c: CrossCheck): string {
+  if (c.cloud === "same") return "proved in the cloud · same result on this device";
+  if (c.cloud === "different") return `the cloud and this device got different results (cloud ${c.hashes?.cloud.slice(0, 8) ?? "?"}, device ${c.hashes?.device.slice(0, 8) ?? "?"}): showing this device's`;
+  if (c.shown === "edge") return c.device === "failed" ? "proved in the cloud · this device couldn't check it" : "proved in the cloud · this device is checking it…";
+  if (c.cloud === "asked") return "proved on your device · the cloud is proving it too";
+  return `proved ${whereWord(c.shown)}`;
 }
 
 /** The word for a status, exactly as the receipt means it (a played claim is not "verified"). */
