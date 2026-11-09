@@ -5,7 +5,7 @@
 import { lawsUnwritten, layoutLaws, parseFill, type FillNote, type FillStats, type WorldBundle } from "@ghostrun/ir";
 import { placeWorld } from "@ghostrun/layout";
 import type { PackLayout } from "@ghostrun/plugin-api";
-import { packFor, PACKS } from "@ghostrun/registry";
+import { layoutOf, packFor, PACKS } from "@ghostrun/registry";
 
 /** Engine hash bound into the spec hash: SHA-256 of the pinned Rapier wasm build (docs/gates.md, S0). */
 export const ENGINE_HASH = "4e9890fd2df60072f9db06a33e4030221249c1b3687b722b2388c21f09e97551";
@@ -46,7 +46,10 @@ export function placeFill(fillText: string, seed: number, opts: { pack?: string 
   if (opts.mode) draft.mode = opts.mode;
   const known = PACKS.some((p) => p.id === draft.pack.id);
   const pack = packFor(draft.pack.id);
-  const layout = pack.generate({ seed, params: pack.defaults, sub: draft.pack.sub, laws: layoutLaws(fillText, draft.laws), harder: false });
+  // a structural edit's layout ("layout" in the meta line); every other fill builds on the defaults
+  const shape = layoutOf(pack, fillText);
+  if (shape.custom) draft.pack = { ...draft.pack, params: shape.custom };
+  const layout = pack.generate({ seed, params: shape.params, sub: draft.pack.sub, laws: layoutLaws(fillText, draft.laws), harder: false });
   const { bundle, notes } = placeWorld({ ...draft, engine: opts.engine ?? ENGINE_HASH }, layout, { reach: lawsUnwritten(fillText) });
   const t2 = performance.now();
   if (!known) notes.unshift(`pack '${draft.pack.id}' not available, using '${pack.id}'`);

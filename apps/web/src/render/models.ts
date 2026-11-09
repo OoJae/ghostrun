@@ -346,7 +346,7 @@ export class ModelLayer {
       const tpl = await character(body);
       if (this.#disposed) return;
       const model = (await three()).clone(tpl.scene);
-      const ghost = id === GHOST_ID ? ghostMaterial(actor) : null;
+      const ghost = id.startsWith(GHOST_ID) ? ghostMaterial(actor) : null;
       const mats = tpl.materials.get(team) ?? tpl.materials.get("")!;
       let i = 0;
       model.traverse((o) => {
@@ -561,7 +561,7 @@ export class ModelLayer {
       const carrying = sim?.sim.entity(c.id)?.carrying ?? "";
       this.#hold(c, carrying);
       // you and your side cheer a win; when you lose, the other side does
-      const won = c.id !== GHOST_ID && (result === "win" ? c.team === mine : result === "lose" ? c.id !== PLAYER_ID && c.team !== mine : false);
+      const won = !c.id.startsWith(GHOST_ID) && (result === "win" ? c.team === mine : result === "lose" ? c.id !== PLAYER_ID && c.team !== mine : false);
       const m: Motion = { speed: c.speed, vy: c.vy, grounded, airTime: c.airTime, carrying: carrying !== "" && !c.holding, ko: c.ko || c.fallen >= 0, cheer: won };
       const every = near && !near.has(c) ? 3 : this.#opts.tier === "lite" ? 2 : 1;
       c.skip += dt;
@@ -578,6 +578,22 @@ export class ModelLayer {
 
   #publish() {
     if (!this.#disposed) probe().models = { ...this.stats };
+  }
+
+  /**
+   * Another ghost (red/green's two runs) as a knight of light too, while it plays: its capsule's own
+   * see-through material on the knight. The returned function takes the knight off again.
+   */
+  dressGhost(obj: Object3D, key: string): () => void {
+    const id = `${GHOST_ID}:${key}`;
+    if (this.#opts.tier === "full" && !this.#cast.has(id)) void this.#dress(id, "knight", "", obj);
+    return () => {
+      const c = this.#cast.get(id);
+      this.#cast.delete(id);
+      c?.animator?.dispose();
+      c?.holder.removeFromParent();
+      for (const k of obj.children) k.visible = true;
+    };
   }
 
   dispose() {

@@ -3,9 +3,11 @@
 // moved, in words; and the gallery's recorded worlds. Each piece mirrors the web's own (pipeline.ts worldFromFill, edits.ts,
 // remix.ts) wherever a spec hash, a stored fill or a share's line depends on it, and
 // apps/web/test/mcp-parity.test.ts holds the two to the same answers.
-import { specHash, splitObjects, type Entity, type WorldBundle } from "@ghostrun/ir";
+import { layoutLaws, mergeFill, parseFill, specHash, splitObjects, type Entity, type MergeStats, type WorldBundle } from "@ghostrun/ir";
+import { reanchor } from "@ghostrun/layout";
 import type { IntentOut } from "@ghostrun/llm";
 import { fraction, statusWord, type Chip, type Receipt } from "@ghostrun/proof/static";
+import { layoutChange, layoutOf, PACKS, schemaFor, settleLayout } from "@ghostrun/registry";
 import { ENGINE_HASH, placeFill as place } from "@ghostrun/world";
 import GALLERY_INDEX from "../../web/src/gallery/index.json?raw";
 
@@ -96,6 +98,28 @@ const counted = (names: string[], sign: string) => {
 const same = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b);
 const num = (x: number) => String(Math.round(x * 100) / 100);
 const night = (h: number) => h >= 19 || h < 6;
+
+/**
+ * An edit's patch merged into a world's fill, as the web's structure.ts mergeEdit does: a layout op
+ * settled against the pack's schema and the fill re-anchored onto the new layout, with the diff
+ * line's phrases ("floors 1 → 2 · 2 rooms added · 1 thing re-anchored") and the moves.
+ */
+export function mergeEdit(fill0: string, patch: string, seed: number): { text: string; stats: MergeStats; layout: { summary: string[]; notes: string[] } | null } {
+  const merged = mergeFill(fill0, patch, { edit: true });
+  if (!merged.stats.layout) return { ...merged, layout: null };
+  const entry = PACKS.find((p) => p.id === fillPack(merged.text)) ?? PACKS[0]!;
+  const text = settleLayout(entry.impl, entry.subs, merged.text);
+  const a = layoutOf(entry.impl, fill0);
+  const b = layoutOf(entry.impl, text);
+  if (same(a.params, b.params) && a.sub.join() === b.sub.join()) return { text, stats: merged.stats, layout: { summary: [], notes: [] } };
+  const laws = layoutLaws(text, parseFill(text, { seed }).draft.laws);
+  const l0 = entry.impl.generate({ seed, params: a.params, sub: a.sub, laws, harder: false });
+  const l1 = entry.impl.generate({ seed, params: b.params, sub: b.sub, laws, harder: false });
+  const moved = reanchor(text, l0, l1);
+  const summary = layoutChange(schemaFor(entry.id), { ...a, layout: l0 }, { ...b, layout: l1 });
+  if (moved.moved.length) summary.push(`${moved.moved.length} thing${moved.moved.length > 1 ? "s" : ""} re-anchored`);
+  return { text: moved.fill, stats: merged.stats, layout: { summary, notes: moved.notes } };
+}
 
 /** What an edit changed in the world, in a few short phrases (most telling first). */
 export function changeSummary(a: WorldBundle, b: WorldBundle): string[] {

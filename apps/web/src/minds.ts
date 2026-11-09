@@ -3,10 +3,22 @@
 // character; the player talking to one always gets an answer. The option is queued into the
 // simulation as a logged input, so replays stay exact; the line is cosmetic. Without the live
 // service the bots simply keep their defaults.
-import type { SimEvent } from "@ghostrun/sim";
+// Talking, the player may also make a speech act ("here's 20 coins, look the other way"): the
+// mind accepts it or refuses in character, and an accepted one goes into the simulation as a logged
+// input too, where the world's own rule decides what it does (acts.ts).
+import type { SimEvent, SpeechAct } from "@ghostrun/sim";
+import type { Act } from "@ghostrun/ir";
+import { acceptsOf, CONFIRM, factsOf, today } from "./acts";
 import { api } from "./api";
 import type { World } from "./pipeline";
 import type { RapierSim } from "./sim/rapier";
+
+export interface ActHooks {
+  /** Money changing hands or a booking: the player says yes first (then RapierSim.queueAct). */
+  onConfirm?: (npc: string, name: string, act: SpeechAct) => void;
+  /** Something to tell the player ("You have 5 coins."). */
+  onNote?: (text: string) => void;
+}
 
 const QUIET_TICKS = 20 * 60; // think on their own at most every 20 s
 // Between thoughts of their own, 8 s, one NPC at a time: about 75 calls in 10 minutes of play,
@@ -26,16 +38,19 @@ export class Minds {
   #quietUntil = 0;
   #turn = -1;
   #off = false;
+  readonly #hooks: ActHooks;
 
-  constructor(world: World, sim: RapierSim, onBark: (npc: string, name: string, line: string, reply: boolean) => void) {
+  constructor(world: World, sim: RapierSim, onBark: (npc: string, name: string, line: string, reply: boolean) => void, hooks: ActHooks = {}) {
     this.#world = world;
     this.#sim = sim;
     this.#onBark = onBark;
+    this.#hooks = hooks;
   }
 
-  /** NPCs with a real choice to make (a menu of two or more options). */
+  /** NPCs with a real choice to make (a menu of two or more options), or something you can say to them. */
   get minded() {
-    return this.#world.bundle.cast.filter((c) => c.menu.length > 1 && this.#world.bundle.entities.some((e) => e.id === c.npc));
+    const b = this.#world.bundle;
+    return b.cast.filter((c) => (c.menu.length > 1 || b.rules.some((r) => r.when.t === "spoken" && r.when.a === c.npc)) && b.entities.some((e) => e.id === c.npc));
   }
 
   stop() {
@@ -97,8 +112,10 @@ export class Minds {
       const rt = s.entity(e.id);
       if (rt?.carrier) parts.push(`the ${this.name(e.id)} is carried by ${rt.carrier === "player" ? "the player" : this.name(rt.carrier)}`);
     }
-    for (const c of this.minded) parts.push(`${this.name(c.npc)} (${c.role}${s.entity(c.npc)?.team ? `, ${s.entity(c.npc)!.team} team` : ""}) is doing ${this.#sim.optionOf(c.npc)}`);
+    for (const c of this.minded) parts.push(`${this.name(c.npc)} (${c.role}${s.entity(c.npc)?.team ? `, ${s.entity(c.npc)!.team} team` : ""}) is doing ${this.#sim.optionOf(c.npc)}${s.blind(c.npc) ? ", looking away" : ""}`);
     parts.push(`the player is on the ${s.entity("player")?.team ?? "red"} team`);
+    // what the player has to offer: their coins, counted
+    for (const w of s.words) parts.push(`the player has ${s.purse("player", w)} ${w}`);
     return parts.join("; ");
   }
 
@@ -107,18 +124,38 @@ export class Minds {
     if (!c) return;
     try {
       const persona = [c.persona.identity, c.persona.personality].filter(Boolean).join(" ");
+      // talked to: the acts it accepts (from the world's rules) and the facts it answers from
+      const accepts = said !== undefined ? acceptsOf(this.#world.bundle, npc) : [];
+      const facts = said !== undefined ? factsOf(this.#world.bundle, npc) : [];
+      const when = accepts.some((a) => a.act === "book") ? today() : null;
       const r = await api("/v1/mind", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ npc: this.name(npc), role: c.role, persona, menu: c.menu, current: this.#sim.optionOf(npc), situation: this.#situation(), event, ...(said ? { said } : {}) }),
+        body: JSON.stringify({ npc: this.name(npc), role: c.role, persona, menu: c.menu, current: this.#sim.optionOf(npc), situation: this.#situation(), event, ...(said ? { said } : {}), ...(accepts.length ? { acts: accepts } : {}), ...(facts.length ? { facts } : {}), ...(when ?? {}) }),
       });
       if (r.status === 429) this.#quietUntil = this.#sim.sim.tick + BACKOFF_TICKS;
       if (!r.ok || this.#off) return;
-      const m = (await r.json()) as { option: string; line: string };
-      if (m.option !== this.#sim.optionOf(npc)) this.#sim.queueMind(npc, m.option);
+      const m = (await r.json()) as { option: string; line: string; act?: string; what?: string; n?: number; slot?: string };
+      const act = m.act && accepts.some((a) => a.act === m.act) ? (m.act as Act) : null;
+      // an option earned by an act comes with the act (the rule sets it, for as long as it says)
+      const earned = accepts.some((a) => a.gives === m.option);
+      if (m.option !== this.#sim.optionOf(npc) && !earned) this.#sim.queueMind(npc, m.option);
       if (m.line) this.#onBark(npc, this.name(npc), m.line, said !== undefined);
+      if (act) this.#accepted(npc, { to: npc, act, what: m.what ?? "", n: m.n ?? 0, slot: m.slot ?? "" });
     } catch {
       // no live service: the bot keeps playing its current option
     }
+  }
+
+  /** An act the character accepted: into the simulation (after the player's yes, where money or a booking is involved). */
+  #accepted(npc: string, a: SpeechAct) {
+    const s = this.#sim.sim;
+    // coins the player hasn't got: nothing changes hands, and the player is told so
+    if (s.words.includes(a.what) && s.purse("player", a.what) < a.n) {
+      this.#hooks.onNote?.(`You have ${s.purse("player", a.what)} ${a.what}.`);
+      return;
+    }
+    if (CONFIRM.has(a.act) && this.#hooks.onConfirm) this.#hooks.onConfirm(npc, this.name(npc), a);
+    else this.#sim.queueAct(a);
   }
 }

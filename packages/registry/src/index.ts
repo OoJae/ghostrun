@@ -6,6 +6,7 @@ import { floorPlan } from "@ghostrun/pack-floor-plan";
 import { maze } from "@ghostrun/pack-maze";
 import { outdoor } from "@ghostrun/pack-outdoor";
 import type { LayoutPack } from "@ghostrun/plugin-api";
+import type { LayoutSchema } from "./layout";
 
 export interface PackEntry {
   id: string;
@@ -30,3 +31,18 @@ export function packFor(id: string): LayoutPack {
 }
 
 export const ALL_SUBS = [...new Set(PACKS.flatMap((p) => p.subs))];
+
+export { clampLayout, customOf, layoutChange, layoutOf, settleLayout, type LayoutSchema } from "./layout";
+
+/** What a structural edit may set on a pack: its parameters and its sub-zones. */
+export function schemaFor(id: string): LayoutSchema {
+  const p = PACKS.find((x) => x.id === id) ?? PACKS[0]!;
+  return { params: p.impl.schema ?? {}, subs: p.subs };
+}
+
+/** The edit model's line about a pack's layout op: what each number shapes, its range, and its sub-zones. */
+export function layoutLine(id: string, params: Readonly<Record<string, string | number | boolean>>, sub: readonly string[]): string {
+  const s = schemaFor(id);
+  const nums = Object.entries(s.params).map(([k, sp]) => `${k} ${sp.min}-${sp.max} (now ${String(params[k])}: ${sp.line})`);
+  return [...nums, ...(s.subs.length ? [`sub: any of ${s.subs.join(", ")} (now ${JSON.stringify(sub)})`] : [])].join("; ");
+}

@@ -1,0 +1,35 @@
+/* ---- the Intent card's one-click corrections ------------------------------------------------- */
+.intent.editable { max-height: calc(100vh - 110px); overflow-y: auto; }
+.intent button.mode { font: inherit; font-size: 11px; font-weight: 700; cursor: pointer; }
+.intent button.mode:disabled { cursor: default; opacity: 0.7; }
+.intent .field {
+  font: inherit; color: inherit; background: none; cursor: pointer; padding: 0 2px; margin: 0 4px 0 -2px; border: 0; border-radius: 4px;
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.28); text-align: left; line-height: inherit;
+}
+.intent .field:hover:not(:disabled), .intent .field[aria-expanded="true"] { border-bottom-color: rgba(25, 227, 255, 0.7); color: #fff; }
+.intent .field:focus-visible, .intent .opt:focus-visible, .intent button.mode:focus-visible { outline: 2px solid rgba(25, 227, 255, 0.75); outline-offset: 1px; }
+.intent .field:disabled { cursor: default; border-bottom-color: transparent; }
+.intent .caret { margin-left: 3px; font-size: 0.8em; opacity: 0.55; }
+.intent dd.fields { display: flex; flex-wrap: wrap; gap: 2px 6px; }
+.intent dl.tech:has(.field) { opacity: 0.85; }
+.intent .field-options { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 5px; margin: 2px 0 4px; padding: 6px; border-radius: 8px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); }
+.intent .opt-row { display: flex; flex-wrap: wrap; gap: 5px; width: 100%; }
+.intent .opt-row + .opt-row { padding-top: 5px; border-top: 1px solid rgba(255, 255, 255, 0.08); }
+.intent .opt {
+  font: inherit; font-size: 11.5px; padding: 3px 9px; border-radius: 999px; cursor: pointer; color: inherit;
+  background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.16);
+}
+.intent .opt:hover:not(:disabled) { border-color: rgba(25, 227, 255, 0.5); }
+.intent .opt[aria-pressed="true"] { border-color: rgba(25, 227, 255, 0.6); background: rgba(25, 227, 255, 0.14); color: #c9fbff; }
+.intent .opt:disabled { opacity: 0.45; cursor: default; }
+.intent .rebuilt { margin: 0 0 10px; font-size: 12px; color: #c9fbff; }
+.intent .rebuilt::first-letter { text-transform: uppercase; }
+.intent-chip { margin: 0 0 10px; padding: 7px 10px; border-radius: 10px; font-size: 12px; color: var(--ink-dim); background: rgba(255, 194, 74, 0.08); border: 1px solid rgba(255, 194, 74, 0.28); }
+.intent-chip .opt { margin-left: 4px; color: var(--ink); }
+@media (pointer: coarse) {
+  .intent .opt { min-height: 34px; padding: 6px 12px; }
+  .intent .field { min-height: 30px; }
+}
+@media (max-width: 720px) {
+  .intent.editable { max-height: 46vh; }
+}

@@ -25,6 +25,8 @@ describe("cost", () => {
       expect(bound, p.id).toBeLessThanOrEqual(FILL_MAX_IN);
       // a Feng Shui prompt brings the Form School's rules with it
       expect(inputBound(fillMessages(`Feng Shui ${prompt.slice(10)}`, intent, layout, EXAMPLE, 7)), `${p.id}, Feng Shui`).toBeLessThanOrEqual(FILL_MAX_IN);
+      // and a bribe (or a booking) brings how the act rules fit together
+      expect(inputBound(fillMessages(`bribe the guard ${prompt.slice(16)}`, intent, layout, EXAMPLE, 7)), `${p.id}, a bribe`).toBeLessThanOrEqual(FILL_MAX_IN);
     }
   });
 

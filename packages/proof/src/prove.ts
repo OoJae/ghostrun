@@ -74,6 +74,7 @@ export async function prove(R: Rapier, b: WorldBundle, opts: ProveOptions): Prom
       ms: Math.round((globalThis.performance?.now?.() ?? 0) - start),
       ...(s3.trails.length ? { trails: s3.trails } : {}),
       ...(s3.ghost ? { ghost: s3.ghost } : {}),
+      ...(s3.failRun ? { failRun: s3.failRun } : {}),
     };
     if (!opts.playtest) return receipt;
     opts.onReceipt?.(receipt);

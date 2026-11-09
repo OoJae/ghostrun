@@ -5,9 +5,9 @@ import { buildWorld } from "../src/pipeline";
 import type { RapierSim } from "../src/sim/rapier";
 
 // Just what Minds reads from the simulation.
-function fakeSim() {
+function fakeSim(words: string[] = [], coins = 0) {
   const f = {
-    sim: { tick: 0, scores: {} as Record<string, number>, pos: () => [0, 0, 0] as [number, number, number], entity: () => undefined },
+    sim: { tick: 0, scores: {} as Record<string, number>, pos: () => [0, 0, 0] as [number, number, number], entity: () => undefined, blind: () => false, words, purse: () => coins },
     replaying: false,
     idle: 0,
     get idleTicks() {
@@ -15,6 +15,7 @@ function fakeSim() {
     },
     optionOf: () => "rival.defend",
     queueMind: vi.fn(),
+    queueAct: vi.fn(),
   };
   return f;
 }
@@ -90,5 +91,42 @@ describe("NPC minds", () => {
       if (t % 60 === 0) await flush();
     }
     expect(calls).toHaveLength(2); // at 8 s, then once the minute is up
+  });
+});
+
+describe("speech acts", () => {
+  const answer = (body: unknown) => {
+    const calls: Record<string, unknown>[] = [];
+    vi.stubGlobal("fetch", vi.fn(async (_url: string, init: RequestInit) => (calls.push(JSON.parse(String(init.body))), new Response(JSON.stringify(body)))));
+    return calls;
+  };
+  it("talked to, the guard is told the acts its rules accept and the facts it knows; an accepted bribe goes into the sim as an act, not as the option it earns", async () => {
+    const calls = answer({ option: "guard.look_away", line: "Twenty. Fine.", act: "offer", what: "coins", n: 20, slot: "" });
+    const sim = fakeSim(["coins"], 20);
+    const minds = new Minds(buildWorld("", "museum"), sim as unknown as RapierSim, () => {});
+    minds.talk("guard", "here's 20 coins, look the other way");
+    await flush();
+    expect(calls[0]).toMatchObject({ acts: [{ act: "offer", what: "coins", n: 20, gives: "guard.look_away" }], said: "here's 20 coins, look the other way" });
+    expect(String(calls[0]!.situation)).toContain("the player has 20 coins");
+    expect((calls[0]!.facts as string[]).some((f) => f.includes("the vault key is in the West gallery"))).toBe(true);
+    expect(sim.queueAct).toHaveBeenCalledWith({ to: "guard", act: "offer", what: "coins", n: 20, slot: "" });
+    expect(sim.queueMind).not.toHaveBeenCalled();
+  });
+  it("coins the player hasn't got change no hands; a booking waits for the player's yes, with today's date and zone sent along", async () => {
+    answer({ option: "guard.watch", line: "Deal.", act: "offer", what: "coins", n: 20, slot: "" });
+    const poor = fakeSim(["coins"], 5);
+    const notes: string[] = [];
+    new Minds(buildWorld("", "museum"), poor as unknown as RapierSim, () => {}, { onNote: (t) => notes.push(t) }).talk("guard", "20 coins?");
+    await flush();
+    expect(poor.queueAct).not.toHaveBeenCalled();
+    expect(notes).toEqual(["You have 5 coins."]);
+    const calls = answer({ option: "guide.welcome", line: "Saturday at three it is.", act: "book", what: "", n: 0, slot: "2026-11-07T15:00" });
+    const sim = fakeSim();
+    const asked: unknown[] = [];
+    new Minds(buildWorld("", "villa"), sim as unknown as RapierSim, () => {}, { onConfirm: (npc, name, a) => asked.push([npc, name, a]) }).talk("guide", "can I book a viewing on Saturday at 3?");
+    await flush();
+    expect(calls[0]).toMatchObject({ acts: [{ act: "book" }], tz: expect.any(String), today: expect.stringMatching(/^\d{4}-\d{2}-\d{2}, [A-Z][a-z]+day$/) });
+    expect(asked).toEqual([["guide", "estate agent", { to: "guide", act: "book", what: "", n: 0, slot: "2026-11-07T15:00" }]]);
+    expect(sim.queueAct).not.toHaveBeenCalled();
   });
 });

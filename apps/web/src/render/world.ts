@@ -87,6 +87,9 @@ export function buildWorldView(bundle: WorldBundle, look: LookStyle): WorldView 
   const neon = new BoxBatch();
   const floorTops: number[] = [];
   let arena = { minX: -40, maxX: 40, minZ: -20, maxZ: 20 };
+  // the largest floor is the ground; a floor a storey above it (an upper floor's block) is a block
+  let base = { area: -1, top: 0 };
+  for (const s of bundle.statics) if (s.surf === "floor" && s.size[0] * s.size[2] > base.area) base = { area: s.size[0] * s.size[2], top: s.pos[1] + s.size[1] / 2 };
 
   if (neonLook) bundle.statics.forEach((s, i) => {
     const [x, y, z] = s.pos;
@@ -95,6 +98,11 @@ export function buildWorldView(bundle: WorldBundle, look: LookStyle): WorldView 
     const max: V3 = [x + w / 2, y + h / 2, z + d / 2];
     const hue = rnd(i * 3 + 1) < 0.5 ? 0 : 1;
     const neonHex = hue === 0 ? PALETTE.magenta : PALETTE.cyan;
+    if (s.surf === "floor" && max[1] > base.top + 2) {
+      solid.add(s.pos, s.size, lin("#10111b"), [0, i, 1, 0]);
+      neon.strip([min[0], max[1], min[2]], [max[0], max[1], min[2]], 0.09, lin(PALETTE.cyan, 3.2));
+      return;
+    }
     if (s.surf === "floor") {
       floorTops.push(max[1]);
       arena = { minX: min[0], maxX: max[0], minZ: min[2], maxZ: max[2] };
@@ -176,7 +184,9 @@ export function buildWorldView(bundle: WorldBundle, look: LookStyle): WorldView 
   const gy = (scenery ? scenery.groundY : floorTops.length ? Math.max(...floorTops) : 0) + 0.012;
   const flat = (x0: number, z0: number, x1: number, z1: number, rgb: V3, wdt = 0.12) =>
     neon.add([(x0 + x1) / 2, gy, (z0 + z1) / 2], [Math.abs(x1 - x0) || wdt, 0.02, Math.abs(z1 - z0) || wdt], rgb);
-  const baseX = 24;
+  // where the bases begin: 16 m in from each end of the street (a longer street moves them out)
+  const street = bundle.pack.params.length;
+  const baseX = typeof street === "number" ? street / 2 - 16 : 24;
   if (city) for (let zz = -11; zz < 11; zz += 2.2) {
     flat(-baseX, zz, -baseX, zz + 1.4, lin(PALETTE.red, 2.2), 0.16);
     flat(baseX, zz, baseX, zz + 1.4, lin(PALETTE.blue, 2.2), 0.16);

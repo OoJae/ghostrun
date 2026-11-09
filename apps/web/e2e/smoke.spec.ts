@@ -380,13 +380,6 @@ test("the Host: a loss explains itself from the causal log, answers questions fr
   const story = page.getByTestId("story");
   await expect(story).toContainText("Rival 1 carried the glowing orb into the neon goal ring, 3 times (blue 1–3)");
   const ended = await probe(page).then((p) => p.tick ?? 0);
-  await page.getByTestId("host-input").fill("why did I lose?");
-  await page.getByTestId("host-input").press("Enter");
-  await expect(page.getByTestId("host-answer")).toContainText("Rival 1 ran the orb home three times while you waited.");
-  expect(asked.question).toBe("why did I lose?");
-  expect(asked.facts?.[0]).toMatch(/^You lost at \d+:\d\d: blue team reached 3$/);
-  expect(asked.facts).toContain("Rule: WHEN blue team reaches 3 THEN you lose (once)");
-  await expect(page.getByTestId("host-answer").getByRole("button")).toHaveCount(2); // each cited moment replays
   await story.getByRole("button").first().click();
   await expect(result).toHaveCount(0);
   await expect(page.getByRole("status").filter({ hasText: "Replaying from" })).toBeVisible();
@@ -394,6 +387,14 @@ test("the Host: a loss explains itself from the causal log, answers questions fr
   expect((await probe(page)).tick ?? 0).toBeGreaterThan(ended - 300);
   await expect(result).toContainText("You lose", { timeout: 20_000 });
   expect(Math.abs(((await probe(page)).tick ?? 0) - ended)).toBeLessThan(5);
+  // the replayed run's card answers from the same log (an answer also flies there: show.spec.ts)
+  await page.getByTestId("host-input").fill("why did I lose?");
+  await page.getByTestId("host-input").press("Enter");
+  await expect(page.getByTestId("host-answer")).toContainText("Rival 1 ran the orb home three times while you waited.");
+  expect(asked.question).toBe("why did I lose?");
+  expect(asked.facts?.[0]).toMatch(/^You lost at \d+:\d\d: blue team reached 3$/);
+  expect(asked.facts).toContain("Rule: WHEN blue team reaches 3 THEN you lose (once)");
+  await expect(page.getByTestId("host-answer").getByRole("button")).toHaveCount(2); // each cited moment replays
   expect(errors.filter((e) => !e.includes("503"))).toEqual([]);
 });
 

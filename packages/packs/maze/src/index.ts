@@ -3,7 +3,7 @@
 // Anchors: start, exit, center, and up to four dead ends (good spots for keys and ghosts).
 import { stream } from "@ghostrun/detmath";
 import type { Vec3 } from "@ghostrun/ir";
-import type { LayoutPack, PackLayout, PackStatic, ZoneSpec } from "@ghostrun/plugin-api";
+import type { LayoutPack, LayoutParamSpec, PackLayout, PackStatic, ZoneSpec } from "@ghostrun/plugin-api";
 
 export interface MazeParams {
   [k: string]: number;
@@ -16,11 +16,21 @@ const H = 2.6;
 const T = 0.3;
 const box = (zoneSlot: string, pos: Vec3, size: Vec3, surf: PackStatic["surf"]): PackStatic => ({ zoneSlot, shape: "box", pos, rotY: 0, size, surf });
 
+/**
+ * What a structural edit may change: how many 3 m cells across and deep (a bigger maze, a smaller
+ * one). Past 10 × 10 the way to the exit outgrows the navmesh's path query, so no runner finds it.
+ */
+export const MAZE_SCHEMA: Readonly<Record<string, LayoutParamSpec>> = {
+  cols: { min: 5, max: 10, step: 1, label: "maze", unit: "cells across", line: "cells across (3 m each)" },
+  rows: { min: 5, max: 10, step: 1, label: "maze", unit: "cells deep", line: "cells from the entrance to the far wall" },
+};
+
 export const maze: LayoutPack<MazeParams> = {
   id: "maze",
   version: "0.1.0",
   modes: ["play", "wander"],
   defaults: { cols: 9, rows: 9 },
+  schema: MAZE_SCHEMA,
   ci: { seeds: Array.from({ length: 50 }, (_, i) => i + 1) },
 
   generate({ seed, params }): PackLayout {

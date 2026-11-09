@@ -2,7 +2,7 @@ import { createHmac } from "node:crypto";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { resetLaneHealth } from "@ghostrun/llm";
 import EXAMPLE from "../../../packages/ir/fixtures/vault-heist.jsonl?raw";
-import { cacheKey, closesGameplay, MAX_CACHE_BYTES, normalisePrompt, promptSeed, templateHash, type CacheEntry } from "../src/cache";
+import { cacheKey, closesGameplay, MAX_CACHE_BYTES, normalisePrompt, promptSeed, templateHash, templateParts, type CacheEntry } from "../src/cache";
 import type { DoNamespace } from "../src/cf";
 import { costMicroUsd, FILL_MODEL, INTENT_MODEL } from "../src/cost";
 import { capsFromEnv, Governor, MemoryLedger } from "../src/governor";
@@ -123,6 +123,11 @@ describe("the exact-repeat build cache", () => {
     expect(w.f.to("api.cerebras.ai")).toHaveLength(2);
     // the template hash moves with what the models are sent
     expect(await templateHash(EXAMPLE)).toMatch(/^[0-9a-f]{64}$/);
+    // lines the fill prompt adds only for some prompts are hashed too: the Feng Shui rules, the place-to-explore line
+    const parts = JSON.stringify(templateParts(EXAMPLE));
+    expect(parts).toContain("Feng Shui (Form School), checked on the built world");
+    expect(parts).toContain("This is a place to explore");
+    expect(parts).toContain("A bribe: spoken a=guard_1 act=offer");
     expect(await cacheKey(PROMPT, 1, "a".repeat(64), ENGINE)).not.toBe(await cacheKey(PROMPT, 1, "b".repeat(64), ENGINE));
     expect(await cacheKey(PROMPT, 1, "a".repeat(64), ENGINE)).not.toBe(await cacheKey(PROMPT, 2, "a".repeat(64), ENGINE));
   });

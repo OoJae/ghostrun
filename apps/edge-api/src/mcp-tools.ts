@@ -11,7 +11,7 @@ import { bandLine, chipLine, fraction, staticReceipt, statusWord, type Chip, typ
 import { PROOF_VERSION } from "@ghostrun/world";
 import * as v from "valibot";
 import { SHARE_ID } from "./share";
-import { changeSummary, contextPrompt, editIntent, ENGINE_HASH, fillPack, fillSeed, GALLERY, galleryRef, galleryWorld, lineageOf, newFailures, placeFill, receiptDelta, type Lineage, type Placed } from "./world";
+import { changeSummary, contextPrompt, editIntent, ENGINE_HASH, fillPack, fillSeed, GALLERY, galleryRef, galleryWorld, lineageOf, mergeEdit, newFailures, placeFill, receiptDelta, type Lineage, type Placed } from "./world";
 
 export interface ToolResult {
   content: { type: "text"; text: string }[];
@@ -422,9 +422,9 @@ export const TOOLS: Tool[] = [
         if (ev.event === "op") patch += `${String(ev.data.line)}\n`;
       }
       if (!patch) return fail("The live AI couldn't make that change just now. Try again, or say it differently.");
-      const { text, stats } = mergeFill(fill0, patch, { edit: true });
+      const { text, stats, layout } = mergeEdit(fill0, patch, src.w.seed); // a structural edit settled and re-anchored, as the web does
       const after = await placeFill(text, src.w.seed, { pack: src.w.bundle.pack.id, mode: src.w.bundle.mode, setting: src.intent?.setting });
-      const summary = changeSummary(src.w.bundle, after.bundle);
+      const summary = [...(layout?.summary ?? []), ...changeSummary(src.w.bundle, after.bundle)];
       if (!summary.length && text.trim() === fill0.trim()) return fail(stats.locked ? "That would only change what the world promises, and the proof keeps those fixed." : "Nothing in the world changed. Try saying it differently.");
       const line = lineageOf(src, a.change);
       // a remix's share says the prompt at the top of its line, as the web's does
@@ -434,7 +434,7 @@ export const TOOLS: Tool[] = [
       const shown = summary.length ? summary : [`${stats.replaced + stats.added + stats.deleted} lines changed`];
       const l = logicOut(after.bundle, proof.receipt);
       const link = "id" in share ? share : null;
-      const notes = [...(stats.locked ? [`${stats.locked} change${stats.locked > 1 ? "s" : ""} to what the world promises ${stats.locked > 1 ? "were" : "was"} kept as ${stats.locked > 1 ? "they were" : "it was"}: the proof keeps promises fixed.`] : []), ...("error" in share ? [share.error] : [])];
+      const notes = [...(layout?.notes ?? []), ...(stats.locked ? [`${stats.locked} change${stats.locked > 1 ? "s" : ""} to what the world promises ${stats.locked > 1 ? "were" : "was"} kept as ${stats.locked > 1 ? "they were" : "it was"}: the proof keeps promises fixed.`] : []), ...("error" in share ? [share.error] : [])];
       const out = [
         `Changed "${a.change}" on ${src.link}.`,
         `What changed: ${shown.join(" · ")}`,

@@ -221,6 +221,29 @@ describe("a trigger's subject under another key", () => {
   });
 });
 
+describe("speech acts in the words models use", () => {
+  it("'bribe' and 'reserve' triggers are spoken with their act, 'pay off' an act, 'pay' and 'reserve' effects take and book_slot; what an act offers may be a counted word", () => {
+    const p = parseFill([
+      '{"op":"meta","mode":"play","pack":"arena","seed":3}',
+      '{"op":"zone","id":"z_a","slot":"midfield","tag":"center"}',
+      '{"op":"ent","id":"coin_1","kind":"pickup","zone":"z_a"}',
+      '{"op":"ent","id":"coin_2","kind":"pickup","zone":"z_a"}',
+      '{"op":"npc","id":"guard","role":"guard","zone":"z_a","menu":["guard.watch","guard.look_away"]}',
+      '{"op":"rule","id":"r_bribe","when":{"t":"bribe","a":"guard","b":"coins","n":20},"if":[{"l":"player.coins","op":">=","r":"20"}],"then":[{"e":"pay","target":"player","v":"coins","n":20},{"e":"set_state","target":"guard","v":"look_away","n":20}]}',
+      '{"op":"rule","id":"r_off","when":{"t":"spoken","a":"guard","act":"pay_off"},"then":[{"e":"set_state","target":"guard","v":"look_away","n":5}]}',
+      '{"op":"rule","id":"r_book","when":{"t":"reserve","a":"guard"},"then":[{"e":"reserve","target":"guard","v":"Viewing"}]}',
+    ].join("\n"), { seed: 3 });
+    expect(p.notes.filter((n) => n.kind === "invalid" || n.kind === "unresolved")).toEqual([]);
+    const r = Object.fromEntries(p.draft.rules.map((x) => [x.id, x]));
+    expect(r.r_bribe!.when).toMatchObject({ t: "spoken", act: "offer", a: "guard", b: "coins", n: 20 });
+    expect(r.r_bribe!.if[0]).toMatchObject({ l: "player.coins", op: "gte" }); // (">=" "20": the sim compares it as a number)
+    expect(r.r_bribe!.then[0]).toMatchObject({ e: "take", target: "player", v: "coins", n: 20 });
+    expect(r.r_off!.when.act).toBe("pay");
+    expect(r.r_book!.when).toMatchObject({ t: "spoken", act: "book" });
+    expect(r.r_book!.then[0]).toMatchObject({ e: "book_slot", v: "Viewing" });
+  });
+});
+
 describe("fill repairs for races", () => {
   it("go-karts, jetskis and sleds are vehicles that drive as their kind, a circuit is the track, and a lap is lap_done", () => {
     const lines = [

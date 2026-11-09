@@ -15,6 +15,8 @@ import streetFill from "../../../packages/ir/fixtures/street-race.jsonl?raw";
 import snowFill from "../../../packages/ir/fixtures/snowmobile-race.jsonl?raw";
 import fengShuiFill from "../../../packages/ir/fixtures/fengshui-gallery.jsonl?raw";
 import fengShuiBrokenFill from "../../../packages/ir/fixtures/fengshui-gallery-broken.jsonl?raw";
+import museumFill from "../../../packages/ir/fixtures/museum-bribe.jsonl?raw";
+import villaFill from "../../../packages/ir/fixtures/villa-viewing.jsonl?raw";
 import { specHash, type FillNote, type FillStats, type WorldBundle } from "@ghostrun/ir";
 import type { PackLayout } from "@ghostrun/plugin-api";
 import { ENGINE_HASH, placeFill } from "@ghostrun/world";
@@ -50,8 +52,11 @@ export interface World {
   seed: number;
   /** What the AI wrote about how it looks (the renderer and the sound pick its look from this). */
   cue: Cue;
-  /** For live (and edited) worlds: what the repair loop needs to ask for a patch. */
-  source?: { prompt: string; intent: unknown; fill: string; seed: number; pack: string; base?: string; edits?: string[] };
+  /**
+   * For live (and edited) worlds: what the repair loop needs to ask for a patch, and what the
+   * person pinned on the Intent card (a rebuild as a maze stays a maze through the next rebuild).
+   */
+  source?: { prompt: string; intent: unknown; fill: string; seed: number; pack: string; base?: string; edits?: string[]; pinned?: { pack?: string; mode?: "play" | "wander"; genre?: string } };
   intent: Intent;
   notes: string[];
   /** The pack's rooms and doorways it was placed on (what the Feng Shui check reads). */
@@ -83,7 +88,7 @@ export function buildWorld(_prompt: string, fixture = "ctf"): World {
 }
 
 /** Recorded fills: the organizer's CTF brief, and a kit-verb world (?fixture=coin-rush). */
-export const FIXTURES: Record<string, string> = { ctf: fixtureFill, "coin-rush": coinRushFill, forest: forestFill, parkour: parkourFill, heist: heistFill, vault: vaultFill, duel: duelFill, zombies: zombieFill, "laser-tag": laserFill, station: stationFill, kart: kartFill, "street-race": streetFill, snowmobile: snowFill, fengshui: fengShuiFill, "fengshui-broken": fengShuiBrokenFill };
+export const FIXTURES: Record<string, string> = { ctf: fixtureFill, "coin-rush": coinRushFill, forest: forestFill, parkour: parkourFill, heist: heistFill, vault: vaultFill, duel: duelFill, zombies: zombieFill, "laser-tag": laserFill, station: stationFill, kart: kartFill, "street-race": streetFill, snowmobile: snowFill, fengshui: fengShuiFill, "fengshui-broken": fengShuiBrokenFill, museum: museumFill, villa: villaFill };
 export const FIXTURE_PROMPTS: Record<string, string> = {
   ctf: BRIEF,
   "coin-rush": "Collect five gold coins in a neon arena before the clock runs out. Mind the lava.",
@@ -100,6 +105,8 @@ export const FIXTURE_PROMPTS: Record<string, string> = {
   snowmobile: "A snowmobile race on a frozen lake: two laps through the ice gates, drifting round the pines.",
   fengshui: "A Feng Shui handbag gallery: five wings, one for each element, and a reception desk in the command position.",
   "fengshui-broken": "A Feng Shui handbag gallery with a tall arched window in line with the front door and an incense burner on the doorstep.",
+  museum: "A museum heist at night: collect coins, bribe the guard to look the other way, and carry the star sapphire out of the vault to the van.",
+  villa: "A villa tour where the guide books a viewing.",
 };
 
 /** Fill text (fixture or a live stream) → placed world, choosing the pack from the registry. */
