@@ -1,0 +1,9 @@
+{
+  "extends": "../../../tsconfig.base.json",
+  "compilerOptions": { "outDir": "dist/types", "rootDir": ".", "types": ["node"], "lib": ["ES2023", "DOM"] },
+  "include": ["src", "test"],
+  "references": [
+    { "path": "../../detmath" }, { "path": "../../ir" }, { "path": "../../plugin-api" }, { "path": "../common" },
+    { "path": "../../layout" }, { "path": "../../nav" }, { "path": "../../proof" }
+  ]
+}

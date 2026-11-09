@@ -345,6 +345,25 @@ importers:
         specifier: workspace:*
         version: link:../../plugin-api
 
+  packages/packs/common:
+    dependencies:
+      '@ghostrun/ir':
+        specifier: workspace:*
+        version: link:../../ir
+      '@ghostrun/plugin-api':
+        specifier: workspace:*
+        version: link:../../plugin-api
+    devDependencies:
+      '@ghostrun/layout':
+        specifier: workspace:*
+        version: link:../../layout
+      '@ghostrun/nav':
+        specifier: workspace:*
+        version: link:../../nav
+      '@ghostrun/proof':
+        specifier: workspace:*
+        version: link:../../proof
+
   packages/packs/course:
     dependencies:
       '@ghostrun/detmath':
@@ -408,6 +427,31 @@ importers:
         specifier: workspace:*
         version: link:../../nav
 
+  packages/packs/orrery:
+    dependencies:
+      '@ghostrun/detmath':
+        specifier: workspace:*
+        version: link:../../detmath
+      '@ghostrun/ir':
+        specifier: workspace:*
+        version: link:../../ir
+      '@ghostrun/pack-common':
+        specifier: workspace:*
+        version: link:../common
+      '@ghostrun/plugin-api':
+        specifier: workspace:*
+        version: link:../../plugin-api
+    devDependencies:
+      '@ghostrun/layout':
+        specifier: workspace:*
+        version: link:../../layout
+      '@ghostrun/nav':
+        specifier: workspace:*
+        version: link:../../nav
+      '@ghostrun/proof':
+        specifier: workspace:*
+        version: link:../../proof
+
   packages/packs/outdoor:
     dependencies:
       '@ghostrun/detmath':
@@ -432,6 +476,81 @@ importers:
       '@ghostrun/sim':
         specifier: workspace:*
         version: link:../../sim
+
+  packages/packs/puzzle-rooms:
+    dependencies:
+      '@ghostrun/detmath':
+        specifier: workspace:*
+        version: link:../../detmath
+      '@ghostrun/ir':
+        specifier: workspace:*
+        version: link:../../ir
+      '@ghostrun/pack-common':
+        specifier: workspace:*
+        version: link:../common
+      '@ghostrun/plugin-api':
+        specifier: workspace:*
+        version: link:../../plugin-api
+    devDependencies:
+      '@ghostrun/layout':
+        specifier: workspace:*
+        version: link:../../layout
+      '@ghostrun/nav':
+        specifier: workspace:*
+        version: link:../../nav
+      '@ghostrun/proof':
+        specifier: workspace:*
+        version: link:../../proof
+
+  packages/packs/service-venue:
+    dependencies:
+      '@ghostrun/detmath':
+        specifier: workspace:*
+        version: link:../../detmath
+      '@ghostrun/ir':
+        specifier: workspace:*
+        version: link:../../ir
+      '@ghostrun/pack-common':
+        specifier: workspace:*
+        version: link:../common
+      '@ghostrun/plugin-api':
+        specifier: workspace:*
+        version: link:../../plugin-api
+    devDependencies:
+      '@ghostrun/layout':
+        specifier: workspace:*
+        version: link:../../layout
+      '@ghostrun/nav':
+        specifier: workspace:*
+        version: link:../../nav
+      '@ghostrun/proof':
+        specifier: workspace:*
+        version: link:../../proof
+
+  packages/packs/stage:
+    dependencies:
+      '@ghostrun/detmath':
+        specifier: workspace:*
+        version: link:../../detmath
+      '@ghostrun/ir':
+        specifier: workspace:*
+        version: link:../../ir
+      '@ghostrun/pack-common':
+        specifier: workspace:*
+        version: link:../common
+      '@ghostrun/plugin-api':
+        specifier: workspace:*
+        version: link:../../plugin-api
+    devDependencies:
+      '@ghostrun/layout':
+        specifier: workspace:*
+        version: link:../../layout
+      '@ghostrun/nav':
+        specifier: workspace:*
+        version: link:../../nav
+      '@ghostrun/proof':
+        specifier: workspace:*
+        version: link:../../proof
 
   packages/plugin-api:
     dependencies:
@@ -493,9 +612,21 @@ importers:
       '@ghostrun/pack-maze':
         specifier: workspace:*
         version: link:../packs/maze
+      '@ghostrun/pack-orrery':
+        specifier: workspace:*
+        version: link:../packs/orrery
       '@ghostrun/pack-outdoor':
         specifier: workspace:*
         version: link:../packs/outdoor
+      '@ghostrun/pack-puzzle-rooms':
+        specifier: workspace:*
+        version: link:../packs/puzzle-rooms
+      '@ghostrun/pack-service-venue':
+        specifier: workspace:*
+        version: link:../packs/service-venue
+      '@ghostrun/pack-stage':
+        specifier: workspace:*
+        version: link:../packs/stage
       '@ghostrun/plugin-api':
         specifier: workspace:*
         version: link:../plugin-api
