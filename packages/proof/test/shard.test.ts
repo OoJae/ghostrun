@@ -6,6 +6,7 @@ import { beforeAll, describe, expect, it } from "vitest";
 import { parseFill, type WorldBundle } from "@ghostrun/ir";
 import { arena } from "@ghostrun/pack-arena";
 import { cityBlock } from "@ghostrun/pack-city-block";
+import { floorPlan } from "@ghostrun/pack-floor-plan";
 import { placeWorld } from "@ghostrun/layout";
 import { buildNav } from "@ghostrun/nav";
 import { loadNavNode } from "@ghostrun/nav/node";
@@ -21,12 +22,12 @@ beforeAll(async () => {
   await loadNavNode();
 });
 
-function world(file: string, pack: "city" | "arena"): WorldBundle {
+function world(file: string, pack: "city" | "arena" | "floor"): WorldBundle {
   const text = readFileSync(new URL(`../../ir/fixtures/${file}.jsonl`, import.meta.url), "utf8");
   const seed = (JSON.parse(text.split("\n", 1)[0]!) as { seed?: number }).seed ?? 7;
   const fill = parseFill(text, { seed });
   const at = { seed, sub: fill.draft.pack.sub, laws: fill.draft.laws, harder: false };
-  const layout = pack === "city" ? cityBlock.generate({ ...at, params: cityBlock.defaults }) : arena.generate({ ...at, params: arena.defaults });
+  const layout = pack === "city" ? cityBlock.generate({ ...at, params: cityBlock.defaults }) : pack === "floor" ? floorPlan.generate({ ...at, params: floorPlan.defaults }) : arena.generate({ ...at, params: arena.defaults });
   return placeWorld({ ...fill.draft, engine: ENGINE }, layout).bundle;
 }
 
@@ -52,7 +53,8 @@ class Counting extends Map<string, unknown> {
 }
 
 describe("a proof played in shards", () => {
-  for (const [file, pack] of [["ctf-neon", "city"], ["zombie-survival", "arena"]] as const) {
+  // the CTF brief, zombies, a race, a guard talked round with a bribe (act runs, the guard's options in the envelope), a villa toured with a viewing booked
+  for (const [file, pack] of [["ctf-neon", "city"], ["zombie-survival", "arena"], ["kart-race", "arena"], ["museum-bribe", "floor"], ["villa-viewing", "floor"]] as const) {
     it(`gives the one-piece receipt for ${file}, chip for chip`, async () => {
       const b = world(file, pack);
       const whole = await prove(R, b, { engine: ENGINE, host: "device", playtest: true });
@@ -70,6 +72,21 @@ describe("a proof played in shards", () => {
       expect(pieces.playtest?.levels).toEqual(whole.playtest?.levels);
     }, 300_000);
   }
+
+  it("keeps the same failing run when nobody wins (the CTF brief with red's goal 40 m up)", async () => {
+    const b = structuredClone(world("ctf-neon", "city"));
+    const goal = b.entities.find((e) => e.id === "goal_red")!;
+    goal.pos = [goal.pos[0], goal.pos[1] + 40, goal.pos[2]];
+    const whole = await prove(R, b, { engine: ENGINE, runs: 4 });
+    expect(whole.failRun).toBeDefined();
+    const ws = witnesses(b, t0(b, "red").chain, 4, "red");
+    const played = new Counting([...shard(b, ws.filter((_, i) => i % 2 === 1)), ...shard(b, ws.filter((_, i) => i % 2 === 0))]);
+    const pieces = await prove(R, b, { engine: ENGINE, runs: 4, played });
+    expect(played.misses).toBe(0);
+    // (through JSON, as a receipt always travels: a shard's results came that way, so a -0 in the ghost is a 0)
+    expect(JSON.stringify(pieces.failRun)).toBe(JSON.stringify(whole.failRun));
+    expect(comparable(pieces)).toEqual(comparable(whole));
+  }, 300_000);
 
   it("plays what a shard didn't send back", async () => {
     const b = world("zombie-survival", "arena");

@@ -103,6 +103,15 @@ describe("POST /v1/proof", () => {
     expect(comparable(r.json.receipt)).toEqual(comparable(await device("vault-heist")));
   }, 120_000);
 
+  for (const name of ["museum-bribe", "villa-viewing"]) {
+    it(`gives the device's receipt for ${name} on shards, act runs and all`, async () => {
+      const w = edge({ PROOF_SHARD: shardNs() });
+      const r = await w.proof(await input(name));
+      expect(r.status).toBe(200);
+      expect(comparable(r.json.receipt)).toEqual(comparable(await device(name)));
+    }, 180_000);
+  }
+
   it("deals the likeliest long runs first and the jump attempts last", () => {
     const order = dealOrder([
       { kind: "jump", expect: "x", jumps: 2, attempt: 0, team: "red" },

@@ -159,7 +159,8 @@ try {
 
   // 11. The cloud proof of the organizer's CTF brief, on real ProofShard DOs, against Node's.
   const nodeOut = await nodeBundle("test/workerd/node-proof.ts", "dist/node-proof", "node-proof.mjs");
-  const [mine] = JSON.parse(execFileSync(process.execPath, [nodeOut], { cwd: root, encoding: "utf8", maxBuffer: 64 * 1024 * 1024 }));
+  // the brief, and the two speech-act worlds (a bribe the proof plans for, a viewing the tour books)
+  const [mine, ...more] = JSON.parse(execFileSync(process.execPath, [nodeOut, ...["ctf-neon", "museum-bribe", "villa-viewing"].map((f) => resolve(root, `../../packages/ir/fixtures/${f}.jsonl`))], { cwd: root, encoding: "utf8", maxBuffer: 256 * 1024 * 1024 }));
   const ask = (headers, body = mine.input) => fetch(`${base}/v1/proof`, { method: "POST", headers: { "content-type": "application/json", ...headers }, body: JSON.stringify(body) });
   // (once more on a reset: workerd closes the kept-alive connection while Node proves the brief)
   const health2 = await fetch(`${base}/v1/health`).catch(() => fetch(`${base}/v1/health`));
@@ -180,6 +181,11 @@ try {
   const p2 = await ask({ "x-judge-token": TOKEN, "cf-connecting-ip": "198.51.100.21" });
   const a2 = await p2.json();
   check("a repeat is answered from the store at once", p2.headers.get("x-proof") === "hit" && typeof a2.cached === "string" && JSON.stringify(still(a2.receipt)) === JSON.stringify(cloud), `${p2.headers.get("x-proof")} in ${Date.now() - t1} ms`);
+  for (const [name, m] of [["museum-bribe", more[0]], ["villa-viewing", more[1]]]) {
+    const r = await ask({ "x-judge-token": TOKEN, "cf-connecting-ip": "198.51.100.23" }, m.input);
+    const a = r.status === 200 ? await r.json() : null;
+    check(`${name}: the cloud's receipt is Node's, chip for chip and in everything else`, a !== null && JSON.stringify(still(a.receipt)) === JSON.stringify(still(m.receipt)), a ? `${a.receipt.chips.length} chips, ${a.shards} shards` : String(r.status));
+  }
   const wrong = await ask({ "x-judge-token": TOKEN }, { ...mine.input, spec: "0".repeat(64) });
   check("a spec hash the fill doesn't place is turned away (409)", wrong.status === 409 && (await wrong.json()).spec === mine.input.spec);
   const anonProof = await ask({ "cf-connecting-ip": "198.51.100.22" });
