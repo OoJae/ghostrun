@@ -181,7 +181,7 @@ export function depthFor(b: WorldBundle, w: Water, id: string): number {
   const e = b.entities.find((x) => x.id === id)!;
   const sensor = e.body === "sensor";
   // the centre as high as still counts (inside a sensor; within 1.4 m of a thing), the floor permitting
-  const centre = Math.max(w.min[1] + HEAD_UP, sensor ? e.pos[1] - e.size[1] / 2 - 0.9 + 0.2 : e.pos[1] - 1.4 + 0.2);
+  const centre = Math.max(w.min[1] + HEAD_UP, sensor ? e.pos[1] + e.size[1] / 2 + 0.9 - 0.2 : e.pos[1] + 1.4 - 0.2);
   return Math.max(0, w.max[1] - 0.05 - (centre + HEAD_UP));
 }
 
