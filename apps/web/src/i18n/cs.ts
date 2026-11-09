@@ -622,4 +622,6 @@ export const cs: Table = {
   "proved in the cloud · this device is checking it…": "ověřeno v cloudu · toto zařízení to kontroluje…",
   "proved on your device · the cloud is proving it too": "ověřeno na vašem zařízení · cloud to ověřuje také",
   "proved {where}": "ověřeno {where}",
+  "AI-made": "Vytvořeno AI",
+  "Worlds, characters and answers here are made by AI, then checked by a proof. Privacy and AI: what we keep.": "Světy, postavy a odpovědi zde vytváří AI a poté je kontroluje důkaz. Soukromí a AI: co uchováváme.",
 };

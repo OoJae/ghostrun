@@ -622,4 +622,6 @@ export const zh: Table = {
   "proved in the cloud · this device is checking it…": "已在云端证明 · 本设备正在核对…",
   "proved on your device · the cloud is proving it too": "已在你的设备上证明 · 云端也在证明",
   "proved {where}": "已证明（{where}）",
+  "AI-made": "AI 生成",
+  "Worlds, characters and answers here are made by AI, then checked by a proof. Privacy and AI: what we keep.": "这里的世界、角色和回答由 AI 生成，再经证明核对。隐私与 AI：我们保留什么。",
 };

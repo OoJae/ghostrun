@@ -622,4 +622,6 @@ export const pt: Table = {
   "proved in the cloud · this device is checking it…": "provado na nuvem · este dispositivo está verificando…",
   "proved on your device · the cloud is proving it too": "provado no seu dispositivo · a nuvem também está provando",
   "proved {where}": "provado {where}",
+  "AI-made": "Feito por IA",
+  "Worlds, characters and answers here are made by AI, then checked by a proof. Privacy and AI: what we keep.": "Os mundos, personagens e respostas aqui são feitos por IA e depois verificados por uma prova. Privacidade e IA: o que guardamos.",
 };

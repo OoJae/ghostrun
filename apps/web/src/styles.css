@@ -108,6 +108,19 @@ body,
   color: var(--ink-dim);
 }
 
+.ai-label {
+  flex: none;
+  font-size: 10px;
+  line-height: 1;
+  padding: 3px 6px;
+  border: 1px solid rgba(25, 227, 255, 0.35);
+  border-radius: 999px;
+  color: var(--ink-dim);
+  text-decoration: none;
+  white-space: nowrap;
+}
+.ai-label:hover { color: var(--ink); border-color: rgba(25, 227, 255, 0.7); }
+
 .promptbar input {
   flex: 1;
   min-width: 0;
