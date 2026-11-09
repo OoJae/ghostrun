@@ -679,4 +679,6 @@ export const cs: Table = {
   "{n} pigeons": { one: "{n} holub", few: "{n} holubi", many: "{n} holuba", other: "{n} holubů" },
   "{n} passers-by": { one: "{n} chodec", few: "{n} chodci", many: "{n} chodce", other: "{n} chodců" },
   "{n} drones": { one: "{n} dron", few: "{n} drony", many: "{n} dronu", other: "{n} dronů" },
+  "AI-made": "Vytvořeno AI",
+  "Worlds, characters and answers here are made by AI, then checked by a proof. Privacy and AI: what we keep.": "Světy, postavy a odpovědi zde vytváří AI a poté je kontroluje důkaz. Soukromí a AI: co uchováváme.",
 };

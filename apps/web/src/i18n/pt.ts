@@ -679,4 +679,6 @@ export const pt: Table = {
   "{n} pigeons": { one: "{n} pombo", many: "{n} de pombos", other: "{n} pombos" },
   "{n} passers-by": { one: "{n} transeunte", many: "{n} de transeuntes", other: "{n} transeuntes" },
   "{n} drones": { one: "{n} drone", many: "{n} de drones", other: "{n} drones" },
+  "AI-made": "Feito por IA",
+  "Worlds, characters and answers here are made by AI, then checked by a proof. Privacy and AI: what we keep.": "Os mundos, personagens e respostas aqui são feitos por IA e depois verificados por uma prova. Privacidade e IA: o que guardamos.",
 };

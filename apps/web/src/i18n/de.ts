@@ -679,4 +679,6 @@ export const de: Table = {
   "{n} pigeons": { one: "{n} Taube", other: "{n} Tauben" },
   "{n} passers-by": { one: "{n} Passant", other: "{n} Passanten" },
   "{n} drones": { one: "{n} Drohne", other: "{n} Drohnen" },
+  "AI-made": "Von KI erstellt",
+  "Worlds, characters and answers here are made by AI, then checked by a proof. Privacy and AI: what we keep.": "Welten, Figuren und Antworten hier erstellt KI, danach prüft sie ein Beweis. Datenschutz und KI: was wir speichern.",
 };

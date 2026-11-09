@@ -679,4 +679,6 @@ export const ja: Table = {
   "{n} pigeons": { other: "ハト {n} 羽" },
   "{n} passers-by": { other: "通行人 {n} 人" },
   "{n} drones": { other: "ドローン {n} 機" },
+  "AI-made": "AI 生成",
+  "Worlds, characters and answers here are made by AI, then checked by a proof. Privacy and AI: what we keep.": "ここのワールド、キャラクター、回答は AI が作り、証明で確認しています。プライバシーと AI：保存する内容。",
 };
