@@ -667,4 +667,6 @@ export const fr: Table = {
   "Listen": "Écouter",
   "Building…": "Construction…",
   "Close": "Fermer",
+  "AI-made": "Fait par l'IA",
+  "Worlds, characters and answers here are made by AI, then checked by a proof. Privacy and AI: what we keep.": "Les mondes, personnages et réponses ici sont créés par l'IA, puis vérifiés par une preuve. Confidentialité et IA : ce que nous conservons.",
 };

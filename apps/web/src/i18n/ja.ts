@@ -667,4 +667,6 @@ export const ja: Table = {
   "Listen": "聞く",
   "Building…": "構築中…",
   "Close": "閉じる",
+  "AI-made": "AI 生成",
+  "Worlds, characters and answers here are made by AI, then checked by a proof. Privacy and AI: what we keep.": "ここのワールド、キャラクター、回答は AI が作り、証明で確認しています。プライバシーと AI：保存する内容。",
 };
