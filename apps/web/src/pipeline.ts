@@ -15,6 +15,8 @@ import streetFill from "../../../packages/ir/fixtures/street-race.jsonl?raw";
 import snowFill from "../../../packages/ir/fixtures/snowmobile-race.jsonl?raw";
 import fengShuiFill from "../../../packages/ir/fixtures/fengshui-gallery.jsonl?raw";
 import fengShuiBrokenFill from "../../../packages/ir/fixtures/fengshui-gallery-broken.jsonl?raw";
+import museumFill from "../../../packages/ir/fixtures/museum-bribe.jsonl?raw";
+import villaFill from "../../../packages/ir/fixtures/villa-viewing.jsonl?raw";
 import { lawsUnwritten, layoutLaws, parseFill, specHash, type FillNote, type FillStats, type WorldBundle } from "@ghostrun/ir";
 import { placeWorld } from "@ghostrun/layout";
 import type { PackLayout } from "@ghostrun/plugin-api";
@@ -90,7 +92,7 @@ export function buildWorld(_prompt: string, fixture = "ctf"): World {
 }
 
 /** Recorded fills: the organizer's CTF brief, and a kit-verb world (?fixture=coin-rush). */
-export const FIXTURES: Record<string, string> = { ctf: fixtureFill, "coin-rush": coinRushFill, forest: forestFill, parkour: parkourFill, heist: heistFill, vault: vaultFill, duel: duelFill, zombies: zombieFill, "laser-tag": laserFill, station: stationFill, kart: kartFill, "street-race": streetFill, snowmobile: snowFill, fengshui: fengShuiFill, "fengshui-broken": fengShuiBrokenFill };
+export const FIXTURES: Record<string, string> = { ctf: fixtureFill, "coin-rush": coinRushFill, forest: forestFill, parkour: parkourFill, heist: heistFill, vault: vaultFill, duel: duelFill, zombies: zombieFill, "laser-tag": laserFill, station: stationFill, kart: kartFill, "street-race": streetFill, snowmobile: snowFill, fengshui: fengShuiFill, "fengshui-broken": fengShuiBrokenFill, museum: museumFill, villa: villaFill };
 export const FIXTURE_PROMPTS: Record<string, string> = {
   ctf: BRIEF,
   "coin-rush": "Collect five gold coins in a neon arena before the clock runs out. Mind the lava.",
@@ -107,6 +109,8 @@ export const FIXTURE_PROMPTS: Record<string, string> = {
   snowmobile: "A snowmobile race on a frozen lake: two laps through the ice gates, drifting round the pines.",
   fengshui: "A Feng Shui handbag gallery: five wings, one for each element, and a reception desk in the command position.",
   "fengshui-broken": "A Feng Shui handbag gallery with a tall arched window in line with the front door and an incense burner on the doorstep.",
+  museum: "A museum heist at night: collect coins, bribe the guard to look the other way, and carry the star sapphire out of the vault to the van.",
+  villa: "A villa tour where the guide books a viewing.",
 };
 
 /** Fill text (fixture or a live stream) → placed world, choosing the pack from the registry. */

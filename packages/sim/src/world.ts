@@ -2,13 +2,14 @@
 // verifier. Fixed 60 Hz, bodies created in id order, triggers evaluated with plain AABB maths in
 // id order, rules in (prio desc, id) order — so the same bundle + seed + inputs give bit-identical
 // event logs and state hashes everywhere.
-import { hex32, xxh32 } from "@ghostrun/detmath";
+import { cosDeg, hex32, xxh32 } from "@ghostrun/detmath";
 import { DRIVE, feelOf, gatesOf, HEALTH, MUZZLE_UP, SHOOT, SHOT_RADIUS, segBody, segBox, TRACK, verb as kitVerb } from "@ghostrun/kits";
 import { clampParams, type Bound, type Shot, type VerbCtx, type VerbPlugin } from "@ghostrun/plugin-api";
 import type { Effect, Entity, Laws, Rule, Vec3, WorldBundle } from "@ghostrun/ir";
 import { clampLaws } from "@ghostrun/ir";
 import { launch, PLAYER_HALF_HEIGHT, PLAYER_RADIUS, PlayerController, type Ride } from "./controller";
 import type { Rapier } from "./rapier/load";
+import { LOOK_AWAY, type SpeechAct } from "./acts";
 import { BTN, DT, type InputFrame, type Pose, type Result, type SimEvent } from "./types";
 
 type RigidBody = InstanceType<Rapier["RigidBody"]>;
@@ -25,7 +26,20 @@ export interface SimOptions {
 /** Called once at the start of every tick, before anything moves; returns each NPC's input. */
 export interface Brain {
   think(w: SimWorld): ReadonlyMap<string, InputFrame>;
+  /** Is this NPC playing an option that sees nothing (a guard told to look away)? */
+  blind?(id: string): boolean;
 }
+
+/** A booking a rule made (book_slot): with whom, what (the rule's words), and the slot the act asked for. */
+export interface Booking {
+  tick: number;
+  with: string;
+  what: string;
+  slot: string;
+}
+
+/** Ticks between two sightings of the same player by the same watcher while it keeps seeing them. */
+const SEEN_EVERY = 30;
 
 type Kcc = ReturnType<InstanceType<Rapier["World"]>["createCharacterController"]>;
 
@@ -124,6 +138,24 @@ export class SimWorld {
   /** Each drive binding's own params as the fill wrote them (its kind's feel fills the rest). */
   readonly #given = new Map<string, Readonly<Record<string, unknown>>>();
   #push: Push = () => -1;
+  /** Speech acts said since the last tick, taken in the order they were said. */
+  #said: SpeechAct[] = [];
+  /** What each agent holds that is counted, not carried ("coins"), by word. */
+  readonly #purse = new Map<string, Map<string, number>>();
+  /** The words this world counts (what give and take hand over that is no thing in it), sorted. */
+  readonly #words: string[];
+  /** A world that trades, talks or books: purses and bookings go into the state hash (others hash as they always did). */
+  readonly #economy: boolean;
+  /** Bookings made so far, oldest first (the client offers each as a calendar file). */
+  readonly bookings: Booking[] = [];
+  /** States set for a while (a guard looking away for 20 s): when each ends and what it goes back to. */
+  readonly #until = new Map<string, { tick: number; to: string }>();
+  /** The NPCs a seen_by rule watches through: the cosine of half their view cone and how far they see. */
+  readonly #watch = new Map<string, { cos: number; range: number }>();
+  /** The way a watcher faces before it has moved: toward what it guards. */
+  readonly #watchFacing = new Map<string, [number, number]>();
+  /** Watchers that see the player now, and the tick each last said so. */
+  readonly #seenAt = new Map<string, number>();
 
   constructor(R: Rapier, bundle: WorldBundle, opts: SimOptions = {}) {
     this.R = R;
@@ -201,6 +233,34 @@ export class SimWorld {
       const who = String(bound.params.driver ?? "");
       if (plugin.id === DRIVE && who && (who === "player" || this.npcs.has(who))) this.#mount(who, bound.on);
     }
+    // what is counted rather than carried: the words give and take hand over that name no thing here
+    // (and what an act offers), so "player.coins" reads a purse
+    const words = new Set<string>();
+    for (const r of bundle.rules) {
+      for (const e of r.then) if ((e.e === "give" || e.e === "take") && String(e.v) && !this.ents.has(String(e.v))) words.add(String(e.v));
+      if (r.when.t === "spoken" && r.when.b && !this.ents.has(r.when.b)) words.add(r.when.b);
+    }
+    this.#words = [...words].sort();
+    this.#economy = this.#words.length > 0 || bundle.rules.some((r) => r.when.t === "spoken" || r.then.some((e) => e.e === "give" || e.e === "take" || e.e === "book_slot"));
+    // the watchers: whoever a seen_by rule names (anyone with a guard's role when it names nobody),
+    // seeing as far and as wide as its cast entry says
+    const cast = new Map(bundle.cast.map((c) => [c.npc, c]));
+    for (const r of bundle.rules) {
+      if (r.when.t !== "seen_by") continue;
+      for (const id of r.when.b ? [r.when.b] : [...this.npcs.keys()].filter((x) => cast.get(x)?.role === "guard")) {
+        if (!this.npcs.has(id) || this.#watch.has(id)) continue;
+        const c = cast.get(id);
+        const cone = Math.min(180, Math.max(10, c?.coneDeg ?? 70));
+        this.#watch.set(id, { cos: cosDeg(cone / 2), range: Math.min(40, Math.max(1, c?.rangeM ?? 12)) });
+        // until it moves it faces what it guards: the thing the rule catches you holding
+        const held = r.if.map((x) => (x.l === "player.carrying" && x.op === "eq" ? String(x.r) : /^([a-z][a-z0-9_]*)\.carrier(?:\.team)?$/.exec(x.l)?.[1])).find((x) => x !== undefined && this.ents.has(x));
+        if (!held) continue;
+        const [h, g] = [this.ents.get(id)!.home, this.ents.get(held)!.home];
+        const [dx, dz] = [g[0] - h[0], g[2] - h[2]];
+        const d = Math.sqrt(dx * dx + dz * dz);
+        if (d > 0.5) this.#watchFacing.set(id, [dx / d, dz / d]);
+      }
+    }
   }
 
   #makeCtx(): VerbCtx {
@@ -276,7 +336,7 @@ export class SimWorld {
 
   /** The way a character faces (unit x, z): the way it last pushed the stick. */
   facingOf(id: string): readonly [number, number] {
-    const f = this.#facing.get(id);
+    const f = this.#facing.get(id) ?? this.#watchFacing.get(id);
     if (f) return f;
     // never moved yet: toward the middle of the world from where it started (arenas are centred)
     const h = this.ents.get(id)?.home ?? [0, 0, 0];
@@ -415,6 +475,63 @@ export class SimWorld {
     if (m > 1e-9) this.#facing.set(id, [x / m, z / m]);
   }
 
+  /** An accepted speech act: it is heard on the next tick, as a spoken event the rules react to. */
+  speak(a: SpeechAct) {
+    this.#said.push({ ...a });
+  }
+
+  /** How many of a counted thing ("coins") an agent holds. */
+  purse(id: string, word: string): number {
+    return this.#purse.get(id)?.get(word) ?? 0;
+  }
+
+  /** The words this world counts ("coins"), sorted. */
+  get words(): readonly string[] {
+    return this.#words;
+  }
+
+  /** Forced state (T2): an agent holds n of a counted thing, as if it had always been so. */
+  forcePurse(id: string, word: string, n: number) {
+    const p = this.#purse.get(id) ?? new Map<string, number>();
+    p.set(word, Math.max(0, n));
+    this.#purse.set(id, p);
+  }
+
+  /** The watchers who see the player right now (as of the last tick), in id order. */
+  seeing(): string[] {
+    return [...this.#seenAt.keys()].sort();
+  }
+
+  /** Does this NPC watch for the player (a seen_by rule names it)? */
+  watches(id: string): boolean {
+    return this.#watch.has(id);
+  }
+
+  /** Looking away (bribed, or told to by its mind): it sees nothing. */
+  blind(id: string): boolean {
+    return this.ents.get(id)?.state === LOOK_AWAY || this.#brain?.blind?.(id) === true;
+  }
+
+  /** Ticks left on a state set for a while (a guard looking away), or 0. */
+  stateLeft(id: string): number {
+    const u = this.#until.get(id);
+    return u ? Math.max(0, u.tick - this.tick) : 0;
+  }
+
+  /** Is the player in this watcher's view: within its range and cone, nothing solid between? */
+  #sees(id: string): boolean {
+    const w = this.#watch.get(id)!;
+    const p = this.pos(id);
+    const q = this.pos("player");
+    const dx = q[0] - p[0];
+    const dz = q[2] - p[2];
+    const d = Math.sqrt(dx * dx + dz * dz);
+    if (d > w.range || Math.abs(q[1] - p[1]) > 2.5) return false;
+    const f = this.facingOf(id);
+    if (d > 0.05 && (dx * f[0] + dz * f[1]) / d < w.cos) return false;
+    return this.clearShot([p[0], p[1] + 0.6, p[2]], [q[0], q[1] + 0.6, q[2]], id);
+  }
+
   /** Hit points down by n (a shot, a damage effect); at 0 it is knocked out. */
   #hurt(id: string, n: number, by: string, push: Push, rule = "", cause = -1) {
     const h = this.#hp.get(id);
@@ -487,6 +604,15 @@ export class SimWorld {
         this.#hurt(what, s.damage, s.weapon, push, "", hi);
       }
     }
+  }
+
+  /** A rule (or a state's time running out) sets a state, and says so. */
+  #setState(id: string, st: string, push: Push, rule = "", cause = -1) {
+    const e = this.ents.get(id)!;
+    e.state = st;
+    // a door said to be open is open: its collider follows the state
+    if (e.kind === "door" && (st === "open" || st === "closed")) e.col?.setEnabled(st === "closed");
+    push("state", id, "", st, rule, cause);
   }
 
   #destroy(id: string): boolean {
@@ -737,8 +863,23 @@ export class SimWorld {
     // 3d. shots in flight
     if (this.shots.length) this.#fly(push);
 
-    // 4. triggers, in id order. Tags first: an agent within reach of an enemy carrier knocks the
-    // item loose on the floor between them, so the tagger can take it this tick.
+    // 4. triggers, in id order. States set for a while run out first (a bribed guard looks back),
+    // then what was said since the last tick is heard, in the order it was said
+    if (this.#until.size) {
+      for (const id of this.order) {
+        const u = this.#until.get(id);
+        if (!u || u.tick > t) continue;
+        this.#until.delete(id);
+        this.#setState(id, u.to, push);
+      }
+    }
+    for (const a of this.#said) {
+      const i = push("spoken", a.to, a.what, a.slot || a.n);
+      evs[i]!.act = a.act;
+    }
+    this.#said = [];
+    // Tags: an agent within reach of an enemy carrier knocks the item loose on the floor between
+    // them, so the tagger can take it this tick.
     if (this.#tagRadius > 0) {
       for (const cid of this.order) {
         const cr = this.ents.get(cid)!;
@@ -796,6 +937,19 @@ export class SimWorld {
         }
       }
     }
+    // sight: a watcher that sees the player says so as it first does, and every half second while
+    // it still does (what the player holds may change in its view); one looking away sees nothing
+    for (const [id] of this.#watch) {
+      const e = this.ents.get(id)!;
+      if (e.destroyed || this.blind(id) || !this.#sees(id)) {
+        this.#seenAt.delete(id);
+        continue;
+      }
+      const last = this.#seenAt.get(id);
+      if (last !== undefined && t - last < SEEN_EVERY) continue;
+      this.#seenAt.set(id, t);
+      push("seen_by", "player", id);
+    }
     for (const r of this.#rules) {
       if (r.when.t === "every" && r.when.n > 0 && t % Math.max(1, Math.round(r.when.n * 60)) === 0) push("every", r.id);
     }
@@ -820,7 +974,7 @@ export class SimWorld {
     for (let i = scoredFrom; i < evs.length && i < 512 && !this.result; i++) if (evs[i]!.k !== "score_gte") this.#fire(evs[i]!, i, push);
 
     // 6. state hash over everything that moves or counts
-    const buf = new Float64Array(this.order.length * 3 + 4 + (this.#combat ? this.#hp.size + this.shots.length * 3 : 0) + (this.#wheels ? this.#rides.size * 3 : 0));
+    const buf = new Float64Array(this.order.length * 3 + 4 + (this.#combat ? this.#hp.size + this.shots.length * 3 : 0) + (this.#wheels ? this.#rides.size * 3 : 0) + (this.#economy ? this.#agents.length * this.#words.length + 1 : 0));
     let o = 0;
     for (const id of this.order) {
       const p = this.pos(id);
@@ -844,6 +998,10 @@ export class SimWorld {
         const r = this.#rides.get(id);
         if (r) for (const x of [r.hx, r.hz, r.speed]) buf[o++] = x === 0 ? 0 : x;
       }
+    }
+    if (this.#economy) {
+      for (const id of this.#agents) for (const w of this.#words) buf[o++] = this.purse(id, w);
+      buf[o++] = this.bookings.length;
     }
     this.hash = xxh32(new Uint8Array(buf.buffer), this.hash);
 
@@ -937,6 +1095,7 @@ export class SimWorld {
         val = e.carrying;
         e = this.ents.get(e.carrying);
       } else if (field === "hp" && this.#hp.has(e.id)) val = this.#hp.get(e.id)!.hp;
+      else if (this.#words.includes(field) && (e.id === "player" || this.npcs.has(e.id))) val = this.#purse.get(e.id)?.get(field) ?? 0; // "player.coins"
       else val = e.props[field] ?? "";
     }
     return val;
@@ -975,6 +1134,8 @@ export class SimWorld {
       if (w.t === "every" && ev.a !== r.id) continue;
       if (w.t === "lap_done" && w.n > 0 && Number(ev.v) !== w.n) continue; // "3 laps": the third lap, once
       if (w.b && w.b !== ev.b) continue;
+      // "offered 20 coins or more": that act, and at least that many
+      if (w.t === "spoken" && ((w.act && w.act !== ev.act) || (w.n > 0 && !(Number(ev.v) >= w.n)))) continue;
       if (r.once && this.#fired.has(r.id)) continue;
       const last = this.#lastFire.get(r.id);
       if (r.cooldownS > 0 && last !== undefined && this.tick - last < r.cooldownS * 60) continue;
@@ -1025,10 +1186,46 @@ export class SimWorld {
       case "set_state": {
         const e = this.ents.get(target);
         if (!e) break;
-        e.state = String(fx.v);
-        // a door said to be open is open: its collider follows the state
-        if (e.kind === "door" && (e.state === "open" || e.state === "closed")) e.col?.setEnabled(e.state === "closed");
-        push("state", target, "", e.state, rule, cause);
+        // for n seconds (a bribed guard looks away for 20), then back to what it was before
+        if (fx.n > 0) this.#until.set(target, { tick: this.tick + Math.max(1, Math.round(fx.n * 60)), to: this.#until.get(target)?.to ?? e.state });
+        else this.#until.delete(target);
+        this.#setState(target, String(fx.v), push, rule, cause);
+        break;
+      }
+      case "give":
+      case "take": {
+        // to or from an agent: a thing in the world changes hands (given into theirs; taken out of
+        // theirs and gone, into the other's pocket), anything else is counted ("coins")
+        const what = String(fx.v);
+        const who = this.ents.get(target);
+        if (!who || !what || (target !== "player" && !this.npcs.has(target))) {
+          push("unsupported", fx.e, target, "", rule, cause);
+          break;
+        }
+        const item = this.ents.get(what);
+        if (item) {
+          if (fx.e === "give" && !item.destroyed && item.carrier !== target && what !== target) {
+            if (who.carrying) this.#setDown(target, push);
+            this.attach(what, target);
+            push("pickup", what, target, "", rule, cause);
+          } else if (fx.e === "take" && who.carrying === what) {
+            this.#destroy(what);
+          }
+          break;
+        }
+        const n = fx.n || 1;
+        const had = this.purse(target, what);
+        this.forcePurse(target, what, fx.e === "give" ? had + n : had - n);
+        push("purse", target, what, this.purse(target, what), rule, cause);
+        break;
+      }
+      case "book_slot": {
+        // the slot the act asked for (the spoken event that set this off), booked as the rule names it
+        const said = this.#evs[cause];
+        const slot = said?.k === "spoken" && typeof said.v === "string" ? said.v : "";
+        const what = String(fx.v) || "Booking";
+        this.bookings.push({ tick: this.tick, with: target, what, slot });
+        push("booked", target, slot, what, rule, cause);
         break;
       }
       case "emit":

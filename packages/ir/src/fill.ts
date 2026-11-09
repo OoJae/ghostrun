@@ -7,7 +7,7 @@ import { DEFAULT_LAWS } from "./laws";
 import type { Cast, Entity, Expect, Rule, StateVar, VerbBinding, WorldBundle, Zone } from "./schema";
 import {
   ACTS, BODIES, COND_OPS, EFFECTS, ENTITY_KINDS, MODES, PROPS, ROLES, SHAPES, SPECIAL_REFS,
-  STATE_TYPES, TEAMS, TRIGGERS, WEATHER,
+  STATE_TYPES, TEAMS, TRIGGERS, WEATHER, type Act,
 } from "./vocab";
 
 export const MAX_LINE_BYTES = 1024;
@@ -210,6 +210,11 @@ const SYNONYMS: Record<string, string | readonly string[]> = {
   // effects
   hurt: "damage", harm: "damage", hit: "damage", attack: "damage", take_damage: "damage", lose_hp: "damage",
   restore: "heal", cure: "heal", regen: "heal", regenerate: "heal", heal_hp: "heal",
+  // what changes hands, and a booking (each only where it fits: "pay" is an act, and an effect taking coins)
+  pay: "take", charge: "take", spend: "take", pay_coins: "take", receive: "give", hand_over: "give",
+  book: "book_slot", booking: ["book", "book_slot"], reserve: ["book", "book_slot"], reservation: ["book", "book_slot"], schedule: ["book", "book_slot"], appointment: ["book", "book_slot"],
+  // speech acts in the words people use for them
+  bribe: "offer", bribed: "offer", pay_off: ["pay", "take"], payoff: ["pay", "take"], tip: "pay", purchase: "buy", order: "command", tell: "command", question: "ask", inquire: "ask",
   // comparison operators in the spellings models use
   neq: "ne", not_eq: "ne", not_equal: "ne", not_equals: "ne", "!=": "ne", "!==": "ne", "<>": "ne",
   "==": "eq", "===": "eq", "=": "eq", equals: "eq", equal: "eq", is: "eq",
@@ -255,6 +260,14 @@ function canonVerb(verb: string, params: Record<string, string | number | boolea
 
 /** Trigger words meaning "the player uses X": rewritten to touch with a = the agent, b = the thing. */
 const USE_WORDS = new Set(["use", "interact", "activate", "press", "click", "open", "inspect", "operate"]);
+
+/** Trigger words for something said to a character ("bribe", "reserve"): spoken, with the act they mean ("" any). */
+const ACT_WORDS: Record<string, Act | ""> = {
+  bribe: "offer", bribed: "offer", offer: "offer", offered: "offer", pay: "pay", paid: "pay", pay_off: "pay", payoff: "pay",
+  buy: "buy", bought: "buy", purchase: "buy", book: "book", booked: "book", reserve: "book", reserved: "book", schedule: "book",
+  ask: "ask", asked: "ask", command: "command", commanded: "command", ordered: "command",
+  talk: "", talked: "", talk_to: "", speak: "", spoke: "", said: "", say: "", told: "", tell: "",
+};
 
 function setAt(obj: unknown, path: (string | number)[], value: unknown) {
   let node = obj as Record<string | number, unknown>;
@@ -315,6 +328,12 @@ function repair(raw: unknown, issues: v.BaseIssue<unknown>[], zone?: string, fil
       const when = (raw as { when: Record<string, unknown> }).when;
       when.t = "touch";
       if (when.b === "player" || !when.b) [when.a, when.b] = ["player", when.a === "player" ? "" : when.a];
+      changed = true;
+    } else if (path.length === 2 && path[0] === "when" && path[1] === "t" && typeof input === "string" && ACT_WORDS[norm(input)] !== undefined) {
+      // "when bribed": the guard is spoken to, with an offer
+      const when = (raw as { when: Record<string, unknown> }).when;
+      when.t = "spoken";
+      if (!when.act) when.act = ACT_WORDS[norm(input)];
       changed = true;
     } else if (typeof input === "string" && issue.expected?.includes('"')) {
       const options = [...issue.expected.matchAll(/"([^"]*)"/g)].map((m) => m[1]!);
@@ -584,7 +603,8 @@ export class FillParser {
       case "sig":
         return this.#has(op.on);
       case "rule":
-        return [op.when.a, op.when.b, ...op.if.map((c) => c.l), ...op.then.map((e) => e.target)].every((r) => this.#has(r));
+        // (what an act hands over may be a word that is counted, "coins", and no thing in the world)
+        return [op.when.a, op.when.t === "spoken" ? "" : op.when.b, ...op.if.map((c) => c.l), ...op.then.map((e) => e.target)].every((r) => this.#has(r));
       case "expect":
         // Never drop an expectation: the placer repairs references and the proof decides.
         return true;

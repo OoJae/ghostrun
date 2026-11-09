@@ -43,6 +43,8 @@ export interface GhostrunProbe {
   models?: { tier: "full" | "lite"; characters: number; props: number; failed: number; player?: string };
   /** In a VR session (refreshed ten times a second): the panels, the pointer, the comfort options. */
   xr?: XrProbe;
+  /** Speech acts (refreshed five times a second): the player's purse, who sees them, who looks away (seconds left), bookings made and the acts logged. */
+  acts?: { purse: Record<string, number>; seeing: string[]; away: Record<string, number>; bookings: number; log: string[] };
 }
 
 export interface XrProbe {

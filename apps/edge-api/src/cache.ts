@@ -51,11 +51,11 @@ const PROBE_INTENT: IntentOut = {
 };
 
 // A probe prompt that turns on every line the fill prompt adds only for some prompts (the Feng Shui
-// rules today), so a change to any of those lines changes the hash too. Rendered in both modes,
+// rules, how speech acts fit together), so a change to any of those lines changes the hash too. Rendered in both modes,
 // since a place to explore gets its own line.
 const PROBE_PROMPTS: { prompt: string; mode: IntentOut["mode"] }[] = [
   { prompt: "", mode: "play" },
-  { prompt: "probe feng shui", mode: "wander" },
+  { prompt: "probe feng shui, bribe the guard, book a viewing", mode: "wander" },
 ];
 
 let template: Promise<string> | undefined;

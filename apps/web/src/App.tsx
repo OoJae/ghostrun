@@ -4,6 +4,7 @@ import { allRuns, better, insights, issuesOf, revealed, statusWord, type Chip, t
 // the engine stack (three, physics, navmesh, bots) is a second chunk, fetched as the shell paints
 import type { Engine, LoadResult } from "./engine";
 import { KeyHint } from "./hud/Corner";
+import { ActsHud, type Asking } from "./hud/Acts";
 import { HealthBar } from "./hud/Health";
 import { LapBoard } from "./hud/Lap";
 import { TouchControls } from "./hud/Touch";
@@ -200,6 +201,9 @@ export function App() {
     setBark({ npc, name, line, at: Date.now() });
     speech.npc(npc, line, reply);
   };
+  // a speech act that spends money or books a time waits for the player's yes (hud/Acts.tsx)
+  const [asking, setAsking] = useState<Asking | null>(null);
+  const actHooks = { onConfirm: (npc: string, name: string, act: Asking["act"]) => setAsking({ npc, name, act }), onNote: (t: string) => setToast(t) };
   const [result, setResult] = useState<RunResult | null>(null);
   const [director, setDirector] = useState<{ line: string; label: string; status: "proving" | "ready"; world?: World } | null>(null);
   const [reported, setReported] = useState<string>();
@@ -353,6 +357,7 @@ export function App() {
       setReported(undefined);
       setResult(null);
       setDirector(null);
+      setAsking(null); // (a yes asked in the world before)
       setCut({ status: "idle" });
       cutWorld.current = null;
       const result = await e.load(world, startedAt);
@@ -367,7 +372,7 @@ export function App() {
       setToast(null);
       if (sim) {
         minds.current?.stop();
-        minds.current = modeRef.current === "live" ? new Minds(world, sim, barked) : null;
+        minds.current = modeRef.current === "live" ? new Minds(world, sim, barked, actHooks) : null;
         sim.onEvents = (evs) => {
           minds.current?.observe(evs);
           for (const ev of evs) {
@@ -591,7 +596,7 @@ export function App() {
     if (mode !== "live" || minds.current) return;
     const sim = engine.current?.rapierSim;
     const w = current.current;
-    if (sim && w) minds.current = new Minds(w, sim, barked);
+    if (sim && w) minds.current = new Minds(w, sim, barked, actHooks);
   }, [mode, status]);
 
   useEffect(() => {
@@ -1183,6 +1188,7 @@ export function App() {
           </div>
         )}
         <HealthBar engine={engine} active={status === "playing"} />
+        <ActsHud engine={engine} active={status === "playing"} bundle={current.current?.bundle ?? null} asking={asking} onYes={() => (asking && engine.current?.rapierSim?.queueAct(asking.act), setAsking(null))} onNo={() => setAsking(null)} />
         <LapBoard engine={engine} active={status === "playing"} />
         {useHint && status === "playing" && !touch && (
           <div className="glass usehint" data-testid="use-hint">

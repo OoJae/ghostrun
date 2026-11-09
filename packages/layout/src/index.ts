@@ -1070,7 +1070,8 @@ export function repairGroups(b: WorldBundle): string[] {
     return id;
   };
   for (const r of b.rules) {
-    const side = members(r.when.a).length ? "a" : members(r.when.b).length ? "b" : null;
+    // (what an act hands over is counted, not a group: "offered 20 coins" is never one rule per coin)
+    const side = members(r.when.a).length ? "a" : r.when.t !== "spoken" && members(r.when.b).length ? "b" : null;
     if (!side) {
       out.push(r);
       continue;
@@ -1142,9 +1143,11 @@ export function repairConditions(b: WorldBundle): string[] {
         notes.push(`rule ${r.id}: dropped '${c.l} is ${String(c.r)}' (${r.when.b} stands in ${String(c.r)}, so reaching it is being there)`);
         return [];
       }
-      // "if player.path is left": a property of the player nothing ever sets can never hold
+      // "if player.path is left": a property of the player nothing ever sets can never hold (what
+      // a rule gives or takes, "player.coins", is counted)
       const pp = /^player\.([a-z_]+)$/.exec(c.l)?.[1];
-      if (pp && !["team", "carrier", "carrying", "state", "zone", "score"].includes(pp) && !b.rules.some((x) => x.then.some((e) => e.target === "player" && e.e === "set_state"))) {
+      const counted = (w: string) => b.rules.some((x) => x.then.some((e) => (e.e === "give" || e.e === "take") && String(e.v) === w));
+      if (pp && !["team", "carrier", "carrying", "state", "zone", "score"].includes(pp) && !counted(pp) && !b.rules.some((x) => x.then.some((e) => e.target === "player" && e.e === "set_state"))) {
         notes.push(`rule ${r.id}: dropped '${c.l} ${c.op} ${String(c.r)}' (nothing ever sets the player's ${pp})`);
         return [];
       }

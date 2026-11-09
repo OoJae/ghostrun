@@ -15,6 +15,8 @@
 | A snowmobile race on a frozen lake: two laps through the ice gates, drift… | snowy | arena | **snow** | day snow |
 | A Feng Shui handbag gallery: five wings, one for each element, and a rece… | Feng Shui handbag gallery | floor_plan | **gallery** | day |
 | A Feng Shui handbag gallery with a tall arched window in line with the fr… | Feng Shui handbag gallery | floor_plan | **gallery** | day |
+| A museum heist at night: collect coins, bribe the guard to look the other… | museum night | floor_plan | **gallery** | night |
+| A villa tour where the guide books a viewing. | luxury villa | floor_plan | **gallery** | day |
 | A 3 versus 3 soccer match on a rooftop at sunset | rooftop arena at sunset | arena | **neon** | dusk |
 | a bioluminescent forest where you climb to an owl's lookout | bioluminescent | outdoor | **grove** | night |
 | A candy factory: sort the sweets into the right boxes | candy factory | floor_plan | **candy** | day |

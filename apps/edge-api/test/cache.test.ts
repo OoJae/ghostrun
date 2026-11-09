@@ -127,6 +127,7 @@ describe("the exact-repeat build cache", () => {
     const parts = JSON.stringify(templateParts(EXAMPLE));
     expect(parts).toContain("Feng Shui (Form School), checked on the built world");
     expect(parts).toContain("This is a place to explore");
+    expect(parts).toContain("A bribe: spoken a=guard_1 act=offer");
     expect(await cacheKey(PROMPT, 1, "a".repeat(64), ENGINE)).not.toBe(await cacheKey(PROMPT, 1, "b".repeat(64), ENGINE));
     expect(await cacheKey(PROMPT, 1, "a".repeat(64), ENGINE)).not.toBe(await cacheKey(PROMPT, 2, "a".repeat(64), ENGINE));
   });

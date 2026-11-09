@@ -15,6 +15,7 @@ import * as v from "valibot";
 // the vault heist teaches goal-dependent wins, doorway doors, keys and inspectable exhibits (an A/B
 // on six live prompts: 5 of 5 headlines verified vs 1 of 6 with the CTF example, which got copied)
 import EXAMPLE from "../../../packages/ir/fixtures/vault-heist.jsonl?raw";
+import { readActs, readFacts, readToday, readZone, settleAct } from "./acts";
 import { Buckets, intVar, WINDOW_MS } from "./buckets";
 import { cacheKey, closesGameplay, ENGINE_RE, promptSeed, readCache, replayBody, templateHash, writeCache, type CachedEvent } from "./cache";
 import type { DoNamespace, KvNamespace, R2Bucket, WaitUntil } from "./cf";
@@ -223,21 +224,28 @@ async function mind(req: Request, env: Env, url: URL): Promise<Response> {
   const menu = Array.isArray(i.menu) ? i.menu.filter((x): x is string => typeof x === "string" && OPTION.test(x)).slice(0, 8) : [];
   const current = str(i.current, 48);
   if (!menu.length || !str(i.npc, 32)) return json({ error: "bad mind request" }, 400);
+  // the speech acts it accepts (from the world's rules) and the facts it answers from (acts.ts)
+  const acts = readActs(i.acts, menu);
+  const facts = readFacts(i.facts);
+  const today = readToday(i.today);
+  const tz = readZone(i.tz);
+  const [inTok, outTok] = [acts.length || facts.length ? 2500 : 1500, acts.length ? 160 : 120];
   const sw = await switches(env);
   if (sw.paused) return json({ error: "builds paused", retryable: true }, 503);
-  const held = await reserveFor(env, url, caller, ip, costMicroUsd(INTENT_MODEL, 1500, 120));
+  const held = await reserveFor(env, url, caller, ip, costMicroUsd(INTENT_MODEL, inTok, outTok));
   if (held instanceof Response) return held;
-  let cost = costMicroUsd(INTENT_MODEL, 1500, 120);
+  let cost = costMicroUsd(INTENT_MODEL, inTok, outTok);
   try {
-    const r = await jsonLanes<{ option?: unknown; line?: unknown }>(
+    const r = await jsonLanes<Record<string, unknown>>(
       lanesFor("mind", keysOf(env), {
         primary: sw.primary,
-        maxTokens: 120,
-        jsonSchema: { name: "mind", schema: mindJsonSchema(menu) },
-        messages: mindMessages({ npc: str(i.npc, 32), role: str(i.role, 32), persona: str(i.persona, 400), menu, current, situation: str(i.situation, 600), event: str(i.event, 200), ...(typeof i.said === "string" ? { said: str(i.said, 200) } : {}) }),
+        maxTokens: outTok,
+        jsonSchema: { name: "mind", schema: mindJsonSchema(menu, acts) },
+        messages: mindMessages({ npc: str(i.npc, 32), role: str(i.role, 32), persona: str(i.persona, 400), menu, current, situation: str(i.situation, 600), event: str(i.event, 200), ...(typeof i.said === "string" ? { said: str(i.said, 200) } : {}), ...(acts.length ? { acts } : {}), ...(facts.length ? { facts } : {}), ...(today ? { today } : {}), ...(tz ? { tz } : {}) }),
       }),
     );
     if (r.inTok > 0) cost = costMicroUsd(r.model, r.inTok, r.outTok);
+    if (acts.length) return json({ ...settleAct(r.value, acts, menu, current, today), line: str(r.value.line, 120), ms: r.ms });
     const option = typeof r.value.option === "string" && menu.includes(r.value.option) ? r.value.option : menu.includes(current) ? current : menu[0]!;
     return json({ option, line: str(r.value.line, 120), ms: r.ms });
   } catch (e) {
