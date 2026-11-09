@@ -45,7 +45,7 @@ import { contextPrompt, galleryRef, lineageOf, receiptVersion, refLink, shareSou
 import { MuteButton } from "./hud/Mute";
 import { EXAMPLES, Landing, type Starter } from "./hud/Landing";
 import { substitution } from "./substitutions";
-import { homage } from "@ghostrun/llm/homage";
+import { homage, type Homage } from "@ghostrun/llm/homage";
 import { RaceChip } from "./hud/Race";
 import { BoardPanel } from "./hud/Board";
 import { loadRace, RACE_PROMPT, useRace } from "./useRace";
@@ -60,6 +60,9 @@ const HINT_MS = 6000;
 const soon = () => new Promise<void>((r) => setTimeout(r, 0));
 const FIXTURE = new URLSearchParams(window.location.search).get("fixture") ?? "ctf";
 const FIRST_PROMPT = FIXTURE_PROMPTS[FIXTURE] ?? BRIEF;
+/** The homages for a prompt, kept for the last one asked (the HUD asks on every render). */
+const lastHomage = { prompt: "", homages: [] as Homage[] };
+const homagesOf = (prompt: string): Homage[] => (lastHomage.prompt === prompt ? lastHomage.homages : Object.assign(lastHomage, { prompt, homages: homage(prompt).homages }).homages);
 const params0 = new URLSearchParams(window.location.search);
 const TOUCH_PARAM = params0.get("touch");
 /** ?record=1: a clean HUD and a caption strip, for screen-recording the demo. */
@@ -1119,7 +1122,7 @@ export function App() {
   const ownPrompt = current.current?.source?.base ?? current.current?.source?.prompt;
   const inspiredNow = inspired && ownPrompt === inspired.prompt ? inspired.brief : null;
   // the homage note, for a world this page built live from words with trademarked names in them (and its edits)
-  const homagesNow = ownPrompt && builtLive.current.has(ownPrompt) ? homage(ownPrompt).homages : undefined;
+  const homagesNow = ownPrompt && builtLive.current.has(ownPrompt) ? homagesOf(ownPrompt) : undefined;
 
   // the HUD can't be seen in a headset: its facts go to the in-headset panels as words
   const vrCard = race.card?.vs ?? null;
