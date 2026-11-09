@@ -1,0 +1,33 @@
+{"op":"meta","mode":"play","lang":"en","pack":"stage","sub":[],"seed":25,"look":"school theatre hurried backstage","mood":[0.4,0.8,0.6],"timeOfDay":18,"weather":"clear"}
+{"op":"zone","id":"z_foyer","slot":"foyer","tag":"entrance","name":"Foyer"}
+{"op":"zone","id":"z_seating","slot":"seating","tag":"hall","name":"Seating hall"}
+{"op":"zone","id":"z_pit","slot":"pit","tag":"pit","name":"Orchestra pit"}
+{"op":"zone","id":"z_stage","slot":"stage","tag":"stage","name":"Stage"}
+{"op":"zone","id":"z_wing_w","slot":"wing_w","tag":"wing","name":"West wing"}
+{"op":"zone","id":"z_wing_e","slot":"wing_e","tag":"wing","name":"East wing"}
+{"op":"zone","id":"z_backstage","slot":"backstage","tag":"room","name":"Backstage"}
+{"op":"spawn","id":"sp_red","zone":"z_foyer","anchor":"center","team":"red"}
+{"op":"goal","id":"stage_mark","zone":"z_stage","anchor":"center","noun":"stage mark","hyper":"stage","team":"red"}
+{"op":"ent","id":"prop_crown","kind":"pickup","noun":"paper crown","hyper":"prop","zone":"z_wing_w","anchor":"rack","body":"dynamic","shape":"box","size":[0.3,0.2,0.3]}
+{"op":"ent","id":"prop_sword","kind":"pickup","noun":"cardboard sword","hyper":"prop","zone":"z_wing_e","anchor":"rack","body":"dynamic","shape":"box","size":[0.2,0.2,0.8]}
+{"op":"ent","id":"prop_teapot","kind":"pickup","noun":"teapot","hyper":"prop","zone":"z_backstage","anchor":"crates","body":"dynamic","shape":"sphere","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"curtain","kind":"door","noun":"curtain","hyper":"door","zone":"z_stage","anchor":"upstage","body":"fixed","shape":"box"}
+{"op":"ent","id":"curtain_cue","kind":"switch","noun":"curtain cue lever","hyper":"switch","zone":"z_backstage","anchor":"corner_nw","body":"fixed","shape":"box"}
+{"op":"ent","id":"rig_hazard","kind":"hazard","noun":"falling sandbag","hyper":"hazard","zone":"z_stage","anchor":"rig_c","body":"sensor","shape":"box","size":[1,1,1]}
+{"op":"ent","id":"stage_plate","kind":"plate","noun":"stage plate","hyper":"plate","zone":"z_stage","anchor":"downstage","body":"fixed","shape":"box"}
+{"op":"verb","id":"vb_carry_crown","verb":"physics_props.carry","on":"prop_crown","params":{}}
+{"op":"verb","id":"vb_carry_sword","verb":"physics_props.carry","on":"prop_sword","params":{}}
+{"op":"verb","id":"vb_carry_teapot","verb":"physics_props.carry","on":"prop_teapot","params":{}}
+{"op":"verb","id":"vb_lever","verb":"puzzle.switch","on":"curtain_cue","params":{"once":true}}
+{"op":"verb","id":"vb_curtain_timer","verb":"puzzle.timer","on":"player","params":{"seconds":120}}
+{"op":"verb","id":"vb_rig","verb":"motion_hazards.hazard","on":"rig_hazard","params":{"respawn":true}}
+{"op":"verb","id":"vb_plate","verb":"puzzle.plate","on":"stage_plate","params":{"latch":false}}
+{"op":"rule","id":"r_prop_crown","when":{"t":"enter","a":"prop_crown","b":"stage_mark"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_prop_sword","when":{"t":"enter","a":"prop_sword","b":"stage_mark"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_prop_teapot","when":{"t":"enter","a":"prop_teapot","b":"stage_mark"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_all_props","when":{"t":"score_gte","a":"team:red","n":3},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_curtain_rises","when":{"t":"timer_end","a":"player"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_curtain_open","when":{"t":"state_is","a":"curtain_cue","s":"on"},"then":[{"e":"open","target":"curtain"}]}
+{"op":"expect","id":"x_props","prop":"win_reachable","a":"sp_red","b":"stage_mark","headline":true,"text":"Props hidden in the wings must all reach the stage before the curtain timer runs out."}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

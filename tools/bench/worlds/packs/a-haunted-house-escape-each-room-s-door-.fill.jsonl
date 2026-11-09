@@ -1,0 +1,39 @@
+{"op":"meta","mode":"play","lang":"en","pack":"puzzle_rooms","sub":[],"seed":22,"look":"haunted house, candlelit dark","mood":[-0.6,0.5,0.8],"timeOfDay":0,"weather":"fog"}
+{"op":"zone","id":"z_yard","slot":"yard","tag":"outside","name":"Overgrown yard"}
+{"op":"zone","id":"z_r1","slot":"room_1","tag":"room","name":"Dusty parlour"}
+{"op":"zone","id":"z_r2","slot":"room_2","tag":"room","name":"Cold kitchen"}
+{"op":"zone","id":"z_r3","slot":"room_3","tag":"room","name":"Nursery"}
+{"op":"zone","id":"z_r4","slot":"room_4","tag":"room","name":"Attic"}
+{"op":"zone","id":"z_exit","slot":"exit","tag":"outside","name":"Front gate"}
+{"op":"spawn","id":"sp_red","zone":"z_yard","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"exit_gate","zone":"z_exit","anchor":"gate","noun":"front gate","hyper":"exit","team":"red"}
+{"op":"ent","id":"candle_1","kind":"switch","noun":"candle","hyper":"candle","zone":"z_r1","anchor":"switch","body":"fixed","shape":"box","size":[0.2,0.4,0.2]}
+{"op":"ent","id":"candle_2","kind":"switch","noun":"candle","hyper":"candle","zone":"z_r2","anchor":"switch","body":"fixed","shape":"box","size":[0.2,0.4,0.2]}
+{"op":"ent","id":"candle_3","kind":"switch","noun":"candle","hyper":"candle","zone":"z_r3","anchor":"switch","body":"fixed","shape":"box","size":[0.2,0.4,0.2]}
+{"op":"ent","id":"candle_4","kind":"switch","noun":"candle","hyper":"candle","zone":"z_r4","anchor":"switch","body":"fixed","shape":"box","size":[0.2,0.4,0.2]}
+{"op":"ent","id":"door_2","kind":"door","noun":"door","hyper":"door","zone":"z_r2","anchor":"doorway_in","body":"fixed","shape":"box"}
+{"op":"ent","id":"door_3","kind":"door","noun":"door","hyper":"door","zone":"z_r3","anchor":"doorway_in","body":"fixed","shape":"box"}
+{"op":"ent","id":"door_4","kind":"door","noun":"door","hyper":"door","zone":"z_r4","anchor":"doorway_in","body":"fixed","shape":"box"}
+{"op":"ent","id":"door_exit","kind":"door","noun":"door","hyper":"door","zone":"z_exit","anchor":"gate","body":"fixed","shape":"box"}
+{"op":"ent","id":"ghost","kind":"npc","noun":"ghost","hyper":"ghost","zone":"z_r3","anchor":"center","body":"kinematic","shape":"capsule"}
+{"op":"verb","id":"vb_c1","verb":"puzzle.switch","on":"candle_1","params":{"once":true}}
+{"op":"verb","id":"vb_c2","verb":"puzzle.switch","on":"candle_2","params":{"once":true}}
+{"op":"verb","id":"vb_c3","verb":"puzzle.switch","on":"candle_3","params":{"once":true}}
+{"op":"verb","id":"vb_c4","verb":"puzzle.switch","on":"candle_4","params":{"once":true}}
+{"op":"verb","id":"vb_d2","verb":"puzzle.lock","on":"door_2","params":{"key":"candle_1","keep":true}}
+{"op":"verb","id":"vb_d3","verb":"puzzle.lock","on":"door_3","params":{"key":"candle_2","keep":true}}
+{"op":"verb","id":"vb_d4","verb":"puzzle.lock","on":"door_4","params":{"key":"candle_3","keep":true}}
+{"op":"verb","id":"vb_dx","verb":"puzzle.lock","on":"door_exit","params":{"key":"candle_4","keep":true}}
+{"op":"verb","id":"vb_shoot","verb":"combat_sport.shoot","on":"ghost","params":{"range":2,"speed":8,"damage":0,"cooldown":1}}
+{"op":"verb","id":"vb_alarm","verb":"puzzle.timer","on":"player","params":{"seconds":240}}
+{"op":"verb","id":"vb_hp","verb":"combat_sport.health","on":"player","params":{"hp":100,"respawn":false}}
+{"op":"verb","id":"vb_jump","verb":"locomotion.jump","on":"player","params":{"jumpsMax":1}}
+{"op":"law","player":{"jumpsMax":1,"jumpH":1.2,"speed":5}}
+{"op":"rule","id":"r_ghost","when":{"t":"hit","a":"player","b":"ghost"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_time","when":{"t":"timer_end","a":"player"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_win","when":{"t":"enter","a":"player","b":"exit_gate"},"if":[{"l":"candle_4.state","op":"eq","r":"on"}],"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_light_all","when":{"t":"state_is","a":"candle_4","s":"on"},"then":[{"e":"emit","target":"door_exit","fx":"door_creak"}]}
+{"op":"expect","id":"x_candles","prop":"win_reachable","a":"sp_red","b":"exit_gate","headline":true,"text":"Each room's door unlocks only after its candle is lit."}
+{"op":"expect","id":"x_ghost","prop":"reachable","a":"sp_red","b":"z_r3","text":"The nursery can be reached while the ghost roams"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

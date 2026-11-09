@@ -1,0 +1,34 @@
+{"op":"meta","mode":"play","lang":"en","pack":"puzzle_rooms","sub":[],"seed":16,"look":"ancient temple","mood":[0.1,0.5,0.6],"timeOfDay":18,"weather":"clear"}
+{"op":"zone","id":"z_yard","slot":"yard","tag":"outside","name":"Temple steps"}
+{"op":"zone","id":"z_room1","slot":"room_1","tag":"room","name":"Plate chamber"}
+{"op":"zone","id":"z_room2","slot":"room_2","tag":"room","name":"Lever hall"}
+{"op":"zone","id":"z_exit","slot":"exit","tag":"outside","name":"Idol shrine"}
+{"op":"spawn","id":"sp_red","zone":"z_yard","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"idol","zone":"z_exit","anchor":"center","noun":"golden idol","hyper":"treasure","team":"red"}
+{"op":"ent","id":"plate_1","kind":"plate","noun":"pressure plate","hyper":"plate","zone":"z_room1","anchor":"plate","body":"fixed","shape":"box","size":[1,0.1,1]}
+{"op":"ent","id":"plate_2","kind":"plate","noun":"pressure plate","hyper":"plate","zone":"z_room2","anchor":"plate","body":"fixed","shape":"box","size":[1,0.1,1]}
+{"op":"ent","id":"lever_1","kind":"switch","noun":"lever","hyper":"lever","zone":"z_room1","anchor":"lever","body":"fixed","shape":"box","size":[0.2,1,0.2]}
+{"op":"ent","id":"lever_2","kind":"switch","noun":"lever","hyper":"lever","zone":"z_room2","anchor":"lever","body":"fixed","shape":"box","size":[0.2,1,0.2]}
+{"op":"ent","id":"gate_1","kind":"door","noun":"stone gate","hyper":"door","zone":"z_room1","anchor":"doorway_out","body":"fixed","shape":"box"}
+{"op":"ent","id":"gate_2","kind":"door","noun":"stone gate","hyper":"door","zone":"z_room2","anchor":"doorway_out","body":"fixed","shape":"box"}
+{"op":"ent","id":"relic_1","kind":"pickup","noun":"carved relic","hyper":"relic","zone":"z_room2","anchor":"chest","body":"dynamic","shape":"box","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"coin_1","kind":"pickup","noun":"gold coin","hyper":"coin","zone":"z_room1","anchor":"center","body":"dynamic","shape":"sphere","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"spikes","kind":"hazard","noun":"spike pit","hyper":"spikes","zone":"z_room2","anchor":"center","body":"sensor","shape":"box","size":[2,0.2,2]}
+{"op":"ent","id":"plaque_1","kind":"prop","noun":"stone tablet","hyper":"tablet","zone":"z_room1","anchor":"corner_nw","body":"fixed","shape":"box","size":[1,1.2,0.2]}
+{"op":"verb","id":"vb_plate_1","verb":"puzzle.plate","on":"plate_1","params":{"latch":true}}
+{"op":"verb","id":"vb_plate_2","verb":"puzzle.plate","on":"plate_2","params":{"latch":true}}
+{"op":"verb","id":"vb_lever_1","verb":"puzzle.switch","on":"lever_1","params":{"once":false}}
+{"op":"verb","id":"vb_lever_2","verb":"puzzle.switch","on":"lever_2","params":{"once":false}}
+{"op":"verb","id":"vb_gate_1","verb":"puzzle.lock","on":"gate_1","params":{"key":"","keep":true}}
+{"op":"verb","id":"vb_gate_2","verb":"puzzle.lock","on":"gate_2","params":{"key":"","keep":true}}
+{"op":"verb","id":"vb_coin","verb":"puzzle.collect","on":"coin_1","params":{}}
+{"op":"verb","id":"vb_carry_relic","verb":"physics_props.carry","on":"relic_1","params":{}}
+{"op":"verb","id":"vb_spikes","verb":"motion_hazards.hazard","on":"spikes","params":{"respawn":true}}
+{"op":"verb","id":"vb_look","verb":"social.inspect","on":"plaque_1","params":{"text":"Step on the stones, pull the levers, and the idol will be yours."}}
+{"op":"law","player":{"jumpsMax":1,"jumpH":1.2,"speed":6}}
+{"op":"rule","id":"r_open1","when":{"t":"state_is","a":"lever_1","s":"on"},"if":[{"l":"plate_1.state","op":"eq","r":"down"}],"then":[{"e":"open","target":"gate_1"}]}
+{"op":"rule","id":"r_open2","when":{"t":"state_is","a":"lever_2","s":"on"},"if":[{"l":"plate_2.state","op":"eq","r":"down"}],"then":[{"e":"open","target":"gate_2"}]}
+{"op":"rule","id":"r_win","when":{"t":"enter","a":"relic_1","b":"idol"},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"expect","id":"x_temple","prop":"win_reachable","a":"sp_red","b":"idol","headline":true,"text":"Pressure plates and levers must unlock the path to the golden idol."}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

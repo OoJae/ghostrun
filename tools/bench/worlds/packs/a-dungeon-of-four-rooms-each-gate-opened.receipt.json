@@ -1,0 +1,284 @@
+{
+  "prompt": "A dungeon of four rooms, each gate opened by a lever, with the treasure at the end",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "dungeon crawl puzzle",
+    "setting": "a dungeon of four rooms, each sealed by a gate",
+    "role": "adventurer",
+    "goal": "pull the lever that opens each gate and reach the treasure in the last room",
+    "fail": "trapped in a sealed room or run out of time",
+    "mood": "tense and mysterious",
+    "pack": "puzzle_rooms",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Each room's gate must open via its lever before the treasure chest is reachable.",
+    "nouns": [
+      {
+        "noun": "gate",
+        "hyper": "doorway"
+      },
+      {
+        "noun": "lever",
+        "hyper": "switch"
+      },
+      {
+        "noun": "treasure",
+        "hyper": "chest"
+      },
+      {
+        "noun": "dungeon",
+        "hyper": "room chain"
+      }
+    ],
+    "moodVec": {
+      "valence": -0.2,
+      "arousal": 0.6,
+      "tension": 0.7
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "4832b2047af296106013eaca7f0e045474e9e0466984addf704ba64ab3c5c991",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_dungeon",
+      "text": "Each room's gate must open via its lever before the treasure chest is reachable.",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 11 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (player enters chest)",
+        "src": ""
+      },
+      {
+        "id": "T2:r_lose",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_lose fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_open_1",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_open_1"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 7,
+        "status": "verified",
+        "text": "r_open_1 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_open_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_open_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_open_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_open_3",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_open_3"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_open_3 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_chest",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_chest"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_chest fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_ne",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_ne"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_corner_ne fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_ne_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_ne_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_secret_corner_ne_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_nw",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_nw"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_secret_corner_nw fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_nw_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_nw_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_secret_corner_nw_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_key",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_key"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_secret_key fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it (AI par 6.3 s)",
+        "cx": null,
+        "src": "",
+        "ms": 743
+      }
+    ],
+    "par": {
+      "goldS": 6.3,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 810
+  }
+}

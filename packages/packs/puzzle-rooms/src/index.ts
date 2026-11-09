@@ -116,7 +116,11 @@ export const puzzleRooms: LayoutPack<PuzzleRoomsParams> = {
       const { ax, bx, az, bz } = bounds(k);
       const w = ways.get(k)!;
       const used = new Set([w.in![0], w.out![0]]);
-      const [A, B] = ORDER.filter((x) => !used.has(x)) as [Side, Side];
+      // an outside wall first: a switch on a wall another room shares is a switch on both its faces
+      // (whoever is next door stands as near to it, and the wall is between them)
+      const [col, row] = cell(k);
+      const inside = (d: Side) => (at.has(`${col + DIR[d][0]},${row + DIR[d][1]}`) ? 1 : 0);
+      const [A, B] = ORDER.filter((x) => !used.has(x)).sort((p, q) => inside(p) - inside(q)) as [Side, Side];
       const cx = r2((ax + bx) / 2);
       const cz = r2((az + bz) / 2);
       const h = S / 2;

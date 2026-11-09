@@ -1,0 +1,35 @@
+{"op":"meta","mode":"wander","lang":"en","pack":"orrery","sub":[],"seed":34,"look":"planetarium floor, dark blue dome","mood":[0.6,0.1,-0.3],"timeOfDay":21,"weather":"clear"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Entrance hall"}
+{"op":"zone","id":"z_sun","slot":"sun","tag":"center","name":"Sun hub"}
+{"op":"zone","id":"z_inner","slot":"inner","tag":"planet","name":"Inner planets"}
+{"op":"zone","id":"z_belt","slot":"belt","tag":"ring","name":"Asteroid belt"}
+{"op":"zone","id":"z_jupiter","slot":"jupiter","tag":"planet","name":"Jupiter"}
+{"op":"zone","id":"z_saturn","slot":"saturn","tag":"planet","name":"Saturn"}
+{"op":"zone","id":"z_uranus","slot":"uranus","tag":"planet","name":"Uranus"}
+{"op":"zone","id":"z_neptune","slot":"neptune","tag":"planet","name":"Neptune"}
+{"op":"spawn","id":"sp_red","zone":"z_entrance","anchor":"spawn_pad","team":"red"}
+{"op":"ent","id":"scale_sign","kind":"sign","noun":"scale note","hyper":"sign","zone":"z_entrance","anchor":"scale_note","body":"fixed","shape":"box","size":[1.2,1.0,0.1]}
+{"op":"ent","id":"sun_model","kind":"prop","noun":"Sun","hyper":"sun","zone":"z_sun","anchor":"sun","body":"fixed","shape":"sphere","size":[2.0,2.0,2.0]}
+{"op":"ent","id":"sun_console","kind":"sign","noun":"Sun info console","hyper":"console","zone":"z_sun","anchor":"console","body":"fixed","shape":"box","size":[0.8,1.1,0.4]}
+{"op":"ent","id":"mercury_plinth","kind":"prop","noun":"Mercury plinth","hyper":"planet plinth","zone":"z_inner","anchor":"mercury","body":"fixed","shape":"box","size":[0.6,1.0,0.6]}
+{"op":"ent","id":"venus_plinth","kind":"prop","noun":"Venus plinth","hyper":"planet plinth","zone":"z_inner","anchor":"venus","body":"fixed","shape":"box","size":[0.6,1.0,0.6]}
+{"op":"ent","id":"earth_plinth","kind":"prop","noun":"Earth plinth","hyper":"planet plinth","zone":"z_inner","anchor":"earth","body":"fixed","shape":"box","size":[0.6,1.0,0.6]}
+{"op":"ent","id":"mars_plinth","kind":"prop","noun":"Mars plinth","hyper":"planet plinth","zone":"z_inner","anchor":"mars","body":"fixed","shape":"box","size":[0.6,1.0,0.6]}
+{"op":"ent","id":"jupiter_plinth","kind":"prop","noun":"Jupiter plinth","hyper":"planet plinth","zone":"z_jupiter","anchor":"jupiter","body":"fixed","shape":"box","size":[0.8,1.0,0.8]}
+{"op":"ent","id":"saturn_plinth","kind":"prop","noun":"Saturn plinth","hyper":"planet plinth","zone":"z_saturn","anchor":"saturn","body":"fixed","shape":"box","size":[0.8,1.0,0.8]}
+{"op":"ent","id":"uranus_plinth","kind":"prop","noun":"Uranus plinth","hyper":"planet plinth","zone":"z_uranus","anchor":"uranus","body":"fixed","shape":"box","size":[0.7,1.0,0.7]}
+{"op":"ent","id":"neptune_plinth","kind":"prop","noun":"Neptune plinth","hyper":"planet plinth","zone":"z_neptune","anchor":"neptune","body":"fixed","shape":"box","size":[0.7,1.0,0.7]}
+{"op":"verb","id":"vb_sun_info","verb":"social.inspect","on":"sun_model","params":{"text":"The Sun, about 150 million km from Earth in true scale. Shown here scaled."}}
+{"op":"verb","id":"vb_mercury_info","verb":"social.inspect","on":"mercury_plinth","params":{"text":"Mercury: about 58 million km from the Sun."}}
+{"op":"verb","id":"vb_venus_info","verb":"social.inspect","on":"venus_plinth","params":{"text":"Venus: about 108 million km from the Sun."}}
+{"op":"verb","id":"vb_earth_info","verb":"social.inspect","on":"earth_plinth","params":{"text":"Earth: about 150 million km from the Sun."}}
+{"op":"verb","id":"vb_mars_info","verb":"social.inspect","on":"mars_plinth","params":{"text":"Mars: about 228 million km from the Sun."}}
+{"op":"verb","id":"vb_jupiter_info","verb":"social.inspect","on":"jupiter_plinth","params":{"text":"Jupiter: about 778 million km from the Sun."}}
+{"op":"verb","id":"vb_saturn_info","verb":"social.inspect","on":"saturn_plinth","params":{"text":"Saturn: about 1.4 billion km from the Sun."}}
+{"op":"verb","id":"vb_uranus_info","verb":"social.inspect","on":"uranus_plinth","params":{"text":"Uranus: about 2.9 billion km from the Sun."}}
+{"op":"verb","id":"vb_neptune_info","verb":"social.inspect","on":"neptune_plinth","params":{"text":"Neptune: about 4.5 billion km from the Sun."}}
+{"op":"verb","id":"vb_scale_info","verb":"social.inspect","on":"scale_sign","params":{"text":"Distances are scaled, not true. Plinths sit at their scaled distance from the Sun."}}
+{"op":"npc","id":"guide_1","role":"guide","zone":"z_entrance","anchor":"desk","team":"","menu":["guide.tour"],"dflt":"guide.tour"}
+{"op":"expect","id":"x_spacing","prop":"reachable","a":"sp_red","b":"z_neptune","headline":true,"text":"Each planet plinth must sit at its scaled distance from the Sun so the spacing can be checked."}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

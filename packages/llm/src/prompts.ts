@@ -198,7 +198,7 @@ type Msg = { role: "system" | "user"; content: string };
  */
 export const PACK_HINTS: Readonly<Record<string, string>> = {
   service_venue:
-    "Layout: entrance, seating (order at counter_front), counter (till on top, staff behind_counter, flap: way behind), back_room, storeroom (via back_room).",
+    "Layout: entrance, seating (order at counter_front), counter (till on top, staff behind_counter, a gap at one end), back_room, storeroom (via back_room).",
   puzzle_rooms:
     "Layout: a chain yard → room_1 → … → exit; doorway_in joins the room before, doorway_out the next. Gates and locked doors go on doorway_out; what opens one (switch, plate, lever, key) stands in that room or an earlier one.",
   stage:

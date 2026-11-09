@@ -1,0 +1,28 @@
+{"op":"meta","mode":"wander","lang":"en","pack":"stage","sub":[],"seed":30,"look":"grand theatre, ballet performance","mood":[0.6,0.2,0.1],"timeOfDay":20,"weather":"clear"}
+{"op":"zone","id":"z_foyer","slot":"foyer","tag":"entrance","name":"Theatre foyer"}
+{"op":"zone","id":"z_seating","slot":"seating","tag":"hall","name":"Auditorium"}
+{"op":"zone","id":"z_pit","slot":"pit","tag":"pit","name":"Orchestra pit"}
+{"op":"zone","id":"z_stage","slot":"stage","tag":"stage","name":"Raised stage"}
+{"op":"zone","id":"z_backstage","slot":"backstage","tag":"room","name":"Backstage"}
+{"op":"spawn","id":"sp_red","zone":"z_foyer","anchor":"center","team":"red"}
+{"op":"ent","id":"programme","kind":"sign","noun":"ballet programme","hyper":"programme","zone":"z_foyer","anchor":"box_office","body":"fixed","shape":"box","size":[0.4,0.1,0.3]}
+{"op":"ent","id":"stage_floor","kind":"platform","noun":"raised stage","hyper":"stage","zone":"z_stage","anchor":"center","body":"fixed","shape":"box","size":[12,0.5,8]}
+{"op":"ent","id":"conductor_podium","kind":"prop","noun":"conductor podium","hyper":"podium","zone":"z_pit","anchor":"podium","body":"fixed","shape":"box","size":[0.8,1.2,0.8]}
+{"op":"ent","id":"rig_light","kind":"prop","noun":"stage light rig","hyper":"lighting","zone":"z_stage","anchor":"rig_c","body":"none","shape":"none"}
+{"op":"ent","id":"backdrop_art","kind":"prop","noun":"painted backdrop","hyper":"painting","zone":"z_stage","anchor":"backdrop","body":"fixed","shape":"box","size":[10,6,0.2]}
+{"op":"ent","id":"dancers_pose","kind":"prop","noun":"dancers on stage","hyper":"exhibit","zone":"z_stage","anchor":"center","body":"fixed","shape":"box","size":[2,1.8,1]}
+{"op":"ent","id":"harp","kind":"prop","noun":"concert harp","hyper":"instrument","zone":"z_pit","anchor":"pit_l","body":"fixed","shape":"box","size":[0.9,1.8,0.6]}
+{"op":"ent","id":"cello","kind":"prop","noun":"cello section","hyper":"instrument","zone":"z_pit","anchor":"pit_r","body":"fixed","shape":"box","size":[0.7,1.2,0.5]}
+{"op":"ent","id":"costume_rack","kind":"prop","noun":"costume rack","hyper":"costume","zone":"z_backstage","anchor":"rack","body":"fixed","shape":"box","size":[1.6,1.8,0.6]}
+{"op":"verb","id":"vb_look_programme","verb":"social.inspect","on":"programme","params":{"text":"Tonight: Swan Lake, Act II. Orchestra and company of 40."}}
+{"op":"verb","id":"vb_look_backdrop","verb":"social.inspect","on":"backdrop_art","params":{"text":"A moonlit lake painted by the scenic studio over three weeks."}}
+{"op":"verb","id":"vb_look_dancers","verb":"social.inspect","on":"dancers_pose","params":{"text":"The corps holds a tableau; the principal dancer is just out of frame."}}
+{"op":"verb","id":"vb_look_harp","verb":"social.inspect","on":"harp","params":{"text":"The harpist retunes between phrases, a habit of the trade."}}
+{"op":"verb","id":"vb_look_cello","verb":"social.inspect","on":"cello","params":{"text":"Cellos sit closest to the audience, carrying the lower lines."}}
+{"op":"verb","id":"vb_look_costume","verb":"social.inspect","on":"costume_rack","params":{"text":"Tutus hang by colour, each stitched with the dancer's name."}}
+{"op":"verb","id":"vb_look_podium","verb":"social.inspect","on":"conductor_podium","params":{"text":"Worn wood where the conductor's feet have rested for decades."}}
+{"op":"npc","id":"usher_1","role":"guide","zone":"z_foyer","anchor":"box_office","team":"","menu":["guide.tour"],"dflt":"guide.tour"}
+{"op":"npc","id":"stagehand_1","role":"citizen","zone":"z_backstage","anchor":"doorway_s","team":"","menu":["citizen.idle"],"dflt":"citizen.idle"}
+{"op":"expect","id":"x_stage","prop":"win_reachable","a":"sp_red","b":"z_stage","headline":true,"text":"Dancers must sit on the raised stage with the orchestra visibly in the pit below."}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

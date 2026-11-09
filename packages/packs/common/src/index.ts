@@ -86,6 +86,19 @@ export class Shell {
     const cx = r2((ax + bx) / 2);
     const cz = r2((az + bz) / 2);
     const m = MARGIN;
+    /**
+     * Where along a wall a picture or a screen hangs: its middle, or, when a doorway is near it,
+     * the middle of the longest stretch of wall the doorways leave (never over a door).
+     */
+    const along = (axis: "x" | "z", fixed: number, a: number, b: number): number => {
+      const doors = this.doorways.filter((d) => d.axis === axis && Math.abs(d.fixed - fixed) < 0.01 && Math.abs(d.base - y) < 0.01 && d.at > a && d.at < b).map((d) => d.at).sort((p, q) => p - q);
+      const mid = (a + b) / 2;
+      if (!doors.some((d) => Math.abs(d - mid) < DOOR_W / 2 + 0.9)) return r2(mid);
+      const cuts = [a, ...doors.flatMap((d) => [d - DOOR_W / 2, d + DOOR_W / 2]), b];
+      let best: [number, number] = [a, a];
+      for (let i = 0; i < cuts.length; i += 2) if (cuts[i + 1]! - cuts[i]! > best[1] - best[0]) best = [cuts[i]!, cuts[i + 1]!];
+      return r2((best[0] + best[1]) / 2);
+    };
     return {
       slot, tag,
       bounds: { min: [ax, y, az], max: [bx, y + WALL_H, bz] },
@@ -94,7 +107,10 @@ export class Shell {
         center: [cx, y, cz],
         corner_ne: [r2(bx - m), y, r2(bz - m)], corner_nw: [r2(ax + m), y, r2(bz - m)], corner_se: [r2(bx - m), y, r2(az + m)], corner_sw: [r2(ax + m), y, r2(az + m)],
         ...(opts.walls !== false
-          ? { wall_n: [cx, r2(y + 1.4), r2(bz - T / 2 - 0.12)], wall_s: [cx, r2(y + 1.4), r2(az + T / 2 + 0.12)], wall_e: [r2(bx - T / 2 - 0.12), r2(y + 1.4), cz], wall_w: [r2(ax + T / 2 + 0.12), r2(y + 1.4), cz] }
+          ? {
+              wall_n: [along("x", bz, ax, bx), r2(y + 1.4), r2(bz - T / 2 - 0.12)], wall_s: [along("x", az, ax, bx), r2(y + 1.4), r2(az + T / 2 + 0.12)],
+              wall_e: [r2(bx - T / 2 - 0.12), r2(y + 1.4), along("z", bx, az, bz)], wall_w: [r2(ax + T / 2 + 0.12), r2(y + 1.4), along("z", ax, az, bz)],
+            }
           : {}),
         ...(opts.doors !== false ? this.doorAnchors(ax, bx, az, bz, y) : {}),
         ...extra,

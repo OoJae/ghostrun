@@ -1,0 +1,184 @@
+{
+  "prompt": "A school trip to the planetarium: find the moon next to the Earth",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "educational exploration",
+    "setting": "a planetarium floor showing the solar system at scaled distances",
+    "role": "school visitor",
+    "goal": "find the Moon next to the Earth",
+    "fail": "none",
+    "mood": "curious and cheerful",
+    "pack": "orrery",
+    "sub": [],
+    "safety": "ok",
+    "headline": "The Moon must be placed next to the Earth plinth so a visitor can locate it.",
+    "nouns": [
+      {
+        "noun": "Moon",
+        "hyper": "a small grey satellite orbiting the Earth"
+      },
+      {
+        "noun": "Earth",
+        "hyper": "a blue-green planet on a plinth in the solar system floor"
+      },
+      {
+        "noun": "planetarium",
+        "hyper": "a dome-lit hall where the solar system is shown to visitors"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.7,
+      "arousal": 0.4,
+      "tension": 0.1
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "2994fa473ad5f8fc2e3e0b4fc8cbb026c6fa58ed6f412ef4e4b4064b08f8135b",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_find_moon",
+      "text": "The Moon must be placed next to the Earth plinth so a visitor can locate it.",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 5 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_moon_placed (moon into moon_slot) ← pick up moon",
+        "src": ""
+      },
+      {
+        "id": "T2:r_moon_placed",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_moon_placed"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_moon_placed fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_belt_nw",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_belt_nw"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_belt_nw fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_beside",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_beside"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_beside fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_mercury",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_mercury"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_mercury fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_venus",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_venus"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_venus fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it (AI par 8 s)",
+        "cx": null,
+        "src": "",
+        "ms": 316
+      }
+    ],
+    "par": {
+      "goldS": 8,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 367
+  }
+}

@@ -1,0 +1,328 @@
+{
+  "prompt": "Sneak backstage at the music festival and steal the setlist without the security guard seeing you",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "stealth heist",
+    "setting": "a music festival stage and its backstage area",
+    "role": "sneaking intruder",
+    "goal": "reach the backstage area and steal the setlist",
+    "fail": "the security guard spots you",
+    "mood": "tense and sneaky",
+    "pack": "stage",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Setlist must be stolen while the guard's line of sight stays unbroken for the whole run.",
+    "nouns": [
+      {
+        "noun": "setlist",
+        "hyper": "a folded paper list of songs taped to the stage manager's desk"
+      },
+      {
+        "noun": "security guard",
+        "hyper": "a broad-shouldered guard who patrols the wings with a flashlight"
+      },
+      {
+        "noun": "backstage",
+        "hyper": "a cramped area of cables, road cases and dressing rooms behind the stage"
+      }
+    ],
+    "moodVec": {
+      "valence": -0.2,
+      "arousal": 0.7,
+      "tension": 0.8
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "997df6b6fd03adbc5400add193146a2fb140dc566a437813d1dba6216c68a178",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_heist",
+      "text": "Setlist must be stolen while the guard's line of sight stays unbroken for the whole run.",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners vs 1 bot + physics, 2 menu schedules × 3 runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 1,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 11 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 1,
+        "id": "T0:afford:r_bribe",
+        "subject": {
+          "kind": "rule",
+          "id": "r_bribe"
+        },
+        "status": "verified",
+        "method": "static count of what the world gives",
+        "text": "r_bribe can be paid: 20 coins needed, 20 to be had",
+        "src": "ai"
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 1,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_escape (setlist into exit, carried by red) ← pick up setlist [past r_caught ← r_bribe (offer guard_1 20 coins) [after 20 coins]]",
+        "src": ""
+      },
+      {
+        "id": "T1:x_bribe",
+        "tier": "T1",
+        "subject": {
+          "kind": "property",
+          "id": "x_bribe"
+        },
+        "method": "kinematic reachability (jump apex model)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "Backstage can be reached by bribing the guard",
+        "cx": null
+      },
+      {
+        "id": "T2:r_bribe",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_bribe"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 12,
+        "status": "verified",
+        "text": "r_bribe fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_caught",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_caught"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_caught fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_coin_1",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_coin_1"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 10,
+        "status": "verified",
+        "text": "r_coin_1 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_coin_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_coin_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 8,
+        "status": "verified",
+        "text": "r_coin_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_escape",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_escape"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_escape fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_ne",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_ne"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 8,
+        "status": "verified",
+        "text": "r_secret_corner_ne fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_nw",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_nw"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 8,
+        "status": "verified",
+        "text": "r_secret_corner_nw fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_crates",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_crates"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 8,
+        "status": "verified",
+        "text": "r_secret_crates fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_rack",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_rack"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 7,
+        "status": "verified",
+        "text": "r_secret_rack fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_steal",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_steal"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 8,
+        "status": "verified",
+        "text": "r_steal fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_timeout",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_timeout"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_timeout fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners vs 1 bot",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it vs 1 bot (AI par 29.2 s)",
+        "cx": null,
+        "src": "",
+        "ms": 4538
+      },
+      {
+        "id": "T3:envelope",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 2 menu schedules × 3 runners",
+        "n": 6,
+        "k": 6,
+        "text": "holds for every choice the guard can make (2 schedules)",
+        "cx": null,
+        "src": "",
+        "ms": 1795
+      }
+    ],
+    "par": {
+      "goldS": 29.2,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 6603
+  }
+}

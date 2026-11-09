@@ -1,0 +1,32 @@
+{"op":"meta","mode":"play","lang":"en","pack":"puzzle_rooms","sub":[],"seed":18,"look":"dungeon stone","mood":[-0.2,0.6,0.7],"timeOfDay":20,"weather":"clear"}
+{"op":"zone","id":"z_yard","slot":"yard","tag":"outside","name":"Dungeon entrance"}
+{"op":"zone","id":"z_r1","slot":"room_1","tag":"room","name":"First chamber"}
+{"op":"zone","id":"z_r2","slot":"room_2","tag":"room","name":"Second chamber"}
+{"op":"zone","id":"z_r3","slot":"room_3","tag":"room","name":"Third chamber"}
+{"op":"zone","id":"z_r4","slot":"room_4","tag":"room","name":"Treasure chamber"}
+{"op":"spawn","id":"sp_red","zone":"z_yard","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"treasure","zone":"z_r4","anchor":"chest","noun":"treasure chest","hyper":"chest","team":"red"}
+{"op":"ent","id":"gate_1","kind":"door","noun":"iron gate","hyper":"doorway","zone":"z_r1","anchor":"doorway_out","body":"fixed","shape":"box"}
+{"op":"ent","id":"gate_2","kind":"door","noun":"iron gate","hyper":"doorway","zone":"z_r2","anchor":"doorway_out","body":"fixed","shape":"box"}
+{"op":"ent","id":"gate_3","kind":"door","noun":"iron gate","hyper":"doorway","zone":"z_r3","anchor":"doorway_out","body":"fixed","shape":"box"}
+{"op":"ent","id":"lever_1","kind":"switch","noun":"lever","hyper":"switch","zone":"z_r1","anchor":"lever","body":"fixed","shape":"box","size":[0.3,0.8,0.3]}
+{"op":"ent","id":"lever_2","kind":"switch","noun":"lever","hyper":"switch","zone":"z_r2","anchor":"lever","body":"fixed","shape":"box","size":[0.3,0.8,0.3]}
+{"op":"ent","id":"lever_3","kind":"switch","noun":"lever","hyper":"switch","zone":"z_r3","anchor":"lever","body":"fixed","shape":"box","size":[0.3,0.8,0.3]}
+{"op":"ent","id":"lever_4","kind":"switch","noun":"lever","hyper":"switch","zone":"z_r4","anchor":"lever","body":"fixed","shape":"box","size":[0.3,0.8,0.3]}
+{"op":"ent","id":"chest","kind":"goal","noun":"treasure chest","hyper":"chest","zone":"z_r4","anchor":"chest","body":"sensor","shape":"box","size":[1,1,1]}
+{"op":"verb","id":"vb_lever_1","verb":"puzzle.switch","on":"lever_1","params":{"once":false}}
+{"op":"verb","id":"vb_lever_2","verb":"puzzle.switch","on":"lever_2","params":{"once":false}}
+{"op":"verb","id":"vb_lever_3","verb":"puzzle.switch","on":"lever_3","params":{"once":false}}
+{"op":"verb","id":"vb_lever_4","verb":"puzzle.switch","on":"lever_4","params":{"once":false}}
+{"op":"verb","id":"vb_gate_1","verb":"puzzle.lock","on":"gate_1","params":{"key":"lever_1","keep":true}}
+{"op":"verb","id":"vb_gate_2","verb":"puzzle.lock","on":"gate_2","params":{"key":"lever_2","keep":true}}
+{"op":"verb","id":"vb_gate_3","verb":"puzzle.lock","on":"gate_3","params":{"key":"lever_3","keep":true}}
+{"op":"verb","id":"vb_timer","verb":"puzzle.timer","on":"player","params":{"seconds":300}}
+{"op":"rule","id":"r_open_1","when":{"t":"state_is","a":"lever_1","s":"on"},"then":[{"e":"open","target":"gate_1"}]}
+{"op":"rule","id":"r_open_2","when":{"t":"state_is","a":"lever_2","s":"on"},"then":[{"e":"open","target":"gate_2"}]}
+{"op":"rule","id":"r_open_3","when":{"t":"state_is","a":"lever_3","s":"on"},"then":[{"e":"open","target":"gate_3"}]}
+{"op":"rule","id":"r_win","when":{"t":"enter","a":"player","b":"chest"},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose","when":{"t":"timer_end","a":"player"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"expect","id":"x_dungeon","prop":"win_reachable","a":"sp_red","b":"chest","headline":true,"text":"Each room's gate must open via its lever before the treasure chest is reachable."}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

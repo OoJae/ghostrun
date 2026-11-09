@@ -1,0 +1,168 @@
+{
+  "prompt": "Collect a crystal from every planet in the solar system before your oxygen runs out",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "collection adventure",
+    "setting": "solar system planetarium floor with the Sun at the centre and eight planets on plinths",
+    "role": "astronaut collector",
+    "goal": "collect a crystal from every planet before oxygen runs out",
+    "fail": "oxygen runs out before all crystals are collected",
+    "mood": "tense and urgent",
+    "pack": "orrery",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Oxygen timer must force a planet-by-planet route that a playtest can time.",
+    "nouns": [
+      {
+        "noun": "crystal",
+        "hyper": "glowing collectible crystal"
+      },
+      {
+        "noun": "planet",
+        "hyper": "plinth-mounted scaled planet"
+      },
+      {
+        "noun": "oxygen",
+        "hyper": "depleting oxygen supply timer"
+      }
+    ],
+    "moodVec": {
+      "valence": -0.2,
+      "arousal": 0.8,
+      "tension": 0.9
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "947e55e7cd047edffadf5e44cd49e962214a02f7218c15f5c2e1acefaa67f43d",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_oxygen",
+      "text": "Oxygen timer must force a planet-by-planet route that a playtest can time.",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 4 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_collect_all (team:red reaches 8) ← r_score_mercury (crystal_mercury into exit) ← pick up crystal_mercury",
+        "src": ""
+      },
+      {
+        "id": "T2:r_collect_all",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_collect_all"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_collect_all fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_oxygen_out",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_oxygen_out"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_oxygen_out fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_score_mercury",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score_mercury"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 11,
+        "status": "verified",
+        "text": "r_score_mercury fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_beside",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_beside"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_secret_beside fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it (AI par 120.3 s)",
+        "cx": null,
+        "src": "",
+        "ms": 9240
+      }
+    ],
+    "par": {
+      "goldS": 120.3,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 9316
+  }
+}

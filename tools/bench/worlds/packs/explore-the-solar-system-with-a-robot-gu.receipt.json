@@ -1,0 +1,148 @@
+{
+  "prompt": "Explore the solar system with a robot guide who tells you facts about each planet",
+  "intent": {
+    "lang": "en",
+    "mode": "wander",
+    "genre": "educational exploration",
+    "setting": "a planetarium floor showing the solar system at scaled distances",
+    "role": "robot guide",
+    "goal": "visit each planet and hear a fact about it from the robot guide",
+    "fail": "none",
+    "mood": "curious and calm",
+    "pack": "orrery",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Each of the eight planets must be reachable and trigger its robot-guide fact.",
+    "nouns": [
+      {
+        "noun": "robot guide",
+        "hyper": "guide"
+      },
+      {
+        "noun": "planet",
+        "hyper": "celestial body"
+      },
+      {
+        "noun": "Sun",
+        "hyper": "star"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.6,
+      "arousal": 0.2,
+      "tension": -0.3
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "6f63db3ab4ef7ce039941a25328168389fdce062df6b351a8f0c78f753fc6ee1",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_planets",
+      "text": "Each of the eight planets must be reachable and trigger its robot-guide fact.",
+      "status": "verified",
+      "method": "kinematic reachability (jump apex model)"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 1 rules reference existing things",
+        "src": ""
+      },
+      {
+        "id": "T1:x_planets",
+        "tier": "T1",
+        "subject": {
+          "kind": "property",
+          "id": "x_planets"
+        },
+        "method": "kinematic reachability (jump apex model)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "Each of the eight planets must be reachable and trigger its robot-guide fact.",
+        "cx": null
+      },
+      {
+        "id": "T1:x_jupiter",
+        "tier": "T1",
+        "subject": {
+          "kind": "property",
+          "id": "x_jupiter"
+        },
+        "method": "kinematic reachability (jump apex model)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "Jupiter can be visited",
+        "cx": null
+      },
+      {
+        "id": "T1:x_neptune",
+        "tier": "T1",
+        "subject": {
+          "kind": "property",
+          "id": "x_neptune"
+        },
+        "method": "kinematic reachability (jump apex model)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "Neptune can be visited",
+        "cx": null
+      },
+      {
+        "id": "T2:r_guide_book",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_guide_book"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 7,
+        "status": "verified",
+        "text": "r_guide_book fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:tour",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "tour"
+        },
+        "status": "played",
+        "method": "physics, an AI visitor walks to and uses each, and says what the cast listens for",
+        "n": 11,
+        "k": 11,
+        "text": "walked to and inspected 10 of 10 things, and 1 of 1 speech acts came off (book with guide)",
+        "cx": null,
+        "src": "",
+        "ms": 105
+      }
+    ],
+    "par": null,
+    "ms": 148
+  }
+}

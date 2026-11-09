@@ -1,0 +1,210 @@
+{
+  "prompt": "An escape room: find the key, flip the switches and get out before the timer runs out",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "escape room",
+    "setting": "a chain of locked rooms with switches, keys and a countdown timer",
+    "role": "escapee solving puzzles room by room",
+    "goal": "find the key, flip the switches and reach the exit before the timer runs out",
+    "fail": "the timer reaches zero before you escape",
+    "mood": "tense and urgent",
+    "pack": "puzzle_rooms",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Timer must run out only after the exit is reachable by solving all switches",
+    "nouns": [
+      {
+        "noun": "key",
+        "hyper": "a brass key hidden somewhere in the rooms"
+      },
+      {
+        "noun": "switch",
+        "hyper": "a wall switch that must be flipped in order"
+      },
+      {
+        "noun": "timer",
+        "hyper": "a countdown clock visible in every room"
+      },
+      {
+        "noun": "exit",
+        "hyper": "a sealed door that opens when all switches are set"
+      }
+    ],
+    "moodVec": {
+      "valence": -0.3,
+      "arousal": 0.8,
+      "tension": 0.9
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "2d4583d4075f737b310846afbb9520e405aa50483eae8f5cc6d7ad8410bc5925",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_escape",
+      "text": "Timer must run out only after the exit is reachable by solving all switches",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 1,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 6 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 1,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_escape (player enters exit_door)",
+        "src": ""
+      },
+      {
+        "id": "T2:r_all_on",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_all_on"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 22,
+        "status": "verified",
+        "text": "r_all_on fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_escape",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_escape"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_escape fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_center",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_center"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 0,
+        "src": "template",
+        "ms": 1,
+        "status": "counterexample",
+        "text": "r_secret_center fires exactly once",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "firings",
+          "text": "never fired when forced"
+        }
+      },
+      {
+        "id": "T2:r_secret_corner_e",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_e"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 8,
+        "status": "verified",
+        "text": "r_secret_corner_e fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_w",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_w"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 6,
+        "status": "verified",
+        "text": "r_secret_corner_w fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_timeout",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_timeout"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_timeout fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it (AI par 9.3 s)",
+        "cx": null,
+        "src": "",
+        "ms": 1807
+      }
+    ],
+    "par": {
+      "goldS": 9.3,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 1895
+  }
+}

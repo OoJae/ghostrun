@@ -1,0 +1,264 @@
+{
+  "prompt": "A talent show: collect the three microphones scattered around the hall and bring them to the stage",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "collection quest",
+    "setting": "a talent show hall with a stage",
+    "role": "performer",
+    "goal": "collect the three microphones scattered around the hall and bring them to the stage",
+    "fail": "time runs out before all three microphones reach the stage",
+    "mood": "lively and competitive",
+    "pack": "stage",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Three microphones must each be carried back to the raised stage before the show starts.",
+    "nouns": [
+      {
+        "noun": "microphone",
+        "hyper": "a handheld stage mic"
+      },
+      {
+        "noun": "stage",
+        "hyper": "a raised performance platform"
+      },
+      {
+        "noun": "hall",
+        "hyper": "a talent show auditorium"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.6,
+      "arousal": 0.7,
+      "tension": 0.4
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "0e3032810ddbd434b43b74c68973a9565f369be61a4cc25cab6c7d672613ead4",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_mics",
+      "text": "Three microphones must each be carried back to the raised stage before the show starts.",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 8 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_all_mics (team:red reaches 3) ← r_mic1_stage (mic_1 into stage_goal) ← pick up mic_1 + r_mic2_stage (mic_2 into stage_goal) ← pick up mic_2 + r_mic3_stage (mic_3 into stage_goal) ← pick up mic_3",
+        "src": ""
+      },
+      {
+        "id": "T1:x_stage_reach",
+        "tier": "T1",
+        "subject": {
+          "kind": "property",
+          "id": "x_stage_reach"
+        },
+        "method": "kinematic reachability (jump apex model)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "reachable sp_red → z_stage",
+        "cx": null
+      },
+      {
+        "id": "T1:x_mic3_reach",
+        "tier": "T1",
+        "subject": {
+          "kind": "property",
+          "id": "x_mic3_reach"
+        },
+        "method": "kinematic reachability (jump apex model)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "reachable sp_red → z_wing_e",
+        "cx": null
+      },
+      {
+        "id": "T2:r_all_mics",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_all_mics"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_all_mics fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_cable_hit",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_cable_hit"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_cable_hit fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_mic1_stage",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_mic1_stage"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_mic1_stage fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_mic2_stage",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_mic2_stage"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 6,
+        "status": "verified",
+        "text": "r_mic2_stage fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_mic3_stage",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_mic3_stage"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 6,
+        "status": "verified",
+        "text": "r_mic3_stage fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_ne",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_ne"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_secret_corner_ne fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_nw",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_nw"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 6,
+        "status": "verified",
+        "text": "r_secret_corner_nw fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_time_out",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_time_out"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_time_out fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it (AI par 35.5 s)",
+        "cx": null,
+        "src": "",
+        "ms": 3607
+      }
+    ],
+    "par": {
+      "goldS": 35.5,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 3908
+  }
+}

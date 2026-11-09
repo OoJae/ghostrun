@@ -1,0 +1,110 @@
+{
+  "prompt": "A cocktail bar at night where the bartender mixes drinks and a jazz singer performs",
+  "intent": {
+    "lang": "en",
+    "mode": "wander",
+    "genre": "lounge",
+    "setting": "a cocktail bar at night",
+    "role": "bartender",
+    "goal": "mix drinks and watch a jazz singer perform",
+    "fail": "none",
+    "mood": "smoky, warm, relaxed",
+    "pack": "service_venue",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Bartender must serve drinks at the counter while the singer performs on the floor.",
+    "nouns": [
+      {
+        "noun": "bartender",
+        "hyper": "person"
+      },
+      {
+        "noun": "jazz singer",
+        "hyper": "performer"
+      },
+      {
+        "noun": "cocktail",
+        "hyper": "drink"
+      },
+      {
+        "noun": "counter",
+        "hyper": "fixture"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.5,
+      "arousal": 0.2,
+      "tension": -0.2
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "5f3102185d42786a7bb24b7765b186ae025172071ccc90bab39dc51cf256823a",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_bar",
+      "text": "Bartender must serve drinks at the counter while the singer performs on the floor.",
+      "status": "verified",
+      "method": "kinematic reachability (jump apex model)"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 0 rules reference existing things",
+        "src": ""
+      },
+      {
+        "id": "T1:x_bar",
+        "tier": "T1",
+        "subject": {
+          "kind": "property",
+          "id": "x_bar"
+        },
+        "method": "kinematic reachability (jump apex model)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "Bartender must serve drinks at the counter while the singer performs on the floor.",
+        "cx": null
+      },
+      {
+        "id": "T3:tour",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "tour"
+        },
+        "status": "counterexample",
+        "method": "physics, an AI visitor walks to and uses each",
+        "n": 6,
+        "k": 1,
+        "text": "walked to and inspected 1 of 6 things",
+        "cx": {
+          "where": null,
+          "have": 1,
+          "need": 6,
+          "unit": "things",
+          "text": "couldn't reach cocktail_shaker, counter_bar, jazz_stage, old_record…"
+        },
+        "src": "",
+        "ms": 2174
+      }
+    ],
+    "par": null,
+    "ms": 2218
+  }
+}

@@ -1,0 +1,47 @@
+{"op":"meta","mode":"play","lang":"en","pack":"puzzle_rooms","sub":[],"seed":19,"look":"ancient tomb","mood":[-0.2,0.6,0.7],"timeOfDay":18,"weather":"clear"}
+{"op":"zone","id":"z_yard","slot":"yard","tag":"outside","name":"Tomb entrance"}
+{"op":"zone","id":"z_r1","slot":"room_1","tag":"room","name":"Antechamber"}
+{"op":"zone","id":"z_r2","slot":"room_2","tag":"room","name":"Pillared hall"}
+{"op":"zone","id":"z_r3","slot":"room_3","tag":"room","name":"Hall of pressure plates"}
+{"op":"zone","id":"z_r4","slot":"room_4","tag":"room","name":"Burial chamber"}
+{"op":"spawn","id":"sp_red","zone":"z_yard","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"sarcophagus","zone":"z_r4","anchor":"center","noun":"sarcophagus","hyper":"sarcophagus","team":"red"}
+{"op":"ent","id":"stone_key","kind":"pickup","noun":"stone key","hyper":"key","zone":"z_r1","anchor":"key","body":"dynamic","shape":"box","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"lever_1","kind":"switch","noun":"stone lever","hyper":"lever","zone":"z_r1","anchor":"lever","body":"fixed","shape":"box","size":[0.3,0.8,0.3]}
+{"op":"ent","id":"door_12","kind":"door","noun":"sealed door","hyper":"door","zone":"z_r1","anchor":"doorway_out","body":"fixed","shape":"box","size":[1.6,2.4,0.3]}
+{"op":"ent","id":"plate_2","kind":"plate","noun":"pressure plate","hyper":"plate","zone":"z_r2","anchor":"plate","body":"fixed","shape":"box","size":[1.2,0.1,1.2]}
+{"op":"ent","id":"door_23","kind":"door","noun":"iron gate","hyper":"door","zone":"z_r2","anchor":"doorway_out","body":"fixed","shape":"box","size":[1.6,2.4,0.3]}
+{"op":"ent","id":"switch_3","kind":"switch","noun":"wall rune","hyper":"switch","zone":"z_r3","anchor":"switch","body":"fixed","shape":"box","size":[0.4,0.4,0.1]}
+{"op":"ent","id":"door_34","kind":"door","noun":"stone slab door","hyper":"door","zone":"z_r3","anchor":"doorway_out","body":"fixed","shape":"box","size":[1.6,2.4,0.3]}
+{"op":"ent","id":"lock_sarc","kind":"door","noun":"sarcophagus lid","hyper":"door","zone":"z_r4","anchor":"center","body":"fixed","shape":"box","size":[2,0.8,1.2]}
+{"op":"ent","id":"hazard_spikes","kind":"hazard","noun":"floor spikes","hyper":"spikes","zone":"z_r2","anchor":"corner_ne","body":"sensor","shape":"box","size":[2,0.2,2]}
+{"op":"ent","id":"cp_entry","kind":"checkpoint","noun":"entry glyph","hyper":"checkpoint","zone":"z_r1","anchor":"doorway_in","body":"sensor","shape":"box","size":[1,1,1]}
+{"op":"ent","id":"statue_1","kind":"prop","noun":"guardian statue","hyper":"statue","zone":"z_r2","anchor":"corner_sw","body":"fixed","shape":"box","size":[1,2.5,1]}
+{"op":"verb","id":"vb_carry_key","verb":"physics_props.carry","on":"stone_key","params":{}}
+{"op":"verb","id":"vb_lever","verb":"puzzle.switch","on":"lever_1","params":{"once":false}}
+{"op":"verb","id":"vb_lock_12","verb":"puzzle.lock","on":"door_12","params":{"key":"stone_key","keep":true}}
+{"op":"verb","id":"vb_plate","verb":"puzzle.plate","on":"plate_2","params":{"latch":false}}
+{"op":"verb","id":"vb_lock_23","verb":"puzzle.lock","on":"door_23","params":{"key":"stone_key","keep":true}}
+{"op":"verb","id":"vb_rune","verb":"puzzle.switch","on":"switch_3","params":{"once":true}}
+{"op":"verb","id":"vb_lock_34","verb":"puzzle.lock","on":"door_34","params":{"key":"stone_key","keep":true}}
+{"op":"verb","id":"vb_sarc","verb":"puzzle.lock","on":"lock_sarc","params":{"key":"stone_key","keep":false}}
+{"op":"verb","id":"vb_spikes","verb":"motion_hazards.hazard","on":"hazard_spikes","params":{"respawn":true}}
+{"op":"verb","id":"vb_cp","verb":"puzzle.checkpoint","on":"cp_entry","params":{}}
+{"op":"verb","id":"vb_inspect","verb":"social.inspect","on":"statue_1","params":{"text":"A guardian carved with the tomb's oath. It watches the key."}}
+{"op":"verb","id":"vb_alarm","verb":"puzzle.timer","on":"player","params":{"seconds":240}}
+{"op":"law","player":{"jumpsMax":1,"jumpH":1.2,"speed":5}}
+{"op":"state","id":"lever_1","value":"off"}
+{"op":"state","id":"plate_2","value":"up"}
+{"op":"state","id":"switch_3","value":"off"}
+{"op":"rule","id":"r_open_12","when":{"t":"state_is","a":"lever_1","s":"on"},"then":[{"e":"open","target":"door_12"}]}
+{"op":"rule","id":"r_open_23","when":{"t":"state_is","a":"plate_2","s":"down"},"then":[{"e":"open","target":"door_23"}]}
+{"op":"rule","id":"r_open_34","when":{"t":"state_is","a":"switch_3","s":"on"},"then":[{"e":"open","target":"door_34"}]}
+{"op":"rule","id":"r_win","when":{"t":"state_is","a":"lock_sarc","s":"open"},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose_timer","when":{"t":"timer_end","a":"player"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_spikes","when":{"t":"hit","a":"player","b":"hazard_spikes"},"then":[{"e":"reset","target":"stone_key"}]}
+{"op":"expect","id":"x_tomb","prop":"win_reachable","a":"sp_red","b":"sarcophagus","headline":true,"text":"Stone key must travel room to room and open the sarcophagus at the end of the chain."}
+{"op":"expect","id":"x_r2","prop":"reachable","a":"sp_red","b":"z_r2","text":"Pillared hall is reachable from the antechamber"}
+{"op":"expect","id":"x_r4","prop":"requires","a":"sp_red","b":"z_r4","need":["jumps>=1"],"text":"Burial chamber reached through the chain"}
+{"op":"end","layer":"gameplay"}
+{"op":"poster","id":"poster_tomb","zone":"z_yard","anchor":"gate","text":"Carry the stone key. Open the sarcophagus before the chamber seals."}
+{"op":"end","layer":"cosmetic"}

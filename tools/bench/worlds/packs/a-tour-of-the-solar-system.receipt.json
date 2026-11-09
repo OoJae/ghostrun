@@ -1,0 +1,100 @@
+{
+  "prompt": "A tour of the solar system",
+  "intent": {
+    "lang": "en",
+    "mode": "wander",
+    "genre": "educational tour",
+    "setting": "a planetarium floor showing the solar system at scaled distances",
+    "role": "visitor",
+    "goal": "explore the solar system and learn about each planet",
+    "fail": "none",
+    "mood": "curious and wondrous",
+    "pack": "orrery",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Each of the eight planets sits on its own plinth at scaled distance from the Sun.",
+    "nouns": [
+      {
+        "noun": "Sun",
+        "hyper": "a glowing golden sphere at the centre of the floor"
+      },
+      {
+        "noun": "planet",
+        "hyper": "a plinth holding a planet at scaled distance from the Sun"
+      },
+      {
+        "noun": "entrance",
+        "hyper": "the arched doorway where the tour begins"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.6,
+      "arousal": 0.2,
+      "tension": -0.2
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "c517917573aacc710939a471a5deebc1cacf88e414d5989c34fbb87d93c16ffc",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_tour",
+      "text": "Each of the eight planets sits on its own plinth at scaled distance from the Sun.",
+      "status": "verified",
+      "method": "kinematic reachability (jump apex model)"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 0 rules reference existing things",
+        "src": ""
+      },
+      {
+        "id": "T1:x_tour",
+        "tier": "T1",
+        "subject": {
+          "kind": "property",
+          "id": "x_tour"
+        },
+        "method": "kinematic reachability (jump apex model)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "Each of the eight planets sits on its own plinth at scaled distance from the Sun.",
+        "cx": null
+      },
+      {
+        "id": "T3:tour",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "tour"
+        },
+        "status": "played",
+        "method": "physics, an AI visitor walks to and uses each",
+        "n": 11,
+        "k": 11,
+        "text": "walked to and inspected 11 of 11 things",
+        "cx": null,
+        "src": "",
+        "ms": 92
+      }
+    ],
+    "par": null,
+    "ms": 130
+  }
+}

@@ -1,0 +1,90 @@
+{
+  "prompt": "A ballet performance: dancers on the stage and an orchestra in the pit",
+  "intent": {
+    "lang": "en",
+    "mode": "wander",
+    "genre": "performance",
+    "setting": "a theatre hosting a ballet performance, with dancers on the raised stage and an orchestra in the pit",
+    "role": "audience member",
+    "goal": "watch the ballet and take in the stage and orchestra",
+    "fail": "none",
+    "mood": "graceful and absorbing",
+    "pack": "stage",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Dancers must sit on the raised stage with the orchestra visibly in the pit below.",
+    "nouns": [
+      {
+        "noun": "stage",
+        "hyper": "performance space"
+      },
+      {
+        "noun": "pit",
+        "hyper": "orchestra area"
+      },
+      {
+        "noun": "dancer",
+        "hyper": "performer"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.6,
+      "arousal": 0.2,
+      "tension": 0.1
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "247f390645b8e7fb2620ae6944b00091c081129c16f9923ca111567c01205581",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_stage",
+      "text": "Dancers must sit on the raised stage with the orchestra visibly in the pit below.",
+      "status": "not_checkable",
+      "method": "none"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 0 rules reference existing things",
+        "src": ""
+      },
+      {
+        "id": "T3:tour",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "tour"
+        },
+        "status": "counterexample",
+        "method": "physics, an AI visitor walks to and uses each",
+        "n": 8,
+        "k": 6,
+        "text": "walked to and inspected 6 of 8 things",
+        "cx": {
+          "where": null,
+          "have": 6,
+          "need": 8,
+          "unit": "things",
+          "text": "couldn't reach backdrop_art, rig_light"
+        },
+        "src": "",
+        "ms": 265
+      }
+    ],
+    "par": null,
+    "ms": 387
+  }
+}

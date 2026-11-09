@@ -1,0 +1,41 @@
+{"op":"meta","mode":"play","lang":"en","pack":"stage","sub":[],"seed":27,"look":"talent show hall","mood":[0.6,0.7,0.4],"timeOfDay":20,"weather":"clear"}
+{"op":"zone","id":"z_yard","slot":"yard","tag":"outside","name":"Hall entrance"}
+{"op":"zone","id":"z_foyer","slot":"foyer","tag":"entrance","name":"Foyer"}
+{"op":"zone","id":"z_seating","slot":"seating","tag":"hall","name":"Audience seating"}
+{"op":"zone","id":"z_pit","slot":"pit","tag":"pit","name":"Orchestra pit"}
+{"op":"zone","id":"z_stage","slot":"stage","tag":"stage","name":"Performance stage"}
+{"op":"zone","id":"z_wing_w","slot":"wing_w","tag":"wing","name":"West wing"}
+{"op":"zone","id":"z_wing_e","slot":"wing_e","tag":"wing","name":"East wing"}
+{"op":"spawn","id":"sp_red","zone":"z_yard","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"stage_goal","zone":"z_stage","anchor":"center","noun":"performance stage","hyper":"stage","team":"red"}
+{"op":"ent","id":"mic_1","kind":"pickup","noun":"handheld microphone","hyper":"microphone","zone":"z_seating","anchor":"aisle_l","body":"dynamic","shape":"capsule","size":[0.1,0.3,0.1]}
+{"op":"ent","id":"mic_2","kind":"pickup","noun":"handheld microphone","hyper":"microphone","zone":"z_foyer","anchor":"bar","body":"dynamic","shape":"capsule","size":[0.1,0.3,0.1]}
+{"op":"ent","id":"mic_3","kind":"pickup","noun":"handheld microphone","hyper":"microphone","zone":"z_wing_e","anchor":"rack","body":"dynamic","shape":"capsule","size":[0.1,0.3,0.1]}
+{"op":"ent","id":"stage_door","kind":"door","noun":"stage door","hyper":"door","zone":"z_wing_w","anchor":"doorway_s","body":"fixed","shape":"box"}
+{"op":"ent","id":"poster_1","kind":"prop","noun":"show poster","hyper":"poster","zone":"z_foyer","anchor":"wall_n","body":"fixed","shape":"box","size":[1.2,1.6,0.1]}
+{"op":"ent","id":"trophy_case","kind":"prop","noun":"trophy case","hyper":"trophy","zone":"z_foyer","anchor":"box_office","body":"fixed","shape":"box","size":[1.0,1.5,0.6]}
+{"op":"ent","id":"pit_hazard","kind":"hazard","noun":"stray cable","hyper":"cable","zone":"z_pit","anchor":"pit_l","body":"sensor","shape":"box","size":[2,0.2,1]}
+{"op":"ent","id":"spotlight_rig","kind":"hazard","noun":"hot spotlight","hyper":"spotlight","zone":"z_stage","anchor":"rig_c","body":"sensor","shape":"sphere","size":[0.6,0.6,0.6]}
+{"op":"ent","id":"exit_stairs","kind":"platform","noun":"stage stairs","hyper":"stairs","zone":"z_seating","anchor":"front_row","body":"fixed","shape":"box"}
+{"op":"verb","id":"vb_carry_mic1","verb":"physics_props.carry","on":"mic_1","params":{}}
+{"op":"verb","id":"vb_carry_mic2","verb":"physics_props.carry","on":"mic_2","params":{}}
+{"op":"verb","id":"vb_carry_mic3","verb":"physics_props.carry","on":"mic_3","params":{}}
+{"op":"verb","id":"vb_stage_door","verb":"puzzle.lock","on":"stage_door","params":{"key":"","keep":true}}
+{"op":"verb","id":"vb_look_poster","verb":"social.inspect","on":"poster_1","params":{"text":"Tonight's lineup: jugglers, singers, and one very brave magician."}}
+{"op":"verb","id":"vb_look_trophy","verb":"social.inspect","on":"trophy_case","params":{"text":"Last year's winner: a dancing goldfish act."}}
+{"op":"verb","id":"vb_cable","verb":"motion_hazards.hazard","on":"pit_hazard","params":{"respawn":true}}
+{"op":"verb","id":"vb_spot","verb":"motion_hazards.hazard","on":"spotlight_rig","params":{"respawn":true}}
+{"op":"verb","id":"vb_show_timer","verb":"puzzle.timer","on":"player","params":{"seconds":180}}
+{"op":"verb","id":"vb_jump_stairs","verb":"locomotion.jump","on":"player","params":{"jumpsMax":2}}
+{"op":"rule","id":"r_mic1_stage","when":{"t":"enter","a":"mic_1","b":"stage_goal"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_mic2_stage","when":{"t":"enter","a":"mic_2","b":"stage_goal"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_mic3_stage","when":{"t":"enter","a":"mic_3","b":"stage_goal"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_all_mics","when":{"t":"score_gte","a":"team:red","n":3},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_time_out","when":{"t":"timer_end","a":"player"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_cable_hit","when":{"t":"hit","a":"player","b":"pit_hazard"},"then":[{"e":"emit","target":"pit_hazard","fx":"spark"}]}
+{"op":"expect","id":"x_mics","prop":"win_reachable","a":"sp_red","b":"stage_goal","headline":true,"text":"Three microphones must each be carried back to the raised stage before the show starts."}
+{"op":"expect","id":"x_stage_reach","prop":"reachable","a":"sp_red","b":"z_stage"}
+{"op":"expect","id":"x_mic3_reach","prop":"reachable","a":"sp_red","b":"z_wing_e"}
+{"op":"end","layer":"gameplay"}
+{"op":"poster","id":"p_show","zone":"z_foyer","anchor":"wall_s","text":"TALENT SHOW TONIGHT"}
+{"op":"end","layer":"cosmetic"}

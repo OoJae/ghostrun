@@ -1,0 +1,46 @@
+{"op":"meta","mode":"play","lang":"en","pack":"puzzle_rooms","sub":[],"seed":20,"look":"submarine interior, steel and red emergency light","mood":[-0.6,0.8,0.9],"timeOfDay":3,"weather":"clear"}
+{"op":"zone","id":"z_yard","slot":"yard","tag":"outside","name":"Dock"}
+{"op":"zone","id":"z_bow","slot":"room_1","tag":"room","name":"Bow compartment"}
+{"op":"zone","id":"z_galley","slot":"room_2","tag":"room","name":"Galley"}
+{"op":"zone","id":"z_engine","slot":"room_3","tag":"room","name":"Engine room"}
+{"op":"zone","id":"z_conn","slot":"room_4","tag":"room","name":"Control room"}
+{"op":"zone","id":"z_exit","slot":"exit","tag":"outside","name":"Surface hatch"}
+{"op":"spawn","id":"sp_red","zone":"z_yard","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"surface","zone":"z_exit","anchor":"center","noun":"surface hatch","hyper":"hatch","team":"red"}
+{"op":"ent","id":"hatch_1","kind":"door","noun":"bow hatch","hyper":"hatch","zone":"z_bow","anchor":"doorway_out","body":"fixed","shape":"box"}
+{"op":"ent","id":"hatch_2","kind":"door","noun":"galley hatch","hyper":"hatch","zone":"z_galley","anchor":"doorway_out","body":"fixed","shape":"box"}
+{"op":"ent","id":"hatch_3","kind":"door","noun":"engine hatch","hyper":"hatch","zone":"z_engine","anchor":"doorway_out","body":"fixed","shape":"box"}
+{"op":"ent","id":"hatch_4","kind":"door","noun":"control hatch","hyper":"hatch","zone":"z_conn","anchor":"doorway_out","body":"fixed","shape":"box"}
+{"op":"ent","id":"power_1","kind":"switch","noun":"bow power switch","hyper":"switch","zone":"z_bow","anchor":"switch","body":"fixed","shape":"box","size":[0.4,0.6,0.2]}
+{"op":"ent","id":"power_2","kind":"switch","noun":"galley power switch","hyper":"switch","zone":"z_galley","anchor":"switch","body":"fixed","shape":"box","size":[0.4,0.6,0.2]}
+{"op":"ent","id":"power_3","kind":"switch","noun":"engine power switch","hyper":"switch","zone":"z_engine","anchor":"switch","body":"fixed","shape":"box","size":[0.4,0.6,0.2]}
+{"op":"ent","id":"power_4","kind":"switch","noun":"control power switch","hyper":"switch","zone":"z_conn","anchor":"switch","body":"fixed","shape":"box","size":[0.4,0.6,0.2]}
+{"op":"ent","id":"flood_gauge","kind":"prop","noun":"flood gauge","hyper":"gauge","zone":"z_conn","anchor":"corner_ne","body":"fixed","shape":"box","size":[0.6,0.8,0.2]}
+{"op":"ent","id":"wiring_chart","kind":"prop","noun":"wiring chart","hyper":"chart","zone":"z_engine","anchor":"corner_nw","body":"fixed","shape":"box","size":[1.0,0.8,0.1]}
+{"op":"ent","id":"leak","kind":"hazard","noun":"water leak","hyper":"leak","zone":"z_galley","anchor":"corner_se","body":"sensor","shape":"box","size":[1.5,0.2,1.5]}
+{"op":"ent","id":"wire_spark","kind":"hazard","noun":"sparking wire","hyper":"spark","zone":"z_engine","anchor":"corner_sw","body":"sensor","shape":"box","size":[1,0.2,1]}
+{"op":"verb","id":"vb_jump","verb":"locomotion.jump","on":"player","params":{"jumpsMax":1}}
+{"op":"verb","id":"vb_sw_1","verb":"puzzle.switch","on":"power_1","params":{"once":true}}
+{"op":"verb","id":"vb_sw_2","verb":"puzzle.switch","on":"power_2","params":{"once":true}}
+{"op":"verb","id":"vb_sw_3","verb":"puzzle.switch","on":"power_3","params":{"once":true}}
+{"op":"verb","id":"vb_sw_4","verb":"puzzle.switch","on":"power_4","params":{"once":true}}
+{"op":"verb","id":"vb_lock_1","verb":"puzzle.lock","on":"hatch_1","params":{"key":"power_1","keep":true}}
+{"op":"verb","id":"vb_lock_2","verb":"puzzle.lock","on":"hatch_2","params":{"key":"power_2","keep":true}}
+{"op":"verb","id":"vb_lock_3","verb":"puzzle.lock","on":"hatch_3","params":{"key":"power_3","keep":true}}
+{"op":"verb","id":"vb_lock_4","verb":"puzzle.lock","on":"hatch_4","params":{"key":"power_4","keep":true}}
+{"op":"verb","id":"vb_clock","verb":"puzzle.timer","on":"player","params":{"seconds":240}}
+{"op":"verb","id":"vb_hurt","verb":"motion_hazards.hazard","on":"leak","params":{"respawn":true}}
+{"op":"verb","id":"vb_spark","verb":"motion_hazards.hazard","on":"wire_spark","params":{"respawn":true}}
+{"op":"verb","id":"vb_look_g","verb":"social.inspect","on":"flood_gauge","params":{"text":"Hull pressure rising. Restore power to seal the compartments."}}
+{"op":"verb","id":"vb_look_w","verb":"social.inspect","on":"wiring_chart","params":{"text":"Circuits wake in order: bow, galley, engine, control."}}
+{"op":"law","player":{"jumpsMax":1,"jumpH":1.2,"speed":5}}
+{"op":"rule","id":"r_open_2","when":{"t":"state_is","a":"power_1","s":"on"},"then":[{"e":"open","target":"hatch_1"}],"once":true}
+{"op":"rule","id":"r_open_3","when":{"t":"state_is","a":"power_2","s":"on"},"if":[{"l":"power_1.state","op":"eq","r":"on"}],"then":[{"e":"open","target":"hatch_2"}],"once":true}
+{"op":"rule","id":"r_open_4","when":{"t":"state_is","a":"power_3","s":"on"},"if":[{"l":"power_2.state","op":"eq","r":"on"}],"then":[{"e":"open","target":"hatch_3"}],"once":true}
+{"op":"rule","id":"r_open_5","when":{"t":"state_is","a":"power_4","s":"on"},"if":[{"l":"power_3.state","op":"eq","r":"on"}],"then":[{"e":"open","target":"hatch_4"}],"once":true}
+{"op":"rule","id":"r_win","when":{"t":"enter","a":"player","b":"surface"},"if":[{"l":"power_4.state","op":"eq","r":"on"}],"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_flood","when":{"t":"timer_end","a":"player"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"expect","id":"x_order","prop":"win_reachable","a":"sp_red","b":"surface","headline":true,"text":"Each restored power switch must unlock the next hatch in order"}
+{"op":"expect","id":"x_bow","prop":"reachable","a":"sp_red","b":"z_bow","text":"Bow compartment is reachable from the dock"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

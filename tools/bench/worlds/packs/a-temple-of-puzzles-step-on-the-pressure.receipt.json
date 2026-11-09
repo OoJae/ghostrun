@@ -1,0 +1,152 @@
+{
+  "prompt": "A temple of puzzles: step on the pressure plates and pull the levers to reach the golden idol",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "puzzle adventure",
+    "setting": "a temple of puzzles",
+    "role": "explorer",
+    "goal": "step on the pressure plates, pull the levers and reach the golden idol",
+    "fail": "no explicit failure condition given",
+    "mood": "mysterious and tense",
+    "pack": "puzzle_rooms",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Pressure plates and levers must unlock the path to the golden idol.",
+    "nouns": [
+      {
+        "noun": "pressure plate",
+        "hyper": "a floor switch that activates when stepped on"
+      },
+      {
+        "noun": "lever",
+        "hyper": "a wall-mounted handle that opens gates when pulled"
+      },
+      {
+        "noun": "golden idol",
+        "hyper": "the treasure at the end of the temple"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.1,
+      "arousal": 0.5,
+      "tension": 0.6
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "4ad3e1783f23ba6461847530014c7024807b760cb14493047efb8389033ebef8",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_temple",
+      "text": "Pressure plates and levers must unlock the path to the golden idol.",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 3 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (relic_1 into idol) ← pick up relic_1",
+        "src": ""
+      },
+      {
+        "id": "T2:r_open1",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_open1"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 10,
+        "status": "verified",
+        "text": "r_open1 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_open2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_open2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_open2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 11,
+        "text": "AI runners won by playing it (AI par 6.8 s)",
+        "cx": null,
+        "src": "",
+        "ms": 3385
+      }
+    ],
+    "par": {
+      "goldS": 6.8,
+      "runs": 12,
+      "won": 11
+    },
+    "ms": 3459
+  }
+}

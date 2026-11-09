@@ -154,6 +154,14 @@ export function conformance(packId: string, layout: PackLayout, seed: number, op
   } finally {
     nav.destroy();
   }
+  // (6) nothing hung on a wall hangs over a doorway (a picture there shuts the door)
+  const doorways = layout.zones.flatMap((z) => Object.entries(z.anchors).filter(([k]) => k.startsWith("doorway_")).map(([, a]) => a));
+  for (const z of layout.zones) {
+    for (const [name, a] of Object.entries(z.anchors)) {
+      if (!name.startsWith("wall_")) continue;
+      for (const d of doorways) if (Math.abs(d[1] - z.floorY) < 0.01 && Math.abs(a[0] - d[0]) < 0.75 && Math.abs(a[2] - d[2]) < 0.75) out.push(`${z.slot}.${name} hangs over the doorway at ${d.join(",")}`);
+    }
+  }
   // (4) every zone owns ground reached with comfortable hops
   const start = surfaceUnder(ss, spawnAt);
   if (!start) return [...out, "nothing under the spawn"];

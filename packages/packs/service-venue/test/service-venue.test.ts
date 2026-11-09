@@ -36,10 +36,12 @@ describe("service_venue pack", () => {
       // the storeroom's one doorway is in the back room's wall; the back room's is off the staff side
       expect(Object.keys(zone(l, "storeroom").anchors).filter((k) => k.startsWith("doorway_"))).toEqual(["doorway_w"]);
       expect(Object.keys(zone(l, "back_room").anchors).filter((k) => k.startsWith("doorway_")).sort()).toEqual(["doorway_e", "doorway_s"]);
-      // the flap is a real gap in the counter at standing height
-      const flap = zone(l, "counter").anchors.flap!;
-      const counterTop = l.statics.find((s) => s.zoneSlot === "counter" && s.surf === "wall")!;
-      expect(Math.abs(flap[0] - counterTop.pos[0])).toBeGreaterThan(counterTop.size[0] / 2 + 0.45);
+      // the flap is a gap at one end of the counter, wider than a doorway (no anchor: nothing is put in the way)
+      const counterTop = l.statics.find((s) => s.zoneSlot === "counter" && s.surf === "wall" && s.size[1] < 1.5)!;
+      const W = serviceVenue.defaults.width;
+      const ends = [counterTop.pos[0] - counterTop.size[0] / 2 + W / 2, W / 2 - (counterTop.pos[0] + counterTop.size[0] / 2)];
+      expect(Math.max(...ends)).toBeGreaterThanOrEqual(1.2 + 0.1 - 1e-9);
+      expect(Object.keys(zone(l, "counter").anchors)).not.toContain("flap");
     }
   });
 
