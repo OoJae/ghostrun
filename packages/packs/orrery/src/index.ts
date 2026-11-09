@@ -127,7 +127,10 @@ export const orrery: LayoutPack<OrreryParams> = {
         anchors: { belt_ne: [a, 0, a], belt_nw: [r2(-a), 0, a], belt_se: [a, 0, r2(-a)], belt_sw: [r2(-a), 0, r2(-a)] } },
       ...planets.slice(4).map(([name, , , w]): ZoneSpec => {
         const p = at.get(name)!;
-        return { slot: name, tag: "planet", bounds: { min: [r2(p[0] - w), 0, r2(p[2] - w)], max: [r2(p[0] + w), 3, r2(p[2] + w)] }, floorY: 0, anchors: { [name]: p, beside: beside.get(name)! } };
+        // (its bounds are the stretch of spoke it stands on: anything scattered in the zone lands on the walkway)
+        const [hx, hz] = Math.abs(p[0]) > Math.abs(p[2]) ? [w, half] : [half, w];
+        const [sx, sz] = Math.abs(p[0]) > Math.abs(p[2]) ? [p[0], 0] : [0, p[2]];
+        return { slot: name, tag: "planet", bounds: { min: [r2(sx - hx), 0, r2(sz - hz)], max: [r2(sx + hx), 3, r2(sz + hz)] }, floorY: 0, anchors: { [name]: p, beside: beside.get(name)! } };
       }),
     ];
     const ext = r2(Math.max(...reach.slice(0, 3), ring1) + 2);

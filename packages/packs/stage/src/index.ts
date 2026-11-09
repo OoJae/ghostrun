@@ -21,7 +21,7 @@ export interface StageParams {
 export const STAGE_H = 1;
 export const PIT_DROP = 0.3;
 /** The lighting rig hangs this high over the stage floor. */
-export const RIG_H = 4;
+export const RIG_H = 3.2; // (low enough that a light hung there is looked at from the stage floor)
 const FOYER_D = 4;
 const PIT_D = 3;
 const BACK_D = 4.5;
@@ -150,7 +150,7 @@ export const stage: LayoutPack<StageParams> = {
         upstage: [0, y, r2(zBs - 1.2)],
         stage_l: [r2(-xs + 2), y, mid],
         stage_r: [r2(xs - 2), y, mid],
-        backdrop: [0, r2(y + 1.6), r2(zBs - 0.22)],
+        backdrop: [0, y, r2(zBs - 0.5)], // (on the floor against the upstage wall: a backdrop stands up from there)
         rig_l: [r2(-xs / 2), y + RIG_H, r2(zSF + 2)], rig_c: [0, y + RIG_H, r2(zSF + 2)], rig_r: [r2(xs / 2), y + RIG_H, r2(zSF + 2)],
       },
     };

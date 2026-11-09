@@ -26,6 +26,9 @@ export const KIND_SIZE: Partial<Record<Entity["kind"], Vec3>> = {
   vehicle: [2, 1.2, 4],
 };
 
+/** Packs whose anchors are named for one place each (a planet, the till): one a zone lacks is found in another. */
+const NAMED_ANCHORS: ReadonlySet<string> = new Set(["service_venue", "puzzle_rooms", "stage", "orrery"]);
+
 const isDefaultSize = (s: Vec3) => s[0] === 1 && s[1] === 1 && s[2] === 1;
 
 /** Which of the pack's slots each of the fill's zones stands in: its own slot, else one with its tag, else any free one. */
@@ -158,12 +161,24 @@ export function placeWorld(input: WorldBundle, layout: PackLayout, opts: { reach
         }
       }
     }
+    // on the newer packs, an anchor the zone lacks that names one place in the whole layout (Saturn's
+    // plinth put in an "outer planets" zone that stands on Jupiter's slot) is that place
+    if (!base && e.anchor && NAMED_ANCHORS.has(layout.packId)) {
+      const owners = layout.zones.filter((z) => z.anchors[e.anchor]);
+      if (owners.length === 1) {
+        base = owners[0]!.anchors[e.anchor];
+        notes.push(`${e.id}: anchor '${e.anchor}' not in slot '${spec.slot}', placed at ${owners[0]!.slot}'s`);
+      }
+    }
     if (!base) {
       // no such anchor: a seeded spot in the zone on open floor (never inside a wall or a pillar)
       const r = stream(b.seed, `place:${e.id}`);
       const { min, max } = spec.bounds;
       const solid = layout.statics.filter((st) => st.pos[1] + st.size[1] / 2 > spec.floorY + 0.3);
-      const open = (x: number, z: number) => !solid.some((st) => Math.abs(x - st.pos[0]) < st.size[0] / 2 + 0.6 && Math.abs(z - st.pos[2]) < st.size[2] / 2 + 0.6);
+      // (on the orrery's walkways in space, also somewhere with a walkway under it, not the void beside it)
+      const grounded = layout.packId === "orrery";
+      const ground = (x: number, z: number) => layout.statics.some((st) => (st.surf === "floor" || st.surf === "ledge") && Math.abs(st.pos[1] + st.size[1] / 2 - spec.floorY) < 0.35 && Math.abs(x - st.pos[0]) < st.size[0] / 2 - 0.6 && Math.abs(z - st.pos[2]) < st.size[2] / 2 - 0.6);
+      const open = (x: number, z: number) => !solid.some((st) => Math.abs(x - st.pos[0]) < st.size[0] / 2 + 0.6 && Math.abs(z - st.pos[2]) < st.size[2] / 2 + 0.6) && (!grounded || ground(x, z));
       let pick: Vec3 | undefined;
       for (let k = 0; k < 40 && !pick; k++) {
         const x = min[0] + 1 + r() * (max[0] - min[0] - 2);

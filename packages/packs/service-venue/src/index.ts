@@ -18,7 +18,7 @@ export interface ServiceVenueParams {
 
 /** The counter: how high its top is, how deep, and the flap left open at one end. */
 export const COUNTER_H = 1.05;
-const COUNTER_D = 0.7;
+const COUNTER_D = 0.5; // shallow enough that a cup on its middle line is in reach from either side
 const FLAP = 1.2;
 /** The staff side behind the counter, from the counter's middle line to the back wall. */
 const STAFF_D = 3.2;
@@ -94,7 +94,7 @@ export const serviceVenue: LayoutPack<ServiceVenueParams> = {
     const [c0, c1] = flapEast ? [x0 + T / 2, x3 - T / 2 - FLAP] : [x0 + T / 2 + FLAP, x3 - T / 2];
     s.box("counter", [r2((c0 + c1) / 2), COUNTER_H / 2, zK], [r2(c1 - c0), COUNTER_H, COUNTER_D], "wall");
     const cMid = r2((c0 + c1) / 2);
-    // the till stands on the counter top near its customer edge (in reach of both sides), a little to
+    // the till stands on the counter top (in reach from either side), a little to
     // the flap side of its middle
     const till = r2(cMid + (flapEast ? 1 : -1) * Math.min(2, (c1 - c0) / 4));
 
@@ -131,7 +131,7 @@ export const serviceVenue: LayoutPack<ServiceVenueParams> = {
       floorY: 0,
       anchors: {
         center: [r2((x0 + x3) / 2 + (flapEast ? -3 : 3)), 0, staffMid],
-        till: [till, COUNTER_H, r2(zK - COUNTER_D / 2 + 0.15)],
+        till: [till, COUNTER_H, zK],
         behind_counter: [cMid, 0, r2(zK + COUNTER_D / 2 + 0.8)],
         // the kitchen pass beside the kitchen door (never in front of it), on the side away from the back bar
         pass: [r2(kitchenDoor + (kitchenDoor - x0 > xB - kitchenDoor ? 1.6 : -1.6)), 0, r2(zR - 0.5)],
