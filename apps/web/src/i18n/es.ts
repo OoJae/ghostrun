@@ -634,4 +634,6 @@ export const es: Table = {
   "Put it on a stage": "Ponlo en un escenario",
   "Did you mean the solar system?": "¿Querías decir el sistema solar?",
   "Make it the solar system": "Hazlo el sistema solar",
+  "AI-made": "Hecho con IA",
+  "Worlds, characters and answers here are made by AI, then checked by a proof. Privacy and AI: what we keep.": "Los mundos, personajes y respuestas de aquí los crea la IA y luego los comprueba una prueba. Privacidad e IA: qué guardamos.",
 };

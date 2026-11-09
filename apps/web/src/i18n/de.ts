@@ -634,4 +634,6 @@ export const de: Table = {
   "Put it on a stage": "Bring es auf eine Bühne",
   "Did you mean the solar system?": "Meintest du das Sonnensystem?",
   "Make it the solar system": "Mach daraus das Sonnensystem",
+  "AI-made": "Von KI erstellt",
+  "Worlds, characters and answers here are made by AI, then checked by a proof. Privacy and AI: what we keep.": "Welten, Figuren und Antworten hier erstellt KI, danach prüft sie ein Beweis. Datenschutz und KI: was wir speichern.",
 };

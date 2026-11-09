@@ -634,4 +634,6 @@ export const zh: Table = {
   "Put it on a stage": "搬上舞台",
   "Did you mean the solar system?": "你是想要太阳系吗？",
   "Make it the solar system": "改成太阳系",
+  "AI-made": "AI 生成",
+  "Worlds, characters and answers here are made by AI, then checked by a proof. Privacy and AI: what we keep.": "这里的世界、角色和回答由 AI 生成，再经证明核对。隐私与 AI：我们保留什么。",
 };

@@ -634,4 +634,6 @@ export const ja: Table = {
   "Put it on a stage": "ステージにする",
   "Did you mean the solar system?": "太陽系のことですか？",
   "Make it the solar system": "太陽系にする",
+  "AI-made": "AI 生成",
+  "Worlds, characters and answers here are made by AI, then checked by a proof. Privacy and AI: what we keep.": "ここのワールド、キャラクター、回答は AI が作り、証明で確認しています。プライバシーと AI：保存する内容。",
 };
