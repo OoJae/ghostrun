@@ -218,3 +218,19 @@ Production, judge token, distinct uncached prompts started at the same moment (f
 The free Cerebras lane's five fills a minute is the ceiling: the sixth judge in the same minute waits on Haiku (the materialise reveal shows the world assembling meanwhile). No build failed and none was refused.
 
 Outside Cloudflare: `.github/workflows/uptime.yml` loads the app and `/v1/health` every 30 minutes from GitHub's machines (a failed run emails the owner; ntfy too when the `NTFY_TOPIC` secret is set). First run: passed in 12 s.
+
+## Release build: the five follow-up lanes, the cloud proof, and twenty judges at once (2026-11-09)
+
+Production runs main 49db57c: the cloud proof (`POST /v1/proof`, six shard Durable Objects, receipts equal to the device's chip for chip), canaries every 15 min, 2 h and 12 h, deals (a bribable guard, a viewing booked to an .ics), the editable Intent card and structural edits, red/green runs, Apply on design notes, the Host flying to the moment, and the HUD in ten languages. On staging, the organizer's brief read "proved in the cloud · same result on this device" in 2.3 s. The first 15-minute canary on production passed (05:15 UTC).
+
+Checks on the release commit: typecheck, 611 unit tests, `det:quick` matching on five runtimes, workerd, and the full browser suite (62 of 63; the one failure, the Host's camera flight, passed 9 of 9 on rerun). Trust re-proved: 231 of 239 games, 63 of 63 places (a runner no longer cuts a doorway's jamb). "Try to fool it": 607 of 607 planted bugs caught in 220 winning worlds.
+
+The exact-repeat cache is warmed by proof now: `warm-cache` proves every world it keeps with the CLI and builds it fresh again until it proves clean (the organizer's brief took three tries on the deploy; its fixed seed, 82028, proves clean on the first pass about 1 to 2 times in 5, against 4 in 5 on other seeds).
+
+Twenty judges at once, production, judge token, twenty distinct uncached prompts fired together (`fresh: true`):
+
+| Built | On the fast lane | On Haiku | First op p50 | First op p90 | Wall | Proved clean on the first pass |
+|---|---|---|---|---|---|---|
+| 20 of 20 | 5, playable in 1.6–4.2 s | 15, first op 4.6–5.7 s, done 7.3–12.6 s | 4.8 s | 5.5 s | 12.7 s | 13 of 20 |
+
+No build failed. The first pass (13 of 20) is in line with the committed benches' 153 of 239; the receipt shows the rest as counterexamples, and the repair loop takes them from there.
