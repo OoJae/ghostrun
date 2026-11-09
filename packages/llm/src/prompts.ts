@@ -227,7 +227,7 @@ function worldRules(layout: PackLayout): string[] {
 const DEALS = /brib|pay[\s-]*off|look the other way|guard|merchant|shop|buy|sell|trade|haggl|bestech|soborn|uplat/i;
 const BOOKS = /book|reserv|schedul|viewing|appointment|guide|estate agent|rezerv/i;
 /** How the act rules fit together, for a prompt that needs them (the language itself is always sent). */
-export const DEAL_HINT = " A bribe: spoken a=guard_1 act=offer b=coins n=20, if player.coins gte 20: take player coins 20, set_state guard_1 look_away n 20 (menu has guard.look_away). Caught: seen_by b=guard_1 if player.carrying eq the loot: lose. Touch rules give coins.";
+export const DEAL_HINT = " A bribe: spoken a=guard_1 act=offer b=coins n=20, if player.coins gte 20: take player coins 20, set_state guard_1 look_away n 20 (menu has guard.look_away). Caught: seen_by b=guard_1 if player.carrying eq the loot: lose. The world must hold the price: 2+ pickup ents (hyper coin) and for each a rule when touch a=player b=its id: give player coins 10, at least the price in all.";
 export const BOOK_HINT = " A guide: spoken act=book: book_slot.";
 /** How the act rules fit together, for a prompt that needs them (the language itself is always sent). */
 export const TALK_HINT = DEAL_HINT + BOOK_HINT;
