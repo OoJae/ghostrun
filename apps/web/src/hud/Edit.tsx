@@ -70,6 +70,14 @@ export function EditBox({ state, enabled, suggestions, canUndo, onEdit, onUndo, 
           ))}
         </div>
       )}
+      {/* after an Undo the panel closes, but anything older can still be undone, one at a time */}
+      {state.status === "idle" && canUndo && (
+        <div className="edit-undo-row">
+          <button type="button" className="edit-undo" onClick={onUndo} data-testid="edit-undo">
+            Undo
+          </button>
+        </div>
+      )}
       {state.status !== "idle" && (
         <div className="edit-result" data-testid="edit-result">
           <p className="edit-change">“{state.change}”</p>
