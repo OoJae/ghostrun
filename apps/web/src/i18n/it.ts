@@ -631,4 +631,6 @@ export const it: Table = {
   "fly up": "vola su",
   "swim up": "nuota su",
   "dive": "immergiti",
+  "AI-made": "Creato dall'IA",
+  "Worlds, characters and answers here are made by AI, then checked by a proof. Privacy and AI: what we keep.": "Mondi, personaggi e risposte qui sono creati dall'IA, poi verificati da una prova. Privacy e IA: cosa conserviamo.",
 };

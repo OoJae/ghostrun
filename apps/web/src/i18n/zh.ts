@@ -631,4 +631,6 @@ export const zh: Table = {
   "fly up": "向上飞",
   "swim up": "向上游",
   "dive": "下潜",
+  "AI-made": "AI 生成",
+  "Worlds, characters and answers here are made by AI, then checked by a proof. Privacy and AI: what we keep.": "这里的世界、角色和回答由 AI 生成，再经证明核对。隐私与 AI：我们保留什么。",
 };

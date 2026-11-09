@@ -25,9 +25,14 @@ import { devOpen, gateMode, identify, ipKey, ipOf, mintSession, verifyTurnstile,
 import { json, ntfy, readJson } from "./http";
 import { MAX_IMAGE_URL, readImage } from "./image";
 import { healthMore } from "./health";
+import { ENGINE_HASH, PROOF_VERSION } from "@ghostrun/world";
 import { proofRoute, type ProofEnv } from "./proof";
 import { getBoard, postBoard } from "./board";
 import { mcp } from "./mcp";
+
+declare const __GIT_COMMIT__: string | undefined;
+/** The commit this bundle was built from (stamped by scripts/build.mjs; "dev" in tests). */
+const COMMIT: string = typeof __GIT_COMMIT__ === "string" ? __GIT_COMMIT__ : "dev";
 import { getShare, memoryBlobs, postReport, postShare, postWrong, r2Blobs, type BlobStore, type ShareCtx } from "./share";
 
 export interface Env extends GateEnv, GovernorEnv, ProofEnv {
@@ -123,6 +128,9 @@ export async function handle(req: Request, env: Env, ctx?: WaitUntil): Promise<R
   const path = url.pathname;
   const later = (p: Promise<unknown>) => (ctx ? ctx.waitUntil(p) : void p.catch(() => undefined));
   // `vision`: a build can bring a picture (the client offers one only then)
+  // what is deployed, to check against a release: the commit the bundle was built from, the engine
+  // and proof versions it proves with, and the hash of everything it sends the models
+  if (path === "/v1/version") return json({ commit: COMMIT, engine: ENGINE_HASH, proof: PROOF_VERSION, template: await templateHash(EXAMPLE) });
   if (path === "/v1/health") return json({ ok: true, packs: PACKS.map((p) => p.id), kits: { flight: (await switches(env)).flight }, llm: hasModel(env), fallback: Boolean(env.CEREBRAS_API_KEY && env.ANTHROPIC_API_KEY), vision: lanesFor("vision", keysOf(env), { messages: [] }).length > 0, gate: gateMode(env, url), sitekey: env.TURNSTILE_SITEKEY ?? null, ...(await healthMore(env)) });
   // MCP for agents (mcp.ts): its tools run on the routes below, in-process, as the caller
   if (path === "/mcp") return mcp(req, env, { route: (r) => handle(r, env, ctx) });

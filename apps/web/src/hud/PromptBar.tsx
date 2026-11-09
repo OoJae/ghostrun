@@ -254,6 +254,10 @@ export function PromptBar({ prompt, onPrompt, onSubmit, collapsed, onExpand, onC
     >
       <span className="mark" aria-hidden="true" />
       <span className="brand">GHOSTRUN</span>
+      {/* the permanent AI label (AI Act Art. 50): what's made here is made by AI, and what we keep */}
+      <a className="ai-label" href="/privacy" target="_blank" rel="noopener" data-testid="ai-label" title={t("Worlds, characters and answers here are made by AI, then checked by a proof. Privacy and AI: what we keep.")}>
+        {t("AI-made")}
+      </a>
       {(picture || pic.reading) && (
         <span className="picture-chip" data-testid="picture-chip" title={picture ? t("Your image, {w}×{h}, {kb} KB with its metadata removed. The world takes ideas from it (the place, colours, things); it doesn't rebuild it.", { w: picture.width, h: picture.height, kb: Math.round(picture.bytes / 1024) }) : t("Making the image small…")}>
           {picture ? <img src={picture.url} alt={t("Your image")} /> : <span className="picture-reading" aria-label={t("Making the image small")} />}

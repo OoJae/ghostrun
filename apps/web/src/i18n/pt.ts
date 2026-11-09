@@ -631,4 +631,6 @@ export const pt: Table = {
   "fly up": "voar para cima",
   "swim up": "nadar para cima",
   "dive": "mergulhar",
+  "AI-made": "Feito por IA",
+  "Worlds, characters and answers here are made by AI, then checked by a proof. Privacy and AI: what we keep.": "Os mundos, personagens e respostas aqui são feitos por IA e depois verificados por uma prova. Privacidade e IA: o que guardamos.",
 };

@@ -631,4 +631,6 @@ export const cs: Table = {
   "fly up": "letět nahoru",
   "swim up": "plavat nahoru",
   "dive": "potopit se",
+  "AI-made": "Vytvořeno AI",
+  "Worlds, characters and answers here are made by AI, then checked by a proof. Privacy and AI: what we keep.": "Světy, postavy a odpovědi zde vytváří AI a poté je kontroluje důkaz. Soukromí a AI: co uchováváme.",
 };
