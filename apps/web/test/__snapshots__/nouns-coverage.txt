@@ -1,5 +1,5 @@
 things (pickup, prop, switch, door): 89 of 216 distinct nouns drawn as a prop, 397 of 573 entities
-characters (npc): 39 of 42 distinct nouns given a body, 67 of 71 entities
+characters (npc): 40 of 43 distinct nouns given a body, 68 of 72 entities
 props used: 23 of 36 (barrel, flag, chair, pumpkin, gravestone, skull, target, tree, sword, wand, crossbow, shield, bomb unused here)
 
 kind     n  noun → prop
@@ -234,6 +234,7 @@ npc      1  creature 1 → skeleton
 npc      2  duch → skeleton
 npc      1  enemy boarding party → barbarian
 npc      1  estate agent → rogue
+npc      1  forest ranger → rogue
 npc      3  ghost → skeleton
 npc      1  goalkeeper → knight
 npc      1  groaning zombie → skeleton

@@ -10,6 +10,7 @@ import type { SimEvent, SpeechAct } from "@ghostrun/sim";
 import type { Act } from "@ghostrun/ir";
 import { acceptsOf, CONFIRM, factsOf, today } from "./acts";
 import { api } from "./api";
+import { chattiness, THINK_EVERY } from "./persona";
 import type { World } from "./pipeline";
 import type { RapierSim } from "./sim/rapier";
 
@@ -29,16 +30,20 @@ const IDLE_TICKS = 60 * 60; // and only while someone plays: a minute without in
 const BACKOFF_TICKS = 60 * 60; // the edge said "rate limited": wait a minute
 
 export class Minds {
-  readonly #world: World;
+  #world: World;
   readonly #sim: RapierSim;
   /** A line to show and say: `reply` when it answers the player (it cuts in over barks). */
   readonly #onBark: (npc: string, name: string, line: string, reply: boolean) => void;
   readonly #busy = new Set<string>();
+  /** When each NPC last thought aloud on its own. */
+  readonly #spoke = new Map<string, number>();
   #lastThought = 0;
   #quietUntil = 0;
   #turn = -1;
   #off = false;
   readonly #hooks: ActHooks;
+  /** Teammates under the player's order, until a tick: their own thoughts don't overrule it. */
+  readonly #held = new Map<string, number>();
 
   constructor(world: World, sim: RapierSim, onBark: (npc: string, name: string, line: string, reply: boolean) => void, hooks: ActHooks = {}) {
     this.#world = world;
@@ -47,10 +52,20 @@ export class Minds {
     this.#hooks = hooks;
   }
 
+  /** The same world with a character's persona retuned (a persona slider: prose, the same spec). */
+  retarget(world: World) {
+    this.#world = world;
+  }
+
   /** NPCs with a real choice to make (a menu of two or more options), or something you can say to them. */
   get minded() {
     const b = this.#world.bundle;
     return b.cast.filter((c) => (c.menu.length > 1 || b.rules.some((r) => r.when.t === "spoken" && r.when.a === c.npc)) && b.entities.some((e) => e.id === c.npc));
+  }
+
+  /** The player gave this NPC an order: for a while (30 s) its own thoughts keep to it (it still talks). */
+  hold(npc: string, ticks = 30 * 60) {
+    this.#held.set(npc, this.#sim.sim.tick + ticks);
   }
 
   stop() {
@@ -78,12 +93,20 @@ export class Minds {
     if (this.#off || !this.minded.length || this.#sim.replaying || this.#sim.idleTicks > IDLE_TICKS) return;
     const tick = this.#sim.sim.tick;
     if (tick < this.#quietUntil || tick - this.#lastThought < GAP_TICKS) return;
-    const event = this.#salient(evs) ?? (tick - this.#lastThought > QUIET_TICKS ? "a quiet moment" : null);
+    // (a quiet moment comes sooner when someone chatty is about: see persona.ts)
+    const soonest = Math.min(...this.minded.map((c) => THINK_EVERY[chattiness(c.persona)] ?? 1));
+    const event = this.#salient(evs) ?? (tick - this.#lastThought > QUIET_TICKS * Math.min(1, soonest) ? "a quiet moment" : null);
     if (!event) return;
     const minded = this.minded;
     this.#turn = (this.#turn + 1) % minded.length;
-    const npc = minded[this.#turn]!.npc;
+    const c = minded[this.#turn]!;
+    const npc = c.npc;
     if (this.#busy.has(npc)) return;
+    // its persona says how often it thinks aloud on its own: a quiet one only answers, a chatty one
+    // takes its turn sooner (each still waits its turn, so the calls stay within the allowance)
+    const every = THINK_EVERY[chattiness(c.persona)] ?? 1;
+    if (every === Infinity || (every > 1 && tick - (this.#spoke.get(npc) ?? -Infinity) < QUIET_TICKS * every)) return;
+    this.#spoke.set(npc, tick);
     this.#lastThought = tick;
     this.#busy.add(npc);
     void this.#ask(npc, event).finally(() => this.#busy.delete(npc));
@@ -123,7 +146,7 @@ export class Minds {
     const c = this.minded.find((x) => x.npc === npc);
     if (!c) return;
     try {
-      const persona = [c.persona.identity, c.persona.personality].filter(Boolean).join(" ");
+      const persona = [c.persona.identity, c.persona.personality, c.persona.replyStyle ? `You speak: ${c.persona.replyStyle}.` : ""].filter(Boolean).join(" ");
       // talked to: the acts it accepts (from the world's rules) and the facts it answers from
       const accepts = said !== undefined ? acceptsOf(this.#world.bundle, npc) : [];
       const facts = said !== undefined ? factsOf(this.#world.bundle, npc) : [];
@@ -139,7 +162,9 @@ export class Minds {
       const act = m.act && accepts.some((a) => a.act === m.act) ? (m.act as Act) : null;
       // an option earned by an act comes with the act (the rule sets it, for as long as it says)
       const earned = accepts.some((a) => a.gives === m.option);
-      if (m.option !== this.#sim.optionOf(npc) && !earned) this.#sim.queueMind(npc, m.option);
+      // (a teammate under the player's order keeps to it while it thinks on its own)
+      const held = said === undefined && (this.#held.get(npc) ?? 0) > this.#sim.sim.tick;
+      if (m.option !== this.#sim.optionOf(npc) && !earned && !held) this.#sim.queueMind(npc, m.option);
       if (m.line) this.#onBark(npc, this.name(npc), m.line, said !== undefined);
       if (act) this.#accepted(npc, { to: npc, act, what: m.what ?? "", n: m.n ?? 0, slot: m.slot ?? "" });
     } catch {

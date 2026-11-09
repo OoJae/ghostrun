@@ -201,6 +201,20 @@ export class Sound {
     this.#play("arrive", (v) => fx.arrive(v, this.#chord(0, 4, 1)), { vary: false, wet: 0.6 });
   }
 
+  /**
+   * A place's creature reacting to the player (life.ts): its call, where it is, panned and faded by
+   * distance like every other sound. Ambience only: it never ducks the music.
+   */
+  life(kind: string, mood: string, at: Vec3) {
+    const o = { at, duck: 0, wet: 0.3, gap: 0.6 };
+    if (kind === "firefly" && mood === "flock") this.#play("life:firefly", fx.shimmer, { ...o, gap: 2 });
+    else if (kind === "deer" && mood === "startled") this.#play("life:deer", fx.snort, o);
+    else if (kind === "owl") this.#play(`life:owl:${mood}`, mood === "fly" ? (v) => fx.flutter(v, 5) : fx.hoot, { ...o, gap: 1.5 });
+    else if (kind === "pigeon" && mood === "scatter") this.#play("life:pigeon", (v) => fx.flutter(v, 9), o);
+    else if ((kind === "attendant" && mood === "nod") || ((kind === "visitor" || kind === "passerby") && mood === "aside")) this.#play("life:person", fx.murmur, { ...o, gain: 0.8, gap: 1.2 });
+    else if (kind === "drone" && mood === "scan") this.#play("life:drone", fx.scan, o);
+  }
+
   /** One simulation frame: the player's footsteps and falls, and where everything is. */
   frame(f: SimFrame) {
     this.#poses = f.poses;

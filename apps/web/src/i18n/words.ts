@@ -22,6 +22,10 @@ const SHAPES: readonly [RegExp, string, readonly string[]][] = [
   [/^forced-state ≤(\d+) ticks$/, k("forced-state ≤{n} ticks"), ["n"]],
   [/^physics jump witness, (\d+) attempts per jump count$/, k("physics jump witness, {n} attempts per jump count"), ["n"]],
   [/^physics, (\d+) menu schedules × (\d+) runners$/, k("physics, {n} menu schedules × {k} runners"), ["n", "k"]],
+  // team AI: a command forced on a teammate (proof commands.ts)
+  [/^the ([a-z]+) ([a-z][a-z0-9_]*) plays ([a-z0-9_.]+) when told$/, k("the {role} {npc} plays {option} when told"), ["role", "npc", "option"]],
+  [/^told ([a-z0-9_.]+), it got no nearer where that takes it$/, k("told {option}, it got no nearer where that takes it"), ["option"]],
+  [/^told ([a-z0-9_.]+), it kept playing what it played$/, k("told {option}, it kept playing what it played"), ["option"]],
 ];
 /** Whole sentences the tiers write as they are. */
 const WHOLE = [

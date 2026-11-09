@@ -76,7 +76,7 @@ function Routes({ routes, runs, on, onToggle, noteAction }: { routes: Insights; 
   );
 }
 
-export function ReceiptPanel({ proof, onClose, onShare, onWrong, onExport, onTrust, onFool, fooled, reported, routes, routesOn, onRoutes, report, version, fengShui, chipAction, noteAction }: { proof: ProofState; onClose: () => void; onShare?: () => void; onWrong?: (note: string) => void; onExport?: () => void; onTrust?: () => void; onFool?: (() => void) | undefined; fooled?: Fooled | null; reported?: string | undefined; routes?: Insights | null; routesOn?: boolean; onRoutes?: () => void; report?: Report | null; /** A remix: which version this receipt is for, and that the original's is its own. */ version?: string | null; /** Feng Shui for one named school, checked on this world (asked for, or offered for an interior). */ fengShui?: FengShuiView | null; /** After a chip's line: its ▶ red/green, when it has one. */ chipAction?: ((c: Chip) => ReactNode) | undefined; /** After a design note (a thing nobody went near, a place runs went wrong): its Apply choices. */ noteAction?: ((key: string) => ReactNode) | undefined }) {
+export function ReceiptPanel({ proof, onClose, onShare, onWrong, onExport, onTrust, onFool, fooled, reported, routes, routesOn, onRoutes, report, version, fengShui, chipAction, noteAction, life }: { /** A place's ambient life in words (life.ts), said beside its stamp. */ life?: string | null; proof: ProofState; onClose: () => void; onShare?: () => void; onWrong?: (note: string) => void; onExport?: () => void; onTrust?: () => void; onFool?: (() => void) | undefined; fooled?: Fooled | null; reported?: string | undefined; routes?: Insights | null; routesOn?: boolean; onRoutes?: () => void; report?: Report | null; /** A remix: which version this receipt is for, and that the original's is its own. */ version?: string | null; /** Feng Shui for one named school, checked on this world (asked for, or offered for an interior). */ fengShui?: FengShuiView | null; /** After a chip's line: its ▶ red/green, when it has one. */ chipAction?: ((c: Chip) => ReactNode) | undefined; /** After a design note (a thing nobody went near, a place runs went wrong): its Apply choices. */ noteAction?: ((key: string) => ReactNode) | undefined }) {
   const r = proof.receipt;
   const [writing, setWriting] = useState(false);
   const [note, setNote] = useState("");
@@ -101,6 +101,13 @@ export function ReceiptPanel({ proof, onClose, onShare, onWrong, onExport, onTru
         <p className={`headline ${r.headline.status}`}>
           {r.headline.text}: <b>{t(r.headline.status.replace("_", " "))}</b>
           <span className="method"> ({r.headline.method.split(" + ").map(proofText).join(" + ")})</span>
+        </p>
+      )}
+      {/* a place: its stamp is the tour, as the proof played it; its ambient life is said, never proved */}
+      {r && r.chips.some((c) => c.id === "T3:tour") && (
+        <p className="placestamp" data-testid="place-stamp">
+          <b>{t("Place checked")}</b> · {proofText(r.chips.find((c) => c.id === "T3:tour")!.text)}
+          {life ? <span className="muted"> · {t("ambient life ({what}) is cosmetic: not in the spec hash or the proof", { what: life })}</span> : null}
         </p>
       )}
       <ul>

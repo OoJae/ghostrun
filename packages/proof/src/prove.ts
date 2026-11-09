@@ -7,6 +7,7 @@ import { playtest } from "./playtest";
 import { t0 } from "./t0";
 import { t1, t1Drive, t1Range } from "./t1";
 import { t2 } from "./t2";
+import { t2Commands } from "./commands";
 import { t3, tour, type Played } from "./t3";
 import type { Chip, Receipt } from "./types";
 
@@ -54,6 +55,8 @@ export async function prove(R: Rapier, b: WorldBundle, opts: ProveOptions): Prom
   emit(t2(R, b, team));
   const nav = buildNav(b);
   try {
+    // teammates you can command: each option a command picks, forced (on the navmesh, so here)
+    emit(t2Commands(R, b, nav, team));
     // (the navmesh first: built here while the shards play)
     const played = opts.played ? await opts.played : undefined;
     const s3 = t3(R, b, nav, s0.chain, opts.runs ?? 12, team, s0.openers, played);

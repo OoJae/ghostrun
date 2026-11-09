@@ -190,6 +190,13 @@ describe("edge API", () => {
     expect((await handle(new Request("http://localhost/v1/nope"), dev)).status).toBe(404);
   });
 
+  it("health carries the living world's flags: on unless KV says off (ff.persona_sliders, ff.team_ai, ff.wander_life)", async () => {
+    const health = async (env: Env) => ((await (await handle(new Request("http://localhost/v1/health"), env)).json()) as { ff: Record<string, boolean> }).ff;
+    expect(await health({ CEREBRAS_API_KEY: "k", DEV_OPEN: "1" })).toEqual({ persona_sliders: true, team_ai: true, wander_life: true });
+    const off = { get: async (k: string) => (k === "ff.team_ai" ? "off" : k === "ff.wander_life" ? "on" : null) };
+    expect(await health({ CEREBRAS_API_KEY: "k", DEV_OPEN: "1", FLAGS: off })).toEqual({ persona_sliders: true, team_ai: false, wander_life: true });
+  });
+
   it("the gate is closed by default, and DEV_OPEN only opens it on localhost", async () => {
     const req = (u: string) => new Request(u, { method: "POST", body: JSON.stringify({ prompt: "x" }) });
     expect((await handle(req("https://g.example/v1/build"), { CEREBRAS_API_KEY: "k" })).status).toBe(503);

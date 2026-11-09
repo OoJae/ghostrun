@@ -28,7 +28,9 @@ describe("proof ladder on the organizer's CTF brief", () => {
     console.log(["", `spec ${receipt.spec.slice(0, 8)} · ${receipt.ms} ms`, ...lines, `par: ${JSON.stringify(receipt.par)}`].join("\n"));
     expect(receipt.headline).toMatchObject({ expect: "x_roof", text: "Rooftop lane needs double jump", status: "verified" });
     const t2 = receipt.chips.filter((c) => c.tier === "T2");
-    expect(t2).toHaveLength(world.rules.length);
+    // one per rule, and one per option a command can pick on the mate's menu (team AI)
+    expect(t2.filter((c) => c.subject.kind === "rule")).toHaveLength(world.rules.length);
+    expect(t2.filter((c) => c.id.startsWith("T2:command:mate_1:"))).toHaveLength(3);
     expect(t2.every((c) => c.status === "verified")).toBe(true);
     expect(receipt.chips.find((c) => c.id === "T0:win_chain")?.status).toBe("verified");
     const win = receipt.chips.find((c) => c.id === "T3:win")!;

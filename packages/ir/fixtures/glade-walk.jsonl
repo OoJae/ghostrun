@@ -1,0 +1,18 @@
+{"op":"meta","mode":"wander","lang":"en","pack":"outdoor","sub":[],"seed":7,"look":"bioluminescent forest","mood":[0.6,0.2,-0.2],"timeOfDay":23,"weather":"fog"}
+{"op":"zone","id":"z_trailhead","slot":"entrance","tag":"start","name":"Mossy trailhead"}
+{"op":"zone","id":"z_glade","slot":"clearing","tag":"hub","name":"Glowcap glade"}
+{"op":"zone","id":"z_pond","slot":"pond","tag":"water","name":"Moonlit pond"}
+{"op":"zone","id":"z_grove","slot":"grove","tag":"trees","name":"Lantern grove"}
+{"op":"zone","id":"z_camp","slot":"camp","tag":"camp","name":"Firefly camp"}
+{"op":"spawn","id":"sp_red","zone":"z_trailhead","anchor":"spawn_pad","team":"red"}
+{"op":"ent","id":"glowcaps","kind":"sign","noun":"glowing mushroom ring","hyper":"plant","zone":"z_glade","anchor":"center_e","body":"fixed","shape":"box","size":[1.2,0.6,1.2]}
+{"op":"ent","id":"lantern_tree","kind":"sign","noun":"lantern tree","hyper":"tree","zone":"z_grove","anchor":"heart","body":"fixed","shape":"box","size":[0.8,2.4,0.8]}
+{"op":"ent","id":"camp_fire","kind":"sign","noun":"camp fire","hyper":"fire","zone":"z_camp","anchor":"fire","body":"fixed","shape":"box","size":[1,0.5,1]}
+{"op":"verb","id":"vb_look_caps","verb":"social.inspect","on":"glowcaps","params":{"text":"Glowcaps light up when it rains: the brighter the ring, the wetter the night."}}
+{"op":"verb","id":"vb_look_tree","verb":"social.inspect","on":"lantern_tree","params":{"text":"The oldest tree in the grove; the lanterns are hung for the spring walk."}}
+{"op":"verb","id":"vb_look_fire","verb":"social.inspect","on":"camp_fire","params":{"text":"The rangers' fire: kept low, always watched, out by midnight."}}
+{"op":"npc","id":"ranger","role":"guide","zone":"z_trailhead","anchor":"guide","noun":"forest ranger","menu":["guide.talk"],"dflt":"guide.talk"}
+{"op":"expect","id":"x_tour","prop":"reachable","a":"sp_red","b":"","headline":true,"text":"Every corner of the glade can be visited"}
+{"op":"end","layer":"gameplay"}
+{"op":"dress","id":"d_lanterns","noun":"paper lanterns","zone":"z_camp","anchor":"fire"}
+{"op":"end","layer":"cosmetic"}

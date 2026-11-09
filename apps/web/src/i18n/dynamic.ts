@@ -18,6 +18,8 @@ export const DYNAMIC: readonly string[] = [
   k("capture the flag"), k("heist"), k("escape"), k("collect"), k("duel"), k("parkour"), k("tour"), k("hide and seek"), k("survival"),
   k("Neon city"), k("Grove"), k("Gallery"), k("Aquarium"), k("Desert"), k("Beach"), k("Seabed"), k("Snow"), k("Ice cave"), k("Space station"),
   k("Moon"), k("Haunted"), k("Haunted library"), k("Medieval"), k("Wizard school"), k("Candy"), k("Jungle"), k("Home"), k("Tea house"), k("Library"),
+  // a character's role, as the persona sliders name it (ir ROLES)
+  k("guard"), k("merchant"), k("guide"), k("rival"), k("teammate"), k("creature"), k("citizen"),
 ];
 
 /** The names the layout package gives, which must be among the keys above. */
