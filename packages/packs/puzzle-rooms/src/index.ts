@@ -137,7 +137,7 @@ export const puzzleRooms: LayoutPack<PuzzleRoomsParams> = {
           switch: pt(A, h - T / 2 - 0.12, 0, SWITCH_Y),
           plate: pt(A, h - 2, 0),
           key: pt(A, h - 0.9, h - 0.9),
-          lever: pt(B, h - 1.3, 0), // (a stride off the wall: whoever pulls it can stand all round it)
+          lever: pt(B, h - 1.0, 0), // (a stride off the wall: whoever pulls it can stand all round it)
           chest: pt(B, h - 0.9, h - 0.9),
         }, { walls: false, doors: false }),
       );
