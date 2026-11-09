@@ -477,7 +477,7 @@ async function main() {
     if (gate && args.includes("--trust")) {
       const file = args[args.indexOf("--trust") + 1]!;
       const was = JSON.parse(readFileSync(file, "utf8")) as Record<string, unknown>;
-      writeFileSync(file, `${JSON.stringify({ ...was, t3h: { worlds: clean, flagged } }, null, 1)}\n`);
+      writeFileSync(file, `${JSON.stringify({ ...was, t3h: { ...(was.t3h as object | undefined), worlds: clean, flagged } }, null, 1)}\n`);
     }
   } else if (cmd === "calibrate") {
     // T4's calibration: collect (prove every play world with its playtest and T3h; --shard i/n

@@ -30,7 +30,7 @@ interface HumanGate {
   worlds: number;
   flagged: number;
   /** Every clean world on the bench (`ghostrun human tools/bench/worlds`), not only the gate's first n. */
-  all: { worlds: number; flagged: number };
+  all?: { worlds: number; flagged: number };
 }
 
 interface Fool {
@@ -71,7 +71,7 @@ export function TrustPanel({ onClose }: { onClose: () => void }) {
         <li><b>T3</b> {t('physics: 12 AI runners play the real simulation against the world\'s own bots, through doors and over gaps; fewer than 30 trials print as "k of n".')}</li>
         <li>
           <b>T3h</b> {t("the player's controls: the experts' plan played again through the keys and the follow camera as a player has them (eight directions, the camera turned by hand, a tenth of a second to react). It flags the camera inside walls, stuck frames over 0.5 s and capsule traps.")}
-          {DATA.t3h ? ` ${t("On the first {n} clean bench worlds it flagged {k}, on all {all} of them {f}; its test plants a low ceiling, a narrow gap and a corner, and catches all three.", { n: DATA.t3h.worlds, k: DATA.t3h.flagged, all: DATA.t3h.all.worlds, f: DATA.t3h.all.flagged })}` : ""}
+          {DATA.t3h ? ` ${t("On the first {n} clean bench worlds it flagged {k}, on all {all} of them {f}; its test plants a low ceiling, a narrow gap and a corner, and catches all three.", { n: DATA.t3h.worlds, k: DATA.t3h.flagged, all: DATA.t3h.all?.worlds ?? DATA.t3h.worlds, f: DATA.t3h.all?.flagged ?? DATA.t3h.flagged })}` : ""}
         </li>
         <li>
           <b>T4</b> {t("route model: the world's route as a graph plays {n} modelled runs in milliseconds, for where the time goes, screening harder versions and red against blue. Never shown as played: each number says modelled, with its error measured against physics on {held} held-out bench worlds (win rate ±{nov} novices, ±{avg} average players; clear time ±{t}%).", { n: MODEL_RUNS_ALL, held: FIT.bench.held, nov: Math.round(FIT.win.novice * 100), avg: Math.round(FIT.win.average * 100), t: Math.round(FIT.times * 100) })}
