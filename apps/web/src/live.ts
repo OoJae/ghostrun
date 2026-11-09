@@ -52,15 +52,18 @@ export type LiveResult =
   | { kind: "refused"; message: string }
   | { kind: "unavailable"; reason: string };
 
-/** Is the live lane up, and can it read a picture (the Claude lane is configured)? */
-export async function liveHealth(): Promise<{ llm: boolean; vision: boolean }> {
+/**
+ * Is the live lane up, can it read a picture (the Claude lane is configured), and are the headset's
+ * creation tools on (ff.vr_create: on unless the edge says off, and on when it can't be asked)?
+ */
+export async function liveHealth(): Promise<{ llm: boolean; vision: boolean; vrCreate: boolean }> {
   try {
     const r = await fetch("/v1/health", { cache: "no-store" });
-    if (!r.ok) return { llm: false, vision: false };
-    const h = (await r.json()) as { llm?: boolean; vision?: boolean };
-    return { llm: Boolean(h.llm), vision: Boolean(h.llm && h.vision) };
+    if (!r.ok) return { llm: false, vision: false, vrCreate: true };
+    const h = (await r.json()) as { llm?: boolean; vision?: boolean; vrCreate?: boolean };
+    return { llm: Boolean(h.llm), vision: Boolean(h.llm && h.vision), vrCreate: h.vrCreate !== false };
   } catch {
-    return { llm: false, vision: false };
+    return { llm: false, vision: false, vrCreate: true };
   }
 }
 

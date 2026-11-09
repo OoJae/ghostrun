@@ -85,3 +85,51 @@ export function reanchor(fill: string, before: PackLayout, after: PackLayout): R
   }
   return { fill: lines.join("\n"), notes, moved };
 }
+
+/** An anchor nothing stands on: somewhere a thing could be moved to. */
+export interface FreeAnchor {
+  zone: string;
+  anchor: string;
+  /** Where it is (the floor under whatever would stand there). */
+  at: Vec3;
+  /** At wall height (where a painting hangs) rather than on the floor. */
+  high: boolean;
+}
+
+/**
+ * The anchors of a world's layout that nothing in its fill stands on, in every zone (never a
+ * doorway, a spawn pad or a goal spot: those keep their own kind), in a stable order: where the
+ * diorama's hand can drop a thing. A move op names one, and the placer does the rest.
+ */
+export function freeAnchors(fill: string, layout: PackLayout): FreeAnchor[] {
+  const rows = fill.split("\n").map((raw) => {
+    try {
+      const o = JSON.parse(raw) as unknown;
+      return o && typeof o === "object" && !Array.isArray(o) ? (o as Record<string, unknown>) : null;
+    } catch {
+      return null;
+    }
+  });
+  const zones: Zone[] = rows
+    .filter((o): o is Record<string, unknown> => o?.op === "zone" && typeof o.id === "string")
+    .map((o): Zone => ({ id: o.id as string, src: "ai", layer: "gameplay", pack: layout.packId, slot: String(o.slot ?? ""), tag: String(o.tag ?? ""), name: "", parent: "" }));
+  if (!zones.length) return [];
+  const bound = bindZones(zones, layout);
+  const zoneOf = (z: unknown) => (typeof z === "string" && bound.has(z) ? z : zones[0]!.id);
+  const used = new Set<string>();
+  for (const o of rows) if (o && PLACED.has(String(o.op)) && typeof o.anchor === "string" && o.anchor) used.add(`${zoneOf(o.zone)}/${o.anchor}`);
+  const out: FreeAnchor[] = [];
+  const slots = new Set<string>();
+  for (const z of zones) {
+    const spec = bound.get(z.id)!;
+    // (two zones bound to one slot share its anchors: the first of them has them)
+    if (slots.has(spec.slot)) continue;
+    slots.add(spec.slot);
+    for (const anchor of Object.keys(spec.anchors).sort()) {
+      if (used.has(`${z.id}/${anchor}`) || SPECIAL.test(anchor)) continue;
+      const p = spec.anchors[anchor]!;
+      out.push({ zone: z.id, anchor, at: [p[0], p[1], p[2]], high: p[1] > spec.floorY + 0.5 });
+    }
+  }
+  return out;
+}

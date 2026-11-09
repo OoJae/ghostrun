@@ -9,15 +9,17 @@ import {
   SphereGeometry, TorusGeometry, Vector3, type Object3D, type Scene, type WebGPURenderer,
 } from "three/webgpu";
 import { speechApi, transcript, voiceError, type Recognition } from "../hud/listen";
+import { locale, t } from "../i18n";
 import type { InputCollector } from "../input";
-import { probe } from "../probe";
+import { probe, type XrProbe } from "../probe";
 import { GhostTrack, RaceTracker, raceClock, split } from "../race";
 import type { Box } from "../sim/aabb";
 import type { RapierSim } from "../sim/rapier";
 import { BTN_JUMP, BTN_USE, PLAYER_ID } from "../sim/types";
 import type { WorldView } from "../render/world";
 import { Vignette } from "./comfort";
-import { EMPTY_HUD, type VrAction, type VrHud, type VrResult } from "./model";
+import { aimed, dioramaFit, editWaysLine, keyboardHere, toPlay, waysLine, type Diorama, type Ways } from "./create";
+import { EMPTY_HUD, type VrAction, type VrHud, type VrResult, type VrSpot } from "./model";
 import { CYAN, DIM, INK, Panel, TONE } from "./panel";
 import { arc, type Arc, type V3 } from "./teleport";
 
@@ -57,9 +59,11 @@ export function aimScore(o: readonly number[], d: readonly number[], at: readonl
 }
 /** Let go of the grip moving at least this fast (m/s) and it's a throw. */
 const THROW_SPEED = 1.4;
+/** In the diorama, a free anchor within this angle (rad, about 9°) of the ray is where a held thing goes. */
+const PICK_SPOT = 0.15;
 /** Fonts on each panel: the smallest is ≥ 0.02 rad tall where that panel is read (panel.test.ts checks). */
 export const PANELS = {
-  wrist: { px: [768, 440] as [number, number], width: 0.26, at: 0.45, font: 28 },
+  wrist: { px: [768, 640] as [number, number], width: 0.26, at: 0.45, font: 28 },
   result: { px: [1024, 720] as [number, number], width: 1.0, at: 1.4, font: 32 },
   sheet: { px: [1024, 660] as [number, number], width: 1.0, at: 1.25, font: 32 },
   toast: { px: [1024, 160] as [number, number], width: 0.9, at: 1.5, font: 38 },
@@ -309,6 +313,23 @@ export class VrMode {
   #cpuMs = 0;
   #cpuStats = { p50: 0, p95: 0 };
   #cpuAt = 0;
+  // ---- making and changing worlds (ff.vr_create) ----
+  /** The watch's face: the game's facts, or the tools to change the world. */
+  #page: "play" | "make" = "play";
+  /** What the words being listened to are for: a new world, or a change to this one. */
+  #listenFor: "world" | "edit" = "world";
+  /** The world as a model on a table in front of you (null: life size), and the view it was fitted to. */
+  #dio: (Diorama & { view: WorldView | null }) | null = null;
+  /** What the diorama's hand holds, and the free anchor its ray picks out to put it on. */
+  #held: { id: string; spot: VrSpot | null } | null = null;
+  /** The movable thing the ray points at, in the diorama (for the ring and the watch's hint). */
+  #aimedAt = "";
+  /** The fog as the world set it, and as the diorama scaled it (it is restored on the way out). */
+  #fog: { near: number; far: number; setNear: number; setFar: number } | null = null;
+  /** The text field the headset's keyboard types into, and what for (null: not typing). */
+  #kbd: HTMLInputElement | null = null;
+  #typing: "world" | "edit" | null = null;
+  readonly #onSelect = () => this.#typeOnSelect();
 
   constructor(host: VrHost, yaw: number) {
     this.#h = host;
@@ -349,6 +370,19 @@ export class VrMode {
     this.#raf = [window.requestAnimationFrame, window.cancelAnimationFrame];
     window.requestAnimationFrame = (cb) => window.setTimeout(() => cb(performance.now()), 16);
     window.cancelAnimationFrame = (id) => window.clearTimeout(id);
+    // a trigger pull is a user gesture only inside the session's select event: where the headset
+    // has a keyboard, a text field focused there brings it up
+    (host.renderer.xr.getSession() as XRSession | null)?.addEventListener("select", this.#onSelect);
+  }
+
+  /** The ways this browser can take words in the headset. */
+  #ways(): Ways {
+    return { speech: Boolean(speechApi()), keyboard: keyboardHere(navigator.userAgent) };
+  }
+
+  /** The creation tools are on (ff.vr_create). */
+  get #making(): boolean {
+    return this.#hud.make.on;
   }
 
   /** The app's facts for the panels (painted only where they changed). */
@@ -366,6 +400,9 @@ export class VrMode {
     this.#seat = null;
     this.#tracker = null;
     this.#blinkUntil = performance.now() + 300;
+    // an edit made in the diorama comes back as a new world: it stands on the same table
+    this.#held = null;
+    if (this.#dio) this.#dio.view = null;
   }
 
   // ---- input --------------------------------------------------------------------------------
@@ -410,8 +447,9 @@ export class VrMode {
     }
     const trigL = L.down(TRIGGER) && !L.clicked;
     const trigR = R.down(TRIGGER) && !R.clicked;
-    // say a world: hold the left grip (let go and it builds)
-    if (L.pressed(GRIP)) this.#listen(now);
+    // say a world: hold the left grip (let go and it builds); on the watch's Change it face, or over
+    // the diorama, what you say is a change to this world instead
+    if (L.pressed(GRIP)) this.#listen(now, this.#making && (this.#page === "make" || this.#dio !== null) ? "edit" : "world", true);
     if (L.released(GRIP)) this.#rec?.stop();
 
     const sim = w.sim;
@@ -425,6 +463,10 @@ export class VrMode {
     if (w.building) {
       // watching a world rise: nothing reaches the one it replaces
       ((jump = false), (this.#aiming = false), (this.#walk = null));
+    } else if (this.#dio) {
+      // over the model: you stand still in it, and the right hand moves things about
+      ((jump = false), (this.#aiming = false), (this.#walk = null));
+      this.#godHand(w);
     } else if (ride) {
       // at the wheel: the stick steers from the nose, the right trigger boosts, the left one gets out
       this.#aiming = false;
@@ -585,28 +627,109 @@ export class VrMode {
     return best;
   }
 
+  // ---- the diorama ----------------------------------------------------------------------------
+
+  /** Life size, or the world as a model on a table in front of you (the play space scaled up round it). */
+  #toggleDiorama(now: number) {
+    this.#held = null;
+    this.#blinkUntil = now + 250;
+    // (the sheet stands where it was opened, at the size it was: it closes rather than float about)
+    this.#sheetOpen = false;
+    this.#hush();
+    if (this.#dio) {
+      this.#dio = null;
+      return;
+    }
+    if (!this.#hud.make.bounds) return void (this.#own = { text: t("This world has no layout to make a model of."), until: now + 2500 });
+    this.#page = "make";
+    this.#walk = null;
+    this.#seat = null;
+    // fitted on the next place(), where the head and the world are known
+    this.#dio = { scale: 1, yaw: this.#h.rig.rotation.y, pos: [0, 0, 0], table: [Number.NaN, 0, 0], view: null };
+  }
+
+  /** The right ray's origin and direction in the world. */
+  #rayOf(h: Hand): [readonly [number, number, number], readonly [number, number, number]] {
+    return [[h.wRay.p.x, h.wRay.p.y, h.wRay.p.z], [h.wRay.d.x, h.wRay.d.y, h.wRay.d.z]];
+  }
+
+  /** The movable thing the right hand's ray points at in the model, or "". */
+  #aimedThing(w: VrWorld): string {
+    const R = this.#right;
+    if (!R.connected || !w.view) return "";
+    const carried = w.sim?.sim.entity(PLAYER_ID)?.carrying;
+    const pts = this.#hud.make.movable.flatMap((m) => {
+      const a = m.id === carried ? undefined : w.view!.actors.get(m.id);
+      return a?.visible === false || !a ? [] : [{ key: m.id, at: [a.position.x, a.position.y, a.position.z] as const }];
+    });
+    return aimed(...this.#rayOf(R), pts) ?? "";
+  }
+
+  /**
+   * The god hand: the right grip on a thing in the model picks it up (in view only: the simulation
+   * isn't touched), its ray picks the free anchor it would go on, and letting go there asks for the
+   * move, which comes back as an edit, re-proved, with Undo.
+   */
+  #godHand(w: VrWorld) {
+    const R = this.#right;
+    const aimedAt = this.#held ? "" : this.#aimedThing(w);
+    if (aimedAt !== this.#aimedAt) ((this.#aimedAt = aimedAt), this.#ver++); // (the watch names it)
+    if (R.pressed(GRIP) && !this.#held && this.#aimedAt) {
+      this.#held = { id: this.#aimedAt, spot: null };
+      R.buzz(0.4, 25);
+      this.#ver++;
+    }
+    const held = this.#held;
+    if (!held) return;
+    if (R.down(GRIP)) {
+      const high = this.#hud.make.movable.find((m) => m.id === held.id)?.high ?? false;
+      const spot = aimed(...this.#rayOf(R), this.#hud.make.spots.filter((s) => s.high === high).map((s) => ({ key: s, at: s.at })), PICK_SPOT);
+      if (spot !== held.spot) ((held.spot = spot), this.#ver++, spot && R.buzz(0.12, 10));
+      return;
+    }
+    // let go
+    this.#held = null;
+    this.#ver++;
+    const thing = this.#hud.make.movable.find((m) => m.id === held.id)?.label ?? held.id;
+    const now = performance.now();
+    if (!held.spot) return void (this.#own = { text: t("Nowhere to put the {thing} there: it stays where it was.", { thing }), until: now + 2500 });
+    this.#own = { text: t("Moving the {thing} to the {where}…", { thing, where: held.spot.label }), until: now + 2500 };
+    R.buzz(0.7, 40);
+    this.onAction?.({ k: "move", id: held.id, zone: held.spot.zone, anchor: held.spot.anchor });
+  }
+
   // ---- voice and the prompt sheet -------------------------------------------------------------
 
-  /** Hold the left grip to say a world; where the browser can't listen, the sheet's chips instead. */
-  #listen(now: number) {
-    if (this.#hud.busy) return void (this.#own = { text: "Still building the last world…", until: now + 2500 });
-    this.#sheetOpen = true;
-    this.#placeAhead(this.#sheet, 1.25, -0.12);
+  /**
+   * Listen for a world (the sheet opens: where the browser can't listen, its chips instead) or for a
+   * change to this one (on the watch). `hold`: the left grip, held for as long as you speak; else a
+   * button, and it stops at a pause (or at the button's Done).
+   */
+  #listen(now: number, purpose: "world" | "edit", hold: boolean) {
+    if (this.#hud.busy) return void (this.#own = { text: t("Still building the last world…"), until: now + 2500 });
+    if (purpose === "edit" && !this.#hud.make.live) return void (this.#own = { text: t("Edits in words need the live AI. The diorama still moves things."), until: now + 3000 });
+    if (purpose === "world") {
+      this.#sheetOpen = true;
+      this.#placeAhead(this.#sheet, 1.25, -0.12);
+    }
     const Api = speechApi();
-    if (!Api || this.#rec) return;
+    if (!Api || this.#rec) return void this.#ver++;
     const r = new Api();
     r.lang = navigator.language || "en-US";
     r.interimResults = true;
-    r.continuous = true; // keeps listening through a pause until the grip is let go
+    r.continuous = hold; // the grip keeps it listening through a pause until it is let go
+    this.#listenFor = purpose;
     this.#heard = "";
     this.#note = null;
     r.onresult = (e) => ((this.#heard = transcript(e)), this.#ver++);
-    r.onerror = (e) => ((this.#note = voiceError(e.error, "say a world")), this.#ver++);
+    r.onerror = (e) => ((this.#note = voiceError(e.error, purpose === "world" ? "say a world" : "say a change")), this.#ver++);
     r.onend = () => {
       this.#rec = null;
       this.#ver++;
       const text = this.#heard.trim();
-      if (text) this.#build(text, performance.now());
+      if (!text) return;
+      if (purpose === "world") this.#build(text, performance.now());
+      else this.#edit(text, performance.now());
     };
     try {
       r.start();
@@ -627,11 +750,67 @@ export class VrMode {
   }
 
   #build(prompt: string, now: number) {
-    if (this.#hud.busy) return void (this.#own = { text: "Still building the last world…", until: now + 2500 });
+    if (this.#hud.busy) return void (this.#own = { text: t("Still building the last world…"), until: now + 2500 });
     this.#sheetOpen = false;
     this.#heard = "";
-    this.#own = { text: `Building: ${prompt.length > 80 ? `${prompt.slice(0, 78)}…` : prompt}`, until: now + 3000 };
+    this.#endTyping();
+    // a new world is met life size, where its reveal is watched from
+    if (this.#dio) ((this.#dio = null), (this.#held = null));
+    this.#own = { text: t("Building: {prompt}", { prompt: prompt.length > 80 ? `${prompt.slice(0, 78)}…` : prompt }), until: now + 3000 };
     this.onAction?.({ k: "build", prompt: prompt.slice(0, 300) });
+  }
+
+  /** A change to this world, in words: the desktop's edit, re-proved, shown on the watch. */
+  #edit(change: string, now: number) {
+    this.#heard = "";
+    this.#endTyping();
+    if (!this.#hud.make.live) return void (this.#own = { text: t("Edits in words need the live AI. The diorama still moves things."), until: now + 3000 });
+    if (this.#hud.busy) return void (this.#own = { text: t("Still building the last world…"), until: now + 2500 });
+    this.#page = "make";
+    this.onAction?.({ k: "edit", change: change.slice(0, 300) });
+  }
+
+  // ---- the headset's keyboard (where the browser has one) ---------------------------------------
+
+  /** Typing a world or a change: a text field the headset's keyboard types into (focused in a select event). */
+  #startTyping(purpose: "world" | "edit") {
+    this.#hush();
+    this.#typing = purpose;
+    let k = this.#kbd;
+    if (!k) {
+      k = this.#kbd = document.createElement("input");
+      k.type = "text";
+      k.maxLength = 300;
+      k.setAttribute("aria-label", t("Type it"));
+      k.style.cssText = "position:fixed;left:0;bottom:0;width:1px;height:1px;opacity:0.01;";
+      k.addEventListener("input", () => ((this.#heard = k!.value), this.#ver++));
+      k.addEventListener("keydown", (e) => {
+        if (e.key !== "Enter") return;
+        const text = k!.value.trim();
+        const p = this.#typing;
+        k!.value = "";
+        if (!text || !p) return;
+        if (p === "world") this.#build(text, performance.now());
+        else this.#edit(text, performance.now());
+      });
+      document.body.appendChild(k);
+    }
+    k.value = "";
+    this.#heard = "";
+    k.focus();
+  }
+
+  #endTyping() {
+    if (!this.#typing) return;
+    this.#typing = null;
+    this.#kbd?.blur();
+  }
+
+  /** The session's select (a user gesture): a trigger pulled on a Type button focuses the field there. */
+  #typeOnSelect() {
+    const b = this.#right.hover?.button ?? this.#left.hover?.button;
+    if (b === "sheet:type") this.#startTyping("world");
+    else if (b === "wrist:type") this.#startTyping("edit");
   }
 
   #click(id: string, now: number) {
@@ -640,6 +819,20 @@ export class VrMode {
     else if (id === "result:world" || id === "wrist:world") {
       this.#sheetOpen = true;
       this.#placeAhead(this.#sheet, 1.25, -0.12);
+      // New world on the watch listens at once (where the browser can): say it, and it builds
+      if (id === "wrist:world" && this.#making) this.#listen(now, "world", false);
+    } else if (id === "sheet:listen") this.#listen(now, "world", false);
+    else if (id === "sheet:go" || id === "wrist:send") this.#rec?.stop();
+    else if (id === "sheet:type") this.#startTyping("world");
+    else if (id === "wrist:type") this.#startTyping("edit");
+    else if (id === "wrist:make") this.#page = "make";
+    else if (id === "wrist:back") ((this.#page = "play"), this.#hush(), this.#endTyping(), this.#dio && this.#toggleDiorama(now));
+    else if (id === "wrist:diorama") this.#toggleDiorama(now);
+    else if (id === "wrist:say") this.#listen(now, "edit", false);
+    else if (id === "wrist:undo") this.onAction?.({ k: "undo" });
+    else if (id.startsWith("wrist:chip:")) {
+      const c = this.#hud.make.chips[Number(id.slice(11))];
+      if (c) this.#edit(c, now);
     } else if (id === "wrist:move") {
       this.#smooth = !this.#smooth;
       store.set("gr_vr_move", this.#smooth ? "smooth" : "teleport");
@@ -649,6 +842,7 @@ export class VrMode {
     } else if (id === "sheet:close") {
       this.#sheetOpen = false;
       this.#hush();
+      this.#endTyping();
     } else if (id.startsWith("sheet:chip:")) {
       const p = this.#hud.prompts[Number(id.slice(11))];
       if (p) this.#build(p.prompt, now);
@@ -673,10 +867,28 @@ export class VrMode {
       const [hx, hz] = turnXZ(s.head.x, s.head.z, yaw);
       rig.rotation.set(0, yaw, 0);
       rig.position.set(s.p.x - hx, s.p.y - s.head.y, s.p.z - hz);
+      rig.scale.setScalar(1);
       return;
     }
     if (this.#stand) ((this.#stand = null), (this.#blinkUntil = now + 300));
     const player = w.view?.actors.get(PLAYER_ID);
+    const dio = this.#dio;
+    if (dio && !this.#hud.make.bounds) this.#dio = null; // (a world with no layout to model)
+    else if (dio) {
+      if (!w.view) return; // (between worlds: stay over the table)
+      // the model on the table: fitted once (and again for each world an edit brings), then still,
+      // so you can lean in and walk round it
+      if (dio.view !== w.view) {
+        const fit = dioramaFit(this.#hud.make.bounds!, w.view.groundY, [hl.x, hl.y, hl.z], yawOf(this.#head.q), dio.yaw, Number.isNaN(dio.table[0]) ? undefined : dio.table);
+        Object.assign(dio, fit, { view: w.view });
+      }
+      rig.rotation.set(0, dio.yaw, 0);
+      rig.scale.setScalar(dio.scale);
+      rig.position.set(dio.pos[0], dio.pos[1], dio.pos[2]);
+      if (player) player.visible = true; // you, in the model
+      return;
+    }
+    rig.scale.setScalar(1);
     if (!player) return;
     player.visible = false; // first person: your own figure would stand in your eyes
     if (this.#faceTo !== null && this.#head.ok) {
@@ -740,6 +952,7 @@ export class VrMode {
       m.visible = h.connected;
       m.position.copy(h.wGrip.p);
       m.quaternion.copy(h.wGrip.q);
+      m.scale.setScalar(this.#k);
     }
     this.#poll(now, w);
     this.#panelsFrame(now, dt, w);
@@ -747,11 +960,51 @@ export class VrMode {
     this.#arcView();
     this.#carried(w);
     this.#grabView(w);
+    this.#heldView(w);
+    this.#fogFor(this.#k);
     this.#comfort(now, dt, w);
     this.#pad.visible = w.building;
     if (w.building) this.#pad.position.set(head.wp.x, rig.position.y + 0.01, head.wp.z);
     this.#time(now, this.#cpuMs + performance.now() - t0);
-    if (now >= this.#probeAt) this.#probe(now);
+    if (now >= this.#probeAt) this.#probe(now, w);
+  }
+
+  /** How many world metres the play space's one is now: 1 life size, the diorama's scale over the model. */
+  get #k(): number {
+    return this.#h.rig.scale.x;
+  }
+
+  /** Where the sky and the weather centre (the engine asks): your head over the model, else null (the player). */
+  get skyAt(): Vector3 | null {
+    return this.#dio ? this.#head.wp : null;
+  }
+
+  /** In the diorama the fog's distances scale with the world, so the model isn't lost in it (restored after). */
+  #fogFor(k: number) {
+    const fog = this.#h.scene.fog as { near?: number; far?: number } | null;
+    if (!fog || typeof fog.near !== "number" || typeof fog.far !== "number") return;
+    const f = this.#fog;
+    if (k === 1) {
+      if (f && fog.near === f.setNear && fog.far === f.setFar) ((fog.near = f.near), (fog.far = f.far));
+      this.#fog = null;
+      return;
+    }
+    // (a world loaded or restyled meanwhile set its own: that is the one to scale)
+    const g = f && fog.near === f.setNear && fog.far === f.setFar ? f : (this.#fog = { near: fog.near, far: fog.far, setNear: 0, setFar: 0 });
+    g.setNear = fog.near = g.near * k;
+    g.setFar = fog.far = g.far * k;
+  }
+
+  /** What the diorama's hand holds is drawn on the anchor it would go on (or at the ray's end): the view only. */
+  #heldView(w: VrWorld) {
+    const h = this.#held;
+    const obj = h ? w.view?.actors.get(h.id) : undefined;
+    if (!h || !obj) return;
+    if (h.spot) obj.position.set(h.spot.at[0], h.spot.at[1] + 0.5, h.spot.at[2]);
+    else {
+      const R = this.#right.wRay;
+      obj.position.copy(R.p).addScaledVector(R.d, 0.35 * this.#k);
+    }
   }
 
   /** A few times a second, from the simulation: the lap, your hit points, the ghost's split, what the buttons do. */
@@ -783,7 +1036,7 @@ export class VrMode {
     }
     if (sim?.ride(PLAYER_ID)) st.hint = "Right trigger: boost · left trigger: get out";
     else if (this.#hud.hint) st.hint = `Trigger: ${this.#hud.hint}`;
-    if (!this.#walk && sim && !sim.entity(PLAYER_ID)?.carrying && this.#pointedItem(w)) st.grab = "Right grip: grab it";
+    if (!this.#walk && !this.#dio && sim && !sim.entity(PLAYER_ID)?.carrying && this.#pointedItem(w)) st.grab = "Right grip: grab it";
     const o = this.#status;
     if (st.lap !== o.lap || st.hp !== o.hp || st.race !== o.race || st.hint !== o.hint || st.grab !== o.grab) ((this.#status = st), this.#ver++);
   }
@@ -801,8 +1054,9 @@ export class VrMode {
       const p = this.#wrist.mesh;
       p.position.copy(L.wGrip.p);
       p.quaternion.copy(L.wGrip.q);
-      p.translateY(0.045);
-      p.translateZ(0.1);
+      p.scale.setScalar(this.#k);
+      p.translateY(0.045 * this.#k);
+      p.translateZ(0.1 * this.#k);
       p.rotateX(-Math.PI / 4);
       _f.set(0, 0, 1).applyQuaternion(p.quaternion);
       _v.copy(head.wp).sub(p.position).normalize();
@@ -812,7 +1066,7 @@ export class VrMode {
 
     // the result card: in front of you when the run ends, and it stays there (until a new world is on its way)
     const res = this.#hud.result;
-    if (res && !this.#sheetOpen && !this.#hud.busy) {
+    if (res && !this.#sheetOpen && !this.#hud.busy && !this.#dio) {
       if (res.tick !== this.#resultTick) ((this.#resultTick = res.tick), this.#placeAhead(this.#result, PANELS.result.at, -0.1));
       if (this.#painted.result !== this.#ver) ((this.#painted.result = this.#ver), this.#paintResult(res));
       this.#result.shown = true;
@@ -829,6 +1083,7 @@ export class VrMode {
     const toast = own ?? this.#hud.toast;
     if (toast) {
       this.#ahead(this.#toast.mesh, 1.5, -0.3, 0.18);
+      this.#toast.mesh.scale.setScalar(this.#k);
       this.#toast.show(`t:${toast}`, (ui) => {
         ui.card("rgba(10, 7, 22, 0.86)");
         const px = PANELS.toast.font;
@@ -848,7 +1103,7 @@ export class VrMode {
         _v.copy(npc.position).sub(head.wp);
         d = _v.length();
         _f.set(0, 0, -1).applyQuaternion(head.wq);
-        inView = d < 18 && d > 0.5 && _f.dot(_v) / d > Math.cos(0.9);
+        inView = !this.#dio && d < 18 && d > 0.5 && _f.dot(_v) / d > Math.cos(0.9);
       }
       this.#barkAt = npc && inView ? "head" : "front";
       if (npc && inView) {
@@ -857,7 +1112,7 @@ export class VrMode {
         m.position.set(npc.position.x, npc.position.y + 1.05 + (this.#bark.heightM * s) / 2, npc.position.z);
         m.lookAt(head.wp);
       } else {
-        m.scale.setScalar(1.6 / PANELS.bark.at);
+        m.scale.setScalar((1.6 / PANELS.bark.at) * this.#k);
         this.#ahead(m, 1.6, toast ? -0.5 : -0.38, 0.2);
       }
       this.#bark.show(`b:${bark.at}:${bark.name}:${bark.line}`, (ui) => {
@@ -878,23 +1133,26 @@ export class VrMode {
     rig.updateMatrixWorld();
     _v.copy(head.p).applyMatrix4(rig.matrixWorld);
     const yaw = rig.rotation.y + yawOf(head.q);
-    panel.mesh.position.set(_v.x - Math.sin(yaw) * dist, _v.y + dy, _v.z - Math.cos(yaw) * dist);
+    const k = this.#k; // (over the diorama the play space is that much bigger)
+    panel.mesh.position.set(_v.x - Math.sin(yaw) * dist * k, _v.y + dy * k, _v.z - Math.cos(yaw) * dist * k);
     panel.mesh.rotation.set(-0.08, yaw, 0, "YXZ");
-    panel.mesh.scale.setScalar(1);
+    panel.mesh.scale.setScalar(k);
   }
 
   /** Lazily head-locked: `dist` ahead along the lazy gaze, `dy` under the eyes, tilted `tilt` back. */
   #ahead(m: Object3D, dist: number, dy: number, tilt: number) {
     const p = this.#head.wp;
     const yaw = this.#lazyYaw;
-    m.position.set(p.x - Math.sin(yaw) * dist, p.y + dy, p.z - Math.cos(yaw) * dist);
+    const k = this.#k;
+    m.position.set(p.x - Math.sin(yaw) * dist * k, p.y + dy * k, p.z - Math.cos(yaw) * dist * k);
     m.rotation.set(tilt, yaw, 0, "YXZ");
   }
 
   #paintWrist() {
+    if (this.#making && (this.#page === "make" || this.#dio)) return this.#paintMake();
     const hud = this.#hud;
     const st = this.#status;
-    const key = JSON.stringify([hud.proof, hud.score, st, this.#smooth, this.#vignetteOn]);
+    const key = JSON.stringify([hud.proof, hud.score, st, this.#smooth, this.#vignetteOn, this.#making, locale()]);
     this.#wrist.show(key, (ui) => {
       ui.card();
       const px = PANELS.wrist.font;
@@ -907,9 +1165,71 @@ export class VrMode {
       for (const h of [st.hint, st.grab]) if (h) y = ui.text(h, 28, y + 4, px, DIM, { max: 1 });
       const bh = 66;
       const by = ui.h - bh - 18;
-      ui.button("wrist:world", "New world", { x: 18, y: by, w: 216, h: bh }, px, true);
-      ui.button("wrist:move", this.#smooth ? "Move: smooth" : "Move: teleport", { x: 246, y: by, w: 252, h: bh }, px);
-      ui.button("wrist:vignette", this.#vignetteOn ? "Vignette: on" : "Vignette: off", { x: 510, y: by, w: 240, h: bh }, px);
+      if (this.#making) {
+        // the world's own tools: change it in words, or as a model on the table
+        ui.button("wrist:make", t("Change it"), { x: 18, y: by - bh - 10, w: 360, h: bh }, px, true);
+        ui.button("wrist:diorama", t("Diorama"), { x: 390, y: by - bh - 10, w: 360, h: bh }, px);
+      }
+      ui.button("wrist:world", t("New world"), { x: 18, y: by, w: 216, h: bh }, px, true);
+      ui.button("wrist:move", this.#smooth ? t("Move: smooth") : t("Move: teleport"), { x: 246, y: by, w: 252, h: bh }, px);
+      ui.button("wrist:vignette", this.#vignetteOn ? t("Vignette: on") : t("Vignette: off"), { x: 510, y: by, w: 240, h: bh }, px);
+    });
+  }
+
+  /**
+   * The watch's Change it face: what the latest edit did (the summary line, the headline's status),
+   * three changes to try, say one, Undo; over the diorama, what the hand holds and where it would go.
+   */
+  #paintMake() {
+    const hud = this.#hud;
+    const make = hud.make;
+    const ways = this.#ways();
+    const listening = this.#rec !== null && this.#listenFor === "edit";
+    const typing = this.#typing === "edit";
+    const held = this.#held;
+    const thing = held ? (make.movable.find((m) => m.id === held.id)?.label ?? held.id) : "";
+    const aimedAt = !held && this.#aimedAt ? (make.movable.find((m) => m.id === this.#aimedAt)?.label ?? "") : "";
+    const dio = this.#dio !== null;
+    const key = JSON.stringify([hud.proof, make.edit, make.chips, make.canUndo, make.live, listening, typing, this.#heard, this.#note, held?.id, held?.spot?.zone, held?.spot?.anchor, aimedAt, dio, hud.busy, ways, locale()]);
+    this.#wrist.show(key, (ui) => {
+      ui.card();
+      const px = PANELS.wrist.font;
+      const bh = 66;
+      const by = ui.h - bh - 18;
+      const row2 = by - bh - 10;
+      const chipH = 50;
+      const chipsAt = row2 - 3 * (chipH + 8);
+      let y = ui.text(dio ? t("Diorama") : t("Change this world"), 28, 18, px + 6, INK, { weight: 800, max: 1 });
+      const e = make.edit;
+      // what is happening now: your words, the edit under way or done, or how to ask for one
+      const [line, tone] = listening
+        ? [this.#heard || t("Listening… say a change."), this.#heard ? INK : CYAN]
+        : typing
+          ? [this.#heard || t("Type a change, then Enter. No keyboard opened? This browser has none in VR."), this.#heard ? INK : CYAN]
+          : this.#note
+            ? [this.#note, TONE.warn!]
+            : e
+              ? [e.line, e.status === "failed" ? TONE.bad! : e.status === "done" ? TONE.good! : CYAN]
+              : [dio ? t("Right grip on a thing in the model picks it up; let go where it goes.") : editWaysLine(ways, make.live), DIM];
+      y = ui.text(line, 28, y + 4, px, tone, { max: 2 });
+      if (e?.summary && !listening && !typing) y = ui.text(e.summary, 28, y + 2, px, INK, { max: 1 });
+      if (e?.receipt && !listening && !typing) y = ui.text(e.receipt, 28, y + 2, px, INK, { max: 2 });
+      if (dio && held) y = ui.text(held.spot ? t("Let go to put the {thing} in the {where}.", { thing, where: held.spot.label }) : t("Point at a free spot for the {thing}.", { thing }), 28, y + 4, px, held.spot ? CYAN : TONE.warn!, { max: 2 });
+      else if (dio && aimedAt) y = ui.text(t("Right grip: pick up the {thing}", { thing: aimedAt }), 28, y + 4, px, CYAN, { max: 1 });
+      // the headline and its status, as the receipt has it now
+      // (as many lines as there is room for, up to two)
+      const room = Math.min(2, Math.floor(((dio ? row2 : chipsAt) - 8 - (y + 8)) / (px * 1.25)));
+      if (room > 0) {
+        ui.dot(38, y + 8 + px * 0.6, 9, TONE[hud.proof.tone] ?? TONE.pending!);
+        ui.text(hud.proof.text, 58, y + 8, px, DIM, { max: room });
+      }
+      if (!dio && make.live) make.chips.slice(0, 3).forEach((c, i) => ui.button(`wrist:chip:${i}`, c, { x: 18, y: chipsAt + i * (chipH + 8), w: ui.w - 36, h: chipH }, px));
+      ui.button("wrist:diorama", dio ? t("Life size") : t("Diorama"), { x: 18, y: row2, w: 360, h: bh }, px, dio);
+      if (ways.keyboard && make.live) ui.button("wrist:type", t("Type it"), { x: 390, y: row2, w: 360, h: bh }, px);
+      if (listening) ui.button("wrist:send", t("Done"), { x: 18, y: by, w: 252, h: bh }, px, true);
+      else if (ways.speech && make.live) ui.button("wrist:say", t("Say a change"), { x: 18, y: by, w: 252, h: bh }, px, true);
+      if (make.canUndo && !hud.busy) ui.button("wrist:undo", t("Undo"), { x: 282, y: by, w: 216, h: bh }, px);
+      ui.button("wrist:back", t("Back"), { x: 510, y: by, w: 240, h: bh }, px);
     });
   }
 
@@ -934,15 +1254,22 @@ export class VrMode {
 
   #paintSheet() {
     const hud = this.#hud;
-    const listening = this.#rec !== null;
-    const speech = Boolean(speechApi());
-    const key = JSON.stringify([hud.prompts, hud.busy, listening, this.#heard, this.#note, speech]);
+    const listening = this.#rec !== null && this.#listenFor === "world";
+    const typing = this.#typing === "world";
+    const ways = this.#ways();
+    const held = this.#rec?.continuous === true; // (the grip, rather than a button)
+    const key = JSON.stringify([hud.prompts, hud.busy, listening, typing, held, this.#heard, this.#note, ways, this.#making, locale()]);
     this.#sheet.show(key, (ui) => {
       ui.card("rgba(10, 7, 22, 0.93)");
       const px = PANELS.sheet.font;
-      let y = ui.text(listening ? "Listening…" : "Say a world", 48, 34, 56, listening ? CYAN : INK, { weight: 800, max: 1 });
-      const sub = listening ? this.#heard || "Say what to build, then let go of the grip." : this.#note ?? (speech ? "Hold the left grip and say it, or pick one:" : "This browser can't listen. Pick one:");
-      y = ui.text(sub, 48, y + 10, px, listening && this.#heard ? INK : DIM, { max: 2 });
+      let y = ui.text(listening ? t("Listening…") : typing ? t("Type a world") : t("Say a world"), 48, 34, 56, listening || typing ? CYAN : INK, { weight: 800, max: 1 });
+      // which ways this browser has, said plainly: voice, the headset's keyboard, and always the starters
+      const sub = listening
+        ? this.#heard || (held ? t("Say what to build, then let go of the grip.") : t("Say what to build: it builds when you stop."))
+        : typing
+          ? this.#heard || t("Type it, then Enter. No keyboard opened? This browser has none in VR: pick one.")
+          : (this.#note ?? waysLine(ways, !this.#making));
+      y = ui.text(sub, 48, y + 10, px, (listening || typing) && this.#heard ? INK : DIM, { max: 2 });
       const chips = hud.prompts.slice(0, 6);
       const cw = (ui.w - 48 * 2 - 20) / 2;
       const ch = 78;
@@ -951,7 +1278,11 @@ export class VrMode {
         const cy = y + 24 + Math.floor(i / 2) * (ch + 16);
         ui.button(`sheet:chip:${i}`, c.label, { x, y: cy, w: cw, h: ch }, px);
       });
-      ui.button("sheet:close", hud.busy ? "Building…" : "Close", { x: ui.w - 48 - 260, y: ui.h - 84 - 28, w: 260, h: 84 }, px);
+      const by = ui.h - 84 - 28;
+      if (listening && !held && this.#heard) ui.button("sheet:go", t("Build it"), { x: 48, y: by, w: 300, h: 84 }, px, true);
+      else if (!listening && ways.speech && this.#making && !hud.busy) ui.button("sheet:listen", t("Listen"), { x: 48, y: by, w: 300, h: 84 }, px, true);
+      if (ways.keyboard && !typing && !hud.busy) ui.button("sheet:type", t("Type it"), { x: 368, y: by, w: 300, h: 84 }, px);
+      ui.button("sheet:close", hud.busy ? t("Building…") : t("Close"), { x: ui.w - 48 - 260, y: by, w: 260, h: 84 }, px);
     });
   }
 
@@ -972,15 +1303,18 @@ export class VrMode {
       }
       if (best?.button && best.button !== h.hover?.button) h.buzz(0.15, 12);
       h.hover = best;
-      // a ray shows on a panel, while one is open to point at, or to aim a weapon
-      const len = best ? best.t : open ? 2.5 : shooting && h === this.#right ? 8 : 0;
+      // a ray shows on a panel, while one is open to point at, to aim a weapon, or over the diorama
+      // (the god hand's); its lengths are the play space's, so over the model they scale with it
+      const k = this.#k;
+      const len = best ? best.t : (open ? 2.5 : this.#dio && h === this.#right ? 1.2 : shooting && h === this.#right ? 8 : 0) * k;
       ray.visible = h.connected && len > 0;
       tip.visible = Boolean(best);
+      tip.scale.setScalar(k);
       if (!ray.visible) continue;
-      ray.material = best?.button ? this.#mats.rayOn : this.#mats.ray;
+      ray.material = best?.button || (this.#dio && h === this.#right && (this.#aimedAt || this.#held?.spot)) ? this.#mats.rayOn : this.#mats.ray;
       ray.position.copy(h.wRay.p);
       ray.quaternion.copy(h.wRay.q);
-      ray.scale.set(1, 1, len);
+      ray.scale.set(k, k, len);
       if (best) tip.position.copy(h.wRay.p).addScaledVector(h.wRay.d, best.t);
     }
     // (the right hand's button wins when both point at the same panel)
@@ -1024,10 +1358,23 @@ export class VrMode {
 
   /** A ring under what the grip would grab (and under what it's walking you to). */
   #grabView(w: VrWorld) {
+    const ring = this.#grabRing;
+    if (this.#dio) {
+      // over the model: under what the hand would pick up, or on the anchor a held thing would go on
+      // (a few centimetres across on the table, whatever the scale)
+      const spot = this.#held?.spot;
+      const obj = !this.#held && this.#aimedAt ? w.view?.actors.get(this.#aimedAt) : undefined;
+      ring.visible = Boolean(spot || obj);
+      ring.scale.setScalar(this.#k * 0.06);
+      if (spot) ring.position.set(spot.at[0], spot.at[1] + 0.05, spot.at[2]);
+      else if (obj) ring.position.set(obj.position.x, obj.position.y - 0.3, obj.position.z);
+      return;
+    }
+    ring.scale.setScalar(1);
     const id = this.#walk?.kind === "grab" ? this.#walk.item : this.#status.grab ? this.#pointedItem(w) : "";
     const obj = id ? w.view?.actors.get(id) : undefined;
-    this.#grabRing.visible = Boolean(obj);
-    if (obj) this.#grabRing.position.set(obj.position.x, obj.position.y - 0.45, obj.position.z);
+    ring.visible = Boolean(obj);
+    if (obj) ring.position.set(obj.position.x, obj.position.y - 0.45, obj.position.z);
   }
 
   /** The vignette while you move without moving (the stick, a vehicle), the blink for a teleport or a swap. */
@@ -1045,7 +1392,7 @@ export class VrMode {
     if (!this.#vignetteOn) s = 0;
     const blink = this.#walk?.kind === "teleport" || now < this.#blinkUntil ? 1 : 0;
     this.#vignette.set(s, blink, dt);
-    this.#vignette.place(this.#head.wp, this.#head.wq);
+    this.#vignette.place(this.#head.wp, this.#head.wq, this.#k);
   }
 
   #time(now: number, ms: number) {
@@ -1058,7 +1405,7 @@ export class VrMode {
   }
 
   /** For the tests (and a curious console): what each panel says, where its buttons are in the play space. */
-  #probe(now: number) {
+  #probe(now: number, w: VrWorld) {
     this.#probeAt = now + 100;
     const rig = this.#h.rig;
     _m.copy(rig.matrixWorld).invert();
@@ -1086,12 +1433,38 @@ export class VrMode {
       watching: this.#stand !== null,
       sheet: this.#sheetOpen,
       cpu: this.#cpuStats,
+      page: this.#making && (this.#page === "make" || this.#dio) ? "make" : "play",
+      listenFor: this.#rec ? this.#listenFor : null,
+      typing: this.#typing,
+      diorama: this.#dioProbe(w),
     };
+  }
+
+  /** The diorama for the probe: its scale, what is held and where it would go, and where things and free spots show on the table (in the play space). */
+  #dioProbe(w: VrWorld): XrProbe["diorama"] {
+    const d = this.#dio;
+    if (!d || !w.view) return null;
+    const play = (p: readonly [number, number, number]): [number, number, number] => toPlay(d, p).map(round3) as [number, number, number];
+    const items: Record<string, [number, number, number]> = {};
+    for (const m of this.#hud.make.movable) {
+      const a = m.id === this.#held?.id ? undefined : w.view.actors.get(m.id);
+      if (a) items[m.id] = play([a.position.x, a.position.y, a.position.z]);
+    }
+    // (while something is held, only the spots it can go on: the floor's, or the walls' for a painting)
+    const h = this.#held;
+    const high = h ? (this.#hud.make.movable.find((m) => m.id === h.id)?.high ?? false) : null;
+    const spots: Record<string, [number, number, number]> = {};
+    for (const s of this.#hud.make.spots) if (high === null || s.high === high) spots[`${s.zone}/${s.anchor}`] = play(s.at);
+    return { scale: round3(d.scale), held: h?.id ?? null, target: h?.spot ? `${h.spot.zone}/${h.spot.anchor}` : null, aimed: this.#aimedAt || null, items, spots };
   }
 
   dispose() {
     [window.requestAnimationFrame, window.cancelAnimationFrame] = this.#raf;
     this.#hush();
+    (this.#h.renderer.xr.getSession() as XRSession | null)?.removeEventListener("select", this.#onSelect);
+    this.#kbd?.remove();
+    this.#fogFor(1);
+    this.#h.rig.scale.setScalar(1);
     this.#root.removeFromParent();
     for (const p of this.#panels) p.dispose();
     this.#vignette.dispose();

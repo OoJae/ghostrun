@@ -45,11 +45,12 @@ export class Vignette {
     this.#alpha.value = Math.max(0.85 * Math.min(1, s * 1.5), b > 0 ? 0.94 : 0);
   }
 
-  /** In front of the eyes, from the headset's pose in the world. */
-  place(pos: { x: number; y: number; z: number }, quat: { x: number; y: number; z: number; w: number }) {
+  /** In front of the eyes, from the headset's pose in the world (`scale`: world metres to the play space's one). */
+  place(pos: { x: number; y: number; z: number }, quat: { x: number; y: number; z: number; w: number }, scale = 1) {
     this.mesh.position.set(pos.x, pos.y, pos.z);
     this.mesh.quaternion.set(quat.x, quat.y, quat.z, quat.w);
-    this.mesh.translateZ(-AT);
+    this.mesh.scale.setScalar(scale);
+    this.mesh.translateZ(-AT * scale);
   }
 
   dispose() {

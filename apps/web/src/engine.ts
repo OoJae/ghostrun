@@ -236,6 +236,7 @@ export class Engine {
         this.#vrMode = null;
         this.#rig.position.set(0, 0, 0);
         this.#rig.rotation.set(0, 0, 0);
+        this.#rig.scale.setScalar(1);
         const player = this.#view?.actors.get(PLAYER_ID);
         if (player) player.visible = true;
       });
@@ -755,7 +756,7 @@ export class Engine {
       preview.update(now, vr ? vr.eye : this.#camera);
       this.#air.follow(vr ? vr.eye.position : this.#camera.position);
     } else if (player && vr) {
-      this.#air.follow(player.position);
+      this.#air.follow(vr.skyAt ?? player.position); // (over the diorama: round your head)
     } else if (this.#shot && this.#shot.frame(now, dt, this.#camera)) {
       this.#air.follow(this.#camera.position);
     } else if (player) {

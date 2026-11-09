@@ -298,9 +298,10 @@ for (const speech of [true, false]) {
       await button(page, "left", "squeeze", 0); // let go: it builds what you said
     } else {
       await button(page, "left", "squeeze", 0);
-      expect((await xr(page)).panels.sheet!.words.join(" ")).toContain("This browser can't listen. Pick one:");
-      expect((await xr(page)).panels.sheet!.words).toContain("[Museum heist]");
-      await click(page, "sheet:chip:1");
+      // (the emulated Quest says it is the Quest browser, which has a keyboard to offer: said as "if it opens")
+      expect((await xr(page)).panels.sheet!.words.join(" ")).toContain("This browser can't listen: type it (the headset's keyboard, if it opens), or pick one:");
+      expect((await xr(page)).panels.sheet!.words).toEqual(expect.arrayContaining(["[Museum heist]", "[Type it]"]));
+      await click(page, "sheet:chip:2"); // the landing's starters: the brief, Surprise me, then Museum heist
       asked = "A museum at night: find the brass key, open the vault, steal the star sapphire and get to the van before the alarm.";
     }
     // the world rises around you while it streams in (the reveal, seen from where it is watched)
@@ -317,3 +318,120 @@ for (const speech of [true, false]) {
     expect(real(errors)).toEqual([]);
   });
 }
+
+// ---- making and changing worlds from inside the headset (ff.vr_create; emulator-tested) -------
+
+test("VR say a world from the watch: New world listens at once, Build it builds what you said, and you land in it", async ({ page }) => {
+  const errors = collectErrors(page);
+  const said = "A museum at night: steal the star sapphire before the alarm";
+  await liveLane(page, said);
+  await enterVr(page);
+  await expect(page.getByTestId("prompt-bar")).toContainText("live AI");
+  await click(page, "wrist:world");
+  await page.waitForFunction(() => window.__GHOSTRUN__.xr?.sheet === true && window.__GHOSTRUN__.xr.listenFor === "world", null, { timeout: 5_000 });
+  await page.waitForFunction((s) => window.__GHOSTRUN__.xr?.panels.sheet?.words.includes(s), said, { timeout: 5_000 });
+  const sheet = (await xr(page)).panels.sheet!;
+  expect(sheet.words[0]).toBe("Listening…");
+  expect(sheet.words).toEqual(expect.arrayContaining(["[Build it]", "[The organizer's brief]", "[Surprise me]", "[Museum heist]"]));
+  await click(page, "sheet:go");
+  // the reveal rises round you, then it plays, still in the headset
+  await page.waitForFunction(() => (window.__GHOSTRUN__.materialise?.statics ?? 0) > 0, null, { timeout: 60_000 });
+  await page.waitForFunction(() => window.__GHOSTRUN__.xr?.watching === true, null, { timeout: 2_000 });
+  await page.waitForFunction(() => window.__GHOSTRUN__.ready === true && window.__GHOSTRUN__.materialise === undefined && Boolean(window.__GHOSTRUN__.specHash), null, { timeout: 60_000 });
+  expect(await page.evaluate(() => window.__GHOSTRUN__.vr)).toBe(true);
+  const builds = await page.evaluate(() => (window as unknown as { __builds: { prompt: string }[] }).__builds);
+  expect(builds.map((b) => b.prompt)).toEqual([said]);
+  await page.waitForFunction(() => /gem can be stolen before the alarm/.test(window.__GHOSTRUN__.xr?.panels.wrist?.words[0] ?? ""), null, { timeout: 60_000 });
+  expect(real(errors)).toEqual([]);
+});
+
+test("VR change it: a chip on the watch is the edit box's edit, back re-proved with what changed and the headline's status, and Undo puts it back", async ({ page }) => {
+  const errors = collectErrors(page);
+  const sse = (lines: string[]) => lines.map((line, i) => `event: op\ndata: ${JSON.stringify({ i, line })}\n\n`).join("") + `event: done\ndata: {"lines":${lines.length}}\n\n`;
+  const asked: string[] = [];
+  await page.route("**/v1/health", (r) => r.fulfill({ json: { ok: true, packs: [], llm: true, gate: "dev", sitekey: null } }));
+  await page.route("**/v1/mind", (r) => r.fulfill({ status: 503, json: { error: "off in this test" } }));
+  for (const path of ["repair", "director"]) await page.route(`**/v1/${path}`, (r) => r.fulfill({ contentType: "text/event-stream", body: 'event: error\ndata: {"message":"off in this test"}\n\n' }));
+  await page.route("**/v1/edit", (r) => {
+    asked.push((r.request().postDataJSON() as { change: string }).change);
+    return r.fulfill({ contentType: "text/event-stream", body: sse(['{"op":"law","player":{"jumpsMax":2,"jumpH":3.4}}']) });
+  });
+  await enterVr(page);
+  await page.waitForFunction(() => /Rooftop lane needs double jump: verified/.test(window.__GHOSTRUN__.xr?.panels.wrist?.words[0] ?? ""), null, { timeout: 60_000 });
+  const spec0 = await page.evaluate(() => window.__GHOSTRUN__.specHash);
+  expect((await xr(page)).panels.wrist!.words).toEqual(expect.arrayContaining(["[Change it]", "[Diorama]", "[New world]"]));
+  await click(page, "wrist:make");
+  await page.waitForFunction(() => window.__GHOSTRUN__.xr?.page === "make" && window.__GHOSTRUN__.xr.panels.wrist?.words.includes("[super high jumps]"), null, { timeout: 5_000 });
+  const face = (await xr(page)).panels.wrist!.words;
+  expect(face[0]).toBe("Change this world");
+  expect(face).toContain("Pick one, or hold the left grip and say a change."); // the emulated browser here can listen
+  expect(face).toEqual(expect.arrayContaining(["[Say a change]", "[Diorama]", "[Back]"]));
+  expect(face).not.toContain("[Undo]"); // nothing to undo yet
+  const chips = face.filter((w) => /^\[/.test(w));
+  await click(page, `wrist:chip:${chips.indexOf("[super high jumps]")}`);
+  // through the same edit path as the desktop: the model's patch, re-proved, how the receipt moved
+  await page.waitForFunction(() => window.__GHOSTRUN__.xr?.panels.wrist?.words.includes("Re-proved: super high jumps"), null, { timeout: 60_000 });
+  await page.waitForFunction(() => /Headline: verified → counterexample/.test(window.__GHOSTRUN__.xr?.panels.wrist?.words.join(" ") ?? ""), null, { timeout: 60_000 });
+  const done = (await xr(page)).panels.wrist!.words.join(" ");
+  expect(done).toContain("jump height 1.6 → 3.4 m");
+  expect(done).toMatch(/Rooftop lane needs double jump: counterexample/);
+  expect(asked).toEqual(["super high jumps"]);
+  expect(await page.evaluate(() => window.__GHOSTRUN__.specHash)).not.toBe(spec0);
+  await expect(page.getByTestId("edit-result")).toContainText("jump height 1.6 → 3.4 m"); // the desktop's edit box says the same
+
+  await click(page, "wrist:undo");
+  await page.waitForFunction(() => /Rooftop lane needs double jump: verified/.test(window.__GHOSTRUN__.xr?.panels.wrist?.words.join(" ") ?? ""), null, { timeout: 60_000 });
+  await expect.poll(() => page.evaluate(() => window.__GHOSTRUN__.specHash)).toBe(spec0);
+  expect((await xr(page)).panels.wrist!.words).not.toContain("[Undo]");
+  expect(await page.evaluate(() => window.__GHOSTRUN__.vr)).toBe(true);
+  expect(real(errors)).toEqual([]);
+});
+
+test("VR diorama: the world as a model on a table, the god hand moves the brass key to the Great hall, re-proved as an edit, Undo, and back to life size", async ({ page }) => {
+  const errors = collectErrors(page);
+  await enterVr(page, "&fixture=vault");
+  await page.waitForFunction(() => /gem can be stolen before the alarm: /.test(window.__GHOSTRUN__.xr?.panels.wrist?.words[0] ?? ""), null, { timeout: 60_000 });
+  const spec0 = await page.evaluate(() => window.__GHOSTRUN__.specHash);
+  const p0 = await player(page);
+  await click(page, "wrist:diorama");
+  await page.waitForFunction(() => (window.__GHOSTRUN__.xr?.diorama?.scale ?? 0) > 10 && Boolean(window.__GHOSTRUN__.xr?.diorama?.items.key), null, { timeout: 5_000 });
+  const d = (await xr(page)).diorama!;
+  expect(Object.keys(d.items).sort()).toEqual(["gem", "key", "painting_1", "painting_2"]); // pickups and props: no door, laser, spawn or van
+  // on a table in front of you, about waist high
+  const key = d.items.key!;
+  expect(key[2]).toBeLessThan(0);
+  expect(key[1]).toBeGreaterThan(0.5);
+  expect(key[1]).toBeLessThan(1.3);
+  expect((await xr(page)).panels.wrist!.words[0]).toBe("Diorama");
+  // point at the key and close the right grip: it is in your hand (the view's: the simulation is untouched)
+  await aim(page, key);
+  await page.waitForFunction(() => window.__GHOSTRUN__.xr?.diorama?.aimed === "key", null, { timeout: 5_000 });
+  await button(page, "right", "squeeze", 1);
+  await page.waitForFunction(() => window.__GHOSTRUN__.xr?.diorama?.held === "key", null, { timeout: 5_000 });
+  // point at a free spot in the Great hall: that's where it would go
+  const spots = (await xr(page)).diorama!.spots;
+  const hall = Object.keys(spots).find((s) => s.startsWith("z_hall/"))!;
+  expect(hall).toBeTruthy();
+  await aim(page, spots[hall]!);
+  await page.waitForFunction((s) => window.__GHOSTRUN__.xr?.diorama?.target === s, hall, { timeout: 5_000 });
+  await page.waitForFunction(() => /Let go to put the brass key in the Great hall/.test(window.__GHOSTRUN__.xr?.panels.wrist?.words.join(" ") ?? ""), null, { timeout: 5_000 });
+  await button(page, "right", "squeeze", 0);
+  // let go: a move op through the edit path, placed, re-proved, with Undo
+  await page.waitForFunction(() => window.__GHOSTRUN__.xr?.panels.wrist?.words.includes("Re-proved: move the brass key to the Great hall"), null, { timeout: 60_000 });
+  const done = (await xr(page)).panels.wrist!.words.join(" ");
+  expect(done).toContain("brass key moved to the Great hall");
+  expect(done).toMatch(/gem can be stolen before the alarm: (verified|played|counterexample)/);
+  expect(await page.evaluate(() => window.__GHOSTRUN__.specHash)).not.toBe(spec0);
+  expect((await xr(page)).diorama).not.toBeNull(); // still over the model, the moved world on the table
+  await expect(page.getByTestId("edit-result")).toContainText("brass key moved to the Great hall");
+
+  await click(page, "wrist:undo");
+  await expect.poll(() => page.evaluate(() => window.__GHOSTRUN__.specHash), { timeout: 60_000 }).toBe(spec0);
+  // back to life size: on your feet where you were
+  await click(page, "wrist:diorama");
+  await page.waitForFunction(() => window.__GHOSTRUN__.xr?.diorama === null, null, { timeout: 5_000 });
+  const p1 = await player(page);
+  expect(Math.hypot(p1[0] - p0[0], p1[2] - p0[2])).toBeLessThan(1.5);
+  expect(await page.evaluate(() => window.__GHOSTRUN__.vr)).toBe(true);
+  expect(real(errors)).toEqual([]);
+});

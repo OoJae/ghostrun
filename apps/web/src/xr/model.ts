@@ -2,8 +2,12 @@
 // same facts (the proof's line, the score, the run's result, who is talking) to the in-headset
 // panels as words. No three.js here: the app's own chunk imports it.
 import type { WorldBundle } from "@ghostrun/ir";
+import { freeAnchors } from "@ghostrun/layout";
 import { recap } from "../audio/lines";
+import type { EditState } from "../hud/Edit";
 import { clock, why, type Story } from "../host";
+import { t } from "../i18n";
+import type { World } from "../pipeline";
 import { raceClock, split, type Rival } from "../race";
 
 export type Tone = "good" | "bad" | "pending" | "warn";
@@ -41,16 +45,123 @@ export interface VrHud {
   result: VrResult | null;
   /** The ghost being raced (its live split is read from the simulation). */
   race: { rival: Rival; secrets: ReadonlySet<string> } | null;
-  /** One-pick prompts for where there is no speech recognition. */
+  /** One-pick prompts for where there is no speech recognition (the landing's starters). */
   prompts: readonly { label: string; prompt: string }[];
   /** A world is being built (the prompt chips and Play again wait). */
   busy: boolean;
+  /** Making and changing the world from inside the headset (ff.vr_create). */
+  make: VrMake;
+}
+
+/** A thing the diorama's hand may pick up and put somewhere else (a pickup or a prop). */
+export interface VrMovable {
+  id: string;
+  /** What it is, in words ("brass key"). */
+  label: string;
+  /** It hangs at wall height (a painting): it goes on another wall-height anchor. */
+  high: boolean;
+}
+
+/** Somewhere a thing may be dropped: an anchor of the world's layout nothing stands on, in world coordinates. */
+export interface VrSpot {
+  zone: string;
+  anchor: string;
+  /** Its zone's name ("Great hall"). */
+  label: string;
+  at: [number, number, number];
+  high: boolean;
+}
+
+/** The latest edit, in the headset's words: what is happening, what changed, how the receipt moved. */
+export interface VrEdit {
+  status: "working" | "proving" | "done" | "failed";
+  /** "Re-proved: super high jumps". */
+  line: string;
+  /** What changed in the world: "jump height 1.6 → 3.4 m" ("" for none yet). */
+  summary: string;
+  /** How the receipt moved: "Headline: verified → counterexample · Counterexamples: 0 → 2" ("" until it is re-proved). */
+  receipt: string;
+}
+
+export interface VrMake {
+  /** The creation tools are on (ff.vr_create): the watch's Change it and Diorama, New world listening at once. */
+  on: boolean;
+  /** Edits in words (said, or a chip) need the live AI; a move in the diorama doesn't. */
+  live: boolean;
+  /** Three changes worth trying on this world (the desktop's chips). */
+  chips: readonly string[];
+  canUndo: boolean;
+  edit: VrEdit | null;
+  movable: readonly VrMovable[];
+  spots: readonly VrSpot[];
+  /** The world's extent (the diorama fits it on the table). */
+  bounds: { min: [number, number, number]; max: [number, number, number] } | null;
 }
 
 /** What a panel button (or a spoken prompt) asks the app to do. */
-export type VrAction = { k: "again" } | { k: "build"; prompt: string };
+export type VrAction =
+  | { k: "again" }
+  | { k: "build"; prompt: string }
+  /** A change to the world in words (a chip, or said): the desktop's edit box. */
+  | { k: "edit"; change: string }
+  | { k: "undo" }
+  /** The diorama's hand put a thing on another anchor: a move op, re-proved like any edit. */
+  | { k: "move"; id: string; zone: string; anchor: string };
 
-export const EMPTY_HUD: VrHud = { proof: { text: "proof: pending", tone: "pending" }, score: "", hint: null, toast: null, bark: null, result: null, race: null, prompts: [], busy: false };
+export const NO_MAKE: VrMake = { on: false, live: false, chips: [], canUndo: false, edit: null, movable: [], spots: [], bounds: null };
+
+export const EMPTY_HUD: VrHud = { proof: { text: "proof: pending", tone: "pending" }, score: "", hint: null, toast: null, bark: null, result: null, race: null, prompts: [], busy: false, make: NO_MAKE };
+
+/** The edit box's state in the headset's words (null while there is none). */
+export function vrEdit(s: EditState): VrEdit | null {
+  switch (s.status) {
+    case "idle":
+      return null;
+    case "editing":
+      return { status: "working", line: t("Changing it: {change}…", { change: s.change }), summary: "", receipt: "" };
+    case "racing":
+      return { status: "working", line: t("Racing harder versions: {k} of {n} proved…", { k: s.proved, n: s.total }), summary: "", receipt: "" };
+    case "proving":
+      return { status: "proving", line: t("AI runners re-proving: {change}…", { change: s.change }), summary: s.summary.join(" · "), receipt: "" };
+    case "done": {
+      const moved = (s.delta ?? []).map((d) => `${d.label}: ${d.from} → ${d.to}`);
+      const same = s.delta && !s.delta.length ? [t("Receipt unchanged: every check came out the same.")] : [];
+      return { status: "done", line: t("Re-proved: {change}", { change: s.change }), summary: s.summary.join(" · "), receipt: [...moved, ...same].join(" · ") };
+    }
+    case "failed":
+      return { status: "failed", line: s.message, summary: "", receipt: "" };
+  }
+}
+
+/** Kinds the diorama's hand may move: what stands about, never a wall, a door, a spawn or a goal. */
+const MOVABLE = new Set(["pickup", "prop"]);
+
+/**
+ * What the diorama can pick up (the fill's own pickups and props, not the placer's extras) and
+ * where it can put them (the layout's free anchors), for the world on show.
+ */
+export function makeOf(w: World): Pick<VrMake, "movable" | "spots" | "bounds"> {
+  const ent = new Map(w.bundle.entities.map((e) => [e.id, e]));
+  const names = new Map(w.bundle.zones.map((z) => [z.id, z.name || z.id]));
+  const spots: VrSpot[] = w.layout ? freeAnchors(w.fill, w.layout).map((a) => ({ zone: a.zone, anchor: a.anchor, label: names.get(a.zone) ?? a.zone, at: a.at, high: a.high })) : [];
+  const anchors = new Map<string, boolean>();
+  if (w.layout) for (const z of w.layout.zones) for (const [id, p] of Object.entries(z.anchors)) anchors.set(`${z.slot}/${id}`, p[1] > z.floorY + 0.5);
+  const slot = new Map(w.bundle.zones.map((z) => [z.id, z.slot]));
+  const movable: VrMovable[] = [];
+  for (const raw of w.fill.split("\n")) {
+    let o: { op?: unknown; id?: unknown };
+    try {
+      o = JSON.parse(raw) as typeof o;
+    } catch {
+      continue;
+    }
+    const e = typeof o.id === "string" && o.op === "ent" ? ent.get(o.id) : undefined;
+    if (!e || !MOVABLE.has(e.kind)) continue;
+    movable.push({ id: e.id, label: e.noun || e.id, high: anchors.get(`${slot.get(e.zone)}/${e.anchor}`) ?? false });
+  }
+  const b = w.layout?.cameraBounds;
+  return { movable, spots, bounds: b ? { min: [b.min[0], b.min[1], b.min[2]], max: [b.max[0], b.max[1], b.max[2]] } : null };
+}
 
 /** The score line the desktop shows over the world, in words. */
 export function scoreText(s: { red: number; blue: number; result: string | null }, teams: boolean, clock: number | null, secrets: { found: number; of: number }): string {
