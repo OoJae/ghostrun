@@ -3,7 +3,7 @@
 // jump can't reach (two can) for "requires double jump" style mechanics.
 import { stream } from "@ghostrun/detmath";
 import type { Vec3 } from "@ghostrun/ir";
-import type { LayoutPack, PackLayout, PackStatic, ZoneSpec } from "@ghostrun/plugin-api";
+import type { LayoutPack, LayoutParamSpec, PackLayout, PackStatic, ZoneSpec } from "@ghostrun/plugin-api";
 
 export interface ArenaParams {
   [k: string]: number;
@@ -13,11 +13,18 @@ export interface ArenaParams {
 
 const box = (zoneSlot: string, pos: Vec3, size: Vec3, surf: PackStatic["surf"]): PackStatic => ({ zoneSlot, shape: "box", pos, rotY: 0, size, surf });
 
+/** What a structural edit may change: the field's size ("a tighter arena" is a smaller one). */
+export const ARENA_SCHEMA: Readonly<Record<string, LayoutParamSpec>> = {
+  length: { min: 32, max: 64, step: 2, label: "arena", unit: "m long", line: "from one base to the other" },
+  width: { min: 22, max: 40, step: 2, label: "arena", unit: "m wide", line: "from deck to deck" },
+};
+
 export const arena: LayoutPack<ArenaParams> = {
   id: "arena",
   version: "0.1.0",
   modes: ["play", "wander"],
   defaults: { length: 44, width: 28 },
+  schema: ARENA_SCHEMA,
   ci: { seeds: Array.from({ length: 50 }, (_, i) => i + 1) },
 
   generate({ seed, params, laws }): PackLayout {

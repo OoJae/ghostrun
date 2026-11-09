@@ -63,7 +63,8 @@ export function intentJsonSchema(packs: string[], subs: string[]): Record<string
   };
 }
 
-export function intentMessages(prompt: string, packs: { id: string; blurb: string }[]): { role: "system" | "user"; content: string }[] {
+/** `pinned`: what the person chose on the Intent card (pin.ts), to keep and to fit the rest to. */
+export function intentMessages(prompt: string, packs: { id: string; blurb: string }[], pinned?: string): { role: "system" | "user"; content: string }[] {
   return [
     {
       role: "system",
@@ -75,6 +76,7 @@ export function intentMessages(prompt: string, packs: { id: string; blurb: strin
         "lang: ISO code of the prompt's language. moodVec values are in [-1, 1].",
         "Rewrite trademarked names as generic homages in setting/goal (never output brand names).",
         `Available packs: ${packs.map((p) => `${p.id} (${p.blurb})`).join("; ")}. Pick the closest pack. sub may include 'rooftop' when vertical lanes or jumping matter.`,
+        ...(pinned ? [pinned] : []),
       ].join("\n"),
     },
     { role: "user", content: prompt },
@@ -274,8 +276,9 @@ export function repairMessages(prompt: string, intent: IntentOut, layout: PackLa
  * The person's own change to a world ("only one jump", "add three more coins", "make it night"):
  * a patch in the repair format. Expectations are off limits (the merge locks them too), so the
  * proof keeps checking what the world promised and a change that breaks a promise shows up.
+ * `structure`: what this pack's layout op may set (registry layoutLine), for changes to the map itself.
  */
-export function editMessages(prompt: string, change: string, intent: IntentOut, layout: PackLayout, fill: string): Msg[] {
+export function editMessages(prompt: string, change: string, intent: IntentOut, layout: PackLayout, fill: string, structure?: string): Msg[] {
   return [
     {
       role: "system",
@@ -287,6 +290,11 @@ export function editMessages(prompt: string, change: string, intent: IntentOut, 
         "Do exactly what the change asks and keep everything else. New things must work: bind their verbs and wire their rules.",
         "Movement (jumps, jump height, speed, gravity) is the law line: {\"op\":\"law\",\"player\":{\"jumpsMax\":1,\"jumpH\":1.6,\"speed\":6,\"gravityScale\":1}}.",
         "Looks are one meta line with only the fields that change: {\"op\":\"meta\",\"look\":\"neon city\",\"timeOfDay\":22,\"weather\":\"rain\"}. timeOfDay is 0-24; weather is clear|rain|snow|fog|storm.",
+        ...(structure
+          ? [
+              `The map itself (bigger, smaller, tighter, a floor, a room, a lane) is one layout line with only what changes, e.g. {"op":"layout","params":{"floors":2}} or {"op":"layout","sub":[]}. This pack: ${structure}. Things whose anchor the new layout lacks move on their own; a new slot may get a zone line and things.`,
+            ]
+          : []),
         "The world's expectations stay as they are: the proof re-checks them after your change, so never try to make a check pass by editing it.",
         "If the change asks for something the world language can't express, make the closest change it can.",
         ...worldRules(layout),
