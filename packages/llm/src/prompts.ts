@@ -222,9 +222,15 @@ function worldRules(layout: PackLayout): string[] {
 }
 
 /** The prompt is about talking someone round: a bribe, a purchase, a booking, a guard or a guide. */
-const TALKS = /brib|pay[\s-]*off|look the other way|guard|merchant|shop|buy|sell|trade|haggl|book|reserv|schedul|viewing|appointment|guide|estate agent|bestech|soborn|uplat|rezerv/i;
+// Two hints, each only for prompts that need it: a guide's museum is not a heist, and the bribe
+// sentence sent to it came back as a bribe nobody could pay.
+const DEALS = /brib|pay[\s-]*off|look the other way|guard|merchant|shop|buy|sell|trade|haggl|bestech|soborn|uplat/i;
+const BOOKS = /book|reserv|schedul|viewing|appointment|guide|estate agent|rezerv/i;
 /** How the act rules fit together, for a prompt that needs them (the language itself is always sent). */
-export const TALK_HINT = " A bribe: spoken a=guard_1 act=offer b=coins n=20, if player.coins gte 20: take player coins 20, set_state guard_1 look_away n 20 (menu has guard.look_away). Caught: seen_by b=guard_1 if player.carrying eq the loot: lose. Touch rules give coins. A guide: spoken act=book: book_slot.";
+export const DEAL_HINT = " A bribe: spoken a=guard_1 act=offer b=coins n=20, if player.coins gte 20: take player coins 20, set_state guard_1 look_away n 20 (menu has guard.look_away). Caught: seen_by b=guard_1 if player.carrying eq the loot: lose. Touch rules give coins.";
+export const BOOK_HINT = " A guide: spoken act=book: book_slot.";
+/** How the act rules fit together, for a prompt that needs them (the language itself is always sent). */
+export const TALK_HINT = DEAL_HINT + BOOK_HINT;
 
 /** The prompt asks for Feng Shui (the same words as asksFengShui in packages/layout/src/fengshui.ts). */
 const FENG_SHUI = /feng[\s-]*(shui|šuej|suej|schui)|fengshui|風水|风水/i;
@@ -249,7 +255,7 @@ export function fillMessages(prompt: string, intent: IntentOut, layout: PackLayo
     },
     {
       role: "user",
-      content: `Prompt: ${prompt}\nIntent: ${JSON.stringify(intent)}\nUse seed ${seed}, pack "${layout.packId}", mode "${intent.mode}", sub ${JSON.stringify(intent.sub)}. Headline expect text: "${intent.headline}".${intent.mode === "wander" ? " This is a place to explore: no win or lose rules needed; make its things inspectable (social.inspect with a real one-line text each) and let NPCs guide." : ""}${FENG_SHUI.test(prompt) ? FENG_SHUI_HINT : ""}${TALKS.test(prompt) ? TALK_HINT : ""}`,
+      content: `Prompt: ${prompt}\nIntent: ${JSON.stringify(intent)}\nUse seed ${seed}, pack "${layout.packId}", mode "${intent.mode}", sub ${JSON.stringify(intent.sub)}. Headline expect text: "${intent.headline}".${intent.mode === "wander" ? " This is a place to explore: no win or lose rules needed; make its things inspectable (social.inspect with a real one-line text each) and let NPCs guide." : ""}${FENG_SHUI.test(prompt) ? FENG_SHUI_HINT : ""}${DEALS.test(prompt) ? DEAL_HINT : ""}${BOOKS.test(prompt) ? BOOK_HINT : ""}`,
     },
   ];
 }

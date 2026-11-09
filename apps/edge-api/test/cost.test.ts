@@ -30,6 +30,18 @@ describe("cost", () => {
     }
   });
 
+  it("a guide's museum gets the booking line and never the bribe; a guarded heist gets the bribe", () => {
+    const p = PACKS[0]!;
+    const layout = p.impl.generate({ seed: 7, params: p.impl.defaults, sub: [], laws: DEFAULT_LAWS, harder: false });
+    const said = (prompt: string) => fillMessages(prompt, INTENT as IntentOut, layout, EXAMPLE, 7).map((m) => m.content).join("\n");
+    const museum = said("A minimalist white museum with five sculptures and a guide who explains each one.");
+    expect(museum).toContain("A guide: spoken act=book");
+    expect(museum).not.toContain("A bribe:");
+    const heist = said("A museum heist at night: bribe the night guard to look away and steal the jade mask");
+    expect(heist).toContain("A bribe:");
+    expect(said("Create a capture-the-flag game in a neon city. Add double jump.")).not.toMatch(/A bribe:|A guide: spoken/);
+  });
+
   it("a build is reserved at about a cent", () => {
     const est = buildEstimate(intentMessages("a maze with ghosts and a key that opens the exit", PACKS));
     expect(est.fill).toBe(costMicroUsd(FILL_MODEL, FILL_MAX_IN, FILL_MAX_OUT));
