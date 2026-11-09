@@ -2,13 +2,14 @@
 // placed on its own pack, and the receipt comes back clean: every check verified, 12 of 12 AI
 // runners winning (or, for a place, the AI visitor touring every thing in it).
 import { beforeAll, describe, expect, it } from "vitest";
-import { splitObjects } from "@ghostrun/ir";
+import { pinLayout, splitObjects } from "@ghostrun/ir";
 import { loadNavNode } from "@ghostrun/nav/node";
 import { prove } from "@ghostrun/proof";
 import type { Rapier } from "@ghostrun/sim";
 import { loadRapierNode } from "@ghostrun/sim/node";
 import { pickLook } from "../src/render/pick";
 import { ENGINE_HASH, FIXTURES, worldFromFill } from "../src/pipeline";
+import { layoutPatch, mergeEdit } from "../src/structure";
 
 let R: Rapier;
 beforeAll(async () => {
@@ -37,6 +38,15 @@ describe("the newer packs' fixtures", () => {
     if (mode === "play") expect(r.chips.find((c) => c.id === "T3:win")).toMatchObject({ k: 12, n: 12 });
     else expect(r.chips.find((c) => c.id === "T3:tour")).toMatchObject({ status: "played" });
   }, 120_000);
+
+  it("a structural edit on a new pack: two more puzzle rooms, then a bigger café, said in the edit's words and placed again", () => {
+    const escape = worldFromFill(FIXTURES.escape!, seedOf(FIXTURES.escape!));
+    const more = mergeEdit(pinLayout(escape.fill), '{"op":"layout","params":{"rooms":6}}', escape.seed);
+    expect(more.layout!.summary.slice(0, 2)).toEqual(["rooms 4 → 6", "2 rooms added"]);
+    const rebuilt = worldFromFill(more.text, escape.seed);
+    expect(rebuilt.bundle.statics.length).toBeGreaterThan(escape.bundle.statics.length);
+    expect(layoutPatch(FIXTURES.cafe!, { scale: 1.25 })).toBe('{"op":"layout","params":{"width":30,"depth":23}}') // (the merge steps it onto the schema);
+  });
 
   it("the orrery says its distances are scaled, in its notes and on the sign by the entrance", () => {
     const w = worldFromFill(FIXTURES.solar!, seedOf(FIXTURES.solar!));
