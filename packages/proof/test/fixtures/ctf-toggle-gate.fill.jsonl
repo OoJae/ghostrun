@@ -1,0 +1,32 @@
+{"op":"meta","mode":"play","lang":"en","pack":"city_block","sub":["rooftop"],"seed":82028,"look":"neon city","mood":[0.6,0.8,0.6],"timeOfDay":22,"weather":"clear"}
+{"op":"zone","id":"z_center","slot":"center","tag":"plaza","name":"Neon Plaza"}
+{"op":"zone","id":"z_west","slot":"west_block","tag":"base","name":"West Base"}
+{"op":"zone","id":"z_east","slot":"east_block","tag":"base","name":"East Base"}
+{"op":"zone","id":"z_street_w","slot":"street_w","tag":"street","name":"West Street"}
+{"op":"zone","id":"z_street_e","slot":"street_e","tag":"street","name":"East Street"}
+{"op":"zone","id":"z_roof","slot":"roof_lane_a","tag":"rooftop","name":"Rooftop Lane"}
+{"op":"spawn","id":"sp_red","zone":"z_west","anchor":"spawn_pad","team":"red"}
+{"op":"spawn","id":"sp_blue","zone":"z_east","anchor":"spawn_pad","team":"blue"}
+{"op":"goal","id":"goal_red","zone":"z_east","anchor":"goal_ring","noun":"enemy flag point","hyper":"goal","team":"red","body":"sensor","shape":"box"}
+{"op":"goal","id":"goal_blue","zone":"z_west","anchor":"goal_ring","noun":"enemy flag point","hyper":"goal","team":"blue","body":"sensor","shape":"box"}
+{"op":"ent","id":"orb","kind":"pickup","noun":"glowing orb","hyper":"orb","zone":"z_center","anchor":"plinth","body":"dynamic","shape":"sphere","size":[0.4,0.4,0.4]}
+{"op":"ent","id":"door_w","kind":"door","noun":"west gate","hyper":"door","zone":"z_street_w","anchor":"wall_n","body":"fixed","shape":"box"}
+{"op":"ent","id":"switch_w","kind":"switch","noun":"gate switch","hyper":"switch","zone":"z_street_w","anchor":"floor_ne","body":"fixed","shape":"box"}
+{"op":"ent","id":"plate_jump","kind":"plate","noun":"jump boost plate","hyper":"plate","zone":"z_roof","anchor":"gap_mid","body":"sensor","shape":"box"}
+{"op":"ent","id":"osc_platform","kind":"platform","noun":"moving platform","hyper":"platform","zone":"z_roof","anchor":"lane_start","body":"kinematic","shape":"box","size":[2,0.2,2]}
+{"op":"ent","id":"hazard_spike","kind":"hazard","noun":"spike trap","hyper":"spike","zone":"z_street_e","anchor":"floor_sw","body":"sensor","shape":"box","size":[1,0.2,1]}
+{"op":"verb","id":"vb_carry_orb","verb":"physics_props.carry","on":"orb","params":{}}
+{"op":"verb","id":"vb_lock_gate","verb":"puzzle.lock","on":"door_w","params":{"key":"key_w"}}
+{"op":"verb","id":"vb_switch_gate","verb":"puzzle.switch","on":"switch_w","params":{"once":false}}
+{"op":"verb","id":"vb_jump_plate","verb":"locomotion.jump_pad","on":"plate_jump","params":{"height":4}}
+{"op":"verb","id":"vb_osc","verb":"motion_hazards.oscillate","on":"osc_platform","params":{"axis":"x","travel":6,"period":3}}
+{"op":"verb","id":"vb_spike_hazard","verb":"motion_hazards.hazard","on":"hazard_spike","params":{"respawn":true}}
+{"op":"verb","id":"vb_player_jump","verb":"locomotion.jump","on":"player","params":{"jumpsMax":2}}
+{"op":"rule","id":"r_win","when":{"t":"enter","a":"player","b":"goal_red"},"if":[{"l":"orb.carrier.team","op":"eq","r":"red"}],"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose","when":{"t":"health_lte","a":"player","n":0},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_gate_open","when":{"t":"state_is","a":"switch_w","s":"on"},"then":[{"e":"open","target":"door_w"}]}
+{"op":"rule","id":"r_gate_close","when":{"t":"state_is","a":"switch_w","s":"off"},"then":[{"e":"close","target":"door_w"}]}
+{"op":"expect","id":"exp_win","prop":"win_reachable","a":"sp_red","b":"goal_red","headline":true,"text":"Vertical neon city requires double jump to traverse gaps"}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":6}}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

@@ -90,7 +90,7 @@ Then `edit_world {"world": "vgo7wn3pc3oinj4x", "change": "super high jumps"}` an
 ```
 What changed: jump height 1.6 → 3.4 m
 Receipt: Headline verified → counterexample · Counterexamples 0 → 1 (static checks; AI runners re-prove it on the new link)
-New failures: Rooftop lane needs double jump — reachable with 1 jump: step 2.6 m ≤ apex 3.2 m
+New failures: Rooftop lane needs double jump — reachable with 1 jump: highest step 2.6 m, apex 3.2 m
 ```
 
 With curl, a 2026-07-28 request carries its version in `_meta` and mirrors it, the method and the tool name into headers:

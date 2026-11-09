@@ -344,7 +344,7 @@ describe("edit_world, explain_world, get_receipt, list_gallery", () => {
     expect(s.summary).toEqual(["jump height 1.6 → 3.4 m"]);
     expect(s.delta).toContainEqual({ label: "Headline", from: "verified", to: "counterexample", sign: -1 });
     expect(s.failures).toHaveLength(1);
-    expect(s.failures[0]).toBe("Rooftop lane needs double jump — reachable with 1 jump: step 2.6 m ≤ apex 3.2 m");
+    expect(s.failures[0]).toBe("Rooftop lane needs double jump — reachable with 1 jump: highest step 2.6 m, apex 3.2 m");
     expect(r.content[0]!.text).toMatch(/Receipt: Headline verified → counterexample · Counterexamples 0 → 1/);
     expect(s.expects).toContainEqual(expect.objectContaining({ text: "Rooftop lane needs double jump", status: "counterexample" }));
   });

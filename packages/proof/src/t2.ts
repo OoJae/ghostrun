@@ -138,7 +138,15 @@ function plan(sim: SimWorld, b: WorldBundle, r: Rule, playerTeam: string, presse
       return w.n * 60 > MAX_TICKS ? `fires every ${w.n} s, longer than the ${MAX_TICKS}-tick bound` : null;
     case "state_is": {
       const p = producers(b).find((x) => x.k === "state" && x.a === w.a && x.s === w.s && x.cause);
-      return p ? force(sim, b, p.cause!) : `nothing in the world makes ${w.a} '${w.s}'`;
+      if (!p) return `nothing in the world makes ${w.a} '${w.s}'`;
+      const how = force(sim, b, p.cause!);
+      // already in that state (a toggle switch starts off, and "off" closes the gate): one press
+      // first puts it in another, so the forced press is a change, as a player's second press is
+      if (how === true && sim.entity(w.a)?.state === w.s) {
+        sim.step({ tick: sim.tick + 1, wx: 0, wz: 0, btn: BTN.USE });
+        for (let i = 0; i < 3; i++) sim.step({ tick: sim.tick + 1, wx: 0, wz: 0, btn: 0 });
+      }
+      return how;
     }
     case "health_lte": {
       // one hit above the line, and the hit comes: the player's shot at a rival, or a rival's shot

@@ -317,7 +317,7 @@ test("edit: 'super high jumps' comes back re-proved, the headline turns into a c
   await expect(page.getByTestId("edit-delta")).toContainText("Headline: verified → counterexample", { timeout: 60_000 });
   await expect(page.getByTestId("proof-badge")).toContainText("counterexample");
   // and why: the proof's own reason, at the rooftop
-  await expect(page.getByTestId("edit-result")).toContainText(/Rooftop lane needs double jump — reachable with 1 jump: step [\d.]+ m ≤ apex [\d.]+ m/);
+  await expect(page.getByTestId("edit-result")).toContainText(/Rooftop lane needs double jump — reachable with 1 jump(?: by way of [^:]+)?: highest step [\d.]+ m, apex [\d.]+ m/);
   expect(asked.change).toBe("super high jumps");
   expect(asked.intent?.pack).toBe("city_block");
   expect(asked.fill).toContain('"fit":{"jumpH":1.6,"jumpsMax":2');

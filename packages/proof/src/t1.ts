@@ -155,6 +155,14 @@ function reachable(ss: Surface[], start: Surface, laws: Laws, jumps: number): Se
   return seen;
 }
 
+/** What a surface is, in the receipt's words: the thing it is the top of, else a ledge. */
+function nounOf(b: WorldBundle, id: string): string {
+  const e = b.entities.find((x) => x.id === id);
+  if (e) return `the ${e.noun ?? e.id}`;
+  const st = b.statics.find((x) => x.id === id);
+  return st?.surf === "roof" ? "a roof" : "a ledge";
+}
+
 export function t1(b: WorldBundle, laws: Laws): Chip[] {
   const chips: Chip[] = [];
   const ss = surfaces(b);
@@ -184,7 +192,19 @@ export function t1(b: WorldBundle, laws: Laws): Chip[] {
       } else if (!hit(withK)) {
         chips.push({ ...base, status: "counterexample", text: label(x), cx: { where: null, have: round(apex(laws, k)), need: round(lowestStep), unit: "m", text: `apex ${round(apex(laws, k))} m < ledge ${round(lowestStep)} m` } });
       } else {
-        chips.push({ ...base, status: "counterexample", text: label(x), cx: { where: null, have: round(apex(laws, k - 1)), need: round(lowestStep), unit: "m", text: `reachable with ${k - 1} jump${k - 1 === 1 ? "" : "s"}: step ${round(lowestStep)} m ≤ apex ${round(apex(laws, k - 1))} m` } });
+        // the way up with fewer jumps: often not one step but a climb over things on the way (a
+        // crate, a kiosk roof), so say what it climbs and its highest single step, never the
+        // straight rise from the ground (which can be higher than the jump)
+        const fewer = { ...laws, jumpsMax: k - 1 };
+        const goal = targets.find((t) => withFewer.has(t.id))!;
+        const way = route(ss, start, goal, fewer, 0);
+        const steps = way ? way.slice(1).map((t, i) => t.top - way[i]!.top) : [];
+        const highest = steps.length ? Math.max(...steps) : lowestStep;
+        const over = (way ?? []).slice(1, -1).filter((t) => t.top > start.top + 0.41);
+        const named = [...new Set(over.map((t) => nounOf(b, t.id)))].slice(0, 2);
+        const via = named.length ? ` by way of ${named.join(" and ")}` : "";
+        const n = `${k - 1} jump${k - 1 === 1 ? "" : "s"}`;
+        chips.push({ ...base, status: "counterexample", text: label(x), cx: { where: null, have: round(apex(laws, k - 1)), need: round(highest), unit: "m", text: `reachable with ${n}${via}: highest step ${round(highest)} m, apex ${round(apex(laws, k - 1))} m` } });
       }
     } else {
       const set = reachable(ss, start, laws, laws.jumpsMax);

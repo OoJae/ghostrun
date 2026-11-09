@@ -193,7 +193,9 @@ async function main() {
   if (cmd === "verify") {
     const R = await loadRapierNode();
     await loadNavNode();
-    const { bundle, layout } = placeFromFill(readFileSync(args[0]!, "utf8"), seed);
+    // --pack/--mode: the intent's, as the app places a live fill (its meta line sometimes names another)
+    const flag = (name: string) => (args.includes(name) ? args[args.indexOf(name) + 1] : undefined);
+    const { bundle, layout } = placeFromFill(readFileSync(args[0]!, "utf8"), seed, flag("--pack"), flag("--mode") as WorldBundle["mode"] | undefined);
     // --playtest: then novice and average runners too (the difficulty band, what the runners revealed)
     const t0 = performance.now();
     let out = 0;
@@ -564,7 +566,7 @@ async function main() {
     mkdirSync(outDir, { recursive: true });
     writeFileSync(join(outDir, "bench.json"), JSON.stringify(rows, null, 2));
   } else {
-    console.log('usage: ghostrun verify <fill.jsonl> [--seed n] [--playtest] | build "<prompt>" [--out dir] | bench <prompts.txt> [--out dir]');
+    console.log('usage: ghostrun verify <fill.jsonl> [--seed n] [--pack id] [--mode play|wander] [--playtest] | build "<prompt>" [--out dir] | bench <prompts.txt> [--out dir]');
   }
 }
 
