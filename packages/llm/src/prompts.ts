@@ -32,6 +32,9 @@ export function settleIntent(prompt: string, intent: IntentOut): IntentOut {
   return intent.mode === "wander" && GOAL.test(prompt.trim()) ? { ...intent, mode: "play" } : intent;
 }
 
+/** The intent's words a person reads (and the fill is written from): what homageIntent rewrites. */
+export const INTENT_WORDS = ["genre", "setting", "role", "goal", "fail", "mood", "headline"] as const satisfies readonly (keyof IntentOut)[];
+
 /** JSON Schema twin of IntentOut for strict structured outputs. */
 export function intentJsonSchema(packs: string[], subs: string[]): Record<string, unknown> {
   const str = { type: "string" };

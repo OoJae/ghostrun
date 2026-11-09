@@ -5,7 +5,7 @@ import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 
 import { dirname, join, resolve } from "node:path";
 import { FillParser, lawsUnwritten, layoutLaws, mergeFill, parseFill, pinLayout, splitObjects, type FillNote, type WorldBundle } from "@ghostrun/ir";
 import { asksFengShui, FENG_SHUI_RULES, fengShui, placeWorld, saysFengShui } from "@ghostrun/layout";
-import { directorMessages, editMessages, fillMessages, homage, homageNote, hostJsonSchema, hostMessages, IntentOut, intentJsonSchema, intentMessages, jsonLanes, lanesFor, mindJsonSchema, mindMessages, repairMessages, settleIntent, streamLanes, type JobCall, type Keys } from "@ghostrun/llm";
+import { directorMessages, editMessages, fillMessages, homage, homageIntent, homageNote, hostJsonSchema, INTENT_WORDS, hostMessages, IntentOut, intentJsonSchema, intentMessages, jsonLanes, lanesFor, mindJsonSchema, mindMessages, repairMessages, settleIntent, streamLanes, type JobCall, type Keys } from "@ghostrun/llm";
 import { loadNavNode } from "@ghostrun/nav/node";
 import { badness, better, caught, chipLine, fengShuiHead, fengShuiLine, insights, issuesOf, plants, prove, provedWon, reportLines, traceRunners, type Receipt } from "@ghostrun/proof";
 import { ALL_SUBS, layoutOf, PACKS, packFor } from "@ghostrun/registry";
@@ -132,7 +132,7 @@ async function build(typed: string, seed: number, outDir: string | null): Promis
 
   // 1. intent (strict schema, no reasoning)
   const intentRes = await jsonLanes<unknown>(lanesFor("intent", keys, { messages: intentMessages(prompt, PACKS), jsonSchema: { name: "intent", schema: intentJsonSchema(PACKS.map((p) => p.id), ALL_SUBS) }, maxTokens: 800 }));
-  const intent = settleIntent(prompt, v.parse(IntentOut, intentRes.value));
+  const intent = settleIntent(prompt, homageIntent(v.parse(IntentOut, intentRes.value), INTENT_WORDS));
   const intentMs = Math.round(now() - t0);
   if (intent.safety === "block") throw new Error(`blocked by moderation: ${intent.setting}`);
 

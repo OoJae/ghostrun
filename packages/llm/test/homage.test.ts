@@ -2,8 +2,8 @@ import { readdirSync, readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
-import { homage, homageNote, TRADEMARKS } from "../src/homage";
-import { intentMessages } from "../src/prompts";
+import { homage, homageIntent, homageNote, TRADEMARKS } from "../src/homage";
+import { INTENT_WORDS, intentMessages } from "../src/prompts";
 
 const bench = resolve(dirname(fileURLToPath(import.meta.url)), "../../../tools/bench");
 const lines = (file: string) =>
@@ -86,6 +86,15 @@ describe("trademarks to homages", () => {
     expect(homage("Wyścig w Hogwarcie").text).toBe("Wyścig w a wizard school castle");
     expect(homage("マリオのレース").homages).toEqual([{ from: "マリオ", to: "a plumber hero" }]);
     expect(homage("在乐高城市里驾驶法拉利").homages.map((h) => h.from)).toEqual(["乐高", "法拉利"]);
+  });
+
+  it("a brand the intent model names by itself is rewritten too (a live run answered a Metropolis flight with 'a Superman-style homage')", () => {
+    const said = { lang: "en", mode: "play" as const, genre: "superhero flight", setting: "rooftops above a gleaming metropolis", role: "caped flying strongman", goal: "catch the satellite", fail: "", mood: "heroic", pack: "city_block", sub: [], safety: "ok" as const, headline: "Fly like Superman over Metropolis", nouns: [{ noun: "Metropolis rooftops", hyper: "a Superman-style homage" }], moodVec: { valence: 0, arousal: 0, tension: 0 } };
+    const out = homageIntent(said, INTENT_WORDS);
+    expect(out.headline).toBe("Fly like a caped flying strongman over a gleaming skyscraper city");
+    expect(out.setting).toBe(said.setting); // the ordinary word stays
+    expect(out.nouns).toEqual([{ noun: "A gleaming skyscraper city rooftops", hyper: "a caped flying strongman-style homage" }]);
+    expect(survivors(JSON.stringify(out))).toEqual([]);
   });
 
   it("the Intent card's note", () => {

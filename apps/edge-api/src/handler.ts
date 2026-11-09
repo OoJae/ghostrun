@@ -9,7 +9,7 @@
 // the governor before any model call and commits the metered cost when it ends (governor.ts).
 // Each model call runs on the fast lane with Claude Haiku as the rung below it (llm/lanes.ts).
 import { DEFAULT_LAWS, gameplayLines, jcs } from "@ghostrun/ir";
-import { BRIEF_MAX_CHARS, BriefOut, briefJsonSchema, directorMessages, editMessages, fillMessages, homage, hostJsonSchema, hostMessages, inspiredPrompt, IntentOut, intentJsonSchema, intentMessages, jsonLanes, lanesFor, LlmError, mindJsonSchema, mindMessages, pinIntent, pinLine, readPin, repairMessages, settleBrief, settleIntent, streamLanes, visionMessages, type ChatMessage, type Job, type Keys, type Provider } from "@ghostrun/llm";
+import { BRIEF_MAX_CHARS, BriefOut, briefJsonSchema, directorMessages, editMessages, fillMessages, homage, homageIntent, hostJsonSchema, INTENT_WORDS, hostMessages, inspiredPrompt, IntentOut, intentJsonSchema, intentMessages, jsonLanes, lanesFor, LlmError, mindJsonSchema, mindMessages, pinIntent, pinLine, readPin, repairMessages, settleBrief, settleIntent, streamLanes, visionMessages, type ChatMessage, type Job, type Keys, type Provider } from "@ghostrun/llm";
 import { ALL_SUBS, layoutLine, layoutOf, PACKS, packFor } from "@ghostrun/registry";
 import * as v from "valibot";
 // the vault heist teaches goal-dependent wins, doorway doors, keys and inspectable exhibits (an A/B
@@ -498,7 +498,8 @@ async function build(req: Request, env: Env, url: URL, later: (p: Promise<unknow
         if (res.inTok > 0) intentCost = costMicroUsd(res.model, res.inTok, res.outTok);
         if (res.fellBack) await send("fallback", { job: "intent", to: res.model });
         // the pins win over the model (and over a goal phrase's "it's a game"): the person chose them
-        const intent = pinIntent(settleIntent(prompt, v.parse(IntentOut, res.value)), pin, subsOf);
+        // (and a brand the model named by itself is rewritten too, before the fill reads the intent)
+        const intent = pinIntent(settleIntent(prompt, homageIntent(v.parse(IntentOut, res.value), INTENT_WORDS)), pin, subsOf);
         safe = intent.safety !== "block"; // arcade games (shooters, monsters, heists) are ordinary worlds to keep
         await keep("intent", { intent, seed, ms: Date.now() - t0 });
         if (intent.safety === "block") {

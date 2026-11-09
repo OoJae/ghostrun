@@ -15,7 +15,8 @@
 //   only written as the brand is (capitalised) and not at the start of a sentence, and a few are
 //   left out altogether because the ordinary word is far commoner in a world prompt than the brand
 //   ("apple", "jaguar", "mustang", "monopoly", "frozen", "minions", "among us", "animal crossing",
-//   "thor", "joker", "tesla"): the intent prompt's rule is their net;
+//   "thor", "joker", "tesla"): the intent prompt's rule is their net, and the intent's own words
+//   are rewritten again on the way out (homageIntent), since a model can name a brand by itself;
 // - a person called Mario is rewritten too: in a prompt for a game world the name nearly always
 //   means the plumber, and a generic hero is a harmless miss.
 // The longest name wins where two overlap ("Mario Kart" before "Mario"), and an article before a
@@ -207,7 +208,8 @@ const TABLE: readonly Row[] = [
   ["Hunger Games|Katniss", "a deadly televised survival contest"],
   ["Squid Game", "a deadly playground-games contest"],
   ["Shrek", "a grumpy green ogre"],
-  ["Toy Story|Buzz Lightyear", "toys that come to life", "c"],
+  ["Toy Story", "toys that come to life", "c"],
+  ["Buzz Lightyear", "a toy space ranger"],
   ["Monsters, Inc.|Monsters Inc|Monstropolis", "a monster-run scare factory"],
   ["Finding Nemo", "a little clownfish"],
   ["Arendelle|Elsa and Anna|Olaf the snowman", "an ice-queen kingdom"],
@@ -221,6 +223,7 @@ const TABLE: readonly Row[] = [
   ["Batmobile", "a black armoured hero car"],
   ["Batcave", "a hero's secret cave base"],
   ["Gotham City|Gotham", "a gothic crime-ridden city"],
+  ["Metropolis", "a gleaming skyscraper city", "c"],
   ["Superman|Supermana|Supermanem|スーパーマン", "a caped flying strongman"],
   ["Wonder Woman", "an amazon warrior hero"],
   ["Iron Man", "a hero in a rocket-powered suit", "c"],
@@ -358,7 +361,7 @@ const sentenceStart = (before: string) => /(^|[.!?:;\n]["'’”)]*)\s*$/u.test(
  * same input always gives the same output, and the output has no name from the table left in it
  * (the homages name none), so a rewritten prompt comes back as it is.
  */
-export function homage(prompt: string): Homaged {
+export function homage(prompt: string, opts: { label?: boolean } = {}): Homaged {
   const found: { start: number; end: number; to: string }[] = [];
   for (const e of ENTRIES) {
     e.re.lastIndex = 0;
@@ -368,7 +371,8 @@ export function homage(prompt: string): Homaged {
         continue;
       }
       // a brand that is also an ordinary word: only mid-sentence, and only with its capitals
-      if (e.cased && sentenceStart(prompt.slice(0, m.index)) && !m[0].includes(" ")) continue;
+      // (a label, like the model's name for a thing, isn't a sentence: its capital means the brand)
+      if (e.cased && !opts.label && sentenceStart(prompt.slice(0, m.index)) && !m[0].includes(" ")) continue;
       found.push({ start: m.index, end: m.index + m[0].length, to: e.to });
     }
   }
@@ -408,4 +412,16 @@ export function homage(prompt: string): Homaged {
 /** The Intent card's note, in English: "Homage: 'Mario Kart' → 'a kart race with a plumber hero'; we don't use trademarked names". */
 export function homageNote(hs: readonly Homage[]): string | null {
   return hs.length ? `Homage: ${hs.map((h) => `'${h.from}' → '${h.to}'`).join(", ")}; we don't use trademarked names` : null;
+}
+
+/**
+ * The intent model's words with any brand it named rewritten too (its setting, goal, headline and
+ * the rest, and its nouns): asked for a "flight over Metropolis rooftops" it answered with "a
+ * Superman-style homage". The same table, so the same rewrite as the prompt's.
+ */
+export function homageIntent<T extends { nouns: { noun: string; hyper: string }[] }>(intent: T, keys: readonly (keyof T & string)[]): T {
+  const out = { ...intent } as Record<string, unknown>;
+  for (const k of keys) if (typeof out[k] === "string") out[k] = homage(out[k] as string).text;
+  out.nouns = intent.nouns.map((n) => ({ ...n, noun: homage(n.noun, { label: true }).text, hyper: homage(n.hyper).text }));
+  return out as T;
 }
