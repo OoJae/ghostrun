@@ -37,6 +37,8 @@ body.record-mode .hud > .proof,
 body.record-mode .repair,
 body.record-mode .intent,
 body.record-mode .toast,
+body.record-mode .teamwheel,
+body.record-mode .persona-open,
 body.record-mode .pill { display: none; }
 body.record-mode .stage,
 body.record-mode.cursor-rest,
