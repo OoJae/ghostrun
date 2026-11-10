@@ -201,6 +201,13 @@ describe("edge API", () => {
     expect(await health({ CEREBRAS_API_KEY: "k", DEV_OPEN: "1", FLAGS: off })).toEqual({ persona_sliders: true, team_ai: false, wander_life: true });
   });
 
+  it("health says whether the headset's creation tools are on (ff.vr_create: on unless FLAGS says off)", async () => {
+    const dev: Env = { CEREBRAS_API_KEY: "k", DEV_OPEN: "1" };
+    expect(await (await handle(new Request("http://localhost/v1/health"), dev)).json()).toMatchObject({ vrCreate: true });
+    const off: Env = { ...dev, FLAGS: { get: async (k: string) => (k === "ff.vr_create" ? "off" : null) } };
+    expect(await (await handle(new Request("http://localhost/v1/health"), off)).json()).toMatchObject({ vrCreate: false });
+  });
+
   it("the gate is closed by default, and DEV_OPEN only opens it on localhost", async () => {
     const req = (u: string) => new Request(u, { method: "POST", body: JSON.stringify({ prompt: "x" }) });
     expect((await handle(req("https://g.example/v1/build"), { CEREBRAS_API_KEY: "k" })).status).toBe(503);

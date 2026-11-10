@@ -79,6 +79,18 @@ export interface XrProbe {
   sheet: boolean;
   /** Main-thread time of the VR layer's own work per frame (ms). */
   cpu: { p50: number; p95: number };
+  /** The watch's face: the game's facts, or Change it (also shown over the diorama). */
+  page: "play" | "make";
+  /** What the words being listened to are for (null: not listening). */
+  listenFor: "world" | "edit" | null;
+  /** Typing on the headset's keyboard, and what for (null: not typing). */
+  typing: "world" | "edit" | null;
+  /**
+   * The world as a model on the table (null: life size): its scale, what the god hand holds and the
+   * free anchor it would go on ("zone/anchor"), what the ray points at, and where the movable things
+   * and the free anchors show, in the play space.
+   */
+  diorama: { scale: number; held: string | null; target: string | null; aimed: string | null; items: Record<string, [number, number, number]>; spots: Record<string, [number, number, number]> } | null;
 }
 
 export interface AudioProbe {

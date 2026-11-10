@@ -45,7 +45,14 @@ export async function lifeFlags(env: { FLAGS?: KvNamespace }): Promise<LifeFlags
   return Object.fromEntries(LIFE_FLAGS.map((f, i) => [f, vals[i] !== "off"])) as LifeFlags;
 }
 
-export async function healthMore(env: ProofEnv): Promise<{ proof: boolean; canary: { at: string; ok: boolean } | null; ff: LifeFlags }> {
-  const [p, canary, ff] = await Promise.all([proofHealth(env), canaryHealth(env), lifeFlags(env)]);
-  return { ...p, canary, ff };
+/** Making and changing worlds from inside the headset (the client's VR wrist tools): on unless FLAGS says "off". */
+export const VR_CREATE_FLAG = "ff.vr_create";
+
+export async function vrCreateOn(env: { FLAGS?: KvNamespace }): Promise<boolean> {
+  return (await env.FLAGS?.get(VR_CREATE_FLAG, { cacheTtl: 60 }).catch(() => null)) !== "off";
+}
+
+export async function healthMore(env: ProofEnv): Promise<{ proof: boolean; canary: { at: string; ok: boolean } | null; ff: LifeFlags; vrCreate: boolean }> {
+  const [p, canary, ff, vrCreate] = await Promise.all([proofHealth(env), canaryHealth(env), lifeFlags(env), vrCreateOn(env)]);
+  return { ...p, canary, ff, vrCreate };
 }

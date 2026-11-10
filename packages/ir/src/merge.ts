@@ -39,6 +39,8 @@ export interface MergeStats {
   locked: number;
   /** Structural edits that changed the layout (absent when there were none). */
   layout?: number;
+  /** Things a move op put on another anchor (absent when there were none). */
+  moved?: number;
 }
 
 /** Meta fields an edit may change: how the world looks, never what it is (pack, mode, seed). */
@@ -85,6 +87,27 @@ function relayout(lines: Line[], patch: Line, stats: MergeStats) {
 }
 
 const PLACED = new Set(["spawn", "goal", "ent", "npc"]);
+/** What a move may carry: a thing or a character. A spawn or a goal is where the world's promises start and end. */
+const MOVABLE = new Set(["ent", "npc"]);
+const ANCHOR = /^[a-z][a-z0-9_]{0,31}$/;
+
+/**
+ * A move, {"op":"move","id":"key","zone":"z_hall","anchor":"corner_nw"}: the thing stands on
+ * another anchor (the diorama's hand dropping it there). Only the relation changes, never a
+ * coordinate (the placer turns it into a position, as for any line); the zone must be one the fill
+ * has, and a spawn or a goal never moves this way.
+ */
+function move(lines: Line[], patch: Line, stats: MergeStats) {
+  const p = JSON.parse(patch.raw) as { id?: unknown; zone?: unknown; anchor?: unknown };
+  const at = lines.findIndex((l) => l.id === p.id && MOVABLE.has(l.op));
+  const zoneOk = typeof p.zone === "string" && lines.some((l) => l.op === "zone" && l.id === p.zone);
+  if (at < 0 || !zoneOk || typeof p.anchor !== "string" || !ANCHOR.test(p.anchor)) return void stats.ignored++;
+  const o = JSON.parse(lines[at]!.raw) as Record<string, unknown>;
+  if (o.zone === p.zone && o.anchor === p.anchor) return void stats.ignored++;
+  lines[at] = { ...lines[at]!, raw: JSON.stringify({ ...o, zone: p.zone, anchor: p.anchor }) };
+  stats.replaced++;
+  stats.moved = (stats.moved ?? 0) + 1;
+}
 
 /**
  * A thing a patch rewrites keeps what makes it that thing when the patch leaves it out: its kind (a
@@ -110,6 +133,11 @@ export function mergeFill(base: string, patch: string, opts: { edit?: boolean } 
     // only an edit reshapes the world; a repair fixes it on the geometry it has
     if (p.op === "layout") {
       if (opts.edit) relayout(lines, p, stats);
+      else stats.ignored++;
+      continue;
+    }
+    if (p.op === "move") {
+      if (opts.edit) move(lines, p, stats);
       else stats.ignored++;
       continue;
     }

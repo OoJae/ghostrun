@@ -1927,4 +1927,4 @@ export function repairExpects(b: WorldBundle): string[] {
   return notes;
 }
 
-export { reanchor, type Reanchored } from "./reanchor";
+export { freeAnchors, reanchor, type FreeAnchor, type Reanchored } from "./reanchor";

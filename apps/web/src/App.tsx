@@ -60,7 +60,7 @@ import { useClip } from "./useClip";
 import { clipName } from "./clip";
 import { worldTitle } from "./race";
 import { RecordStrip } from "./hud/RecordStrip";
-import { scoreText, vrResult, type VrAction } from "./xr/model";
+import { makeOf, scoreText, vrEdit, vrResult, type VrAction, type VrMake } from "./xr/model";
 
 const HINT_MS = 6000;
 /** A moment for the browser: a click returns and "changing the world…" paints before a world is rebuilt. */
@@ -141,6 +141,8 @@ export function App() {
   const [inspired, setInspired] = useState<LiveInspired | null>(null);
   /** The live lane can read a picture (the edge has the Claude lane); the bar offers one only then. */
   const [canSee, setCanSee] = useState(false);
+  /** The headset's creation tools (ff.vr_create, on unless the edge turns them off). */
+  const [vrCreate, setVrCreate] = useState(true);
   const sound = useSound();
   const speech = useSpeech(sound);
   /** A shared or gallery world on screen: where it came from (its line, if a remix), and whether Remix made it your copy. */
@@ -552,6 +554,7 @@ export function App() {
       if (disposed) return;
       setMode(h.llm && params.get("live") !== "0" ? "live" : "fixture");
       setCanSee(h.vision);
+      setVrCreate(h.vrCreate);
     });
     import("./engine")
       .then(({ Engine }) =>
@@ -770,15 +773,16 @@ export function App() {
    * A patch on the world, the model's or the Intent card's own: merged by stable ids (a layout op
    * settled and re-anchored), placed, re-proved, and back with how the receipt moved, and Undo.
    */
-  const applyEdit = async (w: World, change: string, patch: string, t0: number, said?: string[]) => {
+  const applyEdit = async (w: World, change: string, patch: string, t0: number, said?: string[], lead: string[] = []) => {
     const before = receiptRef.current;
     const original = w.source?.base ?? w.source?.prompt ?? builtPrompt.current;
     const edits = [...(w.source?.edits ?? []), change];
     const fill0 = pinLayout(w.fill);
     const { text, stats, layout } = mergeEdit(fill0, patch, w.seed);
     const w2 = worldFromFill(text, w.seed, w.intent.live, w.bundle.pack.id, w.bundle.mode);
-    // (a persona slider says what it changed itself, with its numbers)
-    const summary = said ?? [...(layout?.summary ?? []), ...changeSummary(w.bundle, w2.bundle)];
+    // (a persona slider says what it changed itself, with its numbers; a move says where the thing went:
+    // the bundle's "1 thing changed" says no more than that)
+    const summary = said ?? [...lead, ...(layout?.summary ?? []), ...changeSummary(w.bundle, w2.bundle).filter((x) => !lead.length || !/^\d+ things? changed$/.test(x))];
     if (!summary.length && text.trim() === fill0.trim()) return setEdit({ status: "failed", change, message: stats.locked ? t("That would only change what the world promises, and the proof keeps those fixed.") : t("Nothing in the world changed. Try saying it differently.") });
     if (layout?.notes.length) w2.notes.unshift(...layout.notes);
     w2.source = { prompt: editedPrompt(original, edits), intent: intentFor(w, original), fill: w2.fill, seed: w.seed, pack: w2.bundle.pack.id, base: original, edits, ...(w.source?.pinned ? { pinned: w.source.pinned } : {}) };
@@ -1177,10 +1181,27 @@ export function App() {
   };
   const againRef = useRef(again);
   againRef.current = again;
-  /** A panel button or a spoken prompt in the headset: the same as R, or as the prompt bar's Enter. */
+  /**
+   * The diorama's hand put a thing on a free anchor: a move op through the edit path (merged by
+   * id, placed, re-proved), shown with where it went, with Undo. No AI: it works offline too.
+   */
+  const moveThing = (id: string, zone: string, anchor: string) => {
+    const w = current.current;
+    if (!w) return;
+    const thing = w.bundle.entities.find((e) => e.id === id)?.noun || id;
+    const where = w.bundle.zones.find((z) => z.id === zone)?.name || zone;
+    const change = `move the ${thing} to the ${where}`;
+    setEdit({ status: "editing", change });
+    void soon().then(() => applyEdit(w, change, JSON.stringify({ op: "move", id, zone, anchor }), performance.now(), undefined, [t("{thing} moved to the {where}", { thing, where })]));
+  };
+
+  /** A panel button or a spoken prompt in the headset: the same as R, the prompt bar's Enter, the edit box, its Undo. */
   const vrAct = useRef<(a: VrAction) => void>(() => undefined);
   vrAct.current = (a) => {
     if (a.k === "again") return again();
+    if (a.k === "edit") return void editWorld(a.change);
+    if (a.k === "undo") return undo();
+    if (a.k === "move") return moveThing(a.id, a.zone, a.anchor);
     setPrompt(a.prompt);
     submit(a.prompt);
   };
@@ -1215,11 +1236,27 @@ export function App() {
 
   // the HUD can't be seen in a headset: its facts go to the in-headset panels as words
   const vrCard = race.card?.vs ?? null;
+  /** What the diorama can move and where to, for the world on show (worked out once a world). */
+  const vrMakeOf = useRef<{ w: World; m: ReturnType<typeof makeOf> } | null>(null);
+  // the headset's "Surprise me": a suggestion this lane can build, picked once (a new one each world)
+  const surprise = useMemo(() => {
+    const pool = SUGGESTIONS.filter((x) => (mode === "live" || !x.live) && x.prompt !== BRIEF);
+    return pool[Math.floor(Math.random() * pool.length)]!.prompt;
+  }, [mode, timing]);
   useEffect(() => {
     const e = engine.current;
     if (!inVr || !e) return;
     const w = current.current;
     const busy = status === "building" || status === "booting";
+    if (w && vrMakeOf.current?.w !== w) vrMakeOf.current = { w, m: makeOf(w) };
+    const make: VrMake = {
+      on: vrCreate,
+      live: mode === "live",
+      chips: w && mode === "live" ? suggestionsFor(w.bundle) : [],
+      canUndo: history.current.length > 0,
+      edit: vrEdit(edit),
+      ...(w && vrMakeOf.current ? vrMakeOf.current.m : { movable: [], spots: [], bounds: null }),
+    };
     e.vrHud({
       proof: proofBadge(proof),
       score: scoreText(score, teams, clock, secrets),
@@ -1228,10 +1265,12 @@ export function App() {
       bark,
       result: result && w ? vrResult(result, w.bundle, proof.receipt?.par?.goldS ?? null, vrCard) : null,
       race: race.chip ? { rival: race.chip.rival, secrets: race.chip.secrets } : null,
-      prompts: SUGGESTIONS.filter((x) => mode === "live" || !x.live),
+      // the landing's starters
+      prompts: STARTERS.map((s) => ({ label: t(s.label), prompt: s.prompt ?? surprise })),
       busy,
+      make,
     });
-  }, [inVr, proof, score, teams, clock, secrets, useHint, toast, notice, status, building, bark, result, vrCard, race.chip?.rival, race.chip?.secrets, mode]);
+  }, [inVr, proof, score, teams, clock, secrets, useHint, toast, notice, status, building, bark, result, vrCard, race.chip?.rival, race.chip?.secrets, mode, edit, vrCreate, lang, timing, surprise]);
 
   return (
     <>
