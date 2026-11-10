@@ -17,6 +17,11 @@
 | A Feng Shui handbag gallery with a tall arched window in line with the fr… | Feng Shui handbag gallery | floor_plan | **gallery** | day |
 | A museum heist at night: collect coins, bribe the guard to look the other… | museum night | floor_plan | **gallery** | night |
 | A villa tour where the guide books a viewing. | luxury villa | floor_plan | **gallery** | day |
+| A café where you take orders: bring the latte and the cake to the right t… | cosy coffee shop | service_venue | **home** | day |
+| An escape room: flip the switch, find the key, step on the plate and pull… | stone escape room | puzzle_rooms | **gallery** | night |
+| A rock concert hall: wander from the foyer to the stage and backstage. | rock concert hall | stage | **gallery** | night |
+| A tour of the solar system: visit every planet before the planetarium clo… | planetarium in space | orrery | **space/moon** | night |
+| A bioluminescent forest at night to wander: a glowcap glade, a lantern gr… | bioluminescent forest | outdoor | **grove** | night fog |
 | A jetpack race through floating islands: grab the sky crystal from the pe… | floating islands | volume | **grove** | day |
 | Swim to the sunken treasure by the wreck and bring it back to the beach. | tropical lagoon | volume | **desert/beach** | day |
 | Zero-g escape from a space station: float the keycard from the lab to the… | space station | volume | **space** | night |

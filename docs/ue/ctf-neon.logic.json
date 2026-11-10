@@ -879,6 +879,33 @@
         "counterexample": null
       },
       {
+        "id": "T2:command:mate_1:teammate.attack",
+        "status": "verified",
+        "text": "the teammate mate_1 plays teammate.attack when told",
+        "method": "forced-state ≤180 ticks",
+        "k": 1,
+        "n": 1,
+        "counterexample": null
+      },
+      {
+        "id": "T2:command:mate_1:teammate.defend",
+        "status": "verified",
+        "text": "the teammate mate_1 plays teammate.defend when told",
+        "method": "forced-state ≤180 ticks",
+        "k": 1,
+        "n": 1,
+        "counterexample": null
+      },
+      {
+        "id": "T2:command:mate_1:teammate.follow",
+        "status": "verified",
+        "text": "the teammate mate_1 plays teammate.follow when told",
+        "method": "forced-state ≤180 ticks",
+        "k": 1,
+        "n": 1,
+        "counterexample": null
+      },
+      {
         "id": "T3:win",
         "status": "played",
         "text": "AI runners won by playing it vs 3 bots (AI par 41.4 s)",
