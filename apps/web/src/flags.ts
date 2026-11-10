@@ -1,10 +1,10 @@
 // The living world's feature flags: persona sliders, commandable teammates, a place's ambient life.
-// Each is on unless the edge says "off" (/v1/health's ff, read from KV once a minute: deploy-free)
-// or the page's ?ff= turns it off ("?ff=-team_ai,-wander_life", for tests and comparisons).
+// They ship dark: each is off unless the edge says "on" (/v1/health's ff, read from KV once a minute:
+// deploy-free) or the page's ?ff= turns it on ("?ff=team_ai,wander_life", for tests and comparisons).
 export const FLAGS = ["persona_sliders", "team_ai", "wander_life"] as const;
 export type Flag = (typeof FLAGS)[number];
 
-const off = new Set<Flag>();
+const off = new Set<Flag>(FLAGS);
 const pinned = new Set<Flag>();
 
 /** The page's own choices (?ff=-team_ai switches team AI off; ?ff=team_ai keeps it on whatever the edge says). */
@@ -33,8 +33,9 @@ export function applyHealthFlags(ff: unknown) {
 
 export const flagOn = (f: Flag): boolean => !off.has(f);
 
-/** For tests: every flag back on, nothing pinned. */
+/** For tests: every flag back to its default (off), nothing pinned. */
 export function resetFlags() {
   off.clear();
+  for (const f of FLAGS) off.add(f);
   pinned.clear();
 }

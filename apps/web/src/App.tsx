@@ -1432,7 +1432,7 @@ export function App() {
           />
         )}
         {status === "playing" && !inVr && flagOn("wander_life") && current.current?.bundle.mode === "wander" && lifeWords(current.current.bundle, current.current.cue) && <LifeNote words={lifeWords(current.current.bundle, current.current.cue)!} />}
-        <TeamWheel engine={engine} active={status === "playing" && !inVr} mates={mates} thing={current.current ? objectiveOf(current.current.bundle) : ""} name={(id) => current.current?.bundle.entities.find((e) => e.id === id)?.noun || id.replace(/_/g, " ")} last={order} onCommand={command} />
+        <TeamWheel engine={engine} active={status === "playing" && !inVr} hidden={receiptOpen} mates={mates} thing={current.current ? objectiveOf(current.current.bundle) : ""} name={(id) => current.current?.bundle.entities.find((e) => e.id === id)?.noun || id.replace(/_/g, " ")} last={order} onCommand={command} />
         <ProofBadge proof={proof} onOpen={() => setReceiptOpen((o) => !o)} />
         <CutChip cut={cut} onApply={applyCut} />
         <RepairChip

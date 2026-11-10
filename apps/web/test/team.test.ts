@@ -50,17 +50,17 @@ describe("orders for your teammates", () => {
 });
 
 describe("the living world's flags", () => {
-  it("are on unless the edge says off, and the page can pin one", () => {
-    expect(flagOn("team_ai")).toBe(true);
-    applyHealthFlags({ team_ai: false, persona_sliders: true });
+  it("ship dark: off unless the edge says on, and the page can pin one", () => {
     expect(flagOn("team_ai")).toBe(false);
-    expect(flagOn("persona_sliders")).toBe(true);
+    applyHealthFlags({ team_ai: true, persona_sliders: false });
+    expect(flagOn("team_ai")).toBe(true);
+    expect(flagOn("persona_sliders")).toBe(false);
     resetFlags();
     readUrlFlags("?ff=-wander_life,team_ai");
     applyHealthFlags({ wander_life: true, team_ai: false });
     expect(flagOn("wander_life")).toBe(false);
     expect(flagOn("team_ai")).toBe(true);
     applyHealthFlags(null);
-    expect(flagOn("persona_sliders")).toBe(true);
+    expect(flagOn("persona_sliders")).toBe(false);
   });
 });

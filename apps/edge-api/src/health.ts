@@ -36,13 +36,13 @@ export async function canaryHealth(env: { FLAGS?: KvNamespace }): Promise<{ at: 
   return { at: runs.map((r) => r.at).sort().at(-1)!, ok: runs.every((r) => r.ok) };
 }
 
-/** The living world's feature flags (KV keys ff.persona_sliders, ff.team_ai, ff.wander_life): on unless "off". */
+/** The living world's feature flags (KV keys ff.persona_sliders, ff.team_ai, ff.wander_life): they ship dark, off unless "on". */
 export const LIFE_FLAGS = ["persona_sliders", "team_ai", "wander_life"] as const;
 export type LifeFlags = Record<(typeof LIFE_FLAGS)[number], boolean>;
 
 export async function lifeFlags(env: { FLAGS?: KvNamespace }): Promise<LifeFlags> {
   const vals = await Promise.all(LIFE_FLAGS.map((f) => env.FLAGS?.get(`ff.${f}`, { cacheTtl: 60 }).catch(() => null) ?? Promise.resolve(null)));
-  return Object.fromEntries(LIFE_FLAGS.map((f, i) => [f, vals[i] !== "off"])) as LifeFlags;
+  return Object.fromEntries(LIFE_FLAGS.map((f, i) => [f, vals[i] === "on"])) as LifeFlags;
 }
 
 /** Making and changing worlds from inside the headset (the client's VR wrist tools): on unless FLAGS says "off". */

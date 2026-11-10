@@ -31,7 +31,8 @@ export function proofBadge(proof: ProofState): { text: string; tone: "good" | "b
   if (status === "error") return { text: t("proof unavailable"), tone: "warn" };
   if (status !== "done" || !receipt) return { text: t("proof: pending"), tone: "pending" };
   const head = receipt.headline;
-  if (fails) return { text: tn(fails, "{n} counterexample", "{n} counterexamples"), tone: "bad" };
+  // (a broken headline says which promise broke first, then how many checks did)
+  if (fails) return { text: `${head?.status === "counterexample" ? `${head.text}: ${statusWord(head.status, words)} · ` : ""}${tn(fails, "{n} counterexample", "{n} counterexamples")}`, tone: "bad" };
   return { text: `${head ? `${head.text}: ${statusWord(head.status, words)}` : t("no counterexamples")}${win ? ` · ${t("{k} AI runners won", { k: fraction(win.k, win.n, words) })}` : ""}`, tone: head && head.status !== "verified" && head.status !== "played" ? "pending" : "good" };
 }
 

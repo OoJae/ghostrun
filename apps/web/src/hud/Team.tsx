@@ -10,6 +10,8 @@ import { t } from "../i18n";
 interface Props {
   engine: RefObject<Engine | null>;
   active: boolean;
+  /** Stepped aside (the receipt is open over the same corner); orders by key still work. */
+  hidden?: boolean;
   mates: readonly Commandable[];
   /** What the game is about ("glowing orb"), for "Get the …". */
   thing: string;
@@ -18,7 +20,7 @@ interface Props {
   onCommand: (c: Command) => void;
 }
 
-export function TeamWheel({ engine, active, mates, thing, name, last, onCommand }: Props) {
+export function TeamWheel({ engine, active, hidden, mates, thing, name, last, onCommand }: Props) {
   const [doing, setDoing] = useState<Record<string, string>>({});
   useEffect(() => {
     if (!active || !mates.length) return void setDoing({});
@@ -33,7 +35,7 @@ export function TeamWheel({ engine, active, mates, thing, name, last, onCommand 
     const id = setInterval(read, 200);
     return () => clearInterval(id);
   }, [engine, active, mates, last]);
-  if (!active || !mates.length) return null;
+  if (!active || hidden || !mates.length) return null;
   const takes = (c: Command) => mates.some((m) => m.options[c]);
   return (
     <div className="glass teamwheel" data-testid="team" role="group" aria-label={t("Team orders")}>

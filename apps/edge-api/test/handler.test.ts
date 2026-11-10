@@ -194,11 +194,11 @@ describe("edge API", () => {
     expect((await handle(new Request("http://localhost/v1/nope"), dev)).status).toBe(404);
   });
 
-  it("health carries the living world's flags: on unless KV says off (ff.persona_sliders, ff.team_ai, ff.wander_life)", async () => {
+  it("health carries the living world's flags: dark unless KV says on (ff.persona_sliders, ff.team_ai, ff.wander_life)", async () => {
     const health = async (env: Env) => ((await (await handle(new Request("http://localhost/v1/health"), env)).json()) as { ff: Record<string, boolean> }).ff;
-    expect(await health({ CEREBRAS_API_KEY: "k", DEV_OPEN: "1" })).toEqual({ persona_sliders: true, team_ai: true, wander_life: true });
-    const off = { get: async (k: string) => (k === "ff.team_ai" ? "off" : k === "ff.wander_life" ? "on" : null) };
-    expect(await health({ CEREBRAS_API_KEY: "k", DEV_OPEN: "1", FLAGS: off })).toEqual({ persona_sliders: true, team_ai: false, wander_life: true });
+    expect(await health({ CEREBRAS_API_KEY: "k", DEV_OPEN: "1" })).toEqual({ persona_sliders: false, team_ai: false, wander_life: false });
+    const kv = { get: async (k: string) => (k === "ff.team_ai" ? "off" : k === "ff.wander_life" ? "on" : null) };
+    expect(await health({ CEREBRAS_API_KEY: "k", DEV_OPEN: "1", FLAGS: kv })).toEqual({ persona_sliders: false, team_ai: false, wander_life: true });
   });
 
   it("health says whether the headset's creation tools are on (ff.vr_create: on unless FLAGS says off)", async () => {
