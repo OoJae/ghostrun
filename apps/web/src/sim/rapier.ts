@@ -6,6 +6,7 @@ import { castBrain, type CastBrain } from "@ghostrun/bots";
 import type { WorldBundle } from "@ghostrun/ir";
 import { buildNav, type NavWorld } from "@ghostrun/nav";
 import { BTN, decodeAct, encodeAct, LOOK_AWAY, SimWorld, type InputFrame as SimInput, type Rapier, type SimEvent, type SpeechAct } from "@ghostrun/sim";
+import { aimPush, q8, stickToWorld } from "@ghostrun/sim/rig";
 import { BTN_JUMP, BTN_USE, PLAYER_ID, TICK_HZ, type FrameSource, type InputFrame, type Pose, type SimFrame } from "./types";
 
 const DT = 1 / TICK_HZ;
@@ -17,7 +18,6 @@ export interface MindChoice {
 }
 const MAX_CATCHUP_TICKS = 15;
 
-const q8 = (x: number) => Math.max(-127, Math.min(127, Math.round(x * 127)));
 
 export class RapierSim implements FrameSource {
   readonly sim: SimWorld;
@@ -203,17 +203,10 @@ export class RapierSim implements FrameSource {
       }
     }
     const i = this.#in;
-    // three.js camera yaw 0 looks down −z: forward = (−sin, −cos), right = (cos, −sin)
-    const s = Math.sin(i.yaw);
-    const c = Math.cos(i.yaw);
-    let x = i.mx * c - i.my * s;
-    let z = -i.mx * s - i.my * c;
-    const len = Math.sqrt(x * x + z * z);
-    if (len > 1) {
-      x /= len;
-      z /= len;
-    }
-    if (len > 0.01) this.#facing = Math.atan2(-x, -z);
+    // the keys turned by the camera yaw (the rig's own arithmetic, shared with the proof's T3h:
+    // @ghostrun/sim rig.ts); the trigonometry stays here
+    let [x, z] = stickToWorld(i.mx, i.my, Math.sin(i.yaw), Math.cos(i.yaw));
+    if (Math.sqrt(x * x + z * z) > 0.01) this.#facing = Math.atan2(-x, -z);
     let btn = i.btn & ~BTN_JUMP;
     if (this.#pressQueued || i.btn & BTN_JUMP) btn |= BTN.JUMP;
     this.#pressQueued = false;
@@ -224,8 +217,7 @@ export class RapierSim implements FrameSource {
     const using = (i.btn & BTN_USE) !== 0;
     if (using && !this.#useWas && this.sim.usable()?.label === "shoot") {
       const aim = i.aim ?? i.yaw;
-      x = -Math.sin(aim) * 0.2;
-      z = -Math.cos(aim) * 0.2;
+      [x, z] = aimPush(Math.sin(aim), Math.cos(aim));
       this.#facing = aim;
     }
     this.#useWas = using;

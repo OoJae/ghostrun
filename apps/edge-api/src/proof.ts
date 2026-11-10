@@ -8,7 +8,7 @@
 // there at once. No model is called, so nothing is spent; the CPU is bounded by the gate, per-IP and
 // per-session buckets, a cap on proofs in flight per isolate, and the kill switch ff.edge_proof.
 import type { WorldBundle } from "@ghostrun/ir";
-import { prove, SKILL_RUNS, t0, witnesses, type Receipt, type Witness } from "@ghostrun/proof";
+import { flagOn, HUMAN_RUNS, prove, SKILL_RUNS, t0, TIERS, witnesses, type Receipt, type Tiers, type Witness } from "@ghostrun/proof";
 import type { Rapier } from "@ghostrun/sim";
 import { ENGINE_HASH, PROOF_VERSION } from "@ghostrun/world";
 import * as v from "valibot";
@@ -23,6 +23,12 @@ import { placeFill, type Placed } from "./world";
 
 /** KV key in FLAGS: "off" turns the cloud proof off (clients go on proving on the device), deploy-free. */
 export const PROOF_FLAG = "ff.edge_proof";
+/**
+ * KV keys in FLAGS for the tiers after the playtest: "off" or "on" over the default (TIERS). T3h's
+ * runs are dealt to the shards with the playtest's; T4 (milliseconds of arithmetic) runs here.
+ */
+export const T3H_FLAG = "ff.t3h";
+export const T4_FLAG = "ff.t4";
 /** T3's expert runners, as the device proves the world itself. */
 const RUNS = 12;
 const MAX_PROOF_BODY = MAX_FILL_BYTES + 4096;
@@ -83,7 +89,16 @@ interface Kept {
   receipt: Receipt;
 }
 
-export const proofKey = (spec: string, engineHash = ENGINE_HASH, version = PROOF_VERSION) => `proof/${version}/${engineHash}/${spec}.json`;
+/** Which later tiers a receipt holds, as its key says it ("" for the defaults, so those keys are as they were). */
+const tiersTag = (t: Tiers) => (t.t3h === TIERS.t3h && t.t4 === TIERS.t4 ? "" : `~t3h${t.t3h ? 1 : 0}t4${t.t4 ? 1 : 0}`);
+export const proofKey = (spec: string, engineHash = ENGINE_HASH, version = PROOF_VERSION, tiers: Tiers = TIERS) => `proof/${version}/${engineHash}/${spec}${tiersTag(tiers)}.json`;
+
+/** The later tiers this edge runs (and tells clients to run: /v1/health), read once a minute. */
+export async function tiersOn(env: ProofEnv): Promise<Tiers> {
+  const read = (k: string) => env.FLAGS?.get(k, { cacheTtl: 60 }).catch(() => null) ?? Promise.resolve(null);
+  const [t3h, t4] = await Promise.all([read(T3H_FLAG), read(T4_FLAG)]);
+  return { t3h: flagOn(t3h, TIERS.t3h), t4: flagOn(t4, TIERS.t4) };
+}
 
 /** Is the cloud proof on? Unless FLAGS says "off" (read at the edge once a minute). */
 export async function proofOn(env: ProofEnv): Promise<boolean> {
@@ -91,8 +106,9 @@ export async function proofOn(env: ProofEnv): Promise<boolean> {
 }
 
 /** For /v1/health: whether a client should ask for the cloud proof. */
-export async function proofHealth(env: ProofEnv): Promise<{ proof: boolean }> {
-  return { proof: hasEngine() && (await proofOn(env)) };
+export async function proofHealth(env: ProofEnv): Promise<{ proof: boolean; tiers: Tiers }> {
+  const [on, tiers] = await Promise.all([proofOn(env), tiersOn(env)]);
+  return { proof: hasEngine() && on, tiers };
 }
 
 export async function readKept(store: BlobStore, key: string, ms = KEPT_READ_MS): Promise<Kept | null> {
@@ -129,21 +145,22 @@ interface Running {
 const inflight = new Map<string, Running>();
 const fail = (status: Extract<ProofOutcome, { ok: false }>["status"], error: string, retryable: boolean, detail?: Record<string, unknown>): ProofOutcome => ({ ok: false, status, error, retryable, ...(detail ? { detail } : {}) });
 
-function start(ctx: ProofCtx, R: Promise<Rapier>, b: WorldBundle, world: ShardWorld): Running {
+function start(ctx: ProofCtx, R: Promise<Rapier>, b: WorldBundle, world: ShardWorld, tiers: Tiers): Running {
   let hand = (_r: Receipt) => {};
   const first = new Promise<Receipt>((r) => (hand = r));
   const done = (async () => {
     const ns = ctx.env.PROOF_SHARD;
     const width = intVar(ctx.env.PROOF_SHARDS, 6);
     let shards: ReturnType<typeof playOnShards> | undefined;
-    const jobs = ns && width > 0 ? witnesses(b, t0(b, "red").chain, RUNS, "red", SKILL_RUNS) : [];
+    const jobs = ns && width > 0 ? witnesses(b, t0(b, "red").chain, RUNS, "red", SKILL_RUNS, tiers.t3h ? HUMAN_RUNS : 0) : [];
     if (ns && jobs.length) {
-      const skill = (w: Witness) => w.kind === "run" && w.level !== undefined;
+      // the playtest's runs and T3h's are played after the receipt's
+      const skill = (w: Witness) => w.kind === "human" || (w.kind === "run" && w.level !== undefined);
       shards = playOnShards(ns, world, { receipt: jobs.filter((w) => !skill(w)), playtest: jobs.filter(skill) }, { width, timeoutMs: intVar(ctx.env.PROOF_SHARD_TIMEOUT_MS, 30_000) });
       // let the first shard requests go out before the ladder's own part holds the thread
       await new Promise((r) => setTimeout(r, 0));
     }
-    const receipt = await prove(await R, b, { engine: ENGINE_HASH, host: "edge", runs: RUNS, playtest: true, onReceipt: hand, ...(shards ? { played: shards.receipt, playtestPlayed: shards.all } : {}) });
+    const receipt = await prove(await R, b, { engine: ENGINE_HASH, host: "edge", runs: RUNS, playtest: true, t3h: tiers.t3h, t4: tiers.t4, onReceipt: hand, ...(shards ? { played: shards.receipt, playtestPlayed: shards.all } : {}) });
     hand(bare(receipt));
     return { receipt, shards: shards ? Math.min(width, jobs.length) : 0 };
   })();
@@ -170,7 +187,8 @@ export async function proveWorld(input: ProofInput, ctx: ProofCtx & { onStart?: 
   const spec = placed.spec;
   if (spec !== input.spec) return fail(409, "spec differs", false, { spec });
   const store = ctx.env.SHARES ? r2Blobs(ctx.env.SHARES) : undefined;
-  const key = proofKey(spec);
+  const tiers = await tiersOn(ctx.env);
+  const key = proofKey(spec, ENGINE_HASH, PROOF_VERSION, tiers);
   if (store && !ctx.fresh) {
     const hit = await readKept(store, key);
     if (hit) {
@@ -186,7 +204,7 @@ export async function proveWorld(input: ProofInput, ctx: ProofCtx & { onStart?: 
     const rapier = engine();
     if (!rapier) return fail(503, "no proof engine here", false);
     const world: ShardWorld = { fill: input.fill, seed: input.seed, ...(input.pack ? { pack: input.pack } : {}), ...(input.mode ? { mode: input.mode } : {}), spec };
-    const mine = start(ctx, rapier, placed.bundle, world);
+    const mine = start(ctx, rapier, placed.bundle, world, tiers);
     running = mine;
     inflight.set(key, mine);
     void mine.done.finally(() => inflight.get(key) === mine && inflight.delete(key)).catch(() => undefined);

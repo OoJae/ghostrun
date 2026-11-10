@@ -8,7 +8,7 @@ import { readFileSync } from "node:fs";
 import { specHash } from "@ghostrun/ir";
 import { buildNav } from "@ghostrun/nav";
 import { loadNavNode } from "@ghostrun/nav/node";
-import { playWitnesses, prove, SKILL_RUNS, t0, witnesses, witnessKey } from "@ghostrun/proof";
+import { HUMAN_RUNS, playWitnesses, prove, SKILL_RUNS, t0, TIERS, witnesses, witnessKey } from "@ghostrun/proof";
 import { loadRapierNode } from "@ghostrun/sim/node";
 import { ENGINE_HASH, placeFill, PROOF_VERSION } from "@ghostrun/world";
 import CTF from "../../../../packages/ir/fixtures/ctf-neon.jsonl?raw";
@@ -39,7 +39,8 @@ for (const w of files.length ? files.map(world) : [world(null)]) {
   const placed = placeFill(fill, seed, { pack, mode });
   const b = placed.bundle;
   const start = now();
-  const receipt = await prove(R, b, { engine: ENGINE_HASH, host: "device", playtest: true });
+  // (with the later tiers the device runs by default, as the Worker does without flags saying otherwise)
+  const receipt = await prove(R, b, { engine: ENGINE_HASH, host: "device", playtest: true, t3h: TIERS.t3h, t4: TIERS.t4 });
   const ms = Math.round(now() - start);
   let parts: Record<string, unknown> = {};
   if (timeJobs) {
@@ -49,7 +50,7 @@ for (const w of files.length ? files.map(world) : [world(null)]) {
     const s0 = t0(again, "red");
     const nav = buildNav(again);
     const setupMs = now() - s;
-    const jobs = dealOrder(witnesses(b, s0.chain, 12, "red", SKILL_RUNS));
+    const jobs = dealOrder(witnesses(b, s0.chain, 12, "red", SKILL_RUNS, TIERS.t3h ? HUMAN_RUNS : 0));
     const played = new Map<string, unknown>();
     const jobMs = jobs.map((j) => {
       const q = now();
@@ -59,7 +60,7 @@ for (const w of files.length ? files.map(world) : [world(null)]) {
     nav.destroy();
     // the Worker's own part: the ladder with every shard job already played
     const c = now();
-    await prove(R, b, { engine: ENGINE_HASH, host: "edge", playtest: true, played });
+    await prove(R, b, { engine: ENGINE_HASH, host: "edge", playtest: true, t3h: TIERS.t3h, t4: TIERS.t4, played });
     parts = { setupMs: Math.round(setupMs), coordinatorMs: Math.round(now() - c), jobs: jobMs };
   }
   out.push({ input: { v: 1, fill, seed, ...(pack ? { pack } : {}), ...(mode ? { mode } : {}), engine: ENGINE_HASH, spec: await specHash(ENGINE_HASH, b), version: PROOF_VERSION }, receipt, ms, ...parts });

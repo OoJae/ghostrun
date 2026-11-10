@@ -3,6 +3,10 @@
 // from the eval sets committed in tools/bench/worlds (first pass as the live lane built them, and
 // the same worlds re-proved with today's code).
 import { useEffect } from "react";
+import { FIT } from "@ghostrun/proof/light";
+
+/** Modelled runs in one receipt's route model: 400 at each of three levels (t4.ts MODEL_RUNS). */
+const MODEL_RUNS_ALL = 1200;
 import { k, t } from "../i18n";
 import trust from "../trust.json";
 
@@ -21,6 +25,14 @@ interface TrustSet {
   controlsP50: number | null;
 }
 
+/** T3h on the bench (`ghostrun human tools/bench/worlds --gate 20`): flags on the first n clean worlds. */
+interface HumanGate {
+  worlds: number;
+  flagged: number;
+  /** Every clean world on the bench (`ghostrun human tools/bench/worlds`), not only the gate's first n. */
+  all?: { worlds: number; flagged: number };
+}
+
 interface Fool {
   worlds: number;
   planted: number;
@@ -28,7 +40,7 @@ interface Fool {
   byTier: Record<string, number>;
 }
 
-const DATA = trust as { generated: string; won: string; sets: TrustSet[]; fool?: Fool };
+const DATA = trust as { generated: string; won: string; sets: TrustSet[]; fool?: Fool; t3h?: HumanGate };
 
 const LIMITS = [
   k("Drivable vehicles, herding animals and aiming throws by hand aren't mechanics yet; worlds that need them say so in their receipt."),
@@ -57,6 +69,13 @@ export function TrustPanel({ onClose }: { onClose: () => void }) {
         <li><b>T1</b> {t('jump model: height and gap claims checked analytically ("apex 1.6 m < ledge 2.6 m").')}</li>
         <li><b>T2</b> {t("forced state: each rule's trigger is forced and the rule must fire exactly once.")}</li>
         <li><b>T3</b> {t('physics: 12 AI runners play the real simulation against the world\'s own bots, through doors and over gaps; fewer than 30 trials print as "k of n".')}</li>
+        <li>
+          <b>T3h</b> {t("the player's controls: the experts' plan played again through the keys and the follow camera as a player has them (eight directions, the camera turned by hand, a tenth of a second to react). It flags the camera inside walls, stuck frames over 0.5 s and capsule traps.")}
+          {DATA.t3h ? ` ${t("On the first {n} clean bench worlds it flagged {k}, on all {all} of them {f}; its test plants a low ceiling, a narrow gap and a corner, and catches all three.", { n: DATA.t3h.worlds, k: DATA.t3h.flagged, all: DATA.t3h.all?.worlds ?? DATA.t3h.worlds, f: DATA.t3h.all?.flagged ?? DATA.t3h.flagged })}` : ""}
+        </li>
+        <li>
+          <b>T4</b> {t("route model: the world's route as a graph plays {n} modelled runs in milliseconds, for where the time goes, screening harder versions and red against blue. Never shown as played: each number says modelled, with its error measured against physics on {held} held-out bench worlds (win rate ±{nov} novices, ±{avg} average players; clear time ±{t}%).", { n: MODEL_RUNS_ALL, held: FIT.bench.held, nov: Math.round(FIT.win.novice * 100), avg: Math.round(FIT.win.average * 100), t: Math.round(FIT.times * 100) })}
+        </li>
         <li>{t("The simulation is deterministic: the same 2,000-tick world hashes identically in Node, Cloudflare workerd, Chromium, Firefox and WebKit, so a share link replays exactly anywhere.")}</li>
       </ul>
       <h3>{t("How often it works")}</h3>

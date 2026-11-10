@@ -13,6 +13,7 @@ import { clock } from "./labels";
 import { hands, SKILLS, type Skill } from "./skill";
 import { apex, gap, hopOk, hopRoute, reachAt, surfaceUnder as surfaceAt, surfaces, type Surface } from "./t1";
 import { pickFailing } from "./redgreen";
+import { blockedAhead, debugReports, HUMAN_RUNS, HumanRig, pushOf, StallMeter, t3hChips, type HumanReport } from "./t3h";
 import type { Chip, Fall, FailRun, Level, Trail } from "./types";
 
 const RUN_TICKS = 120 * 60; // two minutes of play per run (a world's own timer still ends it sooner)
@@ -65,6 +66,8 @@ const leapPath = (from: Vec3, to: Vec3) => (leap ? leap.nav().path(from, to) : n
 
 /** The skill of the run under way (null: an expert, one of the proof's own runners). Set for one run. */
 let slack: Skill | null = null;
+/** The run under way plays through the player's keys and camera (T3h). Set for one run. */
+let rigged = false;
 
 /**
  * Where a path runs through a low hazard, cut that stretch out: a run-up point 1 m before it
@@ -189,6 +192,10 @@ interface RunResult {
   falls: Fall[];
   /** Hits and knock-outs by place (x, z, kind triples). */
   fights: number[];
+  /** Where it stood still with the stick pushed (StallMeter: x, z, ticks, ended there). */
+  stalls: number[];
+  /** A T3h run's camera and stalls through the player's controls. */
+  human?: HumanReport;
 }
 
 /** What a mind-locked run plays against: each NPC locked to one option of its menu. */
@@ -201,13 +208,16 @@ type Schedule = readonly (readonly [string, string])[];
  */
 export type Witness =
   | { kind: "run"; seed: number; team: "red" | "blue"; level?: Exclude<Level, "expert">; schedule?: Schedule }
-  | { kind: "jump"; expect: string; jumps: number; attempt: number; team: "red" | "blue" };
+  | { kind: "jump"; expect: string; jumps: number; attempt: number; team: "red" | "blue" }
+  /** T3h: an expert's plan through the player's keys and camera (t3h.ts). */
+  | { kind: "human"; seed: number; team: "red" | "blue" };
 
 /** Witnesses already played, by witnessKey: a run's result or whether a jump attempt reached (plain data). */
 export type Played = ReadonlyMap<string, unknown>;
 
 export function witnessKey(w: Witness): string {
   if (w.kind === "jump") return `jump:${w.expect}:${w.jumps}:${w.attempt}:${w.team}`;
+  if (w.kind === "human") return `human:${w.seed}:${w.team}`;
   return `run:${w.seed}:${w.team}:${w.level ?? "expert"}:${(w.schedule ?? []).map(([npc, o]) => `${npc}=${o}`).join(",")}`;
 }
 
@@ -215,6 +225,8 @@ export function witnessKey(w: Witness): string {
 const expertSeed = (b: WorldBundle, i: number) => b.seed * 1000 + i;
 const envelopeSeed = (b: WorldBundle, j: number, per: number, i: number) => b.seed * 1000 + 500 + j * per + i;
 const skillSeed = (b: WorldBundle, level: Exclude<Level, "expert">, i: number) => b.seed * 1000 + (level === "novice" ? 700 : 800) + i;
+// T3h's from 900
+const humanSeed = (b: WorldBundle, i: number) => b.seed * 1000 + 900 + i;
 const JUMP_ATTEMPTS = 4;
 
 /**
@@ -243,7 +255,7 @@ function jumpNeeds(b: WorldBundle): { x: Expect; k: number }[] {
  * playtest's: what a cloud proof plays on shards. The playtest's are asked for whether or not the
  * experts win (when none does, the playtest never reads them).
  */
-export function witnesses(b: WorldBundle, chain: WinChain | null, runs: number, playerTeam: "red" | "blue" = "red", skill = 0): Witness[] {
+export function witnesses(b: WorldBundle, chain: WinChain | null, runs: number, playerTeam: "red" | "blue" = "red", skill = 0, human = 0): Witness[] {
   const out: Witness[] = [];
   if (chain && b.mode === "play") {
     for (let i = 0; i < runs; i++) out.push({ kind: "run", seed: expertSeed(b, i), team: playerTeam });
@@ -252,6 +264,8 @@ export function witnesses(b: WorldBundle, chain: WinChain | null, runs: number, 
       for (let i = 0; i < env.per; i++) out.push({ kind: "run", seed: envelopeSeed(b, j, env.per, i), team: playerTeam, schedule });
     });
     for (const level of ["novice", "average"] as const) for (let i = 0; i < skill; i++) out.push({ kind: "run", seed: skillSeed(b, level, i), team: playerTeam, level });
+    // after the playtest's: T3h's runs through the player's keys and camera
+    for (let i = 0; i < human; i++) out.push({ kind: "human", seed: humanSeed(b, i), team: playerTeam });
   }
   for (const { x, k } of jumpNeeds(b)) for (const jumps of [k, k - 1]) for (let attempt = 0; attempt < JUMP_ATTEMPTS; attempt++) out.push({ kind: "jump", expect: x.id, jumps, attempt, team: playerTeam });
   return out;
@@ -267,6 +281,14 @@ export function playWitnesses(R: Rapier, b: WorldBundle, nav: NavWorld, chain: W
         return x ? [[witnessKey(w), jumpWitness(R, b, nav, x, w.jumps, w.attempt, w.team)]] : [];
       }
       if (!chain) return [];
+      if (w.kind === "human") {
+        rigged = true;
+        try {
+          return [[witnessKey(w), witnessRun(R, b, nav, chain, openers, w.seed, w.team)]];
+        } finally {
+          rigged = false;
+        }
+      }
       slack = w.level ? SKILLS[w.level] : null;
       try {
         return [[witnessKey(w), witnessRun(R, b, nav, chain, openers, w.seed, w.team, w.schedule)]];
@@ -468,7 +490,17 @@ function airTicks(laws: Laws, jumps: number, rise: number): number {
  * Jump link: when the target is on a raised surface the navmesh can't reach on foot, walk to the
  * closest face of that surface, jump (and air-jump at the apex), then land on top.
  */
+/** The plan is climbing (a hop or a climb under way): T3h's player follows it into the ledge rather than steering round it. */
+let climbing = 0;
 function climbOnto(sim: SimWorld, nav: NavWorld, b: WorldBundle, target: Vec3, rng: () => number, budget: { ticks: number }, onto?: Surface): boolean {
+  climbing++;
+  try {
+    return climbOntoPlan(sim, nav, b, target, rng, budget, onto);
+  } finally {
+    climbing--;
+  }
+}
+function climbOntoPlan(sim: SimWorld, nav: NavWorld, b: WorldBundle, target: Vec3, rng: () => number, budget: { ticks: number }, onto?: Surface): boolean {
   const s = onto ? null : surfaceUnder(b, [target[0], target[1] + 0.1, target[2]]);
   if (!onto && !s) return false;
   const top = onto ? onto.top : s!.pos[1] + s!.size[1] / 2;
@@ -545,6 +577,14 @@ const clampTo = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo,
  * one is below, otherwise jump with the fewest jumps the T1 model needs and air-jump at each apex.
  */
 function hop(sim: SimWorld, nav: NavWorld, b: WorldBundle, a: Surface, n: Surface, budget: { ticks: number }): boolean {
+  climbing++;
+  try {
+    return hopPlan(sim, nav, b, a, n, budget);
+  } finally {
+    climbing--;
+  }
+}
+function hopPlan(sim: SimWorld, nav: NavWorld, b: WorldBundle, a: Surface, n: Surface, budget: { ticks: number }): boolean {
   const laws = sim.laws;
   const rise = n.top - a.top;
   const on = () => {
@@ -1451,10 +1491,19 @@ function witnessRun(R: Rapier, b: WorldBundle, nav: NavWorld, chain: WinChain, o
   let fellAt = -1;
   // a lower skill level plays through human hands (an expert's input goes in as it is)
   const hand = slack ? hands(slack, stream(seed, "t3:hands")) : null;
+  // T3h: the same plan through a player's keys and the client's camera rig (t3h.ts)
+  const rig = rigged ? new HumanRig(b, sim, seed, () => climbing > 0) : null;
+  // where the stick was pushed and the player went nowhere (reading positions only)
+  const meter = new StallMeter();
   const step = sim.step.bind(sim);
   sim.step = (input) => {
     for (const id of watched) if (!sim.entity(id)?.destroyed) was.set(id, sim.pos(id));
-    const evs = step(hand ? hand(input, sim.tick + 1, { shooting: sim.usable()?.label === "shoot", grounded: sim.player.grounded }) : input);
+    const fed = rig ? rig.keys(sim, input) : hand ? hand(input, sim.tick + 1, { shooting: sim.usable()?.label === "shoot", grounded: sim.player.grounded }) : input;
+    const evs = step(fed);
+    rig?.look(sim);
+    const at = sim.pos("player");
+    const push = rig ? rig.pushing : sim.ride("player") ? null : pushOf(fed);
+    meter.step(sim.tick, at, push && blockedAhead(b, at, push) ? push : null);
     ghost.step(sim, input);
     if (sim.tick % 20 === 0) {
       const p = sim.pos("player");
@@ -1536,7 +1585,8 @@ function witnessRun(R: Rapier, b: WorldBundle, nav: NavWorld, chain: WinChain, o
     if (lostBy !== null && fellAt === sim.tick && falls.length) falls.at(-1)!.end = true;
     else falls.push({ x: r1(p[0]), z: r1(p[2]), why, end: true });
   }
-  const out = { won, ticks: sim.tick, stuck, lostBy, stuckAt: sim.result ? null : stuckAt, lostTo, stuckOn: sim.result ? "" : stuckOn, trail, ghost: ghost.finish(sim), at, falls, fights };
+  const stalls = meter.finish(sim.tick);
+  const out: RunResult = { won, ticks: sim.tick, stuck, lostBy, stuckAt: sim.result ? null : stuckAt, lostTo, stuckOn: sim.result ? "" : stuckOn, trail, ghost: ghost.finish(sim), at, falls, fights, stalls, ...(rig ? { human: rig.report(stalls, sim.tick) } : {}) };
   sim.free();
   return out;
 }
@@ -1727,6 +1777,8 @@ export interface T3Out {
   ghost: Ghost | null;
   /** A representative failing run, when no runner won (null otherwise). */
   failRun: FailRun | null;
+  /** Where the experts stood still with the stick pushed (StallMeter spots, every run): T3h's baseline. */
+  stalls: number[];
 }
 
 export function t3(R: Rapier, b: WorldBundle, nav: NavWorld, chain: WinChain | null, runs: number, playerTeam: "red" | "blue" = "red", openers: ReadonlyMap<string, PlanStep[]> = new Map(), played?: Played): T3Out {
@@ -1746,11 +1798,13 @@ function t3Runs(R: Rapier, b: WorldBundle, nav: NavWorld, chain: WinChain | null
   let trails: Trail[] = [];
   let ghost: Ghost | null = null;
   let failRun: FailRun | null = null;
+  const stalls: number[] = [];
   if (chain && b.mode === "play") {
     const t0 = globalThis.performance?.now?.() ?? 0;
     // a run a shard played already is taken as it came back; the rest are played here
     const run = (seed: number, schedule?: Schedule) => (played?.get(witnessKey({ kind: "run", seed, team: playerTeam, ...(schedule ? { schedule } : {}) })) as RunResult | undefined) ?? witnessRun(R, b, nav, chain, openers, seed, playerTeam, schedule);
     const results = Array.from({ length: runs }, (_, i) => run(expertSeed(b, i)));
+    for (const r of results) stalls.push(...(r.stalls ?? []));
     const bots = b.entities.filter((e) => e.kind === "npc" && e.body !== "none" && e.body !== "sensor").length;
     const vs = bots ? ` vs ${bots} bot${bots > 1 ? "s" : ""}` : "";
     const won = results.filter((r) => r.won);
@@ -1779,7 +1833,11 @@ function t3Runs(R: Rapier, b: WorldBundle, nav: NavWorld, chain: WinChain | null
     if (env) {
       const t1 = globalThis.performance?.now?.() ?? 0;
       const { schedules, per, minded } = env;
-      const outcomes = schedules.map((sch, j) => Array.from({ length: per }, (_, i) => run(envelopeSeed(b, j, per, i), sch)).filter((x) => x.won).length);
+      const outcomes = schedules.map((sch, j) => {
+        const rs = Array.from({ length: per }, (_, i) => run(envelopeSeed(b, j, per, i), sch));
+        for (const r of rs) stalls.push(...(r.stalls ?? []));
+        return rs.filter((x) => x.won).length;
+      });
       const k = outcomes.reduce((a, x) => a + x, 0);
       const worst = outcomes.indexOf(0);
       // (a world you talk your way through says whose choices: "every choice the guard can make")
@@ -1824,7 +1882,7 @@ function t3Runs(R: Rapier, b: WorldBundle, nav: NavWorld, chain: WinChain | null
       ms: Math.round((globalThis.performance?.now?.() ?? 0) - t0),
     });
   }
-  return { chips, par, trails, ghost, failRun };
+  return { chips, par, trails, ghost, failRun, stalls };
 }
 
 /** A failing run's ghost keeps at most this many samples (two minutes at 15 a second). */
@@ -1856,6 +1914,30 @@ export function skillRuns(R: Rapier, b: WorldBundle, nav: NavWorld, chain: WinCh
     });
   } finally {
     slack = null;
+    leap?.free();
+    leap = null;
+    freeShut();
+  }
+}
+
+/**
+ * T3h: `n` runs of the experts' plan through the player's keys and camera (t3h.ts), seeded by the
+ * world and the run as T3's own are, and its chips beside the experts' stalls (T3Out.stalls).
+ */
+export function humanRuns(R: Rapier, b: WorldBundle, nav: NavWorld, chain: WinChain, expertStalls: readonly number[], n = HUMAN_RUNS, playerTeam: "red" | "blue" = "red", openers: ReadonlyMap<string, PlanStep[]> = new Map(), played?: Played): Chip[] {
+  const t0 = globalThis.performance?.now?.() ?? 0;
+  leap = leapFor(b);
+  rigged = true;
+  try {
+    const reports = Array.from({ length: n }, (_, i) => {
+      const seed = humanSeed(b, i);
+      const r = (played?.get(witnessKey({ kind: "human", seed, team: playerTeam })) as RunResult | undefined) ?? witnessRun(R, b, nav, chain, openers, seed, playerTeam);
+      return r.human ?? { cam: [], camIn: [], stalls: [], foot: 0, ticks: r.ticks };
+    });
+    debugReports(reports, expertStalls);
+    return t3hChips(b, reports, expertStalls, Math.round((globalThis.performance?.now?.() ?? 0) - t0));
+  } finally {
+    rigged = false;
     leap?.free();
     leap = null;
     freeShut();

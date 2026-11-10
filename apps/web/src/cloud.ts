@@ -5,7 +5,7 @@
 // Different (it never should be): it says so, keeps this device's, and logs both hashes (the
 // console, the probe and a "This is wrong" capture). No edge (offline, switched off, another proof
 // version): this device proves alone, as before. Every word shown comes from labels.ts.
-import { receiptHash, type Chip, type CrossCheck, type Playtest, type Receipt } from "@ghostrun/proof/light";
+import { flagOn, receiptHash, TIERS, type Chip, type CrossCheck, type Playtest, type Receipt, type Tiers } from "@ghostrun/proof/light";
 import { PROOF_VERSION } from "@ghostrun/world";
 import { api } from "./api";
 import type { ProofState } from "./hud/Proof";
@@ -14,14 +14,24 @@ import { probe } from "./probe";
 import { reportWrong } from "./share";
 
 let offered: Promise<boolean> | null = null;
+let health: Promise<{ proof?: unknown; tiers?: { t3h?: unknown; t4?: unknown } } | null> | null = null;
+type Health = { proof?: unknown; tiers?: { t3h?: unknown; t4?: unknown } };
+const healthOnce = () => (health ??= fetch("/v1/health", { cache: "no-store" }).then((r) => (r.ok ? (r.json() as Promise<Health>) : null)).catch(() => null));
 
 /** Does the edge offer the cloud proof? Asked once a page (/v1/health); a refusal of it as off says no from then on. */
 export function cloudOffered(): Promise<boolean> {
-  offered ??= fetch("/v1/health", { cache: "no-store" })
-    .then((r) => (r.ok ? (r.json() as Promise<{ proof?: unknown }>) : null))
-    .then((h) => h?.proof === true)
-    .catch(() => false);
+  offered ??= healthOnce().then((h) => h?.proof === true);
   return offered;
+}
+
+/**
+ * The tiers after the playtest this device runs (T3h, T4): what the edge runs (/v1/health), so the
+ * two proofs of a world hold the same and compare; the defaults when there is no edge to ask.
+ */
+export async function proofTiers(): Promise<Tiers> {
+  const t = (await healthOnce())?.tiers;
+  const word = (v: unknown) => (v === true ? "on" : v === false ? "off" : null);
+  return { t3h: flagOn(word(t?.t3h), TIERS.t3h), t4: flagOn(word(t?.t4), TIERS.t4) };
 }
 
 export interface CloudHooks {

@@ -26,12 +26,14 @@ const SHAPES: readonly [RegExp, string, readonly string[]][] = [
   [/^the ([a-z]+) ([a-z][a-z0-9_]*) plays ([a-z0-9_.]+) when told$/, k("the {role} {npc} plays {option} when told"), ["role", "npc", "option"]],
   [/^told ([a-z0-9_.]+), it got no nearer where that takes it$/, k("told {option}, it got no nearer where that takes it"), ["option"]],
   [/^told ([a-z0-9_.]+), it kept playing what it played$/, k("told {option}, it kept playing what it played"), ["option"]],
+  [/^physics, (\d+) runs through the player's keys and camera \(noisy synthetic input on the experts' routes\)$/, k("physics, {n} runs through the player's keys and camera (noisy synthetic input on the experts' routes)"), ["n"]],
 ];
 /** Whole sentences the tiers write as they are. */
 const WHOLE = [
   k("static def-use"), k("static goal regression over rules"), k("physics, an AI visitor walks to and uses each"), k("kinematic reachability (jump apex model)"),
   k("line-of-sight range model (from ground the jump model reaches)"), k("drivability model (ground a vehicle drives to, turning circle, top speed)"),
   k("race-time model (laps × the shortest lap ÷ top speed with boost)"), k("win unreachable in the rule graph"), k("a choice the cast's minds can make stops every runner"),
+  k("the camera stays out of walls and ceilings"), k("no stuck frames over 0.5 s with the keys held"), k("nothing traps the player's capsule"),
 ];
 
 /** One of the proof's sentences in the player's language, if its shape is known; else as the proof wrote it. */

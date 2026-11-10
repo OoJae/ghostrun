@@ -52,7 +52,7 @@ export async function vrCreateOn(env: { FLAGS?: KvNamespace }): Promise<boolean>
   return (await env.FLAGS?.get(VR_CREATE_FLAG, { cacheTtl: 60 }).catch(() => null)) !== "off";
 }
 
-export async function healthMore(env: ProofEnv): Promise<{ proof: boolean; canary: { at: string; ok: boolean } | null; ff: LifeFlags; vrCreate: boolean }> {
+export async function healthMore(env: ProofEnv): Promise<{ proof: boolean; tiers: { t3h: boolean; t4: boolean }; canary: { at: string; ok: boolean } | null; ff: LifeFlags; vrCreate: boolean }> {
   const [p, canary, ff, vrCreate] = await Promise.all([proofHealth(env), canaryHealth(env), lifeFlags(env), vrCreateOn(env)]);
   return { ...p, canary, ff, vrCreate };
 }

@@ -3,7 +3,7 @@
 // re-proved, and the change comes back with its numbers: what changed in the world, and how the
 // receipt moved (headline, AI runners, par, counterexamples, force-tested rules).
 import type { Entity, WorldBundle } from "@ghostrun/ir";
-import { badness, BANDS, fraction, insights, statusWord, type Chip, type Receipt } from "@ghostrun/proof/light";
+import { badness, BANDS, fraction, insights, statusWord, type Chip, type Model, type Receipt } from "@ghostrun/proof/light";
 import type { LiveIntent } from "./live";
 import type { World } from "./pipeline";
 
@@ -180,6 +180,57 @@ export const ANGLES = [
   "lengthen the route (lock the objective behind one more step: a key, a switch or a plate)",
 ] as const;
 const LETTERS = "ABCDEFGH";
+
+/** A candidate's route model, on the anchors of the world it was made from (T4's screen): its win rate at each level and its median clear time. */
+export interface Screened {
+  levels: { novice: number; average: number; expert: number };
+  median: number;
+}
+
+const pct = (x: number) => `${Math.round(x * 100)}%`;
+
+/**
+ * T4's read on a candidate, against the world's own model: fair if modelled experts still win at
+ * least half the time, harder by how far the novices' and average players' modelled wins fall (and
+ * the clear time grows). Modelled, never played: physics confirms whichever is picked.
+ */
+export function screenScore(base: Model, c: Screened | null): { fair: boolean; score: number; line: string } {
+  if (!c) return { fair: false, score: -Infinity, line: "no route to model" };
+  const at = (l: "novice" | "average" | "expert") => base.levels.find((x) => x.level === l)!;
+  const fair = c.levels.expert >= 0.5;
+  const t0 = base.times?.median ?? 0;
+  const score = at("novice").p + at("average").p - c.levels.novice - c.levels.average + (t0 > 0 && c.median > 0 ? c.median / t0 - 1 : 0);
+  const err = (l: "novice" | "average" | "expert") => Math.round(at(l).err * 100);
+  const line = `modelled: novices ${pct(at("novice").p)} → ${pct(c.levels.novice)} ±${err("novice")}, average ${pct(at("average").p)} → ${pct(c.levels.average)} ±${err("average")}, experts ${pct(at("expert").p)} → ${pct(c.levels.expert)} ±${err("expert")}`;
+  return { fair, score, line };
+}
+
+/**
+ * Successive halving on T4: every candidate screened with a few modelled runs, the better half kept
+ * and screened again with four times as many, until one is left; physics confirms it (and, if it
+ * doesn't hold up, the rest are proved as before). Returns the order to prove them in (the screen's
+ * pick first) and a line per candidate.
+ */
+export async function screenRace(base: Model, alive: number[], screen: (i: number, n: number) => Promise<Screened | null>, n0 = 150): Promise<{ order: number[]; notes: Map<number, string> }> {
+  const notes = new Map<number, string>();
+  let left = [...alive];
+  // halved away, the later (better) rounds' first: physics still has the last word on each
+  let dropped: number[] = [];
+  let n = n0;
+  while (left.length > 1) {
+    const got = await Promise.all(left.map((i) => screen(i, n)));
+    const scored = left.map((i, k) => ({ i, ...screenScore(base, got[k] ?? null) }));
+    for (const s of scored) notes.set(s.i, `${s.fair ? "screened on T4" : "screened out on T4 (unfair)"} with ${n} modelled runs at each level, ${s.line}`);
+    const ranked = scored.filter((s) => s.fair).sort((x, y) => y.score - x.score || x.i - y.i);
+    if (!ranked.length) return { order: [...alive], notes };
+    const keep = ranked.slice(0, Math.ceil(ranked.length / 2));
+    const gone = scored.filter((s) => !keep.includes(s)).sort((x, y) => Number(y.fair) - Number(x.fair) || y.score - x.score || x.i - y.i);
+    dropped = [...gone.map((s) => s.i), ...dropped];
+    left = keep.map((s) => s.i);
+    n *= 4;
+  }
+  return { order: [...left, ...dropped], notes };
+}
 
 /**
  * The race's judge: a candidate is fair if at least half the AI runners still win, its headline is
