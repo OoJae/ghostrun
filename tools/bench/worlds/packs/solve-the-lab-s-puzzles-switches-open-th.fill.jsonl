@@ -1,0 +1,32 @@
+{"op":"meta","mode":"play","lang":"en","pack":"puzzle_rooms","sub":[],"seed":21,"look":"laboratory, sterile tiles, humming lights","mood":[-0.2,0.5,0.6],"timeOfDay":14,"weather":"clear"}
+{"op":"zone","id":"z_yard","slot":"yard","tag":"outside","name":"Lab entrance"}
+{"op":"zone","id":"z_room1","slot":"room_1","tag":"room","name":"Experiment room 1"}
+{"op":"zone","id":"z_room2","slot":"room_2","tag":"room","name":"Experiment room 2"}
+{"op":"zone","id":"z_room3","slot":"room_3","tag":"room","name":"Experiment room 3"}
+{"op":"zone","id":"z_exit","slot":"exit","tag":"outside","name":"Lab exit"}
+{"op":"spawn","id":"sp_red","zone":"z_yard","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"exit_gate","zone":"z_exit","anchor":"gate","noun":"exit gate","hyper":"exit","team":"red"}
+{"op":"ent","id":"sw_1","kind":"switch","noun":"control switch","hyper":"control","zone":"z_room1","anchor":"switch","body":"fixed","shape":"box","size":[0.4,0.6,0.2]}
+{"op":"ent","id":"door_1","kind":"door","noun":"door to room 2","hyper":"barrier","zone":"z_room1","anchor":"doorway_out","body":"fixed","shape":"box","size":[1.2,2.4,0.2]}
+{"op":"ent","id":"sw_2","kind":"switch","noun":"control switch","hyper":"control","zone":"z_room2","anchor":"switch","body":"fixed","shape":"box","size":[0.4,0.6,0.2]}
+{"op":"ent","id":"door_2","kind":"door","noun":"door to room 3","hyper":"barrier","zone":"z_room2","anchor":"doorway_out","body":"fixed","shape":"box","size":[1.2,2.4,0.2]}
+{"op":"ent","id":"sw_3","kind":"switch","noun":"control switch","hyper":"control","zone":"z_room3","anchor":"switch","body":"fixed","shape":"box","size":[0.4,0.6,0.2]}
+{"op":"ent","id":"door_3","kind":"door","noun":"door to exit","hyper":"barrier","zone":"z_room3","anchor":"doorway_out","body":"fixed","shape":"box","size":[1.2,2.4,0.2]}
+{"op":"ent","id":"plate_2","kind":"plate","noun":"floor plate","hyper":"plate","zone":"z_room2","anchor":"plate","body":"fixed","shape":"box","size":[1,0.1,1]}
+{"op":"ent","id":"hazard_3","kind":"hazard","noun":"electric floor","hyper":"hazard","zone":"z_room3","anchor":"center","body":"sensor","shape":"box","size":[2,0.2,2]}
+{"op":"verb","id":"vb_sw1","verb":"puzzle.switch","on":"sw_1","params":{"once":false}}
+{"op":"verb","id":"vb_sw2","verb":"puzzle.switch","on":"sw_2","params":{"once":false}}
+{"op":"verb","id":"vb_sw3","verb":"puzzle.switch","on":"sw_3","params":{"once":false}}
+{"op":"verb","id":"vb_plate2","verb":"puzzle.plate","on":"plate_2","params":{"latch":false}}
+{"op":"verb","id":"vb_lock1","verb":"puzzle.lock","on":"door_1","params":{"key":"sw_1","keep":true}}
+{"op":"verb","id":"vb_lock2","verb":"puzzle.lock","on":"door_2","params":{"key":"sw_2","keep":true}}
+{"op":"verb","id":"vb_lock3","verb":"puzzle.lock","on":"door_3","params":{"key":"sw_3","keep":true}}
+{"op":"verb","id":"vb_haz3","verb":"motion_hazards.hazard","on":"hazard_3","params":{"respawn":true}}
+{"op":"verb","id":"vb_inspect1","verb":"social.inspect","on":"sw_1","params":{"text":"Panel reads: flip to unseal the door to room 2."}}
+{"op":"rule","id":"r_door1","when":{"t":"state_is","a":"sw_1","s":"on"},"then":[{"e":"open","target":"door_1"}]}
+{"op":"rule","id":"r_door2","when":{"t":"state_is","a":"sw_2","s":"on"},"then":[{"e":"open","target":"door_2"}]}
+{"op":"rule","id":"r_door3","when":{"t":"state_is","a":"sw_3","s":"on"},"then":[{"e":"open","target":"door_3"}]}
+{"op":"rule","id":"r_win","when":{"t":"enter","a":"player","b":"exit_gate"},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"expect","id":"x_switches","prop":"win_reachable","a":"sp_red","b":"exit_gate","headline":true,"text":"Each switch must open the door to the next experiment room."}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

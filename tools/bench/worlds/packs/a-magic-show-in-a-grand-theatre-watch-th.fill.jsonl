@@ -1,0 +1,32 @@
+{"op":"meta","mode":"wander","lang":"en","pack":"stage","sub":[],"seed":24,"look":"grand theatre with gilded boxes","mood":[0.7,0.4,0.2],"timeOfDay":20,"weather":"clear"}
+{"op":"zone","id":"z_foyer","slot":"foyer","tag":"entrance","name":"Grand foyer"}
+{"op":"zone","id":"z_seats","slot":"seating","tag":"hall","name":"Auditorium"}
+{"op":"zone","id":"z_pit","slot":"pit","tag":"pit","name":"Orchestra pit"}
+{"op":"zone","id":"z_stage","slot":"stage","tag":"stage","name":"Stage"}
+{"op":"zone","id":"z_wing_w","slot":"wing_w","tag":"wing","name":"Stage left wing"}
+{"op":"zone","id":"z_backstage","slot":"backstage","tag":"room","name":"Backstage"}
+{"op":"spawn","id":"sp_red","zone":"z_seats","anchor":"front_row","team":"red"}
+{"op":"goal","id":"view_point","zone":"z_seats","anchor":"front_row","noun":"best sightline","hyper":"viewpoint","team":""}
+{"op":"ent","id":"magician","kind":"npc","noun":"magician","hyper":"performer","zone":"z_stage","anchor":"center","body":"kinematic","shape":"capsule"}
+{"op":"ent","id":"top_hat","kind":"prop","noun":"top hat","hyper":"prop","zone":"z_stage","anchor":"downstage","body":"fixed","shape":"box","size":[0.4,0.3,0.4]}
+{"op":"ent","id":"rabbit_cage","kind":"prop","noun":"cage with a white rabbit","hyper":"prop","zone":"z_stage","anchor":"stage_l","body":"fixed","shape":"box","size":[0.8,0.8,0.8]}
+{"op":"ent","id":"curtain","kind":"prop","noun":"velvet curtain","hyper":"curtain","zone":"z_stage","anchor":"backdrop","body":"fixed","shape":"box","size":[10,6,0.2]}
+{"op":"ent","id":"rig_spot","kind":"prop","noun":"follow spotlight","hyper":"lighting","zone":"z_stage","anchor":"rig_c","body":"none","shape":"none"}
+{"op":"ent","id":"programme","kind":"pickup","noun":"show programme","hyper":"programme","zone":"z_foyer","anchor":"box_office","body":"dynamic","shape":"box","size":[0.2,0.3,0.02]}
+{"op":"ent","id":"chandelier","kind":"prop","noun":"crystal chandelier","hyper":"prop","zone":"z_seats","anchor":"center","body":"fixed","shape":"sphere","size":[1,1,1]}
+{"op":"ent","id":"poster_case","kind":"prop","noun":"framed poster","hyper":"poster","zone":"z_foyer","anchor":"wall_n","body":"fixed","shape":"box","size":[0.8,1.1,0.1]}
+{"op":"verb","id":"vb_look_hat","verb":"social.inspect","on":"top_hat","params":{"text":"A battered silk top hat. The magician swears it is empty."}}
+{"op":"verb","id":"vb_look_cage","verb":"social.inspect","on":"rabbit_cage","params":{"text":"The white rabbit has been in every show for nine years."}}
+{"op":"verb","id":"vb_look_curtain","verb":"social.inspect","on":"curtain","params":{"text":"Hand-stitched velvet, older than the building's electric wiring."}}
+{"op":"verb","id":"vb_look_chandelier","verb":"social.inspect","on":"chandelier","params":{"text":"Over four hundred crystals, dimmed for the performance."}}
+{"op":"verb","id":"vb_look_poster","verb":"social.inspect","on":"poster_case","params":{"text":"A faded poster promising the impossible since 1923."}}
+{"op":"verb","id":"vb_look_programme","verb":"social.inspect","on":"programme","params":{"text":"Tonight: the vanishing cabinet, the levitating lady, and one surprise."}}
+{"op":"verb","id":"vb_carry_programme","verb":"physics_props.carry","on":"programme","params":{}}
+{"op":"npc","id":"usher_1","role":"guide","zone":"z_seats","anchor":"aisle_l","team":"","menu":["guide.lead"],"dflt":"guide.lead"}
+{"op":"npc","id":"magician_talk","role":"citizen","zone":"z_stage","anchor":"downstage","team":"","menu":["citizen.idle"],"dflt":"citizen.idle"}
+{"op":"expect","id":"x_sightline","prop":"win_reachable","a":"sp_red","b":"view_point","headline":true,"text":"Front row seats must give a clear sightline to the raised stage."}
+{"op":"end","layer":"gameplay"}
+{"op":"dress","id":"d_drape","zone":"z_seats","kind":"prop","noun":"gold drapes","anchor":"wall_s"}
+{"op":"dress","id":"d_sconce","zone":"z_foyer","kind":"prop","noun":"brass sconces","anchor":"wall_e"}
+{"op":"poster","id":"p_show","zone":"z_foyer","text":"TONIGHT ONLY: THE GREAT ASTONISHING"}
+{"op":"end","layer":"cosmetic"}

@@ -1,0 +1,190 @@
+{
+  "prompt": "A cosy bookshop café with a reading corner and a barista who recommends a book",
+  "intent": {
+    "lang": "en",
+    "mode": "wander",
+    "genre": "cozy",
+    "setting": "a cosy bookshop café with a reading corner",
+    "role": "customer",
+    "goal": "find a book the barista recommends and enjoy it in the reading corner",
+    "fail": "none",
+    "mood": "warm and quiet",
+    "pack": "service_venue",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Barista recommendation must lead to a book in the reading corner.",
+    "nouns": [
+      {
+        "noun": "bookshop café",
+        "hyper": "service_venue"
+      },
+      {
+        "noun": "reading corner",
+        "hyper": "floor_plan"
+      },
+      {
+        "noun": "barista",
+        "hyper": "npc"
+      },
+      {
+        "noun": "book",
+        "hyper": "item"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.7,
+      "arousal": -0.4,
+      "tension": -0.5
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "14ca46786150e31efc820201c692197a4180ab8f95c2802899b69db71d8fe5c9",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_recommend",
+      "text": "Barista recommendation must lead to a book in the reading corner.",
+      "status": "not_checkable",
+      "method": "none"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 5 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:afford:r_bribe",
+        "subject": {
+          "kind": "rule",
+          "id": "r_bribe"
+        },
+        "status": "verified",
+        "method": "static count of what the world gives",
+        "text": "r_bribe can be paid: 20 coins needed, 20 to be had",
+        "src": "ai"
+      },
+      {
+        "id": "T2:r_bribe",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_bribe"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 8,
+        "status": "verified",
+        "text": "r_bribe fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_caught",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_caught"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_caught fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_coin_1",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_coin_1"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 0,
+        "src": "ai",
+        "ms": 9,
+        "status": "counterexample",
+        "text": "r_coin_1 fires exactly once",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "firings",
+          "text": "never fired when forced"
+        }
+      },
+      {
+        "id": "T2:r_coin_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_coin_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 9,
+        "status": "verified",
+        "text": "r_coin_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_recommend",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_recommend"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 9,
+        "status": "verified",
+        "text": "r_recommend fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:tour",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "tour"
+        },
+        "status": "played",
+        "method": "physics, an AI visitor walks to and uses each, and says what the cast listens for",
+        "n": 7,
+        "k": 7,
+        "text": "walked to and inspected 5 of 5 things, and 2 of 2 speech acts came off (offer guard_1 20 coins, book with barista_1)",
+        "cx": null,
+        "src": "",
+        "ms": 143
+      }
+    ],
+    "par": null,
+    "ms": 216
+  }
+}

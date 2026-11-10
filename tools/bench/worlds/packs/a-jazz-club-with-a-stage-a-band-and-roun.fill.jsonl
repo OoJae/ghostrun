@@ -1,0 +1,29 @@
+{"op":"meta","mode":"wander","lang":"en","pack":"stage","sub":[],"seed":28,"look":"late-night jazz club","mood":[0.6,0.2,-0.2],"timeOfDay":23,"weather":"clear"}
+{"op":"zone","id":"z_yard","slot":"yard","tag":"outside","name":"Club entrance"}
+{"op":"zone","id":"z_foyer","slot":"foyer","tag":"entrance","name":"Foyer"}
+{"op":"zone","id":"z_hall","slot":"seating","tag":"hall","name":"Club floor"}
+{"op":"zone","id":"z_stage","slot":"stage","tag":"stage","name":"Stage"}
+{"op":"zone","id":"z_wing","slot":"wing_w","tag":"wing","name":"Stage wing"}
+{"op":"zone","id":"z_back","slot":"backstage","tag":"room","name":"Backstage"}
+{"op":"spawn","id":"sp_red","zone":"z_yard","anchor":"spawn_pad","team":"red"}
+{"op":"ent","id":"stage_platform","kind":"platform","noun":"raised stage","hyper":"stage","zone":"z_stage","anchor":"center","body":"fixed","shape":"box","size":[10,0.8,6]}
+{"op":"ent","id":"rig_light","kind":"prop","noun":"lighting rig","hyper":"rig","zone":"z_stage","anchor":"rig_c","body":"none","shape":"none"}
+{"op":"ent","id":"table_1","kind":"prop","noun":"round table","hyper":"table","zone":"z_hall","anchor":"corner_nw","body":"fixed","shape":"cylinder","size":[0.8,0.8,0.8]}
+{"op":"ent","id":"table_2","kind":"prop","noun":"round table","hyper":"table","zone":"z_hall","anchor":"corner_ne","body":"fixed","shape":"cylinder","size":[0.8,0.8,0.8]}
+{"op":"ent","id":"table_3","kind":"prop","noun":"round table","hyper":"table","zone":"z_hall","anchor":"corner_sw","body":"fixed","shape":"cylinder","size":[0.8,0.8,0.8]}
+{"op":"ent","id":"piano","kind":"prop","noun":"grand piano","hyper":"instrument","zone":"z_stage","anchor":"stage_l","body":"fixed","shape":"box","size":[2,1.2,1.5]}
+{"op":"ent","id":"drum_kit","kind":"prop","noun":"drum kit","hyper":"instrument","zone":"z_stage","anchor":"stage_r","body":"fixed","shape":"box","size":[1.6,1,1.4]}
+{"op":"ent","id":"sax","kind":"prop","noun":"saxophone","hyper":"instrument","zone":"z_stage","anchor":"downstage","body":"fixed","shape":"box","size":[0.4,0.8,0.2]}
+{"op":"ent","id":"bar_counter","kind":"prop","noun":"bar counter","hyper":"bar","zone":"z_foyer","anchor":"bar","body":"fixed","shape":"box","size":[4,1,0.8]}
+{"op":"ent","id":"poster_jazz","kind":"prop","noun":"jazz poster","hyper":"poster","zone":"z_foyer","anchor":"wall_n","body":"fixed","shape":"box","size":[1.2,1.6,0.1]}
+{"op":"verb","id":"vb_look_piano","verb":"social.inspect","on":"piano","params":{"text":"A black grand piano, polished by decades of late nights."}}
+{"op":"verb","id":"vb_look_drums","verb":"social.inspect","on":"drum_kit","params":{"text":"The drummer's kit, brushes resting on the snare."}}
+{"op":"verb","id":"vb_look_sax","verb":"social.inspect","on":"sax","params":{"text":"A brass saxophone with a worn mouthpiece."}}
+{"op":"verb","id":"vb_look_poster","verb":"social.inspect","on":"poster_jazz","params":{"text":"A faded poster from a 1959 quartet residency."}}
+{"op":"verb","id":"vb_look_bar","verb":"social.inspect","on":"bar_counter","params":{"text":"Dark wood bar, tonight's specials chalked on a board."}}
+{"op":"npc","id":"host_1","role":"guide","zone":"z_foyer","anchor":"box_office","team":"","menu":["guide.tour"],"dflt":"guide.tour"}
+{"op":"npc","id":"bassist_1","role":"citizen","zone":"z_stage","anchor":"stage_r","team":"","menu":["music.play"],"dflt":"music.play"}
+{"op":"npc","id":"singer_1","role":"citizen","zone":"z_stage","anchor":"downstage","team":"","menu":["music.sing"],"dflt":"music.sing"}
+{"op":"expect","id":"x_stage","prop":"win_reachable","a":"sp_red","b":"z_stage","headline":true,"text":"The stage needs a raised platform with a clear band area and round tables on the floor."}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

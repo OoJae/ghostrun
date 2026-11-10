@@ -1,0 +1,37 @@
+{"op":"meta","mode":"wander","lang":"en","pack":"orrery","sub":[],"seed":36,"look":"planetarium floor, scaled solar system","mood":[0.6,0.2,-0.3],"timeOfDay":12,"weather":"clear"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Planetarium entrance"}
+{"op":"zone","id":"z_sun","slot":"sun","tag":"center","name":"The Sun"}
+{"op":"zone","id":"z_inner","slot":"inner","tag":"planet","name":"Inner planets"}
+{"op":"zone","id":"z_belt","slot":"belt","tag":"ring","name":"Asteroid belt"}
+{"op":"zone","id":"z_jupiter","slot":"jupiter","tag":"planet","name":"Jupiter"}
+{"op":"zone","id":"z_saturn","slot":"saturn","tag":"planet","name":"Saturn"}
+{"op":"zone","id":"z_uranus","slot":"uranus","tag":"planet","name":"Uranus"}
+{"op":"zone","id":"z_neptune","slot":"neptune","tag":"planet","name":"Neptune"}
+{"op":"spawn","id":"sp_red","zone":"z_entrance","anchor":"spawn_pad","team":"red"}
+{"op":"ent","id":"scale_sign","kind":"sign","noun":"scale note","hyper":"sign","zone":"z_entrance","anchor":"scale_note","body":"fixed","shape":"box","size":[1.5,1,0.1]}
+{"op":"ent","id":"guide","kind":"npc","noun":"robot guide","hyper":"guide","zone":"z_entrance","anchor":"desk","body":"kinematic","shape":"capsule"}
+{"op":"ent","id":"sun_body","kind":"prop","noun":"Sun","hyper":"star","zone":"z_sun","anchor":"sun","body":"fixed","shape":"sphere","size":[2,2,2]}
+{"op":"ent","id":"mercury","kind":"prop","noun":"Mercury","hyper":"planet","zone":"z_inner","anchor":"mercury","body":"fixed","shape":"sphere","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"venus","kind":"prop","noun":"Venus","hyper":"planet","zone":"z_inner","anchor":"venus","body":"fixed","shape":"sphere","size":[0.4,0.4,0.4]}
+{"op":"ent","id":"earth","kind":"prop","noun":"Earth","hyper":"planet","zone":"z_inner","anchor":"earth","body":"fixed","shape":"sphere","size":[0.4,0.4,0.4]}
+{"op":"ent","id":"mars","kind":"prop","noun":"Mars","hyper":"planet","zone":"z_inner","anchor":"mars","body":"fixed","shape":"sphere","size":[0.35,0.35,0.35]}
+{"op":"ent","id":"jupiter_body","kind":"prop","noun":"Jupiter","hyper":"planet","zone":"z_jupiter","anchor":"jupiter","body":"fixed","shape":"sphere","size":[1.2,1.2,1.2]}
+{"op":"ent","id":"saturn_body","kind":"prop","noun":"Saturn","hyper":"planet","zone":"z_saturn","anchor":"saturn","body":"fixed","shape":"sphere","size":[1.1,1.1,1.1]}
+{"op":"ent","id":"uranus_body","kind":"prop","noun":"Uranus","hyper":"planet","zone":"z_uranus","anchor":"uranus","body":"fixed","shape":"sphere","size":[0.8,0.8,0.8]}
+{"op":"ent","id":"neptune_body","kind":"prop","noun":"Neptune","hyper":"planet","zone":"z_neptune","anchor":"neptune","body":"fixed","shape":"sphere","size":[0.8,0.8,0.8]}
+{"op":"verb","id":"vb_look_sun","verb":"social.inspect","on":"sun_body","params":{"text":"The Sun holds about 99.8% of the solar system's mass."}}
+{"op":"verb","id":"vb_look_mercury","verb":"social.inspect","on":"mercury","params":{"text":"Mercury is the smallest planet and orbits closest to the Sun."}}
+{"op":"verb","id":"vb_look_venus","verb":"social.inspect","on":"venus","params":{"text":"Venus is the hottest planet, held in by a thick carbon dioxide atmosphere."}}
+{"op":"verb","id":"vb_look_earth","verb":"social.inspect","on":"earth","params":{"text":"Earth is the only known world with liquid water on its surface."}}
+{"op":"verb","id":"vb_look_mars","verb":"social.inspect","on":"mars","params":{"text":"Mars has the tallest volcano known, Olympus Mons, about three times Everest's height."}}
+{"op":"verb","id":"vb_look_jupiter","verb":"social.inspect","on":"jupiter_body","params":{"text":"Jupiter is the largest planet; more than 1,300 Earths would fit inside it."}}
+{"op":"verb","id":"vb_look_saturn","verb":"social.inspect","on":"saturn_body","params":{"text":"Saturn's rings are mostly ice and are over 270,000 km wide."}}
+{"op":"verb","id":"vb_look_uranus","verb":"social.inspect","on":"uranus_body","params":{"text":"Uranus spins on its side, tilted about 98 degrees."}}
+{"op":"verb","id":"vb_look_neptune","verb":"social.inspect","on":"neptune_body","params":{"text":"Neptune has the strongest winds in the solar system, over 2,000 km/h."}}
+{"op":"verb","id":"vb_look_scale","verb":"social.inspect","on":"scale_sign","params":{"text":"Distances are scaled, not true, so the planets are spaced out for walking."}}
+{"op":"rule","id":"r_guide_book","when":{"t":"spoken","a":"guide","act":"book","b":"coins","n":0},"then":[{"e":"book_slot","target":"guide","v":"Viewing at Sun hub"}]}
+{"op":"expect","id":"x_planets","prop":"reachable","a":"sp_red","b":"z_inner","headline":true,"text":"Each of the eight planets must be reachable and trigger its robot-guide fact."}
+{"op":"expect","id":"x_jupiter","prop":"reachable","a":"sp_red","b":"z_jupiter","text":"Jupiter can be visited"}
+{"op":"expect","id":"x_neptune","prop":"reachable","a":"sp_red","b":"z_neptune","text":"Neptune can be visited"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

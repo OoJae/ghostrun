@@ -1,0 +1,36 @@
+{"op":"meta","mode":"play","lang":"en","pack":"service_venue","sub":[],"seed":9,"look":"busy sushi bar","mood":[0.6,0.5,0.3],"timeOfDay":19,"weather":"clear"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Front door"}
+{"op":"zone","id":"z_seating","slot":"seating","tag":"hall","name":"Dining hall"}
+{"op":"zone","id":"z_counter","slot":"counter","tag":"counter","name":"Sushi counter"}
+{"op":"zone","id":"z_back","slot":"back_room","tag":"room","name":"Kitchen back room"}
+{"op":"zone","id":"z_store","slot":"storeroom","tag":"room","name":"Storeroom"}
+{"op":"spawn","id":"sp_red","zone":"z_counter","anchor":"behind_counter","team":"red"}
+{"op":"goal","id":"pass_out","zone":"z_seating","anchor":"counter_front","noun":"serving window","hyper":"food service counter","team":"red"}
+{"op":"ent","id":"plate_1","kind":"pickup","noun":"plate of nigiri","hyper":"serving dish","zone":"z_counter","anchor":"till","body":"dynamic","shape":"box","size":[0.3,0.05,0.3]}
+{"op":"ent","id":"plate_2","kind":"pickup","noun":"plate of maki","hyper":"serving dish","zone":"z_counter","anchor":"pass","body":"dynamic","shape":"box","size":[0.3,0.05,0.3]}
+{"op":"ent","id":"plate_3","kind":"pickup","noun":"plate of sashimi","hyper":"serving dish","zone":"z_counter","anchor":"back_bar","body":"dynamic","shape":"box","size":[0.3,0.05,0.3]}
+{"op":"ent","id":"seat_1","kind":"goal","noun":"customer seat","hyper":"dining seat","zone":"z_seating","anchor":"table_1","body":"sensor","shape":"box","size":[0.8,0.8,0.8]}
+{"op":"ent","id":"seat_2","kind":"goal","noun":"customer seat","hyper":"dining seat","zone":"z_seating","anchor":"table_2","body":"sensor","shape":"box","size":[0.8,0.8,0.8]}
+{"op":"ent","id":"seat_3","kind":"goal","noun":"customer seat","hyper":"dining seat","zone":"z_seating","anchor":"table_3","body":"sensor","shape":"box","size":[0.8,0.8,0.8]}
+{"op":"ent","id":"seat_4","kind":"goal","noun":"customer seat","hyper":"dining seat","zone":"z_seating","anchor":"table_4","body":"sensor","shape":"box","size":[0.8,0.8,0.8]}
+{"op":"ent","id":"heat_lamp","kind":"switch","noun":"heat lamp","hyper":"lamp","zone":"z_counter","anchor":"corner_w","body":"fixed","shape":"box","size":[0.4,0.4,0.4]}
+{"op":"ent","id":"cold_zone","kind":"hazard","noun":"cooling plate zone","hyper":"hazard","zone":"z_counter","anchor":"corner_e","body":"sensor","shape":"box","size":[1.5,0.2,1.5]}
+{"op":"ent","id":"rush_clock","kind":"sign","noun":"rush clock","hyper":"sign","zone":"z_entrance","anchor":"wall_n","body":"fixed","shape":"box","size":[0.6,0.4,0.1]}
+{"op":"verb","id":"vb_carry_1","verb":"physics_props.carry","on":"plate_1","params":{}}
+{"op":"verb","id":"vb_carry_2","verb":"physics_props.carry","on":"plate_2","params":{}}
+{"op":"verb","id":"vb_carry_3","verb":"physics_props.carry","on":"plate_3","params":{}}
+{"op":"verb","id":"vb_heat","verb":"puzzle.switch","on":"heat_lamp","params":{"once":false}}
+{"op":"verb","id":"vb_cold","verb":"motion_hazards.hazard","on":"cold_zone","params":{"respawn":true}}
+{"op":"verb","id":"vb_rush","verb":"puzzle.timer","on":"player","params":{"seconds":180}}
+{"op":"verb","id":"vb_look","verb":"social.inspect","on":"rush_clock","params":{"text":"Two minutes left in the dinner rush."}}
+{"op":"law","player":{"jumpsMax":1,"jumpH":1.0,"speed":5}}
+{"op":"rule","id":"r_serve_1","when":{"t":"enter","a":"plate_1","b":"seat_1"},"then":[{"e":"score","target":"team:red","n":10}],"once":true}
+{"op":"rule","id":"r_serve_2","when":{"t":"enter","a":"plate_2","b":"seat_2"},"then":[{"e":"score","target":"team:red","n":10}],"once":true}
+{"op":"rule","id":"r_serve_3","when":{"t":"enter","a":"plate_3","b":"seat_3"},"then":[{"e":"score","target":"team:red","n":10}],"once":true}
+{"op":"rule","id":"r_win","when":{"t":"score_gte","a":"team:red","n":30},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_cold","when":{"t":"hit","a":"player","b":"cold_zone"},"then":[{"e":"emit","target":"cold_zone","fx":"steam_puff"}]}
+{"op":"rule","id":"r_lose","when":{"t":"timer_end","a":"player"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"expect","id":"x_serve","prop":"win_reachable","a":"sp_red","b":"z_seating","headline":true,"text":"Plates must be carried from the counter to each seat before they go cold."}
+{"op":"expect","id":"x_route","prop":"reachable","a":"sp_red","b":"z_seating"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

@@ -1,0 +1,52 @@
+{"op":"meta","mode":"play","lang":"en","pack":"puzzle_rooms","sub":[],"seed":17,"look":"wizard's tower of sealed chambers","mood":[-0.2,0.5,0.7],"timeOfDay":20,"weather":"clear"}
+{"op":"zone","id":"z_yard","slot":"yard","tag":"outside","name":"Tower grounds"}
+{"op":"zone","id":"z_r1","slot":"room_1","tag":"room","name":"Chamber of First Riddle"}
+{"op":"zone","id":"z_r2","slot":"room_2","tag":"room","name":"Chamber of Echoes"}
+{"op":"zone","id":"z_r3","slot":"room_3","tag":"room","name":"Chamber of Mirrors"}
+{"op":"zone","id":"z_r4","slot":"room_4","tag":"room","name":"Chamber of the Sealed Key"}
+{"op":"zone","id":"z_exit","slot":"exit","tag":"outside","name":"Tower exit"}
+{"op":"spawn","id":"sp_red","zone":"z_yard","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"exit_gate","zone":"z_exit","anchor":"gate","noun":"tower exit gate","hyper":"gate","team":"red"}
+{"op":"ent","id":"door_1","kind":"door","noun":"runic door one","hyper":"door","zone":"z_r1","anchor":"doorway_out","body":"fixed","shape":"box"}
+{"op":"ent","id":"door_2","kind":"door","noun":"runic door two","hyper":"door","zone":"z_r2","anchor":"doorway_out","body":"fixed","shape":"box"}
+{"op":"ent","id":"door_3","kind":"door","noun":"runic door three","hyper":"door","zone":"z_r3","anchor":"doorway_out","body":"fixed","shape":"box"}
+{"op":"ent","id":"door_4","kind":"door","noun":"runic door four","hyper":"door","zone":"z_r4","anchor":"doorway_out","body":"fixed","shape":"box"}
+{"op":"ent","id":"riddle_1","kind":"switch","noun":"riddle stone one","hyper":"switch","zone":"z_r1","anchor":"switch","body":"fixed","shape":"box","size":[0.5,0.5,0.5]}
+{"op":"ent","id":"riddle_2","kind":"switch","noun":"riddle stone two","hyper":"switch","zone":"z_r2","anchor":"switch","body":"fixed","shape":"box","size":[0.5,0.5,0.5]}
+{"op":"ent","id":"riddle_3","kind":"switch","noun":"riddle stone three","hyper":"switch","zone":"z_r3","anchor":"lever","body":"fixed","shape":"box","size":[0.5,0.5,0.5]}
+{"op":"ent","id":"riddle_4","kind":"switch","noun":"riddle stone four","hyper":"switch","zone":"z_r4","anchor":"switch","body":"fixed","shape":"box","size":[0.5,0.5,0.5]}
+{"op":"ent","id":"key_1","kind":"pickup","noun":"silver key","hyper":"key","zone":"z_r1","anchor":"key","body":"dynamic","shape":"box","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"key_2","kind":"pickup","noun":"bronze key","hyper":"key","zone":"z_r2","anchor":"key","body":"dynamic","shape":"box","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"key_3","kind":"pickup","noun":"crystal key","hyper":"key","zone":"z_r3","anchor":"key","body":"dynamic","shape":"box","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"key_4","kind":"pickup","noun":"runed key","hyper":"key","zone":"z_r4","anchor":"key","body":"dynamic","shape":"box","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"sigil_1","kind":"sign","noun":"carved sigil","hyper":"sign","zone":"z_r1","anchor":"center","body":"fixed","shape":"box","size":[1,1.5,0.2]}
+{"op":"ent","id":"tapestry_2","kind":"prop","noun":"tapestry","hyper":"painting","zone":"z_r2","anchor":"center","body":"fixed","shape":"box","size":[1.2,1.6,0.2]}
+{"op":"ent","id":"laser_3","kind":"hazard","noun":"arcane beam","hyper":"laser","zone":"z_r3","anchor":"corner_ne","body":"sensor","shape":"box","size":[2,0.2,2]}
+{"op":"ent","id":"plate_4","kind":"plate","noun":"rune plate","hyper":"plate","zone":"z_r4","anchor":"plate","body":"sensor","shape":"box","size":[1,0.1,1]}
+{"op":"verb","id":"vb_key_1","verb":"physics_props.carry","on":"key_1","params":{}}
+{"op":"verb","id":"vb_key_2","verb":"physics_props.carry","on":"key_2","params":{}}
+{"op":"verb","id":"vb_key_3","verb":"physics_props.carry","on":"key_3","params":{}}
+{"op":"verb","id":"vb_key_4","verb":"physics_props.carry","on":"key_4","params":{}}
+{"op":"verb","id":"vb_lock_1","verb":"puzzle.lock","on":"door_1","params":{"key":"key_1"}}
+{"op":"verb","id":"vb_lock_2","verb":"puzzle.lock","on":"door_2","params":{"key":"key_2"}}
+{"op":"verb","id":"vb_lock_3","verb":"puzzle.lock","on":"door_3","params":{"key":"key_3"}}
+{"op":"verb","id":"vb_lock_4","verb":"puzzle.lock","on":"door_4","params":{"key":"key_4"}}
+{"op":"verb","id":"vb_riddle_1","verb":"puzzle.switch","on":"riddle_1","params":{"once":true}}
+{"op":"verb","id":"vb_riddle_2","verb":"puzzle.switch","on":"riddle_2","params":{"once":true}}
+{"op":"verb","id":"vb_riddle_3","verb":"puzzle.switch","on":"riddle_3","params":{"once":true}}
+{"op":"verb","id":"vb_riddle_4","verb":"puzzle.switch","on":"riddle_4","params":{"once":true}}
+{"op":"verb","id":"vb_look_sigil","verb":"social.inspect","on":"sigil_1","params":{"text":"The riddle: I speak without a mouth and hear without ears. Answer it to free the key."}}
+{"op":"verb","id":"vb_look_tap","verb":"social.inspect","on":"tapestry_2","params":{"text":"A woven map of the tower. The exit lies beyond four locked doors."}}
+{"op":"verb","id":"vb_laser3","verb":"motion_hazards.hazard","on":"laser_3","params":{"respawn":true}}
+{"op":"verb","id":"vb_alarm","verb":"puzzle.timer","on":"player","params":{"seconds":300}}
+{"op":"rule","id":"r_unlock_1","when":{"t":"state_is","a":"riddle_1","s":"on"},"then":[{"e":"open","target":"door_1"}],"once":true}
+{"op":"rule","id":"r_unlock_2","when":{"t":"state_is","a":"riddle_2","s":"on"},"then":[{"e":"open","target":"door_2"}],"once":true}
+{"op":"rule","id":"r_unlock_3","when":{"t":"state_is","a":"riddle_3","s":"on"},"then":[{"e":"open","target":"door_3"}],"once":true}
+{"op":"rule","id":"r_unlock_4","when":{"t":"state_is","a":"riddle_4","s":"on"},"then":[{"e":"open","target":"door_4"}],"once":true}
+{"op":"rule","id":"r_escape","when":{"t":"enter","a":"player","b":"exit_gate"},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_trapped","when":{"t":"timer_end","a":"player"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"expect","id":"x_tower","prop":"win_reachable","a":"sp_red","b":"exit_gate","headline":true,"text":"Each room's riddle must unlock its door before the exit opens."}
+{"op":"expect","id":"x_r4_fair","prop":"requires","a":"sp_red","b":"z_r4","need":["riddle_4"],"text":"The final chamber needs its riddle stone solved"}
+{"op":"end","layer":"gameplay"}
+{"op":"sign","id":"sign_tower","zone":"z_yard","anchor":"gate","text":"Only those who answer the riddles may leave."}
+{"op":"end","layer":"cosmetic"}

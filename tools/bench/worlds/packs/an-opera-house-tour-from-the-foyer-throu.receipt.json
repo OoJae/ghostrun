@@ -1,0 +1,136 @@
+{
+  "prompt": "An opera house tour: from the foyer through the stalls to the stage and backstage",
+  "intent": {
+    "lang": "en",
+    "mode": "wander",
+    "genre": "tour",
+    "setting": "an opera house, from the foyer through the stalls up to the stage and backstage",
+    "role": "visitor",
+    "goal": "explore the opera house and see the stage and backstage",
+    "fail": "none",
+    "mood": "grand and hushed",
+    "pack": "stage",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Tour must run foyer, stalls, stage, then backstage in order.",
+    "nouns": [
+      {
+        "noun": "foyer",
+        "hyper": "entrance hall"
+      },
+      {
+        "noun": "stalls",
+        "hyper": "seating area"
+      },
+      {
+        "noun": "stage",
+        "hyper": "performance platform"
+      },
+      {
+        "noun": "backstage",
+        "hyper": "area behind the stage"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.4,
+      "arousal": -0.2,
+      "tension": 0.1
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "11ac5d89fbb58338458f92829e93319cb825acc0e3423d55a3c0b4840c14e8c6",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_tour",
+      "text": "Tour must run foyer, stalls, stage, then backstage in order.",
+      "status": "verified",
+      "method": "kinematic reachability (jump apex model)"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 2 rules reference existing things",
+        "src": ""
+      },
+      {
+        "id": "T1:x_tour",
+        "tier": "T1",
+        "subject": {
+          "kind": "property",
+          "id": "x_tour"
+        },
+        "method": "kinematic reachability (jump apex model)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "Tour must run foyer, stalls, stage, then backstage in order.",
+        "cx": null
+      },
+      {
+        "id": "T2:r_tour_stage",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_tour_stage"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 8,
+        "status": "verified",
+        "text": "r_tour_stage fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_tour_stalls",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_tour_stalls"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 6,
+        "status": "verified",
+        "text": "r_tour_stalls fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:tour",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "tour"
+        },
+        "status": "played",
+        "method": "physics, an AI visitor walks to and uses each",
+        "n": 6,
+        "k": 6,
+        "text": "walked to and inspected 6 of 6 things",
+        "cx": null,
+        "src": "",
+        "ms": 73
+      }
+    ],
+    "par": null,
+    "ms": 199
+  }
+}

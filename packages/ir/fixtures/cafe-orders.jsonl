@@ -1,0 +1,29 @@
+{"op":"meta","mode":"play","lang":"en","pack":"service_venue","sub":[],"seed":5,"look":"cosy coffee shop","mood":[0.7,0.4,0.3],"timeOfDay":9,"weather":"clear"}
+{"op":"zone","id":"z_street","slot":"yard","tag":"outside","name":"Street"}
+{"op":"zone","id":"z_porch","slot":"entrance","tag":"entrance","name":"Porch"}
+{"op":"zone","id":"z_floor","slot":"seating","tag":"hall","name":"Café floor"}
+{"op":"zone","id":"z_bar","slot":"counter","tag":"counter","name":"Counter"}
+{"op":"zone","id":"z_kitchen","slot":"back_room","tag":"room","name":"Kitchen"}
+{"op":"zone","id":"z_pantry","slot":"storeroom","tag":"room","name":"Pantry"}
+{"op":"spawn","id":"sp_red","zone":"z_street","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"table_window","zone":"z_floor","anchor":"table_2","noun":"window table","hyper":"table","team":"red"}
+{"op":"goal","id":"table_corner","zone":"z_floor","anchor":"table_4","noun":"corner table","hyper":"table","team":"red"}
+{"op":"ent","id":"latte","kind":"pickup","noun":"oat latte","hyper":"cup","zone":"z_bar","anchor":"back_bar","body":"dynamic","shape":"box","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"cake","kind":"pickup","noun":"slice of carrot cake","hyper":"cake","zone":"z_pantry","anchor":"shelves","body":"dynamic","shape":"box","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"register","kind":"prop","noun":"cash register","hyper":"till","zone":"z_bar","anchor":"till","body":"fixed","shape":"box","size":[0.5,0.4,0.4]}
+{"op":"ent","id":"menu_board","kind":"prop","noun":"chalk menu board","hyper":"sign","zone":"z_bar","anchor":"corner_w","body":"fixed","shape":"box","size":[1.2,1.4,0.3]}
+{"op":"ent","id":"oven","kind":"prop","noun":"bread oven","hyper":"oven","zone":"z_kitchen","anchor":"stove","body":"fixed","shape":"box","size":[1.2,1,0.8]}
+{"op":"verb","id":"vb_latte","verb":"physics_props.carry","on":"latte","params":{}}
+{"op":"verb","id":"vb_cake","verb":"physics_props.carry","on":"cake","params":{}}
+{"op":"verb","id":"vb_menu","verb":"social.inspect","on":"menu_board","params":{"text":"Oat latte 3.20, carrot cake 2.80. Cake lives in the pantry, through the kitchen."}}
+{"op":"verb","id":"vb_close","verb":"puzzle.timer","on":"player","params":{"seconds":150}}
+{"op":"rule","id":"r_latte","when":{"t":"enter","a":"latte","b":"table_window"},"then":[{"e":"score","target":"team:red","n":1},{"e":"emit","target":"table_window","fx":"chime"}],"once":true}
+{"op":"rule","id":"r_cake","when":{"t":"enter","a":"cake","b":"table_corner"},"then":[{"e":"score","target":"team:red","n":1},{"e":"emit","target":"table_corner","fx":"chime"}],"once":true}
+{"op":"rule","id":"r_served","when":{"t":"score_gte","a":"team:red","n":2},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_closing","when":{"t":"timer_end","a":"player"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"npc","id":"barista","role":"merchant","zone":"z_bar","anchor":"behind_counter","noun":"barista","team":"","menu":["merchant.idle"],"dflt":"merchant.idle"}
+{"op":"npc","id":"customer_1","role":"citizen","zone":"z_floor","anchor":"table_1","noun":"customer reading a paper","team":"","menu":["citizen.idle"],"dflt":"citizen.idle"}
+{"op":"npc","id":"customer_2","role":"citizen","zone":"z_floor","anchor":"table_3","noun":"customer with a laptop","team":"","menu":["citizen.idle"],"dflt":"citizen.idle"}
+{"op":"expect","id":"x_orders","prop":"win_reachable","a":"sp_red","b":"table_corner","headline":true,"text":"Both orders can be served before closing"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

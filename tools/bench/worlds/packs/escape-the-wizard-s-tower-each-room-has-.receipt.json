@@ -1,0 +1,216 @@
+{
+  "prompt": "Escape the wizard's tower: each room has a riddle and a locked door",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "fantasy puzzle adventure",
+    "setting": "a wizard's tower of linked rooms, each sealed by a riddle-locked door",
+    "role": "escapee trapped in the wizard's tower",
+    "goal": "solve each room's riddle to unlock its door and reach the exit",
+    "fail": "the tower's enchantments trap you permanently",
+    "mood": "mysterious and tense",
+    "pack": "puzzle_rooms",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Each room's riddle must unlock its door before the exit opens.",
+    "nouns": [
+      {
+        "noun": "wizard's tower",
+        "hyper": "a towering arcane keep of sealed chambers"
+      },
+      {
+        "noun": "riddle",
+        "hyper": "a glowing enchanted puzzle inscribed on each door"
+      },
+      {
+        "noun": "locked door",
+        "hyper": "a runic gate that opens only when its riddle is solved"
+      }
+    ],
+    "moodVec": {
+      "valence": -0.2,
+      "arousal": 0.5,
+      "tension": 0.7
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "9aeda3d668617590e64687671d5be673e7a21fadb2f35c67e0f05505cf8dd481",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_tower",
+      "text": "Each room's riddle must unlock its door before the exit opens.",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 6 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_escape (player enters exit_gate)",
+        "src": ""
+      },
+      {
+        "id": "T1:x_r4_fair",
+        "tier": "T1",
+        "subject": {
+          "kind": "property",
+          "id": "x_r4_fair"
+        },
+        "method": "kinematic reachability (jump apex model)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "The final chamber needs its riddle stone solved: needs riddle_4, no checker for that yet",
+        "cx": null
+      },
+      {
+        "id": "T2:r_escape",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_escape"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_escape fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_trapped",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_trapped"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_trapped fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_unlock_1",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_unlock_1"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_unlock_1 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_unlock_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_unlock_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_unlock_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_unlock_3",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_unlock_3"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 6,
+        "status": "verified",
+        "text": "r_unlock_3 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_unlock_4",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_unlock_4"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 6,
+        "status": "verified",
+        "text": "r_unlock_4 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it (AI par 7.6 s)",
+        "cx": null,
+        "src": "",
+        "ms": 1105
+      }
+    ],
+    "par": {
+      "goldS": 7.6,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 1160
+  }
+}

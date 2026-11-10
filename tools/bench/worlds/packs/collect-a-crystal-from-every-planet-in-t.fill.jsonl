@@ -1,0 +1,37 @@
+{"op":"meta","mode":"play","lang":"en","pack":"orrery","sub":[],"seed":33,"look":"planetarium floor, scaled orrery","mood":[-0.2,0.8,0.9],"timeOfDay":12,"weather":"clear"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Planetarium entrance"}
+{"op":"zone","id":"z_sun","slot":"sun","tag":"center","name":"Sun hub"}
+{"op":"zone","id":"z_inner","slot":"inner","tag":"planet","name":"Inner planets"}
+{"op":"zone","id":"z_belt","slot":"belt","tag":"ring","name":"Asteroid belt"}
+{"op":"zone","id":"z_jupiter","slot":"jupiter","tag":"planet","name":"Jupiter"}
+{"op":"zone","id":"z_saturn","slot":"saturn","tag":"planet","name":"Saturn"}
+{"op":"zone","id":"z_uranus","slot":"uranus","tag":"planet","name":"Uranus"}
+{"op":"zone","id":"z_neptune","slot":"neptune","tag":"planet","name":"Neptune"}
+{"op":"spawn","id":"sp_red","zone":"z_entrance","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"exit","zone":"z_entrance","anchor":"corner_w","noun":"airlock","hyper":"exit","team":"red"}
+{"op":"ent","id":"crystal_mercury","kind":"pickup","noun":"mercury crystal","hyper":"crystal","zone":"z_inner","anchor":"mercury","body":"dynamic","shape":"sphere","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"crystal_venus","kind":"pickup","noun":"venus crystal","hyper":"crystal","zone":"z_inner","anchor":"venus","body":"dynamic","shape":"sphere","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"crystal_earth","kind":"pickup","noun":"earth crystal","hyper":"crystal","zone":"z_inner","anchor":"earth","body":"dynamic","shape":"sphere","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"crystal_mars","kind":"pickup","noun":"mars crystal","hyper":"crystal","zone":"z_inner","anchor":"mars","body":"dynamic","shape":"sphere","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"crystal_jupiter","kind":"pickup","noun":"jupiter crystal","hyper":"crystal","zone":"z_jupiter","anchor":"jupiter","body":"dynamic","shape":"sphere","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"crystal_saturn","kind":"pickup","noun":"saturn crystal","hyper":"crystal","zone":"z_saturn","anchor":"saturn","body":"dynamic","shape":"sphere","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"crystal_uranus","kind":"pickup","noun":"uranus crystal","hyper":"crystal","zone":"z_uranus","anchor":"uranus","body":"dynamic","shape":"sphere","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"crystal_neptune","kind":"pickup","noun":"neptune crystal","hyper":"crystal","zone":"z_neptune","anchor":"neptune","body":"dynamic","shape":"sphere","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"oxygen_gauge","kind":"prop","noun":"oxygen gauge","hyper":"oxygen","zone":"z_sun","anchor":"console","body":"fixed","shape":"box","size":[0.6,0.9,0.2]}
+{"op":"ent","id":"scale_sign","kind":"sign","noun":"scale note sign","hyper":"sign","zone":"z_entrance","anchor":"scale_note","body":"fixed","shape":"box","size":[1,0.8,0.1]}
+{"op":"verb","id":"vb_carry_mercury","verb":"physics_props.carry","on":"crystal_mercury","params":{}}
+{"op":"verb","id":"vb_carry_venus","verb":"physics_props.carry","on":"crystal_venus","params":{}}
+{"op":"verb","id":"vb_carry_earth","verb":"physics_props.carry","on":"crystal_earth","params":{}}
+{"op":"verb","id":"vb_carry_mars","verb":"physics_props.carry","on":"crystal_mars","params":{}}
+{"op":"verb","id":"vb_carry_jupiter","verb":"physics_props.carry","on":"crystal_jupiter","params":{}}
+{"op":"verb","id":"vb_carry_saturn","verb":"physics_props.carry","on":"crystal_saturn","params":{}}
+{"op":"verb","id":"vb_carry_uranus","verb":"physics_props.carry","on":"crystal_uranus","params":{}}
+{"op":"verb","id":"vb_carry_neptune","verb":"physics_props.carry","on":"crystal_neptune","params":{}}
+{"op":"verb","id":"vb_oxygen","verb":"puzzle.timer","on":"player","params":{"seconds":240}}
+{"op":"verb","id":"vb_scale_sign","verb":"social.inspect","on":"scale_sign","params":{"text":"Distances are scaled, not true. Planets are placed for walking, not for astronomy."}}
+{"op":"rule","id":"r_collect_all","when":{"t":"score_gte","a":"team:red","n":8},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_oxygen_out","when":{"t":"timer_end","a":"player"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_score_mercury","when":{"t":"enter","a":"crystal_mercury","b":"exit"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"expect","id":"x_oxygen","prop":"win_reachable","a":"sp_red","b":"exit","headline":true,"text":"Oxygen timer must force a planet-by-planet route that a playtest can time."}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

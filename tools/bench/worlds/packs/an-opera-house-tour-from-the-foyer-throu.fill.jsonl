@@ -1,0 +1,28 @@
+{"op":"meta","mode":"wander","lang":"en","pack":"stage","sub":[],"seed":26,"look":"opera house, grand and hushed","mood":[0.4,-0.2,0.1],"timeOfDay":19,"weather":"clear"}
+{"op":"zone","id":"z_foyer","slot":"foyer","tag":"entrance","name":"Foyer"}
+{"op":"zone","id":"z_stalls","slot":"seating","tag":"hall","name":"Stalls"}
+{"op":"zone","id":"z_pit","slot":"pit","tag":"pit","name":"Orchestra pit"}
+{"op":"zone","id":"z_stage","slot":"stage","tag":"stage","name":"Stage"}
+{"op":"zone","id":"z_backstage","slot":"backstage","tag":"room","name":"Backstage"}
+{"op":"spawn","id":"sp_red","zone":"z_foyer","anchor":"center","team":"red"}
+{"op":"goal","id":"tour_stage","zone":"z_stage","anchor":"center","noun":"stage centre","hyper":"stage","team":""}
+{"op":"ent","id":"chandelier","kind":"prop","noun":"crystal chandelier","hyper":"light","zone":"z_foyer","anchor":"center","body":"fixed","shape":"sphere","size":[1.5,1.5,1.5]}
+{"op":"ent","id":"poster_gala","kind":"prop","noun":"gala poster","hyper":"painting","zone":"z_foyer","anchor":"wall_n","body":"fixed","shape":"box","size":[1.2,1.6,0.1]}
+{"op":"ent","id":"stalls_seat","kind":"prop","noun":"velvet seat","hyper":"seat","zone":"z_stalls","anchor":"front_row","body":"fixed","shape":"box","size":[0.6,0.9,0.6]}
+{"op":"ent","id":"conductor_podium","kind":"prop","noun":"conductor's podium","hyper":"podium","zone":"z_pit","anchor":"podium","body":"fixed","shape":"box","size":[0.8,1.2,0.8]}
+{"op":"ent","id":"proscenium","kind":"prop","noun":"proscenium arch","hyper":"arch","zone":"z_stage","anchor":"backdrop","body":"fixed","shape":"box","size":[6,4,0.5]}
+{"op":"ent","id":"prop_rack","kind":"prop","noun":"costume rack","hyper":"rack","zone":"z_backstage","anchor":"rack","body":"fixed","shape":"box","size":[1.5,1.8,0.6]}
+{"op":"verb","id":"vb_look_chand","verb":"social.inspect","on":"chandelier","params":{"text":"Hundreds of crystal drops, lit for every opening night since 1911."}}
+{"op":"verb","id":"vb_look_poster","verb":"social.inspect","on":"poster_gala","params":{"text":"Gala poster for the season's opening production."}}
+{"op":"verb","id":"vb_look_seat","verb":"social.inspect","on":"stalls_seat","params":{"text":"Red velvet seats, each with a brass number plate."}}
+{"op":"verb","id":"vb_look_podium","verb":"social.inspect","on":"conductor_podium","params":{"text":"The conductor stands here to face the orchestra and the singers."}}
+{"op":"verb","id":"vb_look_arch","verb":"social.inspect","on":"proscenium","params":{"text":"The proscenium frames the stage, hiding the wings from the audience."}}
+{"op":"verb","id":"vb_look_rack","verb":"social.inspect","on":"prop_rack","params":{"text":"Costumes are hung here by act, ready for quick changes."}}
+{"op":"rule","id":"r_tour_stalls","when":{"t":"enter","a":"player","b":"z_stalls"},"then":[{"e":"emit","target":"z_stalls","fx":"chime"}]}
+{"op":"rule","id":"r_tour_stage","when":{"t":"enter","a":"player","b":"tour_stage"},"then":[{"e":"emit","target":"tour_stage","fx":"spotlight"}]}
+{"op":"npc","id":"usher_1","role":"guide","zone":"z_foyer","anchor":"box_office","team":"","menu":["guide.tour"],"dflt":"guide.tour"}
+{"op":"npc","id":"stage_manager","role":"guide","zone":"z_backstage","anchor":"center","team":"","menu":["guide.tour"],"dflt":"guide.tour"}
+{"op":"expect","id":"x_tour","prop":"reachable","a":"sp_red","b":"z_backstage","headline":true,"text":"Tour must run foyer, stalls, stage, then backstage in order."}
+{"op":"end","layer":"gameplay"}
+{"op":"poster","id":"p_gala","zone":"z_foyer","anchor":"wall_n","text":"Opening night"}
+{"op":"end","layer":"cosmetic"}

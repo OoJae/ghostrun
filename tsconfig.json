@@ -32,6 +32,21 @@
       "path": "packages/packs/course"
     },
     {
+      "path": "packages/packs/common"
+    },
+    {
+      "path": "packages/packs/service-venue"
+    },
+    {
+      "path": "packages/packs/puzzle-rooms"
+    },
+    {
+      "path": "packages/packs/stage"
+    },
+    {
+      "path": "packages/packs/orrery"
+    },
+    {
       "path": "packages/sim"
     },
     {

@@ -1,0 +1,25 @@
+{"op":"meta","mode":"play","lang":"en","pack":"orrery","sub":[],"seed":38,"look":"planetarium dome","mood":[0.7,0.4,0.1],"timeOfDay":12,"weather":"clear"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Planetarium entrance"}
+{"op":"zone","id":"z_sun","slot":"sun","tag":"center","name":"Sun hub"}
+{"op":"zone","id":"z_inner","slot":"inner","tag":"planet","name":"Inner planets"}
+{"op":"zone","id":"z_belt","slot":"belt","tag":"ring","name":"Asteroid belt"}
+{"op":"zone","id":"z_jupiter","slot":"jupiter","tag":"planet","name":"Jupiter"}
+{"op":"spawn","id":"sp_red","zone":"z_entrance","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"moon_goal","zone":"z_inner","anchor":"moon","noun":"Moon","hyper":"moon","team":"red"}
+{"op":"ent","id":"earth","kind":"prop","noun":"Earth plinth","hyper":"planet","zone":"z_inner","anchor":"earth","body":"fixed","shape":"sphere","size":[1.0,1.0,1.0]}
+{"op":"ent","id":"moon","kind":"pickup","noun":"Moon","hyper":"moon","zone":"z_inner","anchor":"moon","body":"dynamic","shape":"sphere","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"moon_slot","kind":"goal","noun":"Moon slot beside Earth","hyper":"slot","zone":"z_inner","anchor":"earth","body":"sensor","shape":"sphere","size":[0.8,0.8,0.8]}
+{"op":"ent","id":"scale_sign","kind":"sign","noun":"scale note sign","hyper":"sign","zone":"z_entrance","anchor":"scale_note","body":"fixed","shape":"box","size":[1.2,0.8,0.1]}
+{"op":"ent","id":"sun_exhibit","kind":"prop","noun":"Sun exhibit","hyper":"exhibit","zone":"z_sun","anchor":"sun","body":"fixed","shape":"sphere","size":[1.4,1.4,1.4]}
+{"op":"ent","id":"jupiter_exhibit","kind":"prop","noun":"Jupiter exhibit","hyper":"exhibit","zone":"z_jupiter","anchor":"jupiter","body":"fixed","shape":"sphere","size":[1.2,1.2,1.2]}
+{"op":"ent","id":"belt_rock","kind":"prop","noun":"belt rock","hyper":"rock","zone":"z_belt","anchor":"belt_ne","body":"fixed","shape":"box","size":[0.4,0.4,0.4]}
+{"op":"verb","id":"vb_carry_moon","verb":"physics_props.carry","on":"moon","params":{}}
+{"op":"verb","id":"vb_inspect_sun","verb":"social.inspect","on":"sun_exhibit","params":{"text":"The Sun holds over 99 percent of the solar system's mass."}}
+{"op":"verb","id":"vb_inspect_jupiter","verb":"social.inspect","on":"jupiter_exhibit","params":{"text":"Jupiter is the largest planet, more than twice the mass of all the others combined."}}
+{"op":"verb","id":"vb_inspect_belt","verb":"social.inspect","on":"belt_rock","params":{"text":"Asteroids in the belt are leftover rocks that never formed a planet."}}
+{"op":"verb","id":"vb_inspect_sign","verb":"social.inspect","on":"scale_sign","params":{"text":"Distances and sizes are scaled, not true, so the planets are much closer together than they really are."}}
+{"op":"verb","id":"vb_slot_switch","verb":"puzzle.switch","on":"moon_slot","params":{"once":true}}
+{"op":"rule","id":"r_moon_placed","when":{"t":"enter","a":"moon","b":"moon_slot"},"then":[{"e":"score","target":"team:red","n":10},{"e":"win","target":"player"}],"once":true}
+{"op":"expect","id":"x_find_moon","prop":"win_reachable","a":"sp_red","b":"moon_slot","headline":true,"text":"The Moon must be placed next to the Earth plinth so a visitor can locate it."}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

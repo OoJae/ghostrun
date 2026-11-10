@@ -1,0 +1,32 @@
+{"op":"meta","mode":"wander","lang":"en","pack":"orrery","sub":[],"seed":32,"look":"planetarium dome","mood":[0.6,0.2,-0.3],"timeOfDay":12,"weather":"clear"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Entrance hall"}
+{"op":"zone","id":"z_sun","slot":"sun","tag":"center","name":"Sun hub"}
+{"op":"zone","id":"z_inner","slot":"inner","tag":"planet","name":"Inner planets"}
+{"op":"zone","id":"z_belt","slot":"belt","tag":"ring","name":"Asteroid belt"}
+{"op":"zone","id":"z_outer","slot":"jupiter","tag":"planet","name":"Outer planets"}
+{"op":"spawn","id":"sp_red","zone":"z_entrance","anchor":"spawn_pad","team":"red"}
+{"op":"ent","id":"scale_sign","kind":"sign","noun":"scale notice","hyper":"sign","zone":"z_entrance","anchor":"scale_note","body":"fixed","shape":"box","size":[1.5,1,0.1]}
+{"op":"ent","id":"sun_panel","kind":"sign","noun":"sun info panel","hyper":"sign","zone":"z_sun","anchor":"sun","body":"fixed","shape":"box","size":[1,1.2,0.1]}
+{"op":"ent","id":"mercury_plinth","kind":"prop","noun":"mercury plinth","hyper":"plinth","zone":"z_inner","anchor":"mercury","body":"fixed","shape":"box","size":[0.8,1.2,0.8]}
+{"op":"ent","id":"venus_plinth","kind":"prop","noun":"venus plinth","hyper":"plinth","zone":"z_inner","anchor":"venus","body":"fixed","shape":"box","size":[0.8,1.2,0.8]}
+{"op":"ent","id":"earth_plinth","kind":"prop","noun":"earth plinth","hyper":"plinth","zone":"z_inner","anchor":"earth","body":"fixed","shape":"box","size":[0.8,1.2,0.8]}
+{"op":"ent","id":"mars_plinth","kind":"prop","noun":"mars plinth","hyper":"plinth","zone":"z_inner","anchor":"mars","body":"fixed","shape":"box","size":[0.8,1.2,0.8]}
+{"op":"ent","id":"belt_panel","kind":"sign","noun":"belt info panel","hyper":"sign","zone":"z_belt","anchor":"belt_ne","body":"fixed","shape":"box","size":[1,1.2,0.1]}
+{"op":"ent","id":"jupiter_plinth","kind":"prop","noun":"jupiter plinth","hyper":"plinth","zone":"z_outer","anchor":"jupiter","body":"fixed","shape":"box","size":[0.8,1.2,0.8]}
+{"op":"ent","id":"saturn_plinth","kind":"prop","noun":"saturn plinth","hyper":"plinth","zone":"z_outer","anchor":"saturn","body":"fixed","shape":"box","size":[0.8,1.2,0.8]}
+{"op":"ent","id":"uranus_plinth","kind":"prop","noun":"uranus plinth","hyper":"plinth","zone":"z_outer","anchor":"uranus","body":"fixed","shape":"box","size":[0.8,1.2,0.8]}
+{"op":"ent","id":"neptune_plinth","kind":"prop","noun":"neptune plinth","hyper":"plinth","zone":"z_outer","anchor":"neptune","body":"fixed","shape":"box","size":[0.8,1.2,0.8]}
+{"op":"verb","id":"vb_info_sun","verb":"social.inspect","on":"sun_panel","params":{"text":"The Sun holds 99.8% of the solar system's mass."}}
+{"op":"verb","id":"vb_info_mercury","verb":"social.inspect","on":"mercury_plinth","params":{"text":"Mercury: smallest planet, orbits the Sun in 88 days."}}
+{"op":"verb","id":"vb_info_venus","verb":"social.inspect","on":"venus_plinth","params":{"text":"Venus: hottest planet, with a thick carbon dioxide atmosphere."}}
+{"op":"verb","id":"vb_info_earth","verb":"social.inspect","on":"earth_plinth","params":{"text":"Earth: the only known world with liquid water on its surface."}}
+{"op":"verb","id":"vb_info_mars","verb":"social.inspect","on":"mars_plinth","params":{"text":"Mars: the red planet, home to the largest volcano known, Olympus Mons."}}
+{"op":"verb","id":"vb_info_belt","verb":"social.inspect","on":"belt_panel","params":{"text":"The asteroid belt: rocky remnants lying between Mars and Jupiter."}}
+{"op":"verb","id":"vb_info_jupiter","verb":"social.inspect","on":"jupiter_plinth","params":{"text":"Jupiter: the largest planet, more than twice the mass of all the others combined."}}
+{"op":"verb","id":"vb_info_saturn","verb":"social.inspect","on":"saturn_plinth","params":{"text":"Saturn: famous for its bright rings, mostly made of ice."}}
+{"op":"verb","id":"vb_info_uranus","verb":"social.inspect","on":"uranus_plinth","params":{"text":"Uranus: an ice giant that spins on its side."}}
+{"op":"verb","id":"vb_info_neptune","verb":"social.inspect","on":"neptune_plinth","params":{"text":"Neptune: the windiest planet, with gusts over 2,000 km/h."}}
+{"op":"npc","id":"guide_1","role":"guide","zone":"z_entrance","anchor":"desk","team":"","menu":["guide.tour"],"dflt":"guide.tour"}
+{"op":"expect","id":"x_planets","prop":"reachable","a":"sp_red","b":"z_outer","headline":true,"text":"Each of the eight planets must be reachable on foot and show readable info panels."}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

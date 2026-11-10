@@ -1,0 +1,27 @@
+{"op":"meta","mode":"wander","lang":"en","pack":"service_venue","sub":[],"seed":14,"look":"smoky cocktail bar at night","mood":[0.5,0.2,-0.2],"timeOfDay":23,"weather":"clear"}
+{"op":"zone","id":"z_yard","slot":"yard","tag":"outside","name":"Street outside"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Entrance"}
+{"op":"zone","id":"z_hall","slot":"seating","tag":"hall","name":"Lounge floor"}
+{"op":"zone","id":"z_counter","slot":"counter","tag":"counter","name":"Bar counter"}
+{"op":"zone","id":"z_back","slot":"back_room","tag":"room","name":"Back room"}
+{"op":"zone","id":"z_store","slot":"storeroom","tag":"room","name":"Storeroom"}
+{"op":"spawn","id":"sp_red","zone":"z_entrance","anchor":"center","team":"red"}
+{"op":"goal","id":"exit","zone":"z_yard","anchor":"gate","noun":"street door","hyper":"door","team":""}
+{"op":"ent","id":"counter_bar","kind":"prop","noun":"bar counter","hyper":"fixture","zone":"z_counter","anchor":"center","body":"fixed","shape":"box","size":[4,1.1,0.8]}
+{"op":"ent","id":"cocktail_shaker","kind":"prop","noun":"cocktail shaker","hyper":"drink","zone":"z_counter","anchor":"till","body":"fixed","shape":"box","size":[0.2,0.3,0.2]}
+{"op":"ent","id":"jazz_stage","kind":"prop","noun":"jazz stage","hyper":"stage","zone":"z_hall","anchor":"center","body":"fixed","shape":"box","size":[3,0.4,2]}
+{"op":"ent","id":"piano","kind":"prop","noun":"upright piano","hyper":"instrument","zone":"z_hall","anchor":"corner_nw","body":"fixed","shape":"box","size":[1.4,1.1,0.7]}
+{"op":"ent","id":"vintage_poster","kind":"prop","noun":"vintage jazz poster","hyper":"poster","zone":"z_entrance","anchor":"wall_n","body":"fixed","shape":"box","size":[1.2,1.6,0.1]}
+{"op":"ent","id":"old_record","kind":"prop","noun":"vinyl record","hyper":"record","zone":"z_back","anchor":"center","body":"fixed","shape":"box","size":[0.3,0.3,0.03]}
+{"op":"verb","id":"vb_look_counter","verb":"social.inspect","on":"counter_bar","params":{"text":"Polished mahogany, scarred by a thousand late nights."}}
+{"op":"verb","id":"vb_look_shaker","verb":"social.inspect","on":"cocktail_shaker","params":{"text":"Chrome shaker, still frosted from the last Old Fashioned."}}
+{"op":"verb","id":"vb_look_stage","verb":"social.inspect","on":"jazz_stage","params":{"text":"A small riser where the singer leans into the mic after midnight."}}
+{"op":"verb","id":"vb_look_piano","verb":"social.inspect","on":"piano","params":{"text":"The keys are yellowed, but the tuning is surprisingly true."}}
+{"op":"verb","id":"vb_look_poster","verb":"social.inspect","on":"vintage_poster","params":{"text":"A faded 1950s poster promising the Saturday night jazz set."}}
+{"op":"verb","id":"vb_look_record","verb":"social.inspect","on":"old_record","params":{"text":"A worn vinyl, the label reads 'Blue Smoke, Live'."}}
+{"op":"npc","id":"bartender","role":"guide","zone":"z_counter","anchor":"behind_counter","team":"","menu":["guide.talk"],"dflt":"guide.talk"}
+{"op":"npc","id":"singer","role":"performer","zone":"z_hall","anchor":"center","team":"","menu":["performer.sing"],"dflt":"performer.sing"}
+{"op":"expect","id":"x_bar","prop":"reachable","a":"sp_red","b":"z_counter","headline":true,"text":"Bartender must serve drinks at the counter while the singer performs on the floor."}
+{"op":"end","layer":"gameplay"}
+{"op":"poster","id":"poster_jazz","zone":"z_entrance","anchor":"wall_n","text":"Saturday nights: the Blue Smoke Quartet."}
+{"op":"end","layer":"cosmetic"}

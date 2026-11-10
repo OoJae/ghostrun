@@ -1,0 +1,34 @@
+{"op":"meta","mode":"play","lang":"en","pack":"stage","sub":[],"seed":29,"look":"music festival backstage at night","mood":[-0.2,0.7,0.8],"timeOfDay":22,"weather":"clear"}
+{"op":"zone","id":"z_yard","slot":"yard","tag":"outside","name":"Festival grounds"}
+{"op":"zone","id":"z_foyer","slot":"foyer","tag":"entrance","name":"Stage entrance"}
+{"op":"zone","id":"z_seating","slot":"seating","tag":"hall","name":"Crowd area"}
+{"op":"zone","id":"z_pit","slot":"pit","tag":"pit","name":"Front pit"}
+{"op":"zone","id":"z_stage","slot":"stage","tag":"stage","name":"Main stage"}
+{"op":"zone","id":"z_wing_w","slot":"wing_w","tag":"wing","name":"West wing"}
+{"op":"zone","id":"z_backstage","slot":"backstage","tag":"room","name":"Backstage"}
+{"op":"spawn","id":"sp_red","zone":"z_yard","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"exit","zone":"z_yard","anchor":"gate","noun":"festival gate","hyper":"exit","team":"red"}
+{"op":"ent","id":"setlist","kind":"pickup","noun":"setlist","hyper":"setlist","zone":"z_backstage","anchor":"center","body":"dynamic","shape":"box","size":[0.3,0.02,0.4]}
+{"op":"ent","id":"coin_1","kind":"pickup","noun":"coin","hyper":"coin","zone":"z_foyer","anchor":"box_office","body":"dynamic","shape":"sphere","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"coin_2","kind":"pickup","noun":"coin","hyper":"coin","zone":"z_seating","anchor":"aisle_l","body":"dynamic","shape":"sphere","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"guard_post","kind":"prop","noun":"guard post","hyper":"post","zone":"z_wing_w","anchor":"rack","body":"fixed","shape":"box","size":[1,1.2,1]}
+{"op":"ent","id":"backstage_door","kind":"door","noun":"backstage door","hyper":"door","zone":"z_backstage","anchor":"doorway_s","body":"fixed","shape":"box"}
+{"op":"ent","id":"stage_rig","kind":"hazard","noun":"lighting rig","hyper":"rig","zone":"z_stage","anchor":"rig_c","body":"sensor","shape":"box","size":[2,0.4,2]}
+{"op":"verb","id":"vb_carry_setlist","verb":"physics_props.carry","on":"setlist","params":{}}
+{"op":"verb","id":"vb_door","verb":"puzzle.lock","on":"backstage_door","params":{"key":"","keep":true}}
+{"op":"verb","id":"vb_rig","verb":"motion_hazards.hazard","on":"stage_rig","params":{"respawn":true}}
+{"op":"verb","id":"vb_patrol_timer","verb":"puzzle.timer","on":"player","params":{"seconds":120}}
+{"op":"law","player":{"jumpsMax":1,"jumpH":1.2,"speed":5}}
+{"op":"state","id":"guard_1","v":"patrol"}
+{"op":"rule","id":"r_steal","when":{"t":"pickup","a":"setlist","b":"player"},"then":[{"e":"set_state","target":"setlist","v":"stolen"}]}
+{"op":"rule","id":"r_escape","when":{"t":"enter","a":"setlist","b":"exit"},"if":[{"l":"setlist.carrier.team","op":"eq","r":"red"}],"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_caught","when":{"t":"seen_by","a":"player","b":"guard_1"},"if":[{"l":"player.carrying","op":"eq","r":"setlist"}],"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_timeout","when":{"t":"timer_end","a":"player"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_bribe","when":{"t":"spoken","a":"guard_1","act":"offer","b":"coins","n":20},"if":[{"l":"player.coins","op":"gte","r":20}],"then":[{"e":"take","target":"player","v":"coins","n":20},{"e":"set_state","target":"guard_1","v":"look_away","n":20}]}
+{"op":"rule","id":"r_coin_1","when":{"t":"touch","a":"player","b":"coin_1"},"then":[{"e":"give","target":"player","v":"coins","n":10},{"e":"destroy","target":"coin_1"}],"once":true}
+{"op":"rule","id":"r_coin_2","when":{"t":"touch","a":"player","b":"coin_2"},"then":[{"e":"give","target":"player","v":"coins","n":10},{"e":"destroy","target":"coin_2"}],"once":true}
+{"op":"npc","id":"guard_1","role":"guard","zone":"z_wing_w","anchor":"corner_nw","team":"","menu":["guard.patrol","guard.look_away"],"dflt":"guard.patrol"}
+{"op":"expect","id":"x_heist","prop":"win_reachable","a":"sp_red","b":"setlist","headline":true,"text":"Setlist must be stolen while the guard's line of sight stays unbroken for the whole run."}
+{"op":"expect","id":"x_bribe","prop":"reachable","a":"sp_red","b":"z_backstage","text":"Backstage can be reached by bribing the guard"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

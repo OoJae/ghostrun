@@ -1,0 +1,102 @@
+{
+  "prompt": "A planetarium where you can walk between the planets and read about each one",
+  "intent": {
+    "lang": "en",
+    "mode": "wander",
+    "genre": "educational exploration",
+    "setting": "a planetarium floor with the solar system laid out at scaled distances",
+    "role": "visitor",
+    "goal": "walk between the planets and read about each one",
+    "fail": "none",
+    "mood": "curious and calm",
+    "pack": "orrery",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Each of the eight planets must be reachable on foot and show readable info panels.",
+    "nouns": [
+      {
+        "noun": "planetarium",
+        "hyper": "orrery"
+      },
+      {
+        "noun": "planet",
+        "hyper": "plinth"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.6,
+      "arousal": 0.2,
+      "tension": -0.3
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "efc47ee034f723a02cced68f44be9aed34e173d8b5079c4cf0b6d1dcbcc5453a",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_planets",
+      "text": "Each of the eight planets must be reachable on foot and show readable info panels.",
+      "status": "verified",
+      "method": "kinematic reachability (jump apex model)"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 0 rules reference existing things",
+        "src": ""
+      },
+      {
+        "id": "T1:x_planets",
+        "tier": "T1",
+        "subject": {
+          "kind": "property",
+          "id": "x_planets"
+        },
+        "method": "kinematic reachability (jump apex model)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "Each of the eight planets must be reachable on foot and show readable info panels.",
+        "cx": null
+      },
+      {
+        "id": "T3:tour",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "tour"
+        },
+        "status": "counterexample",
+        "method": "physics, an AI visitor walks to and uses each",
+        "n": 11,
+        "k": 10,
+        "text": "walked to and inspected 10 of 11 things",
+        "cx": {
+          "where": null,
+          "have": 10,
+          "need": 11,
+          "unit": "things",
+          "text": "couldn't reach neptune_plinth"
+        },
+        "src": "",
+        "ms": 60
+      }
+    ],
+    "par": null,
+    "ms": 94
+  }
+}

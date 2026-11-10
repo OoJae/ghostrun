@@ -1,0 +1,268 @@
+{
+  "prompt": "A pizza restaurant: take the pizzas from the kitchen to the hungry customers at their tables",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "delivery",
+    "setting": "a pizza restaurant with tables, a counter and a kitchen",
+    "role": "waiter carrying pizzas from the kitchen",
+    "goal": "take finished pizzas from the kitchen to the hungry customers at their tables",
+    "fail": "pizzas go cold or are dropped before reaching the tables",
+    "mood": "busy and cheerful",
+    "pack": "service_venue",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Kitchen-to-table pizza runs must be completable with a full carry load.",
+    "nouns": [
+      {
+        "noun": "pizza",
+        "hyper": "food"
+      },
+      {
+        "noun": "table",
+        "hyper": "furniture"
+      },
+      {
+        "noun": "customer",
+        "hyper": "person"
+      },
+      {
+        "noun": "kitchen",
+        "hyper": "room"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.7,
+      "arousal": 0.6,
+      "tension": 0.3
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "a674f993a3f5f82da82f8c667c6e020c4d6c3cdde3b229759cab46cc78926b50",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_delivery",
+      "text": "Kitchen-to-table pizza runs must be completable with a full carry load.",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 9 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (team:red reaches 3) ← r_deliver_1 (pizza_1 into table_1_goal) ← pick up pizza_1 + r_deliver_2 (pizza_2 into table_2_goal) ← pick up pizza_2 + r_deliver_3 (pizza_3 into table_3_goal) ← pick up pizza_3",
+        "src": ""
+      },
+      {
+        "id": "T1:x_route",
+        "tier": "T1",
+        "subject": {
+          "kind": "property",
+          "id": "x_route"
+        },
+        "method": "kinematic reachability (jump apex model)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "Dining hall reachable from the kitchen through the counter",
+        "cx": null
+      },
+      {
+        "id": "T2:r_cold",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_cold"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 2,
+        "status": "verified",
+        "text": "r_cold fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_deliver_1",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_deliver_1"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 18,
+        "status": "verified",
+        "text": "r_deliver_1 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_deliver_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_deliver_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 15,
+        "status": "verified",
+        "text": "r_deliver_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_deliver_3",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_deliver_3"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 24,
+        "status": "verified",
+        "text": "r_deliver_3 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_e",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_e"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 15,
+        "status": "verified",
+        "text": "r_secret_corner_e fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_se",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_se"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 9,
+        "status": "verified",
+        "text": "r_secret_corner_se fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_corner_w",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_corner_w"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 8,
+        "status": "verified",
+        "text": "r_secret_corner_w fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_spill",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_spill"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 12,
+        "status": "verified",
+        "text": "r_spill fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 8,
+        "text": "AI runners won by playing it (AI par 28.6 s)",
+        "cx": null,
+        "src": "",
+        "ms": 1651
+      }
+    ],
+    "par": {
+      "goldS": 28.6,
+      "runs": 12,
+      "won": 8
+    },
+    "ms": 1812
+  }
+}

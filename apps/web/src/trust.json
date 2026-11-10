@@ -211,6 +211,19 @@
    "controlsP50": 10
   },
   {
+   "name": "packs",
+   "note": "The four newer layout packs (9 Nov): 8 prompts each for a service venue, puzzle rooms, a stage and an orrery, written before the first live run, benched once, unedited",
+   "prompts": 32,
+   "play": 22,
+   "places": 10,
+   "touredFirst": 5,
+   "toured": 10,
+   "firstPass": 14,
+   "now": 17,
+   "playableP50Ms": 9832,
+   "controlsP50": 10
+  },
+  {
    "name": "races",
    "note": "Races (vehicle and track verbs, 30 Oct): written before the first live run, benched once, unedited",
    "prompts": 10,

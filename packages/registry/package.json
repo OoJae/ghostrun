@@ -2,14 +2,20 @@
   "name": "@ghostrun/registry",
   "private": true,
   "type": "module",
-  "exports": { ".": "./src/index.ts" },
+  "exports": {
+    ".": "./src/index.ts"
+  },
   "dependencies": {
     "@ghostrun/pack-arena": "workspace:*",
     "@ghostrun/pack-city-block": "workspace:*",
     "@ghostrun/pack-course": "workspace:*",
     "@ghostrun/pack-floor-plan": "workspace:*",
     "@ghostrun/pack-maze": "workspace:*",
+    "@ghostrun/pack-orrery": "workspace:*",
     "@ghostrun/pack-outdoor": "workspace:*",
+    "@ghostrun/pack-puzzle-rooms": "workspace:*",
+    "@ghostrun/pack-service-venue": "workspace:*",
+    "@ghostrun/pack-stage": "workspace:*",
     "@ghostrun/plugin-api": "workspace:*"
   }
 }

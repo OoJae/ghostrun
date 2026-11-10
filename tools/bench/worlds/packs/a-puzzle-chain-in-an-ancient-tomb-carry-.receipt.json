@@ -1,0 +1,266 @@
+{
+  "prompt": "A puzzle chain in an ancient tomb: carry the stone key from room to room to open the sarcophagus",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "puzzle adventure",
+    "setting": "ancient tomb",
+    "role": "explorer",
+    "goal": "carry the stone key from room to room and open the sarcophagus",
+    "fail": "the key is lost or the chamber seals before the sarcophagus opens",
+    "mood": "tense and mysterious",
+    "pack": "puzzle_rooms",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Stone key must travel room to room and open the sarcophagus at the end of the chain.",
+    "nouns": [
+      {
+        "noun": "stone key",
+        "hyper": "a heavy carved key that must be carried between rooms"
+      },
+      {
+        "noun": "sarcophagus",
+        "hyper": "a stone coffin that opens only when the key is placed in it"
+      },
+      {
+        "noun": "tomb",
+        "hyper": "an ancient burial chamber chain of small connected rooms"
+      }
+    ],
+    "moodVec": {
+      "valence": -0.2,
+      "arousal": 0.6,
+      "tension": 0.7
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "f5c8c43d711b9e05f2c67bc418ddf68135e0b47d93f57142c664451897a88cad",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_tomb",
+      "text": "Stone key must travel room to room and open the sarcophagus at the end of the chain.",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 1,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 6 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 1,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (lock_sarc becomes open: use lock_sarc)",
+        "src": ""
+      },
+      {
+        "id": "T1:x_r2",
+        "tier": "T1",
+        "subject": {
+          "kind": "property",
+          "id": "x_r2"
+        },
+        "method": "kinematic reachability (jump apex model)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "Pillared hall is reachable from the antechamber",
+        "cx": null
+      },
+      {
+        "id": "T1:x_r4",
+        "tier": "T1",
+        "subject": {
+          "kind": "property",
+          "id": "x_r4"
+        },
+        "method": "kinematic reachability (jump apex model)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "counterexample",
+        "text": "Burial chamber reached through the chain",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 0,
+          "unit": "m",
+          "text": "reachable with 0 jumps: highest step 0 m, apex 0 m"
+        }
+      },
+      {
+        "id": "T2:r_lose_timer",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose_timer"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 6,
+        "status": "verified",
+        "text": "r_lose_timer fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_open_12",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_open_12"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 28,
+        "status": "verified",
+        "text": "r_open_12 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_open_23",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_open_23"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_open_23 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_open_34",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_open_34"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_open_34 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_spikes",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_spikes"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_spikes fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 0,
+        "src": "ai",
+        "ms": 5,
+        "status": "counterexample",
+        "text": "r_win fires exactly once",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "firings",
+          "text": "never fired when forced"
+        }
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it (AI par 5.9 s)",
+        "cx": null,
+        "src": "",
+        "ms": 828
+      },
+      {
+        "id": "T3:x_r4",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "x_r4"
+        },
+        "status": "counterexample",
+        "method": "physics jump witness, 4 attempts per jump count",
+        "n": 4,
+        "k": 0,
+        "text": "Burial chamber reached through the chain: reached with 1 jumps 0 of 4, with 0 0 of 4",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 0,
+          "unit": "attempts",
+          "text": "never reached with 1 jumps"
+        },
+        "src": "ai",
+        "ms": 9884
+      }
+    ],
+    "par": {
+      "goldS": 5.9,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 10818
+  }
+}

@@ -1,0 +1,29 @@
+{"op":"meta","mode":"play","lang":"en","pack":"stage","sub":[],"seed":23,"look":"rock concert hall","mood":[0.4,0.8,0.7],"timeOfDay":21,"weather":"clear"}
+{"op":"zone","id":"z_yard","slot":"yard","tag":"outside","name":"Loading yard"}
+{"op":"zone","id":"z_foyer","slot":"foyer","tag":"entrance","name":"Foyer"}
+{"op":"zone","id":"z_seating","slot":"seating","tag":"hall","name":"Seating rows"}
+{"op":"zone","id":"z_pit","slot":"pit","tag":"pit","name":"Orchestra pit"}
+{"op":"zone","id":"z_stage","slot":"stage","tag":"stage","name":"Main stage"}
+{"op":"zone","id":"z_wing","slot":"wing_w","tag":"wing","name":"Stage left wing"}
+{"op":"zone","id":"z_back","slot":"backstage","tag":"room","name":"Backstage"}
+{"op":"spawn","id":"sp_red","zone":"z_yard","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"singer_spot","zone":"z_back","anchor":"center","noun":"lead singer","hyper":"npc","team":"blue"}
+{"op":"ent","id":"guitar","kind":"pickup","noun":"glowing electric guitar","hyper":"guitar","zone":"z_yard","anchor":"spawn_pad","body":"dynamic","shape":"box","size":[0.4,1.0,0.15]}
+{"op":"ent","id":"stage_door","kind":"door","noun":"stage door","hyper":"door","zone":"z_back","anchor":"doorway_s","body":"fixed","shape":"box"}
+{"op":"ent","id":"rig","kind":"prop","noun":"lighting rig","hyper":"rig","zone":"z_stage","anchor":"rig_c","body":"none","shape":"none"}
+{"op":"ent","id":"lights_switch","kind":"switch","noun":"lighting switch","hyper":"switch","zone":"z_back","anchor":"corner_nw","body":"fixed","shape":"box"}
+{"op":"ent","id":"show_clock","kind":"prop","noun":"show clock","hyper":"clock","zone":"z_back","anchor":"crates","body":"none","shape":"none"}
+{"op":"ent","id":"laser_grid","kind":"hazard","noun":"laser grid","hyper":"laser","zone":"z_seating","anchor":"aisle_l","body":"sensor","shape":"box","size":[2,0.2,2]}
+{"op":"ent","id":"stage_plate","kind":"plate","noun":"pressure plate","hyper":"plate","zone":"z_pit","anchor":"center","body":"sensor","shape":"box"}
+{"op":"verb","id":"vb_carry_guitar","verb":"physics_props.carry","on":"guitar","params":{}}
+{"op":"verb","id":"vb_lock_door","verb":"puzzle.lock","on":"stage_door","params":{"key":"lights_switch"}}
+{"op":"verb","id":"vb_switch","verb":"puzzle.switch","on":"lights_switch","params":{"once":false}}
+{"op":"verb","id":"vb_laser","verb":"motion_hazards.hazard","on":"laser_grid","params":{"respawn":true}}
+{"op":"verb","id":"vb_show_timer","verb":"puzzle.timer","on":"player","params":{"seconds":120}}
+{"op":"verb","id":"vb_plate","verb":"puzzle.plate","on":"stage_plate","params":{"latch":false}}
+{"op":"rule","id":"r_handoff","when":{"t":"enter","a":"guitar","b":"singer_spot"},"if":[{"l":"guitar.carrier.team","op":"eq","r":"red"}],"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_show_starts","when":{"t":"timer_end","a":"player"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_door_open","when":{"t":"state_is","a":"stage_door","s":"open"},"then":[{"e":"emit","target":"stage_door","fx":"spotlight_flash"}]}
+{"op":"expect","id":"x_backstage","prop":"win_reachable","a":"sp_red","b":"singer_spot","headline":true,"text":"Backstage access must be reached before the show clock runs out."}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

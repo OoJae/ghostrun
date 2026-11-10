@@ -1,5 +1,5 @@
-things (pickup, prop, switch, door): 89 of 216 distinct nouns drawn as a prop, 397 of 573 entities
-characters (npc): 40 of 43 distinct nouns given a body, 68 of 72 entities
+things (pickup, prop, switch, door): 95 of 245 distinct nouns drawn as a prop, 413 of 612 entities
+characters (npc): 42 of 45 distinct nouns given a body, 71 of 75 entities
 props used: 23 of 36 (barrel, flag, chair, pumpkin, gravestone, skull, target, tree, sword, wand, crossbow, shield, bomb unused here)
 
 kind     n  noun → prop
@@ -11,14 +11,15 @@ door     1  cely dvere → door
 door     1  concealed door → door
 door     1  east hallway door → door
 door     1  exit door → door
-door     1  exit gate → gate
+door     2  exit gate → gate
 door     1  floating bridge → -
 door     1  gate → gate
 door     1  gym west door → door
 door     1  head slot → -
-door     1  iron gate → gate
+door     2  iron gate → gate
 door     1  legs slot → -
 door     1  locked exit door → door
+door     1  locked oak door → door
 door     1  main hall door → door
 door     1  platform gate → gate
 door     1  rope gate → gate
@@ -29,6 +30,7 @@ door     1  sliding shoji door → -
 door     1  southwest door → door
 door     1  steel door → -
 door     1  stone door → -
+door     1  stone gate → gate
 door     1  tower gate → gate
 door     5  vault door → -
 door     1  wooden door → door
@@ -76,10 +78,12 @@ pickup   1  klic k vychodu → key
 pickup   5  kristall → gem
 pickup   1  latte cup → mug
 pickup   1  legs module → -
+pickup   4  lucky coin → coin
 pickup   1  med kit → -
 pickup   1  moon leaf → -
 pickup   6  neon shard → gem
 pickup  10  neon token → coin
+pickup   1  oat latte → mug
 pickup   1  old map → -
 pickup   1  priceless gem → gem
 pickup   1  principal key → key
@@ -90,16 +94,18 @@ pickup   1  red gem → gem
 pickup   1  red silk handbag → sack
 pickup   1  relay baton → staff
 pickup   1  repair toolkit → -
-pickup   3  rune stone → gem
+pickup   7  rune stone → gem
 pickup   2  rusty key → key
 pickup   5  seashell → -
 pickup   1  shimmering coin → coin
 pickup   2  silver coin → coin
-pickup   2  silver key → key
+pickup   3  silver key → key
+pickup   1  slice of carrot cake → -
 pickup   2  snowball → -
 pickup   4  soccer ball → -
 pickup   1  speed boost → -
 pickup   4  stack of coins → coin
+pickup   1  star fragment → -
 pickup   2  star sapphire → gem
 pickup  77  star token → coin
 pickup   1  storm crystal → gem
@@ -115,6 +121,7 @@ pickup   1  yellow silk handbag → sack
 pickup   1  zelezny klic → key
 prop     2  alarm timer → -
 prop     1  ambient rain sound → -
+prop     1  amp stack → -
 prop     1  ancient statue → -
 prop     1  art piece → -
 prop     2  bamboo handle green leather tote → -
@@ -124,18 +131,25 @@ prop     1  boarding plank → -
 prop     1  bookshelf → bookcase
 prop     2  brass incense bowl → -
 prop     1  brass telescope → -
+prop     1  bread oven → -
 prop     1  bronze incense burner → -
 prop     1  buzzer timer → -
 prop     1  capture timer → -
+prop     1  cash register → coins
 prop     1  catapult → -
 prop     1  ceremonial tea set → mug
+prop     1  chalk menu board → -
 prop     2  control panel → -
 prop     2  cottage → -
 prop     1  counter → table
 prop     4  cover block → -
+prop     1  crowd barrier → -
 prop     1  curtain → -
 prop     1  desk → table
 prop     1  dinosaur skeleton → -
+prop     1  drum kit → -
+prop     1  earth → -
+prop     1  electric guitar on a stand → -
 prop     1  flickering gaslight → lamp
 prop     1  glowing mushroom ring → -
 prop     1  grand piano → -
@@ -144,6 +158,7 @@ prop     1  historic microscope → -
 prop     1  incense burner → -
 prop     1  jellyfish → -
 prop     1  jump pad → -
+prop     1  jupiter → -
 prop     1  kitchen island → -
 prop     1  landscape → -
 prop     1  large rock → rock
@@ -152,13 +167,18 @@ prop     1  manta ray → -
 prop     1  marble fireplace → -
 prop     1  marble statue → -
 prop     3  marked shelf slot → bookcase
+prop     1  mars → -
 prop     1  match timer → -
 prop     1  menu board → -
+prop     1  merch stand → -
+prop     1  mercury → -
 prop     1  metal crate → crate
 prop     1  mission timer → -
+prop     1  mixing desk → table
 prop     1  music → -
 prop     2  neon sign → -
 prop     4  neon stall → -
+prop     1  neptune → -
 prop     1  net → -
 prop     1  overhead lamp → lamp
 prop     1  paper lantern → lantern
@@ -172,9 +192,12 @@ prop     1  reactor core → -
 prop     2  red paper lantern → lantern
 prop     2  red silk evening clutch → -
 prop     1  rice paper screened window → -
+prop     1  riddle note → -
 prop     2  round silver mirror → -
+prop     1  saturn → -
 prop     1  scale rocket model → -
 prop     1  sea view window → -
+prop     1  setlist taped to a road case → -
 prop     1  shelf of dragon scales → bookcase
 prop     1  shelf of elf roots → bookcase
 prop     1  shelf of moon leaves → bookcase
@@ -184,16 +207,21 @@ prop     2  silver chain mail purse → sack
 prop     1  sled → -
 prop     2  small stone fountain → rock
 prop     2  snow fence → -
+prop     1  spotlight → -
 prop     1  stone fountain → rock
 prop     1  tall arched window → -
 prop     2  tatami mat → -
 prop     2  terracotta floor vase → -
+prop     1  the sun → -
 prop     1  tide timer → -
 prop     2  timer → -
+prop     1  uranus → -
+prop     1  venus → -
 prop     1  walnut bookcase → bookcase
 prop     2  walnut reception desk → table
 prop     2  yellow ochre suede satchel → sack
 switch   1  blue wire → -
+switch   1  brass switch → -
 switch   3  breaker → -
 switch   1  breaker a → -
 switch   1  breaker b → -
@@ -218,10 +246,11 @@ switch   1  mode switch → -
 switch   1  prepinac brany → -
 switch   1  red wire → -
 switch   1  rope hook → -
+switch   1  rusty lever → -
 switch   1  signal flare → torch
 
 npc      n  noun → body
-npc      1  barista → rogue
+npc      2  barista → rogue
 npc      1  blue 1 → rogue
 npc      1  blue 2 → rogue
 npc      1  blue 3 → rogue
@@ -231,10 +260,11 @@ npc      1  blue rider → rogue
 npc      1  camp cook → barbarian
 npc      1  coach → rogue
 npc      1  creature 1 → skeleton
+npc      1  customer reading a paper → rogue
+npc      1  customer with a laptop → rogue
 npc      2  duch → skeleton
 npc      1  enemy boarding party → barbarian
 npc      1  estate agent → rogue
-npc      1  forest ranger → rogue
 npc      3  ghost → skeleton
 npc      1  goalkeeper → knight
 npc      1  groaning zombie → skeleton
@@ -263,4 +293,5 @@ npc      1  sleeping giant → barbarian
 npc      1  spirit 1 → skeleton
 npc      1  spirit 2 → skeleton
 npc      2  straznik → knight
+npc      1  tour manager → rogue
 npc      1  yellow taxi driver → rogue

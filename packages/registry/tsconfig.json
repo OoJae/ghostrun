@@ -4,6 +4,7 @@
   "include": ["src"],
   "references": [
     { "path": "../plugin-api" }, { "path": "../packs/city-block" }, { "path": "../packs/floor-plan" }, { "path": "../packs/arena" },
-    { "path": "../packs/maze" }, { "path": "../packs/outdoor" }, { "path": "../packs/course" }
+    { "path": "../packs/maze" }, { "path": "../packs/outdoor" }, { "path": "../packs/course" },
+    { "path": "../packs/service-venue" }, { "path": "../packs/puzzle-rooms" }, { "path": "../packs/stage" }, { "path": "../packs/orrery" }
   ]
 }

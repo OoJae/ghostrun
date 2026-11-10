@@ -1,0 +1,200 @@
+{
+  "prompt": "Deliver a message from Earth to Neptune by walking across the solar system",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "adventure",
+    "setting": "the solar system laid out on a planetarium floor at scaled distances",
+    "role": "courier carrying a message from Earth",
+    "goal": "deliver the message to Neptune by walking across the planets",
+    "fail": "the message is lost or time runs out before reaching Neptune",
+    "mood": "wondrous and purposeful",
+    "pack": "orrery",
+    "sub": [],
+    "safety": "ok",
+    "headline": "The message must reach the Neptune plinth at the far end of the orrery.",
+    "nouns": [
+      {
+        "noun": "message",
+        "hyper": "sealed letter from Earth"
+      },
+      {
+        "noun": "Sun",
+        "hyper": "central golden light"
+      },
+      {
+        "noun": "Neptune",
+        "hyper": "distant blue plinth"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.6,
+      "arousal": 0.4,
+      "tension": 0.3
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "3ab21ac4d1a45d64de90e98a76f71c98ce9f057eb07bc3a0d1438dd97c23683d",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_deliver",
+      "text": "The message must reach the Neptune plinth at the far end of the orrery.",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 4 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_deliver (message into neptune_plinth) ← pick up message",
+        "src": ""
+      },
+      {
+        "id": "T1:x_belt",
+        "tier": "T1",
+        "subject": {
+          "kind": "property",
+          "id": "x_belt"
+        },
+        "method": "kinematic reachability (jump apex model)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "The asteroid belt can be crossed",
+        "cx": null
+      },
+      {
+        "id": "T1:x_scale",
+        "tier": "T1",
+        "subject": {
+          "kind": "property",
+          "id": "x_scale"
+        },
+        "method": "kinematic reachability (jump apex model)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "Neptune is reachable across the scaled orrery",
+        "cx": null
+      },
+      {
+        "id": "T2:r_deliver",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_deliver"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_deliver fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_gate",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_gate"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_gate fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lost",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lost"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_lost fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_beside",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_beside"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_secret_beside fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it (AI par 11.2 s)",
+        "cx": null,
+        "src": "",
+        "ms": 692
+      }
+    ],
+    "par": {
+      "goldS": 11.2,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 747
+  }
+}

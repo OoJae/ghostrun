@@ -1,0 +1,216 @@
+{
+  "prompt": "A space race around the asteroid belt between Mars and Jupiter",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "racing",
+    "setting": "asteroid belt between Mars and Jupiter",
+    "role": "pilot",
+    "goal": "finish the lap course around the asteroid belt first",
+    "fail": "hit an asteroid or run out of time",
+    "mood": "fast, dangerous, competitive",
+    "pack": "course",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Race must thread asteroid gaps against a clock, so a playtest can check whether the course is finishable.",
+    "nouns": [
+      {
+        "noun": "asteroid",
+        "hyper": "space rock"
+      },
+      {
+        "noun": "spaceship",
+        "hyper": "vehicle"
+      },
+      {
+        "noun": "belt",
+        "hyper": "ring of debris"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.2,
+      "arousal": 0.9,
+      "tension": 0.7
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "f3087764139ec0dfc942d62a8b0255d441021abbedfe912a0c6721f5e502445d",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_race",
+      "text": "Race must thread asteroid gaps against a clock, so a playtest can check whether the course is finishable.",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners vs 2 bots + physics, 3 menu schedules × 3 runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 1,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 4 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 1,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (lap 1 done) ← drive ship through 5 gates and finish_line ×1",
+        "src": ""
+      },
+      {
+        "id": "T1:drive:finish_line",
+        "tier": "T1",
+        "subject": {
+          "kind": "world",
+          "id": "finish_line"
+        },
+        "method": "drivability model (ground a vehicle drives to, turning circle, top speed)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 41,
+        "status": "verified",
+        "text": "a car can drive the line and 5 gates on the ground (a lap ≥ 233.2 m, turning circle 3.27 m at corner speed)",
+        "cx": null
+      },
+      {
+        "id": "T1:laps:r_win",
+        "tier": "T1",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "race-time model (laps × the shortest lap ÷ top speed with boost)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 41,
+        "status": "verified",
+        "text": "1 lap fit the 180 s clock",
+        "cx": null
+      },
+      {
+        "id": "T2:r_hit_rock",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_hit_rock"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 48,
+        "status": "verified",
+        "text": "r_hit_rock fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_hit_rock2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_hit_rock2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 12,
+        "status": "verified",
+        "text": "r_hit_rock2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_timeout",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_timeout"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_timeout fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners vs 2 bots",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it vs 2 bots (AI par 16.8 s)",
+        "cx": null,
+        "src": "",
+        "ms": 2670
+      },
+      {
+        "id": "T3:envelope",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 3 menu schedules × 3 runners",
+        "n": 9,
+        "k": 9,
+        "text": "runners still win whatever the cast's minds choose (3 schedules)",
+        "cx": null,
+        "src": "",
+        "ms": 1968
+      }
+    ],
+    "par": {
+      "goldS": 16.8,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 5866
+  }
+}

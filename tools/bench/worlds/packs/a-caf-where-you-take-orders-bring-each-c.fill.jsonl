@@ -1,0 +1,38 @@
+{"op":"meta","mode":"play","lang":"en","pack":"service_venue","sub":[],"seed":7,"look":"neighbourhood cafe","mood":[0.6,0.5,0.4],"timeOfDay":9,"weather":"clear"}
+{"op":"zone","id":"z_yard","slot":"yard","tag":"outside","name":"Cafe front"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Entrance"}
+{"op":"zone","id":"z_seating","slot":"seating","tag":"hall","name":"Customer seating"}
+{"op":"zone","id":"z_counter","slot":"counter","tag":"counter","name":"Service counter"}
+{"op":"zone","id":"z_kitchen","slot":"back_room","tag":"room","name":"Back kitchen"}
+{"op":"zone","id":"z_store","slot":"storeroom","tag":"room","name":"Storeroom"}
+{"op":"spawn","id":"sp_red","zone":"z_yard","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"close_door","zone":"z_entrance","anchor":"doorway_s","noun":"closing door","hyper":"door","team":"red"}
+{"op":"ent","id":"cup_1","kind":"pickup","noun":"latte cup","hyper":"drink","zone":"z_counter","anchor":"till","body":"dynamic","shape":"box","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"cup_2","kind":"pickup","noun":"espresso cup","hyper":"drink","zone":"z_counter","anchor":"back_bar","body":"dynamic","shape":"box","size":[0.2,0.2,0.2]}
+{"op":"ent","id":"espresso_machine","kind":"prop","noun":"espresso machine","hyper":"appliance","zone":"z_counter","anchor":"center","body":"fixed","shape":"box","size":[1,0.6,0.6]}
+{"op":"ent","id":"order_pad","kind":"sign","noun":"order pad","hyper":"sign","zone":"z_counter","anchor":"till","body":"fixed","shape":"box","size":[0.3,0.1,0.2]}
+{"op":"ent","id":"tray","kind":"pickup","noun":"serving tray","hyper":"tray","zone":"z_counter","anchor":"flap","body":"dynamic","shape":"box","size":[0.5,0.05,0.4]}
+{"op":"ent","id":"table_1_drink","kind":"goal","noun":"table one","hyper":"table","zone":"z_seating","anchor":"table_1","body":"sensor","shape":"box","size":[1,0.2,1]}
+{"op":"ent","id":"table_2_drink","kind":"goal","noun":"table two","hyper":"table","zone":"z_seating","anchor":"table_2","body":"sensor","shape":"box","size":[1,0.2,1]}
+{"op":"ent","id":"fridge","kind":"prop","noun":"milk fridge","hyper":"appliance","zone":"z_kitchen","anchor":"fridge","body":"fixed","shape":"box","size":[0.8,1.8,0.7]}
+{"op":"ent","id":"stove","kind":"prop","noun":"kitchen stove","hyper":"appliance","zone":"z_kitchen","anchor":"stove","body":"fixed","shape":"box","size":[1,0.9,0.6]}
+{"op":"ent","id":"safe","kind":"prop","noun":"cash safe","hyper":"safe","zone":"z_store","anchor":"safe","body":"fixed","shape":"box","size":[0.6,0.6,0.6]}
+{"op":"ent","id":"shelf","kind":"prop","noun":"cup shelf","hyper":"shelf","zone":"z_store","anchor":"shelves","body":"fixed","shape":"box","size":[1.5,2,0.4]}
+{"op":"ent","id":"closing_bell","kind":"switch","noun":"closing bell","hyper":"switch","zone":"z_counter","anchor":"behind_counter","body":"fixed","shape":"box","size":[0.3,0.3,0.3]}
+{"op":"verb","id":"vb_carry_cup1","verb":"physics_props.carry","on":"cup_1","params":{}}
+{"op":"verb","id":"vb_carry_cup2","verb":"physics_props.carry","on":"cup_2","params":{}}
+{"op":"verb","id":"vb_carry_tray","verb":"physics_props.carry","on":"tray","params":{}}
+{"op":"verb","id":"vb_machine","verb":"puzzle.switch","on":"espresso_machine","params":{"once":false}}
+{"op":"verb","id":"vb_bell","verb":"puzzle.switch","on":"closing_bell","params":{"once":true}}
+{"op":"verb","id":"vb_timer","verb":"puzzle.timer","on":"player","params":{"seconds":180}}
+{"op":"verb","id":"vb_inspect_order","verb":"social.inspect","on":"order_pad","params":{"text":"Table 1: flat white. Table 2: iced chai."}}
+{"op":"law","player":{"jumpsMax":1,"jumpH":1.0,"speed":6}}
+{"op":"rule","id":"r_serve_1","when":{"t":"enter","a":"cup_1","b":"table_1_drink"},"if":[{"l":"cup_1.carrier.team","op":"eq","r":"red"}],"then":[{"e":"score","target":"team:red","n":1},{"e":"destroy","target":"cup_1"}],"once":true}
+{"op":"rule","id":"r_serve_2","when":{"t":"enter","a":"cup_2","b":"table_2_drink"},"if":[{"l":"cup_2.carrier.team","op":"eq","r":"red"}],"then":[{"e":"score","target":"team:red","n":1},{"e":"destroy","target":"cup_2"}],"once":true}
+{"op":"rule","id":"r_win","when":{"t":"score_gte","a":"team:red","n":2},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lose","when":{"t":"timer_end","a":"player"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_bell","when":{"t":"state_is","a":"closing_bell","s":"on"},"then":[{"e":"emit","target":"close_door","fx":"closing_bell"}]}
+{"op":"expect","id":"x_serve","prop":"win_reachable","a":"sp_red","b":"table_1_drink","headline":true,"text":"Each customer's ordered drink must reach the right table before the closing bell."}
+{"op":"expect","id":"x_serve2","prop":"reachable","a":"sp_red","b":"table_2_drink","text":"Table two can be reached with the tray"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

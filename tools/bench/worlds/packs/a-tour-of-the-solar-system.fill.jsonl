@@ -1,0 +1,35 @@
+{"op":"meta","mode":"wander","lang":"en","pack":"orrery","sub":[],"seed":31,"look":"planetarium floor, dark blue dome","mood":[0.6,0.2,-0.2],"timeOfDay":21,"weather":"clear"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Arched entrance"}
+{"op":"zone","id":"z_sun","slot":"sun","tag":"center","name":"The Sun"}
+{"op":"zone","id":"z_inner","slot":"inner","tag":"planet","name":"Inner planets"}
+{"op":"zone","id":"z_belt","slot":"belt","tag":"ring","name":"Asteroid belt"}
+{"op":"zone","id":"z_jupiter","slot":"jupiter","tag":"planet","name":"Jupiter"}
+{"op":"zone","id":"z_saturn","slot":"saturn","tag":"planet","name":"Saturn"}
+{"op":"zone","id":"z_uranus","slot":"uranus","tag":"planet","name":"Uranus"}
+{"op":"zone","id":"z_neptune","slot":"neptune","tag":"planet","name":"Neptune"}
+{"op":"spawn","id":"sp_red","zone":"z_entrance","anchor":"spawn_pad","team":"red"}
+{"op":"ent","id":"sun_orb","kind":"prop","noun":"Sun","hyper":"sun","zone":"z_sun","anchor":"sun","body":"fixed","shape":"sphere","size":[2,2,2]}
+{"op":"ent","id":"sign_scale","kind":"sign","noun":"scale note","hyper":"sign","zone":"z_entrance","anchor":"scale_note","body":"fixed","shape":"box","size":[1,1.2,0.1]}
+{"op":"ent","id":"mercury","kind":"prop","noun":"Mercury","hyper":"planet","zone":"z_inner","anchor":"mercury","body":"fixed","shape":"sphere","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"venus","kind":"prop","noun":"Venus","hyper":"planet","zone":"z_inner","anchor":"venus","body":"fixed","shape":"sphere","size":[0.5,0.5,0.5]}
+{"op":"ent","id":"earth","kind":"prop","noun":"Earth","hyper":"planet","zone":"z_inner","anchor":"earth","body":"fixed","shape":"sphere","size":[0.5,0.5,0.5]}
+{"op":"ent","id":"mars","kind":"prop","noun":"Mars","hyper":"planet","zone":"z_inner","anchor":"mars","body":"fixed","shape":"sphere","size":[0.4,0.4,0.4]}
+{"op":"ent","id":"belt_rocks","kind":"prop","noun":"asteroid belt","hyper":"belt","zone":"z_belt","anchor":"belt_ne","body":"fixed","shape":"box","size":[3,0.2,3]}
+{"op":"ent","id":"jupiter_planet","kind":"prop","noun":"Jupiter","hyper":"planet","zone":"z_jupiter","anchor":"jupiter","body":"fixed","shape":"sphere","size":[1.4,1.4,1.4]}
+{"op":"ent","id":"saturn_planet","kind":"prop","noun":"Saturn","hyper":"planet","zone":"z_saturn","anchor":"saturn","body":"fixed","shape":"sphere","size":[1.2,1.2,1.2]}
+{"op":"ent","id":"uranus_planet","kind":"prop","noun":"Uranus","hyper":"planet","zone":"z_uranus","anchor":"uranus","body":"fixed","shape":"sphere","size":[0.9,0.9,0.9]}
+{"op":"ent","id":"neptune_planet","kind":"prop","noun":"Neptune","hyper":"planet","zone":"z_neptune","anchor":"neptune","body":"fixed","shape":"sphere","size":[0.9,0.9,0.9]}
+{"op":"verb","id":"vb_look_sun","verb":"social.inspect","on":"sun_orb","params":{"text":"The Sun holds over 99 percent of the solar system's mass."}}
+{"op":"verb","id":"vb_look_mercury","verb":"social.inspect","on":"mercury","params":{"text":"Mercury, the smallest planet, orbits closest to the Sun."}}
+{"op":"verb","id":"vb_look_venus","verb":"social.inspect","on":"venus","params":{"text":"Venus is the hottest planet, wrapped in thick clouds."}}
+{"op":"verb","id":"vb_look_earth","verb":"social.inspect","on":"earth","params":{"text":"Earth is the only known world with liquid water on its surface."}}
+{"op":"verb","id":"vb_look_mars","verb":"social.inspect","on":"mars","params":{"text":"Mars is a cold desert world with the tallest volcano we know."}}
+{"op":"verb","id":"vb_look_belt","verb":"social.inspect","on":"belt_rocks","params":{"text":"The asteroid belt holds rocky remnants that never formed a planet."}}
+{"op":"verb","id":"vb_look_jupiter","verb":"social.inspect","on":"jupiter_planet","params":{"text":"Jupiter is the largest planet, more than twice the mass of all the others combined."}}
+{"op":"verb","id":"vb_look_saturn","verb":"social.inspect","on":"saturn_planet","params":{"text":"Saturn's rings are mostly ice and are surprisingly thin."}}
+{"op":"verb","id":"vb_look_uranus","verb":"social.inspect","on":"uranus_planet","params":{"text":"Uranus spins on its side, tilted almost 98 degrees."}}
+{"op":"verb","id":"vb_look_neptune","verb":"social.inspect","on":"neptune_planet","params":{"text":"Neptune has the fastest winds in the solar system."}}
+{"op":"npc","id":"guide_1","role":"guide","zone":"z_entrance","anchor":"desk","team":"","menu":["guide.tour"],"dflt":"guide.tour"}
+{"op":"expect","id":"x_tour","prop":"reachable","a":"sp_red","b":"z_neptune","headline":true,"text":"Each of the eight planets sits on its own plinth at scaled distance from the Sun."}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

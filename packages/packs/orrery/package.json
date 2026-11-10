@@ -1,0 +1,17 @@
+{
+  "name": "@ghostrun/pack-orrery",
+  "private": true,
+  "type": "module",
+  "exports": { ".": "./src/index.ts" },
+  "dependencies": {
+    "@ghostrun/detmath": "workspace:*",
+    "@ghostrun/ir": "workspace:*",
+    "@ghostrun/pack-common": "workspace:*",
+    "@ghostrun/plugin-api": "workspace:*"
+  },
+  "devDependencies": {
+    "@ghostrun/layout": "workspace:*",
+    "@ghostrun/nav": "workspace:*",
+    "@ghostrun/proof": "workspace:*"
+  }
+}

@@ -1,0 +1,33 @@
+{"op":"meta","mode":"play","lang":"en","pack":"puzzle_rooms","sub":[],"seed":4,"look":"stone escape room","mood":[0.1,0.5,0.6],"timeOfDay":20,"weather":"clear"}
+{"op":"zone","id":"z_yard","slot":"yard","tag":"outside","name":"Front steps"}
+{"op":"zone","id":"z_study","slot":"room_1","tag":"room","name":"Study"}
+{"op":"zone","id":"z_library","slot":"room_2","tag":"room","name":"Library"}
+{"op":"zone","id":"z_clock","slot":"room_3","tag":"room","name":"Clock room"}
+{"op":"zone","id":"z_vault","slot":"room_4","tag":"room","name":"Vault"}
+{"op":"zone","id":"z_out","slot":"exit","tag":"outside","name":"Courtyard"}
+{"op":"spawn","id":"sp_red","zone":"z_yard","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"way_out","zone":"z_out","anchor":"center","noun":"open courtyard","hyper":"exit","team":"red"}
+{"op":"ent","id":"sw_study","kind":"switch","noun":"brass switch","hyper":"switch","zone":"z_study","anchor":"switch","body":"fixed"}
+{"op":"ent","id":"gate_study","kind":"door","noun":"iron gate","hyper":"gate","zone":"z_study","anchor":"doorway_out","body":"fixed","shape":"box"}
+{"op":"ent","id":"riddle","kind":"prop","noun":"riddle note","hyper":"note","zone":"z_study","anchor":"chest","body":"fixed","shape":"box","size":[0.8,0.9,0.6]}
+{"op":"ent","id":"key_silver","kind":"pickup","noun":"silver key","hyper":"key","zone":"z_library","anchor":"key","body":"dynamic","shape":"box","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"door_library","kind":"door","noun":"locked oak door","hyper":"door","zone":"z_library","anchor":"doorway_out","body":"fixed","shape":"box"}
+{"op":"ent","id":"plate_clock","kind":"plate","noun":"pressure plate","hyper":"plate","zone":"z_clock","anchor":"plate","body":"sensor"}
+{"op":"ent","id":"gate_clock","kind":"door","noun":"stone gate","hyper":"gate","zone":"z_clock","anchor":"doorway_out","body":"fixed","shape":"box"}
+{"op":"ent","id":"lever_vault","kind":"switch","noun":"rusty lever","hyper":"lever","zone":"z_vault","anchor":"lever","body":"fixed","size":[0.4,1,0.4]}
+{"op":"ent","id":"gate_vault","kind":"door","noun":"exit gate","hyper":"gate","zone":"z_vault","anchor":"doorway_out","body":"fixed","shape":"box"}
+{"op":"verb","id":"vb_sw_study","verb":"puzzle.switch","on":"sw_study","params":{}}
+{"op":"verb","id":"vb_riddle","verb":"social.inspect","on":"riddle","params":{"text":"Light, then key, then weight, then pull: four rooms, four ways through."}}
+{"op":"verb","id":"vb_key","verb":"physics_props.carry","on":"key_silver","params":{}}
+{"op":"verb","id":"vb_lock","verb":"puzzle.lock","on":"door_library","params":{"key":"key_silver"}}
+{"op":"verb","id":"vb_plate","verb":"puzzle.plate","on":"plate_clock","params":{}}
+{"op":"verb","id":"vb_lever","verb":"puzzle.switch","on":"lever_vault","params":{}}
+{"op":"verb","id":"vb_clock","verb":"puzzle.timer","on":"player","params":{"seconds":240}}
+{"op":"rule","id":"r_study","when":{"t":"state_is","a":"sw_study","s":"on"},"then":[{"e":"open","target":"gate_study"}],"once":true}
+{"op":"rule","id":"r_clock","when":{"t":"state_is","a":"plate_clock","s":"down"},"then":[{"e":"open","target":"gate_clock"}],"once":true}
+{"op":"rule","id":"r_vault","when":{"t":"state_is","a":"lever_vault","s":"on"},"then":[{"e":"open","target":"gate_vault"}],"once":true}
+{"op":"rule","id":"r_free","when":{"t":"enter","a":"player","b":"way_out"},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_time","when":{"t":"timer_end","a":"player"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"expect","id":"x_out","prop":"win_reachable","a":"sp_red","b":"way_out","headline":true,"text":"Each room's puzzle opens the way on, out to the courtyard"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

@@ -1,0 +1,100 @@
+{
+  "prompt": "An orrery museum: visit the Sun and the eight planets and learn how far each one is",
+  "intent": {
+    "lang": "en",
+    "mode": "wander",
+    "genre": "astronomy museum",
+    "setting": "a planetarium floor with the Sun in the middle and the eight planets on plinths around it at scaled distances",
+    "role": "visitor",
+    "goal": "visit the Sun and each of the eight planets to learn how far each one is from the Sun",
+    "fail": "none",
+    "mood": "curious and calm",
+    "pack": "orrery",
+    "sub": [],
+    "safety": "ok",
+    "headline": "Each planet plinth must sit at its scaled distance from the Sun so the spacing can be checked.",
+    "nouns": [
+      {
+        "noun": "Sun",
+        "hyper": "a large glowing sphere at the centre of the floor"
+      },
+      {
+        "noun": "planet plinth",
+        "hyper": "a pedestal holding a model of one planet at its scaled distance"
+      },
+      {
+        "noun": "entrance",
+        "hyper": "the doorway where the visitor starts the tour"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.6,
+      "arousal": 0.1,
+      "tension": -0.3
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "82da63581436615a9956da8a50e97b0cc4d6cf1e27335b034781e27960d8ca5b",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_spacing",
+      "text": "Each planet plinth must sit at its scaled distance from the Sun so the spacing can be checked.",
+      "status": "verified",
+      "method": "kinematic reachability (jump apex model)"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 0 rules reference existing things",
+        "src": ""
+      },
+      {
+        "id": "T1:x_spacing",
+        "tier": "T1",
+        "subject": {
+          "kind": "property",
+          "id": "x_spacing"
+        },
+        "method": "kinematic reachability (jump apex model)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "Each planet plinth must sit at its scaled distance from the Sun so the spacing can be checked.",
+        "cx": null
+      },
+      {
+        "id": "T3:tour",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "tour"
+        },
+        "status": "played",
+        "method": "physics, an AI visitor walks to and uses each",
+        "n": 11,
+        "k": 11,
+        "text": "walked to and inspected 11 of 11 things",
+        "cx": null,
+        "src": "",
+        "ms": 95
+      }
+    ],
+    "par": null,
+    "ms": 167
+  }
+}

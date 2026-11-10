@@ -1,0 +1,31 @@
+{"op":"meta","mode":"play","lang":"en","pack":"puzzle_rooms","sub":[],"seed":15,"look":"dim escape room, flickering lights","mood":[-0.3,0.8,0.9],"timeOfDay":22,"weather":"clear"}
+{"op":"zone","id":"z_yard","slot":"yard","tag":"outside","name":"Outside the complex"}
+{"op":"zone","id":"z_r1","slot":"room_1","tag":"room","name":"Cellar room"}
+{"op":"zone","id":"z_r2","slot":"room_2","tag":"room","name":"Storage room"}
+{"op":"zone","id":"z_r3","slot":"room_3","tag":"room","name":"Control room"}
+{"op":"zone","id":"z_exit","slot":"exit","tag":"outside","name":"Exit corridor"}
+{"op":"spawn","id":"sp_red","zone":"z_yard","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"exit_door","zone":"z_exit","anchor":"gate","noun":"exit door","hyper":"exit","team":"red"}
+{"op":"ent","id":"brass_key","kind":"pickup","noun":"brass key","hyper":"key","zone":"z_r2","anchor":"key","body":"dynamic","shape":"box","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"sw_1","kind":"switch","noun":"wall switch one","hyper":"switch","zone":"z_r1","anchor":"switch","body":"fixed","shape":"box","size":[0.3,0.3,0.1]}
+{"op":"ent","id":"sw_2","kind":"switch","noun":"wall switch two","hyper":"switch","zone":"z_r2","anchor":"switch","body":"fixed","shape":"box","size":[0.3,0.3,0.1]}
+{"op":"ent","id":"sw_3","kind":"switch","noun":"wall switch three","hyper":"switch","zone":"z_r3","anchor":"switch","body":"fixed","shape":"box","size":[0.3,0.3,0.1]}
+{"op":"ent","id":"door_2","kind":"door","noun":"locked door","hyper":"door","zone":"z_r2","anchor":"doorway_out","body":"fixed","shape":"box"}
+{"op":"ent","id":"door_3","kind":"door","noun":"locked door","hyper":"door","zone":"z_r3","anchor":"doorway_out","body":"fixed","shape":"box"}
+{"op":"ent","id":"exit_gate","kind":"door","noun":"sealed exit gate","hyper":"door","zone":"z_r3","anchor":"doorway_out","body":"fixed","shape":"box"}
+{"op":"ent","id":"countdown","kind":"prop","noun":"countdown clock","hyper":"clock","zone":"z_r1","anchor":"corner_ne","body":"fixed","shape":"box","size":[0.6,0.4,0.1]}
+{"op":"ent","id":"note_1","kind":"prop","noun":"scribbled note","hyper":"note","zone":"z_r1","anchor":"center","body":"fixed","shape":"box","size":[0.3,0.2,0.02]}
+{"op":"verb","id":"vb_carry_key","verb":"physics_props.carry","on":"brass_key","params":{}}
+{"op":"verb","id":"vb_sw1","verb":"puzzle.switch","on":"sw_1","params":{"once":false}}
+{"op":"verb","id":"vb_sw2","verb":"puzzle.switch","on":"sw_2","params":{"once":false}}
+{"op":"verb","id":"vb_sw3","verb":"puzzle.switch","on":"sw_3","params":{"once":false}}
+{"op":"verb","id":"vb_lock2","verb":"puzzle.lock","on":"door_2","params":{"key":"brass_key","keep":false}}
+{"op":"verb","id":"vb_lock3","verb":"puzzle.lock","on":"door_3","params":{"key":"brass_key","keep":false}}
+{"op":"verb","id":"vb_timer","verb":"puzzle.timer","on":"player","params":{"seconds":300}}
+{"op":"verb","id":"vb_note","verb":"social.inspect","on":"note_1","params":{"text":"Flip the three switches in order: one, two, three."}}
+{"op":"rule","id":"r_all_on","when":{"t":"state_is","a":"sw_3","s":"on"},"if":[{"l":"sw_1.state","op":"eq","r":"on"},{"l":"sw_2.state","op":"eq","r":"on"}],"then":[{"e":"open","target":"exit_gate"}],"once":true}
+{"op":"rule","id":"r_escape","when":{"t":"enter","a":"player","b":"exit_door"},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_timeout","when":{"t":"timer_end","a":"player"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"expect","id":"x_escape","prop":"win_reachable","a":"sp_red","b":"exit_door","headline":true,"text":"Timer must run out only after the exit is reachable by solving all switches"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

@@ -1,0 +1,41 @@
+{"op":"meta","mode":"play","lang":"en","pack":"orrery","sub":[],"seed":37,"look":"planetarium floor","mood":[0.6,0.4,0.3],"timeOfDay":12,"weather":"clear"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Planetarium entrance"}
+{"op":"zone","id":"z_sun","slot":"sun","tag":"center","name":"The Sun's hub"}
+{"op":"zone","id":"z_inner","slot":"inner","tag":"planet","name":"Inner planets"}
+{"op":"zone","id":"z_belt","slot":"belt","tag":"ring","name":"Asteroid belt"}
+{"op":"zone","id":"z_jupiter","slot":"jupiter","tag":"planet","name":"Jupiter"}
+{"op":"zone","id":"z_saturn","slot":"saturn","tag":"planet","name":"Saturn"}
+{"op":"zone","id":"z_uranus","slot":"uranus","tag":"planet","name":"Uranus"}
+{"op":"zone","id":"z_neptune","slot":"neptune","tag":"planet","name":"Neptune"}
+{"op":"spawn","id":"sp_red","zone":"z_entrance","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"neptune_plinth","zone":"z_neptune","anchor":"neptune","noun":"Neptune plinth","hyper":"delivery point","team":"red"}
+{"op":"ent","id":"message","kind":"pickup","noun":"sealed letter from Earth","hyper":"letter","zone":"z_entrance","anchor":"desk","body":"dynamic","shape":"box","size":[0.3,0.05,0.4]}
+{"op":"ent","id":"sun_gate","kind":"door","noun":"solar gate","hyper":"door","zone":"z_sun","anchor":"hub_w","body":"fixed","shape":"box"}
+{"op":"ent","id":"sun_switch","kind":"switch","noun":"sun console","hyper":"lever","zone":"z_sun","anchor":"console","body":"fixed","shape":"box","size":[0.5,0.8,0.5]}
+{"op":"ent","id":"scale_sign","kind":"sign","noun":"scale note sign","hyper":"sign","zone":"z_entrance","anchor":"scale_note","body":"fixed","shape":"box","size":[1,1.2,0.1]}
+{"op":"ent","id":"asteroid_field","kind":"hazard","noun":"asteroid cluster","hyper":"rocks","zone":"z_belt","anchor":"belt_ne","body":"sensor","shape":"sphere","size":[2,2,2]}
+{"op":"ent","id":"jump_pad_mars","kind":"platform","noun":"launch pad","hyper":"jump_pad","zone":"z_inner","anchor":"mars","body":"fixed","shape":"box","size":[1.5,0.2,1.5]}
+{"op":"ent","id":"jupiter_plate","kind":"plate","noun":"gravity plate","hyper":"plate","zone":"z_jupiter","anchor":"jupiter","body":"fixed","shape":"box","size":[1.2,0.1,1.2]}
+{"op":"ent","id":"saturn_checkpoint","kind":"checkpoint","noun":"ring checkpoint","hyper":"checkpoint","zone":"z_saturn","anchor":"saturn","body":"sensor","shape":"box","size":[1,1,1]}
+{"op":"ent","id":"uranus_portal","kind":"portal","noun":"tilt portal","hyper":"portal","zone":"z_uranus","anchor":"uranus","body":"sensor","shape":"sphere","size":[1,1,1]}
+{"op":"ent","id":"neptune_exhibit","kind":"prop","noun":"Neptune exhibit","hyper":"exhibit","zone":"z_neptune","anchor":"beside","body":"fixed","shape":"box","size":[1,1,0.3]}
+{"op":"verb","id":"vb_carry_msg","verb":"physics_props.carry","on":"message","params":{}}
+{"op":"verb","id":"vb_switch","verb":"puzzle.switch","on":"sun_switch","params":{"once":false}}
+{"op":"verb","id":"vb_gate","verb":"puzzle.lock","on":"sun_gate","params":{"key":"message","keep":true}}
+{"op":"verb","id":"vb_belt_hazard","verb":"motion_hazards.hazard","on":"asteroid_field","params":{"respawn":true}}
+{"op":"verb","id":"vb_jump_pad","verb":"locomotion.jump_pad","on":"jump_pad_mars","params":{"height":4}}
+{"op":"verb","id":"vb_plate","verb":"puzzle.plate","on":"jupiter_plate","params":{"latch":false}}
+{"op":"verb","id":"vb_checkpoint","verb":"puzzle.checkpoint","on":"saturn_checkpoint","params":{}}
+{"op":"verb","id":"vb_portal","verb":"puzzle.portal","on":"uranus_portal","params":{"to":"neptune_plinth"}}
+{"op":"verb","id":"vb_inspect","verb":"social.inspect","on":"neptune_exhibit","params":{"text":"Neptune: the distant blue plinth. Distances here are scaled, not true."}}
+{"op":"verb","id":"vb_clock","verb":"puzzle.timer","on":"player","params":{"seconds":300}}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":6}}
+{"op":"state","id":"sun_switch","state":"off"}
+{"op":"rule","id":"r_deliver","when":{"t":"enter","a":"message","b":"neptune_plinth"},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_lost","when":{"t":"timer_end","a":"player"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_gate","when":{"t":"state_is","a":"sun_switch","s":"on"},"then":[{"e":"open","target":"sun_gate"}]}
+{"op":"expect","id":"x_deliver","prop":"win_reachable","a":"sp_red","b":"neptune_plinth","headline":true,"text":"The message must reach the Neptune plinth at the far end of the orrery."}
+{"op":"expect","id":"x_belt","prop":"reachable","a":"sp_red","b":"z_belt","text":"The asteroid belt can be crossed"}
+{"op":"expect","id":"x_scale","prop":"reachable","a":"sp_red","b":"z_neptune","text":"Neptune is reachable across the scaled orrery"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

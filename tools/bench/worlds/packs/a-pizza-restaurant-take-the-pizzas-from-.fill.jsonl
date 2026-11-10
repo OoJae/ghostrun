@@ -1,0 +1,37 @@
+{"op":"meta","mode":"play","lang":"en","pack":"service_venue","sub":[],"seed":13,"look":"busy pizza restaurant","mood":[0.7,0.6,0.3],"timeOfDay":19,"weather":"clear"}
+{"op":"zone","id":"z_yard","slot":"yard","tag":"outside","name":"Front patio"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Entrance"}
+{"op":"zone","id":"z_seating","slot":"seating","tag":"hall","name":"Dining hall"}
+{"op":"zone","id":"z_counter","slot":"counter","tag":"counter","name":"Order counter"}
+{"op":"zone","id":"z_kitchen","slot":"back_room","tag":"room","name":"Kitchen"}
+{"op":"zone","id":"z_store","slot":"storeroom","tag":"room","name":"Storeroom"}
+{"op":"spawn","id":"sp_red","zone":"z_kitchen","anchor":"center","team":"red"}
+{"op":"goal","id":"table_1_goal","zone":"z_seating","anchor":"table_1","noun":"hungry customer table","hyper":"table","team":"red"}
+{"op":"goal","id":"table_2_goal","zone":"z_seating","anchor":"table_2","noun":"hungry customer table","hyper":"table","team":"red"}
+{"op":"goal","id":"table_3_goal","zone":"z_seating","anchor":"table_3","noun":"hungry customer table","hyper":"table","team":"red"}
+{"op":"ent","id":"pizza_1","kind":"pickup","noun":"hot pizza","hyper":"food","zone":"z_kitchen","anchor":"stove","body":"dynamic","shape":"box","size":[0.4,0.1,0.4]}
+{"op":"ent","id":"pizza_2","kind":"pickup","noun":"hot pizza","hyper":"food","zone":"z_kitchen","anchor":"corner_se","body":"dynamic","shape":"box","size":[0.4,0.1,0.4]}
+{"op":"ent","id":"pizza_3","kind":"pickup","noun":"hot pizza","hyper":"food","zone":"z_kitchen","anchor":"center","body":"dynamic","shape":"box","size":[0.4,0.1,0.4]}
+{"op":"ent","id":"kitchen_flap","kind":"door","noun":"kitchen flap","hyper":"door","zone":"z_counter","anchor":"flap","body":"fixed","shape":"box"}
+{"op":"ent","id":"oven_hot","kind":"hazard","noun":"hot oven","hyper":"oven","zone":"z_kitchen","anchor":"stove","body":"sensor","shape":"box","size":[1,1,1]}
+{"op":"ent","id":"wet_floor","kind":"hazard","noun":"wet floor","hyper":"floor","zone":"z_seating","anchor":"queue","body":"sensor","shape":"box","size":[1.5,0.1,1.5]}
+{"op":"ent","id":"cook_plate","kind":"plate","noun":"pass plate","hyper":"plate","zone":"z_counter","anchor":"till","body":"sensor","shape":"box","size":[1,0.1,1]}
+{"op":"verb","id":"vb_carry_1","verb":"physics_props.carry","on":"pizza_1","params":{}}
+{"op":"verb","id":"vb_carry_2","verb":"physics_props.carry","on":"pizza_2","params":{}}
+{"op":"verb","id":"vb_carry_3","verb":"physics_props.carry","on":"pizza_3","params":{}}
+{"op":"verb","id":"vb_hazard_oven","verb":"motion_hazards.hazard","on":"oven_hot","params":{"respawn":true}}
+{"op":"verb","id":"vb_hazard_floor","verb":"motion_hazards.hazard","on":"wet_floor","params":{"respawn":true}}
+{"op":"verb","id":"vb_plate","verb":"puzzle.plate","on":"cook_plate","params":{"latch":false}}
+{"op":"verb","id":"vb_timer","verb":"puzzle.timer","on":"player","params":{"seconds":180}}
+{"op":"law","player":{"jumpsMax":1,"jumpH":1.0,"speed":6}}
+{"op":"rule","id":"r_deliver_1","when":{"t":"enter","a":"pizza_1","b":"table_1_goal"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_deliver_2","when":{"t":"enter","a":"pizza_2","b":"table_2_goal"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_deliver_3","when":{"t":"enter","a":"pizza_3","b":"table_3_goal"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_win","when":{"t":"score_gte","a":"team:red","n":3},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_cold","when":{"t":"timer_end","a":"player"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_spill","when":{"t":"hit","a":"player","b":"wet_floor"},"then":[{"e":"emit","target":"player","fx":"splat"}]}
+{"op":"expect","id":"x_delivery","prop":"win_reachable","a":"sp_red","b":"table_1_goal","headline":true,"text":"Kitchen-to-table pizza runs must be completable with a full carry load."}
+{"op":"expect","id":"x_route","prop":"reachable","a":"sp_red","b":"z_seating","text":"Dining hall reachable from the kitchen through the counter"}
+{"op":"expect","id":"x_hazard","prop":"fair_teams","a":"sp_red","b":"z_kitchen","text":"Oven and wet floor are avoidable"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

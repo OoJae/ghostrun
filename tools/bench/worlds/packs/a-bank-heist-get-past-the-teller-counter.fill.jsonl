@@ -1,0 +1,38 @@
+{"op":"meta","mode":"play","lang":"en","pack":"service_venue","sub":[],"seed":8,"look":"bank branch night","mood":[-0.3,0.7,0.8],"timeOfDay":22,"weather":"clear"}
+{"op":"zone","id":"z_yard","slot":"yard","tag":"outside","name":"Bank steps"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Bank lobby"}
+{"op":"zone","id":"z_seating","slot":"seating","tag":"hall","name":"Customer seating"}
+{"op":"zone","id":"z_counter","slot":"counter","tag":"counter","name":"Teller counter"}
+{"op":"zone","id":"z_back","slot":"back_room","tag":"room","name":"Back room"}
+{"op":"zone","id":"z_vault","slot":"storeroom","tag":"room","name":"Vault"}
+{"op":"spawn","id":"sp_red","zone":"z_yard","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"exit","zone":"z_yard","anchor":"gate","noun":"getaway car","hyper":"vehicle","team":"red"}
+{"op":"ent","id":"flap","kind":"door","noun":"teller flap","hyper":"door","zone":"z_counter","anchor":"flap","body":"fixed","shape":"box"}
+{"op":"ent","id":"switch_alarm","kind":"switch","noun":"silent alarm","hyper":"switch","zone":"z_counter","anchor":"till","body":"fixed","shape":"box","size":[0.3,0.2,0.3]}
+{"op":"ent","id":"vault_door","kind":"door","noun":"vault door","hyper":"door","zone":"z_back","anchor":"doorway_e","body":"fixed","shape":"box"}
+{"op":"ent","id":"vault_key","kind":"pickup","noun":"vault key","hyper":"key","zone":"z_counter","anchor":"behind_counter","body":"dynamic","shape":"box","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"gold","kind":"pickup","noun":"gold bars","hyper":"gold","zone":"z_vault","anchor":"shelves","body":"dynamic","shape":"box","size":[0.5,0.3,0.4]}
+{"op":"ent","id":"plate_guard","kind":"plate","noun":"guard tripwire","hyper":"plate","zone":"z_seating","anchor":"queue","body":"sensor","shape":"box","size":[1.5,0.1,1.5]}
+{"op":"ent","id":"laser_grid","kind":"hazard","noun":"laser grid","hyper":"laser","zone":"z_back","anchor":"center","body":"sensor","shape":"box","size":[2,0.2,2]}
+{"op":"ent","id":"coin_cash","kind":"pickup","noun":"banknote stack","hyper":"coin","zone":"z_counter","anchor":"till","body":"sensor","shape":"sphere","size":[0.3,0.3,0.3]}
+{"op":"verb","id":"vb_key","verb":"physics_props.carry","on":"vault_key","params":{}}
+{"op":"verb","id":"vb_gold","verb":"physics_props.carry","on":"gold","params":{}}
+{"op":"verb","id":"vb_flap","verb":"puzzle.lock","on":"flap","params":{"key":"vault_key","keep":true}}
+{"op":"verb","id":"vb_vault","verb":"puzzle.lock","on":"vault_door","params":{"key":"vault_key","keep":false}}
+{"op":"verb","id":"vb_alarm","verb":"puzzle.switch","on":"switch_alarm","params":{"once":true}}
+{"op":"verb","id":"vb_laser","verb":"motion_hazards.hazard","on":"laser_grid","params":{"respawn":true}}
+{"op":"verb","id":"vb_guard_plate","verb":"puzzle.plate","on":"plate_guard","params":{"latch":false}}
+{"op":"verb","id":"vb_timer","verb":"puzzle.timer","on":"player","params":{"seconds":120}}
+{"op":"verb","id":"vb_catch","verb":"combat_sport.catch","on":"guard_1","params":{}}
+{"op":"verb","id":"vb_look","verb":"social.inspect","on":"vault_door","params":{"text":"Time-locked vault. Opens only with the teller's key."}}
+{"op":"rule","id":"r_flap_open","when":{"t":"state_is","a":"flap","s":"open"},"then":[{"e":"emit","target":"flap","fx":"unlock_click"}]}
+{"op":"rule","id":"r_alarm_trip","when":{"t":"state_is","a":"switch_alarm","s":"on"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_guard_trip","when":{"t":"enter","a":"player","b":"plate_guard"},"then":[{"e":"set_state","target":"switch_alarm","v":"on"}],"once":true}
+{"op":"rule","id":"r_timer_lose","when":{"t":"timer_end","a":"player"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_escape","when":{"t":"enter","a":"gold","b":"exit"},"if":[{"l":"gold.carrier.team","op":"eq","r":"red"}],"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_caught","when":{"t":"hit","a":"player","b":"laser_grid"},"then":[{"e":"damage","target":"player","n":10}]}
+{"op":"npc","id":"guard_1","role":"guard","zone":"z_seating","anchor":"center","team":"","menu":["guard.patrol"],"dflt":"guard.patrol"}
+{"op":"expect","id":"x_flap","prop":"win_reachable","a":"sp_red","b":"z_counter","headline":true,"text":"The teller flap must open to reach the vault behind the counter."}
+{"op":"expect","id":"x_gold","prop":"win_reachable","a":"sp_red","b":"exit","text":"The gold can be carried out before the alarm"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

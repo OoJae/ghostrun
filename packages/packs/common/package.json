@@ -1,0 +1,18 @@
+{
+  "name": "@ghostrun/pack-common",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./conformance": "./test/conformance.ts"
+  },
+  "dependencies": {
+    "@ghostrun/ir": "workspace:*",
+    "@ghostrun/plugin-api": "workspace:*"
+  },
+  "devDependencies": {
+    "@ghostrun/layout": "workspace:*",
+    "@ghostrun/nav": "workspace:*",
+    "@ghostrun/proof": "workspace:*"
+  }
+}

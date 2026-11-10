@@ -1,0 +1,30 @@
+{"op":"meta","mode":"play","lang":"en","pack":"service_venue","sub":[],"seed":10,"look":"small bakery before dawn","mood":[0.4,0.7,0.6],"timeOfDay":5,"weather":"clear"}
+{"op":"zone","id":"z_yard","slot":"yard","tag":"outside","name":"Back yard"}
+{"op":"zone","id":"z_entrance","slot":"entrance","tag":"entrance","name":"Shop front"}
+{"op":"zone","id":"z_seating","slot":"seating","tag":"hall","name":"Serving hall"}
+{"op":"zone","id":"z_counter","slot":"counter","tag":"counter","name":"Counter"}
+{"op":"zone","id":"z_back","slot":"back_room","tag":"room","name":"Bake room"}
+{"op":"zone","id":"z_store","slot":"storeroom","tag":"room","name":"Storeroom"}
+{"op":"spawn","id":"sp_red","zone":"z_back","anchor":"center","team":"red"}
+{"op":"goal","id":"oven_goal","zone":"z_back","anchor":"stove","noun":"brick oven","hyper":"oven","team":"red"}
+{"op":"ent","id":"flour","kind":"pickup","noun":"sack of flour","hyper":"sack of flour","zone":"z_store","anchor":"shelves","body":"dynamic","shape":"box","size":[0.5,0.4,0.3]}
+{"op":"ent","id":"bread_tray","kind":"pickup","noun":"tray of dough loaves","hyper":"tray of dough loaves","zone":"z_back","anchor":"corner_nw","body":"dynamic","shape":"box","size":[0.6,0.1,0.4]}
+{"op":"ent","id":"storeroom_door","kind":"door","noun":"storeroom door","hyper":"door","zone":"z_back","anchor":"doorway_e","body":"fixed","shape":"box"}
+{"op":"ent","id":"oven_plate","kind":"plate","noun":"oven floor plate","hyper":"plate","zone":"z_back","anchor":"stove","body":"sensor","shape":"box","size":[1,0.1,1]}
+{"op":"ent","id":"rush_bell","kind":"switch","noun":"shop bell","hyper":"bell","zone":"z_counter","anchor":"till","body":"fixed","shape":"box"}
+{"op":"ent","id":"hot_tray","kind":"hazard","noun":"hot oven tray","hyper":"hazard","zone":"z_back","anchor":"corner_se","body":"sensor","shape":"box","size":[0.8,0.2,0.8]}
+{"op":"ent","id":"recipe_card","kind":"prop","noun":"recipe card","hyper":"sign","zone":"z_back","anchor":"wall_n","body":"fixed","shape":"box","size":[0.3,0.4,0.02]}
+{"op":"verb","id":"vb_carry_flour","verb":"physics_props.carry","on":"flour","params":{}}
+{"op":"verb","id":"vb_carry_bread","verb":"physics_props.carry","on":"bread_tray","params":{}}
+{"op":"verb","id":"vb_door","verb":"puzzle.lock","on":"storeroom_door","params":{"key":"flour","keep":true}}
+{"op":"verb","id":"vb_plate","verb":"puzzle.plate","on":"oven_plate","params":{"latch":true}}
+{"op":"verb","id":"vb_bell","verb":"puzzle.switch","on":"rush_bell","params":{"once":false}}
+{"op":"verb","id":"vb_hot","verb":"motion_hazards.hazard","on":"hot_tray","params":{"respawn":true}}
+{"op":"verb","id":"vb_rush","verb":"puzzle.timer","on":"player","params":{"seconds":240}}
+{"op":"verb","id":"vb_recipe","verb":"social.inspect","on":"recipe_card","params":{"text":"Mix flour and water, prove 2 hours, bake 25 minutes."}}
+{"op":"rule","id":"r_flour_in","when":{"t":"pickup","a":"flour","b":"player"},"then":[{"e":"emit","target":"flour","fx":"dust_puff"}]}
+{"op":"rule","id":"r_bake","when":{"t":"enter","a":"bread_tray","b":"oven_goal"},"if":[{"l":"flour.carrier.team","op":"eq","r":"red"}],"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_rush","when":{"t":"timer_end","a":"player"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"expect","id":"x_flour_first","prop":"win_reachable","a":"sp_red","b":"oven_goal","headline":true,"text":"Flour must be fetched from the storeroom before the oven is loaded"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

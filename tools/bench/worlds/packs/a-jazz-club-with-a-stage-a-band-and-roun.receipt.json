@@ -1,0 +1,90 @@
+{
+  "prompt": "A jazz club with a stage, a band and round tables",
+  "intent": {
+    "lang": "en",
+    "mode": "wander",
+    "genre": "live music",
+    "setting": "a late-night jazz club with a raised stage, a band, and round tables",
+    "role": "audience member",
+    "goal": "enjoy the performance and explore the club",
+    "fail": "none",
+    "mood": "smoky, warm, relaxed",
+    "pack": "stage",
+    "sub": [],
+    "safety": "ok",
+    "headline": "The stage needs a raised platform with a clear band area and round tables on the floor.",
+    "nouns": [
+      {
+        "noun": "stage",
+        "hyper": "raised platform with wings and a lighting rig"
+      },
+      {
+        "noun": "band",
+        "hyper": "musicians playing instruments on the stage"
+      },
+      {
+        "noun": "round tables",
+        "hyper": "small circular tables with chairs on the floor"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.6,
+      "arousal": 0.2,
+      "tension": -0.2
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "051475b5b9cf0d3ff530ae88b8969ae528311f10b74c4684e45ff64aa37af893",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_stage",
+      "text": "The stage needs a raised platform with a clear band area and round tables on the floor.",
+      "status": "not_checkable",
+      "method": "none"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 0 rules reference existing things",
+        "src": ""
+      },
+      {
+        "id": "T3:tour",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "tour"
+        },
+        "status": "counterexample",
+        "method": "physics, an AI visitor walks to and uses each",
+        "n": 9,
+        "k": 8,
+        "text": "walked to and inspected 8 of 9 things",
+        "cx": {
+          "where": null,
+          "have": 8,
+          "need": 9,
+          "unit": "things",
+          "text": "couldn't reach rig_light"
+        },
+        "src": "",
+        "ms": 403
+      }
+    ],
+    "par": null,
+    "ms": 618
+  }
+}
