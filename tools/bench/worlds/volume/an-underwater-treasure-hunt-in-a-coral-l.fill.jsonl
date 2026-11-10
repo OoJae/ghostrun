@@ -1,0 +1,39 @@
+{"op":"meta","mode":"play","lang":"en","pack":"volume","sub":["water"],"seed":14,"look":"coral lagoon underwater","mood":[0.6,0.3,0.2],"timeOfDay":12,"weather":"clear"}
+{"op":"zone","id":"z_beach","slot":"beach","tag":"shore","name":"Sandy shore"}
+{"op":"zone","id":"z_lagoon","slot":"lagoon","tag":"water","name":"Coral lagoon"}
+{"op":"zone","id":"z_wreck","slot":"wreck","tag":"ship","name":"Sunken galleon"}
+{"op":"spawn","id":"sp_red","zone":"z_beach","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"exit","zone":"z_beach","anchor":"goal","noun":"dive shack","hyper":"goal","team":"red"}
+{"op":"ent","id":"water_body","kind":"prop","noun":"lagoon water","hyper":"water","zone":"z_lagoon","anchor":"surface","body":"sensor","shape":"box","size":[30,6,30]}
+{"op":"ent","id":"pearl_1","kind":"pickup","noun":"glowing pearl","hyper":"pearl","zone":"z_wreck","anchor":"deck","body":"dynamic","shape":"sphere","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"pearl_2","kind":"pickup","noun":"glowing pearl","hyper":"pearl","zone":"z_lagoon","anchor":"reef","body":"dynamic","shape":"sphere","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"pearl_3","kind":"pickup","noun":"glowing pearl","hyper":"pearl","zone":"z_lagoon","anchor":"deep","body":"dynamic","shape":"sphere","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"coral","kind":"prop","noun":"branching coral reef","hyper":"coral","zone":"z_lagoon","anchor":"reef","body":"fixed","shape":"box","size":[3,2,3]}
+{"op":"ent","id":"ship_hull","kind":"prop","noun":"wrecked galleon","hyper":"ship","zone":"z_wreck","anchor":"hold","body":"fixed","shape":"box","size":[8,4,4]}
+{"op":"ent","id":"shark","kind":"hazard","noun":"reef shark","hyper":"predator","zone":"z_lagoon","anchor":"deep","body":"sensor","shape":"sphere","size":[1.5,1.5,1.5]}
+{"op":"ent","id":"sunken_plate","kind":"plate","noun":"hold plate","hyper":"plate","zone":"z_wreck","anchor":"hold","body":"sensor","shape":"box","size":[1,0.1,1]}
+{"op":"verb","id":"vb_swim","verb":"locomotion.swim","on":"water_body","params":{"breath":20}}
+{"op":"verb","id":"vb_jump","verb":"locomotion.jump","on":"player","params":{"jumpsMax":1}}
+{"op":"verb","id":"vb_carry_1","verb":"physics_props.carry","on":"pearl_1","params":{}}
+{"op":"verb","id":"vb_carry_2","verb":"physics_props.carry","on":"pearl_2","params":{}}
+{"op":"verb","id":"vb_carry_3","verb":"physics_props.carry","on":"pearl_3","params":{}}
+{"op":"verb","id":"vb_shark","verb":"motion_hazards.hazard","on":"shark","params":{"respawn":true}}
+{"op":"verb","id":"vb_air","verb":"combat_sport.health","on":"player","params":{"hp":20,"respawn":true}}
+{"op":"verb","id":"vb_coral_wind","verb":"motion_hazards.wind","on":"coral","params":{"x":2,"z":0}}
+{"op":"verb","id":"vb_inspect","verb":"social.inspect","on":"ship_hull","params":{"text":"A galleon sunk a century ago, its hold still holds pearls."}}
+{"op":"law","player":{"jumpsMax":1,"jumpH":1.2,"speed":5}}
+{"op":"state","id":"pearls_found","zone":"z_beach","value":"0"}
+{"op":"rule","id":"r_pearl1","when":{"t":"pickup","a":"pearl_1","b":"player"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_pearl2","when":{"t":"pickup","a":"pearl_2","b":"player"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_pearl3","when":{"t":"pickup","a":"pearl_3","b":"player"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_win","when":{"t":"score_gte","a":"team:red","n":3},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_shark_lose","when":{"t":"health_lte","a":"player","n":0},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_shark_hit","when":{"t":"hit","a":"player","b":"shark"},"then":[{"e":"damage","target":"player","n":10}]}
+{"op":"expect","id":"x_pearls","prop":"win_reachable","a":"sp_red","b":"z_wreck","headline":true,"text":"Three pearls must be reachable by swimming and diving, not by walking on the seabed."}
+{"op":"expect","id":"x_air","prop":"reachable","a":"sp_red","b":"z_lagoon","text":"The lagoon can be reached by swimming from the beach"}
+{"op":"npc","id":"guide_1","role":"guide","zone":"z_beach","anchor":"sign","team":"","menu":["social.inspect"],"dflt":"social.inspect"}
+{"op":"end","layer":"gameplay"}
+{"op":"dress","id":"d_coral_fish","zone":"z_lagoon","anchor":"reef","noun":"tropical fish school"}
+{"op":"dress","id":"d_sand","zone":"z_beach","anchor":"shore","noun":"ripple sand"}
+{"op":"poster","id":"p_galleon","zone":"z_beach","anchor":"sign","text":"Galleon Wreck - dive at your own risk"}
+{"op":"end","layer":"cosmetic"}

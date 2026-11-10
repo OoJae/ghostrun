@@ -1,0 +1,270 @@
+{
+  "prompt": "Get the keycard from the lab module and float to the escape pod before the oxygen runs out",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "space survival",
+    "setting": "a damaged station and asteroids in zero-g",
+    "role": "station survivor in a spacesuit",
+    "goal": "retrieve the keycard from the lab module and reach the escape pod",
+    "fail": "oxygen runs out before reaching the escape pod",
+    "mood": "tense and urgent",
+    "pack": "volume",
+    "sub": [
+      "space"
+    ],
+    "safety": "ok",
+    "headline": "Keycard pickup must be reachable by zero-g float before the oxygen timer expires.",
+    "nouns": [
+      {
+        "noun": "keycard",
+        "hyper": "access card"
+      },
+      {
+        "noun": "lab module",
+        "hyper": "research compartment"
+      },
+      {
+        "noun": "escape pod",
+        "hyper": "emergency vehicle"
+      },
+      {
+        "noun": "oxygen",
+        "hyper": "breathable air supply"
+      }
+    ],
+    "moodVec": {
+      "valence": -0.4,
+      "arousal": 0.8,
+      "tension": 0.9
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "0b93e15c4520e8d00c831ffd3cf63f46e47d62addbb6d680a072cbb4386f1970",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_keycard",
+      "text": "Keycard pickup must be reachable by zero-g float before the oxygen timer expires.",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 7 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_escape (player enters escape_pod) [after holding keycard]",
+        "src": ""
+      },
+      {
+        "id": "T1:x_lab",
+        "tier": "T1",
+        "subject": {
+          "kind": "property",
+          "id": "x_lab"
+        },
+        "method": "kinematic reachability (flight model: thrust-limited straight lines)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "reachable sp_red → z_lab",
+        "cx": null
+      },
+      {
+        "id": "T1:fly",
+        "tier": "T1",
+        "subject": {
+          "kind": "world",
+          "id": "vb_fly"
+        },
+        "n": 0,
+        "k": 0,
+        "src": "",
+        "ms": 0,
+        "method": "flight model (thrust-limited straight lines: climb 4 m/s, 30 s of fuel from each landing)",
+        "status": "verified",
+        "text": "the suit reaches every place the win needs (the longest flight, on the way to the keycard: 6.7 s of 30 s)",
+        "cx": null
+      },
+      {
+        "id": "T2:r_door_open",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_door_open"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 8,
+        "status": "verified",
+        "text": "r_door_open fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_escape",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_escape"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_escape fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_keycard",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_keycard"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 8,
+        "status": "verified",
+        "text": "r_keycard fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_console",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_console"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 7,
+        "status": "verified",
+        "text": "r_secret_console fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_rock_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_rock_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_secret_rock_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_rock_7",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_rock_7"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_secret_rock_7 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_suffocate",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_suffocate"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_suffocate fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:zero_g",
+        "tier": "T2",
+        "subject": {
+          "kind": "world",
+          "id": "laws"
+        },
+        "n": 1,
+        "k": 1,
+        "src": "",
+        "ms": 6,
+        "method": "forced state (thrust held up from the spawn for 1.5 s, then let go)",
+        "status": "verified",
+        "text": "the thrust law reaches 6 m/s in 1.5 s and stops you again",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it (AI par 12.9 s)",
+        "cx": null,
+        "src": "",
+        "ms": 525
+      }
+    ],
+    "par": {
+      "goldS": 12.9,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 604
+  }
+}

@@ -1,0 +1,36 @@
+{"op":"meta","mode":"play","lang":"en","pack":"volume","sub":["sky"],"seed":10,"look":"floating islands above the clouds","mood":[0.7,0.8,0.5],"timeOfDay":10,"weather":"clear"}
+{"op":"zone","id":"z_start","slot":"start","tag":"island","name":"Launch island"}
+{"op":"zone","id":"z_isle1","slot":"isle_1","tag":"island","name":"First island"}
+{"op":"zone","id":"z_isle2","slot":"isle_2","tag":"island","name":"Second island"}
+{"op":"zone","id":"z_isle3","slot":"isle_3","tag":"island","name":"Third island"}
+{"op":"zone","id":"z_finish","slot":"finish","tag":"island","name":"Finish island"}
+{"op":"zone","id":"z_peak","slot":"peak","tag":"peak","name":"Highest peak"}
+{"op":"zone","id":"z_cloud1","slot":"cloud_1","tag":"cloud","name":"Cloud bank"}
+{"op":"zone","id":"z_sky","slot":"open_sky","tag":"air","name":"Open sky"}
+{"op":"spawn","id":"sp_red","zone":"z_start","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"finish_pad","zone":"z_finish","anchor":"goal","noun":"finish platform","hyper":"landing pad","team":"red"}
+{"op":"ent","id":"ring_1","kind":"checkpoint","noun":"ring","hyper":"hoop","zone":"z_sky","anchor":"ring_1","body":"sensor","shape":"sphere","size":[2,2,0.3]}
+{"op":"ent","id":"ring_2","kind":"checkpoint","noun":"ring","hyper":"hoop","zone":"z_sky","anchor":"ring_2","body":"sensor","shape":"sphere","size":[2,2,0.3]}
+{"op":"ent","id":"cp_1","kind":"checkpoint","noun":"gate","hyper":"gate","zone":"z_isle1","anchor":"cp","body":"sensor","shape":"sphere","size":[2,2,0.3]}
+{"op":"ent","id":"cp_2","kind":"checkpoint","noun":"gate","hyper":"gate","zone":"z_isle2","anchor":"cp","body":"sensor","shape":"sphere","size":[2,2,0.3]}
+{"op":"ent","id":"cp_3","kind":"checkpoint","noun":"gate","hyper":"gate","zone":"z_isle3","anchor":"cp","body":"sensor","shape":"sphere","size":[2,2,0.3]}
+{"op":"ent","id":"updraft","kind":"platform","noun":"updraft vent","hyper":"vent","zone":"z_cloud1","anchor":"cloud","body":"sensor","shape":"box","size":[3,0.2,3]}
+{"op":"ent","id":"treasure","kind":"pickup","noun":"sky crystal","hyper":"crystal","zone":"z_peak","anchor":"treasure","body":"dynamic","shape":"sphere","size":[0.4,0.4,0.4]}
+{"op":"ent","id":"sky_hazard","kind":"hazard","noun":"lightning cloud","hyper":"storm","zone":"z_cloud1","anchor":"cloud","body":"sensor","shape":"sphere","size":[2,2,2]}
+{"op":"verb","id":"vb_fly","verb":"locomotion.fly","on":"player","params":{"kind":"jetpack","climb":3,"fuel":6}}
+{"op":"verb","id":"vb_carry_crystal","verb":"physics_props.carry","on":"treasure","params":{}}
+{"op":"verb","id":"vb_hazard","verb":"motion_hazards.hazard","on":"sky_hazard","params":{"respawn":true}}
+{"op":"verb","id":"vb_updraft","verb":"motion_hazards.wind","on":"updraft","params":{"x":0,"z":0}}
+{"op":"verb","id":"vb_track","verb":"racing.track","on":"finish_pad","params":{"gates":"ring_1,ring_2,cp_1,cp_2,cp_3","laps":1}}
+{"op":"verb","id":"vb_cp1","verb":"puzzle.checkpoint","on":"cp_1","params":{}}
+{"op":"verb","id":"vb_cp2","verb":"puzzle.checkpoint","on":"cp_2","params":{}}
+{"op":"verb","id":"vb_cp3","verb":"puzzle.checkpoint","on":"cp_3","params":{}}
+{"op":"law","player":{"jumpsMax":1,"jumpH":1.2,"speed":6}}
+{"op":"rule","id":"r_win","when":{"t":"lap_done","a":"player","b":"finish_pad","n":1},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_crash","when":{"t":"hit","a":"player","b":"sky_hazard"},"then":[{"e":"emit","target":"player","fx":"spark"}]}
+{"op":"rule","id":"r_lose_ring","when":{"t":"lap_done","a":"team:blue","b":"finish_pad","n":1},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"expect","id":"x_rings","prop":"win_reachable","a":"sp_red","b":"finish_pad","headline":true,"text":"Rings between floating islands must be reachable with the jetpack in one flight."}
+{"op":"expect","id":"x_fly","prop":"requires","a":"sp_red","b":"z_isle3","need":["jetpack"],"text":"Far islands need the jetpack to reach"}
+{"op":"expect","id":"x_peak","prop":"reachable","a":"sp_red","b":"z_peak","text":"Highest peak is reachable by flying"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

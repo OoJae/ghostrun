@@ -634,7 +634,15 @@ kbd {
 .tbtn.jump { right: 24px; bottom: 40px; width: 84px; height: 84px; }
 .tbtn.use { right: 120px; bottom: 28px; width: 64px; height: 64px; font-size: 11px; padding: 4px; opacity: 0.55; }
 .tbtn.use.ready { opacity: 1; border-color: rgba(61, 255, 168, 0.7); }
+.tbtn.dive { right: 132px; bottom: 96px; width: 42px; height: 42px; font-size: 10px; padding: 2px; }
 .tbtn:active { background: rgba(25, 227, 255, 0.35); }
+/* flying, swimming, floating: fuel and breath over the key hint, and what Space and C do here */
+.moves { position: absolute; left: 50%; bottom: 68px; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 6px; pointer-events: none; }
+.moves .meter { display: flex; align-items: center; gap: 8px; padding: 5px 12px; font-weight: 600; font-size: 12.5px; }
+.moves .meter-track { width: 140px; height: 8px; border-radius: 4px; background: rgba(255, 255, 255, 0.15); overflow: hidden; }
+.moves-hint { padding: 5px 12px; font-size: 12px; display: inline-flex; align-items: center; gap: 6px; opacity: 0.85; }
+.moves-hint .sep { opacity: 0.5; }
+.touch-mode .moves { bottom: auto; top: 196px; }
 /* on phones the thumbs own the bottom of the screen: status moves under the prompt pill */
 .touch-mode .proof { top: 64px; bottom: auto; left: 12px; right: auto; max-width: calc(100vw - 24px); }
 .touch-mode .repair { top: 104px; bottom: auto; left: 12px; }

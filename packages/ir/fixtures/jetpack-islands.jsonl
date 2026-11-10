@@ -1,0 +1,27 @@
+{"op":"meta","mode":"play","lang":"en","pack":"volume","sub":["sky"],"seed":21,"look":"floating islands","mood":[0.7,0.7,0.4],"timeOfDay":11,"weather":"clear"}
+{"op":"zone","id":"z_start","slot":"start","tag":"island","name":"Launch isle"}
+{"op":"zone","id":"z_isle1","slot":"isle_1","tag":"island","name":"Mossy isle"}
+{"op":"zone","id":"z_isle2","slot":"isle_2","tag":"island","name":"Windmill isle"}
+{"op":"zone","id":"z_isle3","slot":"isle_3","tag":"island","name":"Lantern isle"}
+{"op":"zone","id":"z_peak","slot":"peak","tag":"peak","name":"Crystal peak"}
+{"op":"zone","id":"z_finish","slot":"finish","tag":"island","name":"Finish isle"}
+{"op":"spawn","id":"sp_red","zone":"z_start","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"goal_finish","zone":"z_finish","anchor":"goal","noun":"finish beacon","hyper":"beacon","team":"red"}
+{"op":"ent","id":"crystal","kind":"pickup","noun":"sky crystal","hyper":"crystal","zone":"z_peak","anchor":"treasure","body":"dynamic","shape":"sphere","size":[0.6,0.6,0.6]}
+{"op":"ent","id":"cp_1","kind":"checkpoint","noun":"wind flag","hyper":"flag","zone":"z_isle1","anchor":"cp","body":"sensor"}
+{"op":"ent","id":"cp_2","kind":"checkpoint","noun":"wind flag","hyper":"flag","zone":"z_isle2","anchor":"cp","body":"sensor"}
+{"op":"ent","id":"cp_3","kind":"checkpoint","noun":"wind flag","hyper":"flag","zone":"z_isle3","anchor":"cp","body":"sensor"}
+{"op":"ent","id":"sign_start","kind":"sign","noun":"launch sign","hyper":"sign","zone":"z_start","anchor":"sign","body":"none"}
+{"op":"verb","id":"vb_jet","verb":"locomotion.fly","on":"player","params":{"kind":"jetpack","climb":3,"fuel":6}}
+{"op":"verb","id":"vb_carry","verb":"physics_props.carry","on":"crystal","params":{}}
+{"op":"verb","id":"vb_cp1","verb":"puzzle.checkpoint","on":"cp_1","params":{}}
+{"op":"verb","id":"vb_cp2","verb":"puzzle.checkpoint","on":"cp_2","params":{}}
+{"op":"verb","id":"vb_cp3","verb":"puzzle.checkpoint","on":"cp_3","params":{}}
+{"op":"verb","id":"vb_sign","verb":"social.inspect","on":"sign_start","params":{"text":"Hold jump to fly, crouch to dive. Landing refuels the jetpack."}}
+{"op":"verb","id":"vb_clock","verb":"puzzle.timer","on":"player","params":{"seconds":150}}
+{"op":"rule","id":"r_win","when":{"t":"enter","a":"crystal","b":"goal_finish"},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_late","when":{"t":"timer_end","a":"player"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_crystal","when":{"t":"pickup","a":"crystal","b":"player"},"then":[{"e":"emit","target":"crystal","fx":"sparkle"}],"once":true}
+{"op":"expect","id":"x_win","prop":"win_reachable","a":"sp_red","b":"z_finish","headline":true,"text":"The sky crystal can be flown from the peak to the finish isle"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

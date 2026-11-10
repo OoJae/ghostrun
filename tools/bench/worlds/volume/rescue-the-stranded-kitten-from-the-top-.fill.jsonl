@@ -1,0 +1,45 @@
+{"op":"meta","mode":"play","lang":"en","pack":"volume","sub":["sky"],"seed":11,"look":"floating islands in the sky","mood":[0.6,0.5,0.3],"timeOfDay":10,"weather":"clear"}
+{"op":"zone","id":"z_start","slot":"start","tag":"island","name":"Launch island"}
+{"op":"zone","id":"z_isle1","slot":"isle_1","tag":"island","name":"First floating island"}
+{"op":"zone","id":"z_isle2","slot":"isle_2","tag":"island","name":"Second floating island"}
+{"op":"zone","id":"z_isle3","slot":"isle_3","tag":"island","name":"Third floating island"}
+{"op":"zone","id":"z_peak","slot":"peak","tag":"peak","name":"Top floating island"}
+{"op":"zone","id":"z_sky","slot":"open_sky","tag":"air","name":"Open sky"}
+{"op":"spawn","id":"sp_red","zone":"z_start","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"rescue_pad","zone":"z_peak","anchor":"treasure","noun":"kitten rescue pad","hyper":"goal","team":"red"}
+{"op":"ent","id":"kitten","kind":"pickup","noun":"stranded kitten","hyper":"a small stranded cat","zone":"z_peak","anchor":"treasure","body":"dynamic","shape":"sphere","size":[0.4,0.4,0.4]}
+{"op":"ent","id":"jetpack","kind":"pickup","noun":"jetpack","hyper":"a backpack that lets you fly","zone":"z_start","anchor":"sign","body":"dynamic","shape":"box","size":[0.5,0.6,0.3]}
+{"op":"ent","id":"fuel_1","kind":"pickup","noun":"fuel canister","hyper":"fuel","zone":"z_isle1","anchor":"pickup","body":"sensor","shape":"sphere","size":[0.4,0.4,0.4]}
+{"op":"ent","id":"fuel_2","kind":"pickup","noun":"fuel canister","hyper":"fuel","zone":"z_isle2","anchor":"pickup","body":"sensor","shape":"sphere","size":[0.4,0.4,0.4]}
+{"op":"ent","id":"fuel_3","kind":"pickup","noun":"fuel canister","hyper":"fuel","zone":"z_isle3","anchor":"pickup","body":"sensor","shape":"sphere","size":[0.4,0.4,0.4]}
+{"op":"ent","id":"cp_1","kind":"checkpoint","noun":"windsock checkpoint","hyper":"checkpoint","zone":"z_isle1","anchor":"cp","body":"sensor","shape":"box","size":[2,2,2]}
+{"op":"ent","id":"cp_2","kind":"checkpoint","noun":"windsock checkpoint","hyper":"checkpoint","zone":"z_isle2","anchor":"cp","body":"sensor","shape":"box","size":[2,2,2]}
+{"op":"ent","id":"cp_3","kind":"checkpoint","noun":"windsock checkpoint","hyper":"checkpoint","zone":"z_isle3","anchor":"cp","body":"sensor","shape":"box","size":[2,2,2]}
+{"op":"ent","id":"ring_1","kind":"goal","noun":"sky ring","hyper":"ring","zone":"z_sky","anchor":"ring_1","body":"sensor","shape":"sphere","size":[3,3,3]}
+{"op":"ent","id":"ring_2","kind":"goal","noun":"sky ring","hyper":"ring","zone":"z_sky","anchor":"ring_2","body":"sensor","shape":"sphere","size":[3,3,3]}
+{"op":"ent","id":"wind_gust","kind":"hazard","noun":"crosswind","hyper":"wind","zone":"z_sky","anchor":"ring_1","body":"sensor","shape":"box","size":[6,4,6]}
+{"op":"ent","id":"crumble_ledge","kind":"platform","noun":"crumbling ledge","hyper":"ledge","zone":"z_isle2","anchor":"center","body":"fixed","shape":"box","size":[3,0.5,3]}
+{"op":"ent","id":"sky_jump_pad","kind":"plate","noun":"updraft pad","hyper":"jump pad","zone":"z_isle3","anchor":"center","body":"fixed","shape":"box","size":[2,0.2,2]}
+{"op":"ent","id":"sign_start","kind":"sign","noun":"launch sign","hyper":"sign","zone":"z_start","anchor":"sign","body":"fixed","shape":"box","size":[1,1.2,0.2]}
+{"op":"verb","id":"vb_fly","verb":"locomotion.fly","on":"player","params":{"kind":"jetpack","climb":3,"fuel":6}}
+{"op":"verb","id":"vb_carry_jet","verb":"physics_props.carry","on":"jetpack","params":{}}
+{"op":"verb","id":"vb_carry_kitten","verb":"physics_props.carry","on":"kitten","params":{}}
+{"op":"verb","id":"vb_collect_fuel_1","verb":"puzzle.collect","on":"fuel_1","params":{}}
+{"op":"verb","id":"vb_collect_fuel_2","verb":"puzzle.collect","on":"fuel_2","params":{}}
+{"op":"verb","id":"vb_collect_fuel_3","verb":"puzzle.collect","on":"fuel_3","params":{}}
+{"op":"verb","id":"vb_cp_1","verb":"puzzle.checkpoint","on":"cp_1","params":{}}
+{"op":"verb","id":"vb_cp_2","verb":"puzzle.checkpoint","on":"cp_2","params":{}}
+{"op":"verb","id":"vb_cp_3","verb":"puzzle.checkpoint","on":"cp_3","params":{}}
+{"op":"verb","id":"vb_crumble","verb":"motion_hazards.crumble","on":"crumble_ledge","params":{"delay":1,"back":4}}
+{"op":"verb","id":"vb_jump_pad","verb":"locomotion.jump_pad","on":"sky_jump_pad","params":{"height":6}}
+{"op":"verb","id":"vb_wind","verb":"motion_hazards.wind","on":"wind_gust","params":{"x":4,"z":0}}
+{"op":"verb","id":"vb_inspect_sign","verb":"social.inspect","on":"sign_start","params":{"text":"Fly up to the top island. Mind your fuel and don't fall!"}}
+{"op":"verb","id":"vb_fall_timer","verb":"puzzle.timer","on":"player","params":{"seconds":240}}
+{"op":"law","player":{"jumpsMax":1,"jumpH":1.2,"speed":6}}
+{"op":"rule","id":"r_rescue","when":{"t":"enter","a":"kitten","b":"rescue_pad"},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_fuel_out","when":{"t":"timer_end","a":"player"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_cp1","when":{"t":"state_is","a":"cp_1","s":"reached"},"then":[{"e":"emit","target":"cp_1","fx":"sparkle"}]}
+{"op":"expect","id":"x_peak","prop":"win_reachable","a":"sp_red","b":"rescue_pad","headline":true,"text":"Top floating island must be reachable with jetpack fuel to rescue the kitten"}
+{"op":"expect","id":"x_gap","prop":"requires","a":"sp_red","b":"z_peak","need":["fly"],"text":"Gaps between islands need the jetpack"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

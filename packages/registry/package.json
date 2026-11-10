@@ -16,6 +16,7 @@
     "@ghostrun/pack-puzzle-rooms": "workspace:*",
     "@ghostrun/pack-service-venue": "workspace:*",
     "@ghostrun/pack-stage": "workspace:*",
+    "@ghostrun/pack-volume": "workspace:*",
     "@ghostrun/plugin-api": "workspace:*"
   }
 }

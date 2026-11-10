@@ -1,0 +1,27 @@
+{"op":"meta","mode":"play","lang":"en","pack":"volume","sub":["space"],"seed":20,"look":"orbital station interior","mood":[0.6,0.7,0.5],"timeOfDay":12,"weather":"clear"}
+{"op":"law","player":{"gravityScale":0,"thrust":4,"speed":6}}
+{"op":"zone","id":"z_spawn","slot":"airlock","tag":"entrance","name":"Airlock"}
+{"op":"zone","id":"z_hub","slot":"hub","tag":"hall","name":"Central hub"}
+{"op":"zone","id":"z_far","slot":"far_module","tag":"room","name":"Far module"}
+{"op":"spawn","id":"sp_red","zone":"z_spawn","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"hoop_goal","zone":"z_far","anchor":"center","noun":"hoop","hyper":"hoop","team":"red"}
+{"op":"ent","id":"ball","kind":"pickup","noun":"basketball","hyper":"ball","zone":"z_hub","anchor":"center","body":"dynamic","shape":"sphere","size":[0.4,0.4,0.4]}
+{"op":"ent","id":"hoop_rim","kind":"sensor","noun":"hoop rim","hyper":"hoop","zone":"z_far","anchor":"keycard","body":"sensor","shape":"sphere","size":[0.6,0.6,0.6]}
+{"op":"ent","id":"far_console","kind":"prop","noun":"scoreboard console","hyper":"console","zone":"z_far","anchor":"console","body":"fixed","shape":"box","size":[0.8,0.6,0.3]}
+{"op":"ent","id":"hub_console","kind":"prop","noun":"shot clock console","hyper":"console","zone":"z_hub","anchor":"console","body":"fixed","shape":"box","size":[0.8,0.6,0.3]}
+{"op":"ent","id":"out_bounds","kind":"hazard","noun":"void drift","hyper":"void","zone":"z_hub","anchor":"cp","body":"sensor","shape":"box","size":[2,2,2]}
+{"op":"verb","id":"vb_carry_ball","verb":"physics_props.carry","on":"ball","params":{}}
+{"op":"verb","id":"vb_throw_ball","verb":"combat_sport.throw","on":"ball","params":{"range":12,"damage":0}}
+{"op":"verb","id":"vb_jump","verb":"locomotion.jump","on":"player","params":{"jumpsMax":3}}
+{"op":"verb","id":"vb_fly","verb":"locomotion.fly","on":"player","params":{"kind":"suit","climb":6,"fuel":40}}
+{"op":"verb","id":"vb_hazard","verb":"motion_hazards.hazard","on":"out_bounds","params":{"respawn":true}}
+{"op":"verb","id":"vb_clock","verb":"puzzle.timer","on":"player","params":{"seconds":120}}
+{"op":"verb","id":"vb_inspect_far","verb":"social.inspect","on":"far_console","params":{"text":"Scoreboard: home 0, away 0. Zero-g rules apply."}}
+{"op":"rule","id":"r_score","when":{"t":"hit","a":"","b":"ball"},"if":[{"l":"ball.carrier.team","op":"eq","r":"red"}],"then":[{"e":"score","target":"team:red","n":2}]}
+{"op":"rule","id":"r_win","when":{"t":"score_gte","a":"team:red","n":4},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_out","when":{"t":"hit","a":"player","b":"out_bounds"},"then":[{"e":"reset","target":"ball"}]}
+{"op":"rule","id":"r_lose","when":{"t":"timer_end","a":"player"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"expect","id":"x_hoop","prop":"win_reachable","a":"sp_red","b":"hoop_goal","headline":true,"text":"Zero-g shots must account for drift, so the far hoop needs a playtest for arc and reach."}
+{"op":"expect","id":"x_far","prop":"reachable","a":"sp_red","b":"z_far"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

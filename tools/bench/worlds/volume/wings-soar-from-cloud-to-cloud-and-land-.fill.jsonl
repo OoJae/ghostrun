@@ -1,0 +1,38 @@
+{"op":"meta","mode":"play","lang":"en","pack":"volume","sub":["sky"],"seed":9,"look":"floating cloud islands above a sky temple","mood":[0.7,0.5,0.3],"timeOfDay":10,"weather":"clear"}
+{"op":"zone","id":"z_start","slot":"start","tag":"island","name":"Launch cloud"}
+{"op":"zone","id":"z_c1","slot":"isle_1","tag":"island","name":"First cloud"}
+{"op":"zone","id":"z_c2","slot":"isle_2","tag":"island","name":"Second cloud"}
+{"op":"zone","id":"z_c3","slot":"isle_3","tag":"island","name":"Third cloud"}
+{"op":"zone","id":"z_temple","slot":"finish","tag":"island","name":"Sky temple"}
+{"op":"zone","id":"z_peak","slot":"peak","tag":"peak","name":"Temple summit"}
+{"op":"zone","id":"z_mist","slot":"open_sky","tag":"air","name":"Open sky"}
+{"op":"spawn","id":"sp_red","zone":"z_start","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"temple_pad","zone":"z_temple","anchor":"goal","noun":"temple landing pad","hyper":"landing pad","team":"red"}
+{"op":"ent","id":"wings","kind":"pickup","noun":"feather wings","hyper":"wings","zone":"z_start","anchor":"pickup","body":"dynamic","shape":"box","size":[0.5,0.3,0.5]}
+{"op":"ent","id":"cp_1","kind":"checkpoint","noun":"cloud beacon","hyper":"beacon","zone":"z_c1","anchor":"cp","body":"sensor","shape":"sphere","size":[1,1,1]}
+{"op":"ent","id":"cp_2","kind":"checkpoint","noun":"cloud beacon","hyper":"beacon","zone":"z_c2","anchor":"cp","body":"sensor","shape":"sphere","size":[1,1,1]}
+{"op":"ent","id":"cp_3","kind":"checkpoint","noun":"cloud beacon","hyper":"beacon","zone":"z_c3","anchor":"cp","body":"sensor","shape":"sphere","size":[1,1,1]}
+{"op":"ent","id":"ring_1","kind":"goal","noun":"updraft ring","hyper":"ring","zone":"z_mist","anchor":"ring_1","body":"sensor","shape":"sphere","size":[3,3,3]}
+{"op":"ent","id":"ring_2","kind":"goal","noun":"updraft ring","hyper":"ring","zone":"z_mist","anchor":"ring_2","body":"sensor","shape":"sphere","size":[3,3,3]}
+{"op":"ent","id":"gust","kind":"hazard","noun":"storm gust","hyper":"gust","zone":"z_mist","anchor":"ring_2","body":"sensor","shape":"box","size":[4,2,4]}
+{"op":"ent","id":"jump_c2","kind":"platform","noun":"bounce cloud","hyper":"cloud","zone":"z_c2","anchor":"center","body":"fixed","shape":"box","size":[3,0.3,3]}
+{"op":"ent","id":"crumble_c3","kind":"platform","noun":"thin cloud","hyper":"cloud","zone":"z_c3","anchor":"pickup","body":"fixed","shape":"box","size":[2,0.3,2]}
+{"op":"ent","id":"treasure","kind":"pickup","noun":"sun idol","hyper":"idol","zone":"z_peak","anchor":"treasure","body":"dynamic","shape":"box","size":[0.4,0.4,0.4]}
+{"op":"verb","id":"vb_fly","verb":"locomotion.fly","on":"player","params":{"kind":"jetpack","climb":3,"fuel":6}}
+{"op":"verb","id":"vb_wings","verb":"physics_props.carry","on":"wings","params":{}}
+{"op":"verb","id":"vb_cp1","verb":"puzzle.checkpoint","on":"cp_1","params":{}}
+{"op":"verb","id":"vb_cp2","verb":"puzzle.checkpoint","on":"cp_2","params":{}}
+{"op":"verb","id":"vb_cp3","verb":"puzzle.checkpoint","on":"cp_3","params":{}}
+{"op":"verb","id":"vb_jump","verb":"locomotion.jump_pad","on":"jump_c2","params":{"height":5}}
+{"op":"verb","id":"vb_crumble","verb":"motion_hazards.crumble","on":"crumble_c3","params":{"delay":1,"back":4}}
+{"op":"verb","id":"vb_gust","verb":"motion_hazards.wind","on":"gust","params":{"x":6,"z":0}}
+{"op":"verb","id":"vb_idol","verb":"physics_props.carry","on":"treasure","params":{}}
+{"op":"verb","id":"vb_inspect","verb":"social.inspect","on":"treasure","params":{"text":"A sun idol warm to the touch, lifted from the temple summit."}}
+{"op":"law","player":{"jumpsMax":2,"jumpH":1.6,"speed":6}}
+{"op":"rule","id":"r_temple","when":{"t":"enter","a":"player","b":"temple_pad"},"if":[{"l":"treasure.carrier.team","op":"eq","r":"red"}],"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_fall","when":{"t":"hit","a":"player","b":"gust"},"then":[{"e":"damage","target":"player","n":10}]}
+{"op":"rule","id":"r_ring","when":{"t":"enter","a":"player","b":"ring_1"},"then":[{"e":"score","target":"team:red","n":5}]}
+{"op":"expect","id":"x_glide","prop":"win_reachable","a":"sp_red","b":"temple_pad","headline":true,"text":"Cloud-to-cloud glides must reach the sky temple landing pad."}
+{"op":"expect","id":"x_gap","prop":"requires","a":"sp_red","b":"z_c2","need":["jumps>=2"],"text":"Gaps between clouds need double jump or flight"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

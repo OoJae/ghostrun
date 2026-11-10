@@ -22,6 +22,9 @@ import cafeFill from "../../../packages/ir/fixtures/cafe-orders.jsonl?raw";
 import escapeFill from "../../../packages/ir/fixtures/escape-room.jsonl?raw";
 import concertFill from "../../../packages/ir/fixtures/rock-concert.jsonl?raw";
 import solarFill from "../../../packages/ir/fixtures/solar-tour.jsonl?raw";
+import jetpackFill from "../../../packages/ir/fixtures/jetpack-islands.jsonl?raw";
+import lagoonFill from "../../../packages/ir/fixtures/sunken-treasure.jsonl?raw";
+import zeroGFill from "../../../packages/ir/fixtures/zero-g-escape.jsonl?raw";
 import { specHash, type FillNote, type FillStats, type WorldBundle } from "@ghostrun/ir";
 import type { PackLayout } from "@ghostrun/plugin-api";
 import { ENGINE_HASH, placeFill } from "@ghostrun/world";
@@ -93,7 +96,7 @@ export function buildWorld(_prompt: string, fixture = "ctf"): World {
 }
 
 /** Recorded fills: the organizer's CTF brief, and a kit-verb world (?fixture=coin-rush). */
-export const FIXTURES: Record<string, string> = { ctf: fixtureFill, "coin-rush": coinRushFill, forest: forestFill, parkour: parkourFill, heist: heistFill, vault: vaultFill, duel: duelFill, zombies: zombieFill, "laser-tag": laserFill, station: stationFill, kart: kartFill, "street-race": streetFill, snowmobile: snowFill, fengshui: fengShuiFill, "fengshui-broken": fengShuiBrokenFill, museum: museumFill, villa: villaFill, cafe: cafeFill, escape: escapeFill, concert: concertFill, solar: solarFill, glade: gladeFill };
+export const FIXTURES: Record<string, string> = { ctf: fixtureFill, "coin-rush": coinRushFill, forest: forestFill, parkour: parkourFill, heist: heistFill, vault: vaultFill, duel: duelFill, zombies: zombieFill, "laser-tag": laserFill, station: stationFill, kart: kartFill, "street-race": streetFill, snowmobile: snowFill, fengshui: fengShuiFill, "fengshui-broken": fengShuiBrokenFill, museum: museumFill, villa: villaFill, cafe: cafeFill, escape: escapeFill, concert: concertFill, solar: solarFill, glade: gladeFill, jetpack: jetpackFill, lagoon: lagoonFill, "zero-g": zeroGFill };
 export const FIXTURE_PROMPTS: Record<string, string> = {
   ctf: BRIEF,
   "coin-rush": "Collect five gold coins in a neon arena before the clock runs out. Mind the lava.",
@@ -117,6 +120,9 @@ export const FIXTURE_PROMPTS: Record<string, string> = {
   escape: "An escape room: flip the switch, find the key, step on the plate and pull the lever to get out.",
   concert: "A rock concert hall: wander from the foyer to the stage and backstage.",
   solar: "A tour of the solar system: visit every planet before the planetarium closes.",
+  jetpack: "A jetpack race through floating islands: grab the sky crystal from the peak and land it on the finish isle.",
+  lagoon: "Swim to the sunken treasure by the wreck and bring it back to the beach.",
+  "zero-g": "Zero-g escape from a space station: float the keycard from the lab to the escape pod.",
 };
 
 /** Fill text (fixture or a live stream) → placed world, choosing the pack from the registry. */

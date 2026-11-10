@@ -17,6 +17,14 @@ describe("substitution notes", () => {
     expect(substitution("Laser tag in an abandoned mall", world())).toBe("No shooting yet: you win by moving and using things");
   });
 
+  it("retires flying and swimming once the edge has the kit on (ff.kit_flight)", () => {
+    expect(substitution("Fly through the clouds to the sky castle", world(), { flight: true })).toBeNull();
+    expect(substitution("Swim with the dolphins in a coral reef", world(), { flight: true })).toBeNull();
+    expect(substitution("Drive a race car through a neon city", world(), { flight: true })).toBe("No vehicles yet: you race on foot");
+    expect(substitution("A jetpack race through floating islands", world("locomotion.fly"))).toBeNull();
+    expect(substitution("Swim to the sunken treasure", world("locomotion.swim"))).toBeNull();
+  });
+
   it("goes quiet once the world has the verb (checked by id, so a new kit verb needs no edit here)", () => {
     expect(substitution("A wizard duel: cast spells until one falls", world("combat_sport.shoot"))).toBeNull();
     expect(substitution("Drive a race car through a neon city", world("vehicle.drive"))).toBeNull();

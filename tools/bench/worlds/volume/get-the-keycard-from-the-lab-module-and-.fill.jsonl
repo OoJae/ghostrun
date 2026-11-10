@@ -1,0 +1,32 @@
+{"op":"meta","mode":"play","lang":"en","pack":"volume","sub":["space"],"seed":21,"look":"damaged station in zero-g","mood":[-0.4,0.8,0.9],"timeOfDay":12,"weather":"clear"}
+{"op":"law","player":{"gravityScale":0,"thrust":4,"speed":6}}
+{"op":"zone","id":"z_airlock","slot":"airlock","tag":"airlock","name":"Airlock"}
+{"op":"zone","id":"z_hub","slot":"hub","tag":"hub","name":"Station hub"}
+{"op":"zone","id":"z_lab","slot":"far_module","tag":"lab","name":"Lab module"}
+{"op":"zone","id":"z_field","slot":"field","tag":"debris","name":"Asteroid field"}
+{"op":"zone","id":"z_pod","slot":"pod","tag":"pod","name":"Escape pod"}
+{"op":"spawn","id":"sp_red","zone":"z_airlock","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"escape_pod","zone":"z_pod","anchor":"pod","noun":"escape pod","hyper":"emergency vehicle","team":"red"}
+{"op":"ent","id":"keycard","kind":"pickup","noun":"keycard","hyper":"access card","zone":"z_lab","anchor":"keycard","body":"dynamic","shape":"box","size":[0.2,0.1,0.3]}
+{"op":"ent","id":"lab_door","kind":"door","noun":"lab door","hyper":"door","zone":"z_hub","anchor":"console","body":"fixed","shape":"box"}
+{"op":"ent","id":"o2_tank","kind":"pickup","noun":"oxygen canister","hyper":"oxygen","zone":"z_hub","anchor":"cp","body":"dynamic","shape":"capsule","size":[0.3,0.6,0.3]}
+{"op":"ent","id":"rock_drift","kind":"hazard","noun":"tumbling rock","hyper":"asteroid","zone":"z_field","anchor":"rock_3","body":"kinematic","shape":"sphere","size":[1.2,1.2,1.2]}
+{"op":"ent","id":"debris_belt","kind":"hazard","noun":"debris cloud","hyper":"debris","zone":"z_field","anchor":"rock_6","body":"sensor","shape":"box","size":[4,2,4]}
+{"op":"ent","id":"cp_hub","kind":"checkpoint","noun":"hub checkpoint","hyper":"checkpoint","zone":"z_hub","anchor":"cp","body":"sensor","shape":"box","size":[1,1,1]}
+{"op":"ent","id":"alarm_pad","kind":"plate","noun":"pressure plate","hyper":"plate","zone":"z_field","anchor":"rock_1","body":"sensor","shape":"box","size":[1,0.1,1]}
+{"op":"verb","id":"vb_carry_key","verb":"physics_props.carry","on":"keycard","params":{}}
+{"op":"verb","id":"vb_carry_o2","verb":"physics_props.carry","on":"o2_tank","params":{}}
+{"op":"verb","id":"vb_lock","verb":"puzzle.lock","on":"lab_door","params":{"key":"keycard"}}
+{"op":"verb","id":"vb_hazard","verb":"motion_hazards.hazard","on":"debris_belt","params":{"respawn":true}}
+{"op":"verb","id":"vb_roll","verb":"motion_hazards.oscillate","on":"rock_drift","params":{"axis":"x","travel":6,"period":5}}
+{"op":"verb","id":"vb_cp","verb":"puzzle.checkpoint","on":"cp_hub","params":{}}
+{"op":"verb","id":"vb_o2clock","verb":"puzzle.timer","on":"player","params":{"seconds":180}}
+{"op":"verb","id":"vb_fly","verb":"locomotion.fly","on":"player","params":{"kind":"suit","climb":4,"fuel":30}}
+{"op":"rule","id":"r_keycard","when":{"t":"pickup","a":"keycard","b":"player"},"then":[{"e":"emit","target":"lab_door","fx":"sparks"}]}
+{"op":"rule","id":"r_door_open","when":{"t":"state_is","a":"lab_door","s":"open"},"then":[{"e":"emit","target":"lab_door","fx":"door_open"}]}
+{"op":"rule","id":"r_escape","when":{"t":"enter","a":"player","b":"escape_pod"},"if":[{"l":"keycard.carrier.team","op":"eq","r":"red"}],"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_suffocate","when":{"t":"timer_end","a":"player"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"expect","id":"x_keycard","prop":"win_reachable","a":"sp_red","b":"escape_pod","headline":true,"text":"Keycard pickup must be reachable by zero-g float before the oxygen timer expires."}
+{"op":"expect","id":"x_lab","prop":"reachable","a":"sp_red","b":"z_lab"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

@@ -20,6 +20,8 @@ export interface Cue {
   /** Valence, arousal, tension in [-1, 1]. */
   mood: readonly [number, number, number];
   pack: string;
+  /** The volume pack's medium (absent for every other pack): its default look when the words say nothing. */
+  medium?: Medium;
   /** What the person chose on the Intent card: it wins over every word. */
   pin?: LookPin;
 }
@@ -124,6 +126,16 @@ const VARIANTS: Partial<Record<LookId, readonly (readonly [RegExp, string])[]>> 
  * to the gallery's clean hall, the solar system to space.
  */
 const PACK_LOOK: Record<string, LookId> = { outdoor: "grove", floor_plan: "gallery", service_venue: "home", puzzle_rooms: "medieval", stage: "gallery", orrery: "space" };
+/** The volume pack by its medium: islands in the sky are a grove, the lagoon a beach, zero-g a space station. */
+const MEDIUM_LOOK: Record<Medium, LookId> = { sky: "grove", water: "desert", space: "space" };
+const packLook = (c: Cue): LookId => (c.pack === "volume" ? MEDIUM_LOOK[c.medium ?? "sky"] : PACK_LOOK[c.pack]) ?? "neon";
+
+/** What a volume world is crossed through (its sub-zone: sky unless it names water or space); null for any other pack. */
+export type Medium = "sky" | "water" | "space";
+export function volumeMedium(b: { pack: WorldBundle["pack"] }): Medium | null {
+  if (b.pack.id !== "volume") return null;
+  return b.pack.sub.includes("water") ? "water" : b.pack.sub.includes("space") ? "space" : "sky";
+}
 /** Packs with rooms: the only ones a home's furniture fits in. */
 export const ROOM_PACKS: ReadonlySet<string> = new Set(["floor_plan", "maze", "service_venue", "puzzle_rooms"]);
 const ROOMS = ROOM_PACKS;
@@ -143,7 +155,7 @@ export function pickLook(c: Cue): Pick {
   const words = `${look} | ${setting}`;
   const [valence, , tension] = c.mood;
 
-  let id: LookId = PACK_LOOK[c.pack] ?? "neon";
+  let id: LookId = packLook(c);
   let best = 0;
   for (const k of ORDER) {
     if (k === "home" && !ROOMS.has(c.pack)) continue;
@@ -154,11 +166,12 @@ export function pickLook(c: Cue): Pick {
     if (s > 0 && k === "candy" && valence > 0.6 && tension < 0.3) s += 0.5;
     if (s > best) ((best = s), (id = k));
   }
-  if (best < 2) id = PACK_LOOK[c.pack] ?? "neon"; // one passing name is not enough to restyle a world
+  if (best < 2) id = packLook(c); // one passing name is not enough to restyle a world
   // "haunted" restyles whatever it names: a haunted carnival is a haunted place first
   if (WORDS.haunted[0]![0].test(words)) id = "haunted";
 
   let variant = VARIANTS[id]?.find(([re]) => re.test(all))?.[1] ?? "";
+  if (!variant && id === "desert" && c.pack === "volume" && c.medium === "water") variant = "beach"; // the lagoon's own: a beach, not dunes
   if (UNDERWATER.test(words)) ((id = INDOOR_PACKS.has(c.pack) ? "gallery" : "desert"), (variant = "underwater"));
   const pinned = pinnedLook(c);
   if (pinned) [id, variant] = pinned;
@@ -225,6 +238,7 @@ export function cueOf(b: WorldBundle, extra: { setting?: string; meta?: RawMeta 
     timeOfDay: m?.timeOfDay ?? c.timeOfDay,
     mood: m?.mood ?? c.mood,
     pack: b.pack.id,
+    ...(b.pack.id === "volume" ? { medium: volumeMedium(b)! } : {}),
     ...(m?.pin ? { pin: m.pin } : {}),
   };
 }

@@ -3,8 +3,10 @@
 // unwinnable afterwards (the goal 40 m up, the key gone, a condition nothing can meet), so a
 // receipt that still says "won" would be a lie. Only worlds with one way to win get them: with two,
 // breaking one route isn't a bug.
-import type { Rule, WorldBundle } from "@ghostrun/ir";
+import { clampLaws, type Rule, type WorldBundle } from "@ghostrun/ir";
+import { flightOf, SWIM, SWIM_DOWN, waterAt, watersOf, zeroG } from "@ghostrun/kits";
 import { hitPoints, playerWeapons, purseSupply, t0 } from "./t0";
+import { depthFor } from "./moves";
 import type { Chip, Receipt } from "./types";
 
 export interface Planted {
@@ -33,13 +35,37 @@ export function plants(b: WorldBundle, parS: number | null, team: "red" | "blue"
   const win = winRules(b)[0]!;
 
   // the place the run must end in, lifted out of reach
+  // (in zero-g nothing is out of reach up there, so it isn't a bug; with a jetpack it goes beyond
+  // the fuel's climb from the highest ground there is: the goal beyond the thrust budget)
+  const laws = clampLaws(b.laws);
+  const fly = flightOf({ verbs: b.verbs, laws });
   const last = [...chain.steps].reverse().find((s) => s.do === "deliver");
-  if (last && last.do === "deliver" && win.when.t === "enter" && win.when.b === last.sensor) {
+  if (last && last.do === "deliver" && win.when.t === "enter" && win.when.b === last.sensor && !zeroG(laws)) {
     const w = copy();
     const g = w.entities.find((e) => e.id === last.sensor);
     if (g) {
-      g.pos = [g.pos[0], g.pos[1] + 40, g.pos[2]];
-      out.push({ id: "goal_in_the_sky", text: `the ${noun(b, g.id)} is 40 m up in the air`, at: g.id, bundle: w });
+      const highest = Math.max(g.pos[1], ...b.statics.map((st) => st.pos[1] + st.size[1] / 2), ...b.entities.filter((e) => e.body === "fixed").map((e) => e.pos[1] + e.size[1] / 2));
+      const up = fly ? Math.max(40, Math.ceil(highest - g.pos[1] + fly.climb * fly.fuel + 20)) : 40;
+      g.pos = [g.pos[0], g.pos[1] + up, g.pos[2]];
+      out.push(fly ? { id: "goal_beyond_thrust", text: `the ${noun(b, g.id)} is ${up} m up, beyond the ${fly.kind}'s ${Math.round(fly.climb * fly.fuel)} m climb`, at: g.id, bundle: w } : { id: "goal_in_the_sky", text: `the ${noun(b, g.id)} is 40 m up in the air`, at: g.id, bundle: w });
+    }
+  }
+
+  // under water: a breath too short to get down to what the win needs there (3 m down or more)
+  const waters = watersOf(b);
+  // (as deep as T1's dive model says the head must go: a sensor is entered from its top)
+  const deep = waters.length ? chain.steps.flatMap((st) => (st.do === "pickup" ? [st.item] : st.do === "deliver" ? [st.sensor] : st.do === "use" || st.do === "touch" ? [st.at] : [])).map((id) => b.entities.find((e) => e.id === id)).find((e) => {
+    const wa = e && waterAt(waters, e.pos);
+    return e && wa && depthFor(b, wa, e.id) >= 3;
+  }) : undefined;
+  if (deep) {
+    const wa = waterAt(waters, deep.pos)!;
+    const depth = Math.round(depthFor(b, wa, deep.id) * 10) / 10;
+    const breath = Math.max(1, Math.floor((depth / SWIM_DOWN) * 0.4));
+    if (breath < depth / SWIM_DOWN) { // (it can't even get down there)
+      const w = copy();
+      for (const v of w.verbs) if (v.verb === SWIM && v.on === wa.id) v.params = { ...v.params, breath };
+      out.push({ id: "breath_too_short", text: `a breath lasts ${breath} s, and the ${noun(b, deep.id)} lies ${depth} m down`, at: deep.id, bundle: w });
     }
   }
 

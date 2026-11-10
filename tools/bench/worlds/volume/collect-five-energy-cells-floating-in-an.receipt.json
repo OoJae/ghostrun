@@ -1,0 +1,294 @@
+{
+  "prompt": "Collect five energy cells floating in an asteroid field in zero gravity",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "space collection",
+    "setting": "an asteroid field in zero gravity",
+    "role": "spacewalker",
+    "goal": "collect five energy cells floating among the asteroids",
+    "fail": "running out of oxygen or colliding with an asteroid",
+    "mood": "lonely and tense",
+    "pack": "volume",
+    "sub": [
+      "space"
+    ],
+    "safety": "ok",
+    "headline": "Five energy cells must be reached by drifting through zero-g asteroids.",
+    "nouns": [
+      {
+        "noun": "energy cell",
+        "hyper": "glowing power canister"
+      },
+      {
+        "noun": "asteroid",
+        "hyper": "tumbling rock chunk"
+      }
+    ],
+    "moodVec": {
+      "valence": -0.2,
+      "arousal": 0.5,
+      "tension": 0.7
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "018876b159f6c00b132a34909847d3e82eed81ee783679264efd1935a2497def",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_cells",
+      "text": "Five energy cells must be reached by drifting through zero-g asteroids.",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 10 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (team:red reaches 5) ← collect 5 of 5",
+        "src": ""
+      },
+      {
+        "id": "T1:x_field",
+        "tier": "T1",
+        "subject": {
+          "kind": "property",
+          "id": "x_field"
+        },
+        "method": "kinematic reachability (jump apex model)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "The asteroid field can be entered from the supply pod",
+        "cx": null
+      },
+      {
+        "id": "T2:r_asteroid",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_asteroid"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_asteroid fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_oxygen",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_oxygen"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_oxygen fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_score_1",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score_1"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 6,
+        "status": "verified",
+        "text": "r_score_1 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_score_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_score_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_score_3",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score_3"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_score_3 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_score_4",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score_4"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_score_4 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_score_5",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score_5"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 3,
+        "status": "verified",
+        "text": "r_score_5 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_rock_2",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_rock_2"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 4,
+        "status": "verified",
+        "text": "r_secret_rock_2 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_rock_6",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_rock_6"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 5,
+        "status": "verified",
+        "text": "r_secret_rock_6 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:zero_g",
+        "tier": "T2",
+        "subject": {
+          "kind": "world",
+          "id": "laws"
+        },
+        "n": 1,
+        "k": 1,
+        "src": "",
+        "ms": 7,
+        "method": "forced state (thrust held up from the spawn for 1.5 s, then let go)",
+        "status": "verified",
+        "text": "the thrust law reaches 6 m/s in 1.5 s and stops you again",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it (AI par 19.6 s)",
+        "cx": null,
+        "src": "",
+        "ms": 683
+      }
+    ],
+    "par": {
+      "goldS": 19.6,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 747
+  }
+}

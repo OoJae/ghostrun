@@ -1,0 +1,38 @@
+{"op":"meta","mode":"play","lang":"en","pack":"volume","sub":["space"],"seed":18,"look":"zero-g station exterior","mood":[-0.2,0.5,0.7],"timeOfDay":12,"weather":"clear"}
+{"op":"zone","id":"z_airlock","slot":"airlock","tag":"airlock","name":"Airlock"}
+{"op":"zone","id":"z_hub","slot":"hub","tag":"hub","name":"Station hub"}
+{"op":"zone","id":"z_far","slot":"far_module","tag":"module","name":"Far module"}
+{"op":"zone","id":"z_field","slot":"field","tag":"field","name":"Asteroid field"}
+{"op":"zone","id":"z_pod","slot":"pod","tag":"pod","name":"Solar array pod"}
+{"op":"spawn","id":"sp_red","zone":"z_airlock","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"array","zone":"z_pod","anchor":"pod","noun":"solar panel","hyper":"power array","team":"red"}
+{"op":"ent","id":"wrench","kind":"pickup","noun":"wrench","hyper":"tool","zone":"z_hub","anchor":"console","body":"dynamic","shape":"box","size":[0.2,0.2,0.5]}
+{"op":"ent","id":"oxygen_tank","kind":"pickup","noun":"oxygen refill","hyper":"oxygen","zone":"z_far","anchor":"console","body":"dynamic","shape":"sphere","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"panel_fault","kind":"switch","noun":"panel fault switch","hyper":"switch","zone":"z_pod","anchor":"pod","body":"fixed","shape":"box","size":[0.4,0.4,0.4]}
+{"op":"ent","id":"rock_hazard","kind":"hazard","noun":"debris cloud","hyper":"debris","zone":"z_field","anchor":"rock_4","body":"sensor","shape":"sphere","size":[1.5,1.5,1.5]}
+{"op":"ent","id":"drift_rock","kind":"platform","noun":"tumbling rock","hyper":"space rock","zone":"z_field","anchor":"rock_8","body":"kinematic","shape":"box","size":[2,2,2]}
+{"op":"ent","id":"hatch","kind":"door","noun":"airlock hatch","hyper":"door","zone":"z_airlock","anchor":"hatch","body":"fixed","shape":"box"}
+{"op":"ent","id":"tether_sign","kind":"sign","noun":"tether warning","hyper":"sign","zone":"z_hub","anchor":"center","body":"fixed","shape":"box","size":[0.8,0.6,0.1]}
+{"op":"ent","id":"cp_hub","kind":"checkpoint","noun":"hub checkpoint","hyper":"checkpoint","zone":"z_hub","anchor":"cp","body":"sensor","shape":"box","size":[1,1,1]}
+{"op":"verb","id":"vb_jump","verb":"locomotion.jump","on":"player","params":{"jumpsMax":2}}
+{"op":"verb","id":"vb_carry_wrench","verb":"physics_props.carry","on":"wrench","params":{}}
+{"op":"verb","id":"vb_carry_o2","verb":"physics_props.carry","on":"oxygen_tank","params":{}}
+{"op":"verb","id":"vb_fix","verb":"puzzle.switch","on":"panel_fault","params":{"once":true}}
+{"op":"verb","id":"vb_hazard","verb":"motion_hazards.hazard","on":"rock_hazard","params":{"respawn":true}}
+{"op":"verb","id":"vb_drift","verb":"motion_hazards.oscillate","on":"drift_rock","params":{"axis":"x","travel":6,"period":8}}
+{"op":"verb","id":"vb_o2_timer","verb":"puzzle.timer","on":"player","params":{"seconds":240}}
+{"op":"verb","id":"vb_cp","verb":"puzzle.checkpoint","on":"cp_hub","params":{}}
+{"op":"verb","id":"vb_sign","verb":"social.inspect","on":"tether_sign","params":{"text":"Always clip your tether before leaving the airlock."}}
+{"op":"law","player":{"gravityScale":0,"thrust":4,"speed":6}}
+{"op":"state","id":"panel_fault","s":"off"}
+{"op":"rule","id":"r_repair","when":{"t":"state_is","a":"panel_fault","s":"on"},"if":[{"l":"wrench.carrier.team","op":"eq","r":"red"}],"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_o2_out","when":{"t":"timer_end","a":"player"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_debris","when":{"t":"hit","a":"player","b":"rock_hazard"},"then":[{"e":"damage","target":"player","n":10}]}
+{"op":"rule","id":"r_drift","when":{"t":"exit","a":"player","b":"z_field"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"expect","id":"x_repair","prop":"win_reachable","a":"sp_red","b":"array","headline":true,"text":"Solar panel repair requires floating out in zero-g with the wrench and returning before oxygen runs out."}
+{"op":"expect","id":"x_tether","prop":"reachable","a":"sp_red","b":"z_pod","text":"The solar array pod can be reached by thrust from the airlock"}
+{"op":"end","layer":"gameplay"}
+{"op":"dress","id":"d_earth","kind":"prop","noun":"earth glow","zone":"z_pod","anchor":"center"}
+{"op":"dress","id":"d_stars","kind":"prop","noun":"starfield","zone":"z_field","anchor":"center"}
+{"op":"poster","id":"p_tether","text":"Clip in. Stay in."}
+{"op":"end","layer":"cosmetic"}

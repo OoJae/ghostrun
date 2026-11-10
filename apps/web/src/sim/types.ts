@@ -14,6 +14,8 @@ export interface InputFrame {
 
 export const BTN_JUMP = 1;
 export const BTN_USE = 2;
+/** Crouch (C): dives while flying or swimming, sinks in zero-g; nothing on foot. The sim's BTN.DOWN. */
+export const BTN_DOWN = 16;
 
 export interface Pose {
   p: [number, number, number];

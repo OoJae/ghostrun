@@ -6,6 +6,8 @@ import { headlineOf } from "./headline";
 import { playtest } from "./playtest";
 import { t0 } from "./t0";
 import { t1, t1Drive, t1Range } from "./t1";
+import { t1Fly, t1Swim } from "./moves";
+import { t2Moves } from "./t2moves";
 import { t2 } from "./t2";
 import { t2Commands } from "./commands";
 import { humanRuns, t3, tour, type Played } from "./t3";
@@ -61,7 +63,10 @@ export async function prove(R: Rapier, b: WorldBundle, opts: ProveOptions): Prom
   emit(t1(b, laws));
   emit(t1Range(b, laws, team));
   emit(t1Drive(b, laws, team));
+  emit(t1Fly(b, laws, s0.chain, team));
+  emit(t1Swim(b, s0.chain));
   emit(t2(R, b, team));
+  emit(t2Moves(R, b, team));
   const nav = buildNav(b);
   try {
     // teammates you can command: each option a command picks, forced (on the navmesh, so here)

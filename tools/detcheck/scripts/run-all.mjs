@@ -84,10 +84,12 @@ for (const r of results) {
   const ctfSame = r.ctf.hash === ref.ctf.hash && r.ctf.log === ref.ctf.log;
   const zombiesSame = r.zombies.hash === ref.zombies.hash && r.zombies.log === ref.zombies.log;
   const raceSame = r.race.hash === ref.race.hash && r.race.log === ref.race.log;
-  const same = r.final === ref.final && firstBad === -1 && navSame && qjsSame && ctfSame && zombiesSame && raceSame;
+  const jetSame = r.jet.hash === ref.jet.hash && r.jet.log === ref.jet.log;
+  const swimSame = r.swim.hash === ref.swim.hash && r.swim.log === ref.swim.log;
+  const same = r.final === ref.final && firstBad === -1 && navSame && qjsSame && ctfSame && zombiesSame && raceSame && jetSame && swimSame;
   ok &&= same;
   console.log(
-    `${same ? "MATCH " : "DIFFER"}  phys ${r.final}  nav ${r.navq.nav.hash}/${r.navq.nav.paths} (${r.navq.nav.polys} polys, ${r.navq.nav.buildMs} ms)  qjs ${r.navq.qjs.hash} (int@${r.navq.qjs.interruptedAfter}, mem ${r.navq.qjs.memLimitHit ? "capped" : "UNCAPPED"})  ctf ${r.ctf.hash}/${r.ctf.log} (${r.ctf.events} ev, ${r.ctf.scores})  zombies ${r.zombies.hash}/${r.zombies.log} (${r.zombies.events} ev, shots/hits/KOs ${r.zombies.fights})  race ${r.race.hash}/${r.race.log} (${r.race.events} ev, laps ${r.race.laps}, checkpoints ${r.race.checkpoints}, ${r.race.result})  ${String(r.ms).padStart(5)} ms  ${r.runtime}` +
+    `${same ? "MATCH " : "DIFFER"}  phys ${r.final}  nav ${r.navq.nav.hash}/${r.navq.nav.paths} (${r.navq.nav.polys} polys, ${r.navq.nav.buildMs} ms)  qjs ${r.navq.qjs.hash} (int@${r.navq.qjs.interruptedAfter}, mem ${r.navq.qjs.memLimitHit ? "capped" : "UNCAPPED"})  ctf ${r.ctf.hash}/${r.ctf.log} (${r.ctf.events} ev, ${r.ctf.scores})  zombies ${r.zombies.hash}/${r.zombies.log} (${r.zombies.events} ev, shots/hits/KOs ${r.zombies.fights})  race ${r.race.hash}/${r.race.log} (${r.race.events} ev, laps ${r.race.laps}, checkpoints ${r.race.checkpoints}, ${r.race.result})  jetpack ${r.jet.hash}/${r.jet.log} (${r.jet.events} ev, jumps/lands/breaths ${r.jet.counts})  swim ${r.swim.hash}/${r.swim.log} (${r.swim.events} ev, jumps/lands/breaths ${r.swim.counts})  ${String(r.ms).padStart(5)} ms  ${r.runtime}` +
       (same ? "" : `  (first divergent checkpoint: tick ${(firstBad + 1) * 100})`),
   );
 }

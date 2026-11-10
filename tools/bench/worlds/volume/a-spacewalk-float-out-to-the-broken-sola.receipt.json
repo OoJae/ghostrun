@@ -1,0 +1,401 @@
+{
+  "prompt": "A spacewalk: float out to the broken solar panel and fix it with the wrench",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "adventure",
+    "setting": "zero-g station exterior with asteroids and a broken solar panel",
+    "role": "spacewalking engineer",
+    "goal": "float out to the broken solar panel and repair it with the wrench",
+    "fail": "running out of oxygen or drifting too far from the station",
+    "mood": "tense and quiet",
+    "pack": "volume",
+    "sub": [
+      "space"
+    ],
+    "safety": "ok",
+    "headline": "Solar panel repair requires floating out in zero-g with the wrench and returning before oxygen runs out.",
+    "nouns": [
+      {
+        "noun": "solar panel",
+        "hyper": "power array"
+      },
+      {
+        "noun": "wrench",
+        "hyper": "tool"
+      },
+      {
+        "noun": "asteroid",
+        "hyper": "space rock"
+      },
+      {
+        "noun": "station",
+        "hyper": "space habitat"
+      }
+    ],
+    "moodVec": {
+      "valence": -0.2,
+      "arousal": 0.5,
+      "tension": 0.7
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "e103b201efc998275d8ada978e2e1b6f793c013a87041ba943d575c5ff5b7364",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_repair",
+      "text": "Solar panel repair requires floating out in zero-g with the wrench and returning before oxygen runs out.",
+      "status": "counterexample",
+      "method": "static goal regression over rules + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 6 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_repair (panel_fault becomes on: use panel_fault) [after holding wrench]",
+        "src": ""
+      },
+      {
+        "id": "T1:x_tether",
+        "tier": "T1",
+        "subject": {
+          "kind": "property",
+          "id": "x_tether"
+        },
+        "method": "kinematic reachability (jump apex model)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "The solar array pod can be reached by thrust from the airlock",
+        "cx": null
+      },
+      {
+        "id": "T1:fly",
+        "tier": "T1",
+        "subject": {
+          "kind": "world",
+          "id": "laws"
+        },
+        "n": 0,
+        "k": 0,
+        "src": "",
+        "ms": 0,
+        "method": "flight model (zero-g thrust law: straight lines at 6 m/s, 4 m/s²)",
+        "status": "verified",
+        "text": "the zero-g thrust law reaches every place the win needs (the longest flight, on the way to the panel fault switch: 2.4 s)",
+        "cx": null
+      },
+      {
+        "id": "T2:r_debris",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_debris"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 11,
+        "status": "verified",
+        "text": "r_debris fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_drift",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_drift"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_drift: nothing knocks player out of area_field",
+        "cx": null
+      },
+      {
+        "id": "T2:r_o2_out",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_o2_out"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_o2_out fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_repair",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_repair"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "r_repair: no room to stand next to panel_fault",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_rock_3",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_rock_3"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 8,
+        "status": "verified",
+        "text": "r_secret_rock_3 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_rock_7",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_rock_7"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 8,
+        "status": "verified",
+        "text": "r_secret_rock_7 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:zero_g",
+        "tier": "T2",
+        "subject": {
+          "kind": "world",
+          "id": "laws"
+        },
+        "n": 1,
+        "k": 0,
+        "src": "",
+        "ms": 5,
+        "method": "forced state (thrust held up from the spawn for 1.5 s, then let go)",
+        "status": "counterexample",
+        "text": "the thrust law reaches 6 m/s in 1.5 s and stops you again",
+        "cx": {
+          "where": null,
+          "have": 4.87,
+          "need": 6,
+          "unit": "m/s",
+          "text": "it never stopped"
+        }
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "counterexample",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 0,
+        "text": "no AI runner could win",
+        "cx": {
+          "where": null,
+          "have": 0,
+          "need": 1,
+          "unit": "wins",
+          "text": "12 lost (r_drift ×12)"
+        },
+        "src": "",
+        "ms": 131
+      }
+    ],
+    "par": null,
+    "ms": 188,
+    "failRun": {
+      "run": 0,
+      "ghost": {
+        "every": 4,
+        "ticks": 74,
+        "xyz": [
+          34,
+          6.95,
+          0,
+          33.99,
+          6.94,
+          0,
+          33.97,
+          6.92,
+          0,
+          33.94,
+          6.89,
+          0.01,
+          33.89,
+          6.84,
+          0.02,
+          33.84,
+          6.78,
+          0.03,
+          33.77,
+          6.71,
+          0.04,
+          33.69,
+          6.63,
+          0.06,
+          33.59,
+          6.54,
+          0.07,
+          33.48,
+          6.43,
+          0.09,
+          33.37,
+          6.31,
+          0.11,
+          33.23,
+          6.17,
+          0.13,
+          33.09,
+          6.03,
+          0.16,
+          32.93,
+          5.87,
+          0.19,
+          32.77,
+          5.7,
+          0.22,
+          32.58,
+          5.54,
+          0.25,
+          32.39,
+          5.39,
+          0.28,
+          32.17,
+          5.26,
+          0.32,
+          31.95,
+          5.13,
+          0.36,
+          31.83,
+          5.07,
+          0.38
+        ],
+        "dir": [
+          0,
+          0,
+          -125,
+          22,
+          -125,
+          22,
+          -125,
+          22,
+          -125,
+          22,
+          -125,
+          22,
+          -125,
+          22,
+          -125,
+          22,
+          -125,
+          22,
+          -125,
+          22,
+          -125,
+          22,
+          -125,
+          22,
+          -125,
+          22,
+          -125,
+          22,
+          -125,
+          22,
+          -125,
+          22,
+          -125,
+          22,
+          -125,
+          22,
+          -125,
+          22,
+          -125,
+          22
+        ],
+        "prog": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "end": {
+        "x": 31.9,
+        "z": 0.4,
+        "why": "r_drift",
+        "end": true
+      }
+    }
+  }
+}

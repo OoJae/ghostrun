@@ -1,0 +1,202 @@
+{
+  "prompt": "Rescue the stranded kitten from the top floating island with your jetpack",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "adventure",
+    "setting": "floating islands in the sky",
+    "role": "jetpack pilot",
+    "goal": "rescue the stranded kitten on the top floating island",
+    "fail": "running out of jetpack fuel or falling off an island",
+    "mood": "hopeful and airy",
+    "pack": "volume",
+    "sub": [
+      "sky"
+    ],
+    "safety": "ok",
+    "headline": "Top floating island must be reachable with jetpack fuel to rescue the kitten",
+    "nouns": [
+      {
+        "noun": "kitten",
+        "hyper": "a small stranded cat"
+      },
+      {
+        "noun": "floating island",
+        "hyper": "a rock island drifting in the clouds"
+      },
+      {
+        "noun": "jetpack",
+        "hyper": "a backpack that lets you fly"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.6,
+      "arousal": 0.5,
+      "tension": 0.3
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "743ba86af3e3aa66803e94d0592f8aaaeb8853b79217b04b5b60c251fbd8c25f",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_peak",
+      "text": "Top floating island must be reachable with jetpack fuel to rescue the kitten",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 3 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_rescue (kitten into rescue_pad) ← pick up kitten",
+        "src": ""
+      },
+      {
+        "id": "T1:x_gap",
+        "tier": "T1",
+        "subject": {
+          "kind": "property",
+          "id": "x_gap"
+        },
+        "method": "kinematic reachability (jump apex model)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "not_checkable",
+        "text": "Gaps between islands need the jetpack: needs fly, no checker for that yet",
+        "cx": null
+      },
+      {
+        "id": "T1:fly",
+        "tier": "T1",
+        "subject": {
+          "kind": "world",
+          "id": "vb_fly"
+        },
+        "n": 0,
+        "k": 0,
+        "src": "",
+        "ms": 0,
+        "method": "flight model (thrust-limited straight lines: climb 3 m/s, 6 s of fuel from each landing)",
+        "status": "verified",
+        "text": "the jetpack reaches every place the win needs (the longest flight, on the way to the kitten rescue pad: 4.6 s of 6 s)",
+        "cx": null
+      },
+      {
+        "id": "T2:r_cp1",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_cp1"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 9,
+        "status": "verified",
+        "text": "r_cp1 fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_fuel_out",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_fuel_out"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_fuel_out fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_rescue",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_rescue"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "r_rescue fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:fly",
+        "tier": "T2",
+        "subject": {
+          "kind": "world",
+          "id": "vb_fly"
+        },
+        "n": 1,
+        "k": 1,
+        "src": "",
+        "ms": 17,
+        "method": "forced state (jump held from the spawn for the 6 s of fuel, then let go)",
+        "status": "verified",
+        "text": "the jetpack's fuel lasts 6 s and climbs at least the model's 16.2 m, then you fall, and landing refuels it",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it (AI par 13 s)",
+        "cx": null,
+        "src": "",
+        "ms": 406
+      }
+    ],
+    "par": {
+      "goldS": 13,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 457
+  }
+}

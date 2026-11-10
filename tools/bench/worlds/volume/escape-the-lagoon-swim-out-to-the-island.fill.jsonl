@@ -1,0 +1,24 @@
+{"op":"meta","mode":"play","lang":"en","pack":"volume","sub":["water"],"seed":15,"look":"tropical lagoon","mood":[-0.2,0.7,0.8],"timeOfDay":14,"weather":"clear"}
+{"op":"zone","id":"z_beach","slot":"beach","tag":"shore","name":"Shore"}
+{"op":"zone","id":"z_lagoon","slot":"lagoon","tag":"water","name":"Lagoon"}
+{"op":"zone","id":"z_island","slot":"islet","tag":"island","name":"Island"}
+{"op":"zone","id":"z_wreck","slot":"wreck","tag":"wreck","name":"Sunken hull"}
+{"op":"spawn","id":"sp_red","zone":"z_beach","anchor":"spawn_pad","team":"red"}
+{"op":"goal","id":"island_goal","zone":"z_island","anchor":"palm","noun":"island shore","hyper":"goal","team":"red"}
+{"op":"ent","id":"lagoon_water","kind":"prop","noun":"lagoon water","hyper":"water","zone":"z_lagoon","anchor":"surface","body":"sensor","shape":"box","size":[30,4,30]}
+{"op":"ent","id":"lost_key","kind":"pickup","noun":"lost key","hyper":"key","zone":"z_wreck","anchor":"hold","body":"dynamic","shape":"box","size":[0.3,0.3,0.3]}
+{"op":"ent","id":"reef_gate","kind":"door","noun":"reef gap","hyper":"door","zone":"z_lagoon","anchor":"reef","body":"fixed","shape":"box"}
+{"op":"ent","id":"shark_zone","kind":"hazard","noun":"shark patrol","hyper":"hazard","zone":"z_lagoon","anchor":"deep","body":"sensor","shape":"box","size":[4,2,4]}
+{"op":"verb","id":"vb_swim","verb":"locomotion.swim","on":"lagoon_water","params":{"breath":20}}
+{"op":"verb","id":"vb_jump","verb":"locomotion.jump","on":"player","params":{"jumpsMax":1}}
+{"op":"verb","id":"vb_carry_key","verb":"physics_props.carry","on":"lost_key","params":{}}
+{"op":"verb","id":"vb_shark","verb":"motion_hazards.hazard","on":"shark_zone","params":{"respawn":true}}
+{"op":"verb","id":"vb_air","verb":"puzzle.timer","on":"player","params":{"seconds":25}}
+{"op":"law","player":{"jumpsMax":1,"jumpH":1.2,"speed":5}}
+{"op":"rule","id":"r_win","when":{"t":"enter","a":"lost_key","b":"island_goal"},"if":[{"l":"lost_key.carrier.team","op":"eq","r":"red"}],"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_drown","when":{"t":"timer_end","a":"player"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_shark","when":{"t":"hit","a":"player","b":"shark_zone"},"then":[{"e":"emit","target":"player","fx":"splash"}]}
+{"op":"expect","id":"x_swim","prop":"win_reachable","a":"sp_red","b":"island_goal","headline":true,"text":"Swimming to the island needs a timed air meter that a playtest can check."}
+{"op":"expect","id":"x_key","prop":"reachable","a":"sp_red","b":"lost_key","text":"The lost key lies on the seabed of the wreck"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

@@ -1,0 +1,40 @@
+{"op":"meta","mode":"play","lang":"en","pack":"volume","sub":["space"],"seed":19,"look":"deep space asteroid field","mood":[-0.2,0.5,0.7],"timeOfDay":12,"weather":"clear"}
+{"op":"zone","id":"z_field","slot":"field","tag":"asteroids","name":"Asteroid field"}
+{"op":"zone","id":"z_pod","slot":"pod","tag":"pod","name":"Supply pod"}
+{"op":"spawn","id":"sp_red","zone":"z_pod","anchor":"pod","team":"red"}
+{"op":"law","player":{"gravityScale":0,"thrust":4,"speed":6}}
+{"op":"goal","id":"cell_1","zone":"z_field","anchor":"rock_1","noun":"energy cell","hyper":"glowing power canister","team":""}
+{"op":"ent","id":"cell_1","kind":"pickup","noun":"energy cell","hyper":"glowing power canister","zone":"z_field","anchor":"rock_1","body":"dynamic","shape":"sphere","size":[0.4,0.4,0.4]}
+{"op":"ent","id":"cell_2","kind":"pickup","noun":"energy cell","hyper":"glowing power canister","zone":"z_field","anchor":"rock_3","body":"dynamic","shape":"sphere","size":[0.4,0.4,0.4]}
+{"op":"ent","id":"cell_3","kind":"pickup","noun":"energy cell","hyper":"glowing power canister","zone":"z_field","anchor":"rock_5","body":"dynamic","shape":"sphere","size":[0.4,0.4,0.4]}
+{"op":"ent","id":"cell_4","kind":"pickup","noun":"energy cell","hyper":"glowing power canister","zone":"z_field","anchor":"rock_7","body":"dynamic","shape":"sphere","size":[0.4,0.4,0.4]}
+{"op":"ent","id":"cell_5","kind":"pickup","noun":"energy cell","hyper":"glowing power canister","zone":"z_field","anchor":"rock_9","body":"dynamic","shape":"sphere","size":[0.4,0.4,0.4]}
+{"op":"ent","id":"rock_hazard","kind":"hazard","noun":"tumbling asteroid","hyper":"rock chunk","zone":"z_field","anchor":"rock_4","body":"kinematic","shape":"sphere","size":[1.5,1.5,1.5]}
+{"op":"ent","id":"rock_hazard_2","kind":"hazard","noun":"tumbling asteroid","hyper":"rock chunk","zone":"z_field","anchor":"rock_8","body":"kinematic","shape":"sphere","size":[1.5,1.5,1.5]}
+{"op":"ent","id":"pod_hatch","kind":"door","noun":"pod hatch","hyper":"door","zone":"z_pod","anchor":"pod","body":"fixed","shape":"box"}
+{"op":"verb","id":"vb_carry_1","verb":"physics_props.carry","on":"cell_1","params":{}}
+{"op":"verb","id":"vb_carry_2","verb":"physics_props.carry","on":"cell_2","params":{}}
+{"op":"verb","id":"vb_carry_3","verb":"physics_props.carry","on":"cell_3","params":{}}
+{"op":"verb","id":"vb_carry_4","verb":"physics_props.carry","on":"cell_4","params":{}}
+{"op":"verb","id":"vb_carry_5","verb":"physics_props.carry","on":"cell_5","params":{}}
+{"op":"verb","id":"vb_collect_1","verb":"puzzle.collect","on":"cell_1","params":{}}
+{"op":"verb","id":"vb_collect_2","verb":"puzzle.collect","on":"cell_2","params":{}}
+{"op":"verb","id":"vb_collect_3","verb":"puzzle.collect","on":"cell_3","params":{}}
+{"op":"verb","id":"vb_collect_4","verb":"puzzle.collect","on":"cell_4","params":{}}
+{"op":"verb","id":"vb_collect_5","verb":"puzzle.collect","on":"cell_5","params":{}}
+{"op":"verb","id":"vb_hazard","verb":"motion_hazards.hazard","on":"rock_hazard","params":{"respawn":true}}
+{"op":"verb","id":"vb_hazard_2","verb":"motion_hazards.hazard","on":"rock_hazard_2","params":{"respawn":true}}
+{"op":"verb","id":"vb_oxygen","verb":"puzzle.timer","on":"player","params":{"seconds":180}}
+{"op":"verb","id":"vb_fly","verb":"locomotion.fly","on":"player","params":{"kind":"suit","climb":4,"fuel":30}}
+{"op":"rule","id":"r_score_1","when":{"t":"touch","a":"player","b":"cell_1"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_score_2","when":{"t":"touch","a":"player","b":"cell_2"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_score_3","when":{"t":"touch","a":"player","b":"cell_3"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_score_4","when":{"t":"touch","a":"player","b":"cell_4"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_score_5","when":{"t":"touch","a":"player","b":"cell_5"},"then":[{"e":"score","target":"team:red","n":1}],"once":true}
+{"op":"rule","id":"r_win","when":{"t":"score_gte","a":"team:red","n":5},"then":[{"e":"win","target":"player"}],"once":true}
+{"op":"rule","id":"r_oxygen","when":{"t":"timer_end","a":"player"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"rule","id":"r_asteroid","when":{"t":"hit","a":"player","b":"rock_hazard"},"then":[{"e":"lose","target":"player"}],"once":true}
+{"op":"expect","id":"x_cells","prop":"win_reachable","a":"sp_red","b":"cell_5","headline":true,"text":"Five energy cells must be reached by drifting through zero-g asteroids."}
+{"op":"expect","id":"x_field","prop":"reachable","a":"sp_red","b":"z_field","text":"The asteroid field can be entered from the supply pod"}
+{"op":"end","layer":"gameplay"}
+{"op":"end","layer":"cosmetic"}

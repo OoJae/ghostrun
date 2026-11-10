@@ -2,9 +2,10 @@
 // The LLM chooses relations (zone + anchor), never coordinates (Holodeck/LayoutVLM lesson).
 import { stream } from "@ghostrun/detmath";
 import { groupMembers, type Effect, type Entity, type Rule, type Static, type Vec3, type VerbBinding, type WorldBundle, type Zone } from "@ghostrun/ir";
-import { DRIVE, feelOf, HEALTH, SHOOT, TRACK, verb } from "@ghostrun/kits";
+import { DRIVE, feelOf, FLY, HEALTH, SHOOT, TRACK, verb } from "@ghostrun/kits";
 import type { PackLayout, ZoneSpec } from "@ghostrun/plugin-api";
 import { repairFengShui } from "./fengshui";
+import { repairVolume } from "./volume";
 
 export {
   ELEMENTS, FENG_SHUI_RULES, FENG_SHUI_SCHOOL, FENG_SHUI_SCHOOL_SOURCE, asksFengShui, elementsOf, fengShui, isCommanding, isMirror, repairFengShui, saysFengShui,
@@ -211,7 +212,7 @@ export function placeWorld(input: WorldBundle, layout: PackLayout, opts: { reach
     if (e.kind === "door") base = [base[0], spec.floorY, base[2]];
     // places the player walks into stand on what's under them (a goal named after a wall-height
     // anchor such as a scoreboard would float out of reach); a ledge or rooftop keeps its height
-    if ((e.kind === "goal" || e.kind === "checkpoint" || e.kind === "plate") && base[1] > spec.floorY + 0.05) {
+    if ((e.kind === "goal" || e.kind === "checkpoint" || e.kind === "plate") && base[1] > spec.floorY + 0.05 && layout.packId !== "volume") {
       const [x, y, z] = base;
       const under = layout.statics.filter((st) => st.surf !== "wall" && Math.abs(x - st.pos[0]) <= st.size[0] / 2 && Math.abs(z - st.pos[2]) <= st.size[2] / 2 && st.pos[1] + st.size[1] / 2 <= y + 0.05);
       const top = Math.max(spec.floorY, ...under.map((st) => st.pos[1] + st.size[1] / 2));
@@ -273,7 +274,7 @@ export function placeWorld(input: WorldBundle, layout: PackLayout, opts: { reach
   // a world that says it is Feng Shui follows the Form School's room rules where moving decor can
   notes.push(...repairFengShui(b, layout.zones, bound));
   // wins first: a win rule the repairs add (reach the goal) gets the same trigger and verb repairs
-  notes.push(...repairDoubleDoors(b), ...repairSpawnRefs(b), ...repairGroups(b), ...repairRingOut(b, bound), ...repairAreas(b, bound), ...repairCombat(b), ...repairSentries(b), ...repairKits(b), ...repairConditions(b), ...repairRace(b, layout), ...repairRiders(b), ...repairWin(b), ...(opts.reach ? repairReach(b) : []), ...repairTriggers(b), ...repairVerbs(b), ...repairExpects(b));
+  notes.push(...repairVolume(b, layout, bound), ...repairDoubleDoors(b), ...repairSpawnRefs(b), ...repairGroups(b), ...repairRingOut(b, bound), ...repairAreas(b, bound), ...repairCombat(b), ...repairSentries(b), ...repairKits(b), ...repairConditions(b), ...repairRace(b, layout), ...repairRiders(b), ...repairWin(b), ...(opts.reach ? repairReach(b) : []), ...repairTriggers(b), ...repairVerbs(b), ...repairExpects(b));
   notes.push(...addRivals(b), ...placeRace(b, layout, bound), ...repairDeliveries(b, layout, bound), ...addSecrets(b, layout, bound));
   return { bundle: b, notes };
 }
@@ -1256,7 +1257,7 @@ export function winNeeds(b: WorldBundle): Set<string> {
  * a jump at a time, so its finish is in reach however high it stands). Logged.
  */
 export function repairReach(b: WorldBundle): string[] {
-  if (b.mode !== "play" || b.laws.gravityScale < 0.05 || b.laws.jumpH <= 0) return [];
+  if (b.mode !== "play" || b.laws.gravityScale < 0.05 || b.laws.jumpH <= 0 || b.verbs.some((v) => v.verb === FLY && v.on === "player")) return [];
   const sp = b.entities.find((e) => e.kind === "spawn" && e.team === "red") ?? b.entities.find((e) => e.kind === "spawn");
   if (!sp) return [];
   const apex = (n: number) => n * b.laws.jumpH * 0.94;
@@ -1950,3 +1951,4 @@ export function repairExpects(b: WorldBundle): string[] {
 }
 
 export { freeAnchors, reanchor, type FreeAnchor, type Reanchored } from "./reanchor";
+export { repairVolume, volumeMedium } from "./volume";

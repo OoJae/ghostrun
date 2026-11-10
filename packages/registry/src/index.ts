@@ -9,6 +9,7 @@ import { outdoor } from "@ghostrun/pack-outdoor";
 import { puzzleRooms } from "@ghostrun/pack-puzzle-rooms";
 import { serviceVenue } from "@ghostrun/pack-service-venue";
 import { stage } from "@ghostrun/pack-stage";
+import { volume } from "@ghostrun/pack-volume";
 import type { LayoutPack } from "@ghostrun/plugin-api";
 import type { LayoutSchema } from "./layout";
 
@@ -34,6 +35,7 @@ export const PACKS: PackEntry[] = [
   { id: "puzzle_rooms", blurb: "a chain of 3-6 small rooms joined by doorways (gates and locked doors stand in them), each with a switch, a plate, a lever, a key spot and a chest, from an entrance to an exit: escape rooms, puzzle temples and tombs, lock-and-key and switch puzzles, room-by-room puzzle chains", subs: [], impl: puzzleRooms as unknown as LayoutPack },
   { id: "stage", blurb: "a theatre or concert hall (foyer, rows of seats, a pit, a raised stage with wings, backstage and a lighting rig): concerts and gigs, rock shows, magic shows, plays, ballets, talent shows, opera, comedy clubs, award nights", subs: [], impl: stage as unknown as LayoutPack },
   { id: "orrery", blurb: "the solar system laid out on a planetarium floor at scaled distances (the Sun in the middle, the eight planets on plinths round it, an entrance): solar system tours, planetariums, orreries, astronomy museums, collect-something-from-every-planet games", subs: [], impl: orrery as unknown as LayoutPack },
+  { id: "volume", blurb: "worlds crossed through the air or water, not on foot; sub picks the medium: sky (floating islands and clouds, a jetpack), water (a beach, a lagoon and a sunken ship, swimming and diving), space (a station and asteroids in zero-g): flying, jetpacks, soaring, sky races, swimming, diving, underwater treasure, zero-g, spacewalks", subs: ["sky", "water", "space"], impl: volume as unknown as LayoutPack },
 ];
 
 export function packFor(id: string): LayoutPack {

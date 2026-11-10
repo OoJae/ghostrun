@@ -12,11 +12,14 @@ import { placeWorld } from "@ghostrun/layout";
 import { buildNav } from "@ghostrun/nav";
 import { arena } from "@ghostrun/pack-arena";
 import { cityBlock } from "@ghostrun/pack-city-block";
+import { volume } from "@ghostrun/pack-volume";
 import { BTN, SimWorld, type Rapier } from "@ghostrun/sim";
 import type { Vec3 } from "@ghostrun/ir";
 import ctf from "../../../packages/ir/fixtures/ctf-neon.jsonl?raw";
 import zombies from "../../../packages/ir/fixtures/zombie-survival.jsonl?raw";
 import kart from "../../../packages/ir/fixtures/kart-race.jsonl?raw";
+import jetpack from "../../../packages/ir/fixtures/jetpack-islands.jsonl?raw";
+import lagoon from "../../../packages/ir/fixtures/sunken-treasure.jsonl?raw";
 
 export interface CtfResult {
   hash: string;
@@ -93,6 +96,46 @@ export function runRace(R: Rapier, ticks: number): RaceResult {
     }, 0);
     return { laps: sim.log.filter((e) => e.k === "lap_done").length, checkpoints, order: order.join(",") };
   });
+}
+
+/** A flight or a swim: where the player ended up and what it had left, besides the hash and the log. */
+export interface MovesResult extends CtfResult {
+  /** The player's last position (0.01 m), its fuel and breath ticks: the law really ran. */
+  at: string;
+  /** Take-offs or jumps out of the water, landings, breaths run out. */
+  counts: string;
+}
+
+const movesEnd = (sim: SimWorld) => {
+  const p = sim.pos("player");
+  return {
+    at: `${p.map((x) => Math.round(x * 100) / 100).join(",")} fuel ${sim.player.fuel} under ${sim.player.under}`,
+    counts: (["jump", "land", "breath_out"] as const).map((k) => sim.log.filter((e) => e.k === k).length).join("/"),
+  };
+};
+
+/** The jetpack (locomotion.fly) over the floating islands: fly up and across in bursts, dive, land, refuel, fall off the far side. */
+export function runJetpack(R: Rapier, ticks: number): MovesResult {
+  const fill = parseFill(jetpack, { seed: 21 });
+  const layout = volume.generate({ seed: 21, params: volume.defaults, sub: fill.draft.pack.sub, laws: fill.draft.laws, harder: false });
+  const fly: Input = (_sim, _nav, t) => {
+    const phase = t % 600;
+    const btn = phase < 200 ? BTN.JUMP : phase < 260 ? BTN.DOWN : phase < 420 && t % 40 < 25 ? BTN.JUMP : 0;
+    return [phase < 300 ? 127 : -40, ((t * 5) % 41) - 20, btn];
+  };
+  return play(R, placeWorld({ ...fill.draft, engine: "det" }, layout).bundle, ticks, fly, movesEnd);
+}
+
+/** Swimming (locomotion.swim) in the lagoon: wade in, dive to the seabed, run out of breath, surface, jump out. */
+export function runSwim(R: Rapier, ticks: number): MovesResult {
+  const fill = parseFill(lagoon, { seed: 23 });
+  const layout = volume.generate({ seed: 23, params: volume.defaults, sub: fill.draft.pack.sub, laws: fill.draft.laws, harder: false });
+  const swim: Input = (_sim, _nav, t) => {
+    const phase = t % 1600;
+    const btn = phase > 200 && phase < 1500 ? BTN.DOWN : phase >= 1500 && t % 30 === 0 ? BTN.JUMP : 0;
+    return [((t * 3) % 31) - 15, phase < 800 ? 127 : -127, btn];
+  };
+  return play(R, placeWorld({ ...fill.draft, engine: "det" }, layout).bundle, ticks, swim, movesEnd);
 }
 
 type Input = (sim: SimWorld, nav: ReturnType<typeof buildNav>, t: number) => [number, number, number];

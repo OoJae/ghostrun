@@ -36,6 +36,9 @@
     },
     {
       "path": "../../packages/packs/city-block"
+    },
+    {
+      "path": "../../packages/packs/volume"
     }
   ]
 }

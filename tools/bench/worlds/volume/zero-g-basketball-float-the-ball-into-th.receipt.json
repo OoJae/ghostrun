@@ -1,0 +1,298 @@
+{
+  "prompt": "Zero-g basketball: float the ball into the hoop on the far module",
+  "intent": {
+    "lang": "en",
+    "mode": "play",
+    "genre": "sports",
+    "setting": "zero-gravity space station with a hoop on the far module",
+    "role": "zero-g basketball player",
+    "goal": "float the ball through the hoop on the far module",
+    "fail": "ball drifts out of bounds or time runs out",
+    "mood": "weightless and competitive",
+    "pack": "volume",
+    "sub": [
+      "space"
+    ],
+    "safety": "ok",
+    "headline": "Zero-g shots must account for drift, so the far hoop needs a playtest for arc and reach.",
+    "nouns": [
+      {
+        "noun": "ball",
+        "hyper": "a heavy, slow-spinning basketball that keeps drifting after every throw"
+      },
+      {
+        "noun": "hoop",
+        "hyper": "an orange rim bolted to the far module's hull"
+      },
+      {
+        "noun": "module",
+        "hyper": "a cylindrical station section with a viewport and handrails"
+      }
+    ],
+    "moodVec": {
+      "valence": 0.6,
+      "arousal": 0.7,
+      "tension": 0.5
+    }
+  },
+  "receipt": {
+    "v": 1,
+    "spec": "c84aa39a1307e3b879605af58940292fbcfeac76c595e4d88a948c584e2e6349",
+    "engine": "dev-engine",
+    "host": "node",
+    "headline": {
+      "expect": "x_hoop",
+      "text": "Zero-g shots must account for drift, so the far hoop needs a playtest for arc and reach.",
+      "status": "verified",
+      "method": "static goal regression over rules + physics, 12 AI runners vs 2 bots + physics, 3 menu schedules × 3 runners"
+    },
+    "chips": [
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:refs",
+        "subject": {
+          "kind": "world",
+          "id": "refs"
+        },
+        "status": "verified",
+        "method": "static def-use",
+        "text": "all 8 rules reference existing things",
+        "src": ""
+      },
+      {
+        "tier": "T0",
+        "n": 0,
+        "k": 0,
+        "cx": null,
+        "ms": 0,
+        "id": "T0:win_chain",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "verified",
+        "method": "static goal regression over rules",
+        "text": "win ← r_win (team:red reaches 4) ← r_score (a rival hit by ball) [after holding ball]",
+        "src": ""
+      },
+      {
+        "id": "T1:x_far",
+        "tier": "T1",
+        "subject": {
+          "kind": "property",
+          "id": "x_far"
+        },
+        "method": "kinematic reachability (flight model: thrust-limited straight lines)",
+        "n": 0,
+        "k": 0,
+        "src": "ai",
+        "ms": 0,
+        "status": "verified",
+        "text": "reachable sp_red → z_far",
+        "cx": null
+      },
+      {
+        "id": "T1:fly",
+        "tier": "T1",
+        "subject": {
+          "kind": "world",
+          "id": "vb_fly"
+        },
+        "n": 0,
+        "k": 0,
+        "src": "",
+        "ms": 0,
+        "method": "flight model (thrust-limited straight lines: climb 6 m/s, 40 s of fuel from each landing)",
+        "status": "verified",
+        "text": "the suit reaches every place the win needs (the longest flight, on the way to the basketball: 1 s of 40 s)",
+        "cx": null
+      },
+      {
+        "id": "T2:r_lose",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_lose"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_lose fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_out",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_out"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 11,
+        "status": "verified",
+        "text": "r_out fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_score",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_score"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 9,
+        "status": "verified",
+        "text": "r_score fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_center",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_center"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 9,
+        "status": "verified",
+        "text": "r_secret_center fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_hatch",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_hatch"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 8,
+        "status": "verified",
+        "text": "r_secret_hatch fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_keycard",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_keycard"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 8,
+        "status": "verified",
+        "text": "r_secret_keycard fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_secret_sign",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_secret_sign"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "template",
+        "ms": 8,
+        "status": "verified",
+        "text": "r_secret_sign fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:r_win",
+        "tier": "T2",
+        "subject": {
+          "kind": "rule",
+          "id": "r_win"
+        },
+        "method": "forced-state ≤120 ticks",
+        "n": 1,
+        "k": 1,
+        "src": "ai",
+        "ms": 1,
+        "status": "verified",
+        "text": "r_win fires exactly once",
+        "cx": null
+      },
+      {
+        "id": "T2:zero_g",
+        "tier": "T2",
+        "subject": {
+          "kind": "world",
+          "id": "laws"
+        },
+        "n": 1,
+        "k": 1,
+        "src": "",
+        "ms": 11,
+        "method": "forced state (thrust held up from the spawn for 1.5 s, then let go)",
+        "status": "verified",
+        "text": "the thrust law reaches 6 m/s in 1.5 s and stops you again",
+        "cx": null
+      },
+      {
+        "id": "T3:win",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 12 AI runners vs 2 bots",
+        "n": 12,
+        "k": 12,
+        "text": "AI runners won by playing it vs 2 bots (AI par 5.7 s)",
+        "cx": null,
+        "src": "",
+        "ms": 520
+      },
+      {
+        "id": "T3:envelope",
+        "tier": "T3",
+        "subject": {
+          "kind": "property",
+          "id": "win_reachable"
+        },
+        "status": "played",
+        "method": "physics, 3 menu schedules × 3 runners",
+        "n": 9,
+        "k": 9,
+        "text": "runners still win whatever the cast's minds choose (3 schedules)",
+        "cx": null,
+        "src": "",
+        "ms": 949
+      }
+    ],
+    "par": {
+      "goldS": 5.7,
+      "runs": 12,
+      "won": 12
+    },
+    "ms": 1559
+  }
+}
