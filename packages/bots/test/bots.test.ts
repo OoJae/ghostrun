@@ -7,7 +7,7 @@ import { loadNavNode } from "@ghostrun/nav/node";
 import { cityBlock } from "@ghostrun/pack-city-block";
 import { SimWorld, type Rapier } from "@ghostrun/sim";
 import { loadRapierNode } from "@ghostrun/sim/node";
-import { behaviourOf, castBrain } from "../src";
+import { behaviourOf, castBrain, commandables, commandOption } from "../src";
 
 const ctf = readFileSync(new URL("../../ir/fixtures/ctf-neon.jsonl", import.meta.url), "utf8");
 let R: Rapier;
@@ -149,5 +149,33 @@ describe("cast brains", () => {
     expect(brain.choose("rival_1", "rival.defend")).toBe(true);
     expect(brain.choose("rival_1", "rival.fly_away")).toBe(false);
     expect(brain.bots.find((b) => b.id === "rival_1")!.beh).toBe("defend");
+  });
+  it("a command picks an option on the teammate's own menu, and only a teammate on your side obeys it", () => {
+    expect(commandOption(["teammate.defend", "teammate.attack", "teammate.follow"], "follow")).toBe("teammate.follow");
+    expect(commandOption(["teammate.defend", "teammate.attack", "teammate.follow"], "get")).toBe("teammate.attack");
+    // attack wants to intercept the carrier first, else to go for it
+    expect(commandOption(["rival.attack", "rival.intercept"], "attack")).toBe("rival.intercept");
+    expect(commandOption(["teammate.defend", "teammate.attack"], "attack")).toBe("teammate.attack");
+    expect(commandOption(["guard.watch", "guard.patrol"], "follow")).toBeNull();
+    expect(commandables(world, "red")).toEqual([{ npc: "mate_1", options: { follow: "teammate.follow", defend: "teammate.defend", get: "teammate.attack", attack: "teammate.attack" } }]);
+    expect(commandables(world, "blue").map((m) => m.npc)).toEqual(["rival_1", "rival_2"]);
+    expect(commandables(world, "")).toEqual([]);
+
+    // said as a command act, heard on the next tick: the mate follows; a rival told the same ignores it
+    const brain = castBrain(nav, world);
+    const sim = new SimWorld(R, world, { brain });
+    const option = (id: string) => brain.bots.find((b) => b.id === id)!.option;
+    sim.speak({ to: "mate_1", act: "command", what: "teammate.follow", n: 0, slot: "" });
+    sim.speak({ to: "rival_1", act: "command", what: "rival.defend", n: 0, slot: "" });
+    sim.speak({ to: "mate_1", act: "offer", what: "teammate.attack", n: 0, slot: "" }); // not a command: only heard
+    sim.step(null);
+    expect(option("mate_1")).toBe("teammate.follow");
+    expect(option("rival_1")).toBe("rival.attack");
+    expect(sim.log.filter((e) => e.k === "spoken").map((e) => `${e.act}:${e.a}:${e.b}`)).toEqual(["command:mate_1:teammate.follow", "command:rival_1:rival.defend", "offer:mate_1:teammate.attack"]);
+    // an option off its menu: kept what it played
+    sim.speak({ to: "mate_1", act: "command", what: "teammate.fly", n: 0, slot: "" });
+    sim.step(null);
+    expect(option("mate_1")).toBe("teammate.follow");
+    sim.free();
   });
 });

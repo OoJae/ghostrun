@@ -530,3 +530,45 @@ export function lose(v: Voice, notes: readonly number[]): number {
   setTimeout(() => lp.disconnect(), 2800);
   return 2.4;
 }
+
+// ---- a place's ambient life (life.ts): each creature's call when it reacts to the player ---------
+
+/** Fireflies gathering round you: a faint high shimmer. */
+export function shimmer(v: Voice): number {
+  for (let i = 0; i < 4; i++) bell(v, 2400 * v.p * (1 + i * 0.25), v.t + i * 0.07, 0.25, 0.012, 4);
+  return 0.6;
+}
+
+/** A deer startled: a short snort, then hooves. */
+export function snort(v: Voice): number {
+  hiss(v, { type: "bandpass", f: 900, to: 400, q: 1.2, a: 0.01, d: 0.18, peak: 0.12 });
+  for (let i = 0; i < 4; i++) hiss(v, { type: "lowpass", f: 500, at: v.t + 0.2 + i * 0.11, a: 0.002, d: 0.05, peak: 0.1 });
+  return 0.7;
+}
+
+/** An owl: two soft low hoots. */
+export function hoot(v: Voice): number {
+  blip(v, { type: "sine", f: 380 * v.p, to: 340 * v.p, a: 0.05, d: 0.35, peak: 0.07 });
+  blip(v, { type: "sine", f: 360 * v.p, to: 320 * v.p, at: v.t + 0.5, a: 0.06, d: 0.5, peak: 0.06 });
+  return 1.2;
+}
+
+/** Wings: an owl taking off, pigeons scattering. */
+export function flutter(v: Voice, n = 6): number {
+  for (let i = 0; i < n; i++) hiss(v, { type: "bandpass", f: 1800 + i * 90, q: 2, at: v.t + i * 0.045, a: 0.004, d: 0.035, peak: 0.07 });
+  return 0.2 + n * 0.05;
+}
+
+/** A person's greeting without words: a soft "mm-hm". */
+export function murmur(v: Voice): number {
+  blip(v, { type: "triangle", f: 180 * v.p, to: 200 * v.p, a: 0.03, d: 0.14, peak: 0.05 });
+  blip(v, { type: "triangle", f: 210 * v.p, to: 170 * v.p, at: v.t + 0.17, a: 0.03, d: 0.18, peak: 0.045 });
+  return 0.45;
+}
+
+/** A maintenance drone turning to scan you: a rising two-tone chirp. */
+export function scan(v: Voice): number {
+  blip(v, { type: "square", f: 880 * v.p, to: 1320 * v.p, a: 0.005, d: 0.12, peak: 0.025 });
+  blip(v, { type: "square", f: 1320 * v.p, to: 1760 * v.p, at: v.t + 0.15, a: 0.005, d: 0.12, peak: 0.022 });
+  return 0.35;
+}

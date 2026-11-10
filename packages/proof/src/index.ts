@@ -2,6 +2,7 @@ export { prove, type ProveOptions } from "./prove";
 export { t0, type PlanStep, type WinChain } from "./t0";
 export { apex, reachAt, t1, t1Drive, t1Range } from "./t1";
 export { t2 } from "./t2";
+export { COMMAND_TICKS, t2Commands } from "./commands";
 export { jumpRun, playWitnesses, runnerRun, skillRuns, stepName, t3, traceRunners, witnesses, witnessKey, type KeptRun, type Played, type Witness } from "./t3";
 export { bandLine, bandMethod, bandSaid, chipLine, chipLineAt, chipLineIn, clock, crossLine, english, failLine, failRunLine, fengShuiFix, fengShuiHead, fengShuiLine, fengShuiWhy, fightLine, fightLineIn, fraction, paceLine, pairLine, partLine, statusWord, timesLine, whereWord, type CrossCheck, type Words } from "./labels";
 export { comparable, receiptHash } from "./cross";

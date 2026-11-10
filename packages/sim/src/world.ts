@@ -28,6 +28,8 @@ export interface Brain {
   think(w: SimWorld): ReadonlyMap<string, InputFrame>;
   /** Is this NPC playing an option that sees nothing (a guard told to look away)? */
   blind?(id: string): boolean;
+  /** A teammate told to play an option on its own typed menu (a command act): true if it now plays it. */
+  obey?(id: string, option: string): boolean;
 }
 
 /** A booking a rule made (book_slot): with whom, what (the rule's words), and the slot the act asked for. */
@@ -507,6 +509,12 @@ export class SimWorld {
     return this.#watch.has(id);
   }
 
+  /** An NPC on the player's team (a teammate it may command). */
+  #onPlayersTeam(id: string): boolean {
+    const team = this.ents.get("player")?.team ?? "";
+    return id !== "player" && this.npcs.has(id) && team !== "" && this.ents.get(id)?.team === team;
+  }
+
   /** Looking away (bribed, or told to by its mind): it sees nothing. */
   blind(id: string): boolean {
     return this.ents.get(id)?.state === LOOK_AWAY || this.#brain?.blind?.(id) === true;
@@ -876,6 +884,9 @@ export class SimWorld {
     for (const a of this.#said) {
       const i = push("spoken", a.to, a.what, a.slot || a.n);
       evs[i]!.act = a.act;
+      // a command to a teammate (on the player's team): it plays the option it was told, if that
+      // option is on its own typed menu (the brain decides; anything else is only heard)
+      if (a.act === "command" && this.#onPlayersTeam(a.to)) this.#brain?.obey?.(a.to, a.what);
     }
     this.#said = [];
     // Tags: an agent within reach of an enemy carrier knocks the item loose on the floor between

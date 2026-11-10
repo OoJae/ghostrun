@@ -4,6 +4,7 @@
 // `cached` event (when and by which models it was built live); `fresh` asks for a new build. A
 // build with a picture opens with `inspired`: the brief the edge read from it, and the prompt it made.
 // Trademarked names in the prompt are sent as generic homages (@ghostrun/llm/homage).
+import { applyHealthFlags } from "./flags";
 import { FillParser, splitObjects, type WorldBundle } from "@ghostrun/ir";
 import { homage } from "@ghostrun/llm/homage";
 import { api } from "./api";
@@ -59,7 +60,8 @@ export async function liveHealth(): Promise<{ llm: boolean; vision: boolean }> {
   try {
     const r = await fetch("/v1/health", { cache: "no-store" });
     if (!r.ok) return { llm: false, vision: false };
-    const h = (await r.json()) as { llm?: boolean; vision?: boolean };
+    const h = (await r.json()) as { llm?: boolean; vision?: boolean; ff?: unknown };
+    applyHealthFlags(h.ff); // the living world's switches (flags.ts)
     return { llm: Boolean(h.llm), vision: Boolean(h.llm && h.vision) };
   } catch {
     return { llm: false, vision: false };

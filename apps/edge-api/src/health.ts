@@ -36,7 +36,16 @@ export async function canaryHealth(env: { FLAGS?: KvNamespace }): Promise<{ at: 
   return { at: runs.map((r) => r.at).sort().at(-1)!, ok: runs.every((r) => r.ok) };
 }
 
-export async function healthMore(env: ProofEnv): Promise<{ proof: boolean; canary: { at: string; ok: boolean } | null }> {
-  const [p, canary] = await Promise.all([proofHealth(env), canaryHealth(env)]);
-  return { ...p, canary };
+/** The living world's feature flags (KV keys ff.persona_sliders, ff.team_ai, ff.wander_life): on unless "off". */
+export const LIFE_FLAGS = ["persona_sliders", "team_ai", "wander_life"] as const;
+export type LifeFlags = Record<(typeof LIFE_FLAGS)[number], boolean>;
+
+export async function lifeFlags(env: { FLAGS?: KvNamespace }): Promise<LifeFlags> {
+  const vals = await Promise.all(LIFE_FLAGS.map((f) => env.FLAGS?.get(`ff.${f}`, { cacheTtl: 60 }).catch(() => null) ?? Promise.resolve(null)));
+  return Object.fromEntries(LIFE_FLAGS.map((f, i) => [f, vals[i] !== "off"])) as LifeFlags;
+}
+
+export async function healthMore(env: ProofEnv): Promise<{ proof: boolean; canary: { at: string; ok: boolean } | null; ff: LifeFlags }> {
+  const [p, canary, ff] = await Promise.all([proofHealth(env), canaryHealth(env), lifeFlags(env)]);
+  return { ...p, canary, ff };
 }

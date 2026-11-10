@@ -17,6 +17,7 @@ import fengShuiFill from "../../../packages/ir/fixtures/fengshui-gallery.jsonl?r
 import fengShuiBrokenFill from "../../../packages/ir/fixtures/fengshui-gallery-broken.jsonl?raw";
 import museumFill from "../../../packages/ir/fixtures/museum-bribe.jsonl?raw";
 import villaFill from "../../../packages/ir/fixtures/villa-viewing.jsonl?raw";
+import gladeFill from "../../../packages/ir/fixtures/glade-walk.jsonl?raw";
 import { specHash, type FillNote, type FillStats, type WorldBundle } from "@ghostrun/ir";
 import type { PackLayout } from "@ghostrun/plugin-api";
 import { ENGINE_HASH, placeFill } from "@ghostrun/world";
@@ -88,7 +89,7 @@ export function buildWorld(_prompt: string, fixture = "ctf"): World {
 }
 
 /** Recorded fills: the organizer's CTF brief, and a kit-verb world (?fixture=coin-rush). */
-export const FIXTURES: Record<string, string> = { ctf: fixtureFill, "coin-rush": coinRushFill, forest: forestFill, parkour: parkourFill, heist: heistFill, vault: vaultFill, duel: duelFill, zombies: zombieFill, "laser-tag": laserFill, station: stationFill, kart: kartFill, "street-race": streetFill, snowmobile: snowFill, fengshui: fengShuiFill, "fengshui-broken": fengShuiBrokenFill, museum: museumFill, villa: villaFill };
+export const FIXTURES: Record<string, string> = { ctf: fixtureFill, "coin-rush": coinRushFill, forest: forestFill, parkour: parkourFill, heist: heistFill, vault: vaultFill, duel: duelFill, zombies: zombieFill, "laser-tag": laserFill, station: stationFill, kart: kartFill, "street-race": streetFill, snowmobile: snowFill, fengshui: fengShuiFill, "fengshui-broken": fengShuiBrokenFill, museum: museumFill, villa: villaFill, glade: gladeFill };
 export const FIXTURE_PROMPTS: Record<string, string> = {
   ctf: BRIEF,
   "coin-rush": "Collect five gold coins in a neon arena before the clock runs out. Mind the lava.",
@@ -107,6 +108,7 @@ export const FIXTURE_PROMPTS: Record<string, string> = {
   "fengshui-broken": "A Feng Shui handbag gallery with a tall arched window in line with the front door and an incense burner on the doorstep.",
   museum: "A museum heist at night: collect coins, bribe the guard to look the other way, and carry the star sapphire out of the vault to the van.",
   villa: "A villa tour where the guide books a viewing.",
+  glade: "A bioluminescent forest at night to wander: a glowcap glade, a lantern grove and the rangers' camp.",
 };
 
 /** Fill text (fixture or a live stream) → placed world, choosing the pack from the registry. */

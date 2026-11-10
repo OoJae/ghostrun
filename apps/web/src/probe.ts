@@ -49,6 +49,10 @@ export interface GhostrunProbe {
   xr?: XrProbe;
   /** Speech acts (refreshed five times a second): the player's purse, who sees them, who looks away (seconds left), bookings made and the acts logged. */
   acts?: { purse: Record<string, number>; seeing: string[]; away: Record<string, number>; bookings: number; log: string[] };
+  /** Teammates you can command (refreshed five times a second): the option each plays, the last order, and the orders logged. */
+  team?: { mates: Record<string, string>; last: string | null; orders: string[] };
+  /** A place's ambient life (refreshed twice a second): each creature's kind, where it is [x, z] and what it is doing. */
+  life?: { kinds: string[]; creatures: { kind: string; p: [number, number]; mood: string; reacted: number }[] };
 }
 
 export interface XrProbe {

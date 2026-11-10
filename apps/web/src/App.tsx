@@ -40,6 +40,13 @@ import { NoteApply } from "./hud/Notes";
 import { useSound } from "./audio/useSound";
 import { useSpeech } from "./audio/useSpeech";
 import { TalkBox } from "./hud/Talk";
+import { TeamWheel } from "./hud/Team";
+import { COMMAND_LABEL, COMMANDS, commandActs, matchCommand, objectiveOf, teammates, type Command, type Commandable } from "./team";
+import { flagOn } from "./flags";
+import { PersonaPanel } from "./hud/Persona";
+import { LifeNote, lifeWords } from "./hud/Life";
+import { charactersOf, personaEdit, replaceLine, type Slider } from "./persona";
+import { chipLineT } from "./i18n/words";
 import { LineagePanel } from "./hud/Lineage";
 import { contextPrompt, galleryRef, lineageOf, receiptVersion, refLink, shareSource, yourChanges, type RemixSource } from "./remix";
 import { MuteButton } from "./hud/Mute";
@@ -215,6 +222,35 @@ export function App() {
   const minds = useRef<Minds | null>(null);
   const [bark, setBark] = useState<{ npc: string; name: string; line: string; at: number } | null>(null);
   const [talking, setTalking] = useState<{ npc: string; name: string } | null>(null);
+  // team AI: the teammates on your side you can give orders to (team.ts), and the last order given
+  const [mates, setMates] = useState<Commandable[]>([]);
+  // persona sliders: the minded characters of the world on show and their traits (persona.ts)
+  const [characters, setCharacters] = useState<ReturnType<typeof charactersOf>>([]);
+  const matesRef = useRef<Commandable[]>([]);
+  const [order, setOrder] = useState<Command | null>(null);
+  /** One order to every teammate whose menu takes it: logged command acts, heard on the next tick. */
+  const command = (c: Command) => {
+    const sim = engine.current?.rapierSim;
+    const w = current.current;
+    if (!sim || !w || sim.replaying) return;
+    const acts = commandActs(matesRef.current, c);
+    if (!acts.length) return;
+    for (const a of acts) {
+      sim.queueAct(a);
+      minds.current?.hold(a.to);
+    }
+    setOrder(c);
+    setToast(t("Told the team: {order}", { order: t(COMMAND_LABEL[c], { thing: objectiveOf(w.bundle) }) }));
+  };
+  const commandRef = useRef(command);
+  commandRef.current = command;
+  /** Said or typed in the talk box: one of the four orders goes to the team; anything else to the character. */
+  const say = (to: { npc: string }, text: string) => {
+    const w = current.current;
+    const c = w && matesRef.current.length && (!to.npc || matesRef.current.some((m) => m.npc === to.npc)) ? matchCommand(text, objectiveOf(w.bundle)) : null;
+    if (c) return commandRef.current(c);
+    if (to.npc) minds.current?.talk(to.npc, text);
+  };
   /** An NPC's line: the subtitle, and said out loud in its own voice. */
   const barked = (npc: string, name: string, line: string, reply: boolean) => {
     setBark({ npc, name, line, at: Date.now() });
@@ -391,6 +427,13 @@ export function App() {
       setTeams(world.bundle.rules.some((r) => r.then.some((fx) => fx.target === "team:blue" && fx.e !== "damage" && fx.e !== "heal")));
       setUseHint(null);
       setToast(null);
+      // the teammates you can command here (none with the flag off)
+      const ms = sim && flagOn("team_ai") ? teammates(world.bundle, sim.sim.entity("player")?.team ?? "") : [];
+      matesRef.current = ms;
+      setMates(ms);
+      setCharacters(flagOn("persona_sliders") ? charactersOf(world.bundle) : []);
+      setOrder(null);
+      if (!ms.length) delete probe().team;
       if (sim) {
         minds.current?.stop();
         minds.current = modeRef.current === "live" ? new Minds(world, sim, barked, actHooks) : null;
@@ -600,8 +643,15 @@ export function App() {
         if (npc) {
           ev.preventDefault();
           setTalking({ npc, name: minds.current!.name(npc) });
+        } else if (matesRef.current.length) {
+          // nobody to talk to nearby, but a team to give orders to: say one ("follow me")
+          ev.preventDefault();
+          setTalking({ npc: "", name: t("team") });
         }
       }
+      // the command wheel: 1 follow me, 2 defend the base, 3 get the objective, 4 attack
+      const n = /^Digit([1-4])$/.exec(ev.code)?.[1];
+      if (n && matesRef.current.length && !ev.repeat) commandRef.current(COMMANDS[Number(n) - 1]!);
     };
     window.addEventListener("keydown", onKey);
     return () => {
@@ -703,6 +753,7 @@ export function App() {
   const editWorld = async (change: string) => {
     const w = current.current;
     if (!w || modeRef.current !== "live") return;
+    setPersonaMine(false);
     if (SURPRISE.test(change) && receiptRef.current) return void cutFor(w, receiptRef.current, true);
     if (HARDER.test(change) && w.bundle.mode === "play" && receiptRef.current) return raceHarder(w, change, receiptRef.current);
     const base = runId.current;
@@ -719,14 +770,15 @@ export function App() {
    * A patch on the world, the model's or the Intent card's own: merged by stable ids (a layout op
    * settled and re-anchored), placed, re-proved, and back with how the receipt moved, and Undo.
    */
-  const applyEdit = async (w: World, change: string, patch: string, t0: number) => {
+  const applyEdit = async (w: World, change: string, patch: string, t0: number, said?: string[]) => {
     const before = receiptRef.current;
     const original = w.source?.base ?? w.source?.prompt ?? builtPrompt.current;
     const edits = [...(w.source?.edits ?? []), change];
     const fill0 = pinLayout(w.fill);
     const { text, stats, layout } = mergeEdit(fill0, patch, w.seed);
     const w2 = worldFromFill(text, w.seed, w.intent.live, w.bundle.pack.id, w.bundle.mode);
-    const summary = [...(layout?.summary ?? []), ...changeSummary(w.bundle, w2.bundle)];
+    // (a persona slider says what it changed itself, with its numbers)
+    const summary = said ?? [...(layout?.summary ?? []), ...changeSummary(w.bundle, w2.bundle)];
     if (!summary.length && text.trim() === fill0.trim()) return setEdit({ status: "failed", change, message: stats.locked ? t("That would only change what the world promises, and the proof keeps those fixed.") : t("Nothing in the world changed. Try saying it differently.") });
     if (layout?.notes.length) w2.notes.unshift(...layout.notes);
     w2.source = { prompt: editedPrompt(original, edits), intent: intentFor(w, original), fill: w2.fill, seed: w.seed, pack: w2.bundle.pack.id, base: original, edits, ...(w.source?.pinned ? { pinned: w.source.pinned } : {}) };
@@ -741,6 +793,37 @@ export function App() {
       if (collapsedRef.current && delta?.length) setToast(t("Edit re-proved: {what}", { what: delta.slice(0, 2).map((d) => `${d.label} ${d.from} → ${d.to}`).join(" · ") }));
     });
     await show(w2, id, t0, [{ label: "edit", ms: performance.now() - t0 }]);
+  };
+
+  /** Worlds that differ from the one before them only in a persona's prose (Undo swaps them back in place). */
+  const proseWorlds = useRef(new WeakSet<World>());
+  /** The last change on show came from a persona slider (its result and Undo show beside the sliders). */
+  const [personaMine, setPersonaMine] = useState(false);
+  const [personaOpen, setPersonaOpen] = useState(false);
+  /**
+   * A persona slider moved: a trait that changes play (how bold, how far it sees, a bribe's price) is
+   * an edit, re-proved with its numbers and Undo; quiet ↔ chatty is persona prose, never hashed, so
+   * the world swaps in place and the receipt stands (checked: the spec hash is the same).
+   */
+  const slidePersona = async (s: Slider, to: number) => {
+    const w = current.current;
+    if (!w || edit.status === "editing" || edit.status === "proving") return;
+    const name = charactersOf(w.bundle).find((c) => c.npc === s.npc)?.name ?? s.npc;
+    const pe = personaEdit(w.fill, w.bundle, s, to, name);
+    if (!pe) return;
+    setPersonaMine(true);
+    if (pe.gameplay) return applyEdit(w, pe.change, pe.patch, performance.now(), pe.summary);
+    const w2 = worldFromFill(replaceLine(w.fill, pe.patch), w.seed, w.intent.live, w.bundle.pack.id, w.bundle.mode);
+    if ((await hashWorld(w2.bundle)) !== (await hashWorld(w.bundle))) return applyEdit(w, pe.change, pe.patch, performance.now(), pe.summary);
+    const original = w.source?.base ?? w.source?.prompt ?? builtPrompt.current;
+    const edits = [...(w.source?.edits ?? []), pe.change];
+    w2.source = { prompt: editedPrompt(original, edits), intent: intentFor(w, original), fill: w2.fill, seed: w.seed, pack: w2.bundle.pack.id, base: original, edits, ...(w.source?.pinned ? { pinned: w.source.pinned } : {}) };
+    history.current.push(w);
+    proseWorlds.current.add(w2);
+    current.current = w2;
+    minds.current?.retarget(w2);
+    setCharacters(charactersOf(w2.bundle));
+    setEdit({ status: "done", change: pe.change, summary: [...pe.summary, t("the same spec: the receipt stands")], locked: 0, delta: null, failures: [] });
   };
 
   /** Worlds that differ from the one before them only in how they look (Undo redraws them in place too). */
@@ -1026,6 +1109,12 @@ export function App() {
     setEdit({ status: "idle" });
     // a look undone is redrawn in place, like it was changed; anything else is the old world again
     const top = current.current;
+    if (top && proseWorlds.current.has(top)) {
+      current.current = prev;
+      minds.current?.retarget(prev);
+      setCharacters(charactersOf(prev.bundle));
+      return;
+    }
     if (top && restyledWorlds.current.has(top)) return void redraw(prev);
     void show(prev, ++runId.current, performance.now(), []);
   };
@@ -1250,7 +1339,22 @@ export function App() {
             <b>{bark.name}:</b> {bark.line}
           </div>
         )}
-        {talking && <TalkBox name={talking.name} lang={speech.listenLang()} onSay={(t) => minds.current?.talk(talking.npc, t)} onClose={() => setTalking(null)} onListen={speech.hush} />}
+        {talking && <TalkBox name={talking.name} lang={speech.listenLang()} onSay={(t) => say(talking, t)} onClose={() => setTalking(null)} onListen={speech.hush} />}
+        {status === "playing" && !inVr && (
+          <PersonaPanel
+            characters={characters}
+            edit={edit}
+            proved={(proof.receipt?.chips ?? []).filter((c) => c.id === "T3:envelope" || c.id.startsWith("T0:afford:") || c.id === "T3:win" || c.id.startsWith("T2:command:")).map(chipLineT)}
+            mine={personaMine}
+            canUndo={history.current.length > 0}
+            onSlide={(s, v) => void slidePersona(s, v)}
+            onUndo={undo}
+            open={personaOpen}
+            setOpen={setPersonaOpen}
+          />
+        )}
+        {status === "playing" && !inVr && flagOn("wander_life") && current.current?.bundle.mode === "wander" && lifeWords(current.current.bundle, current.current.cue) && <LifeNote words={lifeWords(current.current.bundle, current.current.cue)!} />}
+        <TeamWheel engine={engine} active={status === "playing" && !inVr} mates={mates} thing={current.current ? objectiveOf(current.current.bundle) : ""} name={(id) => current.current?.bundle.entities.find((e) => e.id === id)?.noun || id.replace(/_/g, " ")} last={order} onCommand={command} />
         <ProofBadge proof={proof} onOpen={() => setReceiptOpen((o) => !o)} />
         <CutChip cut={cut} onApply={applyCut} />
         <RepairChip
@@ -1306,6 +1410,7 @@ export function App() {
         {receiptOpen && (
           <ReceiptPanel
             proof={proof}
+            life={current.current && flagOn("wander_life") ? lifeWords(current.current.bundle, current.current.cue) : null}
             onClose={() => {
               setReceiptOpen(false);
               if (fooled) engine.current?.highlight(null);

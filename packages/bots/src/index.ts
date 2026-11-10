@@ -29,6 +29,49 @@ export function behaviourOf(option: string): Behaviour {
   return VERBS.find(([re]) => re.test(verb))?.[1] ?? "idle";
 }
 
+/**
+ * What a player can tell a teammate, a closed set: follow me, defend the base, get the objective,
+ * attack. Each picks an option on the teammate's own typed menu (the first whose behaviour it
+ * wants, in order), so a command never makes it do anything its menu, and the proof's envelope,
+ * doesn't already cover.
+ */
+export const COMMANDS = ["follow", "defend", "get", "attack"] as const;
+export type Command = (typeof COMMANDS)[number];
+const WANTS: Record<Command, readonly Behaviour[]> = { follow: ["follow"], defend: ["defend"], get: ["attack"], attack: ["intercept", "attack"] };
+
+/** The option on this menu a command picks, or null when the menu has none it would take. */
+export function commandOption(menu: readonly string[], c: Command): string | null {
+  for (const want of WANTS[c]) {
+    const o = menu.find((x) => behaviourOf(x) === want);
+    if (o) return o;
+  }
+  return null;
+}
+
+/** A teammate the player can command: its id, and the option each command picks (absent: its menu has none). */
+export interface Commandable {
+  npc: string;
+  options: Partial<Record<Command, string>>;
+}
+
+/** The NPCs on the player's team that some command reaches (a CTF mate, a team arena's own side), by id. */
+export function commandables(b: WorldBundle, playerTeam: string): Commandable[] {
+  if (!playerTeam) return [];
+  const cast = new Map(b.cast.map((c) => [c.npc, c]));
+  const out: Commandable[] = [];
+  for (const e of sortById(b.entities)) {
+    const c = cast.get(e.id);
+    if (e.kind !== "npc" || e.team !== playerTeam || e.body === "none" || e.body === "sensor" || !c) continue;
+    const options: Partial<Record<Command, string>> = {};
+    for (const k of COMMANDS) {
+      const o = commandOption(c.menu, k);
+      if (o) options[k] = o;
+    }
+    if (Object.keys(options).length) out.push({ npc: e.id, options });
+  }
+  return out;
+}
+
 /** Fraction of the laws' run speed: rivals are a step slower than the player, so they can be beaten. */
 const SPEED: Partial<Record<Cast["role"], number>> = { rival: 0.8, teammate: 0.85, guard: 0.7, creature: 0.75 };
 const PATROL_SPEED = 0.45;
@@ -133,6 +176,18 @@ export class CastBrain implements Brain {
     bot.beh = behaviourOf(option);
     bot.aim = null;
     return true;
+  }
+
+  /** A teammate told what to do (the sim checks it is on the player's team): the option, if it is on its menu. */
+  obey(id: string, option: string): boolean {
+    return this.choose(id, option);
+  }
+
+  /** Where this NPC is heading now as its option plays (null: nowhere, it stands). For the proof's forced-state tests. */
+  aimOf(w: SimWorld, id: string): Vec3 | null {
+    const bot = this.bots.find((x) => x.id === id);
+    const e = w.entity(id);
+    return bot && e && !e.destroyed ? this.#target(w, bot) : null;
   }
 
   /** Playing an option that sees nothing (its mind told it to look away). */

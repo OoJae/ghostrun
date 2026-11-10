@@ -23,6 +23,7 @@ export function issuesOf(r: Receipt, b: WorldBundle, lines: readonly FillNote[] 
     if (c.id === "T0:win_chain") out.push(`No chain of rules lets the player win (${c.text}): ${whyNoWin(b)}`);
     else if (c.id === "T3:too_easy") out.push(`AI runners win in ${c.cx?.have ?? "?"} s without engaging the world: ${tooEasy(b)}`);
     else if (c.id === "T3:win") out.push(`AI runners could not win in 2 minutes of play (${cx || c.text}). ${whyLost(b, cx)}`);
+    else if (c.id.startsWith("T2:command:")) out.push(`A teammate doesn't act on a command (${c.text}: ${cx}): give it a menu option for it (teammate.follow, teammate.defend, teammate.attack) on ground it can walk.`);
     else if (c.tier === "T2") {
       const rule = b.rules.find((x) => x.id === c.subject.id);
       const numeric = rule?.if.some((x) => /\.(hp|score)$|^team:/.test(x.l));

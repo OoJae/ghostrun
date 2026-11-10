@@ -118,6 +118,7 @@ export function useSound(): SoundControl {
     (e: Engine) => {
       engine.current = e;
       e.onFrame = (f) => sound.current?.frame(f);
+      e.onLife = (ev) => sound.current?.life(ev.kind, ev.mood, ev.at); // a place's creatures (life.ts)
       e.onVrB = toggle;
     },
     [toggle],

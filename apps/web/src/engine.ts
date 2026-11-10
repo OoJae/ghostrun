@@ -15,6 +15,9 @@ import type { GhostTrack, Rival } from "./race";
 import { combatView, type CombatView } from "./render/combat";
 import { heatView, type HeatCells } from "./render/heat";
 import { raceView, type RaceView } from "./render/vehicles";
+import { lifeView, type LifeView } from "./render/life";
+import type { LifeEvent } from "./life";
+import { flagOn } from "./flags";
 import { lookOf, type LookStyle } from "./render/looks";
 import { Materialise, type MaterialiseSpec } from "./render/materialise";
 import { beamMaterial, PALETTE } from "./render/materials";
@@ -81,6 +84,9 @@ export class Engine {
   readonly #modelTier = modelTier(window.location.search, window.matchMedia?.("(pointer: coarse)").matches ?? false);
   #combat: CombatView | null = null;
   #race: RaceView | null = null;
+  /** A place's ambient life (Wander worlds): cosmetic creatures that react to the player. */
+  #life: LifeView | null = null;
+  #lifeProbeAt = 0;
   #sim: FrameSource | null = null;
   /** Set once Rapier has loaded; until then (or if it fails) the stub keeps the world walkable. */
   simFactory: SimFactory | null = null;
@@ -102,6 +108,8 @@ export class Engine {
   onInput: (() => void) | undefined;
   /** Every simulation frame, as the renderer gets it (the sound reads the player's steps from it). */
   onFrame: ((f: SimFrame) => void) | undefined;
+  /** A place's creature reacted to the player (a deer startles, pigeons scatter): the sound plays its call there. */
+  onLife: ((e: LifeEvent) => void) | undefined;
   /** B or Y on a VR controller (a fresh press): the sound's mute, where there is no keyboard. */
   onVrB: (() => void) | undefined;
   /** A panel button or a spoken prompt in VR: play again, or build a world. */
@@ -554,6 +562,7 @@ export class Engine {
     // a race (or anything to drive): vehicles that steer and roll, the chase camera, the next gate
     this.#race = this.rapierSim ? raceView(world.bundle, this.rapierSim.sim, look.kick) : null;
     if (this.#race) this.#scene.add(this.#race.root);
+    this.#placeLife(world.bundle, look);
     this.rapierSim?.subscribe((evs) => {
       for (const ev of evs) {
         // (the view shown now: a restyle swaps it under the running sim)
@@ -650,6 +659,7 @@ export class Engine {
     this.#applyLook(look, this.#lookPlace);
     this.#cutaway = look.cutaway;
     this.#follow.setColliders(look.cutaway ? [] : view.colliders);
+    this.#placeLife(world.bundle, look); // (another look may be another setting: a forest's deer, a city's pigeons)
     // compile the new look's shaders before drawing it, but never wait long: the models still
     // loading from the last look compile too, and a precompile behind theirs can stall for good
     this.#compiling = true;
@@ -681,7 +691,17 @@ export class Engine {
     probe().ready = false;
   }
 
+  /** A Wander world's ambient life in this look (none for a game, or with ff.wander_life off). */
+  #placeLife(b: WorldBundle, look: LookStyle) {
+    this.#life?.dispose();
+    this.#life = flagOn("wander_life") ? lifeView(b, look) : null;
+    if (this.#life) this.#scene.add(this.#life.root);
+    else delete probe().life;
+  }
+
   #unload() {
+    this.#life?.dispose();
+    this.#life = null;
     this.#sim?.stop();
     this.#sim = null;
     this.#combat?.dispose();
@@ -764,6 +784,14 @@ export class Engine {
       this.#air.follow(this.#camera.position);
     }
     view?.update(now / 1000);
+    if (this.#life && player && !preview) {
+      for (const e of this.#life.update(dt, now / 1000, [player.position.x, player.position.y, player.position.z])) this.onLife?.(e);
+      if (now - this.#lifeProbeAt > 500) {
+        this.#lifeProbeAt = now;
+        const cs = this.#life.creatures;
+        probe().life = { kinds: [...new Set(cs.map((c) => c.kind))], creatures: cs.map((c) => ({ kind: c.kind, p: [round2(c.p[0]), round2(c.p[2])], mood: c.mood, reacted: c.reacted })) };
+      }
+    }
     this.#models?.update(dt, now / 1000, this.#camera);
     if (view) this.#combat?.update(now / 1000, view.actors, this.#camera);
     // (in VR too: the vehicles turn and the gates show, without the chase camera)
